@@ -1,0 +1,3 @@
+com.alibaba.alink.common.io.directreader.MemoryDataBridgeGenerator
+com.alibaba.alink.common.io.directreader.DbDataBridgeGenerator
+com.alibaba.alink.common.io.directreader.DummyDataBridgeGenerator
