@@ -1,29 +1,12 @@
+PyAlink 使用介绍
+===============
 
-<font size=7>[English](README.en-US.md)| 简体中文</font>
-
-# Alink
-
- Alink是基于Flink的通用算法平台,由阿里巴巴计算平台PAI团队研发。
-
-#### 开源算法列表
-
-<div align=center>
-<img src="https://img.alicdn.com/tfs/TB1n.edorj1gK0jSZFOXXc7GpXa-1635-714.png" height="60%" width="60%">
-</div>
-
-#### pyAlink
-
-<div align=center>
-<img src="https://img.alicdn.com/tfs/TB1TmKloAL0gK0jSZFxXXXWHVXa-2070-1380.png" height="60%" width="60%">
-</div>
-
-# 快速开始--PyAlink 使用介绍
 
 使用前准备：
 ---------
 
 1. 确保使用环境中有Python3，版本>=3.5。
-2. 根据 Python 版本下载对应的 pyalink 包：
+2. 根据 Python 版本下载对应的 pyalink 包： 
     - Python 3.5：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.5.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.5.egg) (MD5: 5831da92fc1c163ce20493a3456b0bac)
     - Python 3.6：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.6.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.6.egg) (MD5: 3f5c7601527a5197f58648572391ab12)
     - Python 3.7：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.7.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.7.egg) (MD5: d5979873296fbd8ad83d562120693032)
@@ -72,6 +55,7 @@ print(df)
   - [StreamOperator数据预览](docs/pyalink/pyalink-stream-operator-preview.md)
   - [UDF使用](docs/pyalink/pyalink-udf.md)
 
+
 Q&A：
 ----
 Q：能否连接远程 Flink 集群进行计算？
@@ -97,3 +81,4 @@ Q：能否直接使用 Python 脚本而不是 Notebook 运行？
 A：可以。但需要在代码最后调用 resetEnv()，否则脚本不会退出。
 
 -----
+
