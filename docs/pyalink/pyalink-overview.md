@@ -51,9 +51,9 @@ print(df)
 
 更多用法：
 ------
-  - [DataFrame与Operator互转](docs/pyalink/pyalink-dataframe.md)
-  - [StreamOperator数据预览](docs/pyalink/pyalink-stream-operator-preview.md)
-  - [UDF使用](docs/pyalink/pyalink-udf.md)
+  - [DataFrame与Operator互转](pyalink-dataframe.md)
+  - [StreamOperator数据预览](pyalink-stream-operator-preview.md)
+  - [UDF使用](pyalink-udf.md)
 
 
 Q&A：
