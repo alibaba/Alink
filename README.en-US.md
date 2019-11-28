@@ -108,3 +108,26 @@ A: Yes. But you need to call resetEnv () at the end of the code, otherwise the s
 -----
 
 
+Run Alink Algorithm with a Flink Cluster
+--------
+
+1. Prepare a Flink Cluster:
+```
+  wget https://archive.apache.org/dist/flink/flink-1.9.0/flink-1.9.0-bin-scala_2.11.tgz
+  tar -xf flink-1.9.0-bin-scala_2.11.tgz && cd flink-1.9.0
+  ./bin/start-cluster.sh
+```
+
+2. Build Alink jar from the source:
+```
+  git clone https://github.com/alibaba/Alink.git
+  cd Alink && mvn -Dmaven.test.skip=true clean package shade:shade
+```
+
+3. Run Java examples:
+```
+  ./bin/flink run -p 1 -c com.alibaba.alink.ALSExample [path_to_Alink]/examples/target/alink_examples-0.1-SNAPSHOT.jar
+  # ./bin/flink run -p 2 -c com.alibaba.alink.GBDTExample [path_to_Alink]/examples/target/alink_examples-0.1-SNAPSHOT.jar
+  # ./bin/flink run -p 2 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-0.1-SNAPSHOT.jar
+```
+

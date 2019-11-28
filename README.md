@@ -97,3 +97,26 @@ Q：能否直接使用 Python 脚本而不是 Notebook 运行？
 A：可以。但需要在代码最后调用 resetEnv()，否则脚本不会退出。
 
 -----
+
+如何在集群上运行Alink算法
+--------
+
+1. 准备Flink集群
+```
+  wget https://archive.apache.org/dist/flink/flink-1.9.0/flink-1.9.0-bin-scala_2.11.tgz
+  tar -xf flink-1.9.0-bin-scala_2.11.tgz && cd flink-1.9.0
+  ./bin/start-cluster.sh
+```
+
+2. 准备Alink算法包
+```
+  git clone https://github.com/alibaba/Alink.git
+  cd Alink && mvn -Dmaven.test.skip=true clean package shade:shade
+```
+
+3. 运行Java示例
+```
+  ./bin/flink run -p 1 -c com.alibaba.alink.ALSExample [path_to_Alink]/examples/target/alink_examples-0.1-SNAPSHOT.jar
+  # ./bin/flink run -p 2 -c com.alibaba.alink.GBDTExample [path_to_Alink]/examples/target/alink_examples-0.1-SNAPSHOT.jar
+  # ./bin/flink run -p 2 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-0.1-SNAPSHOT.jar
+```
