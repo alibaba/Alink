@@ -24,10 +24,10 @@ Preparation before use:
 
 1. Make sure the version of python3 on your computer >=3.5
 2. Download the corresponding pyalink package according to the Python version:
-    - Python 3.5: [Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.5.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.5.egg) (MD5: 5831da92fc1c163ce20493a3456b0bac)
-    - Python 3.6: [Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.6.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.6.egg) (MD5: 3f5c7601527a5197f58648572391ab12)
-    - Python 3.7: [Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.7.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.7.egg) (MD5: d5979873296fbd8ad83d562120693032)
-    - Python 3.8: [Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.8.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0/pyalink-1.0_flink_1.9.0_scala_2.11-py3.8.egg) (MD5: c49e2c9db4ab72023f5d56dbb655b38b)
+    - Python 3.5：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.5.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.5.egg) (MD5: 9714e5e02b4681a55263970abc6dbe57)
+    - Python 3.6：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.6.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.6.egg) (MD5: 112638a81c05f1372f9dac880ec527e6)
+    - Python 3.7：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.7.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.7.egg) (MD5: 9b483da5176977e4f330ca7675120fed)
+    - Python 3.8：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.8.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.8.egg) (MD5: d04aa5d367bc653d5e872e1eba3494cd)
 3. Install using  ```easy_install [path]/pyalink-0.0.1-py3.*.egg```. have to be aware of is:
     * If you have previously installed pyalink, use pip uninstall pyalink to uninstall the previous version before install command.
     * If you have multiple versions of Python, you may need to use a specific version of easy_install, such as easy_install-3.7.
