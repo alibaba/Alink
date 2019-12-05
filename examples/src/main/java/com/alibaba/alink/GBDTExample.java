@@ -17,10 +17,10 @@ public class GBDTExample {
             "capital_loss bigint, hours_per_week bigint, native_country string, label string";
 
         BatchOperator trainData = new CsvSourceBatchOp()
-            .setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_train.csv").setSchemaStr(schema);
+            .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/adult_train.csv").setSchemaStr(schema);
 
         BatchOperator testData = new CsvSourceBatchOp()
-            .setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_test.csv").setSchemaStr(schema);
+            .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/adult_test.csv").setSchemaStr(schema);
 
         GbdtClassifier gbdt = new GbdtClassifier()
             .setFeatureCols(new String[]{"age", "capital_gain", "capital_loss", "hours_per_week",

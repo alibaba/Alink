@@ -13,7 +13,7 @@ public class ALSExample {
 
     public static void main(String[] args) throws Exception {
 
-        String url = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/movielens_ratings.csv";
+        String url = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/movielens_ratings.csv";
         String schema = "userid bigint, movieid bigint, rating double, timestamp string";
 
         BatchOperator data = new CsvSourceBatchOp()

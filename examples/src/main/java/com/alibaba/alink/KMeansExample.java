@@ -12,7 +12,7 @@ import com.alibaba.alink.pipeline.dataproc.vector.VectorAssembler;
 public class KMeansExample {
 
     public static void main(String[] args) throws Exception {
-        String URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
+        String URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv";
         String SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 
         BatchOperator data = new CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR);
