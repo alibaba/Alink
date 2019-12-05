@@ -1,9 +1,14 @@
-
 <font size=7>English| [简体中文](README.md)</font>
 
 # Alink
 
 Alink is the Machine Learning algorithm platform based on Flink, developed by the PAI team of Alibaba computing platform.
+Welcome everyone to join the Alink open source user group to communicate.
+ 
+ 
+<div align=center>
+<img src="https://img.alicdn.com/tfs/TB1qeWTpAT2gK0jSZPcXXcKkpXa-884-1176.jpg" height="20%" width="20%">
+</div>
 
 #### List of Algorithms
 

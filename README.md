@@ -1,9 +1,13 @@
-
 <font size=7>[English](README.en-US.md)| 简体中文</font>
 
 # Alink
 
- Alink是基于Flink的通用算法平台,由阿里巴巴计算平台PAI团队研发。
+ Alink是基于Flink的通用算法平台,由阿里巴巴计算平台PAI团队研发,欢迎大家加入Alink开源用户钉钉群进行交流。
+ 
+ 
+<div align=center>
+<img src="https://img.alicdn.com/tfs/TB1qeWTpAT2gK0jSZPcXXcKkpXa-884-1176.jpg" height="20%" width="20%">
+</div>
 
 #### 开源算法列表
 
