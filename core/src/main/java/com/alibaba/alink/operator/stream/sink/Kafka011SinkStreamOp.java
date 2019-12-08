@@ -49,7 +49,7 @@ public final class Kafka011SinkStreamOp extends BaseSinkStreamOp<Kafka011SinkStr
 
         DataStream<Row> outputRows = in.getDataStream();
         DataStream<Row> serialized = outputRows
-            .<byte[]>map(new RichMapFunction<Row, byte[]>() {
+            .map(new RichMapFunction<Row, byte[]>() {
                 transient RowSerializer rowSerializer;
 
                 @Override
@@ -68,19 +68,9 @@ public final class Kafka011SinkStreamOp extends BaseSinkStreamOp<Kafka011SinkStr
                     return this.rowSerializer.serialize(value);
                 }
             })
-            .map(new MapFunction<byte[], Row>() {
-                @Override
-                public Row map(byte[] value) throws Exception {
-                    return Row.of(value);
-                }
-            });
+            .map((MapFunction<byte[], Row>) Row::of);
         DataStream<Tuple2<Boolean, Row>> richOutputRows = serialized
-            .map(new MapFunction<Row, Tuple2<Boolean, Row>>() {
-                @Override
-                public Tuple2<Boolean, Row> map(Row value) throws Exception {
-                    return Tuple2.of(true, value);
-                }
-            });
+            .map((MapFunction<Row, Tuple2<Boolean, Row>>) value -> Tuple2.of(true, value));
         richOutputRows.writeUsingOutputFormat(createOutputFormat()).name("kafka011_" + getTopic());
         return this;
     }

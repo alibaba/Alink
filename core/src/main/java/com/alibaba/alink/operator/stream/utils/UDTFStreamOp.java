@@ -86,28 +86,20 @@ public class UDTFStreamOp extends StreamOperator<UDTFStreamOp>
 		if (null == reservedColNames) {
 			if (TableUtil.findColIndex(outputColNames, selectedColName) >= 0) {
 				reservedColNames = new String[inColNames.length - 1];
-				for (int i = 0; i < inputColIndex; i++) {
-					reservedColNames[i] = inColNames[i];
-				}
-				for (int i = inputColIndex + 1; i < inColNames.length; i++) {
-					reservedColNames[i - 1] = inColNames[i];
-				}
+                System.arraycopy(inColNames, 0, reservedColNames, 0, inputColIndex);
+				System.arraycopy(inColNames, inputColIndex + 1, reservedColNames, inputColIndex + 1 - 1, inColNames.length - (inputColIndex + 1));
 			} else {
 				reservedColNames = in.getColNames();
 			}
 		}
 
-		for (int k = 0; k < outputColNames.length; k++) {
+		for (String outputColName : outputColNames) {
 			String[] reservedColNamesOld = reservedColNames;
-			int outputColIndex = TableUtil.findColIndex(reservedColNamesOld, outputColNames[k]);
+			int outputColIndex = TableUtil.findColIndex(reservedColNamesOld, outputColName);
 			if (outputColIndex >= 0) {
 				reservedColNames = new String[inColNames.length - 1];
-				for (int i = 0; i < outputColIndex; i++) {
-					reservedColNames[i] = reservedColNamesOld[i];
-				}
-				for (int i = outputColIndex + 1; i < inColNames.length; i++) {
-					reservedColNames[i - 1] = reservedColNamesOld[i];
-				}
+				System.arraycopy(reservedColNamesOld, 0, reservedColNames, 0, outputColIndex);
+				System.arraycopy(reservedColNamesOld, outputColIndex + 1, reservedColNames, outputColIndex + 1 - 1, inColNames.length - (outputColIndex + 1));
 			}
 		}
 

@@ -37,7 +37,7 @@ import org.apache.flink.util.Collector;
 public final class FtrlPredictStreamOp extends StreamOperator<FtrlPredictStreamOp>
     implements FtrlPredictParams<FtrlPredictStreamOp> {
 
-    DataBridge dataBridge = null;
+    private DataBridge dataBridge = null;
 
     public FtrlPredictStreamOp(BatchOperator model) {
         super(new Params());
@@ -72,15 +72,7 @@ public final class FtrlPredictStreamOp extends StreamOperator<FtrlPredictStreamO
                             out.collect(Tuple2.of(i, row));
                         }
                     }
-                }).partitionCustom(new Partitioner<Integer>() {
-                    @Override
-                    public int partition(Integer key, int numPartitions) { return key; }
-                }, 0).map(new MapFunction<Tuple2<Integer, Row>, Row>() {
-                    @Override
-                    public Row map(Tuple2<Integer, Row> value) throws Exception {
-                        return value.f1;
-                    }
-                })
+                }).partitionCustom((Partitioner<Integer>) (key, numPartitions) -> key, 0).map((MapFunction<Tuple2<Integer, Row>, Row>) value -> value.f1)
                 .flatMap(new CollectModel());
 
             TypeInformation[] types = new TypeInformation[3];
@@ -123,15 +115,7 @@ public final class FtrlPredictStreamOp extends StreamOperator<FtrlPredictStreamO
             }
 
             if (buffers.containsKey(id) && buffers.get(id).size() == nTab.intValue() - 1) {
-
-                if (buffers.containsKey(id)) {
-                    buffers.get(id).add(row);
-                } else {
-                    List<Row> buffer = new ArrayList<>(0);
-                    buffer.add(row);
-                    buffers.put(id, buffer);
-                }
-
+                buffers.get(id).add(row);
                 LinearModelData ret = new LinearModelDataConverter().load(buffers.get(id));
                 buffers.get(id).clear();
                 System.out.println("collect model : " + id);

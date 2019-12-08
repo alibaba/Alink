@@ -49,7 +49,7 @@ import org.apache.flink.util.Collector;
 public final class FtrlTrainStreamOp extends StreamOperator<FtrlTrainStreamOp>
     implements FtrlTrainParams<FtrlTrainStreamOp> {
 
-    DataBridge dataBridge = null;
+    private DataBridge dataBridge = null;
 
     public FtrlTrainStreamOp(BatchOperator model) throws Exception {
         super(new Params());
@@ -133,24 +133,16 @@ public final class FtrlTrainStreamOp extends StreamOperator<FtrlTrainStreamOp>
 
         DataStream<Tuple7<Long, Integer, Integer, Vector, Object, Double, Long>>
             result = iterativeBody.filter(
-            new FilterFunction<Tuple7<Long, Integer, Integer, Vector, Object, Double, Long>>() {
-                @Override
-                public boolean filter(Tuple7<Long, Integer, Integer, Vector, Object, Double, Long> t3)
-                    throws Exception {
+                (FilterFunction<Tuple7<Long, Integer, Integer, Vector, Object, Double, Long>>) t3 -> {
                     // if t3.f0 > 0 && t3.f2 > 0 then feedback
                     return (t3.f0 > 0 && t3.f2 > 0);
-                }
-            });
+                });
 
         DataStream<Row> output = iterativeBody.filter(
-            new FilterFunction<Tuple7<Long, Integer, Integer, Vector, Object, Double, Long>>() {
-                @Override
-                public boolean filter(Tuple7<Long, Integer, Integer, Vector, Object, Double, Long> value)
-                    throws Exception {
+                (FilterFunction<Tuple7<Long, Integer, Integer, Vector, Object, Double, Long>>) value -> {
                     /* if value.f0 small than 0, then output */
                     return value.f0 < 0;
-                }
-            }).flatMap(new WriteModel(labelType, getVectorCol(), featureCols, hasInterceptItem));
+                }).flatMap(new WriteModel(labelType, getVectorCol(), featureCols, hasInterceptItem));
 
         iteration.closeWith(result);
 
@@ -303,7 +295,7 @@ public final class FtrlTrainStreamOp extends StreamOperator<FtrlTrainStreamOp>
                 int rowSize = r.getArity();
                 Row row = new Row(rowSize + 2);
                 row.setField(0, iter);
-                row.setField(1, rows.size() + 0L);
+                row.setField(1, (long) rows.size());
 
                 for (int j = 0; j < rowSize; ++j) {
                     if (j == 2 && r.getField(j) != null) {
