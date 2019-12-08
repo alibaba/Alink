@@ -37,7 +37,7 @@ import org.apache.flink.util.Collector;
 public final class FtrlPredictStreamOp extends StreamOperator<FtrlPredictStreamOp>
     implements FtrlPredictParams<FtrlPredictStreamOp> {
 
-    DataBridge dataBridge = null;
+    private DataBridge dataBridge = null;
 
     public FtrlPredictStreamOp(BatchOperator model) {
         super(new Params());
@@ -123,15 +123,7 @@ public final class FtrlPredictStreamOp extends StreamOperator<FtrlPredictStreamO
             }
 
             if (buffers.containsKey(id) && buffers.get(id).size() == nTab.intValue() - 1) {
-
-                if (buffers.containsKey(id)) {
-                    buffers.get(id).add(row);
-                } else {
-                    List<Row> buffer = new ArrayList<>(0);
-                    buffer.add(row);
-                    buffers.put(id, buffer);
-                }
-
+                buffers.get(id).add(row);
                 LinearModelData ret = new LinearModelDataConverter().load(buffers.get(id));
                 buffers.get(id).clear();
                 System.out.println("collect model : " + id);
