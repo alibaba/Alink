@@ -57,7 +57,7 @@ public class GenericCsvInputFormat implements InputFormat<Row, CsvFileInputSplit
     // for reading records
     private transient Charset charset;
 
-    private transient int splitLength;   // remaining bytes of current split to read
+    private transient long splitLength;  // remaining bytes of current split to read
     private transient byte[] readBuffer; // buffer for holding data read by reader
     private transient long bytesRead;    // number of bytes read by reader
     private transient boolean overLimit; // flag indicating whether we have read beyond the split
@@ -74,7 +74,7 @@ public class GenericCsvInputFormat implements InputFormat<Row, CsvFileInputSplit
 
     private transient CsvFileInputSplit split;
 
-    // for parsing fields of a reacord
+    // for parsing fields of a record
     private transient FieldParser<?>[] fieldParsers = null;
     private transient Object[] holders = null;
 
@@ -151,7 +151,7 @@ public class GenericCsvInputFormat implements InputFormat<Row, CsvFileInputSplit
     @Override
     public void open(CsvFileInputSplit split) throws IOException {
         this.charset = Charset.forName(charsetName);
-        this.splitLength = (int) split.length;
+        this.splitLength = split.length;
         this.split = split;
         this.bytesRead = 0L;
 
