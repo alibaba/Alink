@@ -34,6 +34,10 @@ import java.util.Map;
 public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
     implements EvalClusterParams<EvalClusterBatchOp>, EvaluationMetricsCollector<ClusterMetrics> {
     public static final String SILHOUETTE_COEFFICIENT = "silhouetteCoefficient";
+    private static final String METRICS_SUMMARY = "metricsSummary";
+    private static final String EVAL_RESULT = "cluster_eval_result";
+    private static final String LABELS = "labels";
+    private static final String PREDICTIONS = "predictions";
 
     public EvalClusterBatchOp() {
         super(null);
@@ -67,21 +71,17 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
         if (null != labelColName) {
             DataSet<Row> data = in.select(new String[] {labelColName, predResultColName}).getDataSet();
             labelMetrics = calLocalPredResult(data)
-                .reduce(new ReduceFunction<long[][]>() {
+                .reduce(new ReduceFunction<LongMatrix>() {
                     @Override
-                    public long[][] reduce(long[][] value1, long[][] value2) {
-                        for (int i = 0; i < value1.length; i++) {
-                            for (int j = 0; j < value1[0].length; j++) {
-                                value1[i][j] += value2[i][j];
-                            }
-                        }
+                    public LongMatrix reduce(LongMatrix value1, LongMatrix value2) {
+                        value1.plusEqual(value2);
                         return value1;
                     }
                 })
-                .map(new MapFunction<long[][], Params>() {
+                .map(new MapFunction<LongMatrix, Params>() {
                     @Override
-                    public Params map(long[][] value) {
-                        return ClusterEvaluationUtil.MatrixToParams(value);
+                    public Params map(LongMatrix value) {
+                        return ClusterEvaluationUtil.extractParamsFromConfusionMatrix(value);
                     }
                 });
         }
@@ -95,11 +95,11 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
                 new RichMapFunction<Row, Tuple1<Double>>() {
                     @Override
                     public Tuple1<Double> map(Row value) {
-                        List<BaseMetricsSummary> list = getRuntimeContext().getBroadcastVariable("metricsSummary");
+                        List<BaseMetricsSummary> list = getRuntimeContext().getBroadcastVariable(METRICS_SUMMARY);
                         return ClusterEvaluationUtil.calSilhouetteCoefficient(value,
                             (ClusterMetricsSummary)list.get(0));
                     }
-                }).withBroadcastSet(metricsSummary, "metricsSummary")
+                }).withBroadcastSet(metricsSummary, METRICS_SUMMARY)
                 .aggregate(Aggregations.SUM, 0);
 
             vectorMetrics = metricsSummary.map(new ClusterEvaluationUtil.SaveDataAsParams()).withBroadcastSet(
@@ -124,7 +124,7 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
             });
 
         this.setOutputTable(DataSetConversionUtil.toTable(getMLEnvironmentId(),
-            out, new TableSchema(new String[] {"cluster_eval_result"}, new TypeInformation[] {Types.STRING})
+            out, new TableSchema(new String[] {EVAL_RESULT}, new TypeInformation[] {Types.STRING})
         ));
         return this;
     }
@@ -149,7 +149,7 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
         }
     }
 
-    private static DataSet<long[][]> calLocalPredResult(DataSet<Row> data) {
+    private static DataSet<LongMatrix> calLocalPredResult(DataSet<Row> data) {
 
         DataSet<Tuple1<Map<String, Integer>>> labels = data.flatMap(new FlatMapFunction<Row, String>() {
             @Override
@@ -170,28 +170,28 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
         }).reduceGroup(new EvaluationUtil.DistinctLabelIndexMap(false, null)).project(0);
 
         // Build the confusion matrix.
-        DataSet<long[][]> statistics = data
+        DataSet<LongMatrix> statistics = data
             .rebalance()
             .mapPartition(new CalLocalPredResult())
-            .withBroadcastSet(labels, "labels")
-            .withBroadcastSet(predictions, "predictions");
+            .withBroadcastSet(labels, LABELS)
+            .withBroadcastSet(predictions, PREDICTIONS);
 
         return statistics;
     }
 
-    static class CalLocalPredResult extends RichMapPartitionFunction<Row, long[][]> {
+    static class CalLocalPredResult extends RichMapPartitionFunction<Row, LongMatrix> {
         private Map<String, Integer> labels, predictions;
 
         @Override
         public void open(Configuration parameters) throws Exception {
-            List<Tuple1<Map<String, Integer>>> list = getRuntimeContext().getBroadcastVariable("labels");
+            List<Tuple1<Map<String, Integer>>> list = getRuntimeContext().getBroadcastVariable(LABELS);
             this.labels = list.get(0).f0;
-            list = getRuntimeContext().getBroadcastVariable("predictions");
+            list = getRuntimeContext().getBroadcastVariable(PREDICTIONS);
             this.predictions = list.get(0).f0;
         }
 
         @Override
-        public void mapPartition(Iterable<Row> rows, Collector<long[][]> collector) {
+        public void mapPartition(Iterable<Row> rows, Collector<LongMatrix> collector) {
             long[][] matrix = new long[predictions.size()][labels.size()];
             for (Row r : rows) {
                 if (EvaluationUtil.checkRowFieldNotNull(r)) {
@@ -200,7 +200,7 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
                     matrix[pred][label] += 1;
                 }
             }
-            collector.collect(matrix);
+            collector.collect(new LongMatrix(matrix));
         }
     }
 }

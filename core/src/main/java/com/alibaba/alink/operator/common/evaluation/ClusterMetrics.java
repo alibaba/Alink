@@ -9,12 +9,18 @@ import org.apache.flink.types.Row;
  * Cluster evaluation metrics.
  */
 public class ClusterMetrics extends BaseSimpleClusterMetrics<ClusterMetrics> {
+    /**
+     * Cluster Number.
+     */
     public static final ParamInfo<Integer> K = ParamInfoFactory
         .createParamInfo("k", Integer.class)
         .setDescription("cluster number")
         .setRequired()
         .build();
 
+    /**
+     * Count.
+     */
     public static final ParamInfo<Integer> COUNT = ParamInfoFactory
         .createParamInfo("count", Integer.class)
         .setDescription("count")
@@ -59,24 +65,49 @@ public class ClusterMetrics extends BaseSimpleClusterMetrics<ClusterMetrics> {
         .setRequired()
         .build();
 
+    /**
+     * NMI = MutualInformation * 2/ (entropy(pred) + entropy(actual))
+     * MatrixRatio(i,j) = matrix(i,j) / total
+     * PredRatio(i) = predict(i) / total
+     * PredRatio(j) = actual(j) / total
+     * MutualInformation = sum(sum(MatrixRatio(i,j) * log2(MatrixRatio(i,j) / PredRatio(i) / PredRatio(j)))
+     * Entropy(pred) = -sum(actual / total * log2(actual / total)
+     * Entropy(actual) = -sum(prediction / total * log2(prediction / total)
+     */
     public static final ParamInfo<Double> NMI = ParamInfoFactory
         .createParamInfo("NMI", Double.class)
         .setDescription("Normalized Mutual Information")
         .setHasDefaultValue(null)
         .build();
 
+    /**
+     * For each cluster, get the max number of one class.
+     * Purity = sum(mi) / total
+     */
     public static final ParamInfo<Double> PURITY = ParamInfoFactory
         .createParamInfo("purity", Double.class)
         .setDescription("purity")
         .setHasDefaultValue(null)
         .build();
 
+    /**
+     * Index = sum(sum(combination(matrix(i,j)))
+     * RI = (TP + TN) / (TP + TN + FP + FN)
+     * TP + FP = sum(combination(actual))
+     * TP + FN = sum(combination(predict))
+     * TP = Index
+     */
     public static final ParamInfo<Double> RI = ParamInfoFactory
         .createParamInfo("ri", Double.class)
         .setDescription("rand index")
         .setHasDefaultValue(null)
         .build();
 
+    /**
+     * ExpectedIndex = (TP + FP) * (TP + FN) / (TP + TN + FP + FN)
+     * MaxIndex = (TP + FP + TP + FN) / 2
+     * ARI = (Index - ExpectedIndex) / (MaxIndex - ExpectedIndex)
+     */
     public static final ParamInfo<Double> ARI = ParamInfoFactory
         .createParamInfo("ari", Double.class)
         .setDescription("adjusted rand index")

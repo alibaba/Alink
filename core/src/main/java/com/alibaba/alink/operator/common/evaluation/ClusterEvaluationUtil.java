@@ -38,55 +38,62 @@ public class ClusterEvaluationUtil implements AllWindowFunction<Row, Row, TimeWi
         this.distance = distance;
     }
 
-    public static Params MatrixToParams(long[][] matrix) {
-        double[] actualLabel = new double[matrix[0].length];
-        double[] predictLabel = new double[matrix.length];
-        double hGND = 0.0;
-        double hGRPS = 0.0;
-        double I_GND_GRPS = 0.0;
-        double total = 0.0;
+    public static Params extractParamsFromConfusionMatrix(LongMatrix longMatrix) {
+        long[][] matrix = longMatrix.getMatrix();
+        long[] actualLabel = longMatrix.getColSums();
+        long[] predictLabel = longMatrix.getRowSums();
+        long total = longMatrix.getTotal();
+
+        double entropyActual = 0.0;
+        double entropyPredict = 0.0;
+        double mutualInfor = 0.0;
         double purity = 0.0;
-        double tp_fp = 0.0, tp_fn = 0.0, tp = 0.0;
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[0].length; j++) {
-                predictLabel[i] += matrix[i][j];
-                actualLabel[j] += matrix[i][j];
-                total += matrix[i][j];
-            }
+        long tp = 0L;
+        long tpFpSum = 0L;
+        long tpFnSum = 0L;
+        for (long anActualLabel : actualLabel) {
+            entropyActual += entropy(anActualLabel, total);
+            tpFpSum += combination(anActualLabel);
         }
-        for (double anActualLabel : actualLabel) {
-            hGND += (0.0 == anActualLabel ? 0.0 : anActualLabel / total * Math.log(anActualLabel / total));
-            tp_fp += (anActualLabel * (anActualLabel - 1)) / 2;
+        entropyActual /= -Math.log(2);
+        for (long aPredictLabel : predictLabel) {
+            entropyPredict += entropy(aPredictLabel, total);
+            tpFnSum += combination(aPredictLabel);
         }
-        for (double aPredictLabel : predictLabel) {
-            hGRPS += (0.0 == aPredictLabel ? 0.0 : aPredictLabel / total * Math.log(aPredictLabel / total));
-            tp_fn += (aPredictLabel * (aPredictLabel - 1)) / 2;
-        }
-        hGND /= -Math.log(2);
-        hGRPS /= -Math.log(2);
+        entropyPredict /= -Math.log(2);
         for (int i = 0; i < matrix.length; i++) {
             long max = 0;
             for (int j = 0; j < matrix[0].length; j++) {
                 max = Math.max(max, matrix[i][j]);
-                I_GND_GRPS += (0 == matrix[i][j] ? 0.0 :
-                    matrix[i][j] * Math.log(total * matrix[i][j] / predictLabel[i] / actualLabel[j]));
-                tp += 1.0 * matrix[i][j] * (matrix[i][j] - 1) / 2;
+                mutualInfor += (0 == matrix[i][j] ? 0.0 :
+                    1.0 * matrix[i][j] / total * Math.log(1.0 * total * matrix[i][j] / predictLabel[i] / actualLabel[j]));
+                tp += combination(matrix[i][j]);
             }
             purity += max;
         }
         purity /= total;
-        I_GND_GRPS /= (Math.log(2) * total);
-        double fp = tp_fp - tp, fn = tp_fn - tp;
-        double total_C = total * (total - 1) / 2;
-        double tn = total_C - tp - fn - fp;
-        double E_RI = tp_fp * tp_fn / total_C;
-        double MAX_RI = (tp_fp + tp_fn) / 2;
-        double ri = (tp + tn) / (tp + tn + fp + fn);
+        mutualInfor /= Math.log(2);
+        long fp = tpFpSum - tp;
+        long fn = tpFnSum - tp;
+        long totalCombination = combination(total);
+        long tn = totalCombination - tp - fn - fp;
+        double expectedIndex = 1.0 * tpFpSum * tpFnSum / totalCombination;
+        double maxIndex = 1.0 * (tpFpSum + tpFnSum) / 2;
+        double ri = 1.0 * (tp + tn) / (tp + tn + fp + fn);
         return new Params()
-            .set(ClusterMetrics.NMI, 2 * I_GND_GRPS / (hGND + hGRPS))
+            .set(ClusterMetrics.NMI, 2.0 * mutualInfor / (entropyActual + entropyPredict))
             .set(ClusterMetrics.PURITY, purity)
             .set(ClusterMetrics.RI, ri)
-            .set(ClusterMetrics.ARI, (tp - E_RI) / (MAX_RI - E_RI));
+            .set(ClusterMetrics.ARI, (tp - expectedIndex) / (maxIndex - expectedIndex));
+    }
+
+    private static long combination(long number){
+        return number * (number - 1) / 2;
+    }
+
+    private static double entropy(long frequency, long total){
+        double ratio = 1.0 * frequency / total;
+        return 0 == frequency ? 0.0 : ratio * Math.log(ratio);
     }
 
     /**

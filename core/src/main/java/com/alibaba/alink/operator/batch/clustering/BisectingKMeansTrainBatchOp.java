@@ -11,7 +11,6 @@ import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelDataConv
 import com.alibaba.alink.operator.common.clustering.DistanceType;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
-import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.clustering.BisectingKMeansTrainParams;
@@ -34,7 +33,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.Random;
+import java.util.Comparator;
 
 /**
  * Bisecting k-means is a kind of hierarchical clustering algorithm.
@@ -82,8 +88,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
     private static DataSet<Tuple2<Long, DenseVector>>
     getNewClusterCenters(DataSet<Tuple3<Long, ClusterSummary, IterInfo>> allClusterSummaries) {
         return allClusterSummaries
-            .flatMap(new FlatMapFunction<Tuple3<Long, ClusterSummary, IterInfo>,
-                Tuple2<Long, DenseVector>>() {
+            .flatMap(new FlatMapFunction<Tuple3<Long, ClusterSummary, IterInfo>, Tuple2<Long, DenseVector>>() {
                 @Override
                 public void flatMap(Tuple3<Long, ClusterSummary, IterInfo> value,
                                     Collector<Tuple2<Long, DenseVector>> out) {
@@ -97,29 +102,32 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
 
     private static DataSet<Long>
     getDivisibleClusterIndices(
-        DataSet<Tuple3<Long, ClusterSummary, IterInfo>> allClusterSummaries,
-        final int minDivisibleClusterSize) {
+        DataSet<Tuple3<Long, ClusterSummary, IterInfo>> allClusterSummaries) {
         return allClusterSummaries
             .flatMap(new FlatMapFunction<Tuple3<Long, ClusterSummary, IterInfo>, Long>() {
                 @Override
                 public void flatMap(Tuple3<Long, ClusterSummary, IterInfo> value,
-                                    Collector<Long> out) throws Exception {
+                                    Collector<Long> out) {
                     LOG.info("getDivisibleS {}", value);
                     if (value.f2.isDividing) {
-                        if (value.f1.size >= minDivisibleClusterSize) {
-                            out.collect(value.f0);
-                        }
+                        out.collect(value.f0);
                     }
                 }
             })
             .name("getDivisibleClusterIndices");
     }
 
-    // If at the cluster dividing step, divide current active clusters;
-    // Otherwise, just copy existing clusters.
+    /**
+     * If at the cluster dividing step, divide current active clusters; Otherwise, just copy existing clusters.
+     *
+     * @param clustersSummariesAndIterInfo clusterId, clusterSummary, IterInfo
+     * @param k                            cluster number
+     * @return original clusters and new clusters.
+     */
     private static DataSet<Tuple3<Long, ClusterSummary, IterInfo>> getOrSplitClusters(
         DataSet<Tuple3<Long, ClusterSummary, IterInfo>> clustersSummariesAndIterInfo,
-        final int k) {
+        final int k,
+        final int minDivisibleClusterSize) {
         return clustersSummariesAndIterInfo
             .partitionCustom(
                 new Partitioner<Integer>() {
@@ -156,45 +164,32 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
                         List<Tuple3<Long, ClusterSummary, IterInfo>> clustersAndIterInfo = new ArrayList<>();
                         summaries.forEach(clustersAndIterInfo::add);
 
+                        //At the first step of bisecting
                         if (clustersAndIterInfo.get(0).f2.doBisectionInStep()) {
                             // find all splitable clusters
-                            Set<Long> splitableClusters = findSplitableClusters(clustersAndIterInfo, k);
+                            Set<Long> splitableClusters = findSplitableClusters(clustersAndIterInfo, k,
+                                minDivisibleClusterSize);
                             boolean shouldStopSplit = (splitableClusters.size() + getNumLeaf(clustersAndIterInfo)) >= k;
 
                             // split clusters
                             clustersAndIterInfo.forEach(t -> {
                                 assert (!t.f2.isDividing);
                                 assert (!t.f2.isNew);
+                                t.f2.shouldStopSplit = shouldStopSplit;
                                 if (splitableClusters.contains(t.f0)) {
                                     ClusterSummary summary = t.f1;
-                                    Tuple2<DenseVector, DenseVector> newCenters = splitCenter(summary.center, random);
-                                    long leftChildIndex = leftChildIndex(t.f0);
-                                    long rightChildIndex = rightChildIndex(t.f0);
+                                    IterInfo newCenterIterInfo = new IterInfo(t.f2.maxIter, t.f2.bisectingStepNo,
+                                        t.f2.innerIterStepNo, false, true, shouldStopSplit);
+                                    Tuple2<DenseVector, DenseVector> newCenters = initialSplitCenter(summary.center, random);
                                     ClusterSummary leftChildSummary = new ClusterSummary();
                                     leftChildSummary.center = newCenters.f0;
-                                    IterInfo leftChildIterInfo = new IterInfo(
-                                        t.f2.maxIter,
-                                        t.f2.bisectingStepNo,
-                                        t.f2.innerIterStepNo,
-                                        false,
-                                        true,
-                                        shouldStopSplit);
                                     ClusterSummary rightChildSummary = new ClusterSummary();
                                     rightChildSummary.center = newCenters.f1;
-                                    IterInfo rightChildIterInfo = new IterInfo(
-                                        t.f2.maxIter,
-                                        t.f2.bisectingStepNo,
-                                        t.f2.innerIterStepNo,
-                                        false,
-                                        true,
-                                        shouldStopSplit);
                                     t.f2.isDividing = true;
-                                    t.f2.shouldStopSplit = shouldStopSplit;
                                     out.collect(t);
-                                    out.collect(Tuple3.of(leftChildIndex, leftChildSummary, leftChildIterInfo));
-                                    out.collect(Tuple3.of(rightChildIndex, rightChildSummary, rightChildIterInfo));
+                                    out.collect(Tuple3.of(leftChildIndex(t.f0), leftChildSummary, newCenterIterInfo));
+                                    out.collect(Tuple3.of(rightChildIndex(t.f0), rightChildSummary, newCenterIterInfo));
                                 } else {
-                                    t.f2.shouldStopSplit = shouldStopSplit;
                                     out.collect(t);
                                 }
                             });
@@ -207,7 +202,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
             .name("get_or_split_clusters");
     }
 
-    private static Tuple2<DenseVector, DenseVector> splitCenter(DenseVector center, Random random) {
+    private static Tuple2<DenseVector, DenseVector> initialSplitCenter(DenseVector center, Random random) {
         int dim = center.size();
         double norm = Math.sqrt(BLAS.dot(center, center));
         double level = 1.0e-4 * norm;
@@ -219,35 +214,33 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
     }
 
     private static Set<Long> findSplitableClusters(List<Tuple3<Long, ClusterSummary, IterInfo>> allClusterSummaries,
-                                                   int k) {
+                                                   final int k,
+                                                   final int minDivisibleClusterSize) {
         Set<Long> clusterIds = new HashSet<>();
         List<Long> leafs = new ArrayList<>();
         List<Tuple3<Long, ClusterSummary, IterInfo>> splitableClusters = new ArrayList<>();
         allClusterSummaries.forEach(t -> clusterIds.add(t.f0));
         LOG.info("existingClusterIds {}", JsonConverter.toJson(clusterIds));
         allClusterSummaries.forEach(t -> {
-            boolean isLeaf = !clusterIds.contains(leftChildIndex(t.f0)) && !clusterIds.contains(rightChildIndex(t.f0));
+            boolean isLeaf = isLeaf(clusterIds, t.f0);
             if (isLeaf) {
                 leafs.add(t.f0);
             }
-            if (isLeaf && t.f1.size > 1) {
+            if (isLeaf && t.f1.size > 1 && t.f1.size > minDivisibleClusterSize) {
                 splitableClusters.add(t);
             }
         });
         int numClusterToSplit = k - leafs.size();
-        Integer[] order = new Integer[splitableClusters.size()];
-        for (int i = 0; i < order.length; i++) {
-            order[i] = i;
-        }
-        Arrays.sort(order, new Comparator<Integer>() {
+        List<Long> splitableClusterIds = new ArrayList<>();
+
+        splitableClusters.sort(new Comparator<Tuple3<Long, ClusterSummary, IterInfo>>() {
             @Override
-            public int compare(Integer o1, Integer o2) {
-                return -Double.compare(splitableClusters.get(o1).f1.cost, splitableClusters.get(o2).f1.cost);
+            public int compare(Tuple3<Long, ClusterSummary, IterInfo> o1, Tuple3<Long, ClusterSummary, IterInfo> o2) {
+                return -Double.compare(o1.f1.cost, o2.f1.cost);
             }
         });
-        List<Long> splitableClusterIds = new ArrayList<>();
         for (int i = 0; i < Math.min(numClusterToSplit, splitableClusters.size()); i++) {
-            splitableClusterIds.add(splitableClusters.get(order[i]).f0);
+            splitableClusterIds.add(splitableClusters.get(i).f0);
         }
         LOG.info("toSplitClusterIds {}", JsonConverter.toJson(splitableClusterIds));
         return new HashSet<>(splitableClusterIds);
@@ -258,25 +251,27 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
         allClusterSummaries.forEach(t -> clusterIds.add(t.f0));
         int n = 0;
         for (Tuple3<Long, ClusterSummary, IterInfo> t : allClusterSummaries) {
-            boolean isLeaf = !clusterIds.contains(leftChildIndex(t.f0)) && !clusterIds.contains(rightChildIndex(t.f0));
-            if (isLeaf) {
+            if (isLeaf(clusterIds, t.f0)) {
                 n++;
             }
         }
         return n;
     }
 
+    private static boolean isLeaf(Set<Long> clusterIds, long clusterId) {
+        return !clusterIds.contains(leftChildIndex(clusterId)) && !clusterIds.contains(rightChildIndex(clusterId));
+    }
+
     /**
      * Update the assignment of each samples.
+     * <p>
+     * Note that we keep the updated assignment of each samples in memory, instead of putting it to a looped dataset.
      *
-     * Note that we keep the updated assignment of each samples in memory, instead of putting it
-     * to a looped dataset.
-     *
-     * @param data Initial assignment of each samples.
-     * @param divisibleIndices
-     * @param newClusterCenters
-     * @param distance
-     * @param iterInfo
+     * @param data              Initial assignment of each samples.
+     * @param divisibleIndices  DivisibleIndex set.
+     * @param newClusterCenters New Cluster Centers.
+     * @param distance          Distance.
+     * @param iterInfo          Iter Info.
      * @return Updated assignment of each samples.
      */
     private static DataSet<Tuple3<Long, DenseVector, Long>> updateAssignment(
@@ -311,107 +306,107 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
                     return key % numPartitions;
                 }
             })
-            .reduceGroup(
-                new RichGroupReduceFunction<Tuple4<Integer, Long, DenseVector, Long>, Tuple3<Long, DenseVector,
-                    Long>>() {
-                    transient Set<Long> divisibleIndices;
-                    transient Map<Long, DenseVector> newClusterCenters;
-
-                    transient boolean shouldInitState;
-                    transient boolean shouldUpdateState;
-                    transient List<Tuple2<Long, Long>> assignmentInState; // sampleId -> clusterId
-
-                    // In euclidean case, find closer center out of two by checking which
-                    // side of the middle plane the point lies in.
-                    transient Map<Long, Tuple2<DenseVector, Double>> middlePlanes;
-
-                    @Override
-                    public void open(Configuration parameters) {
-                        List<Long> bcDivisibleIndices = getRuntimeContext().getBroadcastVariable(DIVISIBLE_INDICES);
-                        divisibleIndices = new HashSet<>(bcDivisibleIndices);
-                        List<Tuple1<IterInfo>> bcIterInfo = getRuntimeContext().getBroadcastVariable(ITER_INFO);
-                        shouldUpdateState = bcIterInfo.get(0).f0.atLastInnerIterStep();
-                        shouldInitState = getIterationRuntimeContext().getSuperstepNumber() == 1;
-                        List<Tuple2<Long, DenseVector>> bcNewClusterCenters = getRuntimeContext().getBroadcastVariable(
-                            NEW_CLUSTER_CENTERS);
-                        newClusterCenters = new HashMap<>(0);
-                        bcNewClusterCenters.forEach(t -> newClusterCenters.put(t.f0, t.f1));
-                        if (distance instanceof EuclideanDistance) {
-                            middlePlanes = new HashMap<>(0);
-                            divisibleIndices.forEach(parentIndex -> {
-                                long lchild = leftChildIndex(parentIndex);
-                                long rchild = rightChildIndex(parentIndex);
-                                DenseVector m = newClusterCenters.get(rchild).plus(newClusterCenters.get(lchild));
-                                DenseVector v = newClusterCenters.get(rchild).minus(newClusterCenters.get(lchild));
-                                BLAS.scal(0.5, m);
-                                double length = BLAS.dot(m, v);
-                                middlePlanes.put(parentIndex, Tuple2.of(v, length));
-                            });
-                        }
-                        if (shouldInitState) {
-                            assignmentInState = new ArrayList<>();
-                        }
-                    }
-
-                    @Override
-                    public void reduce(Iterable<Tuple4<Integer, Long, DenseVector, Long>> samples,
-                                       Collector<Tuple3<Long, DenseVector, Long>> out) {
-                        int pos = 0;
-                        for (Tuple4<Integer, Long, DenseVector, Long> sample : samples) {
-                            long parentClusterId = sample.f3;
-                            if (shouldInitState) {
-                                assignmentInState.add(Tuple2.of(sample.f1, sample.f3));
-                            } else {
-                                if (!sample.f1.equals(assignmentInState.get(pos).f0)) {
-                                    throw new RuntimeException("Data out of order.");
-                                }
-                                parentClusterId = assignmentInState.get(pos).f1;
-                            }
-                            if (divisibleIndices.contains(parentClusterId)) {
-                                long leftChildIdx = leftChildIndex(parentClusterId);
-                                long rightChildIdx = rightChildIndex(parentClusterId);
-                                long clusterId;
-                                if (distance instanceof EuclideanDistance) {
-                                    Tuple2<DenseVector, Double> plane = middlePlanes.get(parentClusterId);
-                                    double d = BLAS.dot(sample.f2, plane.f0);
-                                    clusterId = d < plane.f1 ? leftChildIdx : rightChildIdx;
-                                } else {
-                                    List<Tuple3<Long, Double, DenseVector>> newChildrenCenters = new ArrayList<>(2);
-                                    newChildrenCenters.add(
-                                        Tuple3.of(leftChildIdx, 0., newClusterCenters.get(leftChildIdx)));
-                                    newChildrenCenters.add(
-                                        Tuple3.of(rightChildIdx, 0., newClusterCenters.get(rightChildIdx)));
-                                    clusterId = findClusterV2(newChildrenCenters, sample.f2, distance);
-                                }
-                                out.collect(Tuple3.of(sample.f1, sample.f2, clusterId));
-
-                                if (shouldUpdateState) {
-                                    assignmentInState.set(pos, Tuple2.of(sample.f1, clusterId));
-                                }
-                            }
-                            pos++;
-                        }
-                    }
-                })
+            .reduceGroup(new UpdateAssignment(distance))
             .withBroadcastSet(divisibleIndices, DIVISIBLE_INDICES)
             .withBroadcastSet(newClusterCenters, NEW_CLUSTER_CENTERS)
             .withBroadcastSet(iterInfo, ITER_INFO)
             .name("update_assignment");
     }
 
-    public static long findClusterV2(Iterable<Tuple3<Long, Double, DenseVector>> centroids, DenseVector sample,
-                                     ContinuousDistance distance) {
-        long clusterId = -1;
-        double d = Double.MAX_VALUE;
+    static class UpdateAssignment extends RichGroupReduceFunction<Tuple4<Integer, Long, DenseVector, Long>, Tuple3<Long, DenseVector,
+        Long>> {
+        transient Set<Long> divisibleIndices;
+        transient Map<Long, DenseVector> newClusterCenters;
 
-        for (Tuple3<Long, Double, DenseVector> c : centroids) {
-            double cost = distance.calc(sample, c.f2);
-            if (cost < d) {
-                clusterId = c.f0;
-                d = cost;
+        transient boolean shouldInitState;
+        transient boolean shouldUpdateState;
+        // sampleId -> clusterId
+        transient List<Tuple2<Long, Long>> assignmentInState;
+
+        // In euclidean case, find closer center out of two by checking which
+        // side of the middle plane the point lies in.
+        transient Map<Long, Tuple2<DenseVector, Double>> middlePlanes;
+
+        ContinuousDistance distance;
+
+        UpdateAssignment(ContinuousDistance distance){
+            this.distance = distance;
+        }
+
+        @Override
+        public void open(Configuration parameters) {
+            List<Long> bcDivisibleIndices = getRuntimeContext().getBroadcastVariable(DIVISIBLE_INDICES);
+            divisibleIndices = new HashSet<>(bcDivisibleIndices);
+            List<Tuple1<IterInfo>> bcIterInfo = getRuntimeContext().getBroadcastVariable(ITER_INFO);
+            shouldUpdateState = bcIterInfo.get(0).f0.atLastInnerIterStep();
+            shouldInitState = getIterationRuntimeContext().getSuperstepNumber() == 1;
+            List<Tuple2<Long, DenseVector>> bcNewClusterCenters = getRuntimeContext().getBroadcastVariable(
+                NEW_CLUSTER_CENTERS);
+            newClusterCenters = new HashMap<>(0);
+            bcNewClusterCenters.forEach(t -> newClusterCenters.put(t.f0, t.f1));
+            if (distance instanceof EuclideanDistance) {
+                middlePlanes = new HashMap<>(0);
+                divisibleIndices.forEach(parentIndex -> {
+                    long lchild = leftChildIndex(parentIndex);
+                    long rchild = rightChildIndex(parentIndex);
+                    DenseVector m = newClusterCenters.get(rchild).plus(newClusterCenters.get(lchild));
+                    DenseVector v = newClusterCenters.get(rchild).minus(newClusterCenters.get(lchild));
+                    BLAS.scal(0.5, m);
+                    double length = BLAS.dot(m, v);
+                    middlePlanes.put(parentIndex, Tuple2.of(v, length));
+                });
+            }
+            if (shouldInitState) {
+                assignmentInState = new ArrayList<>();
             }
         }
-        return clusterId;
+
+        @Override
+        public void reduce(Iterable<Tuple4<Integer, Long, DenseVector, Long>> samples,
+                           Collector<Tuple3<Long, DenseVector, Long>> out) {
+            int pos = 0;
+            for (Tuple4<Integer, Long, DenseVector, Long> sample : samples) {
+                long parentClusterId = sample.f3;
+                if (shouldInitState) {
+                    assignmentInState.add(Tuple2.of(sample.f1, sample.f3));
+                } else {
+                    if (!sample.f1.equals(assignmentInState.get(pos).f0)) {
+                        throw new RuntimeException("Data out of order.");
+                    }
+                    parentClusterId = assignmentInState.get(pos).f1;
+                }
+                if (divisibleIndices.contains(parentClusterId)) {
+                    long leftChildIdx = leftChildIndex(parentClusterId);
+                    long rightChildIdx = rightChildIndex(parentClusterId);
+                    long clusterId;
+                    if (distance instanceof EuclideanDistance) {
+                        Tuple2<DenseVector, Double> plane = middlePlanes.get(parentClusterId);
+                        double d = BLAS.dot(sample.f2, plane.f0);
+                        clusterId = d < plane.f1 ? leftChildIdx : rightChildIdx;
+                    } else {
+                        clusterId = getClosestNode(leftChildIdx, newClusterCenters.get(leftChildIdx),
+                            rightChildIdx, newClusterCenters.get(rightChildIdx), sample.f2, distance);
+                    }
+                    out.collect(Tuple3.of(sample.f1, sample.f2, clusterId));
+
+                    if (shouldUpdateState) {
+                        assignmentInState.set(pos, Tuple2.of(sample.f1, clusterId));
+                    }
+                }
+                pos++;
+            }
+        }
+    }
+
+    public static long getClosestNode(long leftNode,
+                                      DenseVector leftNodeVec,
+                                      long rightNode,
+                                      DenseVector rightNodeVec,
+                                      DenseVector sample,
+                                      ContinuousDistance distance) {
+        double distanceLeft = distance.calc(sample, leftNodeVec);
+        double distanceRight = distance.calc(sample, rightNodeVec);
+        return distanceLeft < distanceRight ? leftNode : rightNode;
     }
 
     /**
@@ -485,9 +480,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
                         Tuple3<Long, ClusterSummary, IterInfo> oldSummary,
                         Tuple2<Long, ClusterSummary> newSummary) {
                         if (newSummary == null) {
-                            if (oldSummary.f2.isNew) {
-                                throw new RuntimeException("Encounter an empty cluster: " + oldSummary);
-                            }
+                            Preconditions.checkState(!oldSummary.f2.isNew, "Encounter an empty cluster: {}", oldSummary);
                             oldSummary.f2.updateIterInfo();
                             return oldSummary;
                         } else {
@@ -500,19 +493,25 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
             .name("update_model");
     }
 
+    /**
+     * The bisecting kmeans algorithm has nested loops. In the outer loop, cluster centers
+     * are splited. In the inner loop, the splited centers are iteratively refined.
+     * However, there lacks nested loop semantic in Flink, so we have to flatten the nested loop
+     * in our implementation.
+     */
     @Override
     public BisectingKMeansTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
         BatchOperator<?> in = checkAndGetFirst(inputs);
 
         // get the input parameter's value
         final DistanceType distanceType = DistanceType.valueOf(this.getDistanceType().toUpperCase());
-        Preconditions.checkArgument( distanceType == DistanceType.COSINE || distanceType == DistanceType.EUCLIDEAN,
+        Preconditions.checkArgument(distanceType == DistanceType.COSINE || distanceType == DistanceType.EUCLIDEAN,
             "distanceType not support!");
         final int k = this.getK();
         final int maxIter = this.getMaxIter();
         final String vectorColName = this.getVectorCol();
         final int minDivisibleClusterSize = this.getMinDivisibleClusterSize();
-        ContinuousDistance distance = (FastDistance)distanceType.getContinuousDistance();
+        ContinuousDistance distance = distanceType.getContinuousDistance();
 
         Tuple2<DataSet<Vector>, DataSet<BaseVectorSummary>> vectorsAndStat =
             StatisticsHelper.summaryHelper(in, null, vectorColName);
@@ -538,12 +537,6 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
         DataSet<Tuple2<Long, ClusterSummary>> clustersSummaries = summary(
             initialAssignment.project(2, 1), dim, distanceType);
 
-        /**
-         * The bisecting kmeans algorithm has nested loops. In the outer loop, cluster centers
-         * are splited. In the inner loop, the splited centers are iteratively refined.
-         * However, there lacks nested loop semantic in Flink, so we have to flatten the nested loop
-         * in our implementation.
-         */
         DataSet<Tuple3<Long, ClusterSummary, IterInfo>> clustersSummariesAndIterInfo
             = clustersSummaries
             .map(new MapFunction<Tuple2<Long, ClusterSummary>, Tuple3<Long, ClusterSummary, IterInfo>>() {
@@ -558,12 +551,10 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
             = clustersSummariesAndIterInfo.iterate(Integer.MAX_VALUE);
         DataSet<Tuple1<IterInfo>> iterInfo = loop.<Tuple1<IterInfo>>project(2).first(1);
 
-        /**
-         * Get all cluster summaries. Split clusters if at the first step of inner iterations.
-         */
-        DataSet<Tuple3<Long, ClusterSummary, IterInfo>> allClusters = getOrSplitClusters(loop, k);
+        //Get all cluster summaries. Split clusters if at the first step of inner iterations.
+        DataSet<Tuple3<Long, ClusterSummary, IterInfo>> allClusters = getOrSplitClusters(loop, k, minDivisibleClusterSize);
 
-        DataSet<Long> divisibleClusterIndices = getDivisibleClusterIndices(allClusters, minDivisibleClusterSize);
+        DataSet<Long> divisibleClusterIndices = getDivisibleClusterIndices(allClusters);
         DataSet<Tuple2<Long, DenseVector>> newClusterCenters = getNewClusterCenters(allClusters);
 
         DataSet<Tuple3<Long, DenseVector, Long>> newAssignment = updateAssignment(
@@ -590,29 +581,40 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
             .project(0, 1);
 
         DataSet<Row> modelRows = finalClusterSummaries
-            .mapPartition(new RichMapPartitionFunction<Tuple2<Long, ClusterSummary>, Row>() {
-                @Override
-                public void mapPartition(Iterable<Tuple2<Long, ClusterSummary>> values,
-                                         Collector<Row> out) {
-                    if (getRuntimeContext().getNumberOfParallelSubtasks() > 1) {
-                        throw new RuntimeException("parallelism greater than one when saving model.");
-                    }
-                    final int dim = (Integer)(getRuntimeContext().getBroadcastVariable(VECTOR_SIZE).get(0));
-                    BisectingKMeansModelData modelData = new BisectingKMeansModelData();
-                    modelData.summaries = new HashMap<>(0);
-                    modelData.vectorSize = dim;
-                    modelData.distanceType = distanceType;
-                    modelData.vectorColName = vectorColName;
-                    modelData.k = k;
-                    values.forEach(t -> modelData.summaries.put(t.f0, t.f1));
-                    new BisectingKMeansModelDataConverter().save(modelData, out);
-                }
-            })
+            .mapPartition(new SaveModel(distanceType, vectorColName, k))
             .withBroadcastSet(dim, VECTOR_SIZE)
             .setParallelism(1);
 
         this.setOutput(modelRows, new BisectingKMeansModelDataConverter().getModelSchema());
         return this;
+    }
+
+    private static class SaveModel extends RichMapPartitionFunction<Tuple2<Long, ClusterSummary>, Row> {
+        private DistanceType distanceType;
+        private String vectorColName;
+        private int k;
+
+        SaveModel(DistanceType distanceType, String vectorColName, int k){
+            this.distanceType = distanceType;
+            this.vectorColName = vectorColName;
+            this.k = k;
+        }
+
+        @Override
+        public void mapPartition(Iterable<Tuple2<Long, ClusterSummary>> values,
+                                 Collector<Row> out) {
+            Preconditions.checkArgument(getRuntimeContext().getNumberOfParallelSubtasks() <= 1,
+                "parallelism greater than one when saving model.");
+            final int dim = (Integer)(getRuntimeContext().getBroadcastVariable(VECTOR_SIZE).get(0));
+            BisectingKMeansModelData modelData = new BisectingKMeansModelData();
+            modelData.summaries = new HashMap<>(0);
+            modelData.vectorSize = dim;
+            modelData.distanceType = distanceType;
+            modelData.vectorColName = vectorColName;
+            modelData.k = k;
+            values.forEach(t -> modelData.summaries.put(t.f0, t.f1));
+            new BisectingKMeansModelDataConverter().save(modelData, out);
+        }
     }
 
     public static class ClusterSummaryAggregator implements Serializable {
@@ -640,6 +642,8 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
         }
 
         ClusterSummaryAggregator(int dim, DistanceType distanceType) {
+            Preconditions.checkArgument(distanceType == DistanceType.EUCLIDEAN || distanceType == DistanceType.COSINE,
+                "distanceType not support: {}", distanceType);
             sum = new DenseVector(dim);
             this.distanceType = distanceType;
         }
@@ -649,57 +653,27 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
             double norm = BLAS.dot(v, v);
             sumSqured += norm;
 
-            switch (distanceType) {
-                case EUCLIDEAN: {
-                    BLAS.axpy(1., v, sum);
-                    break;
-                }
-                case COSINE: {
-                    Preconditions.checkArgument(norm > 0, "Cosine Distance is not defined for zero-length vectors.");
-                    BLAS.axpy(1. / Math.sqrt(norm), v, sum);
-                    break;
-                }
-                default: {
-                    throw new RuntimeException("distanceType not support:" + distanceType);
-                }
+            if (distanceType == DistanceType.EUCLIDEAN) {
+                BLAS.axpy(1., v, sum);
+            } else {
+                Preconditions.checkArgument(norm > 0, "Cosine Distance is not defined for zero-length vectors.");
+                BLAS.axpy(1. / Math.sqrt(norm), v, sum);
             }
         }
 
         public void merge(ClusterSummaryAggregator other) {
             count += other.count;
             sumSqured += other.sumSqured;
-            switch (distanceType) {
-                case EUCLIDEAN: {
-                    BLAS.axpy(1.0, other.sum, sum);
-                    break;
-                }
-                case COSINE: {
-                    double norm = Math.sqrt(BLAS.dot(other.sum, other.sum));
-                    Preconditions.checkArgument(norm > 0, "Cosine Distance is not defined for zero-length vectors.");
-                    BLAS.axpy(1. / norm, other.sum, sum);
-                    break;
-                }
-                default: {
-                    throw new RuntimeException("distanceType not support:" + distanceType);
-                }
-            }
+            BLAS.axpy(1.0, other.sum, sum);
         }
 
         public ClusterSummary toClusterSummary() {
             ClusterSummary summary = new ClusterSummary();
-            switch (distanceType) {
-                case EUCLIDEAN: {
-                    summary.center = sum.scale(1.0 / count);
-                    break;
-                }
-                case COSINE: {
-                    summary.center = sum.scale(1.0 / count);
-                    summary.center.scaleEqual(1.0 / Math.sqrt(BLAS.dot(summary.center, summary.center)));
-                    break;
-                }
-                default: {
-                    throw new RuntimeException("distanceType not support:" + distanceType);
-                }
+            if (distanceType == DistanceType.EUCLIDEAN) {
+                summary.center = sum.scale(1.0 / count);
+            } else {
+                summary.center = sum.scale(1.0 / count);
+                summary.center.scaleEqual(1.0 / Math.sqrt(BLAS.dot(summary.center, summary.center)));
             }
             summary.cost = calcClusterCost(distanceType, summary.center, sum, count, sumSqured);
             summary.size = count;
@@ -711,24 +685,25 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
                                               DenseVector sum,
                                               long count,
                                               double sumSquared) {
-            switch (distanceType) {
-                case EUCLIDEAN: {
-                    double centerL2NormSquared = BLAS.dot(center, center);
-                    double cost = sumSquared - count * centerL2NormSquared;
-                    return Math.max(cost, 0.);
-                }
-                case COSINE: {
-                    double centerL2Norm = Math.sqrt(BLAS.dot(center, center));
-                    return Math.max(count - BLAS.dot(center, sum) / centerL2Norm, 0.0);
-                }
-                default:
-                    throw new RuntimeException("distanceType not support:" + distanceType);
+            if (distanceType == DistanceType.EUCLIDEAN) {
+                double centerL2NormSquared = BLAS.dot(center, center);
+                double cost = sumSquared - count * centerL2NormSquared;
+                return Math.max(cost, 0.);
+            } else {
+                double centerL2Norm = Math.sqrt(BLAS.dot(center, center));
+                return Math.max(count - BLAS.dot(center, sum) / centerL2Norm, 0.0);
             }
         }
     }
 
     public static class IterInfo implements Serializable {
+        /**
+         * Bisecting Step Number
+         */
         public int bisectingStepNo;
+        /**
+         * Innter Iter Step Number
+         */
         public int innerIterStepNo;
         // maxIter of inner steps
         public int maxIter;
@@ -740,14 +715,14 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
         public IterInfo() {
         }
 
-        public IterInfo(int maxIter) {
+        IterInfo(int maxIter) {
             this.maxIter = maxIter;
             this.bisectingStepNo = 0;
             this.innerIterStepNo = 0;
         }
 
-        public IterInfo(int maxIter, int bisectingStepNo, int innerIterStepNo, boolean isDividing, boolean isNew,
-                        boolean shouldStopSplit) {
+        IterInfo(int maxIter, int bisectingStepNo, int innerIterStepNo, boolean isDividing, boolean isNew,
+                 boolean shouldStopSplit) {
             this.bisectingStepNo = bisectingStepNo;
             this.innerIterStepNo = innerIterStepNo;
             this.maxIter = maxIter;
