@@ -65,7 +65,6 @@ public class FeatureLabelUtil {
         }
     }
 
-    //todo:LinearModelData中原有相同的实现，现在移到这边来。
     /**
      * After jsonized and un-jsonized, the label type may be changed.
      * So here we recover the label type.
@@ -83,10 +82,13 @@ public class FeatureLabelUtil {
             }
             if (label instanceof String) {
                 String strLable = (String) label;
-                LabelTypeEnum.StringTypeEnum operation =
-                    LabelTypeEnum.StringTypeEnum.valueOf(labelType.toString().toUpperCase());
-                labels[i] = operation.getOperation().apply(strLable);
-                //todo:还差异常情况的处理，即"unknown label type: " + labelType。目前在enum中抛出异常。
+                try {
+                    LabelTypeEnum.StringTypeEnum operation =
+                            LabelTypeEnum.StringTypeEnum.valueOf(labelType.toString().toUpperCase());
+                    labels[i] = operation.getOperation().apply(strLable);
+                } catch (Exception e) {
+                    throw new RuntimeException("unknown label type: " + labelType);
+                }
             } else if (label instanceof Double) {
                 Double dLabel = (Double) label;
                 LabelTypeEnum.DoubleTypeEnum operation =
