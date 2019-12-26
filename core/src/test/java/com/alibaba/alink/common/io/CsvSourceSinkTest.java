@@ -152,12 +152,4 @@ public class CsvSourceSinkTest {
 
         Assert.assertEquals(new CsvSourceBatchOp().setFilePath(filePath).setSchemaStr("f1 string").collect().size(), 1);
     }
-
-    @Test
-    public void testReadEasModel() throws Exception {
-        String schema = "model_desc string,table_id bigint,t0_model_id bigint,t0_model_info string";
-        String path = "http://test-region.oss-cn-hangzhou-zmf.aliyuncs.com/alink_model_export/Alink-Expr-pre-6339/226607/model_data.csv";
-        new CsvSourceStreamOp().setFilePath(path).setSchemaStr(schema).setFieldDelimiter("\t").setQuoteChar(null).print();
-        StreamOperator.execute();
-    }
 }
