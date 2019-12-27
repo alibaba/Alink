@@ -134,7 +134,7 @@ public class EvaluationUtilTest {
 		Assert.assertEquals(11.03, metrics.logLoss, 0.01);
 		Assert.assertArrayEquals(new Object[] {"prefix2", "prefix1", "prefix0"}, metrics.labels);
 
-		long[][] matrix = metrics.matrix;
+		long[][] matrix = metrics.matrix.getMatrix();
 		Assert.assertArrayEquals(new long[] {1, 1, 1}, matrix[0]);
 		Assert.assertArrayEquals(new long[] {0, 3, 0}, matrix[1]);
 		Assert.assertArrayEquals(new long[] {3, 0, 1}, matrix[2]);
@@ -165,9 +165,9 @@ public class EvaluationUtilTest {
 
 		Assert.assertEquals(10, metrics.total);
 		Assert.assertArrayEquals(new String[] {"prefix2", "prefix1", "prefix0"}, metrics.labels);
-		Assert.assertArrayEquals(new long[] {1, 1, 1}, metrics.matrix[0]);
-		Assert.assertArrayEquals(new long[] {0, 3, 0}, metrics.matrix[1]);
-		Assert.assertArrayEquals(new long[] {3, 0, 1}, metrics.matrix[2]);
+		Assert.assertArrayEquals(new long[] {1, 1, 1}, metrics.matrix.getMatrix()[0]);
+		Assert.assertArrayEquals(new long[] {0, 3, 0}, metrics.matrix.getMatrix()[1]);
+		Assert.assertArrayEquals(new long[] {3, 0, 1}, metrics.matrix.getMatrix()[2]);
 	}
 
 	@Test

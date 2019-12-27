@@ -17,7 +17,7 @@
 ## 脚本示例
 #### 脚本代码
 ```python
-URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv"
+URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv"
 data = TextSourceBatchOp().setFilePath(URL).setTextCol("text")
 data.print()
 ```

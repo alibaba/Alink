@@ -17,7 +17,7 @@ public final class MultiMetricsSummary implements BaseMetricsSummary<MultiClassM
     /**
      * Confusion matrix.
      */
-    long[][] matrix;
+    LongMatrix matrix;
 
     /**
      * Label array.
@@ -35,7 +35,9 @@ public final class MultiMetricsSummary implements BaseMetricsSummary<MultiClassM
     double logLoss;
 
     public MultiMetricsSummary(long[][] matrix, String[] labels, double logLoss, long total) {
-        this.matrix = matrix;
+        Preconditions.checkArgument(matrix.length > 0 && matrix.length == matrix[0].length,
+            "The row size must be equal to col size!");
+        this.matrix = new LongMatrix(matrix);
         this.labels = labels;
         this.logLoss = logLoss;
         this.total = total;
@@ -53,13 +55,7 @@ public final class MultiMetricsSummary implements BaseMetricsSummary<MultiClassM
             return this;
         }
         Preconditions.checkState(Arrays.equals(labels, multiClassMetrics.labels), "The labels are not the same!");
-
-        int n = this.labels.length;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                this.matrix[i][j] += multiClassMetrics.matrix[i][j];
-            }
-        }
+        this.matrix.plusEqual(multiClassMetrics.matrix);
         this.logLoss += multiClassMetrics.logLoss;
         this.total += multiClassMetrics.total;
         return this;

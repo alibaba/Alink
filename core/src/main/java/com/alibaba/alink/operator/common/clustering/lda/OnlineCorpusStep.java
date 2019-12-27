@@ -92,14 +92,18 @@ public class OnlineCorpusStep extends ComputeFunction {
         RandomDataGenerator random = new RandomDataGenerator();
         GammaDistribution distribution = new GammaDistribution(100, 100);
         int dataSize = data.size();
+        boolean sampled = false;
         for (int j = 0; j < dataSize; ++j) {
-            //it the subSamplingRate is too small and no doc is sampled in one iteration, the last doc
+            //if the subSamplingRate is too small and no doc is sampled in one iteration, then will randomly
+            //choose one doc to update the model.
             double rate = random.nextUniform(0, 1);
             int index = -1;
             if (rate < subSamplingRate) {
                 index = j;
-            } else if (j + 1 == dataSize) {
-                index = random.nextInt(0, dataSize);
+                sampled = true;
+            }
+            if (j + 1 == dataSize && !sampled) {
+                index = random.nextInt(0, dataSize - 1);
             }
             if (index != -1) {
                 Vector vec = data.get(index);

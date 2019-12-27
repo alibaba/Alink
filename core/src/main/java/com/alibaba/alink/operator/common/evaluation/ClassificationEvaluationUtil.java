@@ -238,7 +238,7 @@ public class ClassificationEvaluationUtil implements Serializable {
         params.set(BaseSimpleClassifierMetrics.LABEL_ARRAY, labels);
         params.set(BaseSimpleClassifierMetrics.ACTUAL_LABEL_FREQUENCY, confusionMatrix.getActualLabelFrequency());
         params.set(BaseSimpleClassifierMetrics.ACTUAL_LABEL_PROPORTION, confusionMatrix.getActualLabelProportion());
-        params.set(CONFUSION_MATRIX, confusionMatrix.matrix);
+        params.set(CONFUSION_MATRIX, confusionMatrix.longMatrix.getMatrix());
         params.set(TOTAL_SAMPLES, confusionMatrix.total);
 
         for (Computations c : Computations.values()) {

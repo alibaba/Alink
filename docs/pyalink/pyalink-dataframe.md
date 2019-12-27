@@ -13,7 +13,7 @@ BatchOperator 转 Dataframe
 ```
 source = CsvSourceBatchOp()\
     .setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")\
-    .setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv")
+    .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv")
 res = source.select("sepal_length", "sepal_width")
 df = res.collectToDataframe()
 # Operations with df
@@ -28,7 +28,7 @@ res.print()
 source = CsvSourceBatchOp() \
     .setSchemaStr(
     "sepal_length double, sepal_width double, petal_length double, petal_width double, category string") \
-    .setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv")
+    .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv")
 
 split = SplitBatchOp().setFraction(0.1).linkFrom(source)
 [d0, d1, d2] = collectToDataframes(source, split, split.getSideOutput(0))

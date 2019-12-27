@@ -17,7 +17,7 @@ public class ConfusionMatrix implements Serializable {
     /**
      * Record the matrix data.
      */
-    long[][] matrix;
+    LongMatrix longMatrix;
 
     /**
      * The number of labels.
@@ -45,20 +45,18 @@ public class ConfusionMatrix implements Serializable {
      */
     private double tpCount = 0.0, tnCount = 0.0, fpCount = 0.0, fnCount = 0.0;
 
-    public ConfusionMatrix(long[][] matrix) {
-        Preconditions.checkState(matrix.length > 0 && matrix.length == matrix[0].length,
-            "The number of row and column of the matrix must be the same!");
-        this.matrix = matrix;
-        labelCnt = matrix.length;
-        actualLabelFrequency = new long[labelCnt];
-        predictLabelFrequency = new long[labelCnt];
-        for (int i = 0; i < labelCnt; i++) {
-            for (int j = 0; j < labelCnt; j++) {
-                predictLabelFrequency[i] += matrix[i][j];
-                actualLabelFrequency[i] += matrix[j][i];
-                total += matrix[i][j];
-            }
-        }
+    public ConfusionMatrix(long[][] matrix){
+        this(new LongMatrix(matrix));
+    }
+
+    public ConfusionMatrix(LongMatrix longMatrix) {
+        Preconditions.checkArgument(longMatrix.getRowNum() == longMatrix.getColNum(),
+            "The row size must be equal to col size!");
+        this.longMatrix = longMatrix;
+        labelCnt = this.longMatrix.getRowNum();
+        actualLabelFrequency = longMatrix.getColSums();
+        predictLabelFrequency = longMatrix.getRowSums();
+        total = longMatrix.getTotal();
         for (int i = 0; i < labelCnt; i++) {
             tnCount += numTrueNegative(i);
             tpCount += numTruePositive(i);
@@ -98,7 +96,7 @@ public class ConfusionMatrix implements Serializable {
         double pa = 0, pe = 0;
         for (int i = 0; i < labelCnt; i++) {
             pe += (predictLabelFrequency[i] * actualLabelFrequency[i]);
-            pa += matrix[i][i];
+            pa += longMatrix.getValue(i, i);
         }
         pe /= (total * total);
         pa /= total;
@@ -116,7 +114,7 @@ public class ConfusionMatrix implements Serializable {
     double getTotalAccuracy() {
         double pa = 0;
         for (int i = 0; i < labelCnt; i++) {
-            pa += matrix[i][i];
+            pa += longMatrix.getValue(i, i);
         }
         return pa / total;
     }
@@ -124,25 +122,25 @@ public class ConfusionMatrix implements Serializable {
     double numTruePositive(Integer labelIndex) {
         Preconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
             "labelIndex must be null or less than " + labelCnt);
-        return null == labelIndex ? tpCount : matrix[labelIndex][labelIndex];
+        return null == labelIndex ? tpCount : longMatrix.getValue(labelIndex, labelIndex);
     }
 
     double numTrueNegative(Integer labelIndex) {
         Preconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
             "labelIndex must be null or less than " + labelCnt);
-        return null == labelIndex ? tnCount : matrix[labelIndex][labelIndex] + total - predictLabelFrequency[labelIndex]
+        return null == labelIndex ? tnCount : longMatrix.getValue(labelIndex, labelIndex) + total - predictLabelFrequency[labelIndex]
             - actualLabelFrequency[labelIndex];
     }
 
     double numFalsePositive(Integer labelIndex) {
         Preconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
             "labelIndex must be null or less than " + labelCnt);
-        return null == labelIndex ? fpCount : predictLabelFrequency[labelIndex] - matrix[labelIndex][labelIndex];
+        return null == labelIndex ? fpCount : predictLabelFrequency[labelIndex] - longMatrix.getValue(labelIndex, labelIndex);
     }
 
     double numFalseNegative(Integer labelIndex) {
         Preconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
             "labelIndex must be null or less than " + labelCnt);
-        return null == labelIndex ? fnCount : actualLabelFrequency[labelIndex] - matrix[labelIndex][labelIndex];
+        return null == labelIndex ? fnCount : actualLabelFrequency[labelIndex] - longMatrix.getValue(labelIndex, labelIndex);
     }
 }

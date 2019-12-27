@@ -12,7 +12,7 @@ A data sources that reads from text lines.
 ## Script Example
 #### Code
 ```python
-URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv"
+URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv"
 data = TextSourceBatchOp().setFilePath(URL).setTextCol("text")
 data.print()
 ```

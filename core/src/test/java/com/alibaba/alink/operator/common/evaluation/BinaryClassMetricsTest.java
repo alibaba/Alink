@@ -119,8 +119,8 @@ public class BinaryClassMetricsTest {
 
         int cnt = 0;
         for (ConfusionMatrix aData : data) {
-            for (int j = 0; j < aData.matrix.length; j++) {
-                Assert.assertArrayEquals(expectMatrix[cnt++], aData.matrix[j]);
+            for (int j = 0; j < aData.longMatrix.getRowNum(); j++) {
+                Assert.assertArrayEquals(expectMatrix[cnt++], aData.longMatrix.getMatrix()[j]);
             }
         }
 

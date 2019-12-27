@@ -15,24 +15,25 @@
 <img src="https://img.alicdn.com/tfs/TB1n.edorj1gK0jSZFOXXc7GpXa-1635-714.png" height="60%" width="60%">
 </div>
 
-#### pyAlink
+#### PyAlink 使用截图
 
 <div align=center>
 <img src="https://img.alicdn.com/tfs/TB1TmKloAL0gK0jSZFxXXXWHVXa-2070-1380.png" height="60%" width="60%">
 </div>
 
-# 快速开始--PyAlink 使用介绍
+# 快速开始 - PyAlink 使用介绍
 
 使用前准备：
 ---------
 
 1. 确保使用环境中有Python3，版本>=3.5。
-2. 根据 Python 版本下载对应的 pyalink 包：
+2. 确保使用环境中安装有 Java 8。
+3. 根据 Python 版本下载对应的 pyalink 包：
     - Python 3.5：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.5.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.5.egg) (MD5: 9714e5e02b4681a55263970abc6dbe57)
     - Python 3.6：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.6.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.6.egg) (MD5: 112638a81c05f1372f9dac880ec527e6)
     - Python 3.7：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.7.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.7.egg) (MD5: 9b483da5176977e4f330ca7675120fed)
     - Python 3.8：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.8.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.8.egg) (MD5: d04aa5d367bc653d5e872e1eba3494cd)
-3. 使用 ```easy_install``` 进行安装 ```easy_install [存放的路径]/pyalink-0.0.1-py3.*.egg```。需要注意的是：
+4. 使用 ```easy_install``` 进行安装 ```easy_install [存放的路径]/pyalink-***.egg```。需要注意的是：
     * 如果之前安装过 pyalink，请先使用 ```pip uninstall pyalink``` 卸载之前的版本。
     * 如果有多个版本的 Python，可能需要使用特定版本的 ```easy_install```，比如 ```easy_install-3.7```。
     * 如果使用 Anaconda，则需要在 Anaconda 命令行中进行安装。
@@ -55,7 +56,7 @@ Python listening on ***
 ```
 source = CsvSourceBatchOp()\
     .setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")\
-    .setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv")
+    .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv")
 res = source.select("sepal_length", "sepal_width")
 df = res.collectToDataframe()
 print(df)
@@ -77,6 +78,14 @@ print(df)
   - [UDF使用](docs/pyalink/pyalink-udf.md)
 
 Q&A：
+----
+Q：安装 PyAlink 后，使用时报错：```AttributeError： 'NoneType' object has no attribute 'jvm```，如何解决？
+
+A：这个报错信息是因为 PyAlink 的 Java 部分没有成功启动导致的： 
+  - 请先检查是否正确安装 Java 8，可以在 Jupyter 中直接运行 ```!java --version```，如果正确显示版本号（比如 1.8.*）则正常，否则请安装 Java 8，并检查环境变量是否正确。
+  - 在 Jupyter 中运行```import pyalink; print(pyalink.__path__)```，应该输出一个路径。
+  请使用系统的文件管理工具定位到这个目录，如果这个目录包含有名为 ```alink``` 和 ```lib``` 目录则正常，否则 pyalink 安装有问题，请卸载重装。
+
 ----
 Q：能否连接远程 Flink 集群进行计算？
 

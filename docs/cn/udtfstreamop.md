@@ -24,7 +24,7 @@
 ```
 source = CsvSourceStreamOp()\
     .setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")\
-    .setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv")
+    .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv")
 
 udtfOp = UDTFStreamOp()\
     .setFunc(lambda x, y: [ (yield x + 1 + i, y + 2 + i) for i in range(3) ])\

@@ -49,7 +49,7 @@ import org.apache.flink.util.Collector;
 public final class FtrlTrainStreamOp extends StreamOperator<FtrlTrainStreamOp>
     implements FtrlTrainParams<FtrlTrainStreamOp> {
 
-    DataBridge dataBridge = null;
+    private DataBridge dataBridge = null;
 
     public FtrlTrainStreamOp(BatchOperator model) throws Exception {
         super(new Params());
@@ -303,7 +303,7 @@ public final class FtrlTrainStreamOp extends StreamOperator<FtrlTrainStreamOp>
                 int rowSize = r.getArity();
                 Row row = new Row(rowSize + 2);
                 row.setField(0, iter);
-                row.setField(1, rows.size() + 0L);
+                row.setField(1, (long) rows.size());
 
                 for (int j = 0; j < rowSize; ++j) {
                     if (j == 2 && r.getField(j) != null) {

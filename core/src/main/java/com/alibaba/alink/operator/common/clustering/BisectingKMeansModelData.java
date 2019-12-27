@@ -14,10 +14,22 @@ public class BisectingKMeansModelData {
     public Map<Long, ClusterSummary> summaries;
 
     public static class ClusterSummary implements Serializable {
+        /**
+         * Cluster Id.
+         */
         public long clusterId;
-        public long size; // the number of points within this cluster
-        public DenseVector center; // the center of the points within this cluster
-        public double cost; // the sum of squared distances to the center
+        /**
+         * the number of points within this cluster
+         */
+        public long size;
+        /**
+         * the center of the points within this cluster
+         */
+        public DenseVector center;
+        /**
+         * the sum of squared distances to the center
+         */
+        public double cost;
 
         @Override
         public String toString() {
