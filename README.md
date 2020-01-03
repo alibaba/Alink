@@ -6,7 +6,7 @@
  
  
 <div align=center>
-<img src="https://img.alicdn.com/tfs/TB1kQU0sQY2gK0jSZFgXXc5OFXa-614-554.png" height="20%" width="20%">
+<img src="https://img.alicdn.com/tfs/TB1kQU0sQY2gK0jSZFgXXc5OFXa-614-554.png" height="25%" width="25%">
 </div>
 
 #### 开源算法列表
