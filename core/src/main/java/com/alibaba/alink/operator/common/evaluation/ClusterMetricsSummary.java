@@ -23,18 +23,49 @@ import static com.alibaba.alink.operator.common.evaluation.ClusterEvaluationUtil
  */
 public class ClusterMetricsSummary implements BaseMetricsSummary<ClusterMetrics, ClusterMetricsSummary> {
 
-	//clusterId, clusterCnt, compactness, distanceSquareSum, vectorNormL2Sum, meanVector
+	/**
+	 * Save the ClusterId from all clusters.
+	 */
 	public List<String> clusterId = new ArrayList<>();
+	/**
+	 * Save the ClusterCnt from all clusters, the size must be equal to k.
+	 */
 	List<Integer> clusterCnt = new ArrayList<>();
+	/**
+	 * Save the Compactness from all clusters, the size must be equal to k.
+	 */
 	List<Double> compactness = new ArrayList<>();
+	/**
+	 * Save the DistanceSquareSum from all clusters, the size must be equal to k.
+	 */
 	List<Double> distanceSquareSum = new ArrayList<>();
+	/**
+	 * Save the VectorNormL2Sum from all clusters, the size must be equal to k.
+	 */
 	List<Double> vectorNormL2Sum = new ArrayList<>();
+	/**
+	 * Save the MeanVector from all clusters, the size must be equal to k.
+	 */
 	List<DenseVector> meanVector = new ArrayList<>();
 
-	//public List<Tuple6<String, Integer, Double, Double, Double, DenseVector>> map;
+	/**
+	 * Sum of all the samples.
+	 */
 	DenseVector sumVector;
+
+	/**
+	 * Cluster Number, the size of ArrayList above must be equal to k.
+	 */
 	int k;
+
+	/**
+	 * The number of samples.
+	 */
 	int total;
+
+	/**
+	 * distance to measure the distance of two vectors, it could only be EuclideanDistance or CosineDistance.
+	 */
 	ContinuousDistance distance;
 
 	public ClusterMetricsSummary(String clusterId,

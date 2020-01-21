@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.clustering;
 import com.alibaba.alink.common.linalg.*;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.mapper.RichModelMapper;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.clustering.BisectingKMeansTrainBatchOp;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelData.ClusterSummary;
@@ -13,16 +14,15 @@ import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import java.util.*;
-
-import static com.alibaba.alink.common.utils.JsonConverter.gson;
-import static com.alibaba.alink.operator.batch.clustering.BisectingKMeansTrainBatchOp.ROOT_INDEX;
-import static com.alibaba.alink.operator.batch.clustering.BisectingKMeansTrainBatchOp.findClusterV2;
+import java.util.List;
+import java.util.Queue;
+import java.util.ArrayDeque;
+import java.util.Map;
+import java.util.ArrayList;
 
 public class BisectingKMeansModelMapper extends RichModelMapper {
 
@@ -47,7 +47,7 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
     @Override
     protected Tuple2<Object, String> predictResultDetail(Row row) {
         Vector vec = VectorUtil.getVector(row.getField(vectorColIdx));
-        DenseVector x = (vec instanceof DenseVector) ? (DenseVector) vec : ((SparseVector) vec).toDenseVector();
+        DenseVector x = (vec instanceof DenseVector) ? (DenseVector)vec : ((SparseVector)vec).toDenseVector();
         if (x.size() != this.modelData.vectorSize) {
             throw new RuntimeException(
                 "Dim of predict data not equal to vectorSize of training data: " + this.modelData.vectorSize);
@@ -71,7 +71,6 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
         return Tuple2.of(clusterIdAndTreeNodeId.f0, new DenseVector(prob).toString());
     }
 
-
     private static double[] computeProbability(long nodeId, List<Long> otherNodeIds) {
         double[] distances = new double[otherNodeIds.size()];
         for (int i = 0; i < distances.length; i++) {
@@ -82,7 +81,7 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
 
     private static int level(long node) {
         int l = 0;
-        while(node > 1) {
+        while (node > 1) {
             node /= 2;
             l++;
         }
@@ -95,13 +94,15 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
         int d = 0;
         if (level1 > level2) {
             while (level1 > level2) {
-                node1 = node1 / 2; // parent
+                // parent
+                node1 = node1 / 2;
                 level1 = level(node1);
                 d++;
             }
         } else if (level2 > level1) {
             while (level2 > level1) {
-                node2 = node2 / 2; // parent
+                // parent
+                node2 = node2 / 2;
                 level2 = level(node2);
                 d++;
             }
@@ -112,12 +113,11 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
             node2 = node2 / 2;
             d += 2;
         }
-        return (double) d;
+        return (double)d;
     }
 
     @Override
     public void loadModel(List<Row> modelRows) {
-
         this.modelData = new BisectingKMeansModelDataConverter().load(modelRows);
 
         this.vectorColIdx = TableUtil.findColIndex(super.getDataSchema().getFieldNames(),
@@ -158,7 +158,7 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
             return leftChild == null && rightChild == null;
         }
 
-        public void constructMiddlePlane() {
+        void constructMiddlePlane() {
             if (isLeaf()) {
                 return;
             }
@@ -181,8 +181,8 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
         /**
          * Find the cluster the sample belongs to
          *
-         * @param sample
-         * @param distance
+         * @param sample   Sample vector.
+         * @param distance Distance
          * @return The cluster id and tree node id
          */
         public Tuple2<Long, Long> predict(DenseVector sample, ContinuousDistance distance) {
@@ -194,17 +194,15 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
                 double d = BLAS.dot(sample, middlePlane.f0);
                 child = d < middlePlane.f1 ? leftChild : rightChild;
             } else {
-                List<Tuple3<Long, Double, DenseVector>> newChildrenCenters = new ArrayList<>(2);
-                newChildrenCenters.add(Tuple3.of(0L, 0., leftChild.center));
-                newChildrenCenters.add(Tuple3.of(1L, 0., rightChild.center));
-                long whichChild = findClusterV2(newChildrenCenters, sample, distance);
+                long whichChild = BisectingKMeansTrainBatchOp.getClosestNode(0, leftChild.center, 1, rightChild.center,
+                    sample, distance);
                 child = whichChild == 0L ? leftChild : rightChild;
             }
             return child.predict(sample, distance);
         }
 
         public void show() {
-            System.out.println(gson.toJson(this));
+            System.out.println(JsonConverter.toJson(this));
         }
     }
 
@@ -213,7 +211,8 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
         List<Long> treeNodeIds;
 
         public Tree(Map<Long, ClusterSummary> summaries) {
-            root = new TreeNode(ROOT_INDEX, summaries.get(ROOT_INDEX).center);
+            root = new TreeNode(BisectingKMeansTrainBatchOp.ROOT_INDEX,
+                summaries.get(BisectingKMeansTrainBatchOp.ROOT_INDEX).center);
             Queue<TreeNode> queue = new ArrayDeque<>();
             queue.add(root);
 

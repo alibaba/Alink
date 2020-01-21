@@ -44,11 +44,6 @@ public class BisectingKMeansTest {
 			res.select("pred"), Long.class).collect();
 
 		Assert.assertArrayEquals(list.toArray(new Long[0]), new Long[]{0L, 0L, 0L, 1L, 2L, 2L});
-
-		//double[] actual = new double[] {0.173, 0, 0.173, 0.173, 0, 0.173};
-		//for (int i = 0; i < actual.length; i++) {
-		//	Assert.assertEquals(list.get(i), actual[i], 0.01);
-		//}
 		res = model.transform(dataStream);
 
 		DataStreamConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, res).print();

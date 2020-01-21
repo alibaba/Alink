@@ -12,11 +12,11 @@ public class ConfusionMatrixTest {
     public void metricsTest() {
         long[][] matrix = new long[][]{ {2L, 0L}, {1L, 2L}};
 
-        ConfusionMatrix cm = new ConfusionMatrix(matrix);
+        ConfusionMatrix cm = new ConfusionMatrix(new LongMatrix(matrix));
         long[][] expectMatrix = new long[][]{{2L, 0L}, {1L, 2L}};
 
         for(int i = 0; i < expectMatrix.length; i++){
-            Assert.assertArrayEquals(expectMatrix[i], cm.matrix[i]);
+            Assert.assertArrayEquals(expectMatrix[i], cm.longMatrix.getMatrix()[i]);
         }
 
         Assert.assertArrayEquals(cm.getActualLabelFrequency(), new long[]{3L, 2L});

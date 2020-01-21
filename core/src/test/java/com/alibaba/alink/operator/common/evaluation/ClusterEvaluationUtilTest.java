@@ -1,18 +1,14 @@
 package com.alibaba.alink.operator.common.evaluation;
 
 import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.distance.CosineDistance;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
-import org.apache.flink.api.java.tuple.Tuple6;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
-
-import static org.junit.Assert.*;
 
 /**
  * Unit test for ClusterEvaluationUtil.
@@ -106,5 +102,17 @@ public class ClusterEvaluationUtilTest {
         for(Row row : rows1){
             Assert.assertEquals(0.99, ClusterEvaluationUtil.calSilhouetteCoefficient(row, clusterMetricsSummary).f0, 0.01);
         }
+    }
+
+    @Test
+    public void matrixToParamsTest(){
+        long[][] matrix = new long[][]{{5, 1, 2}, {1, 4, 0}, {0, 1, 3}};
+        LongMatrix longMatrix = new LongMatrix(matrix);
+
+        Params params = ClusterEvaluationUtil.extractParamsFromConfusionMatrix(longMatrix);
+        Assert.assertEquals(params.get(ClusterMetrics.NMI), 0.364, 0.001);
+        Assert.assertEquals(params.get(ClusterMetrics.PURITY), 0.705, 0.001);
+        Assert.assertEquals(params.get(ClusterMetrics.RI), 0.68, 0.01);
+        Assert.assertEquals(params.get(ClusterMetrics.ARI), 0.24, 0.01);
     }
 }

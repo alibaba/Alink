@@ -28,7 +28,7 @@ public class MultiClassMetricsTest {
 		Assert.assertEquals(1.8, metrics.logLoss, 0.01);
 		Assert.assertArrayEquals(new String[] {"0", "1", "2"}, metrics.labels);
 
-		long[][] matrix = metrics.matrix;
+		long[][] matrix = metrics.matrix.getMatrix();
 		Assert.assertArrayEquals(new long[] {1, 4, 4}, matrix[0]);
 		Assert.assertArrayEquals(new long[] {4, 5, 2}, matrix[1]);
 		Assert.assertArrayEquals(new long[] {3, 1, 6}, matrix[2]);

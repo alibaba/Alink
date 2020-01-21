@@ -25,7 +25,7 @@ Data source of a CSV (Comma Separated Values) file.
 #### Csv Batch Source
 
 ```python
-filePath = 'http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv'
+filePath = 'https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv'
 schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
 csvSource = CsvSourceBatchOp()\
     .setFilePath(filePath)\
@@ -48,7 +48,7 @@ sepal_length	sepal_width	petal_length	petal_width	category
 #### Csv Stream Source
 
 ```python
-filePath = 'http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv'
+filePath = 'https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv'
 schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
 csvSource = CsvSourceStreamOp()\
     .setFilePath(filePath)\

@@ -45,8 +45,9 @@ data = dataframeToOperator(df, schemaStr="doc string",op_type="batch")
 
 op = Lda()\
     .setSelectedCol("doc")\
-    .setTopicNum(6)\
+    .setTopicNum(5)\
     .setMethod("online")\
+    .setSubsamplingRate(1.0)
     .setPredictionCol("pred")
 pipeline = Pipeline().add(op)
 model = pipeline.fit(data)

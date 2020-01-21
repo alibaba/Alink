@@ -12,7 +12,7 @@ Stream source that reads text lines.
 ## Script Example
 #### Code
 ```python
-URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv"
+URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv"
 data = TextSourceStreamOp().setFilePath(URL).setTextCol("text")
 data.print()
 StreamOperator.execute()

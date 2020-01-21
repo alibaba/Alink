@@ -11,6 +11,8 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 /**
  * Find the closest cluster for every point and calculate the sums of the points belonging to the same cluster.
  */
@@ -54,6 +56,7 @@ public class KMeansAssignCluster extends ComputeFunction {
             return;
         }
 
+        Arrays.fill(sumMatrixData, 0.0);
         for (FastDistanceVectorData sample : trainData) {
             KMeansUtil.updateSumMatrix(sample, 1, stepNumCentroids.f1, vectorSize, sumMatrixData, k, fastDistance,
                 distanceMatrix);

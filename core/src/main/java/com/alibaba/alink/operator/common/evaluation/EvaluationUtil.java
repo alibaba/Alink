@@ -21,6 +21,7 @@ import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluat
 public class EvaluationUtil implements Serializable {
     private static double LOG_LOSS_EPS = 1e-15;
     private static double PROB_SUM_EPS = 0.01;
+
     /**
      * Initialize the base classification evaluation metrics. There are two cases: BinaryClassMetrics and
      * MultiClassMetrics.
@@ -84,7 +85,7 @@ public class EvaluationUtil implements Serializable {
         while (iterator.hasNext() && !checkRowFieldNotNull(row)) {
             row = iterator.next();
         }
-        if(checkRowFieldNotNull(row)){
+        if (checkRowFieldNotNull(row)) {
             if (null == labelIndexLabelArray) {
                 TreeMap<String, Double> labelProbMap = extractLabelProbMap(row);
                 labelIndexLabelArray = buildLabelIndexLabelArray(new HashSet<>(labelProbMap.keySet()), binary,
@@ -108,10 +109,10 @@ public class EvaluationUtil implements Serializable {
         }
 
         while (null != row) {
-            if(checkRowFieldNotNull(row)) {
+            if (checkRowFieldNotNull(row)) {
                 TreeMap<String, Double> labelProbMap = extractLabelProbMap(row);
                 String label = row.getField(0).toString();
-                if(ArrayUtils.indexOf(labelIndexLabelArray.f1, label) >= 0){
+                if (ArrayUtils.indexOf(labelIndexLabelArray.f1, label) >= 0) {
                     if (binary) {
                         updateBinaryMetricsSummary(labelProbMap, label, binaryMetricsSummary);
                     } else {
@@ -163,7 +164,7 @@ public class EvaluationUtil implements Serializable {
 
     public static void updateBinaryMetricsSummary(TreeMap<String, Double> labelProbMap,
                                                   String label,
-                                                   BinaryMetricsSummary binaryMetricsSummary) {
+                                                  BinaryMetricsSummary binaryMetricsSummary) {
         Preconditions.checkState(labelProbMap.size() == BINARY_LABEL_NUMBER,
             "The number of labels must be equal to 2!");
         binaryMetricsSummary.total++;
@@ -187,8 +188,8 @@ public class EvaluationUtil implements Serializable {
 
     public static void updateMultiMetricsSummary(TreeMap<String, Double> labelProbMap,
                                                  String label,
-                                                  Map<String, Integer> labels,
-                                                  MultiMetricsSummary multiMetricsSummary) {
+                                                 Map<String, Integer> labels,
+                                                 MultiMetricsSummary multiMetricsSummary) {
         multiMetricsSummary.total++;
         multiMetricsSummary.logLoss += extractLogloss(labelProbMap, label);
         String predict = null;
@@ -202,7 +203,10 @@ public class EvaluationUtil implements Serializable {
                 predict = key;
             }
         }
-        multiMetricsSummary.matrix[labels.get(predict)][labels.get(label)] += 1;
+        int predictionIdx = labels.get(predict);
+        int labelIdx = labels.get(label);
+        multiMetricsSummary.matrix.setValue(predictionIdx, labelIdx,
+            multiMetricsSummary.matrix.getValue(predictionIdx, labelIdx) + 1);
     }
 
     /**
@@ -214,7 +218,7 @@ public class EvaluationUtil implements Serializable {
     public static RegressionMetricsSummary getRegressionStatistics(Iterable<Row> rows) {
         RegressionMetricsSummary regressionSummary = new RegressionMetricsSummary();
         for (Row row : rows) {
-            if(checkRowFieldNotNull(row)) {
+            if (checkRowFieldNotNull(row)) {
                 double yVal = ((Number)row.getField(0)).doubleValue();
                 double predictVal = ((Number)row.getField(1)).doubleValue();
                 double diff = Math.abs(yVal - predictVal);
@@ -249,11 +253,12 @@ public class EvaluationUtil implements Serializable {
         final int n = recordLabel.length;
         MultiMetricsSummary multiMetricsSummary = new MultiMetricsSummary(new long[n][n], recordLabel, -1, 0L);
         for (Row r : rows) {
-            if(checkRowFieldNotNull(r)) {
+            if (checkRowFieldNotNull(r)) {
                 multiMetricsSummary.total++;
                 int label = labelIndexMap.get(r.getField(0).toString());
                 int prediction = labelIndexMap.get(r.getField(1).toString());
-                multiMetricsSummary.matrix[prediction][label] += 1;
+                multiMetricsSummary.matrix.setValue(prediction, label,
+                    multiMetricsSummary.matrix.getValue(prediction, label) + 1);
             }
         }
         return multiMetricsSummary.total == 0 ? null : multiMetricsSummary;

@@ -49,7 +49,7 @@ public final class Kafka011SinkStreamOp extends BaseSinkStreamOp<Kafka011SinkStr
 
         DataStream<Row> outputRows = in.getDataStream();
         DataStream<Row> serialized = outputRows
-            .<byte[]>map(new RichMapFunction<Row, byte[]>() {
+            .map(new RichMapFunction<Row, byte[]>() {
                 transient RowSerializer rowSerializer;
 
                 @Override
