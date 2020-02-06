@@ -17,7 +17,7 @@
  *
  */
 
-package com.alibaba.alink.operator.common.io.kafka;
+package com.alibaba.alink.operator.common.io.kafka011;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
@@ -25,7 +25,7 @@ import org.apache.flink.streaming.util.serialization.KeyedDeserializationSchema;
 import org.apache.flink.types.Row;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class KafkaMessageDeserialization implements KeyedDeserializationSchema<Row> {
     private RowTypeInfo baseRowTypeInfo;
@@ -42,8 +42,8 @@ public class KafkaMessageDeserialization implements KeyedDeserializationSchema<R
     @Override
     public Row deserialize(byte[] messageKey, byte[] message, String topic, int partition, long offset) throws IOException {
         Row row = new Row(5);
-        row.setField(0, messageKey != null ? new String(messageKey, Charset.forName("UTF-8")) : null);
-        row.setField(1, message != null ? new String(message, Charset.forName("UTF-8")) : null);
+        row.setField(0, messageKey != null ? new String(messageKey, StandardCharsets.UTF_8) : null);
+        row.setField(1, message != null ? new String(message, StandardCharsets.UTF_8) : null);
         row.setField(2, topic);
         row.setField(3, partition);
         row.setField(4, offset);

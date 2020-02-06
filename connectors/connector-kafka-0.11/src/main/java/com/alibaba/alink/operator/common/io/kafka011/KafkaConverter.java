@@ -17,26 +17,19 @@
  *
  */
 
-package com.alibaba.alink.operator.common.io.kafka;
+package com.alibaba.alink.operator.common.io.kafka011;
 
 import org.apache.flink.api.common.functions.RuntimeContext;
-import org.apache.flink.types.Row;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-import java.io.Serializable;
-
-public class SimpleKafkaConverter implements KafkaConverter<Row>, Serializable {
-
-    @Override
-    public ProducerRecord convert(Row row, String topic, int[] partitions) {
-        return new ProducerRecord(topic, null, (byte[]) (row.getField(0)));
+public interface KafkaConverter<IN> {
+    default String getTargetTopic(IN row) {
+        return null;
     }
 
-    @Override
-    public void open(RuntimeContext context) {
-    }
+    ProducerRecord convert(IN row, String topic, int[] partitions);
 
-    @Override
-    public void close() {
-    }
+    void open(RuntimeContext context);
+
+    void close();
 }

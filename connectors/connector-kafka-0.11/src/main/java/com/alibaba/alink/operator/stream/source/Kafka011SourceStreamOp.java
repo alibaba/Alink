@@ -1,5 +1,12 @@
 package com.alibaba.alink.operator.stream.source;
 
+import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.io.annotations.AnnotationUtils;
+import com.alibaba.alink.common.io.annotations.IOType;
+import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
+import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.common.io.kafka011.Kafka011SourceBuilder;
+import com.alibaba.alink.params.io.Kafka011SourceParams;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
@@ -8,14 +15,6 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.StringUtils;
-
-import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.io.annotations.AnnotationUtils;
-import com.alibaba.alink.common.io.annotations.IOType;
-import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import com.alibaba.alink.operator.common.io.kafka.Kafka011SourceBuilder;
-import com.alibaba.alink.params.io.Kafka011SourceParams;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
 import java.text.SimpleDateFormat;
@@ -25,7 +24,7 @@ import java.util.Properties;
 
 
 /**
- * Data source for kafka.
+ * Data source for kafka 0.11.x.
  */
 @IoOpAnnotation(name = "kafka011", hasTimestamp = true, ioType = IOType.SourceStream)
 public final class Kafka011SourceStreamOp extends BaseSourceStreamOp<Kafka011SourceStreamOp>
@@ -33,7 +32,7 @@ public final class Kafka011SourceStreamOp extends BaseSourceStreamOp<Kafka011Sou
 
     final static String[] colNames = new String[]{"message_key", "message", "topic", "topic_partition", "partition_offset"};
     final static TypeInformation[] colTypes = new TypeInformation[]{Types.STRING,
-        Types.STRING, Types.STRING, Types.INT, Types.LONG};
+            Types.STRING, Types.STRING, Types.INT, Types.LONG};
 
     public Kafka011SourceStreamOp() {
         this(new Params());

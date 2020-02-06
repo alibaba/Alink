@@ -17,7 +17,7 @@
  *
  */
 
-package com.alibaba.alink.operator.common.io.kafka;
+package com.alibaba.alink.operator.common.io.kafka011;
 
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 
@@ -27,9 +27,9 @@ public class Kafka011OutputFormat extends KafkaBaseOutputFormat {
     private static final long serialVersionUID = 1L;
 
     public Kafka011OutputFormat(
-        String defaultTopicId,
-        KafkaConverter serializationSchema,
-        Properties producerConfig) {
+            String defaultTopicId,
+            KafkaConverter serializationSchema,
+            Properties producerConfig) {
         super(defaultTopicId, serializationSchema, producerConfig);
     }
 

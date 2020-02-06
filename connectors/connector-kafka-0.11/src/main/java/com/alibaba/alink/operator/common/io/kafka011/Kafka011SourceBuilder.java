@@ -17,7 +17,7 @@
  *
  */
 
-package com.alibaba.alink.operator.common.io.kafka;
+package com.alibaba.alink.operator.common.io.kafka011;
 
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;

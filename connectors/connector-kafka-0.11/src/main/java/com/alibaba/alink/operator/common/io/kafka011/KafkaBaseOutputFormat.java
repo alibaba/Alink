@@ -17,7 +17,7 @@
  *
  */
 
-package com.alibaba.alink.operator.common.io.kafka;
+package com.alibaba.alink.operator.common.io.kafka011;
 
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.functions.RuntimeContext;
@@ -113,8 +113,8 @@ public abstract class KafkaBaseOutputFormat extends TupleRichOutputFormat {
     protected long pendingRecords;
 
     public KafkaBaseOutputFormat(
-        String defaultTopicId, KafkaConverter serializationSchema, Properties
-        producerConfig) {
+            String defaultTopicId, KafkaConverter serializationSchema, Properties
+            producerConfig) {
         requireNonNull(defaultTopicId, "TopicID not set");
         requireNonNull(serializationSchema, "serializationSchema not set");
         requireNonNull(producerConfig, "producerConfig not set");
@@ -127,16 +127,16 @@ public abstract class KafkaBaseOutputFormat extends TupleRichOutputFormat {
         // set the producer configuration properties for kafka record key value serializers.
         if (!producerConfig.containsKey(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG)) {
             this.producerConfig.put(
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                ByteArraySerializer.class.getCanonicalName());
+                    ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                    ByteArraySerializer.class.getCanonicalName());
         } else {
             LOG.warn("Overwriting the '{}' is not recommended", ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG);
         }
 
         if (!producerConfig.containsKey(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG)) {
             this.producerConfig.put(
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                ByteArraySerializer.class.getCanonicalName());
+                    ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                    ByteArraySerializer.class.getCanonicalName());
         } else {
             LOG.warn("Overwriting the '{}' is not recommended", ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG);
         }
@@ -144,7 +144,7 @@ public abstract class KafkaBaseOutputFormat extends TupleRichOutputFormat {
         // eagerly ensure that bootstrap servers are set.
         if (!this.producerConfig.containsKey(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG)) {
             throw new IllegalArgumentException(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG + " must be supplied in the producer config properties.");
+                    ProducerConfig.BOOTSTRAP_SERVERS_CONFIG + " must be supplied in the producer config properties.");
         }
 
         this.topicPartitionsMap = new HashMap<>();
@@ -169,7 +169,7 @@ public abstract class KafkaBaseOutputFormat extends TupleRichOutputFormat {
         schema.open(ctx);
 
         LOG.info("Starting FlinkKafkaProducer ({}/{}) to produce into default topic {}",
-            ctx.getIndexOfThisSubtask() + 1, ctx.getNumberOfParallelSubtasks(), defaultTopicId);
+                ctx.getIndexOfThisSubtask() + 1, ctx.getNumberOfParallelSubtasks(), defaultTopicId);
 
         // register Kafka metrics to Flink accumulators
         if (!Boolean.parseBoolean(producerConfig.getProperty(KEY_DISABLE_METRICS, "false"))) {
@@ -231,7 +231,7 @@ public abstract class KafkaBaseOutputFormat extends TupleRichOutputFormat {
     protected abstract void flush();
 
     @Override
-    public void writeAddRecord(Row row) throws IOException {
+    public void writeAddRecord(Row row) {
         // propagate asynchronous errors
         checkErroneous();
 

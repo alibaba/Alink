@@ -1,21 +1,21 @@
 package com.alibaba.alink.params.io;
 
-import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.params.io.shared_params.HasStartTime_null;
 import com.alibaba.alink.params.io.shared_params.HasTopicPattern_null;
 import com.alibaba.alink.params.io.shared_params.HasTopic_null;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface Kafka011SourceParams<T> extends WithParams<T>,
-	HasTopic_null <T>, HasTopicPattern_null <T>, HasStartTime_null <T> {
+        HasTopic_null<T>, HasTopicPattern_null<T>, HasStartTime_null<T> {
 
-    ParamInfo <String> BOOTSTRAP_SERVERS = ParamInfoFactory
-        .createParamInfo("bootstrapServers", String.class)
-        .setDescription("kafka集群地址")
-        .setRequired()
-        .setAlias(new String[]{"bootstrap.servers", "boostrapServers"})
-        .build();
+    ParamInfo<String> BOOTSTRAP_SERVERS = ParamInfoFactory
+            .createParamInfo("bootstrapServers", String.class)
+            .setDescription("kafka bootstrap servers")
+            .setRequired()
+            .setAlias(new String[]{"bootstrap.servers", "bootstrapServers"})
+            .build();
 
     default String getBootstrapServers() {
         return get(BOOTSTRAP_SERVERS);
@@ -25,12 +25,12 @@ public interface Kafka011SourceParams<T> extends WithParams<T>,
         return set(BOOTSTRAP_SERVERS, value);
     }
 
-    ParamInfo <String> GROUP_ID = ParamInfoFactory
-        .createParamInfo("groupId", String.class)
-        .setDescription("消费组id")
-        .setRequired()
-        .setAlias(new String[]{"group.id"})
-        .build();
+    ParamInfo<String> GROUP_ID = ParamInfoFactory
+            .createParamInfo("groupId", String.class)
+            .setDescription("group id")
+            .setRequired()
+            .setAlias(new String[]{"group.id"})
+            .build();
 
     default String getGroupId() {
         return get(GROUP_ID);
@@ -40,11 +40,11 @@ public interface Kafka011SourceParams<T> extends WithParams<T>,
         return set(GROUP_ID, value);
     }
 
-    ParamInfo <String> STARTUP_MODE = ParamInfoFactory
-        .createParamInfo("startupMode", String.class)
-        .setDescription("startupMode")
-        .setRequired()
-        .build();
+    ParamInfo<String> STARTUP_MODE = ParamInfoFactory
+            .createParamInfo("startupMode", String.class)
+            .setDescription("startupMode")
+            .setRequired()
+            .build();
 
     default String getStartupMode() {
         return get(STARTUP_MODE);

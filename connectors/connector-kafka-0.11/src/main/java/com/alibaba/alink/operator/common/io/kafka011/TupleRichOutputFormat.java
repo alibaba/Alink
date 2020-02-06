@@ -1,4 +1,4 @@
-package com.alibaba.alink.operator.common.io.kafka;
+package com.alibaba.alink.operator.common.io.kafka011;
 
 import org.apache.flink.api.common.io.RichOutputFormat;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -15,10 +15,10 @@ public abstract class TupleRichOutputFormat extends RichOutputFormat<Tuple2<Bool
     }
 
     public void writeRecord(Tuple2<Boolean, Row> cRow) throws IOException {
-        if (((Boolean) cRow.f0).booleanValue()) {
-            this.writeAddRecord(Row.copy((Row) cRow.f1));
+        if (cRow.f0) {
+            this.writeAddRecord(Row.copy(cRow.f1));
         } else {
-            this.writeDeleteRecord(Row.copy((Row) cRow.f1));
+            this.writeDeleteRecord(Row.copy(cRow.f1));
         }
 
     }
