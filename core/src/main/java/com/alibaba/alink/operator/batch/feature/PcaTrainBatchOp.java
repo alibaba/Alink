@@ -102,6 +102,11 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
         public void flatMap(BaseVectorSummarizer srt, Collector<Tuple2<Integer, DenseVector>> collector)
             throws Exception {
             BaseVectorSummary summary = srt.toSummary();
+
+            if (summary.count() == 0) {
+                return;
+            }
+
             int colNum = summary.vectorSize();
 
             //rowNum
@@ -388,10 +393,11 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
 
         /**
          * build pca model.
-         * @param modelData: modelData
+         *
+         * @param modelData:          modelData
          * @param nonEqualColIndices: col indices of variance not zero.
-         * @param nxAll: number of col.
-         * @param model: model.
+         * @param nxAll:              number of col.
+         * @param model:              model.
          * @return model
          */
         protected void buildModel(PcaModelData modelData, List<Integer> nonEqualColIndices, int nxAll, Collector<Row> model) {
@@ -408,6 +414,7 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
 
     /**
      * dense vector or sparse vector to dense vector.
+     *
      * @param vector: dense vector or sparse vector.
      * @return dense vector.
      */
