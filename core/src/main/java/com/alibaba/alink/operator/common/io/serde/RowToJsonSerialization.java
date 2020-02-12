@@ -17,26 +17,33 @@
  *
  */
 
-package com.alibaba.alink.operator.common.io.kafka011;
+package com.alibaba.alink.operator.common.io.serde;
 
-import org.apache.flink.api.common.functions.RuntimeContext;
+import com.alibaba.alink.common.utils.JsonConverter;
+import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.types.Row;
-import org.apache.kafka.clients.producer.ProducerRecord;
 
-import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
-public class SimpleKafkaConverter implements KafkaConverter<Row>, Serializable {
+public class RowToJsonSerialization implements SerializationSchema<Row> {
+    private String[] columnNames;
 
-    @Override
-    public ProducerRecord convert(Row row, String topic, int[] partitions) {
-        return new ProducerRecord(topic, null, (byte[]) (row.getField(0)));
+    public RowToJsonSerialization(String[] columnNames) {
+        this.columnNames = columnNames;
     }
 
     @Override
-    public void open(RuntimeContext context) {
+    public byte[] serialize(Row element) {
+        HashMap<String, Object> map = new HashMap<>();
+        for (int i = 0; i < columnNames.length; i++) {
+            Object obj = element.getField(i);
+            if (obj != null) {
+                map.put(columnNames[i], obj);
+            }
+        }
+        String str = JsonConverter.toJson(map);
+        return str.getBytes(StandardCharsets.UTF_8);
     }
 
-    @Override
-    public void close() {
-    }
 }
