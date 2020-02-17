@@ -17,35 +17,35 @@
  *
  */
 
-package com.alibaba.alink.operator.stream.sink;
+package com.alibaba.alink.operator.stream.source;
 
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.operator.common.io.kafka.BaseKafkaSinkBuilder;
-import com.alibaba.alink.operator.common.io.kafka011.Kafka011SinkBuilder;
-import com.alibaba.alink.params.io.Kafka011SinkParams;
+import com.alibaba.alink.operator.common.io.kafka.BaseKafkaSourceBuilder;
+import com.alibaba.alink.operator.common.io.kafka010.Kafka010SourceBuilder;
+import com.alibaba.alink.params.io.Kafka010SourceParams;
 import org.apache.flink.ml.api.misc.param.Params;
 
+
 /**
- * Data sink for kafka 0.11.x.
+ * Data source for kafka 0.10.x.
  */
-@IoOpAnnotation(name = "kafka011", ioType = IOType.SinkStream)
-public final class Kafka011SinkStreamOp extends BaseKafkaSinkStreamOp<Kafka011SinkStreamOp>
-    implements Kafka011SinkParams<Kafka011SinkStreamOp> {
+@IoOpAnnotation(name = "kafka010", hasTimestamp = true, ioType = IOType.SourceStream)
+public final class Kafka010SourceStreamOp extends BaseKafkaSourceStreamOp<Kafka010SourceStreamOp>
+    implements Kafka010SourceParams<Kafka010SourceStreamOp> {
 
-
-    public Kafka011SinkStreamOp() {
+    public Kafka010SourceStreamOp() {
         this(new Params());
     }
 
-    public Kafka011SinkStreamOp(Params params) {
-        super(AnnotationUtils.annotatedName(Kafka011SinkStreamOp.class), params);
+    public Kafka010SourceStreamOp(Params params) {
+        super(AnnotationUtils.annotatedName(Kafka010SourceStreamOp.class), params);
     }
 
     @Override
-    protected BaseKafkaSinkBuilder getKafkaSinkBuilder() {
-        return new Kafka011SinkBuilder();
+    protected BaseKafkaSourceBuilder getKafkaSourceBuilder() {
+        return new Kafka010SourceBuilder();
     }
 }
 

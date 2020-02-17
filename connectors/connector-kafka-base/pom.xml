@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>alink_connectors_kafka_0.11_${alink.scala.major.version}</artifactId>
-    <name>alink-connector-kafka-0.11</name>
+    <artifactId>alink_connectors_kafka_base_${alink.scala.major.version}</artifactId>
+    <name>alink-connector-kafka-base</name>
     <version>0.1-SNAPSHOT</version>
 
     <packaging>jar</packaging>
@@ -64,32 +64,6 @@
             <artifactId>flink-table-planner_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- dependency on KAFKA  -->
-        <dependency>
-            <groupId>com.alibaba.alink</groupId>
-            <artifactId>alink_connectors_kafka_base_2.11</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-kafka-0.11_${alink.scala.major.version}</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.11</artifactId>
-            <version>0.11.0.2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Declare kafka-junit4 dependency -->
-        <dependency>
-            <groupId>com.salesforce.kafka.test</groupId>
-            <artifactId>kafka-junit4</artifactId>
-            <version>3.2.1</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

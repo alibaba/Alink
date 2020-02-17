@@ -17,14 +17,12 @@
  *
  */
 
-package com.alibaba.alink.operator.common.io.kafka011;
+package com.alibaba.alink.operator.common.io.kafka;
 
-import com.alibaba.alink.operator.common.io.kafka.BaseKafkaSourceBuilder;
-import com.alibaba.alink.operator.common.io.kafka.KafkaMessageDeserialization;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.KafkaDeserializationSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.StringUtils;
@@ -35,7 +33,7 @@ import java.util.regex.Pattern;
 import static com.alibaba.alink.operator.common.io.kafka.KafkaMessageDeserialization.KAFKA_SRC_FIELD_NAMES;
 import static com.alibaba.alink.operator.common.io.kafka.KafkaMessageDeserialization.KAFKA_SRC_FIELD_TYPES;
 
-public final class Kafka011SourceBuilder extends BaseKafkaSourceBuilder {
+public final class KafkaSourceBuilder extends BaseKafkaSourceBuilder {
 
     private static class MessageDeserialization implements KafkaDeserializationSchema<Row> {
         @Override
@@ -58,13 +56,14 @@ public final class Kafka011SourceBuilder extends BaseKafkaSourceBuilder {
 
     @Override
     public RichParallelSourceFunction<Row> build() {
-        FlinkKafkaConsumer011<Row> consumer;
+        FlinkKafkaConsumer<Row> consumer;
         if (!StringUtils.isNullOrWhitespaceOnly(topicPattern)) {
             Pattern pattern = Pattern.compile(topicPattern);
-            consumer = new FlinkKafkaConsumer011<Row>(pattern, new MessageDeserialization(), properties);
+            consumer = new FlinkKafkaConsumer<Row>(pattern, new MessageDeserialization(), properties);
         } else {
-            consumer = new FlinkKafkaConsumer011<Row>(topic, new MessageDeserialization(), properties);
+            consumer = new FlinkKafkaConsumer<Row>(topic, new MessageDeserialization(), properties);
         }
+
         switch (super.startupMode) {
             case LATEST: {
                 consumer.setStartFromLatest();

@@ -17,18 +17,18 @@
  *
  */
 
-package com.alibaba.alink.operator.common.io.kafka011;
+package com.alibaba.alink.operator.common.io.kafka010;
 
 import com.alibaba.alink.operator.common.io.kafka.BaseKafkaSinkBuilder;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer011;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 import org.apache.flink.types.Row;
 
-public final class Kafka011SinkBuilder extends BaseKafkaSinkBuilder {
+public final class Kafka010SinkBuilder extends BaseKafkaSinkBuilder {
     @Override
     public RichSinkFunction<Row> build() {
         SerializationSchema<Row> serializationSchema = getSerializationSchema();
-        return new FlinkKafkaProducer011<Row>(topic, serializationSchema, properties);
+        return new FlinkKafkaProducer010<Row>(topic, serializationSchema, properties);
     }
 }

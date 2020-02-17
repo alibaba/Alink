@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>alink_connectors_kafka_0.11_${alink.scala.major.version}</artifactId>
-    <name>alink-connector-kafka-0.11</name>
+    <artifactId>alink_connectors_kafka_${alink.scala.major.version}</artifactId>
+    <name>alink-connector-kafka</name>
     <version>0.1-SNAPSHOT</version>
 
     <packaging>jar</packaging>
@@ -74,14 +74,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-kafka-0.11_${alink.scala.major.version}</artifactId>
+            <artifactId>flink-connector-kafka_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.11</artifactId>
-            <version>0.11.0.2</version>
-            <scope>test</scope>
         </dependency>
 
         <!-- Declare kafka-junit4 dependency -->
@@ -89,6 +83,12 @@
             <groupId>com.salesforce.kafka.test</groupId>
             <artifactId>kafka-junit4</artifactId>
             <version>3.2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            <version>2.2.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
