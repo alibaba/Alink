@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream;
 import java.util.List;
 import java.util.function.Function;
 
+import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -159,8 +160,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		return as(sbd.toString());
 	}
 
-    @Override
-//<<<<<<< HEAD
+	@Override
 	public StreamOperator where(String clause) {
 		return StreamSqlOperators.where(this, clause);
 	}
@@ -182,8 +182,6 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 	public T linkFrom(List <StreamOperator <?>> ins) {
 		return linkFrom(ins.toArray(new StreamOperator <?>[0]));
 	}
-
-	protected String tableName = null;
 
 	@Override
 	public StreamOperator print() {
@@ -252,32 +250,43 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		setOutputTable(DataStreamConversionUtil.toTable(getMLEnvironmentId(), dataSet, colNames, colTypes));
 	}
 
+	@Deprecated
 	public String getTableName() {
-		if (null == tableName) {
-			tableName = getOutputTable().toString();
-		}
-		return tableName;
+		Table outputTable = getOutputTable();
+		Preconditions.checkNotNull(outputTable, "This output table is null.");
+		return outputTable.toString();
 	}
 
-	public StreamOperator setTableName(String name) {
+	/**
+	 * Register the table of this operator to its table environment.
+	 * An operator can register multiple times with different names.
+	 *
+	 * @param name The name to register with.
+	 * @return This operator.
+	 */
+	public StreamOperator registerTableName(String name) {
 		MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment().registerTable(name, getOutputTable());
-		this.tableName = name;
 		return this;
 	}
 
-	// FIXME
-	public StreamOperator forceSetTableName(String name) {
-		//        if (MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment().isRegistered(name)) {
-		//            MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment()
-		// .replaceRegisteredTable(name,
-		//                new RelTable(getOutput().getRelNode()));
-		//        } else {
-		//            MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment().registerTable(name,
-        // getOutput
-		//                ());
-		//        }
-		//todo: check the usage of replaceRegisteredTable.
-		return setTableName(name);
+	public static void registerFunction(String name, ScalarFunction function) {
+		MLEnvironmentFactory.getDefault().getStreamTableEnvironment().registerFunction(name, function);
+	}
+
+	public static <T> void registerFunction(String name, TableFunction<T> function) {
+		MLEnvironmentFactory.getDefault().getStreamTableEnvironment().registerFunction(name, function);
+	}
+
+	/**
+	 * Evaluate SQL query within the default {@link MLEnvironment}.
+	 *
+	 * @param query The query to evaluate.
+	 * @return The evaluation result returned as a {@link StreamOperator}.
+	 */
+	public static StreamOperator sqlQuery(String query) {
+		final MLEnvironment env = MLEnvironmentFactory.getDefault();
+		final Long sessionId = MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID;
+		return env.streamSQL(query).setMLEnvironmentId(sessionId);
 	}
 
 	public StreamOperator sample(double ratio) {

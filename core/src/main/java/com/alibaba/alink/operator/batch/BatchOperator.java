@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.batch;
 
+import com.alibaba.alink.common.MLEnvironment;
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.accumulators.SerializedListAccumulator;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -242,8 +243,6 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		return linkFrom(ins.toArray(new BatchOperator <?>[0]));
 	}
 
-	protected String tableName = null;
-
 	public static void execute() throws Exception {
 		MLEnvironmentFactory.getDefault().getExecutionEnvironment().execute();
 	}
@@ -255,56 +254,6 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	public static void disableLogging() {
 		MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
 	}
-
-	//    public BatchOperator withStat() {
-	//        return withStatWithLevel("L1");
-	//    }
-
-	//    public BatchOperator withStatWithLevel(String statLevel) {
-	//        stat(statLevel);
-	//        return this;
-	//    }
-
-	//    public BatchOperator withStat(String nodeName) {
-	//        Params params = new Params().set(MLSession.getScreenManager().getVizName(), nodeName);
-	//        this.link(new AllStatBatchOp(params));
-	//        this.withStatWithLevel("L1");
-	//        return this;
-	//    }
-	//
-	//    public DataSet <SimpleStatResultTable> getStatResult() {
-	//        return this.srtDataSet;
-	//    }
-
-	//    /**
-	//     * @param statLevel: L1,L2,L3: 默认是L1
-	//     *                   L1 has basic statistic;
-	//     *                   L2 has simple statistic and cov/corr;
-	//     *                   L3 has simple statistic, cov/corr, histogram, freq, topk, bottomk;
-	//     */
-	//    private void stat(String statLevel) {
-	//        if (null != getTable()) {
-	//            this.srtDataSet = RowTypeDataSet.fromTable(getMLEnvironmentId(), getTable())
-	//                .mapPartition(new SimpleStatPartition(getTable().getSchema(), statLevel))
-	//                .reduce(new ReduceFunction <SimpleStatResultTable>() {
-	//                    @Override
-	//                    public SimpleStatResultTable reduce(SimpleStatResultTable a, SimpleStatResultTable b) {
-	//                        if (null == a) {
-	//                            return b;
-	//                        } else if (null == b) {
-	//                            return a;
-	//                        } else {
-	//                            try {
-	//                                return SimpleStatResultTable.combine(a, b);
-	//                            } catch (Exception ex) {
-	//                                ex.printStackTrace();
-	//                                return null;
-	//                            }
-	//                        }
-	//                    }
-	//                });
-	//        }
-	//    }
 
 	public long count() throws Exception {
 		return DataSetConversionUtil.fromTable(getMLEnvironmentId(), getOutputTable()).count();
@@ -330,32 +279,43 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		}
 	}
 
+	@Deprecated
 	public String getTableName() {
-		if (null == tableName) {
-			tableName = getOutputTable().toString();
-		}
-		return tableName;
+		Table outputTable = getOutputTable();
+		Preconditions.checkNotNull(outputTable, "This output table is null.");
+		return outputTable.toString();
 	}
 
-	public BatchOperator setTableName(String name) {
+	/**
+	 * Register the table of this operator to its table environment.
+	 * An operator can register multiple times with different names.
+	 *
+	 * @param name The name to register with.
+	 * @return This operator.
+	 */
+	public BatchOperator registerTableName(String name) {
 		MLEnvironmentFactory.get(getMLEnvironmentId()).getBatchTableEnvironment().registerTable(name, getOutputTable());
-		this.tableName = name;
 		return this;
 	}
 
-	public BatchOperator forceSetTableName(String name) {
-		//        BatchTableEnvironment env = MLEnvironmentFactory.get(getMLEnvironmentId())
-		// .getBatchTableEnvironment();
-		//        Catalog catalog = env.getCatalog(env.getCurrentCatalog()).get();
-		//        ObjectPath tablePath = new ObjectPath(catalog.getDefaultDatabase(), name);
-		//        try {
-		//            catalog.dropTable(tablePath, true);
-		//        } catch (Exception ex) {
-		//            throw new RuntimeException(ex);
-		//        }
-		//        this.tableName = name;
-		//        return this;
-		return setTableName(name);
+	public static void registerFunction(String name, ScalarFunction function) {
+		MLEnvironmentFactory.getDefault().getBatchTableEnvironment().registerFunction(name, function);
+	}
+
+	public static <T> void registerFunction(String name, TableFunction<T> function) {
+		MLEnvironmentFactory.getDefault().getBatchTableEnvironment().registerFunction(name, function);
+	}
+
+	/**
+	 * Evaluate SQL query within the default {@link MLEnvironment}.
+	 *
+	 * @param query The query to evaluate.
+	 * @return The evaluation result returned as a {@link BatchOperator}.
+	 */
+	public static BatchOperator sqlQuery(String query) {
+		final MLEnvironment env = MLEnvironmentFactory.getDefault();
+		final Long sessionId = MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID;
+		return env.batchSQL(query).setMLEnvironmentId(sessionId);
 	}
 
 	public BatchOperator getSideOutput(int idx) {
