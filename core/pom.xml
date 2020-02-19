@@ -5,25 +5,14 @@
     <parent>
         <artifactId>alink</artifactId>
         <groupId>com.alibaba.alink</groupId>
-        <version>0.1-SNAPSHOT</version>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>alink_core</artifactId>
-    <version>0.1-SNAPSHOT</version>
-
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
             <!-- Scala Compiler -->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -47,32 +36,6 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>javadoc-no-fork</goal>
-                        </goals>
-                        <phase>${alink_javadoc_phase}</phase>
-                        <configuration>
-                            <doclet>capital.scalable.restdocs.jsondoclet.ExtractDocumentationAsJsonDoclet</doclet>
-                            <docletArtifact>
-                                <groupId>capital.scalable</groupId>
-                                <artifactId>spring-auto-restdocs-json-doclet</artifactId>
-                                <version>1.0.10</version>
-                            </docletArtifact>
-                            <destDir>generated-javadoc-json</destDir>
-                            <reportOutputDirectory>${project.build.directory}</reportOutputDirectory>
-                            <useStandardDocletOptions>false</useStandardDocletOptions>
-                            <show>package</show>
-                            <excludePackageNames>com.alibaba.alink.io.utils</excludePackageNames>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -206,6 +169,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
     </dependencies>
 
 </project>
