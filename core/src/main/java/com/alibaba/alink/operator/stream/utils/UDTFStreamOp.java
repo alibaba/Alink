@@ -13,7 +13,7 @@ import org.apache.flink.table.functions.TableFunction;
  * This class provides the UDTF feature which is similar with Flink user-defined table functions.
  * <p>
  * An instance of a class inheriting Flink TableFunction is provided.
- * The computation involves selectedCols, outputCols, and joinType,
+ * The computation involves selectedCols and outputCols,
  * and reservedCols are columns kept from the input table.
  * <p>
  * Note that outputCols can have same names with the selectedCols.
@@ -61,8 +61,7 @@ public class UDTFStreamOp extends StreamOperator<UDTFStreamOp>
         }
 
         String clause = UDFHelper.generateUDTFClause(in.getOutputTable().toString(), funcName,
-            getOutputCols(), getSelectedCols(), reservedCols, getJoinType()
-        );
+            getOutputCols(), getSelectedCols(), reservedCols);
         this.setOutputTable(tEnv.sqlQuery(clause));
         return this;
     }

@@ -50,12 +50,11 @@ public class UDFHelper {
      * @param outputCols   output columns
      * @param selectedCols selected columns
      * @param reservedCols reserved columns
-     * @param joinType     cross or leftOuter
      * @return the sql clause
      */
     public static String generateUDTFClause(
         final String inTableName, final String functionName,
-        final String[] outputCols, final String[] selectedCols, final String[] reservedCols, final String joinType) {
+        final String[] outputCols, final String[] selectedCols, final String[] reservedCols) {
 
         final String selectedColsStr = TableUtil.columnsToSqlClause(selectedCols);
 
@@ -84,13 +83,7 @@ public class UDFHelper {
         String selectClause = sb.toString();
 
         // generate the join clause
-        final String crossJoinTemplate = "SELECT %s FROM %s, LATERAL TABLE(%s(%s)) as T(%s)";
-        final String leftJoinTemplate = "SELECT %s FROM %s LEFT JOIN LATERAL TABLE(%s(%s)) as T(%s) ON TRUE";
-
-        final String joinTemplate = joinType.equalsIgnoreCase("CROSS")
-            ? crossJoinTemplate
-            : leftJoinTemplate;
-
+        final String joinTemplate = "SELECT %s FROM %s, LATERAL TABLE(%s(%s)) as T(%s)";
         final String[] finalOutputCols = ArrayUtils.addAll(cleanedReservedCols, shadedOutputCols);
         final String finalOutputColsStr = TableUtil.columnsToSqlClause(finalOutputCols);
 
