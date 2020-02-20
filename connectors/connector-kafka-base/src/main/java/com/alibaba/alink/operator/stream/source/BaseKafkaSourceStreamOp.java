@@ -53,7 +53,7 @@ public abstract class BaseKafkaSourceStreamOp<T extends BaseKafkaSourceStreamOp<
         String topic = getParams().get(KafkaSourceParams.TOPIC);
         String topicPattern = getParams().get(KafkaSourceParams.TOPIC_PATTERN);
         BaseKafkaSourceBuilder.StartupMode startupMode = BaseKafkaSourceBuilder.StartupMode.valueOf(
-            getParams().get(KafkaSourceParams.STARTUP_MODE));
+            getParams().get(KafkaSourceParams.STARTUP_MODE).toUpperCase());
         String properties = getParams().get(KafkaSourceParams.PROPERTIES);
 
         Preconditions.checkArgument(!StringUtils.isNullOrWhitespaceOnly(topicPattern) ||
