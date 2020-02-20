@@ -19,6 +19,7 @@
             <groupId>com.alibaba.alink</groupId>
             <artifactId>alink_core</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
