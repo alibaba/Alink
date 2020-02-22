@@ -24,7 +24,6 @@ public class OneVsRestTest {
 
     @Test
     public void lr() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
 
         LogisticRegression lr = new LogisticRegression()
             .setFeatureCols(Iris.getFeatureColNames())
@@ -48,7 +47,6 @@ public class OneVsRestTest {
 
     @Test
     public void pipeline() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
 
         VectorAssembler va = new VectorAssembler().setSelectedCols(Iris.getFeatureColNames())
             .setOutputCol("features").setReservedCols(Iris.getLabelColName());
@@ -82,7 +80,6 @@ public class OneVsRestTest {
 
     @Test
     public void gbdtTriCls() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
 
         GbdtClassifier gbdt = new GbdtClassifier()
             .setFeatureCols(Iris.getFeatureColNames())

@@ -28,7 +28,6 @@ public class BlockwiseCrossTest {
         list2.add(Tuple2.of(3L, new float[]{0, 1}));
 
         ExecutionEnvironment env = MLEnvironmentFactory.getDefault().getExecutionEnvironment();
-        env.startNewSession();
         DataSet<Tuple2<Long, float[]>> dataset1 = env.fromCollection(list1).rebalance();
         DataSet<Tuple2<Long, float[]>> dataset2 = env.fromCollection(list2).rebalance();
 

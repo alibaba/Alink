@@ -16,8 +16,6 @@ public class PrefixSpanBatchOpTest {
             Row.of("e,f;a,b;d,f;c;b"),
             Row.of("e;g;a,f;c;b;c"),
         };
-
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
         Table data = MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[]{"sequence"});
 
         PrefixSpanBatchOp prefixSpan = new PrefixSpanBatchOp()

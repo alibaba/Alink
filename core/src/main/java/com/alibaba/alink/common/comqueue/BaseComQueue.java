@@ -21,7 +21,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -28,7 +28,6 @@ public class AlsTopKPredictBatchOpTest {
 
     @Test
     public void testRecommendForUsers() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
         BatchOperator data = BatchOperator.fromTable(
             MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[]{"user", "item", "rating"}));
         BatchOperator predData = BatchOperator.fromTable(

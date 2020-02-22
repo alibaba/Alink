@@ -17,7 +17,6 @@ import java.util.List;
 public class FeatureHasherTest {
 	@Test
 	public void test() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
 		Row[] rows = new Row[] {
 			Row.of(new Object[] {1.1, true, "2", "A"}),
 			Row.of(new Object[] {1.1, false, "2", "B"}),

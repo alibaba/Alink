@@ -38,7 +38,6 @@ public class ALSTest {
 
     @Test
     public void testExplicit() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
         BatchOperator data = BatchOperator.fromTable(
             MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[]{"user", "item", "rating"}));
 
@@ -78,7 +77,6 @@ public class ALSTest {
 
     @Test
     public void testNonNegative() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
         BatchOperator data = BatchOperator.fromTable(
             MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[]{"user", "item", "rating"}));
 
@@ -104,7 +102,6 @@ public class ALSTest {
 
     @Test
     public void testUnSeenUser() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
         BatchOperator data = BatchOperator.fromTable(
             MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[]{"user", "item", "rating"}));
 
@@ -147,7 +144,6 @@ public class ALSTest {
 
     @Test
     public void testImplicit() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
         BatchOperator data = BatchOperator.fromTable(
             MLEnvironmentFactory.getDefault().createBatchTable(rows2, new String[]{"user", "item", "rating"}));
 

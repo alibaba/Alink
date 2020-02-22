@@ -67,7 +67,7 @@ public class IterativeComQueueTest implements Serializable {
 
 	@Test
 	public void testICQLinearRegression() throws Exception {
-		final int m = 1000000;
+		final int m = 10000;
 		final int n = 3;
 
 		List<Tuple2<DenseVector, Double>> data = new ArrayList<>();
@@ -162,7 +162,7 @@ public class IterativeComQueueTest implements Serializable {
 	@Test
 	public void testICQLinearRegression1() throws Exception {
 		final long start = System.currentTimeMillis();
-		final int m = 1000000;
+		final int m = 10000;
 		final int n = 20;
 
 		List<Tuple2<DenseVector, Double>> data = new ArrayList<>();
@@ -235,7 +235,7 @@ public class IterativeComQueueTest implements Serializable {
 
 	@Test
 	public void testFlinkLinerRegression() throws Exception {
-		final int m = 1000000;
+		final int m = 10000;
 		final int n = 1;
 
 		List<Tuple2<DenseVector, Double>> data = new ArrayList<>();

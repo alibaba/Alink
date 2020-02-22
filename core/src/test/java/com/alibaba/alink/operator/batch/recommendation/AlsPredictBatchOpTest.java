@@ -32,7 +32,6 @@ public class AlsPredictBatchOpTest {
 
     @Test
     public void testRating() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().startNewSession();
         BatchOperator data = BatchOperator.fromTable(
             MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[]{"user", "item", "rating"}));
 
