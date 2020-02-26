@@ -1,28 +1,27 @@
 package com.alibaba.alink.operator.common.classification;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.model.LabeledModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.params.classification.NaiveBayesTrainParams;
-import com.alibaba.alink.params.shared.colname.HasFeatureColsDefaultAsNull;
-
+import com.alibaba.alink.params.classification.NaiveBayesTextTrainParams;
+import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.google.common.collect.Iterables;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 /**
  * This converter can help serialize and deserialize the model data.
  */
-public class NaiveBayesModelDataConverter extends
-    LabeledModelDataConverter<NaiveBayesTrainModelData, NaiveBayesPredictModelData> {
+public class NaiveBayesTextModelDataConverter extends
+        LabeledModelDataConverter<NaiveBayesTextTrainModelData, NaiveBayesTextPredictModelData> {
 
-    public NaiveBayesModelDataConverter() {}
+    public NaiveBayesTextModelDataConverter() {}
 
-    public NaiveBayesModelDataConverter(TypeInformation labelType) {
+    public NaiveBayesTextModelDataConverter(TypeInformation labelType) {
         super(labelType);
     }
 
@@ -35,16 +34,16 @@ public class NaiveBayesModelDataConverter extends
      * @return The model data used by mapper.
      */
     @Override
-    public NaiveBayesPredictModelData deserializeModel(Params meta, Iterable<String> data, Iterable<Object> distinctLabels) {
-        NaiveBayesPredictModelData modelData = new NaiveBayesPredictModelData();
+    public NaiveBayesTextPredictModelData deserializeModel(Params meta, Iterable<String> data, Iterable<Object> distinctLabels) {
+        NaiveBayesTextPredictModelData modelData = new NaiveBayesTextPredictModelData();
         modelData.meta = meta;
         String json = data.iterator().next();
-        NaiveBayesProbInfo dataInfo = JsonConverter.fromJson(json, NaiveBayesProbInfo.class);
+        NaiveBayesTextProbInfo dataInfo = JsonConverter.fromJson(json, NaiveBayesTextProbInfo.class);
         modelData.pi = dataInfo.piArray;
         modelData.theta = dataInfo.theta;
         modelData.label = Iterables.toArray(distinctLabels, Object.class);
-        modelData.featureNames = modelData.meta.get(HasFeatureColsDefaultAsNull.FEATURE_COLS);
-        modelData.modelType = BayesType.valueOf(modelData.meta.get(NaiveBayesTrainParams.MODEL_TYPE));
+        modelData.vectorColName = modelData.meta.get(HasVectorCol.VECTOR_COL);
+        modelData.modelType = BayesType.valueOf(modelData.meta.get(NaiveBayesTextTrainParams.MODEL_TYPE));
         modelData.featLen = modelData.theta.numCols();
 
         int rowSize = modelData.theta.numRows();
@@ -70,11 +69,11 @@ public class NaiveBayesModelDataConverter extends
      * @return The serialization result.
      */
     @Override
-    public Tuple3<Params, Iterable<String>, Iterable<Object>> serializeModel(NaiveBayesTrainModelData modelData) {
+    public Tuple3<Params, Iterable<String>, Iterable<Object>> serializeModel(NaiveBayesTextTrainModelData modelData) {
         Params meta = new Params()
-            .set(NaiveBayesTrainParams.MODEL_TYPE, modelData.modelType.name())
-            .set(HasFeatureColsDefaultAsNull.FEATURE_COLS, modelData.featureNames);
-        NaiveBayesProbInfo data = new NaiveBayesProbInfo();
+            .set(NaiveBayesTextTrainParams.MODEL_TYPE, modelData.modelType.name())
+            .set(HasVectorCol.VECTOR_COL, modelData.vectorColName);
+        NaiveBayesTextProbInfo data = new NaiveBayesTextProbInfo();
         data.piArray = modelData.pi;
         data.theta = modelData.theta;
         return Tuple3.of(meta, Collections.singletonList(JsonConverter.toJson(data)), Arrays.asList(modelData.label));
@@ -93,7 +92,7 @@ public class NaiveBayesModelDataConverter extends
         BERNOULLI
     }
 
-    public static class NaiveBayesProbInfo {
+    public static class NaiveBayesTextProbInfo {
         /**
          * the pi array.
          */

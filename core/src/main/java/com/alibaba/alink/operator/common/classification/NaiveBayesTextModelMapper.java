@@ -1,20 +1,15 @@
 package com.alibaba.alink.operator.common.classification;
 
+import com.alibaba.alink.common.linalg.*;
+import com.alibaba.alink.common.mapper.RichModelMapper;
+import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.params.classification.NaiveBayesTextPredictParams;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
-
-import com.alibaba.alink.common.linalg.BLAS;
-import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.linalg.VectorUtil;
-import com.alibaba.alink.common.mapper.RichModelMapper;
-import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.params.classification.NaiveBayesPredictParams;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +18,11 @@ import java.util.Map;
 /**
  * This mapper predicts sample label.
  */
-public class NaiveBayesModelMapper extends RichModelMapper {
+public class NaiveBayesTextModelMapper extends RichModelMapper {
     public String[] colNames;
     public String vectorColName;
     private int vectorIndex;
-    private int[] featIdx;
-    private NaiveBayesPredictModelData modelData;
+    private NaiveBayesTextPredictModelData modelData;
 
     /**
      * Construct function.
@@ -37,14 +31,13 @@ public class NaiveBayesModelMapper extends RichModelMapper {
      * @param dataSchema  data schema.
      * @param params      parameters for predict.
      */
-    public NaiveBayesModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
+    public NaiveBayesTextModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
         super(modelSchema, dataSchema, params);
         this.colNames = dataSchema.getFieldNames();
-        this.vectorColName = params.get(NaiveBayesPredictParams.VECTOR_COL);
-
-        if (this.vectorColName != null && this.vectorColName.length() != 0) {
-            this.vectorIndex = TableUtil.findColIndex(this.colNames, this.vectorColName);
-        }
+        this.vectorColName = params.get(NaiveBayesTextPredictParams.VECTOR_COL);
+        vectorIndex = TableUtil.findColIndex(colNames, vectorColName);
+        Preconditions.checkArgument(vectorIndex != -1,
+                "the predict vector is not in the predict data schema.");
     }
 
     /**
@@ -96,18 +89,7 @@ public class NaiveBayesModelMapper extends RichModelMapper {
 
     @Override
     public void loadModel(List<Row> modelRows) {
-        modelData = new NaiveBayesModelDataConverter().load(modelRows);
-        int size;
-        if (modelData.featureNames != null) {
-            size = modelData.featureNames.length;
-            featIdx = new int[size];
-            for (int i = 0; i < size; ++i) {
-                featIdx[i] = TableUtil.findColIndex(colNames, modelData.featureNames[i]);
-            }
-        } else {
-            featIdx = new int[1];
-            featIdx[0] = TableUtil.findColIndex(colNames, vectorColName);
-        }
+        modelData = new NaiveBayesTextModelDataConverter().load(modelRows);
     }
 
     /**
@@ -131,6 +113,12 @@ public class NaiveBayesModelMapper extends RichModelMapper {
     @Override
     protected Tuple2<Object, String> predictResultDetail(Row row) {
         double[] prob = calculateProb(row);
+        Object result = findMaxProbLabel(prob, modelData.label);
+        String jsonDetail = generateDetail(prob, modelData.pi, modelData.label);
+        return new Tuple2<>(result, jsonDetail);
+    }
+
+    protected static String generateDetail(double[] prob, double[] pi, Object[] labels) {
         double maxProb = prob[0];
         for (int i = 1; i < prob.length; ++i) {
             if (maxProb < prob[i]) {
@@ -146,18 +134,15 @@ public class NaiveBayesModelMapper extends RichModelMapper {
             prob[i] = Math.exp(prob[i] - sumProb);
         }
 
-        Object result = findMaxProbLabel(prob, modelData.label);
-
-        int labelSize = modelData.pi.length;
+        int labelSize = pi.length;
         Map<String, Double> detail = new HashMap<>(labelSize);
         for (int i = 0; i < labelSize; ++i) {
-            detail.put(modelData.label[i].toString(), prob[i]);
+            detail.put(labels[i].toString(), prob[i]);
         }
-        String jsonDetail = JsonConverter.toJson(detail);
-        return new Tuple2<>(result, jsonDetail);
+        return JsonConverter.toJson(detail);
     }
 
-    private static Object findMaxProbLabel(double[] prob, Object[] label) {
+    protected static Object findMaxProbLabel(double[] prob, Object[] label) {
         Object result = null;
         int probSize = prob.length;
         double maxVal = Double.NEGATIVE_INFINITY;
@@ -171,20 +156,8 @@ public class NaiveBayesModelMapper extends RichModelMapper {
     }
 
     private double[] calculateProb(Row row) {
-        Vector featVec;
-        if (vectorColName != null) {
-            featVec = VectorUtil.getVector(row.getField(this.vectorIndex));
-        } else {
-            double[] vals = new double[modelData.featLen];
-            for (int i = 0; i < modelData.featLen; ++i) {
-                Object data = row.getField(featIdx[i]);
-                vals[i] = data instanceof Number ?
-                    ((Number)data).doubleValue() :
-                    Double.parseDouble(data.toString());
-            }
-            featVec = new DenseVector(vals);
-        }
-        if (NaiveBayesModelDataConverter.BayesType.MULTINOMIAL.equals(modelData.modelType)) {
+        Vector featVec = VectorUtil.getVector(row.getField(this.vectorIndex));
+        if (NaiveBayesTextModelDataConverter.BayesType.MULTINOMIAL.equals(modelData.modelType)) {
             return multinomialCalculation(featVec);
         } else {
             return bernoulliCalculation(featVec);

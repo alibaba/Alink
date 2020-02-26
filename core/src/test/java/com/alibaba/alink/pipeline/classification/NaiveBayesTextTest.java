@@ -1,45 +1,44 @@
 package com.alibaba.alink.pipeline.classification;
 
-import java.util.Arrays;
-import java.util.List;
-
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.NaiveBayesPredictBatchOp;
-import com.alibaba.alink.operator.batch.classification.NaiveBayesTrainBatchOp;
+import com.alibaba.alink.operator.batch.classification.NaiveBayesTextPredictBatchOp;
+import com.alibaba.alink.operator.batch.classification.NaiveBayesTextTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.common.classification.NaiveBayesModelDataConverter;
+import com.alibaba.alink.operator.common.classification.NaiveBayesTextModelDataConverter;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
-
 import org.apache.flink.types.Row;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class NaiveBayesTest {
+import java.util.Arrays;
+import java.util.List;
+
+public class NaiveBayesTextTest {
 
 	private static AlgoOperator getData(boolean isBatch) {
 		Row[] array = new Row[] {
-			Row.of("$31$0:1.0 1:1.0 2:1.0 30:1.0", "1.0  1.0  1.0  1.0", 1.0, 1.0, 1.0, 1.0, 1),
-			Row.of("$31$0:1.0 1:1.0 2:0.0 30:1.0", "1.0  1.0  0.0  1.0", 1.0, 1.0, 0.0, 1.0, 1),
-			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1.0, 0.0, 1.0, 1.0, 1),
-			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1.0, 0.0, 1.0, 1.0, 1),
-			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0),
-			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0),
-			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$0:1.0 1:1.0 2:1.0 30:1.0", "1.0  1.0  1.0  1.0", 1),
+			Row.of("$31$0:1.0 1:1.0 2:0.0 30:1.0", "1.0  1.0  0.0  1.0", 1),
+			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1),
+			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0),
 		};
 
 		if (isBatch) {
 			return new MemSourceBatchOp(
-				Arrays.asList(array), new String[] {"svec", "vec", "f0", "f1", "f2", "f3", "labels"});
+				Arrays.asList(array), new String[] {"svec", "vec", "labels"});
 		} else {
 			return new MemSourceStreamOp(
-				Arrays.asList(array), new String[] {"svec", "vec", "f0", "f1", "f2", "f3", "labels"});
+				Arrays.asList(array), new String[] {"svec", "vec", "labels"});
 		}
 	}
 
@@ -47,21 +46,11 @@ public class NaiveBayesTest {
 	public void testPipelineBatch() throws Exception {
 		MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
 
-		String[] featNames = new String[] {"f0", "f1", "f2", "f3"};
 		String labelName = "labels";
 
-        /* train model */
-		NaiveBayes nb
-			= new NaiveBayes()
-			.setModelType("Bernoulli")
-			.setLabelCol(labelName)
-			.setFeatureCols(featNames)
-			.setPredictionCol("predResult")
-			.setPredictionDetailCol("predResultColName")
-			.setSmoothing(0.5);
 
-		NaiveBayes vnb
-			= new NaiveBayes()
+		NaiveBayesTextClassifier vnb
+			= new NaiveBayesTextClassifier()
 			.setModelType("Bernoulli")
 			.setLabelCol(labelName)
 			.setVectorCol("vec")
@@ -69,8 +58,8 @@ public class NaiveBayesTest {
 			.setPredictionDetailCol("predvResultColName")
 			.setSmoothing(0.5);
 
-		NaiveBayes svnb
-			= new NaiveBayes()
+		NaiveBayesTextClassifier svnb
+			= new NaiveBayesTextClassifier()
 			.setModelType("Bernoulli")
 			.setLabelCol(labelName)
 			.setVectorCol("svec")
@@ -78,11 +67,11 @@ public class NaiveBayesTest {
 			.setPredictionDetailCol("predsvResultColName")
 			.setSmoothing(0.5);
 
-		Pipeline pl = new Pipeline().add(nb).add(vnb).add(svnb);
+		Pipeline pl = new Pipeline().add(vnb).add(svnb);
 
 		PipelineModel model = pl.fit((BatchOperator) getData(true));
 		BatchOperator result = model.transform((BatchOperator) getData(true)).select(
-			new String[] {"labels", "predResult", "predvResult", "predsvResult"});
+			new String[] {"labels", "predvResult", "predsvResult"});
 
 		List<Row> data = result.collect();
 		for (Row row : data) {
@@ -97,26 +86,28 @@ public class NaiveBayesTest {
 
 	@Test
 	public void testBatch() throws Exception {
-		String[] featNames = new String[] {"f0", "f1", "f2", "f3"};
 		String labelName = "labels";
-		NaiveBayesTrainBatchOp op = new NaiveBayesTrainBatchOp()
+		NaiveBayesTextTrainBatchOp op = new NaiveBayesTextTrainBatchOp()
 				.setModelType("Bernoulli")
 				.setLabelCol(labelName)
-				.setFeatureCols(featNames)
+				.setVectorCol("vec")
 				.setSmoothing(0.5).linkFrom((BatchOperator) getData(true));
-		NaiveBayesPredictBatchOp predict = new NaiveBayesPredictBatchOp().setPredictionCol("predsvResult")
+		NaiveBayesTextPredictBatchOp predict = new NaiveBayesTextPredictBatchOp()
+				.setPredictionCol("predsvResult")
+				.setVectorCol("vec")
 				.setPredictionDetailCol("predsvResultColName");
 		predict.linkFrom(op, (BatchOperator) getData(true)).print();
 	}
 
 	@Test
 	public void testModelDataSerDeser() {
-		NaiveBayesModelDataConverter.NaiveBayesProbInfo data = new NaiveBayesModelDataConverter.NaiveBayesProbInfo();
+		NaiveBayesTextModelDataConverter.NaiveBayesTextProbInfo data = new NaiveBayesTextModelDataConverter.NaiveBayesTextProbInfo();
 		data.piArray = new double[] { 1., 2., 3.};
 		data.theta = DenseMatrix.eye(3);
 
 		String str = JsonConverter.toJson(data);
-		NaiveBayesModelDataConverter.NaiveBayesProbInfo obj = JsonConverter.fromJson(str, NaiveBayesModelDataConverter.NaiveBayesProbInfo.class);
+		NaiveBayesTextModelDataConverter.NaiveBayesTextProbInfo obj =
+				JsonConverter.fromJson(str, NaiveBayesTextModelDataConverter.NaiveBayesTextProbInfo.class);
 
 		Assert.assertArrayEquals(data.piArray, obj.piArray, 0.0000001);
 		Assert.assertArrayEquals(data.theta.getData(), obj.theta.getData(), 0.0000001);

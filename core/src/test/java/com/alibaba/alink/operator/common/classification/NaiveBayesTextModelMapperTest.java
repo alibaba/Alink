@@ -1,12 +1,11 @@
 package com.alibaba.alink.operator.common.classification;
 
+import com.alibaba.alink.params.classification.NaiveBayesTextPredictParams;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-
-import com.alibaba.alink.params.classification.NaiveBayesPredictParams;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -14,11 +13,11 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class NaiveBayesModelMapperTest {
+public class NaiveBayesTextModelMapperTest {
 	Row[] rows = new Row[] {
 		Row.of(0L, "{\"labelType\":\"4\",\"modelType\":\"\\\"BERNOULLI\\\"\",\"labelTypeName\":\"\\\"INTEGER\\\"\","
 				+ "\"modelSchema\":\"\\\"model_id bigint,model_info string,label_type int\\\"\","
-				+ "\"isNewFormat\":\"true\",\"featureColNames\":\"[\\\"f0\\\",\\\"f1\\\",\\\"f2\\\",\\\"f3\\\"]\"}",
+				+ "\"isNewFormat\":\"true\",\"vectorCol\":\"vec\"}",
 			null),
 		Row.of(1048576L, "{\"piArray\":[-0.6931471805599454,-0.6931471805599454],\"theta\":{\"m\":2,\"n\":4,"
 			+ "\"data\":[-2.3025850929940455,-0.10536051565782611,-0.10536051565782611,-0.6931471805599452,"
@@ -39,36 +38,38 @@ public class NaiveBayesModelMapperTest {
 	@Test
 	public void testPredictCol() throws Exception {
 		TableSchema dataSchema = new TableSchema(
-			new String[] {"f0", "f1", "f2", "f3"},
-			new TypeInformation <?>[] {Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.DOUBLE}
+			new String[] {"vec"},
+			new TypeInformation<?>[] {Types.STRING}
 		);
 		Params params = new Params()
-			.set(NaiveBayesPredictParams.PREDICTION_COL, "pred")
-			.set(NaiveBayesPredictParams.RESERVED_COLS, new String[] {});
+			.set(NaiveBayesTextPredictParams.VECTOR_COL, "vec")
+			.set(NaiveBayesTextPredictParams.PREDICTION_COL, "pred")
+			.set(NaiveBayesTextPredictParams.RESERVED_COLS, new String[] {});
 
-		NaiveBayesModelMapper mapper = new NaiveBayesModelMapper(modelSchema, dataSchema, params);
+		NaiveBayesTextModelMapper mapper = new NaiveBayesTextModelMapper(modelSchema, dataSchema, params);
 		mapper.loadModel(model);
 
-		assertEquals(mapper.map(Row.of(1.0, 1.0, 0.0, 1.0)).getField(0), 1);
+		assertEquals(mapper.map(Row.of("1.0, 1.0, 0.0, 1.0")).getField(0), 1);
 		assertEquals(mapper.getOutputSchema(), new TableSchema(new String[] {"pred"},
-			new TypeInformation <?>[] {Types.INT}));
+			new TypeInformation<?>[] {Types.INT}));
 	}
 
 	@Test
 	public void testPredictReservedCol() throws Exception {
 		TableSchema dataSchema = new TableSchema(
-			new String[] {"f0", "f1", "f2", "f3"},
-			new TypeInformation <?>[] {Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.DOUBLE}
+			new String[] {"vec"},
+			new TypeInformation<?>[] {Types.STRING}
 		);
 		Params params = new Params()
-			.set(NaiveBayesPredictParams.PREDICTION_COL, "pred");
+			.set(NaiveBayesTextPredictParams.VECTOR_COL, "vec")
+			.set(NaiveBayesTextPredictParams.PREDICTION_COL, "pred");
 
-		NaiveBayesModelMapper mapper = new NaiveBayesModelMapper(modelSchema, dataSchema, params);
+		NaiveBayesTextModelMapper mapper = new NaiveBayesTextModelMapper(modelSchema, dataSchema, params);
 		mapper.loadModel(model);
 
-		assertEquals(mapper.map(Row.of(1.0, 1.0, 0.0, 1.0)).getField(4), 1);
-		assertEquals(mapper.getOutputSchema(), new TableSchema(new String[] {"f0", "f1", "f2", "f3", "pred"},
-			new TypeInformation <?>[] {Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.INT}));
+		assertEquals(mapper.map(Row.of("1.0, 1.0, 0.0, 1.0")).getField(1), 1);
+		assertEquals(mapper.getOutputSchema(), new TableSchema(new String[] {"vec", "pred"},
+			new TypeInformation<?>[] {Types.STRING, Types.INT}));
 	}
 }
 

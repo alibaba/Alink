@@ -1,17 +1,16 @@
 package com.alibaba.alink.operator.common.classification;
 
-import org.apache.flink.ml.api.misc.param.Params;
-
 import com.alibaba.alink.common.linalg.DenseMatrix;
-import com.alibaba.alink.operator.common.classification.NaiveBayesModelDataConverter.BayesType;
+import com.alibaba.alink.operator.common.classification.NaiveBayesTextModelDataConverter.BayesType;
+import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * The predict model of naive bayes.
  */
-public class NaiveBayesPredictModelData {
+public class NaiveBayesTextPredictModelData {
 	protected Params meta = new Params();
 	protected BayesType modelType;
-	protected String[] featureNames;
+	protected String vectorColName;
 	/**
 	 * the label of the naive bayes model.
 	 */
