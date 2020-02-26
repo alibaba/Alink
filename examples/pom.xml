@@ -5,18 +5,17 @@
     <parent>
         <artifactId>alink</artifactId>
         <groupId>com.alibaba.alink</groupId>
-        <version>1.0.2-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>alink_examples</artifactId>
-
+    <artifactId>alink_examples_flink-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
     <name>alink_examples</name>
 
     <dependencies>
         <dependency>
             <groupId>com.alibaba.alink</groupId>
-            <artifactId>alink_core</artifactId>
+            <artifactId>alink_core_flink-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
