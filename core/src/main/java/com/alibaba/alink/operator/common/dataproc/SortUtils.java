@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 public class SortUtils {
+	public static final ComparableComparator OBJECT_COMPARATOR = new ComparableComparator();
 
 	public final static int SPLIT_POINT_SIZE = 1000;
 

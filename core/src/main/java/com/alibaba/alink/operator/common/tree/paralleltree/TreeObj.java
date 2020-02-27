@@ -4,10 +4,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
-import com.alibaba.alink.operator.common.tree.Node;
-import com.alibaba.alink.operator.common.tree.FeatureMeta;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
+import com.alibaba.alink.operator.common.tree.FeatureMeta;
+import com.alibaba.alink.operator.common.tree.Node;
 import com.alibaba.alink.params.classification.RandomForestTrainParams;
 import com.alibaba.alink.params.shared.tree.HasFeatureSubsamplingRatio;
 import com.alibaba.alink.params.shared.tree.HasMaxBins;
@@ -48,8 +48,6 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 		.setDescription("numOfSubTasks")
 		.setRequired()
 		.build();
-
-	public static final int TRANSFER_BUF_SIZE = 1024 * 4;
 
 	protected int maxHistBufferSize;
 	protected int maxLoopBufferSize;
@@ -306,7 +304,7 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 		}
 	}
 
-	public final void shuffle(int[] array, Random random) {
+	public static final void shuffle(int[] array, Random random) {
 		for (int i = array.length - 1; i > 0; --i) {
 			int idx = random.nextInt(i + 1);
 
@@ -414,11 +412,12 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 			return;
 		}
 
-		node.setContinuousSplit(quantileDiscretizerModel
-			.getData()
-			.get(featureMetas[node.getFeatureIndex()]
-				.getName()
-			)[(int) node.getContinuousSplit()]
+		node.setContinuousSplit(
+			quantileDiscretizerModel
+				.getFeatureValue(
+					featureMetas[node.getFeatureIndex()].getName(),
+					(int) node.getContinuousSplit()
+				)
 		);
 	}
 

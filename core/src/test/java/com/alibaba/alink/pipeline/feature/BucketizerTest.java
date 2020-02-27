@@ -25,20 +25,19 @@ public class BucketizerTest {
     };
     private Table data = MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[]{"features1", "features2"});
     private Table dataStream = MLEnvironmentFactory.getDefault().createStreamTable(rows, new String[]{"features1", "features2"});
-    private String[] splitsArray = new String[] {"-Infinity: -0.5: 0.0: 0.5: Infinity",
-        "-Infinity: -0.3: 0.0: 0.3: 0.4: Infinity"};
+    private static double[][] cutsArray = new double[][]{{-0.5, 0.0, 0.5}, {-0.3, 0.0, 0.3, 0.4}};
 
     @Test
     public void testBucketizer() throws Exception{
         Bucketizer op = new Bucketizer()
             .setSelectedCols(new String[]{"features1", "features2"})
             .setOutputCols(new String[]{"bucket1", "bucket2"})
-            .setSplitsArray(splitsArray);
+            .setCutsArray(cutsArray);
 
         Table res = op.transform(data);
 
-        List<Integer> list = MLEnvironmentFactory.getDefault().getBatchTableEnvironment().toDataSet(res.select("bucket1"), Integer.class).collect();
-        Assert.assertArrayEquals(list.toArray(new Integer[0]), new Integer[]{0, 1, 1, 2, 2, 3});
+        List<Long> list = MLEnvironmentFactory.getDefault().getBatchTableEnvironment().toDataSet(res.select("bucket1"), Long.class).collect();
+        Assert.assertArrayEquals(list.toArray(new Long[0]), new Long[]{0L, 0L, 1L, 1L, 2L, 3L});
 
         res = op.transform(dataStream);
 

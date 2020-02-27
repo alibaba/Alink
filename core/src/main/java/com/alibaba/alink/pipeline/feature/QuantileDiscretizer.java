@@ -1,15 +1,21 @@
 package com.alibaba.alink.pipeline.feature;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.QuantileDiscretizerTrainBatchOp;
-import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
 
-public class QuantileDiscretizer extends Trainer <QuantileDiscretizer, QuantileDiscretizerModel>
-	implements QuantileDiscretizerTrainParams <QuantileDiscretizer>,
-	QuantileDiscretizerPredictParams <QuantileDiscretizer> {
+/**
+ * Quantile discretizer calculate the q-quantile as the interval, output the interval
+ * as model, and can transform a new data using the model.
+ * <p>The output is the index of the interval.
+ */
+public class QuantileDiscretizer extends Trainer<QuantileDiscretizer, QuantileDiscretizerModel>
+	implements QuantileDiscretizerTrainParams<QuantileDiscretizer>,
+	QuantileDiscretizerPredictParams<QuantileDiscretizer> {
 	public QuantileDiscretizer() {
 		super();
 	}

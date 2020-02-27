@@ -94,9 +94,12 @@ public class SaveModel extends CompleteResultFunction {
 						}
 						cur.setCategoricalSplit(realChildHash);
 					} else {
-						cur.setContinuousSplit(quantileModel
-							.getData()
-							.get(meta.get(HasFeatureCols.FEATURE_COLS)[featureIdx[i]])[splitPoint[i]]);
+						cur.setContinuousSplit(
+							quantileModel
+								.getFeatureValue(
+									meta.get(HasFeatureCols.FEATURE_COLS)[featureIdx[i]],
+									splitPoint[i])
+						);
 					}
 
 					root[i] = cur;

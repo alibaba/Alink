@@ -21,7 +21,7 @@ public class MultiStringIndexerModelData {
     /**
      * The mapping from token to index. A list of (column index, token, token index)
      */
-    List<Tuple3<Integer, String, Long>> tokenAndIndex;
+    public List<Tuple3<Integer, String, Long>> tokenAndIndex;
 
     /**
      * Number of tokens of each columns.

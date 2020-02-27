@@ -1,13 +1,17 @@
 package com.alibaba.alink.params.feature;
 
-import org.apache.flink.ml.api.misc.param.WithParams;
-import com.alibaba.alink.params.shared.colname.HasOutputCol;
-import com.alibaba.alink.params.shared.colname.HasReservedCols;
+import com.alibaba.alink.params.dataproc.HasHandleInvalid;
+import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
+import com.alibaba.alink.params.shared.colname.*;
 
 /**
  * parameters of one hot predictor.
  */
-public interface OneHotPredictParams<T> extends WithParams<T>,
-	HasReservedCols <T>,
-	HasOutputCol <T> {
+public interface OneHotPredictParams<T> extends
+	HasSelectedCols<T>,
+	HasReservedCols<T>,
+	HasOutputColsDefaultAsNull<T>,
+	HasHandleInvalid<T>,
+	HasEncode<T>,
+	HasDropLast<T> {
 }

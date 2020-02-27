@@ -1,6 +1,12 @@
 package com.alibaba.alink.operator.common.tree;
 
-import org.apache.flink.api.common.functions.*;
+import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
+import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.MapPartitionFunction;
+import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
@@ -15,8 +21,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelDataConverter;
-import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerPredictBatchOp;
@@ -25,14 +30,19 @@ import com.alibaba.alink.operator.batch.dataproc.NumericalTypeCastBatchOp;
 import com.alibaba.alink.operator.batch.feature.QuantileDiscretizerPredictBatchOp;
 import com.alibaba.alink.operator.batch.feature.QuantileDiscretizerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.DataSetWrapperBatchOp;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelDataConverter;
 import com.alibaba.alink.operator.common.dataproc.SortUtils;
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
 import com.alibaba.alink.params.shared.colname.HasCategoricalCols;
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
-import com.alibaba.alink.params.shared.colname.HasWeightCol;
+import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
 import com.alibaba.alink.params.shared.tree.HasMaxBins;
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -43,6 +53,11 @@ import java.util.stream.StreamSupport;
  * Util class for data pre-processing in the random forest.
  */
 public class Preprocessing {
+	public static final ParamInfo<Boolean> ZERO_AS_MISSING
+		= ParamInfoFactory.createParamInfo("zeroAsMissing", Boolean.class)
+		.setHasDefaultValue(false)
+		.build();
+	private static final Logger LOG = LoggerFactory.getLogger(Preprocessing.class);
 
 	/**
 	 * Sample count that be used in the quantile discretizer.
@@ -54,33 +69,36 @@ public class Preprocessing {
 
 	/**
 	 * Distinct the label column and get the dataset of unique labels.
+	 *
 	 * @param input the training data.
 	 * @return the dataset of unique label.
 	 */
-	public static DataSet <Object[]> distinctLabels(DataSet <Object> input) {
+	public static DataSet<Object[]> distinctLabels(DataSet<Object> input) {
 		return input
-			.map(new MapFunction <Object, Tuple1 <Comparable>>() {
+			.map(new MapFunction<Object, Tuple1<Comparable>>() {
 				@Override
-				public Tuple1 <Comparable> map(Object value) throws Exception {
+				public Tuple1<Comparable> map(Object value) throws Exception {
 					return Tuple1.of((Comparable) value);
 				}
 			})
 			.groupBy(0)
 			.reduce(new ReduceFunction<Tuple1<Comparable>>() {
 				@Override
-				public Tuple1 <Comparable> reduce(Tuple1 <Comparable> in1, Tuple1 <Comparable> in2) throws Exception {
+				public Tuple1<Comparable> reduce(Tuple1<Comparable> in1, Tuple1<Comparable> in2) throws Exception {
 					return in1;
 				}
 			})
-			.reduceGroup(new GroupReduceFunction<Tuple1<Comparable>, Object[]>(){
+			.reduceGroup(new GroupReduceFunction<Tuple1<Comparable>, Object[]>() {
 				@Override
-				public void reduce(Iterable <Tuple1 <Comparable>> values, Collector <Object[]> out) throws Exception {
+				public void reduce(Iterable<Tuple1<Comparable>> values, Collector<Object[]> out) throws Exception {
+					LOG.info("distinctLabels start");
 					out.collect(
 						StreamSupport.stream(values.spliterator(), false)
 							.map(x -> x.f0)
 							.sorted(new SortUtils.ComparableComparator())
 							.toArray(Object[]::new)
 					);
+					LOG.info("distinctLabels end");
 				}
 			});
 	}
@@ -93,9 +111,9 @@ public class Preprocessing {
 	 * @param colIdx
 	 * @return
 	 */
-	public static DataSet <Row> findIndexOfLabel(DataSet <Row> input, DataSet <Object[]> model, final int colIdx) {
+	public static DataSet<Row> findIndexOfLabel(DataSet<Row> input, DataSet<Object[]> model, final int colIdx) {
 		return input
-			.map(new RichMapFunction <Row, Row>() {
+			.map(new RichMapFunction<Row, Row>() {
 				Object[] model;
 
 				@Override
@@ -103,9 +121,9 @@ public class Preprocessing {
 					super.open(parameters);
 
 					model = getRuntimeContext().getBroadcastVariableWithInitializer("model",
-						new BroadcastVariableInitializer <Object[], Object[]>() {
+						new BroadcastVariableInitializer<Object[], Object[]>() {
 							@Override
-							public Object[] initializeBroadcastVariable(Iterable <Object[]> data) {
+							public Object[] initializeBroadcastVariable(Iterable<Object[]> data) {
 								return data.iterator().next();
 							}
 						}
@@ -138,9 +156,7 @@ public class Preprocessing {
 		DataSet<Object[]> labels;
 		if (!isRegression) {
 			final String labelColName = params.get(HasLabelCol.LABEL_COL);
-			final TypeInformation<?>[] types = input.getColTypes();
-
-			DataSet<Row> labelDataSet = input.select(labelColName).getDataSet();
+			DataSet<Row> labelDataSet = select(input, labelColName).getDataSet();
 
 			labels = distinctLabels(labelDataSet
 				.map(new MapFunction<Row, Object>() {
@@ -197,7 +213,10 @@ public class Preprocessing {
 	}
 
 	public static BatchOperator<?> generateStringIndexerModel(BatchOperator<?> input, Params params) {
-		String[] categoricalColNames = params.get(HasCategoricalCols.CATEGORICAL_COLS);
+		String[] categoricalColNames = null;
+		if (params.contains(HasCategoricalCols.CATEGORICAL_COLS)) {
+			categoricalColNames = params.get(HasCategoricalCols.CATEGORICAL_COLS);
+		}
 		BatchOperator<?> stringIndexerModel;
 		if (categoricalColNames == null || categoricalColNames.length == 0) {
 			MultiStringIndexerModelDataConverter emptyModel = new MultiStringIndexerModelDataConverter();
@@ -232,13 +251,15 @@ public class Preprocessing {
 		Params params) {
 		String[] categoricalColNames = params.get(HasCategoricalCols.CATEGORICAL_COLS);
 		if (categoricalColNames != null && categoricalColNames.length != 0) {
-			input = new MultiStringIndexerPredictBatchOp()
-				.setMLEnvironmentId(input.getMLEnvironmentId())
-				.setHandleInvalid("skip")
-				.setSelectedCols(categoricalColNames)
-				.setReservedCols(input.getColNames())
-				.linkFrom(stringIndexerModel, input)
-				.select(input.getColNames());
+			input = select(
+				new MultiStringIndexerPredictBatchOp()
+					.setMLEnvironmentId(input.getMLEnvironmentId())
+					.setHandleInvalid("skip")
+					.setSelectedCols(categoricalColNames)
+					.setReservedCols(input.getColNames())
+					.linkFrom(stringIndexerModel, input),
+				input.getColNames()
+			);
 			input = new NumericalTypeCastBatchOp()
 				.setMLEnvironmentId(input.getMLEnvironmentId())
 				.setSelectedCols(categoricalColNames)
@@ -334,6 +355,7 @@ public class Preprocessing {
 			input = new QuantileDiscretizerPredictBatchOp()
 				.setMLEnvironmentId(input.getMLEnvironmentId())
 				.setSelectedCols(continuousColNames)
+				.setHandleInvalid("SKIP")
 				.linkFrom(quantileDiscretizerModel, input);
 			input = new NumericalTypeCastBatchOp()
 				.setMLEnvironmentId(input.getMLEnvironmentId())
@@ -373,6 +395,13 @@ public class Preprocessing {
 						ratio = Math.min((double) sampleCount / (double) count, 1.0);
 
 						random = new Random(seed + getRuntimeContext().getIndexOfThisSubtask());
+						LOG.info("{} open.", getRuntimeContext().getTaskName());
+					}
+
+					@Override
+					public void close() throws Exception {
+						super.close();
+						LOG.info("{} close.", getRuntimeContext().getTaskName());
 					}
 
 					@Override
@@ -388,5 +417,74 @@ public class Preprocessing {
 			inputOp.getColNames(),
 			inputOp.getColTypes()
 		).setMLEnvironmentId(inputOp.getMLEnvironmentId());
+	}
+
+	public static BatchOperator<?> select(BatchOperator<?> in, String... selectCols) {
+		final int[] selectIndices = TableUtil.findColIndices(in.getColNames(), selectCols);
+		final TypeInformation<?>[] selectColTypes = TableUtil.findColTypes(in.getSchema(), selectCols);
+
+		return new TableSourceBatchOp(
+			DataSetConversionUtil.toTable(
+				in.getMLEnvironmentId(),
+				in
+					.getDataSet()
+					.map(new RichMapFunction<Row, Row>() {
+						@Override
+						public void open(Configuration parameters) throws Exception {
+							super.open(parameters);
+							LOG.info("{} open.", getRuntimeContext().getTaskName());
+						}
+
+						@Override
+						public void close() throws Exception {
+							super.close();
+							LOG.info("{} close.", getRuntimeContext().getTaskName());
+						}
+
+						@Override
+							 public Row map(Row value) throws Exception {
+								 Row ret = new Row(selectIndices.length);
+								 for (int i = 0; i < selectIndices.length; ++i) {
+									 ret.setField(i, value.getField(selectIndices[i]));
+								 }
+
+								 return ret;
+							 }
+						 }
+					),
+				selectCols,
+				selectColTypes
+			)
+		).setMLEnvironmentId(in.getMLEnvironmentId());
+	}
+
+	public static boolean isMissing(
+		Object val, boolean isNumber, boolean zeroAsMissing) {
+		if (val == null) {
+			return true;
+		}
+
+		if (isNumber) {
+			return isMissing(((Number) val).doubleValue(), zeroAsMissing);
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isMissing(
+		Object val, int missingIndex) {
+		if (val == null) {
+			return true;
+		}
+
+		return (int) val == missingIndex;
+	}
+
+	public static boolean isMissing(double val, boolean zeroAsMissing) {
+		return (zeroAsMissing && val == 0.0) || Double.isNaN(val);
+	}
+
+	public static boolean isMissing(long val, boolean zeroAsMissing) {
+		return (zeroAsMissing && val == 0L);
 	}
 }

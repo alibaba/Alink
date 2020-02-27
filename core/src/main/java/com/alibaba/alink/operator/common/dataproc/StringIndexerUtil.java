@@ -101,7 +101,7 @@ public class StringIndexerUtil {
      * @param ignoreNull If true, null value is ignored.
      * @return A DataSet of tuples of column index, token, and token index.
      */
-    private static DataSet<Tuple3<Integer, String, Long>> indexRandom(
+    public static DataSet<Tuple3<Integer, String, Long>> indexRandom(
         DataSet<Row> data, final long startIndex, final boolean ignoreNull) {
 
         DataSet<Tuple2<Integer, String>> distinctTokens = flattenTokens(data, ignoreNull)
@@ -128,10 +128,26 @@ public class StringIndexerUtil {
      * @param isAscending If true, strings are ordered ascending by frequency.
      * @return A DataSet of tuples of column index, token, and token index.
      */
-    private static DataSet<Tuple3<Integer, String, Long>> indexSortedByFreq(
+    public static DataSet<Tuple3<Integer, String, Long>> indexSortedByFreq(
         DataSet<Row> data, final long startIndex, final boolean ignoreNull, final boolean isAscending) {
 
-        DataSet<Tuple3<Integer, String, Long>> distinctTokens = flattenTokens(data, ignoreNull)
+        return countTokens(data, ignoreNull)
+            .groupBy(0)
+            .sortGroup(2, isAscending ? Order.ASCENDING : Order.DESCENDING)
+            .reduceGroup(new GroupReduceFunction<Tuple3<Integer, String, Long>, Tuple3<Integer, String, Long>>() {
+                @Override
+                public void reduce(Iterable<Tuple3<Integer, String, Long>> values,
+                                   Collector<Tuple3<Integer, String, Long>> out) throws Exception {
+                    long id = startIndex;
+                    for (Tuple3<Integer, String, Long> value : values) {
+                        out.collect(Tuple3.of(value.f0, value.f1, id++));
+                    }
+                }
+            });
+    }
+
+    public static DataSet<Tuple3<Integer, String, Long>> countTokens(DataSet<Row> data, final boolean ignoreNull){
+        return flattenTokens(data, ignoreNull)
             .map(new MapFunction<Tuple2<Integer, String>, Tuple3<Integer, String, Long>>() {
                 @Override
                 public Tuple3<Integer, String, Long> map(Tuple2<Integer, String> value) throws Exception {
@@ -148,20 +164,6 @@ public class StringIndexerUtil {
                 }
             })
             .name("count_tokens");
-
-        return distinctTokens
-            .groupBy(0)
-            .sortGroup(2, isAscending ? Order.ASCENDING : Order.DESCENDING)
-            .reduceGroup(new GroupReduceFunction<Tuple3<Integer, String, Long>, Tuple3<Integer, String, Long>>() {
-                @Override
-                public void reduce(Iterable<Tuple3<Integer, String, Long>> values,
-                                   Collector<Tuple3<Integer, String, Long>> out) throws Exception {
-                    long id = startIndex;
-                    for (Tuple3<Integer, String, Long> value : values) {
-                        out.collect(Tuple3.of(value.f0, value.f1, id++));
-                    }
-                }
-            });
     }
 
     /**
@@ -174,7 +176,7 @@ public class StringIndexerUtil {
      * @param isAscending If true, strings are ordered ascending by frequency.
      * @return A DataSet of tuples of column index, token, and token index.
      */
-    private static DataSet<Tuple3<Integer, String, Long>> indexSortedByAlphabet(
+    public static DataSet<Tuple3<Integer, String, Long>> indexSortedByAlphabet(
         DataSet<Row> data, final long startIndex, final boolean ignoreNull, final boolean isAscending) {
 
         DataSet<Tuple2<Integer, String>> distinctTokens = flattenTokens(data, ignoreNull)
@@ -262,7 +264,7 @@ public class StringIndexerUtil {
      * @param input The input data set consisting of group index and value.
      * @return A data set of tuple 3 consisting of token id, group index and token.
      */
-    private static DataSet<Tuple3<Long, Integer, String>> zipWithIndexPerColumn(DataSet<Tuple2<Integer, String>> input) {
+    public static DataSet<Tuple3<Long, Integer, String>> zipWithIndexPerColumn(DataSet<Tuple2<Integer, String>> input) {
 
         DataSet<Tuple3<Integer, Integer, Long>> tokenCountsPerPartitionPerColumn = countTokensPerPartitionPerColumn(input);
 
