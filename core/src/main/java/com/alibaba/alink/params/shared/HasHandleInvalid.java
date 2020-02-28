@@ -10,7 +10,7 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasHandleInvalid<T> extends WithParams<T> {
 	ParamInfo <String> HANDLE_INVALID = ParamInfoFactory
-		.createParamInfo("handleInvalidMethod", String.class)
+		.createParamInfo("handleInvalid", String.class)
 		.setDescription("the handle method of invalid value. include： error, optimistic")
 		.setHasDefaultValue("error")
 		.build();

@@ -1,10 +1,12 @@
 package com.alibaba.alink.pipeline.feature;
 
+import com.alibaba.alink.params.feature.BucketizerParams;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import org.apache.flink.util.Preconditions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,5 +46,18 @@ public class BucketizerTest {
         DataStreamConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID,res).print();
 
         MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute();
+    }
+
+    @Test
+    public void testBucketizerParam(){
+        Bucketizer op = new Bucketizer().setCutsArray(new double[]{-0.5, 0.0, 0.5, -0.3, 0.0, 0.3, 0.4}, new int[]{3, 4});
+        double[][] newCutsArray = op.getParams().get(BucketizerParams.CUTS_ARRAY);
+        Assert.assertEquals(cutsArray.length, newCutsArray.length);
+        for(int i = 0; i < cutsArray.length; i++){
+            Assert.assertEquals(cutsArray[i].length, newCutsArray[i].length);
+            for(int j = 0; j < cutsArray[i].length; j++){
+                Assert.assertEquals(cutsArray[i][j], newCutsArray[i][j], 0.01);
+            }
+        }
     }
 }
