@@ -8,11 +8,15 @@ Map a continuous variable into several buckets.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| handleInvalid | parameter for how to handle invalid data (NULL values) | String |  | "error" |
-| selectedCols | Names of the columns used for processing | String[] |  |  |
-| splitsArray | Split points array, each of them is used for the corresponding selected column. | String[] |  |  |
+| handleInvalid |  Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String | | "keep" |
+| encode | Encode method，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   |INDEX |
+| dropLast | drop last | Boolean |  | true |
+| leftOpen | left open | Boolean | | true |
+| cutsArray | Split points array, each of them is used for the corresponding selected column. | double[][] | ✓ |  |
+| selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | outputCols | Names of the output columns | String[] |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
+
 
 
 ## Script Example

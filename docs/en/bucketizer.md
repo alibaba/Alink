@@ -6,15 +6,15 @@ Map a continuous variable into several buckets.
  and splitsArray should be set, and the lengths of them should be equal. In the case of multiple columns,
  each column used the corresponding splits.
 
- Split array must be strictly increasing and have at least three points. It's a string input with split points
- segments with delimiter ",".
-
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| handleInvalid | parameter for how to handle invalid data (NULL values) | String |  | "error" |
+| handleInvalid |  Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String | | "keep" |
+| encode | Encode method，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   |INDEX |
+| dropLast | drop last | Boolean |  | true |
+| leftOpen | left open | Boolean | | true |
+| cutsArray | Split points array, each of them is used for the corresponding selected column. | double[][] | ✓ |  |
 | selectedCols | Names of the columns used for processing | String[] |  |  |
-| splitsArray | Split points array, each of them is used for the corresponding selected column. | String[] |  |  |
 | outputCols | Names of the output columns | String[] |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
@@ -33,7 +33,7 @@ data = np.array([
 df = pd.DataFrame({"double": data[:, 0], "bool": data[:, 1], "number": data[:, 2], "str": data[:, 3]})
 
 inOp = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
-bucketizer = Bucketizer().setSelectedCols(["double"]).setSplitsArray(["-Infinity:2:Infinity"])
+bucketizer = Bucketizer().setSelectedCols(["double"]).setCutsArray([[2]])
 bucketizer.transform(inOp).print()
 ```
 #### Results

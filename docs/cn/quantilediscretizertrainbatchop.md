@@ -11,6 +11,7 @@
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
+| leftOpen | 左开右闭 | 左开右闭 | Boolean | | true |
 | numBuckets | quantile个数 | quantile个数，对所有列有效。 | Integer |  | 2 |
 | numBucketsArray | quantile个数 | quantile个数，每一列对应数组中一个元素。 | Integer[] |  | null |<!-- This is the end of auto-generated parameter info -->
 

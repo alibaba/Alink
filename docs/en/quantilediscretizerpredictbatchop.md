@@ -7,6 +7,9 @@ The batch operator that predict the data using the quantile discretizer model.
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | outputCols | Names of the output columns | String[] |  | null |
+| handleInvalid |  Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String | | "keep" |
+| encode | Encode method，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   |INDEX |
+| dropLast | drop last | Boolean |  | true |
 
 
 ## Script Example

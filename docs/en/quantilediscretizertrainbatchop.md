@@ -7,6 +7,7 @@ Fit a quantile discretizer model.
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | numBuckets | number of buckets | Integer |  | 2 |
 | numBucketsArray | Array of num bucket | Integer[] |  | null |
+| leftOpen | left open | Boolean | | true |
 
 
 ## Script Example

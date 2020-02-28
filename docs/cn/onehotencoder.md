@@ -9,66 +9,48 @@ one-hot编码，也称独热编码，对于每一个特征，如果它有m个可
 <!-- OLD_TABLE -->
 <!-- This is the start of auto-generated parameter info -->
 <!-- DO NOT EDIT THIS PART!!! -->
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
+ 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| dropLast | 是否删除最后一个元素 | 删除最后一个元素是为了保证线性无关性。默认true | Boolean |  | true |
-| ignoreNull | 受否忽略null | 忽略将不对null 编码 | Boolean |  | false |
+| discreteThresholdsArray | 离散个数阈值 | 离散个数阈值，每一列对应数组中一个元素 | Integer[] |  | |
+| discreteThresholds | 离散个数阈值 | 离散个数阈值，低于该阈值的离散样本将不会单独成一个组别 | Integer |  | Integer.MIN_VALUE |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
+ selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |<!-- This is the end of auto-generated parameter info -->
+| outputCols | 输出结果列列名数组 | 输出结果列列名数组，可选，默认null | String[] |  | null |
+| handleInvalid | 未知Token处理策略 | 未知Token处理策略，"keep", "skip", "error" | String | | "keep" |
+| encode | 编码方式 | 编码方式，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   | "ASSEMBLED_VECTOR" |
+| dropLast | 是否删除最后一个元素 | 是否删除最后一个元素 | Boolean |  | true |
+
+<!-- This is the end of auto-generated parameter info -->
 
 
 ## 脚本示例
 #### 运行脚本
 ```python
+import numpy as np
+import pandas as pd
 data = np.array([
-    ["assisbragasm", 1],
-    ["assiseduc", 1],
-    ["assist", 1],
-    ["assiseduc", 1],
-    ["assistebrasil", 1],
-    ["assiseduc", 1],
-    ["assistebrasil", 1],
-    ["assistencialgsamsung", 1]
+    [1.1, True, "2", "A"],
+    [1.1, False, "2", "B"],
+    [1.1, True, "1", "B"],
+    [2.2, True, "1", "A"]
 ])
+df = pd.DataFrame({"double": data[:, 0], "bool": data[:, 1], "number": data[:, 2], "str": data[:, 3]})
 
-# load data
-df = pd.DataFrame({"query": data[:, 0], "weight": data[:, 1]})
+inOp1 = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
 
-inOp = dataframeToOperator(df, schemaStr='query string, weight long', op_type='batch')
-
-# one hot train
-one_hot = OneHotEncoder()\
-    .setSelectedCols(["query"])\
-    .setDropLast(False)\
-    .setIgnoreNull(False)\
-    .setOutputCol("predicted_r")\
-    .setReservedCols(["weight"])
-    
-    
-model = one_hot.fit(inOp)
-model.transform(inOp).print()
-
-# stream predict
-inOp2 = dataframeToOperator(df, schemaStr='query string, weight long', op_type='stream')
-model.transform(inOp2).print()
-
-StreamOperator.execute()
+onehot = OneHotEncoder().setSelectedCols(["double", "bool"]).setDiscreteThresholds(2).setEncode("ASSEMBLED_VECTOR").setOutputCols(["pred"]).setDropLast(False)
+onehot.fit(inOp).transform(inOp).collectToDataframe()
 ```
 
 #### 运行结果
 
 ```python
-  weight predicted_r
-0       1    $6$4:1.0
-1       1    $6$3:1.0
-2       1    $6$2:1.0
-3       1    $6$3:1.0
-4       1    $6$1:1.0
-5       1    $6$3:1.0
-6       1    $6$1:1.0
-7       1    $6$0:1.0
-
+   double   bool  number str            pred
+0     1.1   True       2   A  $6$0:1.0 3:1.0
+1     1.1  False       2   B  $6$0:1.0 5:1.0
+2     1.1   True       1   B  $6$0:1.0 3:1.0
+3     2.2   True       1   A  $6$2:1.0 3:1.0
 ```
 
 
