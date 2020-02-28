@@ -7,7 +7,7 @@ Welcome everyone to join the Alink open source user group to communicate.
  
  
 <div align=center>
-<img src="https://img.alicdn.com/tfs/TB1qeWTpAT2gK0jSZPcXXcKkpXa-884-1176.jpg" height="20%" width="20%">
+<img src="https://img.alicdn.com/tfs/TB1kQU0sQY2gK0jSZFgXXc5OFXa-614-554.png" height="25%" width="25%">
 </div>
 
 #### List of Algorithms
