@@ -22,9 +22,11 @@ Welcome everyone to join the Alink open source user group to communicate.
 <img src="https://img.alicdn.com/tfs/TB1TmKloAL0gK0jSZFxXXXWHVXa-2070-1380.png" height="60%" width="60%">
 </div>
 
-# Quick start - PyAlink Manual
+# Quick start
 
-Preparation before use:
+## PyAlink Manual
+
+### Preparation before use:
 ---------
 
 
@@ -53,7 +55,7 @@ If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstal
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 
-Start using: 
+### Start using: 
 -------
 We recommend using Jupyter Notebook to use PyAlink to provide a better experience.
 
@@ -74,7 +76,7 @@ JVM listening on ***
 Python listening on ***
 ```
 4. Start writing PyAlink code, for example:
-```
+```python
 source = CsvSourceBatchOp()\
     .setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")\
     .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv")
@@ -83,7 +85,7 @@ df = res.collectToDataframe()
 print(df)
 ```
 
-Write code: 
+### Write code: 
 ------
 In PyAlink, the interface provided by the algorithm component is basically the same as the Java API, that is, an algorithm component is created through the default construction method, then the parameters are set through ```setXXX```, and other components are connected through ```link / linkTo / linkFrom```.
 
@@ -91,78 +93,99 @@ Here, Jupyter's auto-completion mechanism can be used to provide writing conveni
 
 For batch jobs, you can trigger execution through methods such as ```print / collectToDataframe / collectToDataframes``` of batch components or ```BatchOperator.execute ()```; for streaming jobs, start the job with ```StreamOperator.execute ()```.
 
-More usage: 
+### More usage: 
 ------
+ - [PyAlink Tutorial](docs/pyalink/pyalink-overview.md)
  - [Interchange between DataFrame and Operator](docs/pyalink/pyalink-dataframe.md)
  - [StreamOperator data preview](docs/pyalink/pyalink-stream-operator-preview.md)
- - [UDF usage](docs/pyalink/pyalink-udf.md)
+ - [UDF/UDTF/SQL usage](docs/pyalink/pyalink-udf.md)
  - [Use with PyFlink](docs/pyalink/pyalink-pyflink.md)
 
-Q&A: 
-----
-Q: After installing PyAlink, error occurs when using: ```AttributeError： 'NoneType' object has no attribute 'jvm```.
-How to solve it?
+## Java API Manual
 
-A: This error message occurs when the Java part of PyAlink was not started correctly:
-  - Please first check Java 8 is correctly installed. 
-  Run ```!java --version``` in Jupyter. Version number, like 1.8.*, is shown if Java 8 is installed correctly.
-  Otherwise, try to install Java 8 again, and set environment variables correctly. 
-  - Run ```import pyalink; print(pyalink.__path__)``` in Jupyter.
-  Use the file explorer of your system to enter this folder.
-  It is normal if folders named ```alink``` and ```lib``` are in it.
-  Otherwise, PyAlink is not installed correctly, please uninstall and re-install in a correct way. 
-  
-----
+### KMeans Example
+```java
+String URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv";
+String SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 
-Q: Can I connect to a remote Flink cluster for computation?
+BatchOperator data = new CsvSourceBatchOp()
+        .setFilePath(URL)
+        .setSchemaStr(SCHEMA_STR);
 
-A: You can connect to a Flink cluster that has been started through the command: ```useRemoteEnv(host, port, parallelism, flinkHome=None, localIp="localhost", shipAlinkAlgoJar=True, config=None)```.
+VectorAssembler va = new VectorAssembler()
+        .setSelectedCols(new String[]{"sepal_length", "sepal_width", "petal_length", "petal_width"})
+        .setOutputCol("features");
 
-- ```host``` and ```port```  represent the address of the cluster;
+KMeans kMeans = new KMeans().setVectorCol("features").setK(3)
+        .setPredictionCol("prediction_result")
+        .setPredictionDetailCol("prediction_detail")
+        .setReservedCols("category")
+        .setMaxIter(100);
 
+Pipeline pipeline = new Pipeline().add(va).add(kMeans);
+pipeline.fit(data).transform(data).print();
+```
 
-- ```parallelism```  indicates the degree of parallelism of executing the job;
-- ```flinkHome``` is the full path of flink. By default, the flink-1.9.0 path that comes with PyAlink is used.
-- ```localIp``` specifies the local IP address required to implement the print preview function of Flink ```DataStream```, which needs to be accessible by the Flink cluster. The default is ```localhost```.
-- ```shipAlinkAlgoJar``` Whether transmits the Alink algorithm package provided by PyAlink to the remote cluster. If the Alink algorithm package has been placed in the remote cluster, it can be set to False to reduce data transmission.
+### With Flink-1.10
+```xml
+<dependency>
+    <groupId>com.alibaba.alink</groupId>
+    <artifactId>alink_core_flink-1.10_2.11</artifactId>
+    <version>1.1.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-streaming-scala_2.11</artifactId>
+    <version>1.10.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-table-planner_2.11</artifactId>
+    <version>1.10.0</version>
+</dependency>
+```
 
------
+### With Flink-1.9
 
-Q: How to stop long running Flink jobs?
-
-A: When using the local execution environment, just use the Stop button provided by Notebook.
-
-When using a remote cluster, you need to use the job stop function provided by the cluster.
-
----
-
-Q: Can I run it directly using Python scripts instead of Notebook?
-
-A: Yes. But you need to call resetEnv () at the end of the code, otherwise the script will not exit.
-
------
+```xml
+<dependency>
+    <groupId>com.alibaba.alink</groupId>
+    <artifactId>alink_core_flink-1.9_2.11</artifactId>
+    <version>1.1.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-streaming-scala_2.11</artifactId>
+    <version>1.9.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-table-planner_2.11</artifactId>
+    <version>1.9.0</version>
+</dependency>
+```
 
 
 Run Alink Algorithm with a Flink Cluster
 --------
 
 1. Prepare a Flink Cluster:
-```
-  wget https://archive.apache.org/dist/flink/flink-1.9.0/flink-1.9.0-bin-scala_2.11.tgz
-  tar -xf flink-1.9.0-bin-scala_2.11.tgz && cd flink-1.9.0
+```shell
+  wget https://archive.apache.org/dist/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz
+  tar -xf flink-1.10.0-bin-scala_2.11.tgz && cd flink-1.10.0
   ./bin/start-cluster.sh
 ```
 
 2. Build Alink jar from the source:
-```
+```shell
   git clone https://github.com/alibaba/Alink.git
   cd Alink && mvn -Dmaven.test.skip=true clean package shade:shade
 ```
 
 3. Run Java examples:
-```
-  ./bin/flink run -p 1 -c com.alibaba.alink.ALSExample [path_to_Alink]/examples/target/alink_examples-0.1-SNAPSHOT.jar
-  # ./bin/flink run -p 2 -c com.alibaba.alink.GBDTExample [path_to_Alink]/examples/target/alink_examples-0.1-SNAPSHOT.jar
-  # ./bin/flink run -p 2 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-0.1-SNAPSHOT.jar
+```shell
+  ./bin/flink run -p 1 -c com.alibaba.alink.ALSExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
+  # ./bin/flink run -p 2 -c com.alibaba.alink.GBDTExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
+  # ./bin/flink run -p 2 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
 ```
 
