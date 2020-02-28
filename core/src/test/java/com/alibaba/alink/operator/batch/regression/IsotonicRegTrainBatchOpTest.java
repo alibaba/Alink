@@ -71,7 +71,6 @@ public class IsotonicRegTrainBatchOpTest {
 
 	@Test
 	public void isotonicRegTest() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(5);
 		int length = 15;
 		Object[][] inTrain=new Object[length][3];
 		for (int i=0;i<length;++i){

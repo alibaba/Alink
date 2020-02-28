@@ -86,6 +86,8 @@ public class RandomForestTrainBatchOpTest {
 			.setLabelCol(colNames[2])
 			.setFeatureCols(colNames[0], colNames[1])
 			.setMinSamplesPerLeaf(1)
+			.setMaxDepth(4)
+			.setMaxMemoryInMB(1)
 			.setCreateTreeMode("parallel");
 
 		DecisionTreeRegPredictBatchOp decisionTreeRegPredictBatchOp = new DecisionTreeRegPredictBatchOp()
@@ -132,6 +134,7 @@ public class RandomForestTrainBatchOpTest {
 			.setLabelCol(colNames[2])
 			.setFeatureCols(colNames[0], colNames[1])
 			.setMinSamplesPerLeaf(1)
+			.setMaxMemoryInMB(1)
 			.setCreateTreeMode("parallel");
 
 		DecisionTreeRegPredictBatchOp decisionTreeRegPredictBatchOp = new DecisionTreeRegPredictBatchOp()

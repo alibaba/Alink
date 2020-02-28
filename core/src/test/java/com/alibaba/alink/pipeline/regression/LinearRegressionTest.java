@@ -28,9 +28,6 @@ public class LinearRegressionTest {
 
     @Test
     public void regressionPipelineTest() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(1);
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
-
         String[] xVars = new String[] {"f0", "f1", "f2"};
         String yVar = "label";
         String vec = "vec";

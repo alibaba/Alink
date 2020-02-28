@@ -30,7 +30,6 @@ public class SoftmaxTest {
 
 	@Test
 	public void pipelineTest() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(4);
 		Softmax softmax = new Softmax()
 			.setFeatureCols(new String[] {"f0", "f1", "f2"})
 			.setStandardization(true)

@@ -37,8 +37,6 @@ public class IterativeComQueueTest implements Serializable {
 
 	@Test
 	public void testPI() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(1);
-
 		DataSet<Row> result = new IterativeComQueue()
 			.add(new ComputeFunction() {
 				@Override

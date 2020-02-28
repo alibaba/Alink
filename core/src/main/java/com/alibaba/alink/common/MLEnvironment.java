@@ -113,7 +113,7 @@ public class MLEnvironment {
         if (null == env) {
             if (ExecutionEnvironment.areExplicitEnvironmentsAllowed()) {
                 final int managedMemPerCoreInMB = 64;
-                final int networkMemPerCoreInMB = 16;
+                final int networkMemPerCoreInMB = 64;
                 final int core = Runtime.getRuntime().availableProcessors();
 
                 Configuration conf = new Configuration();

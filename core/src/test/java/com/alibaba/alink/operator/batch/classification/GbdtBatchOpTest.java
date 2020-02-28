@@ -18,7 +18,6 @@ public class GbdtBatchOpTest {
 
 	@Test
 	public void linkFrom() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(1);
 		Row[] testArray =
 			new Row[]{
 				Row.of(1, 2, 0),
@@ -48,7 +47,6 @@ public class GbdtBatchOpTest {
 
 	@Test
 	public void linkFrom1() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(1);
 		Row[] testArray =
 			new Row[]{
 				Row.of(1, 2, 0),
