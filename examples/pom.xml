@@ -22,26 +22,31 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-java_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-scala_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-api-java-bridge_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
+             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-api-java</artifactId>
             <version>${flink.version}</version>
+             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-planner_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
+             <scope>provided</scope>
         </dependency>
     </dependencies>
 
