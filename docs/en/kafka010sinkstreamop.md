@@ -1,5 +1,5 @@
 ## Description
-Data sink for kafka 0.11
+Data sink for kafka 0.10
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
@@ -17,7 +17,7 @@ URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv";
 SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 data = CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 
-sink = Kafka011SinkStreamOp() \
+sink = Kafka010SinkStreamOp() \
     .setBootstrapServers("localhost:9092").setDataFormat("json") \
     .setTopic("iris")
 sink.linkFrom(data)

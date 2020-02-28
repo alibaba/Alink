@@ -3,7 +3,9 @@
 ## 数据源
 * [读CSV文件(stream)](cn/csvsourcestreamop.md)
 * [读CSV文件(batch)](cn/csvsourcebatchop.md)
-* [读Kafka(stream)](cn/kafka011sourcestreamop.md)
+* [读Kafka010(stream)](cn/kafka010sourcestreamop.md)
+* [读Kafka011(stream)](cn/kafka011sourcestreamop.md)
+* [读Kafka(stream)](cn/kafkasourcestreamop.md)
 * [读Libsvm文件(stream)](cn/libsvmsourcestreamop.md)
 * [读Libsvm文件(batch)](cn/libsvmsourcebatchop.md)
 * [读Mysql(stream)](cn/mysqlsourcestreamop.md)
@@ -14,7 +16,9 @@
 ## 数据导出
 * [导出CSV文件(stream)](cn/csvsinkstreamop.md)
 * [导出CSV文件(batch)](cn/csvsinkbatchop.md)
-* [导出Kafka(stream)](cn/kafka011sinkstreamop.md)
+* [导出Kafka010(stream)](cn/kafka010sinkstreamop.md)
+* [导出Kafka011(stream)](cn/kafka011sinkstreamop.md)
+* [导出Kafka(stream)](cn/kafkasinkstreamop.md)
 * [导出Libsvm文件(stream)](cn/libsvmsinkstreamop.md)
 * [导出Libsvm文件(batch)](cn/libsvmsinkbatchop.md)
 * [导出Mysql(stream)](cn/mysqlsinkstreamop.md)

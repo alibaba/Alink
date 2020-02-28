@@ -1,5 +1,5 @@
 ## Description
-Data source for kafka 0.11
+Data source for kafka 1.x and 2.x
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
@@ -15,7 +15,7 @@ Data source for kafka 0.11
 
 ## Script Example
 ```python
-data = Kafka011SourceStreamOp() \
+data = KafkaSourceStreamOp() \
     .setBootstrapServers("localhost:9092") \
     .setTopic("iris") \
     .setStartupMode("EARLIEST") \

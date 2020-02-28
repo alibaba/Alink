@@ -292,7 +292,9 @@
 ## Data Sink
 * [Sink To CSV(batch)](en/csvsinkbatchop.md)
 * [Sink To CSV(stream)](en/csvsinkstreamop.md)
-* [kafka sink(stream)](en/kafka011sinkstreamop.md)
+* [kafka010 sink(stream)](en/kafka010sinkstreamop.md)
+* [kafka011 sink(stream)](en/kafka011sinkstreamop.md)
+* [kafka sink(stream)](en/kafkasinkstreamop.md)
 * [libsvm sink(batch)](en/libsvmsinkbatchop.md)
 * [libsvm sink(stream)](en/libsvmsinkstreamop.md)
 * [mysql sink(batch)](en/mysqlsinkbatchop.md)
@@ -303,7 +305,9 @@
 ## Data Source
 * [CSV source(batch)](en/csvsourcebatchop.md)
 * [CSV source (stream)](en/csvsourcestreamop.md)
-* [kafka source(stream)](en/kafka011sourcestreamop.md)
+* [kafka010 source(stream)](en/kafka010sourcestreamop.md)
+* [kafka011 source(stream)](en/kafka011sourcestreamop.md)
+* [kafka source(stream)](en/kafkasourcestreamop.md)
 * [libsvm source(batch)](en/libsvmsourcebatchop.md)
 * [libsvm source(stream)](en/libsvmsourcestreamop.md)
 * [mysql source(batch)](en/mysqlsourcebatchop.md)

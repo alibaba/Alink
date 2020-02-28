@@ -1,7 +1,7 @@
-# Kafka011
+# Kafka010
 
 ## 功能介绍
-写Kafka 0.11版
+写Kafka 0.10版
 
 ## 参数说明
 
@@ -22,7 +22,7 @@ URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv";
 SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 data = CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 
-sink = Kafka011SinkStreamOp() \
+sink = Kafka010SinkStreamOp() \
     .setBootstrapServers("localhost:9092").setDataFormat("json") \
     .setTopic("iris")
 sink.linkFrom(data)

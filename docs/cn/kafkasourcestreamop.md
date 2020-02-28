@@ -1,7 +1,7 @@
-# Kafka011
+# Kafka
 
 ## 功能介绍
-读Kafka 0.11版
+读Kafka, 支持kafka 1.x和2.x版
 
 ## 参数说明
 
@@ -20,7 +20,7 @@
 
 ## 脚本示例
 ```python
-data = Kafka011SourceStreamOp() \
+data = KafkaSourceStreamOp() \
     .setBootstrapServers("localhost:9092") \
     .setTopic("iris") \
     .setStartupMode("EARLIEST") \
