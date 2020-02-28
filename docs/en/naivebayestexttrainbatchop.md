@@ -32,11 +32,10 @@ dataSchema = ["sv", "dv", "label"]
 df = pd.DataFrame({"sv": data[:, 0], "dv": data[:, 1], "label": data[:, 2]})
 batchData = dataframeToOperator(df, schemaStr='sv string, dv string, label string', op_type='batch')
 
-# load data
-ns = NaiveBayesTrainBatchOp().setVectorCol("sv).setLabelCol("label")
+ns = NaiveBayesTextTrainBatchOp().setVectorCol("sv").setLabelCol("label")
 model = batchData.link(ns)
 
-predictor = NaiveBayesPredictBatchOp().setPredictionCol("pred")
+predictor = NaiveBayesTextPredictBatchOp().setVectorCol("sv").setReservedCols(["sv", "label"]).setPredictionCol("pred")
 predictor.linkFrom(model, batchData).print()
 ```
 #### 运行结果
