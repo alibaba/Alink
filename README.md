@@ -26,17 +26,26 @@
 使用前准备：
 ---------
 
-1. 确保使用环境中有Python3，版本>=3.5。
+包名和版本说明：
+
+  - PyAlink 根据 Alink 所支持的 Flink 版本提供不同的 Python 包：
+其中，`pyalink` 包对应为 Alink 所支持的最新 Flink 版本，而 `pyalink-flink-***` 为旧版本的 Flink 版本，当前提供 `pyalink-flink-1.9`。
+  - Python 包的版本号与 Alink 的版本号一致，例如`1.1.0`。
+
+安装步骤：
+1. 确保使用环境中有Python3，版本限于 3.6 和 3.7。
 2. 确保使用环境中安装有 Java 8。
-3. 根据 Python 版本下载对应的 pyalink 包：
-    - Python 3.5：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.5.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.5.egg) (MD5: 9714e5e02b4681a55263970abc6dbe57)
-    - Python 3.6：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.6.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.6.egg) (MD5: 112638a81c05f1372f9dac880ec527e6)
-    - Python 3.7：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.7.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.7.egg) (MD5: 9b483da5176977e4f330ca7675120fed)
-    - Python 3.8：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.8.egg) [链接2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.8.egg) (MD5: d04aa5d367bc653d5e872e1eba3494cd)
-4. 使用 ```easy_install``` 进行安装 ```easy_install [存放的路径]/pyalink-***.egg```。需要注意的是：
-    * 如果之前安装过 pyalink，请先使用 ```pip uninstall pyalink``` 卸载之前的版本。
-    * 如果有多个版本的 Python，可能需要使用特定版本的 ```easy_install```，比如 ```easy_install-3.7```。
-    * 如果使用 Anaconda，则需要在 Anaconda 命令行中进行安装。
+3. 使用 pip 命令进行安装：
+  `pip install pyalink` 或者 `pip install pyalink-flink-1.9` （注意：当前 `pyalink-flink-1.9` 还不可用，请使用下面提供的安装方法。）。
+  
+安装注意事项：
+
+1. `pyalink` 和 `pyalink-flink-***` 不能同时安装，也不能与旧版本同时安装。
+如果之前安装过 `pyalink` 或者 `pyalink-flink-***`，请使用`pip uninstall pyalink` 或者 `pip uninstall pyalink-flink-***` 卸载之前的版本。
+2. 出现`pip`安装缓慢或不成功的情况，可以参考[这篇文章](https://segmentfault.com/a/1190000006111096)修改pip源，或者直接使用下面的链接下载 whl 包，然后使用 `pip` 安装：
+   - Flink 1.10：[链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.0/pyalink-1.1.0-py3-none-any.whl) [链接2](https://github.com/alibaba/Alink/releases/download/v1.1.0/pyalink-1.1.0-py3-none-any.whl)) (MD5: f92b6fcff0caea332f531f5d97cb00fe)  
+   - Flink 1.9: [链接1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.0/pyalink_flink_1.9-1.1.0-py3-none-any.whl) [链接2](https://github.com/alibaba/Alink/releases/download/v1.1.0/pyalink_flink_1.9-1.1.0-py3-none-any.whl) (MD5: f2c8c32f0be6d9356c7f8ccdedf7238f)  
+3. 如果有多个版本的 Python，可能需要使用特定版本的 `pip`，比如 `pip3`；如果使用 Anaconda，则需要在 Anaconda 命令行中进行安装。
 
 开始使用：
 -------
@@ -57,7 +66,7 @@ Python listening on ***
 source = CsvSourceBatchOp()\
     .setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")\
     .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv")
-res = source.select("sepal_length", "sepal_width")
+res = source.select(["sepal_length", "sepal_width"])
 df = res.collectToDataframe()
 print(df)
 ```
@@ -76,6 +85,7 @@ print(df)
   - [DataFrame与Operator互转](docs/pyalink/pyalink-dataframe.md)
   - [StreamOperator数据预览](docs/pyalink/pyalink-stream-operator-preview.md)
   - [UDF使用](docs/pyalink/pyalink-udf.md)
+  - [与PyFlink整合](docs/pyalink/pyalink-pyflink.md)
 
 Q&A：
 ----
@@ -85,8 +95,8 @@ A：这个报错信息是因为 PyAlink 的 Java 部分没有成功启动导致�
   - 请先检查是否正确安装 Java 8，可以在 Jupyter 中直接运行 ```!java --version```，如果正确显示版本号（比如 1.8.*）则正常，否则请安装 Java 8，并检查环境变量是否正确。
   - 在 Jupyter 中运行```import pyalink; print(pyalink.__path__)```，应该输出一个路径。
   请使用系统的文件管理工具定位到这个目录，如果这个目录包含有名为 ```alink``` 和 ```lib``` 目录则正常，否则 pyalink 安装有问题，请卸载重装。
-
 ----
+
 Q：能否连接远程 Flink 集群进行计算？
 
 A：通过方法可以连接一个已经启动的 Flink 集群：```useRemoteEnv(host, port, parallelism, flinkHome=None, localIp="localhost", shipAlinkAlgoJar=True, config=None)```。其中，参数

@@ -14,7 +14,7 @@ BatchOperator 转 Dataframe
 source = CsvSourceBatchOp()\
     .setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")\
     .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv")
-res = source.select("sepal_length", "sepal_width")
+res = source.select(["sepal_length", "sepal_width"])
 df = res.collectToDataframe()
 # Operations with df
 res.print()
@@ -51,7 +51,7 @@ op.print(key="op")
 StreamOperator.execute()
 ```
 
-同时，PyAlink 也提供了静态方法来进行转换：```dataframeToOperator(df, schemaStr, op_type)```，这里 ```df``` 和 ```schemaStr``` 参数与上文相同，```op_type``` 取值为 ```"batch"``` 或 ```"stream"```。
+同时，PyAlink 也提供了静态方法来进行转换：```dataframeToOperator(df, schemaStr, opType)```，这里 ```df``` 和 ```schemaStr``` 参数与上文相同，```opType``` 取值为 ```"batch"``` 或 ```"stream"```。
 
 
 使用注意

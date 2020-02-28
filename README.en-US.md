@@ -16,7 +16,7 @@ Welcome everyone to join the Alink open source user group to communicate.
 <img src="https://img.alicdn.com/tfs/TB1AEOeoBr0gK0jSZFnXXbRRXXa-1320-1048.png" height="60%" width="60%">
 </div>
 
-#### pyAlink
+#### PyAlink
 
 <div align=center>
 <img src="https://img.alicdn.com/tfs/TB1TmKloAL0gK0jSZFxXXXWHVXa-2070-1380.png" height="60%" width="60%">
@@ -27,17 +27,31 @@ Welcome everyone to join the Alink open source user group to communicate.
 Preparation before use:
 ---------
 
-1. Make sure the version of python3 on your computer >=3.5.
+
+About package names and versions:
+  - PyAlink provides different Python packages for Flink versions that Alink supports: 
+  package `pyalink` always maintains Alink Python API against the latest Flink version, which is 1.10, 
+  while `pyalink-flink-***` support old-version Flink, which are `pyalink-flink-1.9` for now. 
+  - The version of python packages always follows Alink Java version, like `1.1.0`.
+  
+Installation steps:
+
+1. Make sure the version of python3 on your computer is 3.6 or 3.7.
 2. Make sure Java 8 is installed on your computer.
-2. Download the corresponding pyalink package according to the Python version:
-    - Python 3.5：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.5.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.5.egg) (MD5: 9714e5e02b4681a55263970abc6dbe57)
-    - Python 3.6：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.6.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.6.egg) (MD5: 112638a81c05f1372f9dac880ec527e6)
-    - Python 3.7：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.7.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.7.egg) (MD5: 9b483da5176977e4f330ca7675120fed)
-    - Python 3.8：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.8.egg) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.0.1/pyalink-1.0.1_flink_1.9.0_scala_2.11-py3.8.egg) (MD5: d04aa5d367bc653d5e872e1eba3494cd)
-3. Install using  ```easy_install [path]/pyalink-0.0.1-py3.*.egg```. have to be aware of is:
-    * If you have previously installed pyalink, use pip uninstall pyalink to uninstall the previous version before install command.
-    * If you have multiple versions of Python, you may need to use a specific version of easy_install, such as easy_install-3.7.
-    * If Anaconda is used, you may need to install the package in Anaconda prompt.
+3. Use pip to install:
+  `pip install pyalink` or `pip install pyalink-flink-1.9` （Note: for now, `pyalink-flink-1.9` is not available，use following links instead).
+
+
+Potential issues:
+
+1. `pyalink` and/or `pyalink-flink-***` can not be installed at the same time. Multiple versions are not allowed.
+If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstall pyalink` or `pip uninstall pyalink-flink-***` to remove them.
+
+2. If `pip install` is slow of failed, refer to [this article](https://segmentfault.com/a/1190000006111096) to change the pip source, or use the following download links:
+   - Flink 1.10：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.0/pyalink-1.1.0-py3-none-any.whl) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.1.0/pyalink-1.1.0-py3-none-any.whl) (MD5: f92b6fcff0caea332f531f5d97cb00fe)
+   - Flink 1.9: [Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.0/pyalink_flink_1.9-1.1.0-py3-none-any.whl) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.1.0/pyalink_flink_1.9-1.1.0-py3-none-any.whl) (MD5: f2c8c32f0be6d9356c7f8ccdedf7238f)
+3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
+If Anaconda is used, the command should be run in Anaconda prompt. 
 
 Start using: 
 -------
@@ -64,7 +78,7 @@ Python listening on ***
 source = CsvSourceBatchOp()\
     .setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")\
     .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv")
-res = source.select("sepal_length", "sepal_width")
+res = source.select(["sepal_length", "sepal_width"])
 df = res.collectToDataframe()
 print(df)
 ```
@@ -79,9 +93,10 @@ For batch jobs, you can trigger execution through methods such as ```print / col
 
 More usage: 
 ------
--  [Interchange between DataFrame and Operator](docs/pyalink/pyalink-dataframe.md)
-- [StreamOperator data preview](docs/pyalink/pyalink-stream-operator-preview.md)
-- [UDF usage](docs/pyalink/pyalink-udf.md)
+ - [Interchange between DataFrame and Operator](docs/pyalink/pyalink-dataframe.md)
+ - [StreamOperator data preview](docs/pyalink/pyalink-stream-operator-preview.md)
+ - [UDF usage](docs/pyalink/pyalink-udf.md)
+ - [Use with PyFlink](docs/pyalink/pyalink-pyflink.md)
 
 Q&A: 
 ----
