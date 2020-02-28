@@ -5,7 +5,7 @@ Check the size of a vector. if size is not match, then do as handleInvalid
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | size | size of some thing. | Integer | ✓ |  |
-| handleInvalidMethod | the handle method of invalid value. include： error, optimistic | String |  | "error" |
+| handleInvalid | the handle method of invalid value. include： error, optimistic | String |  | "error" |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
