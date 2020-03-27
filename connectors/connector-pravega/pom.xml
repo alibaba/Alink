@@ -1,54 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>alink</artifactId>
+        <artifactId>alink_connectors</artifactId>
         <groupId>com.alibaba.alink</groupId>
         <version>1.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>alink_examples_flink-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
-    <name>alink_examples</name>
+
+    <artifactId>alink_connectors_pravega_flink-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
+    <name>alink-connector-pravega</name>
+
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>com.alibaba.alink</groupId>
             <artifactId>alink_core_flink-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-java_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-scala_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-api-java-bridge_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-api-java</artifactId>
             <version>${flink.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-planner_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
+            <scope>provided</scope>
         </dependency>
+        <!-- dependency on PRAVEGA  -->
         <dependency>
-            <groupId>com.alibaba.alink</groupId>
-            <artifactId>alink_connectors_pravega_flink-1.9_2.11</artifactId>
-            <version>1.1.0</version>
-            <scope>compile</scope>
+            <groupId>io.pravega</groupId>
+            <artifactId>pravega-connectors-flink-${alink.flink.major.version}_2.12</artifactId>
+            <version>${pravega.version}</version>
         </dependency>
     </dependencies>
-
 </project>
