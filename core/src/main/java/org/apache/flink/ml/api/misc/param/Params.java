@@ -1,5 +1,6 @@
 package org.apache.flink.ml.api.misc.param;
 
+import com.alibaba.alink.params.ParamUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -161,19 +162,12 @@ public class Params implements Serializable {
 	}
 
 	public <T> T get(String paramName, Class <T> classOfT) {
-		//        if (!this.params.containsKey(paramName)) {
-		//            throw new RuntimeException("Not have parameter : " + paramName);
-		//        } else {
-		//            String paramValue = this.params.get(paramName);
-		//            try {
-		//                return pGson.fromJson(paramValue, classOfT);
-		//            } catch (Exception ex) {
-		//                throw new RuntimeException("Error in fromJson the paramValue : " + paramName + "\n" + ex
-		// .getMessage
-		//                    ());
-		//            }
-		//        }
-		return get(paramName, (Type) classOfT);
+		if (classOfT.isEnum()) {
+			String value = get(paramName, String.class);
+			return (T)ParamUtil.searchEnum((Class)classOfT, value, paramName);
+		} else {
+			return get(paramName, (Type)classOfT);
+		}
 	}
 
 	public <T> T get(String paramName, Type typeOfT) {

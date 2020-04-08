@@ -1,8 +1,5 @@
 package org.apache.flink.ml.api.misc.param;
 
-import org.apache.flink.ml.api.misc.param.ParamInfo;
-import org.apache.flink.ml.api.misc.param.Params;
-
 /**
  * Interface for the object, which need set/get parameters.
  *
@@ -13,11 +10,19 @@ public interface WithParams<T> {
 	Params getParams();
 
 	default <V> T set(ParamInfo <V> info, V value) {
-		getParams().set(info, value);
+		try {
+			getParams().set(info, value);
+		} catch (Exception ex) {
+			throw new IllegalArgumentException("In " + getClass().getSimpleName() + "," + ex.getMessage());
+		}
 		return (T) this;
 	}
 
 	default <V> V get(ParamInfo <V> info) {
-		return getParams().get(info);
+		try {
+			return getParams().get(info);
+		} catch (Exception ex) {
+			throw new IllegalArgumentException("In " + getClass().getSimpleName() + "," + ex.getMessage());
+		}
 	}
 }
