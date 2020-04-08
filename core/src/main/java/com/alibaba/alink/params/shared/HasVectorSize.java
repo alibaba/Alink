@@ -11,7 +11,7 @@ public interface HasVectorSize<T> extends WithParams<T> {
 		.createParamInfo("vectorSize", Integer.class)
 		.setDescription("vector size of embedding")
 		.setRequired()
-		.setAlias(new String[] {"vectorSize", "inputDim"})
+		.setAlias(new String[] {"inputDim"})
 		.build();
 
 	default Integer getVectorSize() {
