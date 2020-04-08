@@ -104,7 +104,6 @@ public class AlsTrain {
      * @return a dataset of user factors and item factors
      */
     public DataSet<Tuple3<Byte, Long, float[]>> fit(DataSet<Tuple3<Long, Long, Float>> ratings) {
-        final int numTasks = ratings.getExecutionEnvironment().getParallelism();
         DataSet<Ratings> graphData = initGraph(ratings);
         DataSet<Factors> factors = initFactors(graphData, numFactors);
 
@@ -112,7 +111,7 @@ public class AlsTrain {
         // so there should be "numIter * numMiniBatch * 2" iterations.
         int nit = numIters * numMiniBatches * 2;
         IterativeDataSet<Factors> loop = factors.iterate(nit);
-        DataSet<Factors> updatedFactors = updateFactors(loop, graphData, numTasks, numMiniBatches, numFactors, nonnegative);
+        DataSet<Factors> updatedFactors = updateFactors(loop, graphData, numMiniBatches, numFactors, nonnegative);
         factors = loop.closeWith(updatedFactors);
 
         return factors.map(new MapFunction<Factors, Tuple3<Byte, Long, float[]>>() {
@@ -210,7 +209,6 @@ public class AlsTrain {
      *
      * @param userAndItemFactors Users' and items' factors at the beginning of the step.
      * @param graphData          Users' and items' ratings.
-     * @param numTasks           Number of tasks.
      * @param numMiniBatch       Number of mini-batches.
      * @param numFactors         Number of factors.
      * @param nonnegative        Whether to enforce non-negativity constraint.
@@ -219,7 +217,6 @@ public class AlsTrain {
     private DataSet<Factors> updateFactors(
         DataSet<Factors> userAndItemFactors,
         DataSet<Ratings> graphData,
-        final int numTasks,
         final int numMiniBatch,
         final int numFactors,
         final boolean nonnegative) {
@@ -305,6 +302,7 @@ public class AlsTrain {
 
                 @Override
                 public void open(Configuration parameters) throws Exception {
+                    int numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
                     flag = new int[numTasks];
                     partitionsIds = new int[numTasks];
                 }
