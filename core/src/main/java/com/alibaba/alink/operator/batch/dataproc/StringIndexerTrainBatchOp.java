@@ -12,7 +12,6 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 /**
  * Encode one column of strings to bigint type indices.
@@ -46,9 +45,7 @@ public final class StringIndexerTrainBatchOp
 
         final String selectedCol = getSelectedCol();
         final StringIndexerUtil.OrderType orderType = StringIndexerUtil.OrderType.valueOf(getStringOrderType().toUpperCase());
-        final int selectedColIdx = TableUtil.findColIndex(in.getColNames(), selectedCol);
-
-        Preconditions.checkArgument(selectedColIdx >= 0, "Can't find column " + selectedCol);
+        final int selectedColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), selectedCol);
 
         DataSet<Row> inputRows = ((DataSet<Row>) in.getDataSet()).map(
             new MapFunction<Row, Row>() {

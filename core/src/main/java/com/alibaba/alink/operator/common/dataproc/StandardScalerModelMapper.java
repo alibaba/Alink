@@ -26,7 +26,7 @@ public class StandardScalerModelMapper extends ModelMapper {
         super(modelSchema, dataSchema, params);
         this.selectedColNames = ImputerModelDataConverter.extractSelectedColNames(modelSchema);
         this.selectedColTypes = ImputerModelDataConverter.extractSelectedColTypes(modelSchema);
-        this.selectedColIndices = TableUtil.findColIndices(dataSchema, selectedColNames);
+        this.selectedColIndices = TableUtil.findColIndicesWithAssert(dataSchema, selectedColNames);
 
         String[] outputColNames = params.get(SrtPredictMapperParams.OUTPUT_COLS);
         if (outputColNames == null) {

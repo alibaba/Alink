@@ -74,7 +74,7 @@ public final class ChiSquareTestBatchOp extends BatchOperator<ChiSquareTestBatch
 
             TableUtil.assertSelectedColExist(selectedColNames, colName);
 
-            result[TableUtil.findColIndex(selectedColNames, colName)] =
+            result[TableUtil.findColIndexWithAssertAndHint(selectedColNames, colName)] =
                 JsonConverter.fromJson((String) row.getField(1), ChiSquareTestResult.class);
         }
 

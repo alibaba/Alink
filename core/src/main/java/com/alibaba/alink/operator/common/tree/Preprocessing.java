@@ -37,7 +37,6 @@ import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataCon
 import com.alibaba.alink.params.shared.colname.HasCategoricalCols;
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
-import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
 import com.alibaba.alink.params.shared.tree.HasMaxBins;
 import org.apache.commons.lang3.ArrayUtils;
@@ -420,8 +419,8 @@ public class Preprocessing {
 	}
 
 	public static BatchOperator<?> select(BatchOperator<?> in, String... selectCols) {
-		final int[] selectIndices = TableUtil.findColIndices(in.getColNames(), selectCols);
-		final TypeInformation<?>[] selectColTypes = TableUtil.findColTypes(in.getSchema(), selectCols);
+		final int[] selectIndices = TableUtil.findColIndicesWithAssertAndHint(in.getColNames(), selectCols);
+		final TypeInformation<?>[] selectColTypes = TableUtil.findColTypesWithAssertAndHint(in.getSchema(), selectCols);
 
 		return new TableSourceBatchOp(
 			DataSetConversionUtil.toTable(

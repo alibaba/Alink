@@ -88,12 +88,12 @@ public class JDBCUpserOutputFormat extends RichOutputFormat <Tuple2 <Boolean, Ro
 
 				this.primaryColTypes = new TypeInformation[this.primaryColNames.length];
 				for (int i = 0; i < this.primaryColNames.length; i++) {
-					this.primaryColTypes[i] = this.colTypes[TableUtil.findColIndex(colNames,
+					this.primaryColTypes[i] = this.colTypes[TableUtil.findColIndexWithAssert(colNames,
 						this.primaryColNames[i])];
 				}
 				this.otherColTypes = new TypeInformation[this.otherColNames.length];
 				for (int i = 0; i < this.otherColNames.length; i++) {
-					this.otherColTypes[i] = this.colTypes[TableUtil.findColIndex(colNames, otherColNames[i])];
+					this.otherColTypes[i] = this.colTypes[TableUtil.findColIndexWithAssert(colNames, otherColNames[i])];
 				}
 			}
 		} catch (Exception ex) {
@@ -151,25 +151,25 @@ public class JDBCUpserOutputFormat extends RichOutputFormat <Tuple2 <Boolean, Ro
 	//"update  ning_test set f1='cc' where f0='testx'"
 	private String getUpdataSql(Row row) {
 		StringBuilder sb = new StringBuilder();
-		int idx = TableUtil.findColIndex(colNames, this.otherColNames[0]);
+		int idx = TableUtil.findColIndexWithAssert(colNames, this.otherColNames[0]);
 		sb.append("update ").append(this.tableName).append(" set ")
 			.append(otherColNames[0])
 			.append("=")
 			.append(convert2String(row.getField(idx), colTypes[idx]));
 		for (int i = 1; i < otherColNames.length; i++) {
-			idx = TableUtil.findColIndex(colNames, this.otherColNames[i]);
+			idx = TableUtil.findColIndexWithAssert(colNames, this.otherColNames[i]);
 			sb.append(", ")
 				.append(otherColNames[i]).
 				append("=").
 				append(convert2String(row.getField(idx), colTypes[idx]));
 		}
 
-		idx = TableUtil.findColIndex(colNames, this.primaryColNames[0]);
+		idx = TableUtil.findColIndexWithAssert(colNames, this.primaryColNames[0]);
 		sb.append(" where ")
 			.append(primaryColNames[0]).append("=").append(convert2String(row.getField(idx), colTypes[idx]));
 
 		for (int i = 1; i < primaryColNames.length; i++) {
-			idx = TableUtil.findColIndex(colNames, this.primaryColNames[i]);
+			idx = TableUtil.findColIndexWithAssert(colNames, this.primaryColNames[i]);
 			sb.append(" and  ").
 				append(primaryColNames[i]).
 				append("=").

@@ -52,9 +52,9 @@ public class IsotonicRegressionModelMapper extends ModelMapper {
 		featureIndex = meta.get(IsotonicRegTrainParams.FEATURE_INDEX);
 		TableSchema dataSchema = getDataSchema();
 		if (null == vectorColName) {
-			colIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), featureColName);
+			colIdx = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), featureColName);
 		} else {
-			colIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), vectorColName);
+			colIdx = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), vectorColName);
 		}
 	}
 

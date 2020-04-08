@@ -149,13 +149,15 @@ public class OneHotModelMapper extends ModelMapper {
         if (null == mapperBuilder.getSelectedCols()) {
             mapperBuilder.setSelectedCols(trainColNames);
         }
+
         mapperBuilder.setSelectedColIndicesInData(super.getDataSchema());
         mapperBuilder.setInvalidStrategy(model.modelData.meta.get(HasEnableElse.ENABLE_ELSE));
-        int[] selectedColIndicesInModel = TableUtil.findColIndices(trainColNames, mapperBuilder.getSelectedCols());
+        int[] selectedColIndicesInModel = TableUtil.findColIndicesWithAssert(trainColNames, mapperBuilder.getSelectedCols());
 
         for (int i = 0; i < mapperBuilder.getSelectedCols().length; i++) {
             Map<String, Long> mapper = new HashMap<>();
             int colIdxInModel = selectedColIndicesInModel[i];
+
             Preconditions.checkArgument(colIdxInModel >= 0, "Can not find %s in model!",
                 mapperBuilder.getSelectedCols()[i]);
             for (Tuple3<Integer, String, Long> record : model.modelData.tokenAndIndex) {

@@ -46,7 +46,7 @@ public class ImputerTrainBatchOp extends BatchOperator<ImputerTrainBatchOp>
         //result is statistic model with strategy.
         ImputerModelDataConverter converter = new ImputerModelDataConverter();
         converter.selectedColNames = selectedColNames;
-        converter.selectedColTypes = TableUtil.findColTypes(in.getSchema(), selectedColNames);
+        converter.selectedColTypes = TableUtil.findColTypesWithAssertAndHint(in.getSchema(), selectedColNames);
 
         Params meta = new Params()
             .set(ImputerTrainParams.STRATEGY, strategy);
@@ -56,7 +56,7 @@ public class ImputerTrainBatchOp extends BatchOperator<ImputerTrainBatchOp>
         if (isNeedStatModel()) {
             rows = StatisticsHelper.summary(in, selectedColNames)
                 .flatMap(new BuildImputerModel(selectedColNames,
-                        TableUtil.findColTypes(in.getSchema(), selectedColNames), strategy));
+                        TableUtil.findColTypesWithAssertAndHint(in.getSchema(), selectedColNames), strategy));
 
         } else {
             String fillValue = getFillValue();

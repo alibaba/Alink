@@ -95,35 +95,23 @@ public class GlmUtil {
 
         int[] featureColIndices = new int[numFeature];
         for (int i = 0; i < numFeature; i++) {
-            featureColIndices[i] = TableUtil.findColIndex(in.getColNames(), featureColNames[i]);
-            if (-1 == featureColIndices[i]) {
-                throw new RuntimeException(featureColNames[i] + " is not exist.");
-            }
+            featureColIndices[i] = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), featureColNames[i]);
         }
 
         if (labelColName == null) {
             throw new RuntimeException("labelColName must be set.");
         }
 
-        int labelColIdx = TableUtil.findColIndex(in.getColNames(), labelColName);
-        if (-1 == labelColIdx) {
-            throw new RuntimeException(labelColName + " is not exist.");
-        }
+        int labelColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), labelColName);
 
         int weightColIdx = -1;
         if (weightColName != null && !weightColName.isEmpty()) {
-            weightColIdx = TableUtil.findColIndex(in.getColNames(), weightColName);
-            if (-1 == weightColIdx) {
-                throw new RuntimeException(weightColName + " is not exist.");
-            }
+            weightColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), weightColName);
         }
 
         int offsetColIdx = -1;
         if (offsetColName != null && !offsetColName.isEmpty()) {
-            offsetColIdx = TableUtil.findColIndex(in.getColNames(), offsetColName);
-            if (-1 == offsetColIdx) {
-                throw new RuntimeException(offsetColName + " is not exist.");
-            }
+            offsetColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), offsetColName);
         }
 
         return in.getDataSet()

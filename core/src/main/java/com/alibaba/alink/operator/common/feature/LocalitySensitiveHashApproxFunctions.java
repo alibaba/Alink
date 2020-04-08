@@ -46,12 +46,10 @@ public class LocalitySensitiveHashApproxFunctions {
 	public static DataSet<BaseLSH> buildLSH(BatchOperator left, BatchOperator right, Params params){
 		DistanceType distanceType = DistanceType.valueOf(params.get(BaseJoinTopNLSHParams.DISTANCE_TYPE).toUpperCase());
 
-		Preconditions.checkArgument(
-			TableUtil.findColIndex(left.getSchema(), params.get(BaseJoinTopNLSHParams.LEFT_ID_COL)) >= 0
-				&& TableUtil.findColIndex(left.getSchema(), params.get(BaseJoinTopNLSHParams.LEFT_COL)) >= 0
-				&& TableUtil.findColIndex(right.getSchema(), params.get(BaseJoinTopNLSHParams.RIGHT_ID_COL)) >= 0
-				&& TableUtil.findColIndex(right.getSchema(), params.get(BaseJoinTopNLSHParams.RIGHT_COL)) >= 0,
-			"Can not find given columns!");
+		TableUtil.assertSelectedColExist(left.getSchema().getFieldNames(), params.get(BaseJoinTopNLSHParams.LEFT_ID_COL));
+		TableUtil.assertSelectedColExist(left.getSchema().getFieldNames(), params.get(BaseJoinTopNLSHParams.LEFT_COL));
+		TableUtil.assertSelectedColExist(right.getSchema().getFieldNames(), params.get(BaseJoinTopNLSHParams.RIGHT_ID_COL));
+		TableUtil.assertSelectedColExist(right.getSchema().getFieldNames(), params.get(BaseJoinTopNLSHParams.RIGHT_COL));
 
 		DataSet<BaseLSH> lsh;
 

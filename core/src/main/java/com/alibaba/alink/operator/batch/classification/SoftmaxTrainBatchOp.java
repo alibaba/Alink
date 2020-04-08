@@ -82,7 +82,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
         }
 
         if (null == labelType) {
-            labelType = in.getColTypes()[TableUtil.findColIndex(dataSchema.getFieldNames(), labelName)];
+            labelType = in.getColTypes()[TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), labelName)];
         }
 
         DataSet<Row> labelIds = in

@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.utils;
 
+import com.alibaba.alink.operator.common.similarity.LevenshteinSimilarity;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -27,6 +28,8 @@ import static com.alibaba.alink.common.utils.JsonConverter.gson;
  * so on.
  */
 public class TableUtil {
+    private static LevenshteinSimilarity levenshteinSimilarity = new LevenshteinSimilarity();
+
     /**
      * Return a lower temp table name in lower case and use "-" as connector character.
      *
@@ -56,6 +59,86 @@ public class TableUtil {
     }
 
     /**
+     * Find the index of <code>targetCol</code> in string array <code>tableCols</code>. If not found, it will throw a
+     * runtime exception.
+     *
+     * @param tableCols a string array among which to find the targetCol.
+     * @param targetCol the targetCol to find.
+     * @return the index of the targetCol, if not found, returns -1.
+     */
+    public static int findColIndexWithAssert(String[] tableCols, String targetCol) {
+        int index = findColIndex(tableCols, targetCol);
+        if(index < 0){
+            throw new IllegalArgumentException("Can not find column: " + targetCol);
+        }
+        return index;
+    }
+
+    /**
+     * Find the index of <code>targetCol</code> in string array <code>tableCols</code>. If not found, it will try to find
+     * the most similar cols, and throw a runtime exception include colname hint.
+     *
+     * @param tableCols a string array among which to find the targetCol.
+     * @param targetCol the targetCol to find.
+     * @return the index of the targetCol, if not found, returns -1.
+     */
+    public static int findColIndexWithAssertAndHint(String[] tableCols, String targetCol) {
+        int index = findColIndex(tableCols, targetCol);
+        if(index < 0){
+            double maxSimilarity = 0.0;
+            String similarCol = null;
+            for(String s : tableCols){
+                double similarity = levenshteinSimilarity.similarity(s, targetCol);
+                if(similarity > maxSimilarity){
+                    maxSimilarity = similarity;
+                    similarCol = s;
+                }
+            }
+            if(maxSimilarity > 0.7) {
+                throw new IllegalArgumentException(
+                    "Can not find column: " + targetCol + ", do you mean: " + similarCol + " ?");
+            }else{
+                throw new IllegalArgumentException("Can not find column: " + targetCol);
+            }
+        }
+        return index;
+    }
+
+    /**
+     * Find the index of <code>targetCol</code> from the <code>tableSchema</code>.
+     *
+     * @param tableSchema the TableSchema among which to find the targetCol.
+     * @param targetCol   the targetCols to find.
+     * @return the index of the targetCol.
+     */
+    public static int findColIndex(TableSchema tableSchema, String targetCol) {
+        return findColIndex(tableSchema.getFieldNames(), targetCol);
+    }
+
+    /**
+     * Find the index of <code>targetCol</code> from the <code>tableSchema</code>. If not found, it will throw an exception.
+     *
+     * @param tableSchema the TableSchema among which to find the targetCol.
+     * @param targetCol   the targetCols to find.
+     * @return the index of the targetCol.
+     */
+    public static int findColIndexWithAssert(TableSchema tableSchema, String targetCol) {
+        return findColIndexWithAssert(tableSchema.getFieldNames(), targetCol);
+    }
+
+    /**
+     * Find the index of <code>targetCol</code> from the <code>tableSchema</code>.If not found, it will try to find
+     *      * the most similar cols, and throw a runtime exception include colname hint.
+     *
+     * @param tableSchema the TableSchema among which to find the targetCol.
+     * @param targetCol   the targetCols to find.
+     * @return the index of the targetCol.
+     */
+    public static int findColIndexWithAssertAndHint(TableSchema tableSchema, String targetCol) {
+        return findColIndexWithAssertAndHint(tableSchema.getFieldNames(), targetCol);
+    }
+
+    /**
      * Find the indices of <code>targetCols</code> in string array <code>tableCols</code>. If
      * <code>targetCols</code> is
      * null, it will be replaced by the <code>tableCols</code>
@@ -80,14 +163,51 @@ public class TableUtil {
     }
 
     /**
-     * Find the index of <code>targetCol</code> from the <code>tableSchema</code>.
+     * Find the indices of <code>targetCols</code> in string array <code>tableCols</code>. If
+     * <code>targetCols</code> is
+     * null, it will be replaced by the <code>tableCols</code>. If not found, it will throw and exception.
      *
-     * @param tableSchema the TableSchema among which to find the targetCol.
-     * @param targetCol   the targetCols to find.
-     * @return the index of the targetCol.
+     * @param tableCols  a string array among which to find the targetCols.
+     * @param targetCols the targetCols to find.
+     * @return the indices of the targetCols.
      */
-    public static int findColIndex(TableSchema tableSchema, String targetCol) {
-        return findColIndex(tableSchema.getFieldNames(), targetCol);
+    public static int[] findColIndicesWithAssert(String[] tableCols, String[] targetCols) {
+        if (targetCols == null) {
+            int[] indices = new int[tableCols.length];
+            for (int i = 0; i < tableCols.length; i++) {
+                indices[i] = i;
+            }
+            return indices;
+        }
+        int[] indices = new int[targetCols.length];
+        for (int i = 0; i < indices.length; i++) {
+            indices[i] = findColIndexWithAssert(tableCols, targetCols[i]);
+        }
+        return indices;
+    }
+
+    /**
+     * Find the indices of <code>targetCols</code> in string array <code>tableCols</code>. If
+     * <code>targetCols</code> is
+     * null, it will be replaced by the <code>tableCols</code>. If not found, it will throw and exception.
+     *
+     * @param tableCols  a string array among which to find the targetCols.
+     * @param targetCols the targetCols to find.
+     * @return the indices of the targetCols.
+     */
+    public static int[] findColIndicesWithAssertAndHint(String[] tableCols, String[] targetCols) {
+        if (targetCols == null) {
+            int[] indices = new int[tableCols.length];
+            for (int i = 0; i < tableCols.length; i++) {
+                indices[i] = i;
+            }
+            return indices;
+        }
+        int[] indices = new int[targetCols.length];
+        for (int i = 0; i < indices.length; i++) {
+            indices[i] = findColIndexWithAssertAndHint(tableCols, targetCols[i]);
+        }
+        return indices;
     }
 
     /**
@@ -102,6 +222,28 @@ public class TableUtil {
     }
 
     /**
+     * Find the indices of <code>targetCols</code> from the <code>tableSchema</code>. If not found, it will throw an exception.
+     *
+     * @param tableSchema the TableSchema among which to find the targetCols.
+     * @param targetCols  the targetCols to find.
+     * @return the indices of the targetCols.
+     */
+    public static int[] findColIndicesWithAssert(TableSchema tableSchema, String[] targetCols) {
+        return findColIndicesWithAssert(tableSchema.getFieldNames(), targetCols);
+    }
+
+    /**
+     * Find the indices of <code>targetCols</code> from the <code>tableSchema</code>. If not found, it will throw an exception.
+     *
+     * @param tableSchema the TableSchema among which to find the targetCols.
+     * @param targetCols  the targetCols to find.
+     * @return the indices of the targetCols.
+     */
+    public static int[] findColIndicesWithAssertAndHint(TableSchema tableSchema, String[] targetCols) {
+        return findColIndicesWithAssertAndHint(tableSchema.getFieldNames(), targetCols);
+    }
+
+    /**
      * Find the types of the <code>targetCols</code>. If the targetCol not exist, return null.
      *
      * @param tableSchema TableSchema.
@@ -109,12 +251,52 @@ public class TableUtil {
      * @return the corresponding types.
      */
     public static TypeInformation[] findColTypes(TableSchema tableSchema, String[] targetCols) {
+        if (targetCols == null) {
+            return tableSchema.getFieldTypes();
+        }
         TypeInformation[] types = new TypeInformation[targetCols.length];
         for (int i = 0; i < types.length; i++) {
             types[i] = findColType(tableSchema, targetCols[i]);
         }
         return types;
     }
+
+    /**
+     * Find the types of the <code>targetCols</code>. If the targetCol not exist, throw an exception.
+     *
+     * @param tableSchema TableSchema.
+     * @param targetCols  the targetCols to find.
+     * @return the corresponding types.
+     */
+    public static TypeInformation[] findColTypesWithAssert(TableSchema tableSchema, String[] targetCols) {
+        if (targetCols == null) {
+            return tableSchema.getFieldTypes();
+        }
+        TypeInformation[] types = new TypeInformation[targetCols.length];
+        for (int i = 0; i < types.length; i++) {
+            types[i] = findColTypeWithAssert(tableSchema, targetCols[i]);
+        }
+        return types;
+    }
+
+    /**
+     * Find the types of the <code>targetCols</code>. If the targetCol not exist, throw an exception.
+     *
+     * @param tableSchema TableSchema.
+     * @param targetCols  the targetCols to find.
+     * @return the corresponding types.
+     */
+    public static TypeInformation[] findColTypesWithAssertAndHint(TableSchema tableSchema, String[] targetCols) {
+        if (targetCols == null) {
+            return tableSchema.getFieldTypes();
+        }
+        TypeInformation[] types = new TypeInformation[targetCols.length];
+        for (int i = 0; i < types.length; i++) {
+            types[i] = findColTypeWithAssertAndHint(tableSchema, targetCols[i]);
+        }
+        return types;
+    }
+
 
     /**
      * Find the type of the <code>targetCol</code>. If the targetCol not exist, return null.
@@ -127,6 +309,28 @@ public class TableUtil {
         int index = findColIndex(tableSchema.getFieldNames(), targetCol);
 
         return index == -1 ? null : tableSchema.getFieldTypes()[index];
+    }
+
+    /**
+     * Find the type of the <code>targetCol</code>. If the targetCol not exist, throw an exception.
+     *
+     * @param tableSchema TableSchema
+     * @param targetCol   the targetCol to find.
+     * @return the corresponding type.
+     */
+    public static TypeInformation findColTypeWithAssert(TableSchema tableSchema, String targetCol) {
+        return tableSchema.getFieldTypes()[findColIndexWithAssert(tableSchema, targetCol)];
+    }
+
+    /**
+     * Find the type of the <code>targetCol</code>. If the targetCol not exist, throw an exception.
+     *
+     * @param tableSchema TableSchema
+     * @param targetCol   the targetCol to find.
+     * @return the corresponding type.
+     */
+    public static TypeInformation findColTypeWithAssertAndHint(TableSchema tableSchema, String targetCol) {
+        return tableSchema.getFieldTypes()[findColIndexWithAssertAndHint(tableSchema, targetCol)];
     }
 
     /**
@@ -179,9 +383,7 @@ public class TableUtil {
         if (null != selectedCols) {
             for (String selectedCol : selectedCols) {
                 if (null != selectedCol) {
-                    if (-1 == findColIndex(tableCols, selectedCol)) {
-                        throw new IllegalArgumentException(" col is not exist " + selectedCol);
-                    }
+                    findColIndexWithAssert(tableCols, selectedCol);
                 }
             }
         }

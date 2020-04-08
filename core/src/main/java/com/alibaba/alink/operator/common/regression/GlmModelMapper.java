@@ -93,10 +93,7 @@ public class GlmModelMapper extends ModelMapper {
 
         featureColIdxs = new int[modelData.featureColNames.length];
         for (int i = 0; i < featureColIdxs.length; i++) {
-            featureColIdxs[i] = TableUtil.findColIndex(dataSchema.getFieldNames(), modelData.featureColNames[i]);
-            if (featureColIdxs[i] < 0) {
-                throw new RuntimeException("offset col not exist." + modelData.featureColNames[i]);
-            }
+            featureColIdxs[i] = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), modelData.featureColNames[i]);
         }
 
         features = new double[featureColIdxs.length];

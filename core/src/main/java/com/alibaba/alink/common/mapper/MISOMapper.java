@@ -32,7 +32,7 @@ public abstract class MISOMapper extends Mapper {
 	public MISOMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
 		String[] inputColNames = this.params.get(MISOMapperParams.SELECTED_COLS);
-		this.colIndices = TableUtil.findColIndices(dataSchema.getFieldNames(), inputColNames);
+		this.colIndices = TableUtil.findColIndicesWithAssertAndHint(dataSchema.getFieldNames(), inputColNames);
 		String outputColName = params.get(MISOMapperParams.OUTPUT_COL);
 		String[] keepColNames = null;
 		if (this.params.contains(MISOMapperParams.RESERVED_COLS)) {

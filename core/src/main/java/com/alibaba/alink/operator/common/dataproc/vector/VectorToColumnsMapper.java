@@ -32,15 +32,17 @@ public class VectorToColumnsMapper extends Mapper {
      */
 	public VectorToColumnsMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
+
 		String selectedColName = this.params.get(VectorToColumnsParams.SELECTED_COL);
-		idx = TableUtil.findColIndex(dataSchema.getFieldNames(), selectedColName);
-		Preconditions.checkArgument(idx >= 0, "Can not find column: " + selectedColName);
+
+		idx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), selectedColName);
+
 		String[] outputColNames = this.params.get(VectorToColumnsParams.OUTPUT_COLS);
-		Preconditions.checkArgument(null != outputColNames,
-				"VectorToTable: outputColNames must set.");
 		this.colSize = outputColNames.length;
+
 		TypeInformation[] types = new TypeInformation[colSize];
 		Arrays.fill(types, Types.DOUBLE);
+
 		this.outputColsHelper = new OutputColsHelper(dataSchema, outputColNames, types,
 			this.params.get(VectorToColumnsParams.RESERVED_COLS));
 	}

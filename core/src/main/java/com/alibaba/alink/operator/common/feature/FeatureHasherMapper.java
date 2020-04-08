@@ -50,8 +50,8 @@ public class FeatureHasherMapper extends Mapper {
         String[] numericCols = ArrayUtils.removeElements(selectedCols, categoricalCols);
         colNames = dataSchema.getFieldNames();
 
-        numericColIndexes = TableUtil.findColIndices(colNames, numericCols);
-        categoricalColIndexes = TableUtil.findColIndices(colNames, categoricalCols);
+        numericColIndexes = TableUtil.findColIndicesWithAssertAndHint(colNames, numericCols);
+        categoricalColIndexes = TableUtil.findColIndicesWithAssertAndHint(colNames, categoricalCols);
 
         outputColsHelper = new OutputColsHelper(
             dataSchema,

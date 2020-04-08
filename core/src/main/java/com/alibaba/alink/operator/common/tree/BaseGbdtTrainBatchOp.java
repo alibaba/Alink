@@ -98,7 +98,7 @@ public class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp<T>> extends Bat
 			)
 		);
 
-		init(TableUtil.findColType(in.getSchema(), getParams().get(HasLabelCol.LABEL_COL)));
+		init(TableUtil.findColTypeWithAssertAndHint(in.getSchema(), getParams().get(HasLabelCol.LABEL_COL)));
 
 		int parallelism = Math.max(1, MLEnvironmentFactory
 			.get(getMLEnvironmentId())

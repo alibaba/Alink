@@ -52,7 +52,7 @@ public final class MultiStringIndexerTrainBatchOp
         final String[] selectedColSqlType = new String[selectedColNames.length];
         for (int i = 0; i < selectedColNames.length; i++) {
             selectedColSqlType[i] = FlinkTypeConverter.getTypeString(
-                TableUtil.findColType(in.getSchema(), selectedColNames[i]));
+                TableUtil.findColTypeWithAssertAndHint(in.getSchema(), selectedColNames[i]));
         }
 
         DataSet<Row> inputRows = in.select(selectedColNames).getDataSet();

@@ -135,7 +135,7 @@ public final class MultiStringIndexerPredictBatchOp
         OutputColsHelper outputColsHelper = new OutputColsHelper(data.getSchema(), outputColNames,
             outputColTypes, keepColNames);
 
-        final int[] selectedColIdx = TableUtil.findColIndices(data.getSchema(), selectedColNames);
+        final int[] selectedColIdx = TableUtil.findColIndicesWithAssertAndHint(data.getSchema(), selectedColNames);
         final StringIndexerUtil.HandleInvalidStrategy handleInvalidStrategy
             = StringIndexerUtil.HandleInvalidStrategy
             .valueOf(params.get(StringIndexerPredictParams.HANDLE_INVALID).toUpperCase());

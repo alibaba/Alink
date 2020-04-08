@@ -67,9 +67,9 @@ public final class AlsTrainBatchOp
         final double alpha = getAlpha();
         final int numMiniBatches = getNumBlocks();
 
-        final int userColIdx = TableUtil.findColIndex(in.getColNames(), userColName);
-        final int itemColIdx = TableUtil.findColIndex(in.getColNames(), itemColName);
-        final int rateColIdx = TableUtil.findColIndex(in.getColNames(), rateColName);
+        final int userColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), userColName);
+        final int itemColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), itemColName);
+        final int rateColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), rateColName);
 
         // tuple3: userId, itemId, rating
         DataSet<Tuple3<Long, Long, Float>> alsInput = in.getDataSet()

@@ -33,7 +33,7 @@ public class BinarizerMapper extends SISOMapper {
 		super(dataSchema, params);
 		this.threshold = this.params.get(BinarizerParams.THRESHOLD);
 
-		selectedColType = TableUtil.findColType(
+		selectedColType = TableUtil.findColTypeWithAssertAndHint(
 			dataSchema,
 			this.params.get(BinarizerParams.SELECTED_COL)
 		);
@@ -51,7 +51,7 @@ public class BinarizerMapper extends SISOMapper {
 
 	@Override
 	protected TypeInformation initOutputColType() {
-		final TypeInformation<?> selectedColType = TableUtil.findColType(
+		final TypeInformation<?> selectedColType = TableUtil.findColTypeWithAssertAndHint(
 				getDataSchema(),
 			this.params.get(BinarizerParams.SELECTED_COL)
 		);

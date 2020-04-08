@@ -254,7 +254,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 			new SerializeModel(
 				getParams(),
 				quantileColNames,
-				TableUtil.findColTypes(in.getSchema(), quantileColNames),
+				TableUtil.findColTypesWithAssertAndHint(in.getSchema(), quantileColNames),
 				BinTypes.BinDivideType.QUANTILE
 			)
 		);

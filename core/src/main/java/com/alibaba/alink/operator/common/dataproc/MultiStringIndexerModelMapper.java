@@ -62,8 +62,8 @@ public class MultiStringIndexerModelMapper extends ModelMapper {
         MultiStringIndexerModelData model = new MultiStringIndexerModelDataConverter().load(modelRows);
 
         String[] trainColNames = model.meta.get(HasSelectedCols.SELECTED_COLS);
-        this.selectedColIndicesInData = TableUtil.findColIndices(super.getDataSchema(), selectedColNames);
-        int[] selectedColIndicesInModel = TableUtil.findColIndices(trainColNames, selectedColNames);
+        this.selectedColIndicesInData = TableUtil.findColIndicesWithAssert(super.getDataSchema(), selectedColNames);
+        int[] selectedColIndicesInModel = TableUtil.findColIndicesWithAssert(trainColNames, selectedColNames);
         this.indexMapper = new HashMap<>();
         this.defaultIndex = new HashMap<>();
 

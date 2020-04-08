@@ -19,7 +19,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,9 +77,7 @@ public final class PrefixSpanBatchOp extends BatchOperator<PrefixSpanBatchOp>
         final int minSupportCount = getMinSupportCount();
         final int maxPatternLength = getMaxPatternLength();
         final double minConfidence = getMinConfidence();
-        final int itemsColIdx = TableUtil.findColIndex(in.getSchema(), itemsColName);
-
-        Preconditions.checkArgument(itemsColIdx >= 0, "Can't find column: " + itemsColName);
+        final int itemsColIdx = TableUtil.findColIndexWithAssertAndHint(in.getSchema(), itemsColName);
 
         DataSet<Long> sequenceCount = count(in.getDataSet());
         DataSet<Long> minSupportCnt = getMinSupportCnt(sequenceCount, minSupportCount, minSupportPercent);

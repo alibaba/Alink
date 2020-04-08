@@ -40,7 +40,7 @@ public class MinMaxScalerModelMapper extends ModelMapper {
         super(modelSchema, dataSchema, params);
         String[] selectedColNames = ImputerModelDataConverter.extractSelectedColNames(modelSchema);
         TypeInformation[] selectedColTypes = ImputerModelDataConverter.extractSelectedColTypes(modelSchema);
-        this.selectedColIndices = TableUtil.findColIndices(dataSchema, selectedColNames);
+        this.selectedColIndices = TableUtil.findColIndicesWithAssert(dataSchema, selectedColNames);
 
         String[] outputColNames = params.get(SrtPredictMapperParams.OUTPUT_COLS);
         if (outputColNames == null) {

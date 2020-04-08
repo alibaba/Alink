@@ -208,10 +208,7 @@ public class TableSummary extends BaseSummary {
      * given colName, return the number of vaild value.
      */
     public double numMissingValue(String colName) {
-        int idx = TableUtil.findColIndex(colNames, colName);
-        if (idx < 0) {
-            throw new RuntimeException(colName + " is not exist.");
-        }
+        int idx = TableUtil.findColIndexWithAssertAndHint(colNames, colName);
         return numMissingValue.get(idx);
     }
 
@@ -220,10 +217,7 @@ public class TableSummary extends BaseSummary {
      * given colName, return index of colNames.
      */
     private int findIdx(String colName) {
-        int idx = TableUtil.findColIndex(colNames, colName);
-        if (idx < 0) {
-            throw new RuntimeException(colName + " is not exist.");
-        }
+        int idx = TableUtil.findColIndexWithAssertAndHint(colNames, colName);
         return findIdx(numericalColIndices, idx);
     }
 

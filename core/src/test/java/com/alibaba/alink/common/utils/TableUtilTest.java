@@ -14,94 +14,112 @@ import org.junit.rules.ExpectedException;
 public class TableUtilTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-    private String[] colNames = new String[] {"f0", "f1", "f2"};
+    private String[] colNames = new String[]{"f0", "f1", "f2"};
     private TableSchema tableSchema = new TableSchema(colNames,
-        new TypeInformation[] {Types.INT, Types.LONG, Types.STRING});
+        new TypeInformation[]{Types.INT, Types.LONG, Types.STRING});
 
     @Test
     public void testFindIndexFromName() {
-        String[] colNames = new String[] {"f0", "f1", "F2"};
+        String[] colNames = new String[]{"f0", "f1", "F2"};
         Assert.assertEquals(TableUtil.findColIndex(colNames, "f0"), 0);
         Assert.assertEquals(TableUtil.findColIndex(colNames, "F1"), 1);
         Assert.assertEquals(TableUtil.findColIndex(colNames, "f3"), -1);
         Assert.assertEquals(TableUtil.findColIndex(tableSchema, "f0"), 0);
-        Assert.assertArrayEquals(TableUtil.findColIndices(colNames, new String[] {"f1", "F2"}), new int[] {1, 2});
-        Assert.assertArrayEquals(TableUtil.findColIndices(tableSchema, new String[] {"f1", "F2"}), new int[] {1, 2});
+
+        Assert.assertArrayEquals(TableUtil.findColIndices(colNames, new String[]{"f1", "F2"}), new int[]{1, 2});
+        Assert.assertArrayEquals(TableUtil.findColIndices(tableSchema, new String[]{"f1", "F2"}), new int[]{1, 2});
+        Assert.assertArrayEquals(TableUtil.findColIndices(tableSchema, new String[]{"f3", "F2"}), new int[]{-1, 2});
+        Assert.assertArrayEquals(TableUtil.findColIndices(colNames, null), new int[]{0, 1, 2});
     }
 
     @Test
     public void testFindTypeFromTable() {
-        Assert.assertArrayEquals(TableUtil.findColTypes(tableSchema, new String[] {"f0", "f1"}),
-            new TypeInformation[] {TypeInformation.of(Integer.class), Types.LONG});
-
-        Assert.assertArrayEquals(TableUtil.findColTypes(tableSchema, new String[] {"f1", "f3"}),
-            new TypeInformation[] {Types.LONG, null});
+        Assert.assertArrayEquals(TableUtil.findColTypes(tableSchema, new String[]{"f0", "f1"}),
+            new TypeInformation[]{TypeInformation.of(Integer.class), Types.LONG});
+        Assert.assertArrayEquals(TableUtil.findColTypes(tableSchema, new String[]{"f1", "f3"}),
+            new TypeInformation[]{Types.LONG, null});
+        Assert.assertArrayEquals(TableUtil.findColTypes(tableSchema, null),
+            new TypeInformation[]{Types.INT, Types.LONG, Types.STRING});
 
         Assert.assertEquals(TableUtil.findColType(tableSchema, "f0"), TypeInformation.of(Integer.class));
         Assert.assertNull(TableUtil.findColType(tableSchema, "f3"));
     }
 
     @Test
-    public void isNumberIsStringTest() {
-        Assert.assertTrue(TableUtil.isNumber(Types.INT));
-        Assert.assertTrue(TableUtil.isNumber(Types.DOUBLE));
-        Assert.assertTrue(TableUtil.isNumber(Types.LONG));
-        Assert.assertTrue(TableUtil.isNumber(Types.BYTE));
-        Assert.assertTrue(TableUtil.isNumber(Types.FLOAT));
-        Assert.assertTrue(TableUtil.isNumber(Types.SHORT));
-        Assert.assertFalse(TableUtil.isNumber(Types.STRING));
-        Assert.assertTrue(TableUtil.isString(Types.STRING));
+    public void assertColExistOrTypeTest() {
+        String[] colNames = new String[]{"f0", "f1", "f2"};
+        TableUtil.assertSelectedColExist(colNames, null);
+        TableUtil.assertSelectedColExist(colNames, "f0");
+        TableUtil.assertSelectedColExist(colNames, "f0", "f1");
+
+        TableUtil.assertNumericalCols(tableSchema, null);
+        TableUtil.assertNumericalCols(tableSchema, "f1");
+        TableUtil.assertNumericalCols(tableSchema, "f0", "f1");
+
+        TableUtil.assertStringCols(tableSchema, null);
+        TableUtil.assertStringCols(tableSchema, "f2");
     }
 
     @Test
-    public void assertTest() {
-        String[] colNames = new String[] {"f0", "f1", "f2"};
-        TableUtil.assertSelectedColExist(colNames, "f0");
-
-        thrown.expect(RuntimeException.class);
+    public void assertColExistOrTypeExceptionTest() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Can not find column: f3");
         TableUtil.assertSelectedColExist(colNames, "f3");
 
-        thrown.expect(RuntimeException.class);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Can not find column: f3");
         TableUtil.assertSelectedColExist(colNames, "f0", "f3");
 
-        TableUtil.assertNumericalCols(tableSchema, "f0", "f1");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("col type must be number f2");
+        TableUtil.assertNumericalCols(tableSchema, "f2");
 
-        thrown.expect(RuntimeException.class);
-        TableUtil.assertNumericalCols(tableSchema, "f0", "f2");
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("col type must be number f2");
+        TableUtil.assertNumericalCols(tableSchema, "f2", "f0");
 
-        TableUtil.assertStringCols(tableSchema, "f3");
-
-        thrown.expect(RuntimeException.class);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("col type must be string f2");
         TableUtil.assertStringCols(tableSchema, "f2");
 
-        thrown.expect(RuntimeException.class);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("col type must be string f0");
         TableUtil.assertStringCols(tableSchema, "f0", "f3");
     }
 
     @Test
     public void getNumericColsTest() {
-        TableSchema tableSchema = new TableSchema(new String[] {"f0", "f1", "F2", "f3"},
-            new TypeInformation[] {Types.INT, Types.LONG, Types.STRING, Types.BOOLEAN});
+        TableSchema tableSchema = new TableSchema(new String[]{"f0", "f1", "F2", "f3"},
+            new TypeInformation[]{Types.INT, Types.LONG, Types.STRING, Types.BOOLEAN});
 
-        Assert.assertArrayEquals(TableUtil.getNumericCols(tableSchema), new String[] {"f0", "f1"});
-        Assert.assertArrayEquals(TableUtil.getNumericCols(tableSchema, new String[] {"f0"}), new String[] {"f1"});
-        Assert.assertArrayEquals(TableUtil.getNumericCols(tableSchema, new String[] {"f2"}), new String[] {"f0", "f1"});
+        Assert.assertArrayEquals(TableUtil.getNumericCols(tableSchema), new String[]{"f0", "f1"});
+        Assert.assertArrayEquals(TableUtil.getNumericCols(tableSchema, new String[]{"f0"}), new String[]{"f1"});
+        Assert.assertArrayEquals(TableUtil.getNumericCols(tableSchema, new String[]{"f2"}), new String[]{"f0", "f1"});
     }
 
     @Test
     public void getCategoricalColsTest() {
-        TableSchema tableSchema = new TableSchema(new String[] {"f0", "f1", "f2", "f3"},
-            new TypeInformation[] {Types.INT, Types.LONG, Types.STRING, Types.BOOLEAN});
+        TableSchema tableSchema = new TableSchema(new String[]{"f0", "f1", "f2", "f3"},
+            new TypeInformation[]{Types.INT, Types.LONG, Types.STRING, Types.BOOLEAN});
 
         Assert.assertArrayEquals(TableUtil.getCategoricalCols(tableSchema, tableSchema.getFieldNames(), null),
-            new String[] {"f2", "f3"});
+            new String[]{"f2", "f3"});
         Assert.assertArrayEquals(
-            TableUtil.getCategoricalCols(tableSchema, new String[]{"f2", "f1", "f0", "f3"}, new String[] {"f0"}),
-            new String[] {"f2", "f0", "f3"});
+            TableUtil.getCategoricalCols(tableSchema, new String[]{"f2", "f1", "f0", "f3"}, new String[]{"f0"}),
+            new String[]{"f2", "f0", "f3"});
 
         thrown.expect(IllegalArgumentException.class);
         Assert.assertArrayEquals(
-            TableUtil.getCategoricalCols(tableSchema, new String[] {"f3", "f0"}, new String[] {"f2"}),
-            new String[] {"f3", "f2"});
+            TableUtil.getCategoricalCols(tableSchema, new String[]{"f3", "f0"}, new String[]{"f2"}),
+            new String[]{"f3", "f2"});
+    }
+
+    @Test
+    public void findColIndexWithAssertAndHintTest() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Can not find column: features, do you mean: feature ?");
+
+        String[] colNames = new String[]{"id", "text", "vector", "feature"};
+        TableUtil.findColIndexWithAssertAndHint(colNames, "features");
     }
 }

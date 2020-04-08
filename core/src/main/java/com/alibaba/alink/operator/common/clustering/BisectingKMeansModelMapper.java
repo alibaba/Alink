@@ -120,11 +120,8 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
     public void loadModel(List<Row> modelRows) {
         this.modelData = new BisectingKMeansModelDataConverter().load(modelRows);
 
-        this.vectorColIdx = TableUtil.findColIndex(super.getDataSchema().getFieldNames(),
+        this.vectorColIdx = TableUtil.findColIndexWithAssert(super.getDataSchema().getFieldNames(),
             this.modelData.vectorColName);
-        if (this.vectorColIdx < 0) {
-            throw new RuntimeException("Can't find feature col in predict data: " + this.modelData.vectorColName);
-        }
 
         this.tree = new Tree(modelData.summaries);
     }

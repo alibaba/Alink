@@ -33,7 +33,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,9 +85,7 @@ public final class FpGrowthBatchOp
         final int maxConsequentLength = getMaxConsequentLength();
         final double minLift = getMinLift();
         final int maxPatternLength = getMaxPatternLength();
-        final int itemsColIdx = TableUtil.findColIndex(in.getSchema(), itemsColName);
-
-        Preconditions.checkArgument(itemsColIdx >= 0, "Can't find column: " + itemsColName);
+        final int itemsColIdx = TableUtil.findColIndexWithAssertAndHint(in.getSchema(), itemsColName);
 
         DataSet<Set<String>> itemsets = ((DataSet<Row>) in.getDataSet())
             .map(new MapFunction<Row, Set<String>>() {

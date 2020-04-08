@@ -110,7 +110,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 
 		public DiscretizerMapperBuilder(Params params, TableSchema dataSchema){
 			paramsBuilder = new DiscretizerParamsBuilder(params, dataSchema, params.get(HasEncodeDefaultAsIndex.ENCODE));
-			this.selectedColIndicesInData = TableUtil.findColIndices(
+			this.selectedColIndicesInData = TableUtil.findColIndicesWithAssert(
 				dataSchema,
 				paramsBuilder.selectedCols
 			);

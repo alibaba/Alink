@@ -11,7 +11,10 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
+
+import static com.alibaba.alink.operator.batch.similarity.ApproxVectorSimilarityTopNLSHBatchOp.DISTANCE_COL;
 
 /**
  * ApproxVectorSimilarityJoinLSHBatchOp is used to join two vectors whose distance is below threshold from two datasets
@@ -47,17 +50,23 @@ public final class ApproxVectorSimilarityJoinLSHBatchOp extends BatchOperator<Ap
             inputs[0].select(new String[] {leftIdCol, getLeftCol()}).getDataSet(),
             inputs[1].select(new String[] {rightIdCol, getRightCol()}).getDataSet(), this.getDistanceThreshold(), lsh);
 
-        if (leftIdCol.equals(rightIdCol)) {
-            leftIdCol += "_left";
-            rightIdCol += "_right";
+        this.setOutput(res, getJoinOutputSchema(inputs, leftIdCol, rightIdCol));
+        return this;
+    }
+
+    static TableSchema getJoinOutputSchema(BatchOperator[] inputs, String leftIdCol, String rightIdCol) {
+        TypeInformation[] types = new TypeInformation[] {
+            TableUtil.findColTypeWithAssertAndHint(inputs[0].getSchema(), leftIdCol),
+            TableUtil.findColTypeWithAssertAndHint(inputs[1].getSchema(), rightIdCol),
+            Types.DOUBLE};
+
+        if (leftIdCol.equalsIgnoreCase(rightIdCol)) {
+            leftIdCol = leftIdCol + "_left";
+            rightIdCol = rightIdCol + "_right";
         }
 
-        this.setOutputTable(DataSetConversionUtil.toTable(getMLEnvironmentId(), res,
-            new String[] {leftIdCol, rightIdCol, this.getOutputCol()},
-            new TypeInformation[] {TableUtil.findColType(inputs[0].getSchema(), this.getLeftIdCol()),
-                TableUtil.findColType(inputs[1].getSchema(), this.getRightIdCol()),
-                Types.DOUBLE}
-        ));
-        return this;
+        String[] names = new String[] {leftIdCol, rightIdCol, DISTANCE_COL};
+
+        return new TableSchema(names, types);
     }
 }

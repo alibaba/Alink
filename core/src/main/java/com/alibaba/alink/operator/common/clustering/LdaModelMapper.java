@@ -14,9 +14,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.common.clustering.lda.LdaUtil;
-import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.clustering.LdaPredictParams;
 
@@ -50,7 +48,7 @@ public class LdaModelMapper extends RichModelMapper {
         super(modelSchema, dataSchema, params);
         params.set(DocCountVectorizerPredictParams.SELECTED_COL, this.params.get(LdaPredictParams.SELECTED_COL));
         String documentColName = this.params.get(LdaPredictParams.SELECTED_COL);
-        this.documentColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), documentColName);
+        this.documentColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), documentColName);
     }
 
     /**

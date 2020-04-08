@@ -58,8 +58,8 @@ public final class LibSvmSinkBatchOp extends BaseSinkBatchOp<LibSvmSinkBatchOp>
         final String vectorCol = getVectorCol();
         final String labelCol = getLabelCol();
 
-        final int vectorColIdx = TableUtil.findColIndex(in.getColNames(), vectorCol);
-        final int labelColIdx = TableUtil.findColIndex(in.getColNames(), labelCol);
+        final int vectorColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorCol);
+        final int labelColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), labelCol);
 
         DataSet<Row> outputRows = ((DataSet<Row>) in.getDataSet())
             .map(new MapFunction<Row, Row>() {

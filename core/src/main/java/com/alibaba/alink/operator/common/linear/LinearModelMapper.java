@@ -39,7 +39,7 @@ public class LinearModelMapper extends RichModelMapper {
 		if (null != params) {
 			String vectorColName = params.get(LinearModelMapperParams.VECTOR_COL);
 			if (null != vectorColName && vectorColName.length() != 0) {
-				this.vectorColIndex = TableUtil.findColIndex(dataSchema.getFieldNames(), vectorColName);
+				this.vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), vectorColName);
 			}
 		}
 	}
@@ -60,11 +60,11 @@ public class LinearModelMapper extends RichModelMapper {
 				this.featureIdx = new int[this.featureN];
 				String[] predictTableColNames = dataSchema.getFieldNames();
 				for (int i = 0; i < this.featureN; i++) {
-					this.featureIdx[i] = TableUtil.findColIndex(predictTableColNames,
+					this.featureIdx[i] = TableUtil.findColIndexWithAssert(predictTableColNames,
 						this.model.featureNames[i]);
 				}
 			} else {
-				vectorColIndex = TableUtil.findColIndex(dataSchema.getFieldNames(), model.vectorColName);
+				vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), model.vectorColName);
 			}
 		}
 	}
@@ -78,11 +78,11 @@ public class LinearModelMapper extends RichModelMapper {
 				this.featureIdx = new int[this.featureN];
 				String[] predictTableColNames = dataSchema.getFieldNames();
 				for (int i = 0; i < this.featureN; i++) {
-					this.featureIdx[i] = TableUtil.findColIndex(predictTableColNames,
+					this.featureIdx[i] = TableUtil.findColIndexWithAssert(predictTableColNames,
 						this.model.featureNames[i]);
 				}
 			} else {
-				vectorColIndex = TableUtil.findColIndex(dataSchema.getFieldNames(), model.vectorColName);
+				vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), model.vectorColName);
 			}
 		}
 	}

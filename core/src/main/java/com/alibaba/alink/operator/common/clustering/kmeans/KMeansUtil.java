@@ -188,14 +188,11 @@ public class KMeansUtil implements Serializable {
         int[] colIdxs;
         if (null != params.vectorColName) {
             colIdxs = new int[1];
-            colIdxs[0] = TableUtil.findColIndex(dataCols, params.vectorColName);
-            Preconditions.checkArgument(colIdxs[0] >= 0, "can't find vector column in predict data!");
+            colIdxs[0] = TableUtil.findColIndexWithAssert(dataCols, params.vectorColName);
         } else {
             colIdxs = new int[2];
-            colIdxs[0] = TableUtil.findColIndex(dataCols, params.latitudeColName);
-            colIdxs[1] = TableUtil.findColIndex(dataCols, params.longtitudeColName);
-            Preconditions.checkArgument(colIdxs[0] >= 0 && colIdxs[1] >= 0,
-                "can't find latitude or longtitude column in predict data!");
+            colIdxs[0] = TableUtil.findColIndexWithAssert(dataCols, params.latitudeColName);
+            colIdxs[1] = TableUtil.findColIndexWithAssert(dataCols, params.longtitudeColName);
         }
         return colIdxs;
     }

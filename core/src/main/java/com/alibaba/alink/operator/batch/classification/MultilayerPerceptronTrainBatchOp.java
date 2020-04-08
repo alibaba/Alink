@@ -69,10 +69,10 @@ public final class MultilayerPerceptronTrainBatchOp
         final String[] featureColNames, final String vectorColName, final String labelColName) {
 
         final boolean isVectorInput = !StringUtils.isNullOrWhitespaceOnly(vectorColName);
-        final int vectorColIdx = isVectorInput ? TableUtil.findColIndex(data.getColNames(), vectorColName) : -1;
-        final int[] featureColIdx = isVectorInput ? null : TableUtil.findColIndices(data.getSchema(),
+        final int vectorColIdx = isVectorInput ? TableUtil.findColIndexWithAssertAndHint(data.getColNames(), vectorColName) : -1;
+        final int[] featureColIdx = isVectorInput ? null : TableUtil.findColIndicesWithAssertAndHint(data.getSchema(),
             featureColNames);
-        final int labelColIdx = TableUtil.findColIndex(data.getColNames(), labelColName);
+        final int labelColIdx = TableUtil.findColIndexWithAssertAndHint(data.getColNames(), labelColName);
 
         DataSet<Row> dataRows = data.getDataSet();
         return dataRows
@@ -131,8 +131,8 @@ public final class MultilayerPerceptronTrainBatchOp
             (getParams().contains(FEATURE_COLS) ? getFeatureCols() :
                 TableUtil.getNumericCols(in.getSchema(), new String[]{labelColName}));
 
-        final TypeInformation<?> labelType = in.getColTypes()[TableUtil.findColIndex(in.getColNames(),
-            labelColName)];
+        final TypeInformation<?> labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(),
+            labelColName);
         DataSet<Tuple2<Long, Object>> labels = getDistinctLabels(in, labelColName);
 
         // get train data

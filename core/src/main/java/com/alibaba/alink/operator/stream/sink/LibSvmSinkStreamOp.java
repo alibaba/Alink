@@ -36,8 +36,8 @@ public final class LibSvmSinkStreamOp extends BaseSinkStreamOp<LibSvmSinkStreamO
         final String vectorCol = getVectorCol();
         final String labelCol = getLabelCol();
 
-        final int vectorColIdx = TableUtil.findColIndex(in.getColNames(), vectorCol);
-        final int labelColIdx = TableUtil.findColIndex(in.getColNames(), labelCol);
+        final int vectorColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorCol);
+        final int labelColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), labelCol);
 
         DataStream<Row> outputRows = ((DataStream<Row>) in.getDataStream())
             .map(new MapFunction<Row, Row>() {

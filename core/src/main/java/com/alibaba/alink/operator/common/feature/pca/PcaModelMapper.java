@@ -49,11 +49,11 @@ public class PcaModelMapper extends ModelMapper {
         if (!isVector) {
             TableUtil.assertSelectedColExist(colNames, featureColNames);
             TableUtil.assertNumericalCols(getDataSchema(), featureColNames);
-            return TableUtil.findColIndices(colNames, featureColNames);
+            return TableUtil.findColIndicesWithAssertAndHint(colNames, featureColNames);
         } else {
             TableUtil.assertSelectedColExist(colNames, vectorColName);
             TableUtil.assertVectorCols(getDataSchema(), vectorColName);
-            return new int[]{TableUtil.findColIndex(colNames, vectorColName)};
+            return new int[]{TableUtil.findColIndexWithAssertAndHint(colNames, vectorColName)};
         }
     }
 

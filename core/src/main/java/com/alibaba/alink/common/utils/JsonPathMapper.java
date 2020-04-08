@@ -31,7 +31,7 @@ public class JsonPathMapper extends FlatMapper {
 	public JsonPathMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
 		String selectedColName = this.params.get(JsonValueParams.SELECTED_COL);
-		this.idx = TableUtil.findColIndex(dataSchema.getFieldNames(), selectedColName);
+		this.idx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), selectedColName);
 		outputColNames = params.get(JsonValueParams.OUTPUT_COLS);
 		jsonPaths = params.get(JsonValueParams.JSON_PATHS);
 

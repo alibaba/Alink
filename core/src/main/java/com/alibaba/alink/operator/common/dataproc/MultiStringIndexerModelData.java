@@ -35,8 +35,7 @@ public class MultiStringIndexerModelData {
      * @return The number of tokens of that column.
      */
     public long getNumberOfTokensOfColumn(String columnName) {
-        int colIndex = TableUtil.findColIndex(meta.get(HasSelectedCols.SELECTED_COLS), columnName);
-        Preconditions.checkArgument(colIndex >= 0, "Can't find column: " + columnName);
+        int colIndex = TableUtil.findColIndexWithAssertAndHint(meta.get(HasSelectedCols.SELECTED_COLS), columnName);
         Preconditions.checkArgument(tokenNumber != null);
         return tokenNumber.get(colIndex);
     }

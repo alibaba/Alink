@@ -31,7 +31,7 @@ public class MaxAbsScalerModelMapper extends ModelMapper {
         super(modelSchema, dataSchema, params);
         String[] selectedColNames = RichModelDataConverter.extractSelectedColNames(modelSchema);
         TypeInformation[] selectedColTypes = RichModelDataConverter.extractSelectedColTypes(modelSchema);
-        this.selectedColIndices = TableUtil.findColIndices(dataSchema, selectedColNames);
+        this.selectedColIndices = TableUtil.findColIndicesWithAssert(dataSchema, selectedColNames);
 
         String[] outputColNames = params.get(SrtPredictMapperParams.OUTPUT_COLS);
         if (outputColNames == null) {

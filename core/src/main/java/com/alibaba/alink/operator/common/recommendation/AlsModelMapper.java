@@ -25,9 +25,9 @@ public class AlsModelMapper extends ModelMapper {
         super(modelSchema, dataSchema, params);
         String predResultColName = this.params.get(AlsPredictParams.PREDICTION_COL);
         String userColName = this.params.get(AlsPredictParams.USER_COL);
-        this.userColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), userColName);
+        this.userColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), userColName);
         String itemColName = this.params.get(AlsPredictParams.ITEM_COL);
-        this.itemColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), itemColName);
+        this.itemColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), itemColName);
         this.outputColsHelper = new OutputColsHelper(dataSchema, predResultColName, Types.DOUBLE());
     }
 

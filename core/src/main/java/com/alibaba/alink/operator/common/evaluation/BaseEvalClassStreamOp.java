@@ -50,9 +50,7 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp<T>> extends S
         switch (type) {
             case PRED_RESULT: {
                 String predResultColName = this.get(MultiEvaluationStreamParams.PREDICTION_COL);
-                Preconditions.checkArgument(
-                    TableUtil.findColIndex(in.getColNames(), labelColName) >= 0 || TableUtil.findColIndex(
-                        in.getColNames(), predResultColName) >= 0, "Can not find given column names!");
+                TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predResultColName);
 
                 LabelPredictionWindow predMultiWindowFunction = new LabelPredictionWindow(binary, positiveValue);
                 statistics = in.select(new String[] {labelColName, predResultColName})
@@ -63,9 +61,7 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp<T>> extends S
             }
             case PRED_DETAIL: {
                 String predDetailColName = this.get(MultiEvaluationStreamParams.PREDICTION_DETAIL_COL);
-                Preconditions.checkArgument(
-                    TableUtil.findColIndex(in.getColNames(), labelColName) >= 0 && TableUtil.findColIndex(
-                        in.getColNames(), predDetailColName) >= 0, "Can not find given column names!");
+                TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predDetailColName);
 
                 PredDetailLabel eval = new PredDetailLabel(positiveValue, binary);
 

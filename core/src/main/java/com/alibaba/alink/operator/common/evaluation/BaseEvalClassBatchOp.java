@@ -55,9 +55,7 @@ public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends Bat
         switch (type) {
             case PRED_RESULT: {
                 String predResultColName = this.get(MultiEvaluationParams.PREDICTION_COL);
-                Preconditions.checkArgument(
-                    TableUtil.findColIndex(in.getColNames(), labelColName) >= 0 || TableUtil.findColIndex(
-                        in.getColNames(), predResultColName) >= 0, "Can not find given column names!");
+                TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predResultColName);
 
                 DataSet<Row> data = in.select(new String[] {labelColName, predResultColName}).getDataSet();
                 res = calLabelPredictionLocal(data, positiveValue, binary);
@@ -65,9 +63,7 @@ public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends Bat
             }
             case PRED_DETAIL: {
                 String predDetailColName = this.get(MultiEvaluationParams.PREDICTION_DETAIL_COL);
-                Preconditions.checkArgument(
-                    TableUtil.findColIndex(in.getColNames(), labelColName) >= 0 && TableUtil.findColIndex(
-                        in.getColNames(), predDetailColName) >= 0, "Can not find given column names!");
+                TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predDetailColName);
 
                 DataSet<Row> data = in.select(new String[] {labelColName, predDetailColName}).getDataSet();
                 res = calLabelPredDetailLocal(data, positiveValue, binary);

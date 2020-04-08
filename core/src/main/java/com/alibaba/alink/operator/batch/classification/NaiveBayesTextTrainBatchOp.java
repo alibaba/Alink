@@ -71,7 +71,7 @@ public final class NaiveBayesTextTrainBatchOp
 		double smoothing = getSmoothing();
 		String vectorColName = getVectorCol();
 
-		labelType = in.getColTypes()[TableUtil.findColIndex(in.getColNames(), labelColName)];
+		labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelColName);
 
 		String[] keepColNames = (weightColName == null) ? new String[] {labelColName}
 			: new String[] {weightColName, labelColName};

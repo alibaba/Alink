@@ -139,10 +139,10 @@ public class StatisticsHelper {
         checkSimpleStatParameter(in, selectedColNames, vectorColName, null);
 
         if (selectedColNames != null && selectedColNames.length != 0) {
-            int[] selectedColIndices = TableUtil.findColIndices(in.getColNames(), selectedColNames);
+            int[] selectedColIndices = TableUtil.findColIndicesWithAssertAndHint(in.getColNames(), selectedColNames);
             return in.getDataSet().map(new ColsToVectorWithoutReservedColsMap(selectedColIndices));
         } else {
-            int selectColIndex = TableUtil.findColIndex(in.getColNames(), vectorColName);
+            int selectColIndex = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorColName);
             return in.getDataSet().map(new VectorCoToVectorWithoutReservedColsMap(selectColIndex));
         }
     }
@@ -157,15 +157,15 @@ public class StatisticsHelper {
 
         checkSimpleStatParameter(in, selectedColNames, vectorColName, reservedColNames);
 
-        int[] reservedColIndices = TableUtil.findColIndices(in.getColNames(), reservedColNames);
+        int[] reservedColIndices = TableUtil.findColIndicesWithAssertAndHint(in.getColNames(), reservedColNames);
 
         if (selectedColNames != null && selectedColNames.length != 0) {
-            int[] selectedColIndices = TableUtil.findColIndices(in.getColNames(), selectedColNames);
+            int[] selectedColIndices = TableUtil.findColIndicesWithAssertAndHint(in.getColNames(), selectedColNames);
             return in.getDataSet()
                 .map(new ColsToVectorWithReservedColsMap(selectedColIndices, reservedColIndices))
                 .name("transform_data");
         } else {
-            int vectorColIndex = TableUtil.findColIndex(in.getColNames(), vectorColName);
+            int vectorColIndex = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorColName);
             return in.getDataSet()
                 .map(new VectorColToVectorWithReservedColsMap(vectorColIndex, reservedColIndices))
                 .name("transform_data");
@@ -191,16 +191,16 @@ public class StatisticsHelper {
 
         int[] reservedColIndices = null;
         if (reservedColNames != null) {
-            reservedColIndices = TableUtil.findColIndices(in.getColNames(), reservedColNames);
+            reservedColIndices = TableUtil.findColIndicesWithAssertAndHint(in.getColNames(), reservedColNames);
         }
 
         if (selectedColNames != null && selectedColNames.length != 0) {
-            int[] selectedColIndices = TableUtil.findColIndices(in.getSchema(), selectedColNames);
+            int[] selectedColIndices = TableUtil.findColIndicesWithAssertAndHint(in.getSchema(), selectedColNames);
             return in.getDataSet().map(new ColsToDoubleColsMap(selectedColIndices, reservedColIndices));
         }
 
         if (vectorColName != null) {
-            int vectorColIndex = TableUtil.findColIndex(in.getColNames(), vectorColName);
+            int vectorColIndex = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorColName);
             return in.getDataSet().map(new VectorColToTableMap(vectorColIndex, reservedColIndices));
         }
 
@@ -245,9 +245,7 @@ public class StatisticsHelper {
      */
     private static DataSet<BaseVectorSummarizer> vectorSummarizer(BatchOperator in, String selectedColName,
                                                                   boolean calculateOuterProduct) {
-        if (TableUtil.findColIndex(in.getColNames(), selectedColName) < 0) {
-            throw new RuntimeException(selectedColName + " is not exist.");
-        }
+        TableUtil.assertSelectedColExist(in.getColNames(), selectedColName);
 
         DataSet<Vector> data = transformToVector(in, null, selectedColName);
         return summarizer(data, calculateOuterProduct);

@@ -79,14 +79,14 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 			getParams().set(
 				ModelParamName.LABEL_TYPE,
 				FlinkTypeConverter.getTypeString(
-					TableUtil.findColType(in.getSchema(), getParams().get(HasLabelCol.LABEL_COL))
+					TableUtil.findColTypeWithAssertAndHint(in.getSchema(), getParams().get(HasLabelCol.LABEL_COL))
 				)
 			);
 		}
 
 		getParams().set(ModelParamName.FEATURE_TYPES,
 			FlinkTypeConverter.getTypeString(
-				TableUtil.findColTypes(in.getSchema(), getParams().get(HasFeatureCols.FEATURE_COLS))
+				TableUtil.findColTypesWithAssertAndHint(in.getSchema(), getParams().get(HasFeatureCols.FEATURE_COLS))
 			)
 		);
 

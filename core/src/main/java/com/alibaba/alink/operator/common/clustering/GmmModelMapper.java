@@ -29,10 +29,7 @@ public class GmmModelMapper extends RichModelMapper {
     public GmmModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
         super(modelSchema, dataSchema, params);
         String vectorColName = this.params.get(GmmPredictParams.VECTOR_COL);
-        vectorColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), vectorColName);
-        if (vectorColIdx < 0) {
-            throw new RuntimeException("Can't find vectorCol: " + vectorColName);
-        }
+        vectorColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), vectorColName);
     }
 
     @Override

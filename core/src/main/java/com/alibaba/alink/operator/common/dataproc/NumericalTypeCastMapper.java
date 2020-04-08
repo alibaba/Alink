@@ -28,7 +28,7 @@ public class NumericalTypeCastMapper extends Mapper {
 	public NumericalTypeCastMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
 		String[] inputColNames = this.params.get(NumericalTypeCastParams.SELECTED_COLS);
-		this.colIndices = TableUtil.findColIndices(dataSchema.getFieldNames(), inputColNames);
+		this.colIndices = TableUtil.findColIndicesWithAssertAndHint(dataSchema.getFieldNames(), inputColNames);
 		String[] outputColNames = params.get(NumericalTypeCastParams.OUTPUT_COLS);
 		if (outputColNames == null || outputColNames.length == 0) {
 			outputColNames = inputColNames;

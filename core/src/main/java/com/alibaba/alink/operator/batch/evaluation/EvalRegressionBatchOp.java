@@ -38,9 +38,8 @@ public final class EvalRegressionBatchOp extends BatchOperator<EvalRegressionBat
     public EvalRegressionBatchOp linkFrom(BatchOperator<?>... inputs) {
         BatchOperator in = checkAndGetFirst(inputs);
 
-        int indexLabel = TableUtil.findColIndex(in.getColNames(), this.getLabelCol());
-        int indexPredict = TableUtil.findColIndex(in.getColNames(), this.getPredictionCol());
-        Preconditions.checkArgument(indexLabel >= 0 && indexPredict >= 0, "Can not find given columns!");
+        TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getLabelCol());
+        TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getPredictionCol());
 
         TableUtil.assertNumericalCols(in.getSchema(), this.getLabelCol(), this.getPredictionCol());
         DataSet<Row> out = in.select(new String[] {this.getLabelCol(), this.getPredictionCol()})

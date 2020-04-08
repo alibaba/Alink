@@ -156,8 +156,8 @@ public final class AlsPredictBatchOp
         String userColName = getUserCol();
         String itemColName = getItemCol();
         String predResultColName = getPredictionCol();
-        final int userColIdx = TableUtil.findColIndex(data.getColNames(), userColName);
-        final int itemColIdx = TableUtil.findColIndex(data.getColNames(), itemColName);
+        final int userColIdx = TableUtil.findColIndexWithAssertAndHint(data.getColNames(), userColName);
+        final int itemColIdx = TableUtil.findColIndexWithAssertAndHint(data.getColNames(), itemColName);
 
         DataSet<Tuple2<Long, float[]>> userFactors = getFactors(model, 0);
         DataSet<Tuple2<Long, float[]>> itemFactors = getFactors(model, 1);

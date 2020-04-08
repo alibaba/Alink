@@ -51,7 +51,7 @@ public final class OneHotTrainBatchOp extends BatchOperator<OneHotTrainBatchOp>
 		final String[] selectedColSqlType = new String[selectedColNames.length];
 		for (int i = 0; i < selectedColNames.length; i++) {
 			selectedColSqlType[i] = FlinkTypeConverter.getTypeString(
-				TableUtil.findColType(in.getSchema(), selectedColNames[i]));
+				TableUtil.findColTypeWithAssertAndHint(in.getSchema(), selectedColNames[i]));
 		}
 		int[] thresholdArray;
 

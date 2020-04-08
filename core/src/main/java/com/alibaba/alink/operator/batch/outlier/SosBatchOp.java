@@ -39,7 +39,7 @@ public final class SosBatchOp
 		BatchOperator<?> in = checkAndGetFirst(inputs);
 		final String vectorColName = getVectorCol();
 		final String predResultColName = getPredictionCol();
-		final int vectorColIdx = TableUtil.findColIndex(in.getColNames(), vectorColName);
+		final int vectorColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorColName);
 
 		DataSet <Tuple2 <Integer, Row>> pointsWithIndex = DataSetUtils
 			.zipWithIndex(in.getDataSet())

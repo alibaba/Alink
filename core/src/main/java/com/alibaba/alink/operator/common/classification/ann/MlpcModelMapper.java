@@ -74,11 +74,10 @@ public class MlpcModelMapper extends RichModelMapper {
             String vectorColName = params.contains(MultilayerPerceptronPredictParams.VECTOR_COL) ?
                 params.get(MultilayerPerceptronPredictParams.VECTOR_COL) :
                 model.meta.get(MultilayerPerceptronPredictParams.VECTOR_COL);
-            this.vectorColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), vectorColName);
-            assert this.vectorColIdx >= 0;
+            this.vectorColIdx = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), vectorColName);
         } else {
             String[] featureColNames = model.meta.get(MultilayerPerceptronTrainParams.FEATURE_COLS);
-            this.featureColIdx = TableUtil.findColIndices(dataSchema.getFieldNames(), featureColNames);
+            this.featureColIdx = TableUtil.findColIndicesWithAssert(dataSchema.getFieldNames(), featureColNames);
         }
     }
 

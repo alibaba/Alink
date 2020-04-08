@@ -82,7 +82,7 @@ public class LdaTrainBatchOp extends BatchOperator<LdaTrainBatchOp>
         getParams().set(SELECTED_COL, vectorColName);
         final DataSet<DocCountVectorizerModelData> resDocCountModel = DocCountVectorizerTrainBatchOp
                 .generateDocCountModel(getParams(), in);
-        int index = TableUtil.findColIndex(in.getColNames(), vectorColName);
+        int index = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorColName);
         DataSet<Row> resRow = in.getDataSet()
                 .flatMap(new Document2Vector(index)).withBroadcastSet(resDocCountModel, "DocCountModel");
         TypeInformation<?>[] types = in.getColTypes();

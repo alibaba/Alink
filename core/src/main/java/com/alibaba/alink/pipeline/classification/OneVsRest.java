@@ -124,8 +124,7 @@ public class OneVsRest extends EstimatorBase<OneVsRest, OneVsRestModel>
         BatchOperator allLabels = getAllLabels(data, labelColName);
         int numClasses = getNumClass();
 
-        int labelColIdx = TableUtil.findColIndex(data.getColNames(), labelColName);
-        assert (labelColIdx >= 0);
+        int labelColIdx = TableUtil.findColIndexWithAssertAndHint(data.getColNames(), labelColName);
         TypeInformation labelColType = data.getColTypes()[labelColIdx];
 
         ModelBase[] models = new ModelBase[numClasses];
@@ -219,8 +218,7 @@ public class OneVsRest extends EstimatorBase<OneVsRest, OneVsRestModel>
     }
 
     private BatchOperator getAllLabels(BatchOperator data, String labelColName) {
-        final int labelColIdx = TableUtil.findColIndex(data.getColNames(), labelColName);
-        assert labelColIdx >= 0;
+        final int labelColIdx = TableUtil.findColIndexWithAssertAndHint(data.getColNames(), labelColName);
         DataSet<Row> input = data.getDataSet();
         DataSet<Row> output = input
             .<Tuple1<Comparable>>mapPartition(new MapPartitionFunction<Row, Tuple1<Comparable>>() {

@@ -44,10 +44,8 @@ class SISOColsHelper implements Serializable {
 		String outputColName = params.get(SISOMapperParams.OUTPUT_COL);
 		String[] reservedColNames = params.get(SISOMapperParams.RESERVED_COLS);
 
-		this.colIndex = TableUtil.findColIndex(dataSchema.getFieldNames(), selectedColName);
-		if (this.colIndex < 0) {
-			throw new IllegalArgumentException("Can't find column " + selectedColName);
-		}
+		this.colIndex = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), selectedColName);
+
 		if (outputColName == null) {
 			outputColName = selectedColName;
 		}

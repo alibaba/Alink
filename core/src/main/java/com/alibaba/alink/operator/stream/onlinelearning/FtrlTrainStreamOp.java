@@ -90,15 +90,15 @@ public final class FtrlTrainStreamOp extends StreamOperator<FtrlTrainStreamOp>
         int vectorSize = getVectorSize();
         boolean hasInterceptItem = getWithIntercept();
         int vectorTrainIdx = getVectorCol() != null ?
-            TableUtil.findColIndex(inputs[0].getColNames(), getVectorCol()) : -1;
-        int labelIdx = TableUtil.findColIndex(inputs[0].getColNames(), getLabelCol());
+            TableUtil.findColIndexWithAssertAndHint(inputs[0].getColNames(), getVectorCol()) : -1;
+        int labelIdx = TableUtil.findColIndexWithAssertAndHint(inputs[0].getColNames(), getLabelCol());
         String[] featureCols = getFeatureCols();
         int[] featureIdx = null;
         int featureColLength = -1;
         if (vectorTrainIdx == -1) {
             featureIdx = new int[featureCols.length];
             for (int i = 0; i < featureCols.length; ++i) {
-                featureIdx[i] = TableUtil.findColIndex(inputs[0].getColNames(), featureCols[i]);
+                featureIdx[i] = TableUtil.findColIndexWithAssertAndHint(inputs[0].getColNames(), featureCols[i]);
             }
             featureColLength = featureCols.length;
         }
