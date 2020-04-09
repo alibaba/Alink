@@ -1,15 +1,21 @@
 package com.alibaba.alink.operator.common.classification;
 
-import com.alibaba.alink.common.linalg.*;
-import com.alibaba.alink.common.mapper.RichModelMapper;
-import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.params.classification.NaiveBayesTextTrainParams.ModelType;
 import com.alibaba.alink.params.classification.NaiveBayesTextPredictParams;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.linalg.BLAS;
+import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.common.mapper.RichModelMapper;
+import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.TableUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,10 +40,9 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
     public NaiveBayesTextModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
         super(modelSchema, dataSchema, params);
         this.colNames = dataSchema.getFieldNames();
+
         this.vectorColName = params.get(NaiveBayesTextPredictParams.VECTOR_COL);
-        vectorIndex = TableUtil.findColIndex(colNames, vectorColName);
-        Preconditions.checkArgument(vectorIndex != -1,
-                "the predict vector is not in the predict data schema.");
+        vectorIndex = TableUtil.findColIndexWithAssertAndHint(colNames, vectorColName);
     }
 
     /**
@@ -51,9 +56,9 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
         DenseVector prob = DenseVector.zeros(rowSize);
         DenseVector pi = new DenseVector(modelData.pi);
         if (vec instanceof DenseVector) {
-            BLAS.gemv(1, modelData.theta, false, (DenseVector)vec, 0, prob);
+            BLAS.gemv(1, modelData.theta, false, (DenseVector) vec, 0, prob);
         } else {
-            BLAS.gemv(1, modelData.theta, false, (SparseVector)vec, 0, prob);
+            BLAS.gemv(1, modelData.theta, false, (SparseVector) vec, 0, prob);
         }
         BLAS.axpy(1, pi, prob);
         return prob.getData();
@@ -72,15 +77,15 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
         DenseVector pi = new DenseVector(modelData.pi);
         DenseVector phi = new DenseVector(modelData.phi);
         if (vec instanceof DenseVector) {
-            DenseVector denseVec = (DenseVector)vec;
+            DenseVector denseVec = (DenseVector) vec;
             for (int j = 0; j < colSize; ++j) {
                 double value = denseVec.get(j);
                 Preconditions.checkArgument(value == 0. || value == 1.,
-                    "Bernoulli naive Bayes requires 0 or 1 feature values.");
+                        "Bernoulli naive Bayes requires 0 or 1 feature values.");
             }
             BLAS.gemv(1, modelData.minMat, false, denseVec, 0, prob);
         } else {
-            BLAS.gemv(1, modelData.minMat, false, (SparseVector)vec, 0, prob);
+            BLAS.gemv(1, modelData.minMat, false, (SparseVector) vec, 0, prob);
         }
         BLAS.axpy(1, pi, prob);
         BLAS.axpy(1, phi, prob);
@@ -89,8 +94,7 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
 
     @Override
     public void loadModel(List<Row> modelRows) {
-        modelData = new NaiveBayesTextModelDataConverter().load(modelRows);
-    }
+        modelData = new NaiveBayesTextModelDataConverter().load(modelRows); }
 
     /**
      * Calculate the probability of each label and return the most possible one.
@@ -157,7 +161,7 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
 
     private double[] calculateProb(Row row) {
         Vector featVec = VectorUtil.getVector(row.getField(this.vectorIndex));
-        if (NaiveBayesTextModelDataConverter.BayesType.MULTINOMIAL.equals(modelData.modelType)) {
+        if (ModelType.Multinomial.equals(modelData.modelType)) {
             return multinomialCalculation(featVec);
         } else {
             return bernoulliCalculation(featVec);

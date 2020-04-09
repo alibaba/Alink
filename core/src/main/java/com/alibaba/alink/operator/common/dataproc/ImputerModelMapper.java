@@ -1,15 +1,15 @@
 package com.alibaba.alink.operator.common.dataproc;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
-
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.params.dataproc.HasStrategy;
 import com.alibaba.alink.params.dataproc.SrtPredictMapperParams;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
 
 import java.util.List;
 
@@ -72,9 +72,14 @@ public class ImputerModelMapper extends ModelMapper {
     @Override
     public void loadModel(List<Row> modelRows) {
         ImputerModelDataConverter converter = new ImputerModelDataConverter();
-        Tuple2<String, double[]> tuple2 = converter.load(modelRows);
+        Tuple3<HasStrategy.Strategy, double[], String> tuple2 = converter.load(modelRows);
         values = tuple2.f1;
-        fillValue = tuple2.f0.toLowerCase();
+        if (HasStrategy.Strategy.VALUE.equals(tuple2.f0)) {
+            if (tuple2.f2 == null) {
+                throw new RuntimeException("In VALUE strategy, the filling value is necessary.");
+            }
+            fillValue = tuple2.f2.toLowerCase();
+        }
     }
 
     /**

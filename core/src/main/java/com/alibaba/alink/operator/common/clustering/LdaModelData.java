@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.clustering;
 
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.operator.common.nlp.DocCountVectorizerModelData;
+import com.alibaba.alink.params.clustering.LdaTrainParams;
 
 import java.io.Serializable;
 import java.util.List;
@@ -27,7 +28,7 @@ public class LdaModelData implements Serializable  {
     public int topicNum;
     public int vocabularySize;
     //the optimizer strategy.
-    public String optimizer = "em";
+    public LdaTrainParams.Method optimizer = LdaTrainParams.Method.EM;
     //for calculate perplexity.
     public double logPerplexity;
     public double logLikelihood;

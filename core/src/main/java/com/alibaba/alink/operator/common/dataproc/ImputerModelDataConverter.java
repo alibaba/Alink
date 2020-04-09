@@ -3,9 +3,7 @@ package com.alibaba.alink.operator.common.dataproc;
 import com.alibaba.alink.common.model.RichModelDataConverter;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.params.dataproc.ImputerTrainParams;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
@@ -13,10 +11,12 @@ import org.apache.flink.types.Row;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.alibaba.alink.params.dataproc.ImputerTrainParams.*;
+
 /**
  * This converter can help serialize and deserialize the model data.
  */
-public class ImputerModelDataConverter extends RichModelDataConverter<Tuple2<String, TableSummary>, Tuple2<String, double[]>> {
+public class ImputerModelDataConverter extends RichModelDataConverter<Tuple3<Strategy, TableSummary, String>, Tuple3<Strategy, double[], String>> {
     public String[] selectedColNames;
     public TypeInformation[] selectedColTypes;
 
@@ -43,36 +43,38 @@ public class ImputerModelDataConverter extends RichModelDataConverter<Tuple2<Str
      * @return The serialization result.
      */
     @Override
-    public Tuple3<Params, Iterable<String>, Iterable<Row>> serializeModel(Tuple2<String, TableSummary> modelData) {
-        String strategy = modelData.f0.trim().toUpperCase();
+    public Tuple3<Params, Iterable<String>, Iterable<Row>> serializeModel(Tuple3<Strategy, TableSummary, String> modelData) {
+        Strategy strategy = modelData.f0;
         TableSummary summary = modelData.f1;
+        String fillValue = modelData.f2;
 
         double[] values = null;
-
-        switch (strategy.trim().toUpperCase()) {
-            case "MIN":
+        Params meta = new Params()
+                .set(STRATEGY, strategy)
+                .set(SELECTED_COLS, selectedColNames);
+        switch (strategy) {
+            case MIN:
                 values = new double[selectedColNames.length];
                 for (int i = 0; i < selectedColNames.length; i++) {
                     values[i] = summary.min(selectedColNames[i]);
                 }
                 break;
-            case "MAX":
+            case MAX:
                 values = new double[selectedColNames.length];
                 for (int i = 0; i < selectedColNames.length; i++) {
                     values[i] = summary.max(selectedColNames[i]);
                 }
                 break;
-            case "MEAN":
+            case MEAN:
                 values = new double[selectedColNames.length];
                 for (int i = 0; i < selectedColNames.length; i++) {
                     values[i] = summary.mean(selectedColNames[i]);
                 }
                 break;
             default:
+                meta.set(FILL_VALUE, fillValue);
         }
-        Params meta = new Params()
-                .set(ImputerTrainParams.STRATEGY, strategy)
-                .set(ImputerTrainParams.SELECTED_COLS, selectedColNames);
+
         List<String> data = new ArrayList<>();
         data.add(JsonConverter.toJson(values));
 
@@ -88,10 +90,11 @@ public class ImputerModelDataConverter extends RichModelDataConverter<Tuple2<Str
      * @return The deserialized model data.
      */
     @Override
-    public Tuple2<String, double[]> deserializeModel(Params meta, Iterable<String> data, Iterable<Row> additionData) {
-        return Tuple2.of(
-                meta.get(ImputerTrainParams.STRATEGY),
-                data.iterator().hasNext() ? JsonConverter.fromJson(data.iterator().next(), double[].class) : null
+    public Tuple3<Strategy, double[], String> deserializeModel(Params meta, Iterable<String> data, Iterable<Row> additionData) {
+        return Tuple3.of(
+                meta.get(STRATEGY),
+                data.iterator().hasNext() ? JsonConverter.fromJson(data.iterator().next(), double[].class) : null,
+                meta.get(FILL_VALUE)
         );
     }
 }

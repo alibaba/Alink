@@ -62,12 +62,11 @@ public class LdaModelDataConverter extends SimpleModelDataConverter<LdaModelData
         modelData.logLikelihood = meta.get(LdaEvaluateParams.LOG_LIKELIHOOD);
         Tuple2<DenseMatrix, List<String>> res = deserializeMatrixAndDocCountData(data);
         modelData.list = res.f1;
-        LdaUtil.OptimizerMethod optimizerMethod = LdaUtil.OptimizerMethod.valueOf(modelData.optimizer.toUpperCase());
-        switch (optimizerMethod) {
+        switch (modelData.optimizer) {
             case EM:
                 modelData.gamma = res.f0;
                 break;
-            case ONLINE:
+            case Online:
                 modelData.wordTopicCounts = res.f0;
                 break;
             default:

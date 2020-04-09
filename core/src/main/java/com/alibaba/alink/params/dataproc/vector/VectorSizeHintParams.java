@@ -9,5 +9,5 @@ import com.alibaba.alink.params.shared.HasSize;
  */
 public interface VectorSizeHintParams<T> extends
 	SISOMapperParams<T>,
-	HasSize <T>,
-	HasHandleInvalid <T> {}
+	HasSize<T>,
+	HasHandleInvalid<T> {}

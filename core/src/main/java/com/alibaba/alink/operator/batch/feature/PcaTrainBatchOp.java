@@ -71,7 +71,7 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
         //get parameters
         String[] selectedColNames = getSelectedCols();
         String vectorColName = getVectorCol();
-        String calcType = getCalculationType();
+        CalculationType calcType = getCalculationType();
         int k = getK();
 
         //convert table, dense tensor or sparse tensor to dense vector
@@ -81,7 +81,7 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
         VectorSplit vectorSplit = new VectorSplit();
 
         //combine vector
-        VecCombine vecCombine = new VecCombine(calcType, k, selectedColNames, vectorColName);
+        VecCombine vecCombine = new VecCombine(calcType.name(), k, selectedColNames, vectorColName);
 
         DataSet<Row> srt = data
             .mapPartition(new StatisticsHelper.VectorSummarizerPartition(true))

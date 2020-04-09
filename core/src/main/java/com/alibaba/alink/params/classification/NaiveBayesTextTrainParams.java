@@ -1,5 +1,6 @@
 package com.alibaba.alink.params.classification;
 
+import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.shared.HasSmoothing;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
@@ -16,19 +17,35 @@ public interface NaiveBayesTextTrainParams<T> extends
         HasVectorCol<T>,
         HasSmoothing<T> {
 
-	ParamInfo<String> MODEL_TYPE = ParamInfoFactory
-		.createParamInfo("modelType", String.class)
-		.setDescription("model type : Multinomial or Bernoulli.")
-		.setHasDefaultValue("Multinomial")
-		.setAlias(new String[] {"bayesType"})
-		.build();
+	ParamInfo <ModelType> MODEL_TYPE = ParamInfoFactory
+			.createParamInfo("modelType", ModelType.class)
+			.setDescription("model type : Multinomial or Bernoulli.")
+			.setHasDefaultValue(ModelType.Multinomial)
+			.setAlias(new String[] {"bayesType"})
+			.build();
 
-	default String getModelType() {
+	default ModelType getModelType() {
 		return get(MODEL_TYPE);
 	}
 
-	default T setModelType(String value) {
+	default T setModelType(ModelType value) {
 		return set(MODEL_TYPE, value);
+	}
+
+	default T setModelType(String value) {
+		return set(MODEL_TYPE, ParamUtil.searchEnum(MODEL_TYPE, value));
+	}
+
+	enum ModelType {
+		/**
+		 * Multinomial type.
+		 */
+		Multinomial,
+
+		/**
+		 * Bernoulli type.
+		 */
+		Bernoulli
 	}
 
 }

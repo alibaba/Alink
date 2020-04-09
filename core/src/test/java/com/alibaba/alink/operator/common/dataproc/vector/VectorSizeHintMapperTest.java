@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.dataproc.vector;
 
+import com.alibaba.alink.params.shared.HasHandleInvalid;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
@@ -35,7 +36,7 @@ public class VectorSizeHintMapperTest {
 		Params params = new Params()
 			.set(VectorSizeHintParams.SELECTED_COL, "vec")
 			.set(VectorSizeHintParams.OUTPUT_COL, "res")
-			.set(VectorSizeHintParams.HANDLE_INVALID, "optimistic")
+			.set(VectorSizeHintParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalidMethod.Optimistic)
 			.set(VectorSizeHintParams.SIZE, 2);
 
 		VectorSizeHintMapper mapper = new VectorSizeHintMapper(schema, params);

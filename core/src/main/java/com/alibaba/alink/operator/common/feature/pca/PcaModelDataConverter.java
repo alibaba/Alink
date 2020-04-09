@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.feature.pca;
 
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
+import com.alibaba.alink.params.feature.HasCalculationType;
 import org.apache.flink.api.java.tuple.Tuple2;
 
 import org.apache.flink.ml.api.misc.param.Params;
@@ -36,7 +37,6 @@ public class PcaModelDataConverter extends SimpleModelDataConverter<PcaModelData
 
     public PcaModelDataConverter() {
     }
-
     /**
      * Serialize the model to "Tuple2<Params, List<String>>"
      *
@@ -45,9 +45,11 @@ public class PcaModelDataConverter extends SimpleModelDataConverter<PcaModelData
     @Override
     public Tuple2<Params, Iterable<String>> serializeModel(PcaModelData modelData) {
         Params meta = new Params()
-            .set(HasFeatureColsDefaultAsNull.FEATURE_COLS, featureColNames)
-            .set(PcaTrainParams.VECTOR_COL, vectorColName)
-            .set(PcaTrainParams.CALCULATION_TYPE, pcaType);
+                .set(HasFeatureColsDefaultAsNull.FEATURE_COLS, featureColNames)
+                .set(PcaTrainParams.VECTOR_COL, vectorColName);
+        if (pcaType != null) {
+            meta.set(PcaTrainParams.CALCULATION_TYPE, HasCalculationType.CalculationType.valueOf(pcaType));
+        }
         return Tuple2.of(meta, Arrays.asList(JsonConverter.toJson(modelData)));
     }
 

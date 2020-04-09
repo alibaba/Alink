@@ -32,7 +32,7 @@ public class VectorImputerTest {
 		String selectedColName = "vec";
 
 		String strategy = "value";
-		String fillValue = "-7.0";
+		double fillValue = -7.0;
 		TableSchema schema = new TableSchema(
 			new String[] {"id", "vec"},
 			new TypeInformation<?>[] {Types.STRING, Types.STRING}

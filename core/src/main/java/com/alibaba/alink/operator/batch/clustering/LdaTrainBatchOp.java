@@ -78,7 +78,7 @@ public class LdaTrainBatchOp extends BatchOperator<LdaTrainBatchOp>
         int numTopic = getTopicNum();
         int numIter = getNumIter();
         String vectorColName = getSelectedCol();
-        String optimizer = getMethod();
+        Method optimizer = getMethod();
         getParams().set(SELECTED_COL, vectorColName);
         final DataSet<DocCountVectorizerModelData> resDocCountModel = DocCountVectorizerTrainBatchOp
                 .generateDocCountModel(getParams(), in);
@@ -94,12 +94,11 @@ public class LdaTrainBatchOp extends BatchOperator<LdaTrainBatchOp>
                 = StatisticsHelper.summaryHelper(trainData, null, vectorColName);
         double beta = getParams().get(BETA);
         double alpha = getParams().get(ALPHA);
-        LdaUtil.OptimizerMethod optimizerMethod = LdaUtil.OptimizerMethod.valueOf(optimizer.toUpperCase());
-        switch (optimizerMethod) {
+        switch (optimizer) {
             case EM:
                 gibbsSample(dataAndStat, numTopic, numIter, alpha, beta, resDocCountModel);
                 break;
-            case ONLINE:
+            case Online:
                 online(dataAndStat, numTopic, numIter, alpha, beta, resDocCountModel);
                 break;
             default:

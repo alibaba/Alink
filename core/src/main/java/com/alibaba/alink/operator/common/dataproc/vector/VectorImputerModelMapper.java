@@ -1,20 +1,19 @@
 package com.alibaba.alink.operator.common.dataproc.vector;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
-
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.SISOModelMapper;
 import com.alibaba.alink.common.model.RichModelDataConverter;
-import com.alibaba.alink.common.VectorTypes;
-import com.alibaba.alink.params.dataproc.vector.VectorImputerTrainParams;
+import com.alibaba.alink.params.dataproc.HasStrategy;
 import com.alibaba.alink.params.dataproc.vector.VectorSrtPredictorParams;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
 
 import java.util.List;
 
@@ -23,14 +22,13 @@ import java.util.List;
  * Strategy support min, max, mean or value.
  */
 public class VectorImputerModelMapper extends SISOModelMapper {
-    private String fillValue;
     private double[] values;
     private double value;
 
     public VectorImputerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
         super(modelSchema, dataSchema, params.set(VectorSrtPredictorParams.SELECTED_COL,
-            RichModelDataConverter.extractSelectedColNames(modelSchema)[0]));
-        this.fillValue = this.params.get(VectorImputerTrainParams.FILL_VALUE);
+                RichModelDataConverter.extractSelectedColNames(modelSchema)[0]));
+
     }
 
     @Override
@@ -65,14 +63,14 @@ public class VectorImputerModelMapper extends SISOModelMapper {
     @Override
     public void loadModel(List<Row> modelRows) {
         VectorImputerModelDataConverter converter = new VectorImputerModelDataConverter();
-        Tuple2<String, double[]> tuple2 = converter.load(modelRows);
-        this.fillValue = tuple2.f0;
+        Tuple3<HasStrategy.Strategy, double[], Double> tuple2 = converter.load(modelRows);
         this.values = tuple2.f1;
-
         if (this.values == null) {
-            this.value = Double.parseDouble(this.fillValue);
+            if (tuple2.f2 == null) {
+                throw new RuntimeException("In VALUE strategy, the filling value is necessary.");
+            }
+            this.value = tuple2.f2;
         }
-
     }
 
     /**

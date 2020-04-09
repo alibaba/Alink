@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.clustering.lda;
 
 import com.alibaba.alink.operator.common.clustering.LdaModelData;
+import com.alibaba.alink.params.clustering.LdaTrainParams;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
 
@@ -60,7 +61,7 @@ public class BuildOnlineLdaModel extends CompleteResultFunction {
         modelData.vocabularySize = vocabularySize;
         modelData.wordTopicCounts = context.getObj(LdaVariable.lambda);
 
-        modelData.optimizer = "online";
+        modelData.optimizer = LdaTrainParams.Method.Online;
 
         long nonEmptyWordCount = Math.round(((double[]) context.getObj(LdaVariable.nonEmptyWordCount))[0]);
         double[] logLikelihoods = context.getObj(LdaVariable.logLikelihood);

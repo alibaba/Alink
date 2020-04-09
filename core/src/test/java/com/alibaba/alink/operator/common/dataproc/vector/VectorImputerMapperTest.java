@@ -111,14 +111,14 @@ public class VectorImputerMapperTest {
     @Test
     public void testValue() throws Exception {
         Row[] rows = new Row[]{
-                Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"strategy\":\"\\\"-7.0\\\"\"}", null)
+                Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"fillValue\":\"\\\"-7.0\\\"\",\"strategy\":\"\\\"VALUE\\\"\"}", null)
         };
 
         List<Row> model = Arrays.asList(rows);
 
         TableSchema dataSchema = new TableSchema(
-            new String[]{"vec"},
-            new TypeInformation<?>[]{Types.STRING}
+                new String[]{"vec"},
+                new TypeInformation<?>[]{Types.STRING}
         );
         Params params = new Params();
 

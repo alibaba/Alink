@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.clustering.lda;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.operator.common.clustering.LdaModelData;
 import com.alibaba.alink.operator.common.clustering.LdaModelDataConverter;
+import com.alibaba.alink.params.clustering.LdaTrainParams;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.junit.Test;
@@ -39,7 +40,7 @@ public class LdaModelDataConverterTest {
         modelData.beta = new Double[]{0.2, 0.2, 0.2, 0.2, 0.2};
         modelData.topicNum = 3;
         modelData.vocabularySize = 5;
-        modelData.optimizer = "em";
+        modelData.optimizer = LdaTrainParams.Method.EM;
         modelData.list = generateDocData();
         modelData.gamma = denseMatrix;
         return modelData;

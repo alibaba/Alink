@@ -92,13 +92,13 @@ public class ImputerMapperTest {
         TableSchema modelSchema = new TableSchema(new String[]{"model_id", "model_info", "f_double", "f_long", "f_int", "f_boolean"},
                 new TypeInformation[]{Types.LONG, Types.STRING, Types.DOUBLE, Types.LONG, Types.INT, Types.BOOLEAN});
         Row[] rows = new Row[]{
-                Row.of(0L, "{\"selectedCols\":\"[\\\"f_double\\\",\\\"f_long\\\",\\\"f_int\\\",\\\"f_boolean\\\"]\",\"strategy\":\"\\\"0\\\"\"}", null, null, null),
+                Row.of(0L, "{\"selectedCols\":\"[\\\"f_double\\\",\\\"f_long\\\",\\\"f_int\\\",\\\"f_boolean\\\"]\",\"fillValue\":\"\\\"0\\\"\",\"strategy\":\"\\\"VALUE\\\"\"}", null, null, null),
         };
         List<Row> model = Arrays.asList(rows);
 
         TableSchema dataSchema = new TableSchema(
-            new String[]{"f_string", "f_long", "f_int", "f_double", "f_boolean"},
-            new TypeInformation<?>[]{Types.STRING, Types.LONG, Types.INT, Types.DOUBLE, Types.BOOLEAN}
+                new String[]{"f_string", "f_long", "f_int", "f_double", "f_boolean"},
+                new TypeInformation<?>[]{Types.STRING, Types.LONG, Types.INT, Types.DOUBLE, Types.BOOLEAN}
         );
         Params params = new Params();
 

@@ -5,7 +5,7 @@ import com.alibaba.alink.operator.common.dataproc.vector.VectorImputerModelDataC
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -27,7 +27,7 @@ import org.apache.flink.util.Collector;
  * Or it will throw "no support" exception.
  */
 public class VectorImputerTrainBatchOp extends BatchOperator<VectorImputerTrainBatchOp>
-    implements VectorImputerTrainParams<VectorImputerTrainBatchOp> {
+        implements VectorImputerTrainParams<VectorImputerTrainBatchOp> {
 
     public VectorImputerTrainBatchOp() {
         super(null);
@@ -41,7 +41,7 @@ public class VectorImputerTrainBatchOp extends BatchOperator<VectorImputerTrainB
     public VectorImputerTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
         BatchOperator<?> in = checkAndGetFirst(inputs);
         String vectorColName = getSelectedCol();
-        String strategy = getStrategy();
+        Strategy strategy = getStrategy();
 
         /* result is statistic model with strategy. */
         VectorImputerModelDataConverter converter = new VectorImputerModelDataConverter();
@@ -52,11 +52,14 @@ public class VectorImputerTrainBatchOp extends BatchOperator<VectorImputerTrainB
         if (isNeedStatModel()) {
             /* first calculate the data, then transform it into model. */
             rows = StatisticsHelper.vectorSummary(in, vectorColName)
-                .flatMap(new BuildVectorImputerModel(vectorColName, strategy));
+                    .flatMap(new BuildVectorImputerModel(vectorColName, strategy));
         } else {
-            String fillValue = getFillValue();
+            if (!getParams().contains(VectorImputerTrainParams.FILL_VALUE)) {
+                throw new RuntimeException("In VALUE strategy, the filling value is necessary.");
+            }
+            double fillValue = getFillValue();
             RowCollector collector = new RowCollector();
-            converter.save(Tuple2.of(fillValue, null), collector);
+            converter.save(Tuple3.of(Strategy.VALUE, null, fillValue), collector);
             rows = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment().fromCollection(collector.getRows());
         }
         this.setOutput(rows, converter.getModelSchema());
@@ -64,13 +67,13 @@ public class VectorImputerTrainBatchOp extends BatchOperator<VectorImputerTrainB
     }
 
     private boolean isNeedStatModel() {
-        String strategy = getStrategy();
-        if ("min".equals(strategy) || "max".equals(strategy) || "mean".equals(strategy)) {
+        Strategy strategy = getStrategy();
+        if (Strategy.MIN.equals(strategy) || Strategy.MAX.equals(strategy) || Strategy.MEAN.equals(strategy)) {
             return true;
-        } else if ("value".equals(strategy)){
+        } else if (Strategy.VALUE.equals(strategy)){
             return false;
         } else {
-            throw new IllegalArgumentException("Only support \"max\", \"mean\", \"min\" and \"value\" strategy.");
+            throw new IllegalArgumentException("Only support \"MAX\", \"MEAN\", \"MIN\" and \"VALUE\" strategy.");
         }
     }
 
@@ -80,9 +83,9 @@ public class VectorImputerTrainBatchOp extends BatchOperator<VectorImputerTrainB
      */
     public static class BuildVectorImputerModel implements FlatMapFunction<BaseVectorSummary, Row> {
         private String selectedColName;
-        private String strategy;
+        private Strategy strategy;
 
-        public BuildVectorImputerModel(String selectedColName, String strategy) {
+        public BuildVectorImputerModel(String selectedColName, Strategy strategy) {
             this.selectedColName = selectedColName;
             this.strategy = strategy;
         }
@@ -92,8 +95,7 @@ public class VectorImputerTrainBatchOp extends BatchOperator<VectorImputerTrainB
             if (null != srt) {
                 VectorImputerModelDataConverter converter = new VectorImputerModelDataConverter();
                 converter.vectorColName = selectedColName;
-
-                converter.save(new Tuple2<>(strategy, srt), collector);
+                converter.save(new Tuple3<>(strategy, srt, null), collector);
             }
         }
     }

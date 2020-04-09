@@ -1,5 +1,6 @@
 package com.alibaba.alink.params.clustering;
 
+import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.nlp.HasVocabSize;
 import com.alibaba.alink.params.shared.colname.HasSelectedCol;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
@@ -35,12 +36,26 @@ public interface LdaTrainParams<T> extends
 				+ "distributions over terms.")
 		.setHasDefaultValue(-1.0)
 		.build();
-	ParamInfo <String> METHOD = ParamInfoFactory
-		.createParamInfo("method", String.class)
-		.setDescription("optimizer: em, online")
-		.setHasDefaultValue("em")
-		.setAlias(new String[] {"optimizer"})
-		.build();
+	ParamInfo <Method> METHOD = ParamInfoFactory
+			.createParamInfo("method", Method.class)
+			.setDescription("optimizer: em, online")
+			.setHasDefaultValue(Method.EM)
+			.setAlias(new String[] {"optimizer"})
+			.build();
+
+	/**
+	 * Enum class for Lda optimizer method.
+	 */
+	enum Method {
+		/**
+		 * Online optimizer method.
+		 */
+		Online,
+		/**
+		 * EM optimizer method.
+		 */
+		EM
+	}
 	ParamInfo <Double> ONLINE_LEARNING_OFFSET = ParamInfoFactory
 		.createParamInfo("onlineLearningOffset", Double.class)
 		.setDescription("(For online optimizer)" +
@@ -95,14 +110,17 @@ public interface LdaTrainParams<T> extends
 		return set(BETA, value);
 	}
 
-	default String getMethod() {
+	default Method getMethod() {
 		return get(METHOD);
 	}
 
-	default T setMethod(String value) {
+	default T setMethod(Method value) {
 		return set(METHOD, value);
 	}
 
+	default T setMethod(String value) {
+		return set(METHOD, ParamUtil.searchEnum(METHOD, value));
+	}
 	default Double getLearningOffset() {
 		return get(ONLINE_LEARNING_OFFSET);
 	}

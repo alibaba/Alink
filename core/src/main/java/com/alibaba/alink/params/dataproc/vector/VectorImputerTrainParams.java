@@ -9,6 +9,7 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCol;
  */
 public interface VectorImputerTrainParams<T>
 	extends WithParams<T>,
-	HasStrategy <T>,
-	HasSelectedCol <T> {
+	HasStrategy<T>,
+	HasSelectedCol<T>,
+	HasVectorImputerFillValue<T> {
 }

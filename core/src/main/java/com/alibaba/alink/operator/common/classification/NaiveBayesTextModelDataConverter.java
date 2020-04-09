@@ -1,17 +1,20 @@
 package com.alibaba.alink.operator.common.classification;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.model.LabeledModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.params.ParamUtil;
+import com.alibaba.alink.params.classification.NaiveBayesTextTrainParams.ModelType;
 import com.alibaba.alink.params.classification.NaiveBayesTextTrainParams;
+
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.google.common.collect.Iterables;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * This converter can help serialize and deserialize the model data.
@@ -42,15 +45,15 @@ public class NaiveBayesTextModelDataConverter extends
         modelData.pi = dataInfo.piArray;
         modelData.theta = dataInfo.theta;
         modelData.label = Iterables.toArray(distinctLabels, Object.class);
-        modelData.vectorColName = modelData.meta.get(HasVectorCol.VECTOR_COL);
-        modelData.modelType = BayesType.valueOf(modelData.meta.get(NaiveBayesTextTrainParams.MODEL_TYPE));
+        modelData.vectorColName = modelData.meta.get(NaiveBayesTextTrainParams.VECTOR_COL);
+        modelData.modelType = modelData.meta.get(NaiveBayesTextTrainParams.MODEL_TYPE);
         modelData.featLen = modelData.theta.numCols();
 
         int rowSize = modelData.theta.numRows();
         modelData.phi = new double[rowSize];
         modelData.minMat = new DenseMatrix(rowSize, modelData.featLen);
         //construct special model data for the bernoulli model.
-        if (BayesType.BERNOULLI.equals(modelData.modelType)) {
+        if (ModelType.Bernoulli.equals(modelData.modelType)) {
             for (int i = 0; i < rowSize; ++i) {
                 for (int j = 0; j < modelData.featLen; ++j) {
                     double tmp = Math.log(1 - Math.exp(modelData.theta.get(i, j)));
@@ -71,25 +74,12 @@ public class NaiveBayesTextModelDataConverter extends
     @Override
     public Tuple3<Params, Iterable<String>, Iterable<Object>> serializeModel(NaiveBayesTextTrainModelData modelData) {
         Params meta = new Params()
-            .set(NaiveBayesTextTrainParams.MODEL_TYPE, modelData.modelType.name())
-            .set(HasVectorCol.VECTOR_COL, modelData.vectorColName);
+                .set(NaiveBayesTextTrainParams.MODEL_TYPE, ParamUtil.searchEnum(NaiveBayesTextTrainParams.MODEL_TYPE, modelData.modelType.name()))
+                .set(HasVectorCol.VECTOR_COL, modelData.vectorColName);
         NaiveBayesTextProbInfo data = new NaiveBayesTextProbInfo();
         data.piArray = modelData.pi;
         data.theta = modelData.theta;
         return Tuple3.of(meta, Collections.singletonList(JsonConverter.toJson(data)), Arrays.asList(modelData.label));
-    }
-
-    public enum BayesType {
-
-        /**
-         * Multinomial type.
-         */
-        MULTINOMIAL,
-
-        /**
-         * Bernoulli type.
-         */
-        BERNOULLI
     }
 
     public static class NaiveBayesTextProbInfo {
@@ -103,3 +93,5 @@ public class NaiveBayesTextModelDataConverter extends
         public DenseMatrix theta;
     }
 }
+
+

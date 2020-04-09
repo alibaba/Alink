@@ -283,18 +283,4 @@ public class LdaUtil {
         }
         return wordIdWeight;
     }
-
-    /**
-     * Enum class for Lda optimizer.
-     */
-    public enum OptimizerMethod {
-        /**
-         * EM optimizer method.
-         */
-        EM,
-        /**
-         * Online optimizer method.
-         */
-        ONLINE
-    }
 }
