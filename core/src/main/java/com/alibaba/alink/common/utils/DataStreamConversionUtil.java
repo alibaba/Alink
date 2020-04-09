@@ -121,7 +121,7 @@ public class DataStreamConversionUtil {
 	 * @param colTypes the specified colTypes
 	 * @return the DataStream with type information hint.
 	 */
-	private static DataStream <Row> getDataSetWithExplicitTypeDefine(
+	public static DataStream <Row> getDataSetWithExplicitTypeDefine(
 		DataStream <Row> data,
 		String[] colNames,
 		TypeInformation <?>[] colTypes) {
