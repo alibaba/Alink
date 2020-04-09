@@ -116,7 +116,7 @@ public class DocHashCountVectorizerModelMapperTest {
 
         Params params = new Params()
             .set(DocHashCountVectorizerPredictParams.SELECTED_COL, "sentence")
-            .set(DocCountVectorizerTrainParams.FEATURE_TYPE, "IDF");
+            .set(DocCountVectorizerTrainParams.FEATURE_TYPE, FeatureType.IDF);
 
         DocHashCountVectorizerModelMapper mapper = new DocHashCountVectorizerModelMapper(modelSchema, dataSchema, params);
         mapper.loadModel(model);

@@ -10,6 +10,6 @@ public interface QuantileDiscretizerPredictParams<T> extends
 	HasReservedCols<T>,
 	HasOutputColsDefaultAsNull<T>,
 	HasHandleInvalid<T>,
-	HasEncodeDefaultAsIndex<T>,
+	HasEncodeWithoutWoeDefaultAsIndex<T>,
 	HasDropLast<T> {
 }

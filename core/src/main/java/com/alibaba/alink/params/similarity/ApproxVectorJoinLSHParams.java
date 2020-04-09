@@ -1,5 +1,6 @@
 package com.alibaba.alink.params.similarity;
 
+import com.alibaba.alink.params.shared.clustering.HasApproxDistanceType;
 import com.alibaba.alink.params.shared.clustering.HasDistanceThreshold;
 
 /**
@@ -7,5 +8,6 @@ import com.alibaba.alink.params.shared.clustering.HasDistanceThreshold;
  */
 public interface ApproxVectorJoinLSHParams<T> extends
 	BaseJoinTopNLSHParams<T>,
+	HasApproxDistanceType<T>,
 	HasDistanceThreshold<T>{
 }

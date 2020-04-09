@@ -8,6 +8,7 @@ import com.alibaba.alink.operator.common.distance.ContinuousDistance;
 import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
+import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -182,7 +183,7 @@ public class KMeansUtil implements Serializable {
     public static int[] getKmeansPredictColIdxs(KMeansTrainModelData.ParamSummary params, String[] dataCols) {
         Preconditions.checkArgument((null == params.longtitudeColName) == (null == params.latitudeColName),
             "Model Format error!");
-        Preconditions.checkArgument(params.distanceType.equals(DistanceType.HAVERSINE) == (null == params.vectorColName
+        Preconditions.checkArgument(params.distanceType.equals(HasKMeansWithHaversineDistanceType.DistanceType.HAVERSINE) == (null == params.vectorColName
                 && null != params.longtitudeColName),
             "Model Format error!");
         int[] colIdxs;
@@ -254,7 +255,7 @@ public class KMeansUtil implements Serializable {
             index++;
         }
         modelData.centroids = new FastDistanceMatrixData(denseMatrix, rows);
-        ((FastDistance)modelData.params.distanceType.getContinuousDistance()).updateLabel(modelData.centroids);
+        (modelData.params.distanceType.getFastDistance()).updateLabel(modelData.centroids);
         return modelData;
     }
 

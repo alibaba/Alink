@@ -72,7 +72,7 @@ public class TreeInitObj extends ComputeFunction {
 		Map<String, Integer> categoricalColsSize = TreeUtil.extractCategoricalColsSize(
 			stringIndexerModel, lookUpColNames.toArray(new String[0]));
 
-		if (!Criteria.isRegression(params.get(HasTreeType.TREE_TYPE))) {
+		if (!Criteria.isRegression(params.get(TreeUtil.TREE_TYPE))) {
 			categoricalColsSize.put(params.get(HasLabelCol.LABEL_COL), labels.get(0).length);
 		}
 
@@ -88,7 +88,7 @@ public class TreeInitObj extends ComputeFunction {
 
 		TreeObj treeObj;
 
-		if (Criteria.isRegression(params.get(HasTreeType.TREE_TYPE))) {
+		if (Criteria.isRegression(params.get(TreeUtil.TREE_TYPE))) {
 			treeObj = new RegObj(localParams, quantileDiscretizerModel, featureMetas, labelMeta);
 		} else {
 			treeObj = new ClassifierObj(localParams, quantileDiscretizerModel, featureMetas, labelMeta);
@@ -101,7 +101,7 @@ public class TreeInitObj extends ComputeFunction {
 		double[] regLabels = null;
 		int[] classifyLabels = null;
 
-		if (Criteria.isRegression(params.get(HasTreeType.TREE_TYPE))) {
+		if (Criteria.isRegression(params.get(TreeUtil.TREE_TYPE))) {
 			regLabels = new double[nLocalRow];
 		} else {
 			classifyLabels = new int[nLocalRow];
@@ -114,7 +114,7 @@ public class TreeInitObj extends ComputeFunction {
 				data[i * nLocalRow + agg] = (int) dataRows.get(iter).getField(i);
 			}
 
-			if (Criteria.isRegression(params.get(HasTreeType.TREE_TYPE))) {
+			if (Criteria.isRegression(params.get(TreeUtil.TREE_TYPE))) {
 				regLabels[agg] = (double) dataRows.get(iter).getField(nFeatureCol);
 			} else {
 				classifyLabels[agg] = (int) dataRows.get(iter).getField(nFeatureCol);
@@ -125,7 +125,7 @@ public class TreeInitObj extends ComputeFunction {
 
 		treeObj.setFeatures(data);
 
-		if (Criteria.isRegression(params.get(HasTreeType.TREE_TYPE))) {
+		if (Criteria.isRegression(params.get(TreeUtil.TREE_TYPE))) {
 			treeObj.setLabels(regLabels);
 		} else {
 			treeObj.setLabels(classifyLabels);

@@ -21,24 +21,6 @@ import java.util.Map;
 public class StringIndexerUtil {
 
     /**
-     * Strategy to handle unseen token when doing prediction.
-     */
-    public enum HandleInvalidStrategy {
-        /**
-         * Assign "max index" + 1.
-         */
-        KEEP,
-        /**
-         * Raise exception.
-         */
-        ERROR,
-        /**
-         * Pad with null.
-         */
-        SKIP
-    }
-
-    /**
      * Assign consecutive indices to each columns of strings. The index space of each columns
      * are independent.
      *

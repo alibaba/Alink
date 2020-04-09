@@ -2,19 +2,17 @@ package com.alibaba.alink.params.shared.tree;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-import com.alibaba.alink.operator.common.tree.TreeUtil;
 import com.alibaba.alink.params.ParamUtil;
 
-public interface HasTreeType<T> extends WithParams<T> {
-	ParamInfo <TreeType> TREE_TYPE = ParamInfoFactory
+public interface HasIndividualTreeType<T> extends WithParams<T> {
+	ParamInfo<TreeType> TREE_TYPE = ParamInfoFactory
 		.createParamInfo("treeType", TreeType.class)
 		.setDescription("The criteria of the tree. " +
-			"There are three options: \"AVG\", \"partition\" or \"gini(infoGain, infoGainRatio)\""
+			"There are three options: gini, infoGain, infoGainRatio"
 		)
-		.setHasDefaultValue(TreeType.AVG)
+		.setHasDefaultValue(TreeType.GINI)
 		.build();
 
 	default TreeType getTreeType() {
@@ -30,19 +28,9 @@ public interface HasTreeType<T> extends WithParams<T> {
 	}
 
 	/**
-	 * Indicate that the criteria using in the random forest.
+	 * Indicate that the criteria using in the decision tree.
 	 */
 	enum TreeType {
-		/**
-		 * Ave Partition the tree as hybrid.
-		 */
-		AVG,
-
-		/**
-		 * Partition the tree as hybrid.
-		 */
-		PARTITION,
-
 		/**
 		 * Gini index. ref: cart.
 		 */

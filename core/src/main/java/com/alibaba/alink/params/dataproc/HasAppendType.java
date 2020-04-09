@@ -3,22 +3,42 @@ package com.alibaba.alink.params.dataproc;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
-import com.alibaba.alink.operator.batch.dataproc.AppendIdBatchOp;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.params.ParamUtil;
+
 public interface HasAppendType<T> extends WithParams<T> {
-	ParamInfo <String> APPEND_TYPE = ParamInfoFactory
-		.createParamInfo("appendType", String.class)
+	ParamInfo <AppendType> APPEND_TYPE = ParamInfoFactory
+		.createParamInfo("appendType", AppendType.class)
 		.setDescription("append type. DENSE or UNIQUE")
-		.setHasDefaultValue(AppendIdBatchOp.AppendType.DENSE)
+		.setHasDefaultValue(AppendType.DENSE)
 		.setAlias(new String[] {"AppendType"})
 		.build();
 
-	default String getAppendType() {
+	default AppendType getAppendType() {
 		return get(APPEND_TYPE);
 	}
 
-	default T setAppendType(String value) {
+	default T setAppendType(AppendType value) {
 		return set(APPEND_TYPE, value);
+	}
+
+	default T setAppendType(String value) {
+		return set(APPEND_TYPE, ParamUtil.searchEnum(APPEND_TYPE, value));
+	}
+
+	/**
+	 * Indicate that the type of append function.
+	 */
+	enum AppendType {
+		/**
+		 * Append dense index to the data. The generated values are consecutive.
+		 */
+		DENSE,
+
+		/**
+		 * Append unique index to the data.
+		 */
+		UNIQUE
 	}
 }

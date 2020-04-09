@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.feature;
 
+import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -10,7 +11,6 @@ import org.apache.flink.util.Preconditions;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.Functional;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.dataproc.StringIndexerUtil;
 import com.alibaba.alink.params.feature.HasEnableElse;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 
@@ -96,7 +96,7 @@ public class OneHotModelMapper extends ModelMapper {
          * @return the method to handle unseen token and null token.
          */
         public static InvalidStrategy valueOf(boolean enableElse,
-                                              StringIndexerUtil.HandleInvalidStrategy handleInvalidStrategy) {
+                                              HasHandleInvalid.HandleInvalid handleInvalidStrategy) {
             switch (handleInvalidStrategy) {
                 case KEEP: {
                     if (enableElse) {

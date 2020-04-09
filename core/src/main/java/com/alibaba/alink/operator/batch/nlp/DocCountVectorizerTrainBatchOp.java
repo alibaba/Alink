@@ -138,7 +138,7 @@ public final class DocCountVectorizerTrainBatchOp extends BatchOperator<DocCount
         private double minTF;
 
         public BuildDocCountModel(Params params) {
-            this.featureType = params.get(DocHashCountVectorizerTrainParams.FEATURE_TYPE);
+            this.featureType = params.get(DocHashCountVectorizerTrainParams.FEATURE_TYPE).name();
             this.minTF = params.get(DocHashCountVectorizerTrainParams.MIN_TF);
         }
 

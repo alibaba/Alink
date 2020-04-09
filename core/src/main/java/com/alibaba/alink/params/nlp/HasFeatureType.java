@@ -4,21 +4,28 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.operator.common.nlp.FeatureType;
+import com.alibaba.alink.params.ParamUtil;
+
 /**
  * FeatureType.
  */
 public interface HasFeatureType<T> extends WithParams<T> {
-    ParamInfo<String> FEATURE_TYPE = ParamInfoFactory
-        .createParamInfo("featureType", String.class)
+    ParamInfo<FeatureType> FEATURE_TYPE = ParamInfoFactory
+        .createParamInfo("featureType", FeatureType.class)
         .setDescription("Feature type, support IDF/WORD_COUNT/TF_IDF/Binary/TF")
-        .setHasDefaultValue("WORD_COUNT")
+        .setHasDefaultValue(FeatureType.WORD_COUNT)
         .build();
 
-    default String getFeatureType() {
+    default FeatureType getFeatureType() {
         return get(FEATURE_TYPE);
     }
 
-    default T setFeatureType(String value) {
+    default T setFeatureType(FeatureType value){
         return set(FEATURE_TYPE, value);
+    }
+
+    default T setFeatureType(String value) {
+        return set(FEATURE_TYPE, ParamUtil.searchEnum(FEATURE_TYPE, value));
     }
 }

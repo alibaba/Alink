@@ -9,6 +9,7 @@ import com.alibaba.alink.operator.common.tree.Criteria;
 import com.alibaba.alink.operator.common.tree.LabelCounter;
 import com.alibaba.alink.operator.common.tree.Node;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.operator.common.tree.TreeUtil;
 import com.alibaba.alink.params.shared.tree.HasTreeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ public class RandomForestModelMapper extends TreeModelMapper {
 
 			labelCounter.normWithWeight();
 
-			if (!Criteria.isRegression(treeModel.meta.get(HasTreeType.TREE_TYPE))) {
+			if (!Criteria.isRegression(treeModel.meta.get(TreeUtil.TREE_TYPE))) {
 				detail = new HashMap<>();
 				double[] probability = labelCounter.getDistributions();
 				double max = 0.0;

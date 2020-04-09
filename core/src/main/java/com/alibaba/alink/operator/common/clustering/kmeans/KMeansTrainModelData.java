@@ -5,6 +5,8 @@ import com.alibaba.alink.operator.common.clustering.DistanceType;
 import com.alibaba.alink.params.clustering.KMeans4LongiLatitudeTrainParams;
 import com.alibaba.alink.params.clustering.KMeansTrainParams;
 import com.alibaba.alink.params.shared.HasVectorSizeDv100;
+import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
+
 import org.apache.flink.ml.api.misc.param.Params;
 
 import java.io.Serializable;
@@ -72,7 +74,7 @@ public class KMeansTrainModelData implements Serializable {
         /**
          * DistanceType.
          */
-        public DistanceType distanceType;
+        public HasKMeansWithHaversineDistanceType.DistanceType distanceType;
 
         /**
          * Vector column name.
@@ -94,14 +96,14 @@ public class KMeansTrainModelData implements Serializable {
         public ParamSummary(Params params) {
             k = params.get(KMeansTrainParams.K);
             vectorSize = params.get(HasVectorSizeDv100.VECTOR_SIZE);
-            distanceType = DistanceType.valueOf(params.get(KMeansTrainParams.DISTANCE_TYPE).toUpperCase());
+            distanceType = params.get(HasKMeansWithHaversineDistanceType.DISTANCE_TYPE);
             vectorColName = params.get(KMeansTrainParams.VECTOR_COL);
             latitudeColName = params.get(KMeans4LongiLatitudeTrainParams.LATITUDE_COL);
             longtitudeColName = params.get(KMeans4LongiLatitudeTrainParams.LONGITUDE_COL);
         }
 
         public Params toParams() {
-            return new Params().set(KMeansTrainParams.DISTANCE_TYPE, distanceType.name())
+            return new Params().set(HasKMeansWithHaversineDistanceType.DISTANCE_TYPE, distanceType)
                 .set(KMeansTrainParams.K, k)
                 .set(HasVectorSizeDv100.VECTOR_SIZE, vectorSize)
                 .set(KMeansTrainParams.VECTOR_COL, vectorColName)

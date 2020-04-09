@@ -56,36 +56,6 @@ public class BinTypes {
         NOT_INF
     }
 
-    /**
-     * Encode type for Binning.
-     */
-    public enum Encode {
-        /**
-         * Output the woe of the bin.
-         */
-        WOE,
-
-        /**
-         * Output a spasevector with only one Non-zero(the index of the bin) element.
-         */
-        VECTOR,
-
-        /**
-         * If there are multi columns, first encode these columns as vectors, and output the assembled vector.
-         */
-        ASSEMBLED_VECTOR,
-
-        /**
-         * Output the index of the bin.
-         */
-        INDEX,
-
-        /**
-         * The bin is not encoded, return the data as it is.
-         */
-        NULL
-    }
-
     public enum ColType {
         /**
          * Long type, for Int/Short/Byte/Long data.

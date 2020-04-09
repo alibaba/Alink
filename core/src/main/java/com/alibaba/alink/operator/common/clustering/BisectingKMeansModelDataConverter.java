@@ -25,7 +25,7 @@ public class BisectingKMeansModelDataConverter extends SimpleModelDataConverter<
 			v.clusterId = k;
 			modelRows.add(gson.toJson(v, ClusterSummary.class));
 		});
-		Params meta = new Params().set(BisectingKMeansTrainParams.DISTANCE_TYPE, modelData.distanceType.name())
+		Params meta = new Params().set(BisectingKMeansTrainParams.DISTANCE_TYPE, modelData.distanceType)
 			.set(BisectingKMeansTrainParams.K, modelData.k)
 			.set(HasVectorSizeDv100.VECTOR_SIZE, modelData.vectorSize)
 			.set(BisectingKMeansTrainParams.VECTOR_COL, modelData.vectorColName);
@@ -37,7 +37,7 @@ public class BisectingKMeansModelDataConverter extends SimpleModelDataConverter<
 		BisectingKMeansModelData modelData = new BisectingKMeansModelData();
 		modelData.k = meta.get(BisectingKMeansTrainParams.K);
 		modelData.vectorSize = meta.get(HasVectorSizeDv100.VECTOR_SIZE);
-		modelData.distanceType = DistanceType.valueOf(meta.get(BisectingKMeansTrainParams.DISTANCE_TYPE).toUpperCase());
+		modelData.distanceType = meta.get(BisectingKMeansTrainParams.DISTANCE_TYPE);
 		modelData.vectorColName = meta.get(BisectingKMeansTrainParams.VECTOR_COL);
 		modelData.summaries = new HashMap <>();
 		for (String c : data) {

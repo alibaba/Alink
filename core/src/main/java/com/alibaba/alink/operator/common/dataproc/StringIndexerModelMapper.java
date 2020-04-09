@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.dataproc;
 
 import com.alibaba.alink.common.mapper.SISOModelMapper;
+import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.dataproc.StringIndexerPredictParams;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -20,12 +21,11 @@ public class StringIndexerModelMapper extends SISOModelMapper {
 
     private Map<String, Long> mapper;
     private Long defaultIndex;
-    private StringIndexerUtil.HandleInvalidStrategy handleInvalidStrategy;
+    private HasHandleInvalid.HandleInvalid handleInvalidStrategy;
 
     public StringIndexerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
         super(modelSchema, dataSchema, params);
-        handleInvalidStrategy = StringIndexerUtil.HandleInvalidStrategy
-            .valueOf(params.get(StringIndexerPredictParams.HANDLE_INVALID).toUpperCase());
+        handleInvalidStrategy = params.get(StringIndexerPredictParams.HANDLE_INVALID);
     }
 
     @Override

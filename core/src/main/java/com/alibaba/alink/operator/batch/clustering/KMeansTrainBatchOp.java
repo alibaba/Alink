@@ -12,6 +12,8 @@ import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.clustering.KMeansTrainParams;
+import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
+
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -59,7 +61,7 @@ public final class KMeansTrainBatchOp extends BatchOperator <KMeansTrainBatchOp>
 			   						final int maxIter,
 			   						final double tol,
 			   						final FastDistance distance,
-									DistanceType distanceType,
+									HasKMeansWithHaversineDistanceType.DistanceType distanceType,
 			   						final String vectorColName,
 			   						final String latitudeColName,
 			   						final String longitudeColName) {
@@ -84,10 +86,8 @@ public final class KMeansTrainBatchOp extends BatchOperator <KMeansTrainBatchOp>
 		final int maxIter = this.getMaxIter();
 		final double tol = this.getEpsilon();
 		final String vectorColName = this.getVectorCol();
-		final DistanceType distanceType = DistanceType.valueOf(this.getDistanceType().toUpperCase());
-		Preconditions.checkArgument(distanceType == DistanceType.EUCLIDEAN || distanceType == DistanceType.COSINE,
-			"distanceType %s not support!", distanceType.name());
-		FastDistance distance = (FastDistance)distanceType.getContinuousDistance();
+		final DistanceType distanceType = getDistanceType();
+		FastDistance distance = distanceType.getFastDistance();
 
 		Tuple2 <DataSet <Vector>, DataSet <BaseVectorSummary>> statistics =
 			StatisticsHelper.summaryHelper(in, null, vectorColName);
@@ -111,7 +111,7 @@ public final class KMeansTrainBatchOp extends BatchOperator <KMeansTrainBatchOp>
 		DataSet <FastDistanceMatrixData> initCentroid = KMeansInitCentroids.initKmeansCentroids(data, distance, this.getParams(), vectorSize);
 
 		DataSet <Row> finalCentroid = iterateICQ(initCentroid, data,
-			vectorSize, maxIter, tol, distance, distanceType, vectorColName, null, null);
+			vectorSize, maxIter, tol, distance, HasKMeansWithHaversineDistanceType.DistanceType.valueOf(distanceType.name()), vectorColName, null, null);
 
 		this.setOutput(finalCentroid, new KMeansModelDataConverter().getModelSchema());
 

@@ -504,14 +504,12 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
         BatchOperator<?> in = checkAndGetFirst(inputs);
 
         // get the input parameter's value
-        final DistanceType distanceType = DistanceType.valueOf(this.getDistanceType().toUpperCase());
-        Preconditions.checkArgument(distanceType == DistanceType.COSINE || distanceType == DistanceType.EUCLIDEAN,
-            "distanceType not support!");
+        final DistanceType distanceType = getDistanceType();
         final int k = this.getK();
         final int maxIter = this.getMaxIter();
         final String vectorColName = this.getVectorCol();
         final int minDivisibleClusterSize = this.getMinDivisibleClusterSize();
-        ContinuousDistance distance = distanceType.getContinuousDistance();
+        ContinuousDistance distance = distanceType.getFastDistance();
 
         Tuple2<DataSet<Vector>, DataSet<BaseVectorSummary>> vectorsAndStat =
             StatisticsHelper.summaryHelper(in, null, vectorColName);

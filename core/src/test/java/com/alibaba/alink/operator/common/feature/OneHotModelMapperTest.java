@@ -2,7 +2,8 @@ package com.alibaba.alink.operator.common.feature;
 
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.operator.common.feature.binning.BinTypes;
+import com.alibaba.alink.params.dataproc.HasHandleInvalid;
+import com.alibaba.alink.params.feature.HasEncodeWithoutWoe;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
 import com.alibaba.alink.params.shared.colname.HasOutputCols;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -107,7 +108,7 @@ public class OneHotModelMapperTest {
 	@Test
 	public void testIndex() throws Exception {
 		Params params = new Params()
-			.set(OneHotPredictParams.ENCODE, BinTypes.Encode.INDEX.name())
+			.set(OneHotPredictParams.ENCODE, HasEncodeWithoutWoe.Encode.INDEX)
 			.set(OneHotPredictParams.SELECTED_COLS, new String[]{"cnt", "word", "docid"});
 
 		OneHotModelMapper mapper = new OneHotModelMapper(modelSchema, dataSchema, params);
@@ -123,7 +124,7 @@ public class OneHotModelMapperTest {
 	@Test
 	public void testVector() throws Exception {
 		Params params = new Params()
-			.set(OneHotPredictParams.ENCODE, BinTypes.Encode.VECTOR.name())
+			.set(OneHotPredictParams.ENCODE, HasEncodeWithoutWoe.Encode.VECTOR)
 			.set(OneHotPredictParams.SELECTED_COLS, new String[]{"cnt", "word", "docid"})
 			.set(OneHotPredictParams.DROP_LAST, false);
 
@@ -152,7 +153,7 @@ public class OneHotModelMapperTest {
 			new TypeInformation <?>[] {Types.STRING, Types.STRING, Types.LONG}
 		);
 		Params params = new Params()
-			.set(OneHotPredictParams.ENCODE, BinTypes.Encode.VECTOR.name())
+			.set(OneHotPredictParams.ENCODE, HasEncodeWithoutWoe.Encode.VECTOR)
 			.set(OneHotPredictParams.SELECTED_COLS, new String[]{"cnt", "word", "docid"})
 			.set(OneHotPredictParams.DROP_LAST, true);
 
@@ -188,8 +189,8 @@ public class OneHotModelMapperTest {
 	@Test
 	public void testHandleInvalidVector() throws Exception{
 		Params params = new Params()
-			.set(OneHotPredictParams.ENCODE, BinTypes.Encode.VECTOR.name())
-			.set(OneHotPredictParams.HANDLE_INVALID, "skip")
+			.set(OneHotPredictParams.ENCODE, HasEncodeWithoutWoe.Encode.VECTOR)
+			.set(OneHotPredictParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalid.SKIP)
 			.set(OneHotPredictParams.SELECTED_COLS, new String[]{"cnt", "word", "docid"})
 			.set(OneHotPredictParams.DROP_LAST, false);
 
@@ -207,8 +208,8 @@ public class OneHotModelMapperTest {
 	@Test
 	public void testHandleInvalidError() throws Exception{
 		Params params = new Params()
-			.set(OneHotPredictParams.ENCODE, BinTypes.Encode.VECTOR.name())
-			.set(OneHotPredictParams.HANDLE_INVALID, "error")
+			.set(OneHotPredictParams.ENCODE, HasEncodeWithoutWoe.Encode.VECTOR)
+			.set(OneHotPredictParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalid.ERROR)
 			.set(OneHotPredictParams.SELECTED_COLS, new String[]{"cnt", "word"})
 			.set(OneHotPredictParams.DROP_LAST, false);
 

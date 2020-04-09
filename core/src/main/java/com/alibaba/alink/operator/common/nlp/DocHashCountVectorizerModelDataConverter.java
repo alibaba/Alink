@@ -23,7 +23,7 @@ public class DocHashCountVectorizerModelDataConverter
         Params meta = new Params()
             .set(DocHashCountVectorizerTrainParams.NUM_FEATURES, data.numFeatures)
             .set(DocHashCountVectorizerTrainParams.MIN_TF, data.minTF)
-            .set(DocHashCountVectorizerTrainParams.FEATURE_TYPE, data.featureType);
+            .set(DocHashCountVectorizerTrainParams.FEATURE_TYPE, FeatureType.valueOf(data.featureType));
         return Tuple2.of(meta, Collections.singletonList(JsonConverter.toJson(data.idfMap)));
     }
 
@@ -35,7 +35,7 @@ public class DocHashCountVectorizerModelDataConverter
             new TypeReference<HashMap<Integer, Double>>() {}.getType());
         modelData.numFeatures = meta.get(DocHashCountVectorizerTrainParams.NUM_FEATURES);
         modelData.minTF = meta.get(DocHashCountVectorizerTrainParams.MIN_TF);
-        modelData.featureType = meta.get(DocHashCountVectorizerTrainParams.FEATURE_TYPE);
+        modelData.featureType = meta.get(DocHashCountVectorizerTrainParams.FEATURE_TYPE).name();
         return modelData;
     }
 }

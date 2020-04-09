@@ -73,7 +73,7 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 	public T linkFrom(BatchOperator<?>... inputs) {
 		BatchOperator<?> in = checkAndGetFirst(inputs);
 
-		if (Criteria.isRegression(getParams().get(HasTreeType.TREE_TYPE))) {
+		if (Criteria.isRegression(getParams().get(TreeUtil.TREE_TYPE))) {
 			getParams().set(ModelParamName.LABEL_TYPE, FlinkTypeConverter.getTypeString(Types.DOUBLE));
 		} else {
 			getParams().set(
@@ -103,11 +103,11 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 		);
 
 		labels = Preprocessing.generateLabels(
-			in, getParams(), Criteria.isRegression(getParams().get(HasTreeType.TREE_TYPE))
+			in, getParams(), Criteria.isRegression(getParams().get(TreeUtil.TREE_TYPE))
 		);
 
 		in = Preprocessing.castLabel(
-			in, getParams(), labels, Criteria.isRegression(getParams().get(HasTreeType.TREE_TYPE))
+			in, getParams(), labels, Criteria.isRegression(getParams().get(TreeUtil.TREE_TYPE))
 		);
 
 		stringIndexerModel = Preprocessing.generateStringIndexerModel(in, getParams());
@@ -289,7 +289,7 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 						}
 					});
 
-			if (!Criteria.isRegression(params.get(HasTreeType.TREE_TYPE))) {
+			if (!Criteria.isRegression(params.get(TreeUtil.TREE_TYPE))) {
 				categoricalColsSize.put(
 					params.get(HasLabelCol.LABEL_COL),
 					getRuntimeContext()
@@ -402,19 +402,24 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 	}
 
 	private static Criteria.Gain getGainFromParams(Params params, int treeId) {
-		String treeType = params.get(HasTreeType.TREE_TYPE).trim().toUpperCase();
+		TreeUtil.TreeType treeType = params.get(TreeUtil.TREE_TYPE);
 
-		if (treeType.equals("AVG")) {
-			return getAvgGain(params.get(HasNumTreesDefaltAs10.NUM_TREES), treeId);
-		} if (isInterval(treeType)) {
-			return getIntervalGain(treeType, treeId);
-		} else {
-			return Criteria.Gain.valueOf(treeType);
+		switch (treeType) {
+			case AVG:
+				return getAvgGain(params.get(HasNumTreesDefaltAs10.NUM_TREES), treeId);
+			case PARTITION:
+				return getIntervalGain(params.get(HasTreePartition.TREE_PARTITION), treeId);
+			case MSE:
+				return Criteria.Gain.MSE;
+			case GINI:
+				return Criteria.Gain.GINI;
+			case INFOGAIN:
+				return Criteria.Gain.INFOGAIN;
+			case INFOGAINRATIO:
+				return Criteria.Gain.INFOGAINRATIO;
+			default:
+				throw new IllegalArgumentException("Could not parse the gain type from params. type: " + treeType);
 		}
-	}
-
-	private static boolean isInterval(String treeType) {
-		return treeType.contains(",");
 	}
 
 	private static Criteria.Gain getIntervalGain(String treeType, int id) {

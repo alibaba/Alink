@@ -203,7 +203,8 @@ public class RandomForestTrainBatchOpTest {
 			.setLabelCol(colNames[2])
 			.setFeatureCols(colNames[0], colNames[1])
 			.setNumTrees(3)
-			.setTreeType("1,2")
+			.setTreeType("partition")
+			.setTreePartition("1,2")
 			.setCategoricalCols(colNames[0], colNames[1]);
 
 		rfOp.linkFrom(memSourceBatchOp).print();

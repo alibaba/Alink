@@ -1,7 +1,6 @@
 package com.alibaba.alink.params.feature;
 
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
-import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
 import com.alibaba.alink.params.shared.colname.*;
 
 /**
@@ -12,6 +11,6 @@ public interface OneHotPredictParams<T> extends
 	HasReservedCols<T>,
 	HasOutputColsDefaultAsNull<T>,
 	HasHandleInvalid<T>,
-	HasEncode<T>,
+	HasEncodeWithoutWoe<T>,
 	HasDropLast<T> {
 }

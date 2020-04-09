@@ -356,18 +356,12 @@ public abstract class Criteria implements Cloneable, Serializable {
 		}
 	}
 
-	public static boolean isRegression(String treeType) {
-		treeType = treeType.trim().toUpperCase();
-
-		if (treeType.equals("AVG") || treeType.contains(",")) {
-			return false;
-		}
-
-		Gain gainType = Gain.valueOf(treeType);
-
-		switch (gainType) {
+	public static boolean isRegression(TreeUtil.TreeType treeType) {
+		switch (treeType) {
 			case MSE:
 				return true;
+			case AVG:
+			case PARTITION:
 			case GINI:
 			case INFOGAIN:
 			case INFOGAINRATIO:

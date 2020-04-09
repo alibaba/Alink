@@ -37,26 +37,15 @@ public class KMeansInitCentroids {
     private static final String SUM_COSTS = "sumCosts";
     private static final String VECTOR_SIZE = "vectorSize";
 
-    private enum InitMode {
-        /**
-         * Random init.
-         */
-        RANDOM,
-        /**
-         * KMeansPlusPlus init.
-         */
-        K_MEANS_PARALLEL
-    }
-
     public static DataSet<FastDistanceMatrixData> initKmeansCentroids(DataSet<FastDistanceVectorData> data,
                                                                       FastDistance distance, Params params,
                                                                       DataSet<Integer> vectorSize) {
-        final String initMode = params.get(KMeansTrainParams.INIT_MODE);
+        final InitMode initMode = params.get(KMeansTrainParams.INIT_MODE);
         final int initSteps = params.get(KMeansTrainParams.INIT_STEPS);
         final int k = params.get(KMeansTrainParams.K);
 
         DataSet<FastDistanceMatrixData> initCentroid;
-        switch (InitMode.valueOf(initMode.toUpperCase())){
+        switch (initMode){
             case RANDOM:
             {
                 initCentroid = randomInit(data, k, distance, vectorSize);

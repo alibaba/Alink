@@ -8,6 +8,8 @@ import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.batch.clustering.KMeansTrainBatchOp;
 import com.alibaba.alink.operator.common.clustering.DistanceType;
 import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
+import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
+
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
 
@@ -18,12 +20,12 @@ import java.util.List;
  * Tranform the centroids to KmeansModel.
  */
 public class KMeansOutputModel extends CompleteResultFunction {
-	private DistanceType distanceType;
+	private HasKMeansWithHaversineDistanceType.DistanceType distanceType;
 	private String vectorColName;
 	private String latitudeColName;
 	private String longtitudeColName;
 
-	public KMeansOutputModel(DistanceType distanceType, String vectorColName,
+	public KMeansOutputModel(HasKMeansWithHaversineDistanceType.DistanceType distanceType, String vectorColName,
 							 final String latitudeColName, final String longitudeColName) {
 		this.distanceType = distanceType;
 		this.vectorColName = vectorColName;

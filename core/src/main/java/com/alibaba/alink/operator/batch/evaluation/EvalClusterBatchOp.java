@@ -59,10 +59,8 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
         String labelColName = this.getLabelCol();
         String predResultColName = this.getPredictionCol();
         String vectorColName = this.getVectorCol();
-        DistanceType distanceType = DistanceType.valueOf(this.getDistanceType().toUpperCase());
-        Preconditions.checkArgument(distanceType == DistanceType.COSINE || distanceType == DistanceType.EUCLIDEAN,
-            "Not support " + distanceType.name());
-        ContinuousDistance distance = distanceType.getContinuousDistance();
+        DistanceType distanceType = getDistanceType();
+        ContinuousDistance distance = distanceType.getFastDistance();
 
         DataSet<Params> empty = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment().fromElements(
             new Params());

@@ -70,7 +70,7 @@ public class DocHashCountVectorizerTrainBatchOp extends BatchOperator<DocHashCou
         public BuildModel(Params params) {
             this.minDocFrequency = params.get(DocHashCountVectorizerTrainParams.MIN_DF);
             this.numFeatures = params.get(DocHashCountVectorizerTrainParams.NUM_FEATURES);
-            this.featureType = params.get(DocHashCountVectorizerTrainParams.FEATURE_TYPE);
+            this.featureType = params.get(DocHashCountVectorizerTrainParams.FEATURE_TYPE).name();
             this.minTF = params.get(DocHashCountVectorizerTrainParams.MIN_TF);
         }
 

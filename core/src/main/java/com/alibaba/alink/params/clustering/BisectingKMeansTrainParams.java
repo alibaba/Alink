@@ -4,7 +4,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import org.apache.flink.ml.api.misc.param.WithParams;
-import com.alibaba.alink.params.shared.clustering.HasDistanceType;
+import com.alibaba.alink.params.shared.clustering.HasKMeansDistanceType;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs10;
 
@@ -12,7 +12,7 @@ import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs10;
  * Params for BisectingKMeansTrain.
  */
 public interface BisectingKMeansTrainParams<T> extends WithParams<T>,
-	HasDistanceType <T>,
+	HasKMeansDistanceType<T>,
 	HasVectorCol <T>,
     HasMaxIterDefaultAs10<T> {
 

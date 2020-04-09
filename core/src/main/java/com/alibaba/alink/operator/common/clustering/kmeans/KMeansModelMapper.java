@@ -99,7 +99,7 @@ public class KMeansModelMapper extends ModelMapper {
     @Override
     public void loadModel(List<Row> modelRows) {
         this.modelData = new KMeansModelDataConverter().load(modelRows);
-        this.distance = (FastDistance)this.modelData.params.distanceType.getContinuousDistance();
+        this.distance = this.modelData.params.distanceType.getFastDistance();
         this.distanceMatrix = new DenseMatrix(this.modelData.params.k, 1);
         this.colIdx = KMeansUtil.getKmeansPredictColIdxs(this.modelData.params, getDataSchema().getFieldNames());
     }

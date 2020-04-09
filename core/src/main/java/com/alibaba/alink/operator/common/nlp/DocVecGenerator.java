@@ -3,24 +3,22 @@ package com.alibaba.alink.operator.common.nlp;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.params.nlp.HasPredMethod;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class DocVecGenerator {
 	private HashMap <String, DenseVector> embed = new HashMap <>();
 
 	private String wordDelimiter;
-	private InferVectorMethod inferMethod;
+	private HasPredMethod.PredMethod inferMethod;
 
 	public DocVecGenerator(
 		List <Row> dict,
 		String wordDelimiter,
-		InferVectorMethod inferMethod) {
+		HasPredMethod.PredMethod inferMethod) {
 
 		this.wordDelimiter = wordDelimiter;
 		this.inferMethod = inferMethod;
@@ -54,70 +52,10 @@ public class DocVecGenerator {
 		if (null == dvec) {
 			return null;
 		} else {
-			if (inferMethod == InferVectorMethod.AVG) {
+			if (inferMethod == HasPredMethod.PredMethod.AVG) {
 				dvec.scaleEqual(1.0 / cnt);
 			}
 			return VectorUtil.toString(dvec);
-		}
-	}
-
-	public interface DenseVectorBiFuntionSerizlizeable
-		extends BiFunction<DenseVector, DenseVector, DenseVector>, Serializable {}
-
-	public enum InferVectorMethod implements Serializable {
-		/**
-		 * AVG Method
-		 */
-		AVG(new DenseVectorBiFuntionSerizlizeable() {
-			@Override
-			public DenseVector apply(DenseVector denseVector, DenseVector denseVector2) {
-				denseVector.plusScaleEqual(denseVector2, 1.0);
-				return denseVector;
-			}
-		}),
-
-		/**
-		 * MIN Method
-		 */
-		MIN(new DenseVectorBiFuntionSerizlizeable() {
-			@Override
-			public DenseVector apply(DenseVector denseVector, DenseVector denseVector2) {
-				MatVecOp.apply(denseVector, denseVector2, denseVector, new BiFunction<Double, Double, Double>() {
-					@Override
-					public Double apply(Double x, Double y) {
-						return Math.min(x, y);
-					}
-				});
-
-				return denseVector;
-			}
-		}),
-
-		/**
-		 * MAX Method
-		 */
-		MAX(new DenseVectorBiFuntionSerizlizeable() {
-			@Override
-			public DenseVector apply(DenseVector denseVector, DenseVector denseVector2) {
-				MatVecOp.apply(denseVector, denseVector2, denseVector, new BiFunction<Double, Double, Double>() {
-					@Override
-					public Double apply(Double x, Double y) {
-						return Math.max(x, y);
-					}
-				});
-
-				return denseVector;
-			}
-		});
-
-		private DenseVectorBiFuntionSerizlizeable func;
-
-		InferVectorMethod(DenseVectorBiFuntionSerizlizeable func) {
-			this.func = func;
-		}
-
-		public DenseVectorBiFuntionSerizlizeable getFunc() {
-			return func;
 		}
 	}
 

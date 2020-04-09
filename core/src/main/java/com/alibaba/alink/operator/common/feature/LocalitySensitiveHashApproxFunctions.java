@@ -9,6 +9,8 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.clustering.DistanceType;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
+import com.alibaba.alink.params.shared.clustering.HasApproxDistanceType;
+import com.alibaba.alink.params.similarity.ApproxVectorJoinLSHParams;
 import com.alibaba.alink.params.similarity.BaseJoinTopNLSHParams;
 import com.alibaba.alink.params.feature.BaseLSHTrainParams;
 import com.alibaba.alink.params.feature.HasNumHashTables;
@@ -44,7 +46,7 @@ import static org.apache.flink.api.common.operators.base.JoinOperatorBase.JoinHi
 public class LocalitySensitiveHashApproxFunctions {
 
 	public static DataSet<BaseLSH> buildLSH(BatchOperator left, BatchOperator right, Params params){
-		DistanceType distanceType = DistanceType.valueOf(params.get(BaseJoinTopNLSHParams.DISTANCE_TYPE).toUpperCase());
+		HasApproxDistanceType.DistanceType distanceType = params.get(ApproxVectorJoinLSHParams.DISTANCE_TYPE);
 
 		TableUtil.assertSelectedColExist(left.getSchema().getFieldNames(), params.get(BaseJoinTopNLSHParams.LEFT_ID_COL));
 		TableUtil.assertSelectedColExist(left.getSchema().getFieldNames(), params.get(BaseJoinTopNLSHParams.LEFT_COL));

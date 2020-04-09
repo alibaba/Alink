@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.clustering;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.operator.common.nlp.DocCountVectorizerModelMapper;
+import com.alibaba.alink.operator.common.nlp.FeatureType;
 import com.alibaba.alink.params.nlp.DocCountVectorizerPredictParams;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -34,7 +35,7 @@ public class LdaModelMapper extends RichModelMapper {
     private int topicNum;
     public int vocabularySize;
 
-    private DocCountVectorizerModelMapper.FeatureType featureType = DocCountVectorizerModelMapper.FeatureType.valueOf("WORD_COUNT");
+    private FeatureType featureType = FeatureType.valueOf("WORD_COUNT");
     private HashMap <String, Tuple2 <Integer, Double>> wordIdWeight;
     private int featureNum;
 

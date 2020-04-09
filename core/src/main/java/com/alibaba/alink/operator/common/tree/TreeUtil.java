@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.tree;
 
+import org.apache.flink.ml.api.misc.param.ParamInfo;
+import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
@@ -8,6 +10,7 @@ import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelDataCon
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
+import com.alibaba.alink.params.shared.tree.HasTreeType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,5 +71,48 @@ public class TreeUtil {
 		}
 
 		return colNames.toArray(new String[0]);
+	}
+
+	public static ParamInfo<TreeType> TREE_TYPE = ParamInfoFactory
+		.createParamInfo("treeType", TreeType.class)
+		.setDescription("The criteria of the tree. " +
+			"There are three options: \"AVG\", \"partition\" or \"gini(infoGain, infoGainRatio)\""
+		)
+		.setHasDefaultValue(TreeType.AVG)
+		.build();
+
+	/**
+	 * Indicate that the criteria using in the tree.
+	 */
+	public enum TreeType {
+		/**
+		 * Ave Partition the tree as hybrid.
+		 */
+		AVG,
+
+		/**
+		 * Partition the tree as hybrid.
+		 */
+		PARTITION,
+
+		/**
+		 * Gini index. ref: cart.
+		 */
+		GINI,
+
+		/**
+		 * Info gain. ref: id3
+		 */
+		INFOGAIN,
+
+		/**
+		 * Info gain ratio. ref: c4.5
+		 */
+		INFOGAINRATIO,
+
+		/**
+		 * mse. ref: cart regression.
+		 */
+		MSE
 	}
 }

@@ -4,6 +4,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import org.apache.flink.ml.api.misc.param.WithParams;
+
+import com.alibaba.alink.operator.common.clustering.kmeans.InitMode;
+import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.shared.clustering.HasEpsilonDv00001;
 import com.alibaba.alink.params.shared.clustering.HasKDefaultAs2;
 
@@ -20,10 +23,10 @@ public interface BaseKMeansTrainParams<T> extends WithParams<T>,
 		.setHasDefaultValue(20)
 		.setAlias(new String[] {"numIter"})
 		.build();
-	ParamInfo <String> INIT_MODE = ParamInfoFactory
-		.createParamInfo("initMode", String.class)
+	ParamInfo <InitMode> INIT_MODE = ParamInfoFactory
+		.createParamInfo("initMode", InitMode.class)
 		.setDescription("Methods to get initial centers, support K_MEANS_PARALLEL and RANDOM!")
-		.setHasDefaultValue("K_MEANS_PARALLEL")
+		.setHasDefaultValue(InitMode.K_MEANS_PARALLEL)
 		.build();
 	ParamInfo <Integer> INIT_STEPS = ParamInfoFactory
 		.createParamInfo("initSteps", Integer.class)
@@ -35,12 +38,16 @@ public interface BaseKMeansTrainParams<T> extends WithParams<T>,
 
 	default T setMaxIter(Integer value) {return set(MAX_ITER, value);}
 
-	default String getInitMode() {
+	default InitMode getInitMode() {
 		return get(INIT_MODE);
 	}
 
-	default T setInitMode(String value) {
+	default T setInitMode(InitMode value){
 		return set(INIT_MODE, value);
+	}
+
+	default T setInitMode(String value) {
+		return set(INIT_MODE, ParamUtil.searchEnum(INIT_MODE, value));
 	}
 
 	default Integer getInitSteps() {

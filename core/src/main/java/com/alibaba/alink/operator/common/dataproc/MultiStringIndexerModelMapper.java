@@ -4,6 +4,7 @@ package com.alibaba.alink.operator.common.dataproc;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 import com.alibaba.alink.pipeline.dataproc.MultiStringIndexerModel;
@@ -37,7 +38,7 @@ public class MultiStringIndexerModelMapper extends ModelMapper {
     private OutputColsHelper outputColsHelper;
     private String[] selectedColNames;
     private int[] selectedColIndicesInData;
-    private StringIndexerUtil.HandleInvalidStrategy handleInvalidStrategy;
+    private HasHandleInvalid.HandleInvalid handleInvalidStrategy;
 
     public MultiStringIndexerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
         super(modelSchema, dataSchema, params);
@@ -48,7 +49,7 @@ public class MultiStringIndexerModelMapper extends ModelMapper {
         }
         String[] reservedColNames = params.get(MultiStringIndexerPredictParams.RESERVED_COLS);
 
-        handleInvalidStrategy = StringIndexerUtil.HandleInvalidStrategy
+        handleInvalidStrategy = HasHandleInvalid.HandleInvalid
             .valueOf(params.get(MultiStringIndexerPredictParams.HANDLE_INVALID).toUpperCase());
 
         TypeInformation[] outputColTypes = new TypeInformation[selectedColNames.length];

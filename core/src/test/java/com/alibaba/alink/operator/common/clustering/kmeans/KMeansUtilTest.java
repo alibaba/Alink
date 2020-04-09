@@ -8,6 +8,8 @@ import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -58,7 +60,7 @@ public class KMeansUtilTest {
             vectorList.add(DenseVector.ones(predictModelData.params.vectorSize).scale(i));
         }
         vectorList.forEach(vec -> samples
-            .add(((FastDistance)predictModelData.params.distanceType.getContinuousDistance()).prepareVectorData(Tuple2.of(vec, null))));
+            .add((predictModelData.params.distanceType.getFastDistance()).prepareVectorData(Tuple2.of(vec, null))));
 
         DenseMatrix distanceMatrix = new DenseMatrix(predictModelData.params.k, 1);
         double[] sumMatrix = new double[predictModelData.params.k * (predictModelData.params.vectorSize + 1)];
@@ -70,7 +72,7 @@ public class KMeansUtilTest {
                 predictModelData.params.vectorSize,
                 sumMatrix,
                 predictModelData.params.k,
-                (FastDistance)predictModelData.params.distanceType.getContinuousDistance(),
+                predictModelData.params.distanceType.getFastDistance(),
                 distanceMatrix);
         }
 
@@ -88,7 +90,7 @@ public class KMeansUtilTest {
             vectorList.add(new SparseVector(vectorSize, new int[]{i % vectorSize}, new double[]{i * i}));
         }
         vectorList.forEach(vec -> samples
-            .add(((FastDistance)predictModelData.params.distanceType.getContinuousDistance()).prepareVectorData(Tuple2.of(vec, null))));
+            .add((predictModelData.params.distanceType.getFastDistance()).prepareVectorData(Tuple2.of(vec, null))));
 
         DenseMatrix distanceMatrix = new DenseMatrix(predictModelData.params.k, 1);
         double[] sumMatrix = new double[predictModelData.params.k * (vectorSize + 1)];
@@ -100,7 +102,7 @@ public class KMeansUtilTest {
                 predictModelData.params.vectorSize,
                 sumMatrix,
                 predictModelData.params.k,
-                (FastDistance)predictModelData.params.distanceType.getContinuousDistance(),
+                predictModelData.params.distanceType.getFastDistance(),
                 distanceMatrix);
         }
 
@@ -117,7 +119,7 @@ public class KMeansUtilTest {
         Assert.assertEquals(predictModelData.params.vectorColName, "Y");
         Assert.assertNull(predictModelData.params.longtitudeColName);
         Assert.assertNull(predictModelData.params.latitudeColName);
-        Assert.assertEquals(predictModelData.params.distanceType, DistanceType.EUCLIDEAN);
+        Assert.assertEquals(predictModelData.params.distanceType, HasKMeansWithHaversineDistanceType.DistanceType.EUCLIDEAN);
 
         Assert.assertEquals(predictModelData.centroids.getVectors(), new DenseMatrix(3, 2, new double[]{9.1, 9.1, 9.1, 0.1, 0.1, 0.1}));
     }
@@ -131,7 +133,7 @@ public class KMeansUtilTest {
         Tuple2<Integer, Double> tuple2 = KMeansUtil.getClosestClusterIndex(sample,
             predictModelData.centroids,
             predictModelData.params.k,
-            (FastDistance)predictModelData.params.distanceType.getContinuousDistance(),
+            predictModelData.params.distanceType.getFastDistance(),
             distanceMatrix);
 
         Assert.assertEquals(tuple2.f0.intValue(), 0);
@@ -148,7 +150,7 @@ public class KMeansUtilTest {
         KMeansPredictModelData predictModelData = new KMeansModelDataConverter().load(modelRows);
         KMeansTrainModelData modelData = KMeansUtil.transformPredictDataToTrainData(predictModelData);
         Tuple2<Integer, Double> tuple2 = KMeansUtil.getClosestClusterIndex(modelData, sample,
-            (FastDistance)modelData.params.distanceType.getContinuousDistance());
+            modelData.params.distanceType.getFastDistance());
 
         Assert.assertEquals(tuple2.f0.intValue(), 0);
         Assert.assertEquals(tuple2.f1, 0.173, 0.01);
@@ -162,7 +164,7 @@ public class KMeansUtilTest {
         params.longtitudeColName = null;
         params.k = 2;
         params.vectorSize = vectorSize;
-        params.distanceType = DistanceType.EUCLIDEAN;
+        params.distanceType = HasKMeansWithHaversineDistanceType.DistanceType.EUCLIDEAN;
 
         String[] colNames = new String[] {"id", "vec", "lat", "lon"};
         Assert.assertArrayEquals(KMeansUtil.getKmeansPredictColIdxs(params, colNames), new int[] {1});
@@ -170,7 +172,7 @@ public class KMeansUtilTest {
         params.vectorColName = null;
         params.latitudeColName = "lat";
         params.longtitudeColName = "lon";
-        params.distanceType = DistanceType.HAVERSINE;
+        params.distanceType = HasKMeansWithHaversineDistanceType.DistanceType.HAVERSINE;
         Assert.assertArrayEquals(KMeansUtil.getKmeansPredictColIdxs(params, colNames), new int[] {2, 3});
     }
 

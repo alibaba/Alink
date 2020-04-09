@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.clustering;
 
 import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.params.shared.clustering.HasKMeansDistanceType;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -8,7 +9,7 @@ import java.util.Map;
 public class BisectingKMeansModelData {
     public int k;
     public int vectorSize;
-    public DistanceType distanceType;
+    public HasKMeansDistanceType.DistanceType distanceType;
     public String vectorColName;
 
     public Map<Long, ClusterSummary> summaries;

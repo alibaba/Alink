@@ -19,7 +19,7 @@ public class DocCountVectorizerModelDataConverter extends SimpleModelDataConvert
     @Override
     public Tuple2<Params, Iterable<String>> serializeModel(DocCountVectorizerModelData data) {
         Params params = new Params().set(DocCountVectorizerTrainParams.MIN_TF, data.minTF)
-            .set(DocCountVectorizerTrainParams.FEATURE_TYPE, data.featureType);
+            .set(DocCountVectorizerTrainParams.FEATURE_TYPE, FeatureType.valueOf(data.featureType));
         return Tuple2.of(params, data.list);
     }
 
@@ -29,7 +29,7 @@ public class DocCountVectorizerModelDataConverter extends SimpleModelDataConvert
         data.list = new ArrayList<>();
         modelData.forEach(data.list::add);
         data.minTF = meta.get(DocCountVectorizerTrainParams.MIN_TF);
-        data.featureType = meta.get(DocCountVectorizerTrainParams.FEATURE_TYPE);
+        data.featureType = meta.get(DocCountVectorizerTrainParams.FEATURE_TYPE).name();
         return data;
     }
 }

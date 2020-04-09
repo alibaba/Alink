@@ -24,7 +24,7 @@ import static org.apache.flink.shaded.guava18.com.google.common.hash.Hashing.mur
  */
 public class DocHashCountVectorizerModelMapper extends SISOModelMapper {
 	private DocHashCountVectorizerModelData model;
-	private DocCountVectorizerModelMapper.FeatureType featureType;
+	private FeatureType featureType;
 
 	private static final HashFunction HASH = murmur3_32(0);
 
@@ -35,7 +35,7 @@ public class DocHashCountVectorizerModelMapper extends SISOModelMapper {
 	@Override
 	public void loadModel(List <Row> modelRows) {
 		this.model = new DocHashCountVectorizerModelDataConverter().load(modelRows);
-		this.featureType = DocCountVectorizerModelMapper.FeatureType.valueOf(model.featureType.toUpperCase());
+		this.featureType = FeatureType.valueOf(model.featureType.toUpperCase());
 	}
 
 	@Override

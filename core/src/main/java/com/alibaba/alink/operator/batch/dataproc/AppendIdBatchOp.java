@@ -51,7 +51,7 @@ public final class AppendIdBatchOp extends BatchOperator<AppendIdBatchOp>
 		DataSet <Row> dataSet,
 		TableSchema schema,
 		String appendIdColName,
-		String appendType,
+		AppendType appendType,
 		Long sessionId) {
 		String[] rawColNames = schema.getFieldNames();
 		TypeInformation[] rawColTypes = schema.getFieldTypes();
@@ -61,14 +61,20 @@ public final class AppendIdBatchOp extends BatchOperator<AppendIdBatchOp>
 
 		DataSet <Row> ret = null;
 
-		if (appendType.toUpperCase().equals(AppendType.DENSE)) {
-			ret = DataSetUtils.zipWithIndex(dataSet)
-				.map(new TransTupleToRowMapper());
-		} else if (appendType.toUpperCase().equals(AppendType.UNIQUE)) {
-			ret = DataSetUtils.zipWithUniqueId(dataSet)
-				.map(new TransTupleToRowMapper());
-			ret = dataSet.map(new AppendIdMapper());
+		switch (appendType) {
+			case DENSE:
+				ret = DataSetUtils.zipWithIndex(dataSet)
+					.map(new TransTupleToRowMapper());
+				break;
+			case UNIQUE:
+				ret = DataSetUtils.zipWithUniqueId(dataSet)
+					.map(new TransTupleToRowMapper());
+				ret = dataSet.map(new AppendIdMapper());
+				break;
+			default:
+				throw new IllegalArgumentException("Error append type.");
 		}
+
 		return DataSetConversionUtil.toTable(sessionId, ret, colNames, colTypes);
 	}
 
@@ -84,11 +90,6 @@ public final class AppendIdBatchOp extends BatchOperator<AppendIdBatchOp>
 		));
 
 		return this;
-	}
-
-	public static class AppendType {
-		public static final String DENSE = "DENSE";
-		public static final String UNIQUE = "UNIQUE";
 	}
 
 	public static class AppendIdMapper extends RichMapFunction <Row, Row> {

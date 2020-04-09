@@ -30,7 +30,6 @@ import com.alibaba.alink.params.statistics.HasRoundMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -60,7 +59,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 	public static DataSet<Row> quantile(
 		DataSet<Row> input,
 		final int[] quantileNum,
-		final String roundMode,
+		final HasRoundMode.RoundMode roundMode,
 		final boolean zeroAsMissing) {
 		/* instance count of dataset */
 		DataSet<Long> cnt = DataSetUtils
@@ -265,74 +264,16 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 		return this;
 	}
 
-	public enum RoundModeEnum implements RoundType {
-		/**
-		 * ⌈a⌉
-		 */
-		CEIL(new RoundType() {
-			@Override
-			public long calc(double a) {
-				return (long) Math.ceil(a);
-			}
-		}),
-
-		/**
-		 * ⌊a⌋
-		 */
-		FLOOR(new RoundType() {
-			@Override
-			public long calc(double a) {
-				return (long) Math.floor(a);
-			}
-		}),
-
-		/**
-		 * [a]
-		 */
-		ROUND(new RoundType() {
-			@Override
-			public long calc(double a) {
-				return Math.round(a);
-			}
-		});
-
-		private final RoundType roundType;
-
-		RoundModeEnum(RoundType roundType) {
-			this.roundType = roundType;
-		}
-
-		@Override
-		public String toString() {
-			return super.name();
-		}
-
-		@Override
-		public long calc(double a) {
-			/**
-			 * 0.1 * (8.0 - 1.0) * 10.0 = 7.000000000000001,
-			 * we hold 14 digits after the decimal point to avoid this situation
-			 */
-			BigDecimal bigDecimal = new BigDecimal(a);
-			return roundType.calc(bigDecimal.setScale(14,
-				BigDecimal.ROUND_HALF_UP).doubleValue());
-		}
-	}
-
-	public interface RoundType {
-		long calc(double a);
-	}
-
 	public static class MultiQuantile
 		extends RichMapPartitionFunction<PairComparable, Tuple2<Integer, Number>> {
 		private List<Tuple2<Integer, Long>> counts;
 		private List<Tuple2<Integer, Long>> missingCounts;
 		private long totalCnt = 0;
 		private int[] quantileNum;
-		private String roundType;
+		private HasRoundMode.RoundMode roundType;
 		private int taskId;
 
-		public MultiQuantile(int[] quantileNum, String roundType) {
+		public MultiQuantile(int[] quantileNum, HasRoundMode.RoundMode roundType) {
 			this.quantileNum = quantileNum;
 			this.roundType = roundType;
 		}
@@ -532,12 +473,12 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 	public static class QIndex {
 		private double totalCount;
 		private double q1;
-		private RoundModeEnum roundMode;
+		private HasRoundMode.RoundMode roundMode;
 
-		public QIndex(double totalCount, int quantileNum, String type) {
+		public QIndex(double totalCount, int quantileNum, HasRoundMode.RoundMode type) {
 			this.totalCount = totalCount;
 			this.q1 = 1.0 / (double) quantileNum;
-			this.roundMode = RoundModeEnum.valueOf(type.trim().toUpperCase());
+			this.roundMode = type;
 		}
 
 		public long genIndex(int k) {

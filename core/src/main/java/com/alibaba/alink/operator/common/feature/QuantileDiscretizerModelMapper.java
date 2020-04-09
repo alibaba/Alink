@@ -13,14 +13,14 @@ import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.dataproc.StringIndexerUtil;
 import com.alibaba.alink.operator.common.feature.binning.Bin;
 import com.alibaba.alink.operator.common.feature.binning.BinTypes;
 import com.alibaba.alink.operator.common.feature.binning.BinningUtil;
 import com.alibaba.alink.operator.common.feature.binning.FeatureBorder;
 import com.alibaba.alink.operator.common.tree.Preprocessing;
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
-import com.alibaba.alink.params.feature.HasEncodeDefaultAsIndex;
+import com.alibaba.alink.params.feature.HasEncodeWithoutWoe;
+import com.alibaba.alink.params.feature.HasEncodeWithoutWoeDefaultAsIndex;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.params.shared.colname.HasOutputCol;
 import com.alibaba.alink.params.shared.colname.HasOutputColsDefaultAsNull;
@@ -109,7 +109,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 		Long[] predictIndices;
 
 		public DiscretizerMapperBuilder(Params params, TableSchema dataSchema){
-			paramsBuilder = new DiscretizerParamsBuilder(params, dataSchema, params.get(HasEncodeDefaultAsIndex.ENCODE));
+			paramsBuilder = new DiscretizerParamsBuilder(params, dataSchema, params.get(HasEncodeWithoutWoeDefaultAsIndex.ENCODE));
 			this.selectedColIndicesInData = TableUtil.findColIndicesWithAssert(
 				dataSchema,
 				paramsBuilder.selectedCols
@@ -164,17 +164,16 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 	}
 
 	public static class DiscretizerParamsBuilder implements Serializable {
-		public BinTypes.Encode encode;
-		public StringIndexerUtil.HandleInvalidStrategy handleInvalidStrategy;
+		public HasEncodeWithoutWoe.Encode encode;
+		public HasHandleInvalid.HandleInvalid handleInvalidStrategy;
 		public String[] selectedCols;
 		public OutputColsHelper outputColsHelper;
 		public boolean dropLast;
 
-        public DiscretizerParamsBuilder(Params params, TableSchema dataSchema, String encodeStr) {
+        public DiscretizerParamsBuilder(Params params, TableSchema dataSchema, HasEncodeWithoutWoe.Encode encode) {
             String[] reservedCols = params.get(HasReservedCols.RESERVED_COLS);
-            encode = BinTypes.Encode.valueOf(encodeStr.toUpperCase());
-            handleInvalidStrategy = StringIndexerUtil.HandleInvalidStrategy
-                .valueOf(params.get(HasHandleInvalid.HANDLE_INVALID).toUpperCase());
+            handleInvalidStrategy = params.get(HasHandleInvalid.HANDLE_INVALID);
+			this.encode = encode;
 
             //To delete when open source
             if (!params.contains(HasOutputColsDefaultAsNull.OUTPUT_COLS) && params.contains(HasOutputCol.OUTPUT_COL)) {
@@ -182,7 +181,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
             }
             if (!params.contains(HasSelectedCols.SELECTED_COLS)) {
                 Preconditions.checkArgument(
-                    encode.equals(BinTypes.Encode.ASSEMBLED_VECTOR),
+                    encode.equals(HasEncodeWithoutWoe.Encode.ASSEMBLED_VECTOR),
                     "Not given selectedCols, encode must be ASSEMBLED_VECTOR!"
                 );
             } else {
@@ -407,7 +406,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 	 * @return the result row.
 	 */
 	public static Row setResultRow(Long[] predictIndices,
-								   BinTypes.Encode encode,
+								   HasEncodeWithoutWoe.Encode encode,
 								   Map<Integer, Long> dropIndex,
 								   Map<Integer, Long> vectorSize,
 								   boolean dropLast,

@@ -38,6 +38,7 @@ public class Word2VecModelMapper extends SISOModelMapper {
 		generator = new DocVecGenerator(
 			word2VecModel.modelRows,
 			params.get(HasWordDelimiter.WORD_DELIMITER),
-			DocVecGenerator.InferVectorMethod.valueOf(params.get(HasPredMethod.PRED_METHOD).trim().toUpperCase()));
+			params.get(HasPredMethod.PRED_METHOD)
+		);
 	}
 }

@@ -2,15 +2,16 @@ package com.alibaba.alink.common.params;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.ParamUtil;
-import com.alibaba.alink.params.dataproc.HasAppendType;
+
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.ml.api.misc.param.WithParams;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ParamTest {
+public class ParamsTest {
 
     @Test
     public void testOpSetString() {
@@ -332,4 +333,25 @@ public class ParamTest {
     }
 
 
+    public static class AppendType {
+        public static final String DENSE = "DENSE";
+        public static final String UNIQUE = "UNIQUE";
+    }
+
+    public interface HasAppendType<T> extends WithParams<T> {
+        ParamInfo <String> APPEND_TYPE = ParamInfoFactory
+            .createParamInfo("appendType", String.class)
+            .setDescription("append type. DENSE or UNIQUE")
+            .setHasDefaultValue(AppendType.DENSE)
+            .setAlias(new String[] {"AppendType"})
+            .build();
+
+        default String getAppendType() {
+            return get(APPEND_TYPE);
+        }
+
+        default T setAppendType(String value) {
+            return set(APPEND_TYPE, value);
+        }
+    }
 }
