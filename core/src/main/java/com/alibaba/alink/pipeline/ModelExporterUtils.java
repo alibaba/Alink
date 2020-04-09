@@ -168,7 +168,7 @@ class ModelExporterUtils {
 
             @Override
             public Row map(Row value) throws Exception {
-                return parser.parse((String) value.getField(1));
+                return parser.parse((String) value.getField(1)).f1;
             }
         });
 

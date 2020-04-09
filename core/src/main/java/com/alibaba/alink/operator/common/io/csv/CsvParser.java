@@ -2,10 +2,10 @@ package com.alibaba.alink.operator.common.io.csv;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.InstantiationUtil;
-import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 
 import javax.annotation.Nullable;
@@ -19,7 +19,6 @@ public class CsvParser {
     private Character quoteChar;
     private String quoteString;
     private String escapedQuote;
-    private Row reused;
     private boolean enableQuote;
     private FieldParser<?>[] parsers;
     private boolean[] isString;
@@ -36,7 +35,6 @@ public class CsvParser {
         this.fieldDelim = fieldDelim;
         this.lenFieldDelim = this.fieldDelim.length();
         this.quoteChar = quoteChar;
-        this.reused = new Row(types.length);
         this.enableQuote = quoteChar != null;
         this.parsers = new FieldParser[types.length];
         this.isString = new boolean[types.length];
@@ -63,17 +61,20 @@ public class CsvParser {
      * @param line The text line to parse.
      * @return The parsed result.
      */
-    public Row parse(String line) {
-        for (int i = 0; i < reused.getArity(); i++) {
-            reused.setField(i, null);
+    public Tuple2<Boolean, Row> parse(String line) {
+        Row output = new Row(this.parsers.length);
+        for (int i = 0; i < output.getArity(); i++) {
+            output.setField(i, null);
         }
         if (line == null || line.isEmpty()) {
-            return reused;
+            return Tuple2.of(false, output);
         }
         int startPos = 0;
+        boolean succ = true;
         final int limit = line.length();
-        for (int i = 0; i < reused.getArity(); i++) {
-            if (startPos >= limit) {
+        for (int i = 0; i < output.getArity(); i++) {
+            if (startPos > limit) {
+                succ = false;
                 break;
             }
             boolean isStringCol = isString[i];
@@ -83,14 +84,21 @@ public class CsvParser {
             }
             String token = line.substring(startPos, delimPos);
             if (!token.isEmpty()) {
-                reused.setField(i, parseField(parsers[i], token, isStringCol));
+                Tuple2<Boolean, Object> parsed = parseField(parsers[i], token, isStringCol);
+                if (!parsed.f0) {
+                    succ = false;
+                }
+                output.setField(i, parsed.f1);
             }
             startPos = delimPos + this.lenFieldDelim;
         }
-        return reused;
+        return Tuple2.of(succ, output);
     }
 
     private int findNextDelimPos(String line, int startPos, int limit, boolean isStringCol) {
+        if (startPos >= limit) {
+            return -1;
+        }
         if (!enableQuote || !isStringCol) {
             return line.indexOf(fieldDelim, startPos);
         }
@@ -116,31 +124,35 @@ public class CsvParser {
             pos++;
         }
         if (pos >= limit) {
-            throw new RuntimeException("Unterminated quote.");
+            return -1;
         }
         return line.indexOf(fieldDelim, pos + 1);
     }
 
-    private Object parseField(FieldParser<?> parser, String token, boolean isStringField) {
+    private Tuple2<Boolean, Object> parseField(FieldParser<?> parser, String token, boolean isStringField) {
         if (isStringField) {
             if (!enableQuote || token.charAt(0) != quoteChar) {
-                return token;
+                return Tuple2.of(true, token);
             }
-            Preconditions.checkArgument(token.endsWith(quoteChar.toString()),
-                "String not end with quote: " + String.format("\"%s\"", token));
-            String content = token.substring(1, token.length() - 1);
-            return content.replace(escapedQuote, quoteString);
+            String content;
+            if (token.endsWith(quoteChar.toString())) {
+                content = token.substring(1, token.length() - 1);
+            } else {
+                content = token.substring(1, token.length());
+            }
+            return Tuple2.of(true, content.replace(escapedQuote, quoteString));
         } else {
             if (StringUtils.isNullOrWhitespaceOnly(token)) {
-                return null;
+                return Tuple2.of(true, null);
             }
             byte[] bytes = token.getBytes();
             parser.resetErrorStateAndParse(bytes, 0, bytes.length, fieldDelim.getBytes(), null);
             FieldParser.ParseErrorState errorState = parser.getErrorState();
             if (errorState != FieldParser.ParseErrorState.NONE) {
-                throw new RuntimeException("Fail to parse token: " + String.format("\"%s\"", token));
+                return Tuple2.of(false, null);
+            } else {
+                return Tuple2.of(true, parser.getLastResult());
             }
-            return parser.getLastResult();
         }
     }
 }

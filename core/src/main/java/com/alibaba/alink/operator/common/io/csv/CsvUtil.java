@@ -1,10 +1,10 @@
 package com.alibaba.alink.operator.common.io.csv;
 
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
-
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
@@ -99,7 +99,11 @@ public class CsvUtil {
                     out.collect(emptyRow);
                 }
             } else {
-                out.collect(parser.parse(line));
+                Tuple2<Boolean, Row> parsed = parser.parse(line);
+                if (!parsed.f0) {
+                    throw new RuntimeException("Fail to parse line \"" + line + "\"");
+                }
+                out.collect(parsed.f1);
             }
         }
     }
@@ -148,127 +152,5 @@ public class CsvUtil {
      */
     public static TypeInformation[] getColTypes(String schemaStr) {
         return schemaStr2Schema(schemaStr).getFieldTypes();
-    }
-
-    /**
-     * Parse the escape chars and unicode chars from a string, replace them with the chars they represents.
-     * <p>
-     * For example:
-     * <ul>
-     * <li> "\\t" -> '\t'
-     * <li> "\\001" -> '\001'
-     * <li> "\\u0001" -> '\u0001'
-     * </ul>
-     * <p>
-     * The escaped char list: \b, \f, \n, \r, \t, \\, \', \".
-     */
-    public static String unEscape(String s) {
-        if (s == null) {
-            return null;
-        }
-
-        if (s.length() == 0) {
-            return s;
-        }
-
-        StringBuilder sbd = new StringBuilder();
-
-        for (int i = 0; i < s.length(); ) {
-            int flag = extractEscape(s, i, sbd);
-            if (flag <= 0) {
-                sbd.append(s.charAt(i));
-                i++;
-            } else {
-                i += flag;
-            }
-        }
-
-        return sbd.toString();
-    }
-
-    /**
-     * Parse one escape char.
-     *
-     * @param s   The string to parse.
-     * @param pos Starting position of the string.
-     * @param sbd String builder to accept the parsed result.
-     * @return The length of the part of the string that is parsed.
-     */
-    private static int extractEscape(String s, int pos, StringBuilder sbd) {
-        if (s.charAt(pos) != '\\') {
-            return 0;
-        }
-        pos++;
-        if (pos >= s.length()) {
-            return 0;
-        }
-        char c = s.charAt(pos);
-
-        if (c >= '0' && c <= '7') {
-            int digit = 1;
-            int i;
-            for (i = 0; i < 2; i++) {
-                if (pos + 1 + i >= s.length()) {
-                    break;
-                }
-                if (s.charAt(pos + 1 + i) >= '0' && s.charAt(pos + 1 + i) <= '7') {
-                    digit++;
-                } else {
-                    break;
-                }
-            }
-            int n = Integer.valueOf(s.substring(pos, pos + digit), 8);
-            sbd.append(Character.toChars(n));
-            return digit + 1;
-        } else if (c == 'u') { // unicode
-            pos++;
-            int digit = 0;
-            for (int i = 0; i < 4; i++) {
-                if (pos + i >= s.length()) {
-                    break;
-                }
-                char ch = s.charAt(pos + i);
-                if ((ch >= '0' && ch <= '9') || ((ch >= 'a' && ch <= 'f')) || ((ch >= 'A' && ch <= 'F'))) {
-                    digit++;
-                } else {
-                    break;
-                }
-            }
-            if (digit == 0) {
-                return 0;
-            }
-            int n = Integer.valueOf(s.substring(pos, pos + digit), 16);
-            sbd.append(Character.toChars(n));
-            return digit + 2;
-        } else {
-            switch (c) {
-                case '\\':
-                    sbd.append('\\');
-                    return 2;
-                case '\'':
-                    sbd.append('\'');
-                    return 2;
-                case '\"':
-                    sbd.append('"');
-                    return 2;
-                case 'r':
-                    sbd.append('\r');
-                    return 2;
-                case 'f':
-                    sbd.append('\f');
-                    return 2;
-                case 't':
-                    sbd.append('\t');
-                    return 2;
-                case 'n':
-                    sbd.append('\n');
-                    return 2;
-                case 'b':
-                    sbd.append('\b');
-                    return 2;
-                default:
-                    return 0;
-            }
-        }
     }
 }

@@ -18,7 +18,7 @@ public class CsvFormatterTest {
         CsvFormatter formatter = new CsvFormatter(types, ",", '"');
         CsvParser parser = new CsvParser(types, ",", '"');
         String text = formatter.format(row);
-        Row parsed = parser.parse(text);
+        Row parsed = parser.parse(text).f1;
 
         Assert.assertEquals(parsed.getArity(), row.getArity());
         for (int i = 0; i < parsed.getArity(); i++) {
@@ -37,7 +37,7 @@ public class CsvFormatterTest {
             new Random().nextDouble()};
         for (Double v : values) {
             String text = formatter.format(Row.of(v));
-            Row parsed = parser.parse(text);
+            Row parsed = parser.parse(text).f1;
             Double p = (Double) parsed.getField(0);
             Assert.assertEquals(v, p, 0.);
         }
