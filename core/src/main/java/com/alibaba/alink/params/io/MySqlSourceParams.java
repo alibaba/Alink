@@ -6,5 +6,6 @@ import com.alibaba.alink.params.io.shared_params.HasInputTableName;
 
 public interface MySqlSourceParams<T> extends WithParams<T>,
 	MySqlDBParams <T>,
-	HasInputTableName <T> {
+	HasInputTableName <T>,
+	HasSchemaStrDefaultAsNull<T>{
 }

@@ -5,7 +5,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasSchemaStr_null<T> extends WithParams<T> {
+public interface HasSchemaStrDefaultAsNull<T> extends WithParams<T> {
 	ParamInfo <String> SCHEMA_STR = ParamInfoFactory
 		.createParamInfo("schemaStr", String.class)
 		.setDescription("Formatted schema")
