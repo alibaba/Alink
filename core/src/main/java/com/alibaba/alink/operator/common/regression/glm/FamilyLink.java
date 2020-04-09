@@ -15,6 +15,7 @@ import com.alibaba.alink.operator.common.regression.glm.link.Logit;
 import com.alibaba.alink.operator.common.regression.glm.link.Power;
 import com.alibaba.alink.operator.common.regression.glm.link.Probit;
 import com.alibaba.alink.operator.common.regression.glm.link.Sqrt;
+import com.alibaba.alink.params.regression.GlmTrainParams;
 
 import java.io.Serializable;
 
@@ -32,57 +33,57 @@ public class FamilyLink implements Serializable {
      * @param linkName: link name.
      * @param linkPower: link power.
      */
-    public FamilyLink(String familyName, double variancePower, String linkName, double linkPower) {
-        if (familyName == null || familyName.isEmpty()) {
+    public FamilyLink(GlmTrainParams.Family familyName, double variancePower, GlmTrainParams.Link linkName, double linkPower) {
+        if (familyName == null) {
             throw new RuntimeException("family can not be empty");
         }
 
-        switch (familyName.toLowerCase()) {
-            case "gamma":
+        switch (familyName) {
+            case Gamma:
                 family = new Gamma();
                 break;
-            case "binomial":
+            case Binomial:
                 family = new Binomial();
                 break;
-            case "gaussian":
+            case Gaussian:
                 family = new Gaussian();
                 break;
-            case "poisson":
+            case Poisson:
                 family = new Poisson();
                 break;
-            case "tweedie":
+            case Tweedie:
                 family = new Tweedie(variancePower);
                 break;
             default:
                 throw new RuntimeException("family is not support. ");
         }
 
-        if (linkName == null || linkName.isEmpty()) {
+        if (linkName == null) {
             link = family.getDefaultLink();
         } else {
-            switch (linkName.toLowerCase()) {
-                case "cloglog":
+            switch (linkName) {
+                case CLogLog:
                     link = new CLogLog();
                     break;
-                case "identity":
+                case Identity:
                     link = new Identity();
                     break;
-                case "inverse":
+                case Inverse:
                     link = new Inverse();
                     break;
-                case "log":
+                case Log:
                     link = new Log();
                     break;
-                case "logit":
+                case Logit:
                     link = new Logit();
                     break;
-                case "power":
+                case Power:
                     link = new Power(linkPower);
                     break;
-                case "probit":
+                case Probit:
                     link = new Probit();
                     break;
-                case "sqrt":
+                case Sqrt:
                     link = new Sqrt();
                     break;
                 default:

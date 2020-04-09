@@ -7,6 +7,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.params.feature.HasCalculationType;
 import com.alibaba.alink.params.shared.colname.HasFeatureColsDefaultAsNull;
 import com.alibaba.alink.params.feature.PcaTrainParams;
 

@@ -5,6 +5,8 @@ import com.alibaba.alink.operator.common.statistics.Crosstab;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.params.feature.BasedChisqSelectorParams;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -35,7 +37,7 @@ public class ChiSquareTestTest {
 
     @Test
     public void testChiSqSelector() {
-        String selectorType = "NumTopFeatures";
+        BasedChisqSelectorParams.SelectorType selectorType = BasedChisqSelectorParams.SelectorType.NumTopFeatures;
         int numTopFeatures = 2;
         double percentile = 0.5;
         double fpr = 0.5;
@@ -51,7 +53,7 @@ public class ChiSquareTestTest {
 
     @Test
     public void testChiSqSelector2() {
-        String selectorType = "percentile";
+        BasedChisqSelectorParams.SelectorType selectorType = BasedChisqSelectorParams.SelectorType.PERCENTILE;
         int numTopFeatures = 2;
         double percentile = 0.5;
         double fpr = 0.5;
@@ -67,7 +69,7 @@ public class ChiSquareTestTest {
 
     @Test
     public void testChiSqSelector3() {
-        String selectorType = "fpr";
+        BasedChisqSelectorParams.SelectorType selectorType = BasedChisqSelectorParams.SelectorType.FPR;
         int numTopFeatures = 2;
         double percentile = 0.5;
         double fpr = 0.5;
@@ -83,7 +85,7 @@ public class ChiSquareTestTest {
 
     @Test
     public void testChiSqSelector4() {
-        String selectorType = "fdr";
+        BasedChisqSelectorParams.SelectorType selectorType = BasedChisqSelectorParams.SelectorType.FDR;
         int numTopFeatures = 2;
         double percentile = 0.5;
         double fpr = 0.5;
@@ -99,7 +101,7 @@ public class ChiSquareTestTest {
 
     @Test
     public void testChiSqSelector5() {
-        String selectorType = "fwe";
+        BasedChisqSelectorParams.SelectorType selectorType = BasedChisqSelectorParams.SelectorType.FWE;
         int numTopFeatures = 2;
         double percentile = 0.5;
         double fpr = 0.5;
@@ -112,7 +114,7 @@ public class ChiSquareTestTest {
         assertEquals(0, selectedIndices[0]);
     }
 
-    private int[] testSelector(String selectorType, int numTopFeatures,
+    private int[] testSelector(BasedChisqSelectorParams.SelectorType selectorType, int numTopFeatures,
                                double percentile,
                                double fpr,
                                double fdr,

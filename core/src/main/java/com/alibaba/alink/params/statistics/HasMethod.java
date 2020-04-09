@@ -5,23 +5,34 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.params.ParamUtil;
+
 /**
  * Parameter of correlation method.
  */
 public interface HasMethod<T> extends WithParams<T> {
 
-    ParamInfo<String> METHOD = ParamInfoFactory
-        .createParamInfo("method", String.class)
-        .setDescription("method: pearson, spearman. default pearson")
-        .setHasDefaultValue("pearson")
+    ParamInfo<Method> METHOD = ParamInfoFactory
+        .createParamInfo("method", Method.class)
+        .setDescription("method: PEARSON, SPEAMAN. default PEARSON")
+        .setHasDefaultValue(Method.PEARSON)
         .build();
 
-    default String getMethod() {
+    default Method getMethod() {
         return get(METHOD);
     }
 
-    default T setMethod(String value) {
+    default T setMethod(Method value) {
         return set(METHOD, value);
+    }
+
+    default T setMethod(String value) {
+        return set(METHOD, ParamUtil.searchEnum(METHOD, value));
+    }
+
+    enum Method {
+        PEARSON,
+        SPEAMAN
     }
 
 }

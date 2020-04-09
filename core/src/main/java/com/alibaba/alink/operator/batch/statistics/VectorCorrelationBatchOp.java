@@ -39,9 +39,9 @@ public final class VectorCorrelationBatchOp extends BatchOperator<VectorCorrelat
         BatchOperator<?> in = checkAndGetFirst(inputs);
         String vectorColName = getSelectedCol();
 
-        String corrType = getMethod().trim().toLowerCase();
+        Method corrType = getMethod();
 
-        if ("pearson".equals(corrType)) {
+        if (Method.PEARSON == corrType) {
             DataSet<Tuple2<BaseVectorSummary, CorrelationResult>> srt = StatisticsHelper.vectorPearsonCorrelation(in, vectorColName);
 
             //block

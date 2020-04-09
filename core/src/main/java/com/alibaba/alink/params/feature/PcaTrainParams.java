@@ -16,5 +16,4 @@ public interface PcaTrainParams<T> extends
         HasWithStd<T>,
         HasK<T>,
         HasCalculationType<T> {
-
 }

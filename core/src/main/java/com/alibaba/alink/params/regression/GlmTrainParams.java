@@ -3,6 +3,8 @@ package com.alibaba.alink.params.regression;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.operator.common.regression.glm.famliy.Family;
+import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
 import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs10;
 
@@ -14,11 +16,11 @@ public interface GlmTrainParams<T> extends
     HasWeightColDefaultAsNull<T>,
     HasMaxIterDefaultAs10<T> {
 
-    ParamInfo<String> FAMILY = ParamInfoFactory
-        .createParamInfo("family", String.class)
+    ParamInfo<Family> FAMILY = ParamInfoFactory
+        .createParamInfo("family", Family.class)
         .setDescription("the name of family which is a description of the error distribution. " +
-            "Supported options: gaussian, binomial, poisson, gamma and tweedie")
-        .setHasDefaultValue("gaussian")
+            "Supported options: Gaussian, Binomial, Poisson, Gamma and Tweedie")
+        .setHasDefaultValue(Family.Gaussian)
         .build();
     ParamInfo<Double> VARIANCE_POWER = ParamInfoFactory
         .createParamInfo("variancePower", Double.class)
@@ -26,10 +28,10 @@ public interface GlmTrainParams<T> extends
             "It describe the relationship between the variance and mean of the distribution")
         .setHasDefaultValue(0.0)
         .build();
-    ParamInfo<String> LINK = ParamInfoFactory
-        .createParamInfo("link", String.class)
+    ParamInfo<Link> LINK = ParamInfoFactory
+        .createParamInfo("link", Link.class)
         .setDescription("The name of link function" +
-            "Supported options: cloglog, identity, inverse, log, logit, power, probit and sqrt")
+            "Supported options: CLogLog, Identity, Inverse, log, logit, power, probit and sqrt")
         .setHasDefaultValue(null)
         .build();
     ParamInfo<Double> LINK_POWER = ParamInfoFactory
@@ -59,12 +61,16 @@ public interface GlmTrainParams<T> extends
         .setHasDefaultValue(1.0e-5)
         .build();
 
-    default String getFamily() {
+    default Family getFamily() {
         return get(FAMILY);
     }
 
-    default T setFamily(String value) {
+    default T setFamily(Family value) {
         return set(FAMILY, value);
+    }
+
+    default T setFamily(String value) {
+        return set(FAMILY, ParamUtil.searchEnum(FAMILY, value));
     }
 
     default Double getVariancePower() {
@@ -75,12 +81,16 @@ public interface GlmTrainParams<T> extends
         return set(VARIANCE_POWER, value);
     }
 
-    default String getLink() {
+    default Link getLink() {
         return get(LINK);
     }
 
-    default T setLink(String value) {
+    default T setLink(Link value) {
         return set(LINK, value);
+    }
+
+    default T setLink(String value) {
+        return set(LINK, ParamUtil.searchEnum(LINK, value));
     }
 
     default Double getLinkPower() {
@@ -119,4 +129,22 @@ public interface GlmTrainParams<T> extends
         return get(EPSILON);
     }
 
+    enum Family {
+        Gamma,
+        Binomial,
+        Gaussian,
+        Poisson,
+        Tweedie
+    }
+
+    enum Link {
+        CLogLog,
+        Identity,
+        Inverse,
+        Log,
+        Logit,
+        Power,
+        Probit,
+        Sqrt
+    }
 }

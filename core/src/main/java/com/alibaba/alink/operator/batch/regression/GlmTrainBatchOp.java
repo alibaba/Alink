@@ -48,8 +48,8 @@ public final class GlmTrainBatchOp extends BatchOperator<GlmTrainBatchOp>
         String weightColName = getWeightCol();
         String offsetColName = getOffsetCol();
 
-        String familyName = getFamily();
-        String linkName = getLink();
+        Family familyName = getFamily();
+        Link linkName = getLink();
         double variancePower = getVariancePower();
         double linkPower = getLinkPower();
 
@@ -125,9 +125,9 @@ public final class GlmTrainBatchOp extends BatchOperator<GlmTrainBatchOp>
         private String weightColName;
         private String labelColName;
 
-        private String familyName;
+        private Family familyName;
         private double variancePower;
-        private String linkName;
+        private Link linkName;
         private double linkPower;
 
         private boolean fitIntercept;
@@ -136,8 +136,8 @@ public final class GlmTrainBatchOp extends BatchOperator<GlmTrainBatchOp>
 
         public BuildModel(String[] featureColNames, String offsetColName,
                           String weightColName, String labelColName,
-                          String familyName, double variancePower,
-                          String linkName, double linkPower,
+                          Family familyName, double variancePower,
+                          Link linkName, double linkPower,
                           Boolean fitIntercept, int numIter, double epsilon) {
             this.featureColNames = featureColNames;
             this.offsetColName = offsetColName;

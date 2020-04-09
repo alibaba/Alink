@@ -15,6 +15,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.common.feature.ChiSqSelectorModelDataConverter;
+import com.alibaba.alink.params.feature.BasedChisqSelectorParams;
 import com.google.common.primitives.Ints;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -95,7 +96,7 @@ public class ChiSquareTest {
      * @return selected col indices.
      */
     protected static int[] selector(List<Row> chiSquareTest,
-                                    String selectorType,
+                                    BasedChisqSelectorParams.SelectorType selectorType,
                                     int numTopFeatures,
                                     double percentile,
                                     double fpr,
@@ -105,14 +106,9 @@ public class ChiSquareTest {
 
         int len = chiSquareTest.size();
 
-        if(selectorType.toUpperCase().equals("NUMTOPFEATURES")) {
-            selectorType = "NUM_TOP_FEATURES";
-        }
-        ChiSqSelectorType type = ChiSqSelectorType.valueOf(selectorType.toUpperCase());
-
         List<Integer> selectedColIndices = new ArrayList<>();
-        switch (type) {
-            case NUM_TOP_FEATURES:
+        switch (selectorType) {
+            case NumTopFeatures:
                 chiSquareTest.sort(new RowAscComparator());
 
                 for (int i = 0; i < numTopFeatures && i < len; i++) {
@@ -211,14 +207,14 @@ public class ChiSquareTest {
      * chi-square selector and build model.
      */
     protected static class ChiSquareSelector implements MapPartitionFunction<Row, Row> {
-        private String selectorType;
+        private BasedChisqSelectorParams.SelectorType selectorType;
         private int numTopFeatures;
         private double percentile;
         private double fpr;
         private double fdr;
         private double fwe;
 
-        ChiSquareSelector(String selectorType, int numTopFeatures,
+        ChiSquareSelector(BasedChisqSelectorParams.SelectorType selectorType, int numTopFeatures,
                           double percentile, double fpr,
                           double fdr, double fwe) {
             this.selectorType = selectorType;
@@ -290,36 +286,5 @@ public class ChiSquareTest {
 
             return row;
         }
-    }
-
-    /**
-     * chi-square selector type.
-     */
-
-    public enum ChiSqSelectorType {
-        /**
-         * select numTopFeatures features which are maximum chi-square value.
-         */
-        NUM_TOP_FEATURES,
-
-        /**
-         * select percentile * n features which are maximum chi-square value.
-         */
-        PERCENTILE,
-
-        /**
-         * select feature which chi-square value less than fpr.
-         */
-        FPR,
-
-        /**
-         * select feature which chi-square value less than fdr * (i + 1) / n.
-         */
-        FDR,
-
-        /**
-         * select feature which chi-square value less than fwe / n.
-         */
-        FWE
     }
 }

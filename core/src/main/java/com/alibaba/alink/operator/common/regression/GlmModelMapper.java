@@ -98,9 +98,9 @@ public class GlmModelMapper extends ModelMapper {
 
         features = new double[featureColIdxs.length];
 
-        String familyName = params.get(GlmTrainParams.FAMILY);
+        GlmTrainParams.Family familyName = params.get(GlmTrainParams.FAMILY);
         double variancePower = params.get(GlmTrainParams.VARIANCE_POWER);
-        String linkName = params.get(GlmTrainParams.LINK);
+        GlmTrainParams.Link linkName = params.get(GlmTrainParams.LINK);
         double linkPower = params.get(GlmTrainParams.LINK_POWER);
 
         familyLink = new FamilyLink(familyName, variancePower, linkName, linkPower);

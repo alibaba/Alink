@@ -1,7 +1,6 @@
 package com.alibaba.alink.operator.batch.feature;
 
 import com.alibaba.alink.common.linalg.*;
-import com.alibaba.alink.operator.common.feature.pca.PcaTypeEnum;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.java.DataSet;
@@ -328,7 +327,7 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
             PcaModelData pcr = new PcaModelData();
 
             //get correlation or covariance matrix
-            PcaTypeEnum pcaTypeEnum = PcaTypeEnum.valueOf(pcaType.toUpperCase());
+            CalculationType pcaTypeEnum = CalculationType.valueOf(pcaType.toUpperCase());
 
             double[][] corr = null;
 
@@ -346,7 +345,7 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
 
 
             DenseMatrix calculateMatrix = new DenseMatrix(corr);
-            if (pcaTypeEnum.equals(PcaTypeEnum.COVAR_POP)) {
+            if (pcaTypeEnum.equals(CalculationType.COVAR_POP)) {
                 double cnt = counts[0];
                 if (cnt > 1) {
                     calculateMatrix.scaleEqual(cnt / (cnt - 1));

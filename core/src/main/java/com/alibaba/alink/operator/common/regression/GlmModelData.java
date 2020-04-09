@@ -1,6 +1,8 @@
 package com.alibaba.alink.operator.common.regression;
 
 
+import com.alibaba.alink.params.regression.GlmTrainParams;
+
 /**
  * Glm model data.
  */
@@ -51,7 +53,7 @@ public class GlmModelData {
     /**
      * family name.
      */
-    public String familyName;
+    public GlmTrainParams.Family familyName;
 
     /**
      * variance power of family.
@@ -61,7 +63,7 @@ public class GlmModelData {
     /**
      * link function name.
      */
-    public String linkName;
+    public GlmTrainParams.Link linkName;
 
     /**
      * power of link function.

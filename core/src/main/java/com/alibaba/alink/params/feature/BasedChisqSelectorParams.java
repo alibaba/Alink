@@ -3,6 +3,7 @@ package com.alibaba.alink.params.feature;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
 
 /**
@@ -11,10 +12,11 @@ import com.alibaba.alink.params.shared.colname.HasLabelCol;
 public interface BasedChisqSelectorParams<T> extends
     HasLabelCol<T> {
 
-    ParamInfo<String> SELECTOR_TYPE = ParamInfoFactory.createParamInfo("selectorType", String.class)
-        .setDescription("The selector supports different selection methods: `numTopFeatures`, `percentile`, `fpr`,\n" +
+    ParamInfo<SelectorType> SELECTOR_TYPE = ParamInfoFactory.createParamInfo("selectorType",
+        SelectorType.class)
+        .setDescription("The selector supports different selection methods: `NumTopFeatures`, `percentile`, `fpr`,\n" +
             "  `fdr`, `fwe`.\n" +
-            "   - `numTopFeatures` chooses a fixed number of top features according to a chi-squared test.\n" +
+            "   - `NumTopFeatures` chooses a fixed number of top features according to a chi-squared test.\n" +
             "   - `percentile` is similar but chooses a fraction of all features instead of a fixed number.\n" +
             "   - `fpr` chooses all features whose p-values are below a threshold, thus controlling the false\n" +
             "     positive rate of selection.\n" +
@@ -23,10 +25,11 @@ public interface BasedChisqSelectorParams<T> extends
             "     to choose all features whose false discovery rate is below a threshold.\n" +
             "   - `fwe` chooses all features whose p-values are below a threshold. The threshold is scaled by\n" +
             "     1/numFeatures, thus controlling the family-wise error rate of selection.\n" +
-            "  By default, the selection method is `numTopFeatures`, with the default number of top features")
+            "  By default, the selection method is `NumTopFeatures`, with the default number of top features")
         .setOptional()
-        .setHasDefaultValue("numTopFeatures")
+        .setHasDefaultValue(SelectorType.NumTopFeatures)
         .build();
+
     ParamInfo<Integer> NUM_TOP_FEATURES = ParamInfoFactory.createParamInfo("numTopFeatures", Integer.class)
         .setDescription("Number of features that selector will select, ordered by ascending p-value. If the" +
             " number of features is < numTopFeatures, then this will select all features." +
@@ -58,12 +61,16 @@ public interface BasedChisqSelectorParams<T> extends
         .setHasDefaultValue(0.05)
         .build();
 
-    default String getSelectorType() {
+    default SelectorType getSelectorType() {
         return get(SELECTOR_TYPE);
     }
 
-    default T setSelectorType(String value) {
+    default T setSelectorType(SelectorType value) {
         return set(SELECTOR_TYPE, value);
+    }
+
+    default T setSelectorType(String value) {
+        return set(SELECTOR_TYPE, ParamUtil.searchEnum(SELECTOR_TYPE, value));
     }
 
     default Integer getNumTopFeatures() {
@@ -106,4 +113,33 @@ public interface BasedChisqSelectorParams<T> extends
         return set(FWE, value);
     }
 
+    /**
+     * chi-square selector type.
+     */
+    enum SelectorType {
+        /**
+         * select NumTopFeatures features which are maximum chi-square value.
+         */
+        NumTopFeatures,
+
+        /**
+         * select percentile * n features which are maximum chi-square value.
+         */
+        PERCENTILE,
+
+        /**
+         * select feature which chi-square value less than fpr.
+         */
+        FPR,
+
+        /**
+         * select feature which chi-square value less than fdr * (i + 1) / n.
+         */
+        FDR,
+
+        /**
+         * select feature which chi-square value less than fwe / n.
+         */
+        FWE
+    }
 }

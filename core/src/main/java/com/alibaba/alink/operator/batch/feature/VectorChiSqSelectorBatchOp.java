@@ -24,7 +24,7 @@ public final class VectorChiSqSelectorBatchOp extends BatchOperator<VectorChiSqS
         String vectorColName = getSelectedCol();
         String labelColName = getLabelCol();
 
-        String selectorType = getParams().get(SELECTOR_TYPE).trim().toLowerCase();
+        SelectorType selectorType = getParams().get(SELECTOR_TYPE);
         int numTopFeatures = getParams().get(NUM_TOP_FEATURES);
         double percentile = getParams().get(PERCENTILE);
         double fpr = getParams().get(FPR);

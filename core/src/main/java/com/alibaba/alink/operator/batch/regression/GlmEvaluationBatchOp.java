@@ -36,8 +36,8 @@ public class GlmEvaluationBatchOp extends BatchOperator<GlmEvaluationBatchOp>
         String weightColName = getWeightCol();
         String offsetColName = getOffsetCol();
 
-        String familyName = getFamily();
-        String linkName = getLink();
+        Family familyName = getFamily();
+        Link linkName = getLink();
         double variancePower = getVariancePower();
         double linkPower = getLinkPower();
 

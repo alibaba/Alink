@@ -47,9 +47,9 @@ public final class CorrelationBatchOp extends BatchOperator<CorrelationBatchOp>
         //check col types must be double or bigint
         TableUtil.assertNumericalCols(in.getSchema(), selectedColNames);
 
-        String corrType = getMethod().trim().toLowerCase();
+        Method corrType = getMethod();
 
-        if ("pearson".equals(corrType)) {
+        if (Method.PEARSON == corrType) {
 
             DataSet<Tuple2<TableSummary, CorrelationResult>> srt = StatisticsHelper.pearsonCorrelation(in, selectedColNames);
 

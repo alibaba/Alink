@@ -6,6 +6,7 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.params.feature.HasCalculationType;
 import com.alibaba.alink.params.feature.PcaPredictParams;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
@@ -25,7 +26,7 @@ public class PcaModelMapper extends ModelMapper {
     private int[] featureIdxs = null;
     private boolean isVector;
 
-    private String transformType = null;
+    private PcaPredictParams.TransformType transformType = null;
     private String pcaType = null;
 
     private double[] sourceMean = null;
@@ -77,8 +78,7 @@ public class PcaModelMapper extends ModelMapper {
         int nx = model.means.length;
         int p = model.p;
 
-        PcaTransformTypeEnum transformTypeEnum = PcaTransformTypeEnum.valueOf(this.transformType.toUpperCase());
-        PcaTypeEnum pcaTypeEnum = PcaTypeEnum.valueOf(this.pcaType.toUpperCase());
+        HasCalculationType.CalculationType pcaTypeEnum = HasCalculationType.CalculationType.valueOf(this.pcaType.toUpperCase());
 
         //transform mean, stdDevs and scoreStd
         sourceMean = new double[nx];
@@ -88,11 +88,11 @@ public class PcaModelMapper extends ModelMapper {
         Arrays.fill(sourceStd, 1);
         Arrays.fill(scoreStd, 1);
 
-        if (PcaTypeEnum.CORR.equals(pcaTypeEnum)) {
+        if (HasCalculationType.CalculationType.CORR.equals(pcaTypeEnum)) {
             sourceStd = model.stddevs;
         }
 
-        switch (transformTypeEnum) {
+        switch (transformType) {
             case SUBMEAN:
                 sourceMean = model.means;
                 break;
@@ -108,6 +108,10 @@ public class PcaModelMapper extends ModelMapper {
                     scoreStd[i] = Math.sqrt(tmp);
                 }
                 break;
+            case SIMPLE:
+                break;
+            default:
+                throw new IllegalArgumentException("Error transformType: " + transformType);
         }
     }
 

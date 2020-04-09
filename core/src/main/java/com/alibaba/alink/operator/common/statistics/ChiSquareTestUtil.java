@@ -4,6 +4,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.feature.ChiSqSelectorModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.params.feature.BasedChisqSelectorParams;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -64,7 +65,7 @@ public class ChiSquareTestUtil {
     public static Table selector(BatchOperator in,
                                  String[] selectedColNames,
                                  String labelColName,
-                                 String selectorType,
+                                 BasedChisqSelectorParams.SelectorType selectorType,
                                  int numTopFeatures,
                                  double percentile,
                                  double fpr,
@@ -97,7 +98,7 @@ public class ChiSquareTestUtil {
     public static Table vectorSelector(BatchOperator in,
                                        String selectedColName,
                                        String labelColName,
-                                       String selectorType,
+                                       BasedChisqSelectorParams.SelectorType selectorType,
                                        int numTopFeatures,
                                        double percentile,
                                        double fpr,
