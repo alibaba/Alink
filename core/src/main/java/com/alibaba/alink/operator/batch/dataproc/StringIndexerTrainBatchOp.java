@@ -44,7 +44,6 @@ public final class StringIndexerTrainBatchOp
         BatchOperator<?> in = checkAndGetFirst(inputs);
 
         final String selectedCol = getSelectedCol();
-        final StringIndexerUtil.OrderType orderType = StringIndexerUtil.OrderType.valueOf(getStringOrderType().toUpperCase());
         final int selectedColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), selectedCol);
 
         DataSet<Row> inputRows = ((DataSet<Row>) in.getDataSet()).map(
@@ -57,7 +56,7 @@ public final class StringIndexerTrainBatchOp
         );
 
         DataSet<Tuple3<Integer, String, Long>> indexedToken =
-            StringIndexerUtil.indexTokens(inputRows, orderType, 0L, true);
+            StringIndexerUtil.indexTokens(inputRows, getStringOrderType(), 0L, true);
 
         DataSet<Row> values = indexedToken
             .mapPartition(new RichMapPartitionFunction<Tuple3<Integer, String, Long>, Row>() {

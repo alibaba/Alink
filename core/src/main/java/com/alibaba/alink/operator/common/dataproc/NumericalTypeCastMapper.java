@@ -40,7 +40,7 @@ public class NumericalTypeCastMapper extends Mapper {
 			reservedColNames = dataSchema.getFieldNames();
 		}
 
-		targetType = FlinkTypeConverter.getFlinkType(params.get(HasTargetType.TARGET_TYPE));
+		targetType = FlinkTypeConverter.getFlinkType(params.get(HasTargetType.TARGET_TYPE).toString());
 
 		this.outputColsHelper = new OutputColsHelper(dataSchema, outputColNames,
 			Arrays.stream(outputColNames).map(x -> targetType).toArray(TypeInformation[]::new), reservedColNames);

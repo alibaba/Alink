@@ -52,8 +52,7 @@ public abstract class BaseKafkaSourceStreamOp<T extends BaseKafkaSourceStreamOp<
     protected Table initializeDataSource() {
         String topic = getParams().get(KafkaSourceParams.TOPIC);
         String topicPattern = getParams().get(KafkaSourceParams.TOPIC_PATTERN);
-        BaseKafkaSourceBuilder.StartupMode startupMode = BaseKafkaSourceBuilder.StartupMode.valueOf(
-            getParams().get(KafkaSourceParams.STARTUP_MODE).toUpperCase());
+        KafkaSourceParams.StartupMode startupMode = getParams().get(KafkaSourceParams.STARTUP_MODE);
         String properties = getParams().get(KafkaSourceParams.PROPERTIES);
 
         Preconditions.checkArgument(!StringUtils.isNullOrWhitespaceOnly(topicPattern) ||
@@ -85,7 +84,7 @@ public abstract class BaseKafkaSourceStreamOp<T extends BaseKafkaSourceStreamOp<
         builder.setProperties(props);
         builder.setStartupMode(startupMode);
 
-        if (startupMode.equals(BaseKafkaSourceBuilder.StartupMode.TIMESTAMP)) {
+        if (startupMode.equals(KafkaSourceParams.StartupMode.TIMESTAMP)) {
             String timeStr = getParams().get(KafkaSourceParams.START_TIME);
             builder.setStartTimeMs(KafkaUtils.parseDateStringToMs(timeStr));
         }

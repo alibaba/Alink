@@ -1,5 +1,6 @@
 package com.alibaba.alink.params.sql;
 
+import com.alibaba.alink.params.ParamUtil;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
@@ -24,11 +25,27 @@ public interface JoinParams<T> extends WithParams<T> {
         .setHasDefaultValue("*")
         .build();
 
-    ParamInfo<String> TYPE = ParamInfoFactory
-        .createParamInfo("type", String.class)
+    ParamInfo<Type> TYPE = ParamInfoFactory
+        .createParamInfo("type", Type.class)
         .setDescription("Join type, one of \"join\", \"leftOuterJoin\", \"rightOuterJoin\", \"fullOuterJoin\"")
-        .setHasDefaultValue("join")
+        .setHasDefaultValue(Type.JOIN)
         .build();
+
+    default Type getType() {
+        return get(TYPE);
+    }
+
+    default T setType(Type value) {
+        return set(TYPE, value);
+    }
+
+    default T setType(String value) {
+        return set(TYPE, ParamUtil.searchEnum(TYPE, value));
+    }
+
+    enum Type {
+        JOIN, LEFTOUTERJOIN, RIGHTOUTERJOIN, FULLOUTERJOIN
+    }
 
     default String getJoinPredicate() {
         return get(JOIN_PREDICATE);
@@ -44,13 +61,5 @@ public interface JoinParams<T> extends WithParams<T> {
 
     default T setSelectClause(String value) {
         return set(SELECT_CLAUSE, value);
-    }
-
-    default String getType() {
-        return get(TYPE);
-    }
-
-    default T setType(String value) {
-        return set(TYPE, value);
     }
 }

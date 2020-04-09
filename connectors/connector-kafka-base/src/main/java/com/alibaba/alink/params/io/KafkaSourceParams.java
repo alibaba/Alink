@@ -1,11 +1,14 @@
 package com.alibaba.alink.params.io;
 
+import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.io.shared_params.HasStartTime_null;
 import com.alibaba.alink.params.io.shared_params.HasTopicPattern_null;
 import com.alibaba.alink.params.io.shared_params.HasTopic_null;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
+
+import java.io.Serializable;
 
 public interface KafkaSourceParams<T> extends WithParams<T>,
     HasTopic_null<T>, HasTopicPattern_null<T>, HasStartTime_null<T>, HasProperties<T> {
@@ -40,17 +43,25 @@ public interface KafkaSourceParams<T> extends WithParams<T>,
         return set(GROUP_ID, value);
     }
 
-    ParamInfo<String> STARTUP_MODE = ParamInfoFactory
-        .createParamInfo("startupMode", String.class)
+    ParamInfo<StartupMode> STARTUP_MODE = ParamInfoFactory
+        .createParamInfo("startupMode", StartupMode.class)
         .setDescription("startupMode")
         .setRequired()
         .build();
 
-    default String getStartupMode() {
+    default StartupMode getStartupMode() {
         return get(STARTUP_MODE);
     }
 
-    default T setStartupMode(String value) {
+    default T setStartupMode(StartupMode value) {
         return set(STARTUP_MODE, value);
+    }
+
+    default T setStartupMode(String value) {
+        return set(STARTUP_MODE, ParamUtil.searchEnum(STARTUP_MODE, value));
+    }
+
+    enum StartupMode implements Serializable {
+        EARLIEST, GROUP_OFFSETS, LATEST, TIMESTAMP
     }
 }

@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.tree.predictors;
 
+import com.alibaba.alink.params.dataproc.HasTargetType;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
@@ -61,7 +62,7 @@ public abstract class TreeModelMapper extends RichModelMapper {
 			stringIndexerModelNumericalTypeCastMapper = new NumericalTypeCastMapper(dataSchema,
 				new Params()
 					.set(NumericalTypeCastParams.SELECTED_COLS, categoricalColNames)
-					.set(NumericalTypeCastParams.TARGET_TYPE, "INT")
+					.set(NumericalTypeCastParams.TARGET_TYPE, HasTargetType.TargetType.INT)
 			);
 		}
 
@@ -71,7 +72,7 @@ public abstract class TreeModelMapper extends RichModelMapper {
 					NumericalTypeCastParams.SELECTED_COLS,
 					ArrayUtils.removeElements(treeModel.meta.get(HasFeatureCols.FEATURE_COLS), categoricalColNames)
 				)
-				.set(NumericalTypeCastParams.TARGET_TYPE, "DOUBLE")
+				.set(NumericalTypeCastParams.TARGET_TYPE, HasTargetType.TargetType.DOUBLE)
 		);
 
 		initFeatureIndexes(treeModel.meta, dataSchema);

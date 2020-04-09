@@ -1,25 +1,15 @@
 package com.alibaba.alink.operator.batch.sql;
 
-import org.apache.flink.ml.api.misc.param.Params;
-
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
 import com.alibaba.alink.params.sql.JoinParams;
-
-import java.io.Serializable;
+import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * Join two batch operators.
  */
 public final class JoinBatchOp extends BaseSqlApiBatchOp<JoinBatchOp>
     implements JoinParams<JoinBatchOp> {
-
-    enum Op implements Serializable {
-        JOIN,
-        LEFTOUTERJOIN,
-        RIGHTOUTERJOIN,
-        FULLOUTERJOIN;
-    }
 
     public JoinBatchOp() {
         this(new Params());
@@ -44,9 +34,8 @@ public final class JoinBatchOp extends BaseSqlApiBatchOp<JoinBatchOp>
         String selectClause = this.getParams().get(JoinParams.SELECT_CLAUSE);
         String joidPredicate = this.getParams().get(JoinParams.JOIN_PREDICATE);
 
-        Op op = Op.valueOf(getType().toUpperCase());
         BatchOperator outputOp = null;
-        switch (op) {
+        switch (getType()) {
             case JOIN:
                 outputOp = BatchSqlOperators.join(inputs[0], inputs[1], joidPredicate, selectClause);
                 break;
@@ -60,7 +49,7 @@ public final class JoinBatchOp extends BaseSqlApiBatchOp<JoinBatchOp>
                 outputOp = BatchSqlOperators.fullOuterJoin(inputs[0], inputs[1], joidPredicate, selectClause);
                 break;
             default:
-                throw new RuntimeException("Not supported binary op: " + op);
+                throw new RuntimeException("Not supported join type: " + getType());
         }
         this.setOutputTable(outputOp.getOutputTable());
         return this;

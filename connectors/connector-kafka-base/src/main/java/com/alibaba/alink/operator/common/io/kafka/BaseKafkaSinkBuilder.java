@@ -21,6 +21,7 @@ package com.alibaba.alink.operator.common.io.kafka;
 
 import com.alibaba.alink.operator.common.io.serde.RowToCsvSerialization;
 import com.alibaba.alink.operator.common.io.serde.RowToJsonSerialization;
+import com.alibaba.alink.params.io.shared_params.HasDataFormat;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
@@ -30,16 +31,11 @@ import java.util.Properties;
 
 public abstract class BaseKafkaSinkBuilder {
     protected String topic;
-    protected OutputFormat format;
+    protected HasDataFormat.DataFormat format;
     protected String fieldDelimiter;
     protected String[] fieldNames;
     protected TypeInformation<?>[] fieldTypes;
     protected Properties properties;
-
-    protected enum OutputFormat {
-        CSV,
-        JSON
-    }
 
     public void setTopic(String topic) {
         this.topic = topic;
@@ -57,8 +53,8 @@ public abstract class BaseKafkaSinkBuilder {
         this.fieldTypes = fieldTypes;
     }
 
-    public void setFormat(String format) {
-        this.format = OutputFormat.valueOf(format.toUpperCase());
+    public void setFormat(HasDataFormat.DataFormat format) {
+        this.format = format;
     }
 
     public void setProperties(Properties properties) {

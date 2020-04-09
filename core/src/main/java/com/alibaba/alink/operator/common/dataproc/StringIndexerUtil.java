@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.dataproc;
 
+import com.alibaba.alink.params.dataproc.HasStringOrderTypeDefaultAsRandom;
 import org.apache.flink.api.common.functions.*;
 import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
@@ -18,32 +19,6 @@ import java.util.Map;
  * A utility class to assign indices to columns of strings.
  */
 public class StringIndexerUtil {
-
-    /**
-     * Specifies how to order tokens.
-     */
-    public enum OrderType {
-        /**
-         * Index randomly.
-         */
-        RANDOM,
-        /**
-         * Ordered by token frequency in ascending order.
-         */
-        FREQUENCY_ASC,
-        /**
-         * Ordered by token frequency in descending order.
-         */
-        FREQUENCY_DESC,
-        /**
-         * Ordered by ascending alphabet order ascending.
-         */
-        ALPHABET_ASC,
-        /**
-         * Ordered by descending alphabet order ascending.
-         */
-        ALPHABET_DESC
-    }
 
     /**
      * Strategy to handle unseen token when doing prediction.
@@ -74,7 +49,8 @@ public class StringIndexerUtil {
      * @return A DataSet of tuples of column index, token, and token index.
      */
     public static DataSet<Tuple3<Integer, String, Long>> indexTokens(
-        DataSet<Row> data, OrderType orderType, final long startIndex, final boolean ignoreNull) {
+        DataSet<Row> data, HasStringOrderTypeDefaultAsRandom.StringOrderType orderType,
+        final long startIndex, final boolean ignoreNull) {
 
         switch (orderType) {
             case RANDOM:
@@ -146,7 +122,7 @@ public class StringIndexerUtil {
             });
     }
 
-    public static DataSet<Tuple3<Integer, String, Long>> countTokens(DataSet<Row> data, final boolean ignoreNull){
+    public static DataSet<Tuple3<Integer, String, Long>> countTokens(DataSet<Row> data, final boolean ignoreNull) {
         return flattenTokens(data, ignoreNull)
             .map(new MapFunction<Tuple2<Integer, String>, Tuple3<Integer, String, Long>>() {
                 @Override

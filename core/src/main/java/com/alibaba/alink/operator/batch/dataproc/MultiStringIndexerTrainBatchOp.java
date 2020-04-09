@@ -46,8 +46,6 @@ public final class MultiStringIndexerTrainBatchOp
         BatchOperator<?> in = checkAndGetFirst(inputs);
 
         final String[] selectedColNames = getSelectedCols();
-        final StringIndexerUtil.OrderType orderType = StringIndexerUtil.OrderType
-            .valueOf(getStringOrderType().toUpperCase());
 
         final String[] selectedColSqlType = new String[selectedColNames.length];
         for (int i = 0; i < selectedColNames.length; i++) {
@@ -57,7 +55,7 @@ public final class MultiStringIndexerTrainBatchOp
 
         DataSet<Row> inputRows = in.select(selectedColNames).getDataSet();
         DataSet<Tuple3<Integer, String, Long>> indexedToken =
-            StringIndexerUtil.indexTokens(inputRows, orderType, 0L, true);
+            StringIndexerUtil.indexTokens(inputRows, getStringOrderType(), 0L, true);
 
         DataSet<Row> values = indexedToken
             .mapPartition(new RichMapPartitionFunction<Tuple3<Integer, String, Long>, Row>() {

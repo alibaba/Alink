@@ -22,6 +22,7 @@ package com.alibaba.alink.operator.stream.sink;
 import com.alibaba.alink.operator.common.io.kafka.BaseKafkaSinkBuilder;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.KafkaSinkParams;
+import com.alibaba.alink.params.io.shared_params.HasDataFormat;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.types.Row;
@@ -44,7 +45,7 @@ public abstract class BaseKafkaSinkStreamOp<T extends BaseKafkaSinkStreamOp<T>>
     public T sinkFrom(StreamOperator in) {
         String topic = getParams().get(KafkaSinkParams.TOPIC);
         String fieldDelimiter = getParams().get(KafkaSinkParams.FIELD_DELIMITER);
-        String dataFormat = getParams().get(KafkaSinkParams.DATA_FORMAT);
+        HasDataFormat.DataFormat dataFormat = getParams().get(KafkaSinkParams.DATA_FORMAT);
         String bootstrapServer = getParams().get(KafkaSinkParams.BOOTSTRAP_SERVERS);
         String properties = getParams().get(KafkaSinkParams.PROPERTIES);
 

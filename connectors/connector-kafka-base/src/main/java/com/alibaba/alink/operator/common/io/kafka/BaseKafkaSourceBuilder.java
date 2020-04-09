@@ -19,6 +19,7 @@
 
 package com.alibaba.alink.operator.common.io.kafka;
 
+import com.alibaba.alink.params.io.KafkaSourceParams;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 import org.apache.flink.types.Row;
 
@@ -28,16 +29,9 @@ import java.util.Properties;
 public abstract class BaseKafkaSourceBuilder {
     protected List<String> topic;
     protected String topicPattern;
-    protected StartupMode startupMode;
+    protected KafkaSourceParams.StartupMode startupMode;
     protected Properties properties;
     protected long startTimeMs;
-
-    public enum StartupMode {
-        TIMESTAMP,
-        EARLIEST,
-        LATEST,
-        GROUP_OFFSETS
-    }
 
     public void setTopic(List<String> topic) {
         this.topic = topic;
@@ -47,7 +41,7 @@ public abstract class BaseKafkaSourceBuilder {
         this.topicPattern = topicPattern;
     }
 
-    public void setStartupMode(StartupMode startupMode) {
+    public void setStartupMode(KafkaSourceParams.StartupMode startupMode) {
         this.startupMode = startupMode;
     }
 
