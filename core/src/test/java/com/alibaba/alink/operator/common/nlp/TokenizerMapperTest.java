@@ -24,7 +24,7 @@ public class TokenizerMapperTest {
         TokenizerMapper mapper = new TokenizerMapper(schema, params);
 
         assertEquals(mapper.map(Row.of("This\tis  a unit test for mapper")).getField(0),
-            "this is  a unit test for mapper");
+            "this is a unit test for mapper");
         assertEquals(mapper.getOutputSchema(), schema);
     }
 

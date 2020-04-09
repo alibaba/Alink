@@ -11,7 +11,7 @@ import com.alibaba.alink.common.mapper.SISOMapper;
  * Transform all words into lower case, and split it by white space.
  */
 public class TokenizerMapper extends SISOMapper {
-	private static final String SPLIT_DELIMITER = "\\s";
+	private static final String SPLIT_DELIMITER = "\\s+";
 
 	public TokenizerMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
