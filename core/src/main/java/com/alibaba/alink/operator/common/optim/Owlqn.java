@@ -21,6 +21,7 @@ import com.alibaba.alink.common.comqueue.communication.AllReduce;
 
 import com.alibaba.alink.params.shared.linear.HasL1;
 import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs100;
+import com.alibaba.alink.params.shared.linear.LinearTrainParams.OptimMethod;
 import com.alibaba.alink.params.shared.optim.HasNumSearchStepDv4;
 
 import org.apache.flink.api.java.DataSet;

@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.optim;
 
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
+import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple3;
@@ -16,11 +17,11 @@ public class OptimizerFactory {
 		DataSet <Tuple3 <Double, Double, Vector>> trainData,
 		DataSet <Integer> coefDim,
 		Params params,
-		OptimMethod method) {
+		LinearTrainParams.OptimMethod method) {
 		switch (method) {
 			case SGD:
 				return new Sgd(objFunc, trainData, coefDim, params);
-			case NEWTON:
+			case Newton:
 				return new Newton(objFunc, trainData, coefDim, params);
 			case GD:
 				return new Gd(objFunc, trainData, coefDim, params);

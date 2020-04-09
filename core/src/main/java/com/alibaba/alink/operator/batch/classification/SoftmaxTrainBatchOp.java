@@ -17,7 +17,6 @@ import com.alibaba.alink.operator.common.linear.LinearModelData;
 import com.alibaba.alink.operator.common.linear.LinearModelDataConverter;
 import com.alibaba.alink.operator.common.linear.SoftmaxObjFunc;
 import com.alibaba.alink.operator.common.optim.Lbfgs;
-import com.alibaba.alink.operator.common.optim.OptimMethod;
 import com.alibaba.alink.operator.common.optim.OptimizerFactory;
 import com.alibaba.alink.operator.common.optim.Owlqn;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
@@ -212,8 +211,8 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
         });
 
         // solve the opt problem.
-        if (params.contains("optimMethod")) {
-            OptimMethod method = OptimMethod.valueOf(params.get(LinearTrainParams.OPTIM_METHOD).toUpperCase());
+        if (params.contains(LinearTrainParams.OPTIM_METHOD)) {
+            OptimMethod method = params.get(LinearTrainParams.OPTIM_METHOD);
             return OptimizerFactory.create(objFunc, trainData, coefDim, params, method)
                 .optimize();
         } else if (params.get(SoftmaxTrainParams.L_1) > 0) {

@@ -2,7 +2,7 @@ package com.alibaba.alink.operator.batch.classification;
 
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
-import com.alibaba.alink.params.classification.LogisticRegressionTrainParams;
+import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
@@ -12,7 +12,7 @@ import org.apache.flink.ml.api.misc.param.Params;
  *
  */
 public final class LogisticRegressionTrainBatchOp extends BaseLinearModelTrainBatchOp<LogisticRegressionTrainBatchOp>
-	implements LogisticRegressionTrainParams <LogisticRegressionTrainBatchOp> {
+	implements LinearBinaryClassTrainParams<LogisticRegressionTrainBatchOp> {
 
 	public LogisticRegressionTrainBatchOp() {
 		this(new Params());

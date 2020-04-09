@@ -11,7 +11,6 @@ import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.linear.unarylossfunc.*;
 import com.alibaba.alink.operator.common.optim.Lbfgs;
-import com.alibaba.alink.operator.common.optim.OptimMethod;
 import com.alibaba.alink.operator.common.optim.OptimizerFactory;
 import com.alibaba.alink.operator.common.optim.Owlqn;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
@@ -258,7 +257,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
             .fromElements(getObjFunction(modelType, params));
 
         if (params.contains(LinearTrainParams.OPTIM_METHOD)) {
-            OptimMethod method = OptimMethod.valueOf(params.get(LinearTrainParams.OPTIM_METHOD).toUpperCase());
+            LinearTrainParams.OptimMethod method = params.get(LinearTrainParams.OPTIM_METHOD);
             return OptimizerFactory.create(objFunc, trainData, coefficientDim, params, method).optimize();
         } else if (params.get(HasL1.L_1) > 0) {
             return new Owlqn(objFunc, trainData, coefficientDim, params).optimize();

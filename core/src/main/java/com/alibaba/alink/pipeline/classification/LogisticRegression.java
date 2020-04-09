@@ -3,8 +3,9 @@ package com.alibaba.alink.pipeline.classification;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.LogisticRegressionTrainBatchOp;
 import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
 import com.alibaba.alink.params.classification.LogisticRegressionPredictParams;
-import com.alibaba.alink.params.classification.LogisticRegressionTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
 
 /**
@@ -12,8 +13,8 @@ import com.alibaba.alink.pipeline.Trainer;
  *
  */
 public class LogisticRegression extends Trainer <LogisticRegression, LogisticRegressionModel> implements
-	LogisticRegressionTrainParams <LogisticRegression>,
-	LogisticRegressionPredictParams <LogisticRegression> {
+    LogisticRegressionPredictParams <LogisticRegression>,
+	LinearBinaryClassTrainParams<LogisticRegression> {
 
 	public LogisticRegression() {super();}
 

@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.operator.common.optim.OptimMethod;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
 import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.ComputeFunction;
+import com.alibaba.alink.params.shared.linear.LinearTrainParams.OptimMethod;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;

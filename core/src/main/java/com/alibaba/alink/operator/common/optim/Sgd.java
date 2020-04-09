@@ -18,6 +18,7 @@ import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.ComputeFunction;
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
+import com.alibaba.alink.params.shared.linear.LinearTrainParams.OptimMethod;
 import com.alibaba.alink.params.shared.optim.SgdParams;
 
 import org.apache.flink.api.java.DataSet;
