@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.alibaba.alink</groupId>
+    <artifactId>alink_shaded</artifactId>
+    <packaging>pom</packaging>
+    <version>0.1-SNAPSHOT</version>
+
+    <name>alink-shaded</name>
+    <url>https://github.com/alibaba/Alink</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+
+    <organization>
+        <name>Alibaba Group</name>
+        <url>https://github.com/alibaba</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>xuyang1706</name>
+            <email>xuyang1706@gmail.com</email>
+        </developer>
+        <developer>
+            <name>chengscu</name>
+            <email>chengscu@qq.com</email>
+        </developer>
+        <developer>
+            <name>Fanoid</name>
+            <email>hongfanxo@gmail.com</email>
+        </developer>
+        <developer>
+            <name>hapsunday</name>
+            <email>hapsunday@gmail.com</email>
+        </developer>
+        <developer>
+            <name>liulfy</name>
+            <email>2691140740@qq.com</email>
+        </developer>
+        <developer>
+            <name>lqb11</name>
+            <email>liqianbing11@163.com</email>
+        </developer>
+        <developer>
+            <name>Xiafei Qiu</name>
+            <email>qiuxiafei@gmail.com</email>
+        </developer>
+        <developer>
+            <name>shaomengwang</name>
+            <email>shaomeng.wang.w@gmail.com</email>
+        </developer>
+        <developer>
+            <name>cainingnk</name>
+            <email>cainingnk@gmail.com</email>
+        </developer>
+        <developer>
+            <name>weibo.zwb</name>
+            <email>weibo.zwb@alibaba-inc.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:alibaba/Alink.git</connection>
+        <developerConnection>scm:git:ssh://github.com:alibaba/Alink.git</developerConnection>
+        <url>https://github.com/alibaba/Alink</url>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <modules>
+        <module>shaded_protobuf_java</module>
+    </modules>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <activation>
+                <property>
+                    <name>env.type</name>
+                    <value>release</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <configuration>
+                            <additionalOptions>-Xdoclint:none</additionalOptions>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
+                            <show>public</show>
+                            <charset>UTF-8</charset>
+                            <encoding>UTF-8</encoding>
+                            <docencoding>UTF-8</docencoding>
+                            <links>
+                                <link>http://docs.oracle.com/javase/6/docs/api</link>
+                            </links>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
