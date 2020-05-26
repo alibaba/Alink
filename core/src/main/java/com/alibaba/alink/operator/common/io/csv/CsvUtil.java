@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.io.csv;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
@@ -31,10 +32,21 @@ public class CsvUtil {
         for (int i = 0; i < colNames.length; i++) {
             String[] kv = fields[i].trim().split("\\s+");
             colNames[i] = kv[0];
-            if (colNames[i].equalsIgnoreCase("varbinary")) {
+
+            if (kv[1].equalsIgnoreCase("VARBINARY")) {
                 colTypes[i] = BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
+            } else if (kv[1].equalsIgnoreCase("VEC_TYPES_VECTOR")) {
+                colTypes[i] = VectorTypes.VECTOR;
+            } else if (kv[1].equalsIgnoreCase("VEC_TYPES_DENSE_VECTOR")) {
+                colTypes[i] = VectorTypes.DENSE_VECTOR;
+            } else if (kv[1].equalsIgnoreCase("VEC_TYPES_SPARSE_VECTOR")) {
+                colTypes[i] = VectorTypes.SPARSE_VECTOR;
             } else {
-                colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1].toUpperCase());
+                if(kv[1].contains("<") && kv[1].contains(">")) {
+                    colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1]);
+                } else {
+                    colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1].toUpperCase());
+                }
             }
         }
         return new TableSchema(colNames, colTypes);
@@ -58,7 +70,13 @@ public class CsvUtil {
             }
             String typeName;
             if (colTypes[i].equals(BYTE_PRIMITIVE_ARRAY_TYPE_INFO)) {
-                typeName = "varbinary";
+                typeName = "VARBINARY";
+            } else if (colTypes[i].equals(VectorTypes.VECTOR)) {
+                typeName = "VEC_TYPES_VECTOR";
+            } else if (colTypes[i].equals(VectorTypes.DENSE_VECTOR)) {
+                typeName = "VEC_TYPES_DENSE_VECTOR";
+            } else if (colTypes[i].equals(VectorTypes.SPARSE_VECTOR)) {
+                typeName = "VEC_TYPES_SPARSE_VECTOR";
             } else {
                 typeName = FlinkTypeConverter.getTypeString(colTypes[i]);
             }
