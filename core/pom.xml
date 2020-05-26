@@ -177,6 +177,13 @@
             </exclusions>
         </dependency>
 
+        <!-- Calcite-related dependency -->
+        <dependency>
+            <groupId>com.alibaba.alink</groupId>
+            <artifactId>shaded_protobuf_java</artifactId>
+            <version>3.6.1-0.1</version>
+        </dependency>
+
     </dependencies>
 
 </project>
