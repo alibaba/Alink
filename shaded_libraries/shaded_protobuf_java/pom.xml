@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.alink</groupId>
         <artifactId>alink_shaded</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.1</version>
     </parent>
 
     <properties>
@@ -16,7 +16,7 @@
 
     <groupId>com.alibaba.alink</groupId>
     <artifactId>shaded_protobuf_java</artifactId>
-    <version>${protobuf.java.version}-0.1-SNAPSHOT</version>
+    <version>${protobuf.java.version}-0.1</version>
     <name>alink-shaded-protobuf-java</name>
 
     <dependencies>
