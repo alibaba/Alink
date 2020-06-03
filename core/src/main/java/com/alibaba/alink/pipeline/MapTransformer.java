@@ -41,7 +41,9 @@ public abstract class MapTransformer<T extends MapTransformer <T>>
 
 	@Override
 	public LocalPredictor getLocalPredictor(TableSchema inputSchema) {
-		return new LocalPredictor(this.mapperBuilder.apply(inputSchema, this.getParams()));
+		Mapper mapper = this.mapperBuilder.apply(inputSchema, this.getParams());
+		mapper.open();
+		return new LocalPredictor(mapper);
 	}
 
 }

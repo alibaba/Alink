@@ -42,4 +42,9 @@ public class ModelMapperAdapter extends RichMapFunction<Row, Row> implements Ser
     public Row map(Row row) throws Exception {
         return this.mapper.map(row);
     }
+
+    @Override
+    public void close() throws Exception {
+        this.mapper.close();
+    }
 }

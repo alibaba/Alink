@@ -12,30 +12,34 @@ import java.util.List;
  */
 public abstract class ModelMapper extends Mapper {
 
-	/**
-	 * Field names of the model.
-	 */
-	private final String[] modelFieldNames;
+    /**
+     * Field names of the model.
+     */
+    private final String[] modelFieldNames;
 
-	/**
-	 * Field types of the model.
-	 */
-	private final DataType[] modelFieldTypes;
+    /**
+     * Field types of the model.
+     */
+    private final DataType[] modelFieldTypes;
 
-	public ModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
-		super(dataSchema, params);
-		this.modelFieldNames = modelSchema.getFieldNames();
-		this.modelFieldTypes = modelSchema.getFieldDataTypes();
-	}
+    public ModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
+        super(dataSchema, params);
+        this.modelFieldNames = modelSchema.getFieldNames();
+        this.modelFieldTypes = modelSchema.getFieldDataTypes();
+    }
 
-	protected TableSchema getModelSchema() {
-		return TableSchema.builder().fields(this.modelFieldNames, this.modelFieldTypes).build();
-	}
+    protected TableSchema getModelSchema() {
+        return TableSchema.builder().fields(this.modelFieldNames, this.modelFieldTypes).build();
+    }
 
-	/**
-	 * Load model from the list of Row type data.
-	 *
-	 * @param modelRows the list of Row type data
-	 */
-	public abstract void loadModel(List<Row> modelRows);
+
+    public final void open() {
+    }
+
+    /**
+     * Load model from the list of Row type data.
+     *
+     * @param modelRows the list of Row type data
+     */
+    public abstract void loadModel(List<Row> modelRows);
 }

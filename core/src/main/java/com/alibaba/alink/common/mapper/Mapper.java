@@ -44,11 +44,17 @@ public abstract class Mapper implements Serializable {
 	 */
 	public abstract Row map(Row row) throws Exception;
 
+	public void open() {
+	}
+
 	/**
 	 * Get the table schema(includes column names and types) of the calculation result.
 	 *
 	 * @return the table schema of output Row type data
 	 */
 	public abstract TableSchema getOutputSchema();
+
+	public void close() {
+	}
 
 }

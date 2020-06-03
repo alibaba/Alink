@@ -54,4 +54,9 @@ public class LocalPredictor {
 		return r;
 	}
 
+	public void close() {
+		this.mappers.forEach(Mapper::close);
+	}
+
+
 }

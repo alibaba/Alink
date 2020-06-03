@@ -1,15 +1,16 @@
 package com.alibaba.alink.pipeline;
 
-import com.alibaba.alink.common.mapper.ModelMapper;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.sink.CsvSinkBatchOp;
-import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
-import com.alibaba.alink.operator.stream.StreamOperator;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.common.mapper.ModelMapper;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.sink.CsvSinkBatchOp;
+import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
+import com.alibaba.alink.operator.stream.StreamOperator;
 
 import java.util.ArrayList;
 import java.util.List;
