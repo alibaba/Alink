@@ -7,6 +7,7 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.MISOMapper;
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.params.dataproc.vector.VectorAssemblerParams;
+import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
@@ -27,20 +28,14 @@ public class VectorAssemblerMapper extends MISOMapper {
      */
     private static final double RATIO = 1.5;
 
-    private enum HandleType {
-        ERROR,
-        KEEP,
-        SKIP
-    }
-
     /**
      * the way to handle invalid input.
      */
-    private HandleType handleInvalid;
+    private HandleInvalidMethod handleInvalid;
 
     public VectorAssemblerMapper(TableSchema dataSchema, Params params) {
         super(dataSchema, params);
-        this.handleInvalid = HandleType.valueOf(params.get(VectorAssemblerParams.HANDLE_INVALID).toUpperCase());
+        this.handleInvalid = params.get(VectorAssemblerParams.HANDLE_INVALID);
     }
 
     @Override
@@ -75,10 +70,8 @@ public class VectorAssemblerMapper extends MISOMapper {
                 switch (handleInvalid) {
                     case ERROR:
                         throw new NullPointerException("null value is found in vector assembler inputs.");
-                    case KEEP:
-                        map.put(pos++, Double.NaN);
-                        break;
                     case SKIP:
+                        return null;
                     default:
                 }
             }

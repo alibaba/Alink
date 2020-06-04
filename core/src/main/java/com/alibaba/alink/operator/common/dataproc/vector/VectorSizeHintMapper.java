@@ -5,8 +5,7 @@ import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.SISOMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorSizeHintParams;
-import com.alibaba.alink.params.shared.HasHandleInvalid;
-
+import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
@@ -17,7 +16,7 @@ import org.apache.flink.table.api.TableSchema;
 public class VectorSizeHintMapper extends SISOMapper {
     private int size;
 
-    private HasHandleInvalid.HandleInvalidMethod handleMethod;
+    private HandleInvalidMethod handleMethod;
 
     public VectorSizeHintMapper(TableSchema dataSchema, Params params) {
         super(dataSchema, params);
@@ -34,7 +33,7 @@ public class VectorSizeHintMapper extends SISOMapper {
     protected Object mapColumn(Object input) throws Exception {
         Vector vec;
         switch (handleMethod) {
-            case Error:
+            case ERROR:
                 if (input == null) {
                     throw new NullPointerException(
                             "Got null vector in VectorSizeHint");
@@ -47,7 +46,7 @@ public class VectorSizeHintMapper extends SISOMapper {
                                 "VectorSizeHint : vec size (" + vec.size() + ") not equal param size (" + size + ").");
                     }
                 }
-            case Optimistic:
+            case SKIP:
                 if (input != null) {
                     return VectorUtil.getVector(input);
                 } else {

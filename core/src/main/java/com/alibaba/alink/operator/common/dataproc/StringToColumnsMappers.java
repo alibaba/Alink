@@ -8,6 +8,7 @@ import com.alibaba.alink.params.dataproc.CsvToColumnsParams;
 import com.alibaba.alink.params.dataproc.JsonToColumnsParams;
 import com.alibaba.alink.params.dataproc.KvToColumnsParams;
 import com.alibaba.alink.params.dataproc.StringToColumnsParams;
+import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
 import com.alibaba.alink.params.dataproc.vector.VectorToColumnsParams;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -24,7 +25,7 @@ public class StringToColumnsMappers {
         private String[] fieldNames;
         private TypeInformation[] fieldTypes;
         private transient StringParsers.StringParser parser;
-        private transient StringToColumnsParams.HandleInvalid handleInvalid;
+        private transient HandleInvalidMethod handleInvalid;
         private transient boolean hasOpen;
 
         public BaseStringToColumnsMapper(TableSchema dataSchema, Params params) {
@@ -53,7 +54,7 @@ public class StringToColumnsMappers {
             String text = (String) row.getField(idx);
             Tuple2<Boolean, Row> parsed = parser.parse(text);
 
-            if (!parsed.f0 && handleInvalid == StringToColumnsParams.HandleInvalid.ERROR) {
+            if (!parsed.f0 && handleInvalid == HandleInvalidMethod.ERROR) {
                 throw new RuntimeException("Fail to parse \"" + text + "\"");
             }
             return outputColsHelper.getResultRow(row, parsed.f1);

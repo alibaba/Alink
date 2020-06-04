@@ -36,7 +36,7 @@ public class VectorSizeHintMapperTest {
 		Params params = new Params()
 			.set(VectorSizeHintParams.SELECTED_COL, "vec")
 			.set(VectorSizeHintParams.OUTPUT_COL, "res")
-			.set(VectorSizeHintParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalidMethod.Optimistic)
+			.set(VectorSizeHintParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalidMethod.SKIP)
 			.set(VectorSizeHintParams.SIZE, 2);
 
 		VectorSizeHintMapper mapper = new VectorSizeHintMapper(schema, params);

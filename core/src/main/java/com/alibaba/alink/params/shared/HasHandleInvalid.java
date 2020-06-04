@@ -12,8 +12,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 public interface HasHandleInvalid<T> extends WithParams<T> {
 	ParamInfo <HandleInvalidMethod> HANDLE_INVALID = ParamInfoFactory
 			.createParamInfo("handleInvalidMethod", HandleInvalidMethod.class)
-			.setDescription("the handle method of invalid value. include： error, optimistic")
-			.setHasDefaultValue(HandleInvalidMethod.Error)
+			.setDescription("the handle method of invalid value. include： error, skip")
+			.setHasDefaultValue(HandleInvalidMethod.ERROR)
 			.build();
 
 	default HandleInvalidMethod getHandleInvalidMethod() {
@@ -35,9 +35,9 @@ public interface HasHandleInvalid<T> extends WithParams<T> {
 		/**
 		 * Error method, throw exception.
 		 */
-		Error,
+		ERROR,
 		/**
-		 * Optimistic method, do not throw exception to interrupt the algorithm.
+		 * Filter out rows with invalid data.
 		 */
-		Optimistic
+		SKIP
 	}}

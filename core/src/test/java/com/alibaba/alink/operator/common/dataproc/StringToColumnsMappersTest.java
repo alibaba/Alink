@@ -23,7 +23,7 @@ public class StringToColumnsMappersTest {
 
         BatchOperator op = new CsvToColumnsBatchOp()
             .setSelectedCol("content")
-            .setHandleInvalid("skip")
+            .setHandleInvalidMethod("skip")
             .setSchemaStr("f1 string, f2 double");
 
         BatchOperator output = data.link(op);
