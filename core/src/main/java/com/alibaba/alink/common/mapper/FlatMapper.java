@@ -54,4 +54,9 @@ public abstract class FlatMapper implements Serializable {
 	 */
 	public abstract TableSchema getOutputSchema();
 
+	public void open() {
+	}
+
+	public void close() {
+	}
 }
