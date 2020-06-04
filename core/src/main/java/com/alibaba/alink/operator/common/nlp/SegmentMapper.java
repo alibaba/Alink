@@ -16,10 +16,14 @@ import java.util.List;
  * Segment Chinese document into words.
  */
 public class SegmentMapper extends SISOMapper {
-	private JiebaSegmenter segmentor;
+	private transient JiebaSegmenter segmentor = null;
 
 	public SegmentMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
+	}
+
+	@Override
+	public void open(){
 		segmentor = new JiebaSegmenter();
 		String[] userDefinedDict = this.params.get(SegmentParams.USER_DEFINED_DICT);
 		if (null != userDefinedDict) {

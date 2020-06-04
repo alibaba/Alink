@@ -20,6 +20,7 @@ public class SegmentMapperTest {
 			.set(SegmentParams.SELECTED_COL, "sentence");
 
 		SegmentMapper mapper = new SegmentMapper(schema, params);
+		mapper.open();
 
 		assertEquals(mapper.map(Row.of("我们辅助用户简单快速低成本低风险的实现系统权限安全管理")).getField(0),
 			"我们 辅助 用户 简单 快速 低成本 低 风险 的 实现 系统 权限 安全 管理");
@@ -36,6 +37,7 @@ public class SegmentMapperTest {
 			.set(SegmentParams.USER_DEFINED_DICT, dictArray);
 
 		SegmentMapper mapper = new SegmentMapper(schema, params);
+		mapper.open();
 
 		assertEquals(mapper.map(Row.of("我们辅助用户简单快速低成本低风险的实现系统权限安全管理")).getField(0),
 			"我们 辅助 用户 简单 快速 低成本 低风险 的 实现 系统 权限 安全 管理");

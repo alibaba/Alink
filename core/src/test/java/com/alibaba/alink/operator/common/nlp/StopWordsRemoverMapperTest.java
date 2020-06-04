@@ -23,6 +23,7 @@ public class StopWordsRemoverMapperTest {
             .set(StopWordsRemoverParams.STOP_WORDS, new String[]{"Test"});
 
         StopWordsRemoverMapper mapper = new StopWordsRemoverMapper(schema, params);
+        mapper.open();
 
         assertEquals(mapper.map(Row.of("This is a unit test for filtering stopWords")).getField(0),
             "unit filtering stopWords");
@@ -42,6 +43,7 @@ public class StopWordsRemoverMapperTest {
             .set(StopWordsRemoverParams.STOP_WORDS, new String[]{"Test"});
 
         StopWordsRemoverMapper mapper = new StopWordsRemoverMapper(schema, params);
+        mapper.open();
 
         assertEquals(mapper.map(Row.of("This is a unit test for filtering stopWords")).getField(0),
             "This unit test filtering stopWords");

@@ -22,17 +22,21 @@ import java.util.HashSet;
  * English stop words are from https://anoncvs.postgresql.org/cvsweb.cgi/pgsql/src/backend/snowball/stopwords/.
  */
 public class StopWordsRemoverMapper extends SISOMapper {
-    private HashSet<String> stopWordsSet;
+    private transient HashSet<String> stopWordsSet = null;
     private final boolean caseSensitive;
     private static final Logger LOG = LoggerFactory.getLogger(StopWordsRemoverMapper.class);
 
     public StopWordsRemoverMapper(TableSchema dataSchema, Params params) {
         super(dataSchema, params);
         this.caseSensitive = this.params.get(StopWordsRemoverParams.CASE_SENSITIVE);
+    }
+
+    @Override
+    public void open(){
         this.stopWordsSet = new HashSet<>();
         String[] stopWords = this.params.get(StopWordsRemoverParams.STOP_WORDS);
         if (null != stopWords) {
-            for(String stopWord : stopWords){
+            for (String stopWord : stopWords) {
                 stopWordsSet.add(caseSensitive ? stopWord : stopWord.toLowerCase());
             }
         }
@@ -74,7 +78,7 @@ public class StopWordsRemoverMapper extends SISOMapper {
         StringBuilder sbd = new StringBuilder();
         String[] tokens = content.split(NLPConstant.WORD_DELIMITER);
         for (String token : tokens) {
-            if (stopWordsSet.contains(caseSensitive ? token : token.toLowerCase())) {
+            if (token.isEmpty() || this.stopWordsSet.contains(caseSensitive ? token : token.toLowerCase())) {
                 continue;
             }
             sbd.append(token).append(NLPConstant.WORD_DELIMITER);
