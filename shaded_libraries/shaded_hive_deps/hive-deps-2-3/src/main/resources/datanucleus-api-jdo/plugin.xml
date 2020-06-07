@@ -1,0 +1,203 @@
+<?xml version="1.0"?>
+<!--
+Copyright (c) 2011 Andy Jefferson and others. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+    ...
+-->
+<plugin id="org.datanucleus.api.jdo" name="DataNucleus JDO" provider-name="DataNucleus">
+    <!-- PERSISTENCE PROPERTIES -->
+    <extension point="org.datanucleus.persistence_properties">
+        <persistence-property name="javax.jdo.PersistenceManagerFactoryClass"/>
+        <persistence-property name="javax.jdo.option.ConnectionDriverName" internal-name="datanucleus.ConnectionDriverName"/>
+        <persistence-property name="javax.jdo.option.ConnectionURL" internal-name="datanucleus.ConnectionURL"/>
+        <persistence-property name="javax.jdo.option.ConnectionUserName" internal-name="datanucleus.ConnectionUserName"/>
+        <persistence-property name="javax.jdo.option.ConnectionPassword" internal-name="datanucleus.ConnectionPassword"/>
+        <persistence-property name="javax.jdo.option.ConnectionFactoryName" internal-name="datanucleus.ConnectionFactoryName"/>
+        <persistence-property name="javax.jdo.option.ConnectionFactory2Name" internal-name="datanucleus.ConnectionFactory2Name"/>
+        <persistence-property name="javax.jdo.option.ConnectionFactory" internal-name="datanucleus.ConnectionFactory"/>
+        <persistence-property name="javax.jdo.option.ConnectionFactory2" internal-name="datanucleus.ConnectionFactory2"/>
+        <persistence-property name="javax.jdo.option.IgnoreCache" internal-name="datanucleus.IgnoreCache"
+                              manager-overrideable="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.Optimistic" internal-name="datanucleus.Optimistic"
+                              manager-overrideable="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.Multithreaded" internal-name="datanucleus.Multithreaded"
+                              manager-overrideable="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.RetainValues" internal-name="datanucleus.RetainValues"
+                              manager-overrideable="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.RestoreValues" internal-name="datanucleus.RestoreValues"
+                              manager-overrideable="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.NontransactionalRead" internal-name="datanucleus.NontransactionalRead"
+                              manager-overrideable="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.NontransactionalWrite" internal-name="datanucleus.NontransactionalWrite"
+                              manager-overrideable="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.DetachAllOnCommit" internal-name="datanucleus.DetachAllOnCommit"
+                              manager-overrideable="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.CopyOnAttach" internal-name="datanucleus.CopyOnAttach"
+                              manager-overrideable="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.TransactionType" internal-name="datanucleus.TransactionType"
+                              validator="org.datanucleus.properties.CorePropertyValidator"/>
+        <persistence-property name="javax.jdo.option.Name" internal-name="datanucleus.Name"
+                              validator="org.datanucleus.properties.StringPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.PersistenceUnitName" internal-name="datanucleus.PersistenceUnitName"
+                              validator="org.datanucleus.properties.StringPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.ServerTimeZoneID" internal-name="datanucleus.ServerTimeZoneID"
+                              validator="org.datanucleus.properties.CorePropertyValidator"/>
+        <persistence-property name="javax.jdo.option.ReadOnly" internal-name="datanucleus.readOnlyDatastore"
+                              validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.TransactionIsolationLevel" internal-name="datanucleus.transactionIsolation"
+                              validator="org.datanucleus.properties.CorePropertyValidator"/>
+        <persistence-property name="javax.jdo.option.Mapping" internal-name="datanucleus.Mapping"
+                              validator="org.datanucleus.properties.StringPropertyValidator"/>
+        <persistence-property name="javax.jdo.mapping.Catalog" internal-name="datanucleus.mapping.Catalog"
+                              validator="org.datanucleus.properties.StringPropertyValidator"/>
+        <persistence-property name="javax.jdo.mapping.Schema" internal-name="datanucleus.mapping.Schema"
+                              validator="org.datanucleus.properties.StringPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.DatastoreReadTimeoutMillis" internal-name="datanucleus.datastoreReadTimeout" value="0"
+                              manager-overrideable="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.DatastoreWriteTimeoutMillis" internal-name="datanucleus.datastoreWriteTimeout" value="0"
+                              manager-overrideable="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="javax.jdo.option.spi.ResourceName"/> <!-- JDOHelper nonsense -->
+        <persistence-property name="javax.jdo.option.Multitenancy" internal-name="datanucleus.tenantID"/>
+
+        <persistence-property name="datanucleus.allowListenerUpdateAfterInit" value="false"
+                              validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+
+        <persistence-property name="datanucleus.singletonPMFForName" value="false"
+                              validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+    </extension>
+
+    <!-- ANNOTATIONS -->
+    <extension point="org.datanucleus.annotations">
+        <annotations annotation-class="javax.jdo.annotations.PersistenceCapable" reader="org.datanucleus.api.jdo.metadata.JDOAnnotationReader"/>
+        <annotations annotation-class="javax.jdo.annotations.PersistenceAware" reader="org.datanucleus.api.jdo.metadata.JDOAnnotationReader"/>
+        <annotations annotation-class="javax.jdo.annotations.Queries" reader="org.datanucleus.api.jdo.metadata.JDOAnnotationReader"/>
+        <annotations annotation-class="javax.jdo.annotations.Query" reader="org.datanucleus.api.jdo.metadata.JDOAnnotationReader"/>
+    </extension>
+
+    <!-- CALLBACK HANDLER -->
+    <extension point="org.datanucleus.callbackhandler">
+        <callback-handler class-name="org.datanucleus.api.jdo.JDOCallbackHandler" name="JDO"/>
+    </extension>
+
+    <!-- METADATA HANDLERS -->
+    <extension point="org.datanucleus.metadata_handler">
+        <handler class-name="org.datanucleus.api.jdo.metadata.JDOMetaDataHandler" name="JDO"
+                 entity-resolver="org.datanucleus.metadata.xml.PluginEntityResolver"/>
+    </extension>
+
+    <!-- METADATA MANAGER -->
+    <extension point="org.datanucleus.metadata_manager">
+        <metadata-manager class="org.datanucleus.api.jdo.metadata.JDOMetaDataManager" name="JDO"/>
+    </extension>
+
+    <!-- QUERY METHODS (IN-MEMORY) -->
+    <extension point="org.datanucleus.query_method_evaluators">
+        <query-method-evaluator method="JDOHelper.getObjectId" evaluator="org.datanucleus.api.jdo.query.inmemory.JDOHelperGetObjectIdFunction"/>
+        <query-method-evaluator method="JDOHelper.getVersion" evaluator="org.datanucleus.api.jdo.query.inmemory.JDOHelperGetVersionFunction"/>
+    </extension>
+
+    <!-- PERSISTENCE API -->
+    <extension point="org.datanucleus.api_adapter">
+        <api-adapter name="JDO" class-name="org.datanucleus.api.jdo.JDOAdapter"/>
+    </extension>
+
+    <!-- ENTITY RESOLVER -->
+    <extension point="org.datanucleus.metadata_entityresolver">
+        <!-- DTDs -->
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Metadata 1.0//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_1_0.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Metadata 2.0//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_2_0.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Metadata 2.1//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_2_0.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Metadata 2.2//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_2_2.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Metadata 2.3//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_2_3.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Metadata 3.0//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_3_0.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Metadata 3.1//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_3_1.dtd"/>
+
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Mapping Metadata 2.0//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_orm_2_0.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Mapping Metadata 2.1//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_orm_2_0.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Mapping Metadata 2.2//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_orm_2_2.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Mapping Metadata 3.0//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_orm_3_0.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Mapping Metadata 3.1//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdo_orm_3_1.dtd"/>
+
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Query Metadata 2.0//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdoquery_2_0.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Query Metadata 2.1//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdoquery_2_0.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Query Metadata 2.2//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdoquery_2_2.dtd"/>
+        <entityresolver identity="-//Sun Microsystems, Inc.//DTD Java Data Objects Query Metadata 3.0//EN"
+                        type="PUBLIC" url="/org/datanucleus/api/jdo/jdoquery_3_0.dtd"/>
+
+        <!-- DTD Shortcuts : point to latest version -->
+        <entityresolver identity="file:/javax/jdo/jdo.dtd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_3_1.dtd"/>
+        <entityresolver identity="file:/javax/jdo/orm.dtd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_3_1.dtd"/>
+        <entityresolver identity="file:/javax/jdo/jdoquery.dtd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_3_0.dtd"/>
+
+        <!-- XSDs -->
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdoquery_3_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_3_0.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdoquery_3_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_3_0.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdoquery_3_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_3_0.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdoquery_2_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_2_2.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdoquery_2_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_2_1.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdoquery_2_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_2_0.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdoquery_3_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_3_0.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdoquery_3_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_3_0.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdoquery_3_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_3_0.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdoquery_2_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_2_2.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdoquery_2_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_2_1.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdoquery_2_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdoquery_2_0.xsd"/>
+
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/orm_3_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_3_2.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/orm_3_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_3_1.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/orm_3_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_3_0.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/orm_2_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_2_2.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/orm_2_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_2_1.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/orm_2_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_2_0.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/orm_3_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_3_2.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/orm_3_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_3_1.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/orm_3_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_3_0.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/orm_2_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_2_2.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/orm_2_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_2_1.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/orm_2_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_orm_2_0.xsd"/>
+
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdo_3_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_3_2.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdo_3_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_3_1.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdo_3_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_3_0.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdo_2_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_2_2.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdo_2_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_2_1.xsd"/>
+        <entityresolver identity="http://java.sun.com/xml/ns/jdo/jdo_2_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_2_0.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdo_3_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_3_2.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdo_3_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_3_1.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdo_3_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_3_0.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdo_2_2.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_2_2.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdo_2_1.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_2_1.xsd"/>
+        <entityresolver identity="http://xmlns.jcp.org/xml/ns/jdo/jdo_2_0.xsd" type="SYSTEM" url="/org/datanucleus/api/jdo/jdo_2_0.xsd"/>
+
+        <entityresolver url="/org/datanucleus/api/jdo/jdoquery_3_0.xsd"/>
+        <entityresolver url="/org/datanucleus/api/jdo/jdo_orm_3_2.xsd"/>
+        <entityresolver url="/org/datanucleus/api/jdo/jdo_3_2.xsd"/>
+    </extension>
+</plugin>
