@@ -1,0 +1,62 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven Bundle Plugin
+Built-By: andy
+Build-Jdk: 1.8.0_65
+Bnd-LastModified: 1446796611907
+Bundle-Description: Plugin providing DataNucleus implementation of the
+  JDO API.
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: DataNucleus JDO API plugin
+Bundle-SymbolicName: org.datanucleus.api.jdo;singleton:=true
+Bundle-Version: 4.2.1
+Export-Package: org.datanucleus.api.jdo;uses:="javax.jdo,javax.jdo.dat
+ astore,javax.jdo.identity,javax.jdo.listener,javax.jdo.metadata,javax
+ .jdo.spi,javax.naming,javax.naming.spi,javax.transaction,org.datanucl
+ eus,org.datanucleus.api,org.datanucleus.cache,org.datanucleus.enhance
+ ment,org.datanucleus.exceptions,org.datanucleus.identity,org.datanucl
+ eus.metadata,org.datanucleus.query.cache,org.datanucleus.state,org.da
+ tanucleus.store,org.datanucleus.store.query,org.datanucleus.store.que
+ ry.cache,org.datanucleus.store.types.converters,org.datanucleus.util"
+ ;version="4.2.1",org.datanucleus.api.jdo.query;uses:="javax.jdo,javax
+ .jdo.query,org.datanucleus,org.datanucleus.api.jdo,org.datanucleus.me
+ tadata,org.datanucleus.query.compiler,org.datanucleus.query.expressio
+ n,org.datanucleus.store.query";version="4.2.1",org.datanucleus.api.jd
+ o.query.inmemory;uses:="org.datanucleus.query.expression,org.datanucl
+ eus.query.inmemory";version="4.2.1",org.datanucleus.api.jdo.state;use
+ s:="org.datanucleus.state";version="4.2.1",org.datanucleus.api.jdo.me
+ tadata;uses:="javax.jdo,javax.jdo.annotations,javax.jdo.metadata,org.
+ datanucleus,org.datanucleus.metadata,org.datanucleus.metadata.annotat
+ ions,org.datanucleus.metadata.xml,org.xml.sax";version="4.2.1",org.da
+ tanucleus.api.jdo.exceptions;uses:="javax.jdo";version="4.2.1"
+Import-Package: javax.jdo;version="3.2.0.m3",javax.jdo.annotations;ver
+ sion="3.2.0.m3",javax.jdo.datastore;version="3.2.0.m3",javax.jdo.iden
+ tity;version="3.2.0.m3",javax.jdo.listener;version="3.2.0.m3",javax.j
+ do.metadata;version="3.2.0.m3",javax.jdo.query;version="3.2.0.m3",jav
+ ax.jdo.spi;version="3.2.0.m3",org.datanucleus;version="4.1.0.release"
+ ,org.datanucleus.api;version="4.1.0.release",org.datanucleus.cache;ve
+ rsion="4.1.0.release",org.datanucleus.enhancement;version="4.1.0.rele
+ ase",org.datanucleus.enhancer;version="4.1.0.release",org.datanucleus
+ .exceptions;version="4.1.0.release",org.datanucleus.identity;version=
+ "4.1.0.release",org.datanucleus.metadata;version="4.1.0.release",org.
+ datanucleus.metadata.annotations;version="4.1.0.release",org.datanucl
+ eus.metadata.xml;version="4.1.0.release",org.datanucleus.plugin;versi
+ on="4.1.0.release",org.datanucleus.properties;version="4.1.0.release"
+ ,org.datanucleus.query;version="4.1.0.release",org.datanucleus.query.
+ cache;version="4.1.0.release",org.datanucleus.query.compiler;version=
+ "4.1.0.release",org.datanucleus.query.expression;version="4.1.0.relea
+ se",org.datanucleus.query.inmemory;version="4.1.0.release",org.datanu
+ cleus.query.symbol;version="4.1.0.release",org.datanucleus.state;vers
+ ion="4.1.0.release",org.datanucleus.store;version="4.1.0.release",org
+ .datanucleus.store.connection;version="4.1.0.release",org.datanucleus
+ .store.exceptions;version="4.1.0.release",org.datanucleus.store.query
+ ;version="4.1.0.release",org.datanucleus.store.query.cache;version="4
+ .1.0.release",org.datanucleus.store.types;version="4.1.0.release",org
+ .datanucleus.store.types.converters;version="4.1.0.release",org.datan
+ ucleus.transaction;version="4.1.0.release",org.datanucleus.util;versi
+ on="4.1.0.release",javax.naming;resolution:=optional,javax.naming.spi
+ ;resolution:=optional,javax.transaction;resolution:=optional,org.xml.
+ sax;resolution:=optional
+Tool: Bnd-2.1.0.20130426-122213
+

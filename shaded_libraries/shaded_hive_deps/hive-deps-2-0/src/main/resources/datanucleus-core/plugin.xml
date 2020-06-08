@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--**********************************************************************
+Copyright (c) 2006 Erik Bengtson and others. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+2006 Andy Jefferson - added enhancer extension point
+2006 Andy Jefferson - added datasource extension point
+2006 Andy Jefferson - added L2 cache, value generators, etc
+2008 Andy Jefferson - added persistence properties, query methods
+2009 Andy Jefferson - query caching options
+    ...
+**********************************************************************-->
+<plugin id="org.datanucleus" name="DataNucleus Core" provider-name="DataNucleus">
+    <extension-point id="api_adapter" name="Api Adapter" schema="schema/apiadapter.exsd"/>
+    <extension-point id="autostart" name="AutoStartMechanism" schema="schema/autostart.exsd"/>
+    <extension-point id="cache_level1" name="Level1 Cache" schema="schema/cache_level1.exsd"/>
+    <extension-point id="cache_level2" name="Level2 Cache" schema="schema/cache_level2.exsd"/>
+    <extension-point id="cache_query_compilation" name="Query Compilation Cache" schema="schema/cache_query_compilation.exsd"/>
+    <extension-point id="cache_query_compilation_store" name="Query Datastore Compilation Cache" schema="schema/cache_query_compilation_store.exsd"/>
+    <extension-point id="cache_query_result" name="Query Result Cache" schema="schema/cache_query_result.exsd"/>
+    <extension-point id="callbackhandler" name="Callback Handler" schema="schema/callbackhandler.exsd"/>
+    <extension-point id="classloader_resolver" name="ClassLoader Resolver" schema="schema/classloader_resolver.exsd"/>
+    <extension-point id="identity_string_translator" name="Identity String Translator" schema="schema/identity_string_translator.exsd"/>
+    <extension-point id="identity_key_translator" name="Identity Key Translator" schema="schema/identity_key_translator.exsd"/>
+    <extension-point id="jta_locator" name="JTA Locator" schema="schema/jta_locator.exsd"/>
+    <extension-point id="management_server" name="Management Server" schema="schema/management_server.exsd"/>
+    <extension-point id="store_datastoreidentity" name="Datastore Identity" schema="schema/datastoreidentity.exsd"/>
+    <extension-point id="store_manager" name="Store Manager" schema="schema/store_manager.exsd"/>
+    <extension-point id="store_query_query" name="Query" schema="schema/query.exsd"/>
+    <extension-point id="query_method_evaluators" name="Query Method Evaluators" schema="schema/query_method_evaluator.exsd"/>
+    <extension-point id="query_method_prefix" name="Query Method Prefix" schema="schema/query_method_prefix.exsd"/>
+    <extension-point id="store_valuegenerator" name="Value Generator" schema="schema/valuegenerator.exsd"/>
+    <extension-point id="store_objectvaluegenerator" name="Object Value Generator" schema="schema/objectvaluegenerator.exsd"/>
+    <extension-point id="store_connectionfactory" name="Connection Factory" schema="schema/connectionfactory.exsd"/>
+    <extension-point id="java_type" name="Java Type" schema="schema/java_type.exsd"/>
+    <extension-point id="type_converter" name="Java Converter Type" schema="schema/type_converter.exsd"/>
+    <extension-point id="persistence_properties" name="Persistence Properties" schema="schema/persistenceproperties.exsd"/>
+    <extension-point id="metadata_handler" name="MetaData Handler" schema="schema/metadata_handler.exsd"/>
+    <extension-point id="metadata_manager" name="MetaDataManager" schema="schema/metadata_manager.exsd"/>
+    <extension-point id="metadata_entityresolver" name="MetaDataEntityResolver" schema="schema/metadata_entityresolver.exsd"/>
+    <extension-point id="annotations" name="Annotations" schema="schema/annotations.exsd"/>
+    <extension-point id="class_annotation_handler" name="Class Annotation Handler" schema="schema/class_annotation_handler.exsd"/>
+    <extension-point id="member_annotation_handler" name="Member Annotation Handler" schema="schema/member_annotation_handler.exsd"/>
+    <extension-point id="identifier_namingfactory" name="Identifier NamingFactory" schema="schema/identifier_namingfactory.exsd"/>
+
+    <!-- LEVEL1 CACHES -->
+    <extension point="org.datanucleus.cache_level1">
+        <cache name="strong" class-name="org.datanucleus.cache.StrongRefCache"/>
+        <cache name="soft" class-name="org.datanucleus.cache.SoftRefCache"/>
+        <cache name="weak" class-name="org.datanucleus.cache.WeakRefCache"/>
+    </extension>
+
+    <!-- LEVEL2 CACHES -->
+    <extension point="org.datanucleus.cache_level2">
+        <cache name="weak" class-name="org.datanucleus.cache.WeakLevel2Cache"/>
+        <cache name="soft" class-name="org.datanucleus.cache.SoftLevel2Cache"/>
+        <cache name="none" class-name="org.datanucleus.cache.NullLevel2Cache"/>
+        <cache name="javax.cache" class-name="org.datanucleus.cache.JavaxCacheLevel2Cache"/>
+    </extension>
+
+    <!-- JTA LOCATORS -->
+    <extension point="org.datanucleus.jta_locator">
+        <jta_locator name="jboss" class-name="org.datanucleus.transaction.jta.JBossTransactionManagerLocator"/>
+        <jta_locator name="jonas" class-name="org.datanucleus.transaction.jta.JOnASTransactionManagerLocator"/>
+        <jta_locator name="jotm" class-name="org.datanucleus.transaction.jta.JOTMTransactionManagerLocator"/>
+        <jta_locator name="oc4j" class-name="org.datanucleus.transaction.jta.OC4JTransactionManagerLocator"/>
+        <jta_locator name="orion" class-name="org.datanucleus.transaction.jta.OrionTransactionManagerLocator"/>
+        <jta_locator name="resin" class-name="org.datanucleus.transaction.jta.ResinTransactionManagerLocator"/>
+        <jta_locator name="sap" class-name="org.datanucleus.transaction.jta.SAPWebASTransactionManagerLocator"/>
+        <jta_locator name="sun" class-name="org.datanucleus.transaction.jta.SunTransactionManagerLocator"/>
+        <jta_locator name="weblogic" class-name="org.datanucleus.transaction.jta.WebLogicTransactionManagerLocator"/>
+        <jta_locator name="websphere" class-name="org.datanucleus.transaction.jta.WebSphereTransactionManagerLocator"/>
+        <jta_locator name="custom_jndi" class-name="org.datanucleus.transaction.jta.CustomJNDITransactionManagerLocator"/>
+        <jta_locator name="atomikos" class-name="org.datanucleus.transaction.jta.AtomikosTransactionManagerLocator"/>
+        <jta_locator name="bitronix" class-name="org.datanucleus.transaction.jta.BTMTransactionManagerLocator"/>
+    </extension>
+
+    <!-- DATASTORE IDENTITY -->
+    <extension point="org.datanucleus.store_datastoreidentity">
+        <datastoreidentity name="datanucleus" class-name="org.datanucleus.identity.DatastoreIdImpl"/>
+        <datastoreidentity name="kodo" class-name="org.datanucleus.identity.DatastoreIdImplKodo"/>
+        <datastoreidentity name="xcalia" class-name="org.datanucleus.identity.DatastoreIdImplXcalia"/>
+        <datastoreidentity name="unique" class-name="org.datanucleus.identity.DatastoreUniqueLongId"/>
+    </extension>
+
+    <!-- IDENTITY STRING TRANSLATOR -->
+    <extension point="org.datanucleus.identity_string_translator">
+        <identitystringtranslator name="xcalia" class-name="org.datanucleus.identity.XcaliaIdentityStringTranslator"/>
+    </extension>
+
+    <!-- NAMING FACTORY -->
+    <extension point="org.datanucleus.identifier_namingfactory">
+        <namingfactory name="datanucleus2" class-name="org.datanucleus.store.schema.naming.DN2NamingFactory"/>
+        <namingfactory name="jpa" class-name="org.datanucleus.store.schema.naming.JPANamingFactory"/>
+    </extension>
+
+    <!-- JAVA TYPES -->
+    <extension point="org.datanucleus.java_type">
+        <!-- "primitive" types -->
+        <java-type name="boolean" dfg="true" embedded="true"/>
+        <java-type name="byte" dfg="true" embedded="true"/>
+        <java-type name="char" dfg="true" embedded="true"/>
+        <java-type name="double" dfg="true" embedded="true"/>
+        <java-type name="float" dfg="true" embedded="true"/>
+        <java-type name="int" dfg="true" embedded="true"/>
+        <java-type name="long" dfg="true" embedded="true"/>
+        <java-type name="short" dfg="true" embedded="true"/>
+    
+        <!-- "java.lang" types -->
+        <java-type name="java.lang.Boolean" dfg="true" embedded="true"/>
+        <java-type name="java.lang.Byte" dfg="true" embedded="true"/>
+        <java-type name="java.lang.Character" dfg="true" embedded="true"/>
+        <java-type name="java.lang.Double" dfg="true" embedded="true"/>
+        <java-type name="java.lang.Float" dfg="true" embedded="true"/>
+        <java-type name="java.lang.Integer" dfg="true" embedded="true"/>
+        <java-type name="java.lang.Long" dfg="true" embedded="true"/>
+        <java-type name="java.lang.Short" dfg="true" embedded="true"/>
+        <java-type name="java.lang.Number" dfg="true" embedded="true"/>
+        <java-type name="java.lang.String" dfg="true" embedded="true"/>
+        <java-type name="java.lang.Enum" dfg="true" embedded="true"/>
+        <java-type name="java.lang.StringBuffer" dfg="true" embedded="true" converter-name="dn.stringbuffer-string"/>
+        <java-type name="java.lang.StringBuilder" dfg="true" embedded="true" converter-name="dn.stringbuilder-string"/>
+        <java-type name="java.lang.Class" dfg="true" embedded="true" converter-name="dn.class-string"/>
+
+        <!-- "java.awt" types -->
+        <java-type name="java.awt.image.BufferedImage" embedded="true"/>
+        <java-type name="java.awt.Color" embedded="true" converter-name="dn.color-string"/>
+
+        <!-- "java.math" types -->
+        <java-type name="java.math.BigDecimal" dfg="true" embedded="true"/>
+        <java-type name="java.math.BigInteger" dfg="true" embedded="true"/>
+
+        <!-- "java.net" types -->
+        <java-type name="java.net.URL" dfg="true" embedded="true" converter-name="dn.url-string"/>
+        <java-type name="java.net.URI" dfg="true" embedded="true" converter-name="dn.uri-string"/>
+
+        <!-- "java.sql" types -->
+        <java-type name="java.sql.Date" dfg="true" embedded="true" wrapper-type="org.datanucleus.store.types.wrappers.SqlDate"/>
+        <java-type name="java.sql.Time" dfg="true" embedded="true" wrapper-type="org.datanucleus.store.types.wrappers.SqlTime"/>
+        <java-type name="java.sql.Timestamp" dfg="true" embedded="true" wrapper-type="org.datanucleus.store.types.wrappers.SqlTimestamp"/>
+
+        <!-- "java.util" types -->
+        <java-type name="java.util.Date" dfg="true" embedded="true" wrapper-type="org.datanucleus.store.types.wrappers.Date"/>
+        <java-type name="java.util.Locale" dfg="true" embedded="true" converter-name="dn.locale-string"/>
+        <java-type name="java.util.Currency" dfg="true" embedded="true" converter-name="dn.currency-string"/>
+        <java-type name="java.util.Calendar" dfg="true" embedded="true"
+            wrapper-type="org.datanucleus.store.types.wrappers.GregorianCalendar" converter-name="dn.calendar-string"/>
+        <java-type name="java.util.GregorianCalendar" dfg="true" embedded="true"
+            wrapper-type="org.datanucleus.store.types.wrappers.GregorianCalendar" converter-name="dn.calendar-string"/>
+        <java-type name="java.util.UUID" dfg="true" embedded="true" converter-name="dn.uuid-string"/>
+        <java-type name="java.util.TimeZone" dfg="true" embedded="true" converter-name="dn.timezone-string"/>
+
+        <java-type name="java.util.ArrayList" wrapper-type="org.datanucleus.store.types.wrappers.ArrayList"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.ArrayList"/>
+        <java-type name="java.util.Arrays$ArrayList" wrapper-type="org.datanucleus.store.types.wrappers.List"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.List"/>
+        <java-type name="java.util.BitSet" wrapper-type="org.datanucleus.store.types.wrappers.BitSet" converter-name="dn.bitset-string"/>
+        <java-type name="java.util.Collection" wrapper-type="org.datanucleus.store.types.wrappers.Collection"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.Collection"/>
+        <java-type name="java.util.HashMap" wrapper-type="org.datanucleus.store.types.wrappers.HashMap"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.HashMap"/>
+        <java-type name="java.util.HashSet" wrapper-type="org.datanucleus.store.types.wrappers.HashSet"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.HashSet"/>
+        <java-type name="java.util.Hashtable" wrapper-type="org.datanucleus.store.types.wrappers.Hashtable"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.Hashtable"/>
+        <java-type name="java.util.LinkedHashMap" wrapper-type="org.datanucleus.store.types.wrappers.LinkedHashMap"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.LinkedHashMap"/>
+        <java-type name="java.util.LinkedHashSet" wrapper-type="org.datanucleus.store.types.wrappers.LinkedHashSet"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.LinkedHashSet"/>
+        <java-type name="java.util.LinkedList" wrapper-type="org.datanucleus.store.types.wrappers.LinkedList"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.LinkedList"/>
+        <java-type name="java.util.List" wrapper-type="org.datanucleus.store.types.wrappers.List"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.List"/>
+        <java-type name="java.util.Map" wrapper-type="org.datanucleus.store.types.wrappers.Map"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.Map"/>
+        <java-type name="java.util.PriorityQueue" wrapper-type="org.datanucleus.store.types.wrappers.PriorityQueue"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.PriorityQueue"/>
+        <java-type name="java.util.Properties" wrapper-type="org.datanucleus.store.types.wrappers.Properties"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.Properties"/>
+        <java-type name="java.util.Queue" wrapper-type="org.datanucleus.store.types.wrappers.Queue"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.Queue"/>
+        <java-type name="java.util.Set" wrapper-type="org.datanucleus.store.types.wrappers.Set"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.Set"/>
+        <java-type name="java.util.SortedSet" wrapper-type="org.datanucleus.store.types.wrappers.SortedSet"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.SortedSet"/>
+        <java-type name="java.util.SortedMap" wrapper-type="org.datanucleus.store.types.wrappers.SortedMap"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.SortedMap"/>
+        <java-type name="java.util.Stack" wrapper-type="org.datanucleus.store.types.wrappers.Stack"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.Stack"/>
+        <java-type name="java.util.TreeMap" wrapper-type="org.datanucleus.store.types.wrappers.TreeMap"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.TreeMap"/>
+        <java-type name="java.util.TreeSet" wrapper-type="org.datanucleus.store.types.wrappers.TreeSet"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.TreeSet"/>
+        <java-type name="java.util.Vector" wrapper-type="org.datanucleus.store.types.wrappers.Vector"
+            wrapper-type-backed="org.datanucleus.store.types.wrappers.backed.Vector"/>
+
+        <!-- array types -->
+        <java-type name="[B" embedded="true"/>
+        <java-type name="[C" embedded="true"/>
+        <java-type name="[D" embedded="true"/>
+        <java-type name="[F" embedded="true"/>
+        <java-type name="[I" embedded="true"/>
+        <java-type name="[J" embedded="true"/>
+        <java-type name="[S" embedded="true"/>
+        <java-type name="[Z" embedded="true"/>
+        <java-type name="[Ljava.lang.Boolean;" embedded="true"/>
+        <java-type name="[Ljava.lang.Byte;" embedded="true"/>
+        <java-type name="[Ljava.lang.Character;" embedded="true"/>
+        <java-type name="[Ljava.lang.Double;" embedded="true"/>
+        <java-type name="[Ljava.lang.Float;" embedded="true"/>
+        <java-type name="[Ljava.lang.Integer;" embedded="true"/>
+        <java-type name="[Ljava.lang.Long;" embedded="true"/>
+        <java-type name="[Ljava.lang.Short;" embedded="true"/>
+        <java-type name="[Ljava.lang.Number;" embedded="true"/>
+        <java-type name="[Ljava.lang.String;" embedded="true"/>
+        <java-type name="[Ljava.math.BigInteger;" embedded="true"/>
+        <java-type name="[Ljava.math.BigDecimal;" embedded="true"/>
+        <java-type name="[Ljava.util.Date;" embedded="true"/>
+        <java-type name="[Ljava.util.Locale;" embedded="true"/>
+        <java-type name="[Ljava.lang.Enum;" embedded="true"/>
+    </extension>
+
+    <!-- TYPE CONVERTERS -->
+    <extension point="org.datanucleus.type_converter">
+        <type-converter name="dn.boolean-yn" member-type="java.lang.Boolean" datastore-type="java.lang.Character"
+            converter-class="org.datanucleus.store.types.converters.BooleanYNConverter"/>
+        <type-converter name="dn.boolean-integer" member-type="java.lang.Boolean" datastore-type="java.lang.Integer"
+            converter-class="org.datanucleus.store.types.converters.BooleanIntegerConverter"/>
+
+        <type-converter name="dn.character-string" member-type="java.lang.Character" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.CharacterStringConverter"/>
+        <type-converter name="dn.bigdecimal-string" member-type="java.math.BigDecimal" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.BigDecimalStringConverter"/>
+        <type-converter name="dn.bigdecimal-double" member-type="java.math.BigDecimal" datastore-type="java.lang.Double"
+            converter-class="org.datanucleus.store.types.converters.BigDecimalDoubleConverter"/>
+        <type-converter name="dn.biginteger-string" member-type="java.math.BigInteger" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.BigIntegerStringConverter"/>
+        <type-converter name="dn.biginteger-long" member-type="java.math.BigInteger" datastore-type="java.lang.Long"
+            converter-class="org.datanucleus.store.types.converters.BigIntegerLongConverter"/>
+        <type-converter name="dn.bitset-string" member-type="java.util.BitSet" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.BitSetStringConverter"/>
+
+        <type-converter name="dn.calendar-string" member-type="java.util.Calendar" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.CalendarStringConverter"/>
+        <type-converter name="dn.calendar-date" member-type="java.util.Calendar" datastore-type="java.util.Date"
+            converter-class="org.datanucleus.store.types.converters.CalendarDateConverter"/>
+        <type-converter name="dn.calendar-timestamp" member-type="java.util.Calendar" datastore-type="java.sql.Timestamp"
+            converter-class="org.datanucleus.store.types.converters.CalendarTimestampConverter"/>
+        <type-converter name="dn.calendar-components" member-type="java.util.Calendar" datastore-type="[Ljava.lang.Object;"
+            converter-class="org.datanucleus.store.types.converters.CalendarComponentsConverter"/>
+
+        <type-converter name="dn.color-string" member-type="java.awt.Color" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.ColorStringConverter"/>
+        <type-converter name="dn.color-components" member-type="java.awt.Color" datastore-type="[I"
+            converter-class="org.datanucleus.store.types.converters.ColorComponentsConverter"/>
+
+        <type-converter name="dn.class-string" member-type="java.lang.Class" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.ClassStringConverter"/>
+        <type-converter name="dn.integer-string" member-type="java.lang.Integer" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.IntegerStringConverter"/>
+        <type-converter name="dn.long-string" member-type="java.lang.Long" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.LongStringConverter"/>
+        <type-converter name="dn.currency-string" member-type="java.util.Currency" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.CurrencyStringConverter"/>
+        <type-converter name="dn.locale-string" member-type="java.util.Locale" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.LocaleStringConverter"/>
+        <type-converter name="dn.stringbuffer-string" member-type="java.lang.StringBuffer" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.StringBufferStringConverter"/>
+        <type-converter name="dn.stringbuilder-string" member-type="java.lang.StringBuilder" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.StringBuilderStringConverter"/>
+        <type-converter name="dn.timezone-string" member-type="java.util.TimeZone" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.TimeZoneStringConverter"/>
+        <type-converter name="dn.uri-string" member-type="java.net.URI" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.URIStringConverter"/>
+        <type-converter name="dn.url-string" member-type="java.net.URL" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.URLStringConverter"/>
+        <type-converter name="dn.uuid-string" member-type="java.util.UUID" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.UUIDStringConverter"/>
+
+        <type-converter name="dn.date-long" member-type="java.util.Date" datastore-type="java.lang.Long"
+            converter-class="org.datanucleus.store.types.converters.DateLongConverter"/>
+        <type-converter name="dn.date-string" member-type="java.util.Date" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.DateStringConverter"/>
+
+        <type-converter name="dn.sqldate-long" member-type="java.sql.Date" datastore-type="java.lang.Long"
+            converter-class="org.datanucleus.store.types.converters.SqlDateLongConverter"/>
+        <type-converter name="dn.sqldate-string" member-type="java.sql.Date" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.SqlDateStringConverter"/>
+        <type-converter name="dn.sqldate-date" member-type="java.sql.Date" datastore-type="java.util.Date"
+            converter-class="org.datanucleus.store.types.converters.SqlDateDateConverter"/>
+        <type-converter name="dn.sqltime-long" member-type="java.sql.Time" datastore-type="java.lang.Long"
+            converter-class="org.datanucleus.store.types.converters.SqlTimeLongConverter"/>
+        <type-converter name="dn.sqltime-string" member-type="java.sql.Time" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.SqlTimeStringConverter"/>
+        <type-converter name="dn.sqltime-date" member-type="java.sql.Time" datastore-type="java.util.Date"
+            converter-class="org.datanucleus.store.types.converters.SqlTimeDateConverter"/>
+        <type-converter name="dn.sqltimestamp-long" member-type="java.sql.Timestamp" datastore-type="java.lang.Long"
+            converter-class="org.datanucleus.store.types.converters.SqlTimestampLongConverter"/>
+        <type-converter name="dn.sqltimestamp-date" member-type="java.sql.Timestamp" datastore-type="java.util.Date"
+            converter-class="org.datanucleus.store.types.converters.SqlTimestampDateConverter"/>
+        <type-converter name="dn.sqltimestamp-string" member-type="java.sql.Timestamp" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.SqlTimestampStringConverter"/>
+
+        <type-converter name="dn.serializable-string" member-type="java.io.Serializable" datastore-type="java.lang.String"
+            converter-class="org.datanucleus.store.types.converters.SerializableStringConverter"/>
+        <type-converter name="dn.serializable-bytearray" member-type="java.io.Serializable" datastore-type="[B"
+            converter-class="org.datanucleus.store.types.converters.SerializableByteArrayConverter"/>
+        <type-converter name="dn.serializable-bytebuffer" member-type="java.io.Serializable" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.SerializableByteBufferConverter"/>
+
+        <type-converter name="dn.bytearray-bytebuffer" member-type="[B" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.ByteArrayByteBufferConverter"/>
+        <type-converter name="dn.booleanarray-bytebuffer" member-type="[Z" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.BooleanArrayByteBufferConverter"/>
+        <type-converter name="dn.chararray-bytebuffer" member-type="[C" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.CharArrayByteBufferConverter"/>
+        <type-converter name="dn.doublearray-bytebuffer" member-type="[D" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.DoubleArrayByteBufferConverter"/>
+        <type-converter name="dn.floatarray-bytebuffer" member-type="[F" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.FloatArrayByteBufferConverter"/>
+        <type-converter name="dn.intarray-bytebuffer" member-type="[I" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.IntArrayByteBufferConverter"/>
+        <type-converter name="dn.longarray-bytebuffer" member-type="[J" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.LongArrayByteBufferConverter"/>
+        <type-converter name="dn.shortarray-bytebuffer" member-type="[S" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.ShortArrayByteBufferConverter"/>
+        <type-converter name="dn.bigintegerarray-bytebuffer" member-type="java.math.BigInteger" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.BigIntegerArrayByteBufferConverter"/>
+        <type-converter name="dn.bigdecimalarray-bytebuffer" member-type="java.math.BigDecimal" datastore-type="java.nio.ByteBuffer"
+            converter-class="org.datanucleus.store.types.converters.BigDecimalArrayByteBufferConverter"/>
+    </extension>
+
+    <!-- VALUE GENERATORS -->
+    <extension point="org.datanucleus.store_valuegenerator">
+        <valuegenerator name="timestamp" class-name="org.datanucleus.store.valuegenerator.TimestampGenerator" unique="true"/>
+        <valuegenerator name="timestamp-value" class-name="org.datanucleus.store.valuegenerator.TimestampValueGenerator" unique="true"/>
+        <valuegenerator name="auid" class-name="org.datanucleus.store.valuegenerator.AUIDGenerator" unique="true"/>
+        <valuegenerator name="uuid-hex" class-name="org.datanucleus.store.valuegenerator.UUIDHexGenerator" unique="true"/>
+        <valuegenerator name="uuid-string" class-name="org.datanucleus.store.valuegenerator.UUIDStringGenerator" unique="true"/>
+        <valuegenerator name="uuid" class-name="org.datanucleus.store.valuegenerator.UUIDGenerator" unique="true"/>
+    </extension>
+
+    <!-- CLASS LOADERS -->
+    <extension point="org.datanucleus.classloader_resolver">
+        <class-loader-resolver name="datanucleus" class-name="org.datanucleus.ClassLoaderResolverImpl"/>
+    </extension>
+
+    <!-- AUTOSTART MECHANISMS -->
+    <extension point="org.datanucleus.autostart">
+        <autostart class-name="org.datanucleus.store.autostart.ClassesAutoStarter" name="Classes"/>
+        <autostart class-name="org.datanucleus.store.autostart.XMLAutoStarter" name="XML"/>
+        <autostart class-name="org.datanucleus.store.autostart.MetaDataAutoStarter" name="MetaData"/>
+    </extension>
+
+    <!-- QUERY COMPILATION CACHE (GENERIC) -->
+    <extension point="org.datanucleus.cache_query_compilation">
+        <cache name="soft" class-name="org.datanucleus.query.cache.SoftQueryCompilationCache"/>
+        <cache name="weak" class-name="org.datanucleus.query.cache.WeakQueryCompilationCache"/>
+        <cache name="strong" class-name="org.datanucleus.query.cache.StrongQueryCompilationCache"/>
+    </extension>
+
+    <!-- QUERY COMPILATION CACHE (DATASTORE) -->
+    <extension point="org.datanucleus.cache_query_compilation_store">
+        <cache name="soft" class-name="org.datanucleus.store.query.cache.SoftQueryDatastoreCompilationCache"/>
+        <cache name="weak" class-name="org.datanucleus.store.query.cache.WeakQueryDatastoreCompilationCache"/>
+        <cache name="strong" class-name="org.datanucleus.store.query.cache.StrongQueryDatastoreCompilationCache"/>
+    </extension>
+
+    <!-- QUERY RESULT CACHE -->
+    <extension point="org.datanucleus.cache_query_result">
+        <cache name="soft" class-name="org.datanucleus.store.query.cache.SoftQueryResultsCache"/>
+        <cache name="weak" class-name="org.datanucleus.store.query.cache.WeakQueryResultsCache"/>
+        <cache name="strong" class-name="org.datanucleus.store.query.cache.StrongQueryResultsCache"/>
+        <cache name="javax.cache" class-name="org.datanucleus.cache.JavaxCacheQueryResultCache"/>
+    </extension>
+
+    <!-- QUERY METHODS (IN-MEMORY) -->
+    <extension point="org.datanucleus.query_method_evaluators">
+        <query-method-evaluator method="Math.abs" evaluator="org.datanucleus.query.inmemory.AbsFunction"/>
+        <query-method-evaluator method="Math.sqrt" evaluator="org.datanucleus.query.inmemory.SqrtFunction"/>
+        <query-method-evaluator method="Math.acos" evaluator="org.datanucleus.query.inmemory.ArcCosineFunction"/>
+        <query-method-evaluator method="Math.asin" evaluator="org.datanucleus.query.inmemory.ArcSineFunction"/>
+        <query-method-evaluator method="Math.atan" evaluator="org.datanucleus.query.inmemory.ArcTangentFunction"/>
+        <query-method-evaluator method="Math.cos" evaluator="org.datanucleus.query.inmemory.CosineFunction"/>
+        <query-method-evaluator method="Math.sin" evaluator="org.datanucleus.query.inmemory.SineFunction"/>
+        <query-method-evaluator method="Math.tan" evaluator="org.datanucleus.query.inmemory.TangentFunction"/>
+        <query-method-evaluator method="Math.log" evaluator="org.datanucleus.query.inmemory.LogFunction"/>
+        <query-method-evaluator method="Math.exp" evaluator="org.datanucleus.query.inmemory.ExpFunction"/>
+        <query-method-evaluator method="Math.floor" evaluator="org.datanucleus.query.inmemory.FloorFunction"/>
+        <query-method-evaluator method="Math.ceil" evaluator="org.datanucleus.query.inmemory.CeilFunction"/>
+        <query-method-evaluator method="Math.toDegrees" evaluator="org.datanucleus.query.inmemory.DegreesFunction"/>
+        <query-method-evaluator method="Math.toRadians" evaluator="org.datanucleus.query.inmemory.RadiansFunction"/>
+        <query-method-evaluator method="CURRENT_DATE" evaluator="org.datanucleus.query.inmemory.CurrentDateFunction"/>
+        <query-method-evaluator method="CURRENT_TIME" evaluator="org.datanucleus.query.inmemory.CurrentTimeFunction"/>
+        <query-method-evaluator method="CURRENT_TIMESTAMP" evaluator="org.datanucleus.query.inmemory.CurrentTimestampFunction"/>
+        <query-method-evaluator method="ABS" evaluator="org.datanucleus.query.inmemory.AbsFunction"/>
+        <query-method-evaluator method="SQRT" evaluator="org.datanucleus.query.inmemory.SqrtFunction"/>
+        <query-method-evaluator method="MOD" evaluator="org.datanucleus.query.inmemory.ModFunction"/>
+        <query-method-evaluator method="COALESCE" evaluator="org.datanucleus.query.inmemory.CoalesceFunction"/>
+        <query-method-evaluator method="COS" evaluator="org.datanucleus.query.inmemory.CosineFunction"/>
+        <query-method-evaluator method="SIN" evaluator="org.datanucleus.query.inmemory.SineFunction"/>
+        <query-method-evaluator method="TAN" evaluator="org.datanucleus.query.inmemory.TangentFunction"/>
+        <query-method-evaluator method="ACOS" evaluator="org.datanucleus.query.inmemory.ArcCosineFunction"/>
+        <query-method-evaluator method="ASIN" evaluator="org.datanucleus.query.inmemory.ArcSineFunction"/>
+        <query-method-evaluator method="ATAN" evaluator="org.datanucleus.query.inmemory.ArcTangentFunction"/>
+        <query-method-evaluator method="CEIL" evaluator="org.datanucleus.query.inmemory.CeilFunction"/>
+        <query-method-evaluator method="FLOOR" evaluator="org.datanucleus.query.inmemory.FloorFunction"/>
+        <query-method-evaluator method="LOG" evaluator="org.datanucleus.query.inmemory.LogFunction"/>
+        <query-method-evaluator method="EXP" evaluator="org.datanucleus.query.inmemory.ExpFunction"/>
+        <query-method-evaluator method="NULLIF" evaluator="org.datanucleus.query.inmemory.NullIfFunction"/>
+        <query-method-evaluator method="SIZE" evaluator="org.datanucleus.query.inmemory.SizeFunction"/>
+        <query-method-evaluator method="UPPER" evaluator="org.datanucleus.query.inmemory.UpperFunction"/>
+        <query-method-evaluator method="LOWER" evaluator="org.datanucleus.query.inmemory.LowerFunction"/>
+        <query-method-evaluator method="LENGTH" evaluator="org.datanucleus.query.inmemory.LengthFunction"/>
+        <query-method-evaluator method="CONCAT" evaluator="org.datanucleus.query.inmemory.ConcatFunction"/>
+        <query-method-evaluator method="SUBSTRING" evaluator="org.datanucleus.query.inmemory.SubstringFunction"/>
+        <query-method-evaluator method="LOCATE" evaluator="org.datanucleus.query.inmemory.LocateFunction"/>
+        <query-method-evaluator method="TRIM" evaluator="org.datanucleus.query.inmemory.TrimFunction"/>
+        <query-method-evaluator method="TRIM_LEADING" evaluator="org.datanucleus.query.inmemory.TrimFunction"/>
+        <query-method-evaluator method="TRIM_TRAILING" evaluator="org.datanucleus.query.inmemory.TrimFunction"/>
+        <query-method-evaluator method="DEGREES" evaluator="org.datanucleus.query.inmemory.DegreesFunction"/>
+        <query-method-evaluator method="RADIANS" evaluator="org.datanucleus.query.inmemory.RadiansFunction"/>
+
+        <query-method-evaluator class="java.lang.Enum" method="matches" evaluator="org.datanucleus.query.inmemory.EnumMatchesMethod"/>
+        <query-method-evaluator class="java.lang.Enum" method="toString" evaluator="org.datanucleus.query.inmemory.EnumToStringMethod"/>
+        <query-method-evaluator class="java.lang.Enum" method="ordinal" evaluator="org.datanucleus.query.inmemory.EnumOrdinalMethod"/>
+
+        <query-method-evaluator class="java.lang.Object" method="getClass" evaluator="org.datanucleus.query.inmemory.ObjectGetClassMethod"/>
+
+        <query-method-evaluator class="java.lang.String" method="charAt" evaluator="org.datanucleus.query.inmemory.StringCharAtMethod"/>
+        <query-method-evaluator class="java.lang.String" method="concat" evaluator="org.datanucleus.query.inmemory.StringConcatMethod"/>
+        <query-method-evaluator class="java.lang.String" method="endsWith" evaluator="org.datanucleus.query.inmemory.StringEndsWithMethod"/>
+        <query-method-evaluator class="java.lang.String" method="equals" evaluator="org.datanucleus.query.inmemory.StringEqualsMethod"/>
+        <query-method-evaluator class="java.lang.String" method="equalsIgnoreCase" evaluator="org.datanucleus.query.inmemory.StringEqualsIgnoreCaseMethod"/>
+        <query-method-evaluator class="java.lang.String" method="indexOf" evaluator="org.datanucleus.query.inmemory.StringIndexOfMethod"/>
+        <query-method-evaluator class="java.lang.String" method="length" evaluator="org.datanucleus.query.inmemory.StringLengthMethod"/>
+        <query-method-evaluator class="java.lang.String" method="matches" evaluator="org.datanucleus.query.inmemory.StringMatchesMethod"/>
+        <query-method-evaluator class="java.lang.String" method="startsWith" evaluator="org.datanucleus.query.inmemory.StringStartsWithMethod"/>
+        <query-method-evaluator class="java.lang.String" method="substring" evaluator="org.datanucleus.query.inmemory.StringSubstringMethod"/>
+        <query-method-evaluator class="java.lang.String" method="toUpperCase" evaluator="org.datanucleus.query.inmemory.StringToUpperCaseMethod"/>
+        <query-method-evaluator class="java.lang.String" method="toLowerCase" evaluator="org.datanucleus.query.inmemory.StringToLowerCaseMethod"/>
+        <query-method-evaluator class="java.lang.String" method="trim" evaluator="org.datanucleus.query.inmemory.StringTrimMethod"/>
+        <query-method-evaluator class="java.lang.String" method="trimLeft" evaluator="org.datanucleus.query.inmemory.StringTrimLeftMethod"/>
+        <query-method-evaluator class="java.lang.String" method="trimRight" evaluator="org.datanucleus.query.inmemory.StringTrimRightMethod"/>
+
+        <query-method-evaluator class="java.util.Collection" method="size" evaluator="org.datanucleus.query.inmemory.ContainerSizeMethod"/>
+        <query-method-evaluator class="java.util.Collection" method="isEmpty" evaluator="org.datanucleus.query.inmemory.ContainerIsEmptyMethod"/>
+        <query-method-evaluator class="java.util.Collection" method="contains" evaluator="org.datanucleus.query.inmemory.CollectionContainsMethod"/>
+        <query-method-evaluator class="java.util.Map" method="size" evaluator="org.datanucleus.query.inmemory.ContainerSizeMethod"/>
+        <query-method-evaluator class="java.util.Map" method="isEmpty" evaluator="org.datanucleus.query.inmemory.ContainerIsEmptyMethod"/>
+        <query-method-evaluator class="java.util.Map" method="containsKey" evaluator="org.datanucleus.query.inmemory.MapContainsKeyMethod"/>
+        <query-method-evaluator class="java.util.Map" method="containsValue" evaluator="org.datanucleus.query.inmemory.MapContainsValueMethod"/>
+        <query-method-evaluator class="java.util.Map" method="containsEntry" evaluator="org.datanucleus.query.inmemory.MapContainsEntryMethod"/>
+        <query-method-evaluator class="java.util.Map" method="get" evaluator="org.datanucleus.query.inmemory.MapGetMethod"/>
+
+        <query-method-evaluator class="java.util.Date" method="getTime" evaluator="org.datanucleus.query.inmemory.DateGetTimeMethod"/>
+        <query-method-evaluator class="java.util.Date" method="getDay" evaluator="org.datanucleus.query.inmemory.DateGetDayMethod"/>
+        <query-method-evaluator class="java.util.Date" method="getDate" evaluator="org.datanucleus.query.inmemory.DateGetDayMethod"/>
+        <query-method-evaluator class="java.util.Date" method="getMonth" evaluator="org.datanucleus.query.inmemory.DateGetMonthMethod"/>
+        <query-method-evaluator class="java.util.Date" method="getYear" evaluator="org.datanucleus.query.inmemory.DateGetYearMethod"/>
+        <query-method-evaluator class="java.util.Date" method="getHour" evaluator="org.datanucleus.query.inmemory.DateGetHoursMethod"/>
+        <query-method-evaluator class="java.util.Date" method="getMinute" evaluator="org.datanucleus.query.inmemory.DateGetMinutesMethod"/>
+        <query-method-evaluator class="java.util.Date" method="getSecond" evaluator="org.datanucleus.query.inmemory.DateGetSecondsMethod"/>
+    </extension>
+
+    <!-- QUERY METHODS -->
+    <extension point="org.datanucleus.query_method_prefix">
+        <query-method-prefix prefix="JDOHelper" alias="JDOHelper"/>
+        <query-method-prefix prefix="javax.jdo.JDOHelper" alias="JDOHelper"/>
+        <query-method-prefix prefix="Math" alias="Math"/>
+        <query-method-prefix prefix="java.lang.Math" alias="Math"/>
+    </extension>
+
+    <!-- METADATA HANDLERS -->
+    <extension point="org.datanucleus.metadata_handler">
+        <handler class-name="org.datanucleus.metadata.xml.PersistenceFileMetaDataHandler" name="Persistence" 
+            entity-resolver="org.datanucleus.metadata.xml.PluginEntityResolver"/>
+    </extension>
+
+    <!-- METADATA RESOLVERS -->
+    <extension point="org.datanucleus.metadata_entityresolver">
+       <entityresolver identity="http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd" type="SYSTEM" url="/org/datanucleus/metadata/persistence_1_0.xsd"/>
+       <entityresolver identity="http://xmlns.jcp.org/xml/ns/persistence/persistence_1_0.xsd" type="SYSTEM" url="/org/datanucleus/metadata/persistence_1_0.xsd"/>
+       <entityresolver identity="http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd" type="SYSTEM" url="/org/datanucleus/metadata/persistence_2_0.xsd"/>
+       <entityresolver identity="http://xmlns.jcp.org/xml/ns/persistence/persistence_2_0.xsd" type="SYSTEM" url="/org/datanucleus/metadata/persistence_2_0.xsd"/>
+       <entityresolver identity="http://java.sun.com/xml/ns/persistence/persistence_2_1.xsd" type="SYSTEM" url="/org/datanucleus/metadata/persistence_2_1.xsd"/>
+       <entityresolver identity="http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd" type="SYSTEM" url="/org/datanucleus/metadata/persistence_2_1.xsd"/>
+       <entityresolver url="/org/datanucleus/metadata/persistence_2_0.xsd"/>
+    </extension>
+
+    <!-- EXTENSION ANNOTATIONS -->
+    <extension point="org.datanucleus.member_annotation_handler">
+        <member-annotation-handler annotation-class="javax.validation.constraints.NotNull" 
+            handler="org.datanucleus.metadata.annotations.ValidationNotNullAnnotationHandler"/>
+        <member-annotation-handler annotation-class="javax.validation.constraints.Size" 
+            handler="org.datanucleus.metadata.annotations.ValidationSizeAnnotationHandler"/>
+    </extension>
+
+    <!-- JMX SERVERS -->
+    <extension point="org.datanucleus.management_server">
+        <management-server class="org.datanucleus.management.jmx.PlatformManagementServer" name="default"/>
+        <management-server class="org.datanucleus.management.jmx.Mx4jManagementServer" name="mx4j"/>
+    </extension>
+</plugin>
