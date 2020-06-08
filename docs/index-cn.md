@@ -307,6 +307,7 @@
 * [MinusAll(batch)](cn/minusallbatchop.md)
 * [Minus(batch)](cn/minusbatchop.md)
 * [Orderby(batch)](cn/orderbybatchop.md)
+* [Select](cn/select.md)
 * [Select(stream)](cn/selectstreamop.md)
 * [Select(batch)](cn/selectbatchop.md)
 * [数据拆分(stream)](cn/splitstreamop.md)

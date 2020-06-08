@@ -279,6 +279,7 @@
 * [minus(batch)](en/minusbatchop.md)
 * [orderby(batch)](en/orderbybatchop.md)
 * [rightouterjoin(batch)](en/rightouterjoinbatchop.md)
+* [select](cn/select.md)
 * [select(batch)](en/selectbatchop.md)
 * [select(stream)](en/selectstreamop.md)
 * [split(batch)](en/splitbatchop.md)
