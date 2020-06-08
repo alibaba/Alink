@@ -8,6 +8,9 @@ import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.pravega.PravegaRowDeserializationSchema;
 import com.alibaba.alink.params.io.PravegaSourceParams;
+import io.pravega.client.ClientConfig;
+import io.pravega.client.admin.StreamManager;
+import io.pravega.client.stream.StreamCut;
 import io.pravega.connectors.flink.FlinkPravegaReader;
 import io.pravega.connectors.flink.PravegaConfig;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -40,6 +43,16 @@ public class PravegaSourceStreamOp extends BaseSourceStreamOp<PravegaSourceStrea
         String pravegaControllerUri = getPravegaControllerUri();
         String pravegascope = getPravegaScope();
         String pravegaStream = getPravegaStream();
+        StreamCut pravegaStartStreamCut = null;
+        if (getPravegaStartStreamCut().equals("UNBOUNDED"))
+        {
+            ClientConfig clientConfig= ClientConfig.builder().controllerURI(URI.create(pravegaControllerUri)).build();
+            StreamManager streamManager = StreamManager.create(clientConfig);
+            pravegaStartStreamCut = streamManager.getStreamInfo(pravegascope,pravegaStream).getTailStreamCut();
+        } else {
+            pravegaStartStreamCut = StreamCut.from(getPravegaStartStreamCut());
+        }
+        StreamCut pravegaEndStreamCut = StreamCut.from(getPravegaEndStreamCut());
         String schemaStr = "event String";
         final String[] colNames = CsvUtil.getColNames(schemaStr);
         final TypeInformation[] colTypes = CsvUtil.getColTypes(schemaStr);
@@ -63,12 +76,12 @@ public class PravegaSourceStreamOp extends BaseSourceStreamOp<PravegaSourceStrea
 
         FlinkPravegaReader<Row> source = FlinkPravegaReader.<String>builder()
                 .withPravegaConfig(pravegaConfig)
-                .forStream(pravegaStream)
+                .forStream(pravegaStream, pravegaStartStreamCut, pravegaEndStreamCut)
                 .withDeserializationSchema(new PravegaRowDeserializationSchema(Row.class))
                 .build();
 
         DataStream<Row> data = MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment()
-                .addSource(source).name("Pravega");
+                .addSource(source).name("Pravega StreamReader");
         return DataStreamConversionUtil.toTable(getMLEnvironmentId(), data, colNames, colTypes);
     }
 }

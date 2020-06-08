@@ -8,6 +8,10 @@ import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.pravega.PravegaRowDeserializationSchema;
 import com.alibaba.alink.params.io.PravegaSourceParams;
+import io.pravega.client.ClientConfig;
+import io.pravega.client.admin.StreamManager;
+import io.pravega.client.stream.ReaderGroup;
+import io.pravega.client.stream.StreamCut;
 import io.pravega.connectors.flink.FlinkPravegaInputFormat;
 import io.pravega.connectors.flink.PravegaConfig;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -37,6 +41,8 @@ public final class PravegaSourceBatchOp extends BaseSourceBatchOp<PravegaSourceB
         String pravegaControllerUri = getPravegaControllerUri();
         String pravegascope = getPravegaScope();
         String pravegaStream = getPravegaStream();
+        StreamCut pravegaStartStreamCut = StreamCut.from(getPravegaStartStreamCut());
+        StreamCut pravegaEndStreamCut = StreamCut.from(getPravegaEndStreamCut());
         String schemaStr = "event String";
         //DeserializationSchema deserializationSchema = getPravegaDeserializer();
         final String[] colNames = CsvUtil.getColNames(schemaStr);
@@ -58,13 +64,13 @@ public final class PravegaSourceBatchOp extends BaseSourceBatchOp<PravegaSourceB
 
         FlinkPravegaInputFormat<Row> source = FlinkPravegaInputFormat.<Row>builder()
                 .withPravegaConfig(pravegaConfig)
-                .forStream(pravegaStream)
+                .forStream(pravegaStream, pravegaStartStreamCut, pravegaEndStreamCut)
                 .withDeserializationSchema(new PravegaRowDeserializationSchema(Row.class))
                 .build();
 
         ExecutionEnvironment execEnv = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment();
 
-        DataSource<Row> data = execEnv.createInput(source, TypeInformation.of(Row.class)).name("PravegaBatch");
+        DataSource<Row> data = execEnv.createInput(source, TypeInformation.of(Row.class)).name("Pravega BatchReader");
 
         return DataSetConversionUtil.toTable(getMLEnvironmentId(), data, colNames, colTypes);
     }

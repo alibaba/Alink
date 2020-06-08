@@ -31,6 +31,20 @@ public interface PravegaSourceParams<T> extends WithParams<T> {
             .setRequired()
             .setAlias(new String[]{"pravega.deserializer", "pravega_deserializer"})
             .build();
+    ParamInfo<String> pravega_startStreamCut = ParamInfoFactory
+            .createParamInfo("pravega_startStreamCut ", String.class)
+            .setDescription("pravega startStreamCut")
+            .setHasDefaultValue("UNBOUNDED")
+            .setOptional()
+            .setAlias(new String[]{"pravega.startStreamCut", "pravega_startStreamCut"})
+            .build();
+    ParamInfo<String> pravega_endStreamCut = ParamInfoFactory
+            .createParamInfo("pravega_endtreamCut ", String.class)
+            .setDescription("pravega endStreamCut")
+            .setHasDefaultValue("UNBOUNDED")
+            .setOptional()
+            .setAlias(new String[]{"pravega.endStreamCut", "pravega_endtreamCut"})
+            .build();
 
     default String getPravegaControllerUri() {
         return get(PRAVEGA_CONTROLLER_URI);
@@ -62,6 +76,22 @@ public interface PravegaSourceParams<T> extends WithParams<T> {
 
     default T setPravegaDeserializer(DeserializationSchema value) {
         return set(pravega_deserializer, value);
+    }
+
+    default String getPravegaStartStreamCut() {
+        return get(pravega_startStreamCut);
+    }
+
+    default T setPravegaStartStreamCut(String value) {
+        return set(pravega_startStreamCut, value);
+    }
+
+    default String getPravegaEndStreamCut() {
+        return get(pravega_endStreamCut);
+    }
+
+    default T setPravegaEndStreamCut(String value) {
+        return set(pravega_endStreamCut, value);
     }
 
 }
