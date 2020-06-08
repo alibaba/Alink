@@ -14,11 +14,11 @@ import com.alibaba.alink.params.io.HiveSourceParams;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.io.OutputFormat;
+import org.apache.flink.api.common.io.RichInputFormat;
 import org.apache.flink.api.common.io.RichOutputFormat;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.connectors.hive.HiveTableFactory;
 import org.apache.flink.connectors.hive.HiveTableSink;
 import org.apache.flink.connectors.hive.HiveTableSource;
@@ -42,7 +42,6 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.FileUtils;
 import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.parquet.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -379,28 +378,11 @@ public class HiveDB extends BaseDB implements Serializable {
         return hiveTableSource;
     }
 
-    private HiveBatchSource getHiveBatchSource(String tableName, Params parameter) throws Exception {
-        ObjectPath objectPath = ObjectPath.fromString(dbName + "." + tableName);
-        CatalogTable catalogTable = getCatalogTable(tableName);
-        HiveBatchSource hiveTableSource = new HiveBatchSource(new JobConf(catalog.getHiveConf()), objectPath, catalogTable);
-        String partitionSpecsStr = parameter.get(HiveSourceParams.PARTITIONS);
-        if (!StringUtils.isNullOrWhitespaceOnly(partitionSpecsStr)) {
-            String[] partitionSpecs = partitionSpecsStr.trim().split(",");
-            List<Map<String, String>> selectedPartitions = getSelectedPartitions(partitionSpecs);
-            hiveTableSource = (HiveBatchSource) hiveTableSource.applyPartitionPruning(selectedPartitions);
-        }
-        return hiveTableSource;
-    }
-
     @Override
     public Table getBatchTable(String tableName, Params parameter, Long sessionId) throws Exception {
-        ExecutionEnvironment env = MLEnvironmentFactory.get(sessionId).getExecutionEnvironment();
-        HiveBatchSource hiveTableSource = getHiveBatchSource(tableName, parameter);
-        DataSet<BaseRow> dataSet = hiveTableSource.getDataSet(env);
-        TableSchema schema = hiveTableSource.getTableSchema();
-        final DataType[] dataTypes = schema.getFieldDataTypes();
-        DataSet<Row> rows = dataSet.map(new BaseRowToRow(dataTypes));
-        Table tbl = DataSetConversionUtil.toTable(sessionId, rows, schema);
+        RichInputFormat<Row, ?> inputFormat = (RichInputFormat<Row, ?>) getHiveTableSource(tableName, parameter).getInputFormat();
+        DataSet<Row> ds = MLEnvironmentFactory.get(sessionId).getExecutionEnvironment().createInput(inputFormat);
+        Table tbl = DataSetConversionUtil.toTable(sessionId, ds, getTableSchemaWithPartitionColumns(tableName));
         if (getPartitionCols(tableName).size() > 0) { // remove static partition columns
             String[] fieldNames = getColNames(tableName);
             tbl = tbl.select(Strings.join(fieldNames, ","));
@@ -433,11 +415,13 @@ public class HiveDB extends BaseDB implements Serializable {
     public Table getStreamTable(String tableName, Params parameter, Long sessionId) throws Exception {
         StreamExecutionEnvironment env = MLEnvironmentFactory.get(sessionId).getStreamExecutionEnvironment();
         HiveTableSource hiveTableSource = getHiveTableSource(tableName, parameter);
-        DataStream<BaseRow> dataStream = hiveTableSource.getDataStream(env);
-        TableSchema schema = hiveTableSource.getTableSchema();
-        final DataType[] dataTypes = schema.getFieldDataTypes();
-        DataStream<Row> rows = dataStream.map(new BaseRowToRow(dataTypes));
-        return DataStreamConversionUtil.toTable(sessionId, rows, schema);
+        DataStream<Row> dataStream = hiveTableSource.getDataStream(env);
+        Table tbl = DataStreamConversionUtil.toTable(sessionId, dataStream, getTableSchemaWithPartitionColumns(tableName));
+        if (getPartitionCols(tableName).size() > 0) { // remove static partition columns
+            String[] fieldNames = getColNames(tableName);
+            tbl = tbl.select(Strings.join(fieldNames, ","));
+        }
+        return tbl;
     }
 
     @Override
