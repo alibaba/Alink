@@ -121,7 +121,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.10_2.11</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -141,7 +141,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.9_2.11</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
