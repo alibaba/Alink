@@ -41,7 +41,7 @@ Installation steps:
 1. Make sure the version of python3 on your computer is 3.6 or 3.7.
 2. Make sure Java 8 is installed on your computer.
 3. Use pip to install:
-  `pip install pyalink` or `pip install pyalink-flink-1.9` （Note: for now, `pyalink-flink-1.9` is not available，use following links instead).
+  `pip install pyalink` or `pip install pyalink-flink-1.9`.
 
 
 Potential issues:
@@ -50,8 +50,8 @@ Potential issues:
 If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstall pyalink` or `pip uninstall pyalink-flink-***` to remove them.
 
 2. If `pip install` is slow of failed, refer to [this article](https://segmentfault.com/a/1190000006111096) to change the pip source, or use the following download links:
-   - Flink 1.10：[Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.1/pyalink-1.1.1-py3-none-any.whl) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.1.1/pyalink-1.1.1-py3-none-any.whl) (MD5: b0541ea013e0ceae47d6961149d2c46f)
-   - Flink 1.9: [Link 1](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.1/pyalink_flink_1.9-1.1.1-py3-none-any.whl) [Link 2](https://github.com/alibaba/Alink/releases/download/v1.1.1/pyalink_flink_1.9-1.1.1-py3-none-any.whl) (MD5: fca8937ff724734dc3bcd27d12cdc997)
+   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.2.post0/pyalink-1.1.2.post0-py3-none-any.whl) (MD5: 6bf3a50a4437116793149ead57d9793c)
+   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.2.post0/pyalink_flink_1.9-1.1.2.post0-py3-none-any.whl) (MD5: e6d2a0ba3549662d77b51a4a37483479)
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 
