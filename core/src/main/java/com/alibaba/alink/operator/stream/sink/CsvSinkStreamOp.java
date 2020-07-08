@@ -54,36 +54,26 @@ public final class CsvSinkStreamOp extends BaseSinkStreamOp<CsvSinkStreamOp>
     public CsvSinkStreamOp sinkFrom(StreamOperator in) {
         this.schema = in.getSchema();
 
-		final String filePath = getFilePath().getPathStr();
-		final String fieldDelim = getFieldDelimiter();
-		final String rowDelimiter = getRowDelimiter();
-		final int numFiles = getNumFiles();
-		final TypeInformation[] types = in.getColTypes();
-		final Character quoteChar = getQuoteChar();
+        final String filePath = getFilePath().getPathStr();
+        final String fieldDelim = getFieldDelimiter();
+        final String rowDelimiter = getRowDelimiter();
+        final int numFiles = getNumFiles();
+        final TypeInformation[] types = in.getColTypes();
+        final Character quoteChar = getQuoteChar();
 
-		FileSystem.WriteMode writeMode;
-		if (getOverwriteSink()) {
-			writeMode = FileSystem.WriteMode.OVERWRITE;
-		} else {
-			writeMode = FileSystem.WriteMode.NO_OVERWRITE;
-		}
+        FileSystem.WriteMode writeMode;
+        if (getOverwriteSink()) {
+            writeMode = FileSystem.WriteMode.OVERWRITE;
+        } else {
+            writeMode = FileSystem.WriteMode.NO_OVERWRITE;
+        }
 
-		DataStream<String> output = ((DataStream<Row>) in.getDataStream())
-			.map(new CsvUtil.FormatCsvFunc(types, fieldDelim, quoteChar))
-			.map(new CsvUtil.FlattenCsvFromRow(rowDelimiter));
+        DataStream<Row> output = ((DataStream<Row>) in.getDataStream())
+            .map(new CsvUtil.FormatCsvFunc(types, fieldDelim, quoteChar))
+            .setParallelism(numFiles);
 
-		TextOutputFormat<String> tof = new TextOutputFormat<>(
-			new Path(filePath), getFilePath().getFileSystem(), getRowDelimiter()
-		);
-
-		tof.setWriteMode(writeMode);
-
-		output
-			.addSink(
-				new OutputFormatSinkFunction<>(tof)
-			)
-			.name("csv_sink")
-			.setParallelism(numFiles);
+        CsvTableSink cts = new CsvTableSink(filePath, rowDelimiter, numFiles, writeMode);
+        cts.consumeDataStream(output);
         return this;
     }
 }

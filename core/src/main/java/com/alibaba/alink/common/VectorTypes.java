@@ -2,10 +2,11 @@ package com.alibaba.alink.common;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 
+import org.apache.flink.shaded.guava18.com.google.common.collect.HashBiMap;
+
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
-import com.google.common.collect.HashBiMap;
 
 /**
  * Built-in vector types. <br/>

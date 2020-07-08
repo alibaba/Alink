@@ -2,14 +2,16 @@ package com.alibaba.alink.common.io;
 
 import org.apache.flink.api.common.io.RichOutputFormat;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.io.jdbc.JDBCAppendTableSink;
 import org.apache.flink.api.java.io.jdbc.JDBCInputFormat;
 import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
+import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
+import org.apache.flink.connector.jdbc.JdbcOutputFormat;
+import org.apache.flink.connector.jdbc.JdbcSink;
+import org.apache.flink.connector.jdbc.utils.JdbcTypeUtil;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.api.java.StreamTableEnvironment;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.DBAnnotation;
@@ -17,9 +19,9 @@ import com.alibaba.alink.common.io.table.BaseDbTable;
 import com.alibaba.alink.common.io.table.JdbcTable;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.io.types.JdbcTypeConverter;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import com.alibaba.alink.operator.common.io.types.JdbcTypeConverter;
 import com.alibaba.alink.operator.stream.sink.JdbcRetractSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
 import com.alibaba.alink.params.io.JdbcDBParams;
@@ -34,6 +36,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -373,19 +376,27 @@ public class JdbcDB extends BaseDB {
 
         String[] primaryColNames = parameter.getStringArrayOrDefault("primaryKeys", null);
 
-        if (primaryColNames == null || primaryColNames.length == 0) {
-            JDBCAppendTableSink jdbcAppendTableSink = JDBCAppendTableSink.builder()
-                    .setUsername(getUserName())
-                    .setPassword(getPassword())
-                    .setDrivername(getDriverName())
-                    .setDBUrl(getDbUrl())
-                    .setQuery(sql)
-                    .setParameterTypes(schema.getFieldTypes())
-                    .build();
-            StreamTableEnvironment tEnv = MLEnvironmentFactory.get(sessionId).getStreamTableEnvironment();
-            jdbcAppendTableSink.emitDataStream(tEnv
-                    .toAppendStream(in, new RowTypeInfo(in.getSchema().getFieldTypes()))
-            );
+		if (primaryColNames == null || primaryColNames.length == 0) {
+			MLEnvironmentFactory
+				.get(sessionId)
+				.getStreamTableEnvironment()
+				.toAppendStream(in, new RowTypeInfo(in.getSchema().getFieldTypes()))
+				.addSink(
+					JdbcSink
+						.sink(sql,
+							(ps, t) -> {
+								int arity = t.getArity();
+								for (int i = 0; i < arity; ++i) {
+									ps.setObject(i, t.getField(i));
+								}
+							},
+							new JdbcConnectionOptions.JdbcConnectionOptionsBuilder()
+								.withUsername(getUserName())
+								.withPassword(getPassword())
+								.withUrl(getDbUrl())
+								.withDriverName(getDriverName())
+								.build())
+				);
         } else {
             new TableSourceStreamOp(in)
                     .setMLEnvironmentId(sessionId)
@@ -444,16 +455,24 @@ public class JdbcDB extends BaseDB {
         }
         sbd.append(")");
 
-        JDBCAppendTableSink jdbcAppendTableSink = JDBCAppendTableSink.builder()
-                .setUsername(getUserName())
-                .setPassword(getPassword())
-                .setDrivername(getDriverName())
-                .setDBUrl(getDbUrl())
-                .setQuery(sbd.toString())
-                .setParameterTypes(schema.getFieldTypes())
-                .build();
-
-        jdbcAppendTableSink.emitDataSet(BatchOperator.fromTable(in).setMLEnvironmentId(sessionId).getDataSet());
+		new TableSourceBatchOp(in)
+			.setMLEnvironmentId(sessionId)
+			.getDataSet()
+			.output(
+				JdbcOutputFormat
+					.buildJdbcOutputFormat()
+					.setUsername(getUserName())
+					.setPassword(getPassword())
+					.setDrivername(getDriverName())
+					.setDBUrl(getDbUrl())
+					.setQuery(sbd.toString())
+					.setSqlTypes(
+						Arrays.stream(schema.getFieldTypes())
+							.mapToInt(JdbcTypeUtil::typeInformationToSqlType)
+							.toArray()
+					)
+					.finish()
+			);
     }
 
     @Override

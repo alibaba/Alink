@@ -4,8 +4,8 @@ import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
 import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.api.internal.TableImpl;
-import org.apache.flink.table.api.java.StreamTableEnvironment;
 
 public class TestUtil {
     public static void printTable(Table table) throws Exception {

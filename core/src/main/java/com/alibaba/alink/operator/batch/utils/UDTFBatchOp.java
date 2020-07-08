@@ -6,7 +6,7 @@ import com.alibaba.alink.operator.common.utils.UDFHelper;
 import com.alibaba.alink.params.dataproc.UDTFParams;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
 import org.apache.flink.table.functions.TableFunction;
 
 /**

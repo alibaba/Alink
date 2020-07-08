@@ -1,13 +1,13 @@
 package com.alibaba.alink.operator.common.sql;
 
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 
-import org.apache.flink.table.api.java.StreamTableEnvironment;
-import scala.collection.immutable.Stream;
 
 /**
  * Apply sql operators(select, where, filter, union etc.) on {@link StreamOperator}s.
