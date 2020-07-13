@@ -38,7 +38,8 @@ import org.apache.flink.table.catalog.hive.client.HiveMetastoreClientWrapper;
 import org.apache.flink.table.catalog.hive.client.HiveShim;
 import org.apache.flink.table.catalog.hive.client.HiveShimLoader;
 import org.apache.flink.table.catalog.hive.descriptors.HiveCatalogValidator;
-import org.apache.flink.table.dataformat.BaseRow;
+import org.apache.flink.table.catalog.hive.util.HiveReflectionUtils;
+import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.functions.hive.conversion.HiveInspectors;
 import org.apache.flink.table.runtime.types.TypeInfoDataTypeConverter;
 import org.apache.flink.table.sources.*;
@@ -49,6 +50,7 @@ import org.apache.flink.util.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -65,10 +67,10 @@ import java.util.stream.Collectors;
  * A TableSource implementation to read data from Hive tables.
  */
 public class HiveBatchSource implements
-    BatchTableSource<BaseRow>,
+    BatchTableSource<RowData>,
     PartitionableTableSource,
-    ProjectableTableSource<BaseRow>,
-    LimitableTableSource<BaseRow> {
+    ProjectableTableSource<RowData>,
+    LimitableTableSource<RowData> {
 
     private static final Logger LOG = LoggerFactory.getLogger(HiveBatchSource.class);
 
@@ -116,15 +118,15 @@ public class HiveBatchSource implements
     }
 
     @Override
-    public DataSet<BaseRow> getDataSet(ExecutionEnvironment execEnv) {
+    public DataSet<RowData> getDataSet(ExecutionEnvironment execEnv) {
         List<HiveTablePartition> allHivePartitions = initAllPartitions();
 
         @SuppressWarnings("unchecked")
-        TypeInformation<BaseRow> typeInfo =
-            (TypeInformation<BaseRow>) TypeInfoDataTypeConverter.fromDataTypeToTypeInfo(getProducedDataType());
+        TypeInformation<RowData> typeInfo =
+            (TypeInformation<RowData>) TypeInfoDataTypeConverter.fromDataTypeToTypeInfo(getProducedDataType());
         Configuration conf = GlobalConfiguration.loadConfiguration();
         HiveTableInputFormat inputFormat = getInputFormat(allHivePartitions, conf.getBoolean(HiveOptions.TABLE_EXEC_HIVE_FALLBACK_MAPRED_READER));
-        DataSource<BaseRow> source = execEnv.createInput(inputFormat, typeInfo);
+        DataSource<RowData> source = execEnv.createInput(inputFormat, typeInfo);
 
         if (conf.getBoolean(HiveOptions.TABLE_EXEC_HIVE_INFER_SOURCE_PARALLELISM)) {
             int max = conf.getInteger(HiveOptions.TABLE_EXEC_HIVE_INFER_SOURCE_PARALLELISM_MAX);
@@ -164,19 +166,20 @@ public class HiveBatchSource implements
 
     @Override
     public DataType getProducedDataType() {
+        return getProducedTableSchema().toRowDataType().bridgedTo(RowData.class);
+    }
+
+    private TableSchema getProducedTableSchema() {
         TableSchema fullSchema = getTableSchema();
-        DataType type;
         if (projectedFields == null) {
-            type = fullSchema.toRowDataType();
+            return fullSchema;
         } else {
             String[] fullNames = fullSchema.getFieldNames();
             DataType[] fullTypes = fullSchema.getFieldDataTypes();
-            type = TableSchema.builder().fields(
+            return TableSchema.builder().fields(
                 Arrays.stream(projectedFields).mapToObj(i -> fullNames[i]).toArray(String[]::new),
-                Arrays.stream(projectedFields).mapToObj(i -> fullTypes[i]).toArray(DataType[]::new))
-                .build().toRowDataType();
+                Arrays.stream(projectedFields).mapToObj(i -> fullTypes[i]).toArray(DataType[]::new)).build();
         }
-        return type.bridgedTo(BaseRow.class);
     }
 
     @Override
@@ -185,19 +188,19 @@ public class HiveBatchSource implements
     }
 
     @Override
-    public TableSource<BaseRow> applyLimit(long limit) {
+    public TableSource<RowData> applyLimit(long limit) {
         return new HiveBatchSource(jobConf, tablePath, catalogTable, remainingPartitions, hiveVersion,
             partitionPruned, projectedFields, true, limit);
     }
 
     @Override
     public List<Map<String, String>> getPartitions() {
-        throw new RuntimeException("This method is not expected to be called. " +
+        throw new UnsupportedOperationException(
             "Please use Catalog API to retrieve all partitions of a table");
     }
 
     @Override
-    public TableSource<BaseRow> applyPartitionPruning(List<Map<String, String>> remainingPartitions) {
+    public TableSource<RowData> applyPartitionPruning(List<Map<String, String>> remainingPartitions) {
         if (catalogTable.getPartitionKeys() == null || catalogTable.getPartitionKeys().size() == 0) {
             return this;
         } else {
@@ -215,6 +218,8 @@ public class HiveBatchSource implements
             String dbName = tablePath.getDatabaseName();
             String tableName = tablePath.getObjectName();
             List<String> partitionColNames = catalogTable.getPartitionKeys();
+            Table hiveTable = client.getTable(dbName, tableName);
+            Properties tableProps = HiveReflectionUtils.getTableMetadata(hiveShim, hiveTable);
             if (partitionColNames != null && partitionColNames.size() > 0) {
                 final String defaultPartitionName = jobConf.get(HiveConf.ConfVars.DEFAULTPARTITIONNAME.varname,
                     HiveConf.ConfVars.DEFAULTPARTITIONNAME.defaultStrVal);
@@ -227,32 +232,51 @@ public class HiveBatchSource implements
                     partitions.addAll(client.listPartitions(dbName, tableName, (short) -1));
                 }
                 for (Partition partition : partitions) {
-                    StorageDescriptor sd = partition.getSd();
-                    Map<String, Object> partitionColValues = new HashMap<>();
-                    for (int i = 0; i < partitionColNames.size(); i++) {
-                        String partitionColName = partitionColNames.get(i);
-                        String partitionValue = partition.getValues().get(i);
-                        DataType type = catalogTable.getSchema().getFieldDataType(partitionColName).get();
-                        Object partitionObject;
-                        if (defaultPartitionName.equals(partitionValue)) {
-                            LogicalTypeRoot typeRoot = type.getLogicalType().getTypeRoot();
-                            // while this is inline with Hive, seems it should be null for string columns as well
-                            partitionObject = typeRoot == LogicalTypeRoot.CHAR || typeRoot == LogicalTypeRoot.VARCHAR ? defaultPartitionName : null;
-                        } else {
-                            partitionObject = restorePartitionValueFromFromType(partitionValue, type);
-                        }
-                        partitionColValues.put(partitionColName, partitionObject);
-                    }
-                    HiveTablePartition hiveTablePartition = new HiveTablePartition(sd, partitionColValues);
+                    HiveTablePartition hiveTablePartition = toHiveTablePartition(
+                        catalogTable.getPartitionKeys(),
+                        catalogTable.getSchema().getFieldNames(),
+                        catalogTable.getSchema().getFieldDataTypes(),
+                        hiveShim,
+                        tableProps,
+                        defaultPartitionName,
+                        partition);
                     allHivePartitions.add(hiveTablePartition);
                 }
             } else {
-                allHivePartitions.add(new HiveTablePartition(client.getTable(dbName, tableName).getSd()));
+                allHivePartitions.add(new HiveTablePartition(hiveTable.getSd(), tableProps));
             }
         } catch (TException e) {
             throw new FlinkHiveException("Failed to collect all partitions from hive metaStore", e);
         }
         return allHivePartitions;
+    }
+
+    public static HiveTablePartition toHiveTablePartition(
+        List<String> partitionKeys,
+        String[] fieldNames,
+        DataType[] fieldTypes,
+        HiveShim shim,
+        Properties tableProps,
+        String defaultPartitionName,
+        Partition partition) {
+        StorageDescriptor sd = partition.getSd();
+        Map<String, Object> partitionColValues = new HashMap<>();
+        List<String> nameList = Arrays.asList(fieldNames);
+        for (int i = 0; i < partitionKeys.size(); i++) {
+            String partitionColName = partitionKeys.get(i);
+            String partitionValue = partition.getValues().get(i);
+            DataType type = fieldTypes[nameList.indexOf(partitionColName)];
+            Object partitionObject;
+            if (defaultPartitionName.equals(partitionValue)) {
+                LogicalTypeRoot typeRoot = type.getLogicalType().getTypeRoot();
+                // while this is inline with Hive, seems it should be null for string columns as well
+                partitionObject = typeRoot == LogicalTypeRoot.CHAR || typeRoot == LogicalTypeRoot.VARCHAR ? defaultPartitionName : null;
+            } else {
+                partitionObject = restorePartitionValueFromFromType(shim, partitionValue, type);
+            }
+            partitionColValues.put(partitionColName, partitionObject);
+        }
+        return new HiveTablePartition(sd, partitionColValues, tableProps);
     }
 
     private static List<String> partitionSpecToValues(Map<String, String> spec, List<String> partitionColNames) {
@@ -261,7 +285,7 @@ public class HiveBatchSource implements
         return partitionColNames.stream().map(spec::get).collect(Collectors.toList());
     }
 
-    private Object restorePartitionValueFromFromType(String valStr, DataType type) {
+    private static Object restorePartitionValueFromFromType(HiveShim shim, String valStr, DataType type) {
         LogicalTypeRoot typeRoot = type.getLogicalType().getTypeRoot();
         //note: it's not a complete list ofr partition key types that Hive support, we may need add more later.
         switch (typeRoot) {
@@ -285,13 +309,13 @@ public class HiveBatchSource implements
             case DATE:
                 return HiveInspectors.toFlinkObject(
                     HiveInspectors.getObjectInspector(type),
-                    hiveShim.toHiveDate(Date.valueOf(valStr)),
-                    hiveShim);
+                    shim.toHiveDate(Date.valueOf(valStr)),
+                    shim);
             case TIMESTAMP_WITHOUT_TIME_ZONE:
                 return HiveInspectors.toFlinkObject(
                     HiveInspectors.getObjectInspector(type),
-                    hiveShim.toHiveTimestamp(Timestamp.valueOf(valStr)),
-                    hiveShim);
+                    shim.toHiveTimestamp(Timestamp.valueOf(valStr)),
+                    shim);
             default:
                 break;
         }
@@ -313,7 +337,7 @@ public class HiveBatchSource implements
     }
 
     @Override
-    public TableSource<BaseRow> projectFields(int[] fields) {
+    public TableSource<RowData> projectFields(int[] fields) {
         return new HiveBatchSource(jobConf, tablePath, catalogTable, remainingPartitions, hiveVersion,
             partitionPruned, fields, isLimitPushDown, limit);
     }

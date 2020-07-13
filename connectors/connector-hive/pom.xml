@@ -14,7 +14,7 @@
 
     <properties>
         <hive.version>2.3.4</hive.version>
-        <shaded-hadoop-2.version>2.8.3-9.0</shaded-hadoop-2.version>
+        <shaded-hadoop-2.version>2.8.3-10.0</shaded-hadoop-2.version>
     </properties>
 
     <build>
@@ -77,6 +77,13 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-runtime-blink_${alink.scala.major.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-clients_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>
