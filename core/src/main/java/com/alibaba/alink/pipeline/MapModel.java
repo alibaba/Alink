@@ -1,17 +1,16 @@
 package com.alibaba.alink.pipeline;
 
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
-import org.apache.flink.util.function.TriFunction;
-
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
+import org.apache.flink.util.Preconditions;
+import org.apache.flink.util.function.TriFunction;
 
 import java.util.List;
 
@@ -38,9 +37,10 @@ public abstract class MapModel<T extends MapModel<T>>
 
 	@Override
 	public BatchOperator transform(BatchOperator input) {
-		return new ModelMapBatchOp(this.mapperBuilder, this.params)
+		return postProcessTransformResult(
+			new ModelMapBatchOp(this.mapperBuilder, this.params)
 				.linkFrom(BatchOperator.fromTable(this.getModelData())
-					.setMLEnvironmentId(input.getMLEnvironmentId()), input);
+					.setMLEnvironmentId(input.getMLEnvironmentId()), input));
 	}
 
 	@Override

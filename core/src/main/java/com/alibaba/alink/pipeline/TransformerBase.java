@@ -1,5 +1,8 @@
 package com.alibaba.alink.pipeline;
 
+import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo;
+import com.alibaba.alink.common.lazy.LazyObjectsManager;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
@@ -18,7 +21,7 @@ import org.apache.flink.util.Preconditions;
  *            org.apache.flink.ml.api.misc.param.WithParams}
  */
 public abstract class TransformerBase<T extends TransformerBase<T>>
-    extends PipelineStageBase<T> implements Transformer<T> {
+	extends PipelineStageBase<T> implements Transformer<T>, HasLazyPrintTransformInfo<T> {
 
     public TransformerBase() {
         super();
@@ -58,6 +61,18 @@ public abstract class TransformerBase<T extends TransformerBase<T>>
 			}
 			return transform(source).getOutputTable();
 		}
+	}
+
+	protected BatchOperator postProcessTransformResult(BatchOperator output) {
+		LazyObjectsManager lazyObjectsManager = MLEnvironmentFactory.get(output.getMLEnvironmentId()).getLazyObjectsManager();
+		lazyObjectsManager.genLazyTransformResult(this).addValue(output);
+		if (get(LAZY_PRINT_TRANSFORM_DATA_ENABLED)) {
+			output.lazyPrint(get(LAZY_PRINT_TRANSFORM_DATA_NUM), get(LAZY_PRINT_TRANSFORM_DATA_TITLE));
+		}
+		if (get(LAZY_PRINT_TRANSFORM_STAT_ENABLED)) {
+			output.lazyPrintStatistics(get(LAZY_PRINT_TRANSFORM_STAT_TITLE));
+		}
+		return output;
 	}
 
     /**

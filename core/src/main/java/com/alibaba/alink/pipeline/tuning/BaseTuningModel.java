@@ -22,7 +22,7 @@ public abstract class BaseTuningModel<M extends BaseTuningModel <M>> extends Mod
 
 	@Override
 	public BatchOperator transform(BatchOperator input) {
-		return this.transformer.transform(input);
+		return postProcessTransformResult(this.transformer.transform(input));
 	}
 
 	@Override

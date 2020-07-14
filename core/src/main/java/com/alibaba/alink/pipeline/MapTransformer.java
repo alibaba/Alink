@@ -31,7 +31,7 @@ public abstract class MapTransformer<T extends MapTransformer <T>>
 
 	@Override
 	public BatchOperator transform(BatchOperator input) {
-		return new MapBatchOp(this.mapperBuilder, this.params).linkFrom(input);
+		return postProcessTransformResult(new MapBatchOp(this.mapperBuilder, this.params).linkFrom(input));
 	}
 
 	@Override

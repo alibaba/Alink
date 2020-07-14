@@ -1,6 +1,26 @@
 package com.alibaba.alink.operator.batch;
 
 import com.alibaba.alink.common.MLEnvironment;
+import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.io.annotations.AnnotationUtils;
+import com.alibaba.alink.common.io.annotations.IOType;
+import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
+import com.alibaba.alink.common.lazy.LazyEvaluation;
+import com.alibaba.alink.common.lazy.LazyObjectsManager;
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.AlgoOperator;
+import com.alibaba.alink.operator.batch.dataproc.FirstNBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.SampleBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.SampleWithSizeBatchOp;
+import com.alibaba.alink.operator.batch.sink.BaseSinkBatchOp;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.batch.statistics.SummarizerBatchOp;
+import com.alibaba.alink.operator.batch.utils.UDFBatchOp;
+import com.alibaba.alink.operator.batch.utils.UDTFBatchOp;
+import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
+import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.accumulators.SerializedListAccumulator;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -17,26 +37,11 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.AbstractID;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.io.annotations.AnnotationUtils;
-import com.alibaba.alink.common.io.annotations.IOType;
-import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.AlgoOperator;
-import com.alibaba.alink.operator.batch.dataproc.FirstNBatchOp;
-import com.alibaba.alink.operator.batch.dataproc.SampleBatchOp;
-import com.alibaba.alink.operator.batch.dataproc.SampleWithSizeBatchOp;
-import com.alibaba.alink.operator.batch.sink.BaseSinkBatchOp;
-import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
-import com.alibaba.alink.operator.batch.utils.PrintBatchOp;
-import com.alibaba.alink.operator.batch.utils.UDFBatchOp;
-import com.alibaba.alink.operator.batch.utils.UDTFBatchOp;
-import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -244,7 +249,11 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	}
 
 	public static void execute() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().execute();
+		triggerLazyEvaluation(MLEnvironmentFactory.getDefault());
+	}
+
+	public static void execute(MLEnvironment mlEnv) throws Exception {
+		triggerLazyEvaluation(mlEnv);
 	}
 
 	public static void setParallelism(int parallelism) {
@@ -272,8 +281,11 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	}
 
 	public List <Row> collect() {
+		MLEnvironment mlEnv = MLEnvironmentFactory.get(getMLEnvironmentId());
+		LazyEvaluation<Pair<BatchOperator<?>, List<Row>>> lazyRows = mlEnv.getLazyObjectsManager().genLazySink(this);
 		try {
-			return getDataSet().collect();
+			triggerLazyEvaluation(mlEnv);
+			return lazyRows.getLatestValue().getRight();
 		} catch (Exception e) {
 			throw new RuntimeException("Collect result fail in BatchOperator.", e);
 		}
@@ -333,8 +345,10 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	}
 
 	@Override
-	public BatchOperator print() throws Exception {
-		return linkTo(new PrintBatchOp().setMLEnvironmentId(getMLEnvironmentId()));
+	public T print() throws Exception {
+		this.lazyPrint(-1);
+		triggerLazyEvaluation(MLEnvironmentFactory.get(getMLEnvironmentId()));
+		return (T)this;
 	}
 
 	public BatchOperator sample(double ratio) {
@@ -480,6 +494,58 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		}
 	}
 
+	public T lazyPrint(int n) {
+		return lazyPrint(n, null);
+	}
+
+	public T lazyPrint(int n, String title) {
+		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(this);
+		BatchOperator <?> op = n > 0 ? this.firstN(n) : this;
+		LazyEvaluation<Pair<BatchOperator<?>, List<Row>>> lazyRowOps = lazyObjectsManager.genLazySink(op);
+		lazyRowOps.addCallback(d -> {
+			if (null != title) {
+				System.out.println(title);
+			}
+			System.out.println(TableUtil.formatTitle(d.getLeft().getColNames()));
+			for (Row row : d.getRight()) {
+				System.out.println(TableUtil.formatRows(row));
+			}
+		});
+		return (T) this;
+	}
+
+	@SafeVarargs
+	public final T lazyCollect(Consumer <List <Row>>... callbacks) {
+		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(this);
+		LazyEvaluation<Pair<BatchOperator<?>, List<Row>>> lazyRowOps = lazyObjectsManager.genLazySink(this);
+		for (Consumer <List <Row>> callback : callbacks) {
+			lazyRowOps.addCallback(d -> callback.accept(d.getRight()));
+		}
+		return (T) this;
+	}
+
+	private static void triggerLazyEvaluation(MLEnvironment mlEnv) throws Exception {
+		LazyObjectsManager lazyObjectsManager = null;
+		try {
+			lazyObjectsManager = mlEnv.getLazyObjectsManager();
+			Map<BatchOperator<?>, LazyEvaluation<Pair<BatchOperator<?>, List<Row>>>> lazyRowOps = lazyObjectsManager.getLazySinks();
+			List<BatchOperator<?>> opsToCollect = new ArrayList<>(lazyRowOps.keySet());
+			List<List<Row>> listRows = collect(opsToCollect.toArray(new BatchOperator[0]));
+
+			for (int i = 0; i < opsToCollect.size(); i += 1) {
+				BatchOperator<?> op = opsToCollect.get(i);
+				if (lazyRowOps.containsKey(op)) {
+					List<Row> rows = listRows.get(i);
+					lazyRowOps.get(op).addValue(Pair.of(op, rows));
+				}
+			}
+		} finally {
+			if (lazyObjectsManager != null) {
+				lazyObjectsManager.clearVirtualSinks();
+			}
+		}
+	}
+
 	public static List <List <Row>> collect(BatchOperator <?>... batchOperators) throws Exception {
 		List <MemSinkBatchOp> memSinks = new ArrayList <>();
 
@@ -505,5 +571,34 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		}
 
 		return ret;
+	}
+
+	private SummarizerBatchOp getStatisticsOp() {
+		SummarizerBatchOp summarizerBatchOp = new SummarizerBatchOp()
+			.setMLEnvironmentId(getMLEnvironmentId());
+		this.link(summarizerBatchOp);
+		return summarizerBatchOp;
+	}
+
+	public TableSummary collectStatistics() {
+		return getStatisticsOp().collectSummary();
+	}
+
+	public T lazyCollectStatistics(Consumer<TableSummary>... callbacks) {
+		getStatisticsOp().lazyCollectSummary(callbacks);
+		return (T)this;
+	}
+
+	public T lazyPrintStatistics() {
+		return lazyPrintStatistics(null);
+	}
+
+	public T lazyPrintStatistics(String title) {
+		return lazyCollectStatistics(d -> {
+			if (null != title) {
+				System.out.println(title);
+			}
+			System.out.println(d);
+		});
 	}
 }

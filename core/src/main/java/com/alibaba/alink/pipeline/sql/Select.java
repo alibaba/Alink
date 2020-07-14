@@ -26,7 +26,7 @@ public class Select extends MapTransformer <Select>
 
 	@Override
 	public BatchOperator transform(BatchOperator input) {
-		return new SelectBatchOp().setClause(this.getClause()).linkFrom(input);
+		return postProcessTransformResult(new SelectBatchOp().setClause(this.getClause()).linkFrom(input));
 	}
 
 	@Override

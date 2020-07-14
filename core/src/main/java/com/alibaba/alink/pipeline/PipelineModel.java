@@ -56,7 +56,7 @@ public class PipelineModel extends ModelBase<PipelineModel> implements LocalPred
         for (TransformerBase transformer : this.transformers) {
             input = transformer.transform(input);
         }
-        return input;
+        return postProcessTransformResult(input);
     }
 
     @Override

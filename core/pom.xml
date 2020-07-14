@@ -184,6 +184,13 @@
             <version>3.6.1-0.1</version>
         </dependency>
 
+        <!-- lazy-api dependency -->
+        <dependency>
+            <groupId>io.reactivex.rxjava3</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
     </dependencies>
 
 </project>

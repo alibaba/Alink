@@ -1,5 +1,6 @@
 package com.alibaba.alink.common;
 
+import com.alibaba.alink.common.lazy.LazyObjectsManager;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -39,6 +40,8 @@ public class MLEnvironment {
     private StreamExecutionEnvironment streamEnv;
     private BatchTableEnvironment batchTableEnv;
     private StreamTableEnvironment streamTableEnv;
+
+    final LazyObjectsManager lazyObjectsManager = new LazyObjectsManager();
 
     /**
      * Construct with null that the class can load the environment in the `get` method.
@@ -277,5 +280,8 @@ public class MLEnvironment {
         DataStream<Row> dataSet = getStreamExecutionEnvironment().fromCollection(rows);
         return DataStreamConversionUtil.toTable(this, dataSet, colNames, types);
     }
-}
 
+    public LazyObjectsManager getLazyObjectsManager() {
+        return lazyObjectsManager;
+    }
+}

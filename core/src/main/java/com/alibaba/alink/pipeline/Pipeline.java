@@ -8,6 +8,9 @@ import com.alibaba.alink.operator.stream.StreamOperator;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo.LAZY_PRINT_TRANSFORM_DATA_ENABLED;
+import static com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo.LAZY_PRINT_TRANSFORM_STAT_ENABLED;
+
 /**
  * A pipeline is a linear workflow which chains {@link EstimatorBase}s and {@link TransformerBase}s to
  * execute an algorithm.
@@ -119,7 +122,16 @@ public class Pipeline extends EstimatorBase<Pipeline, PipelineModel> {
 					transformers[i] = (TransformerBase) stage;
 				}
 				if (i < lastEstimatorIdx) {
+					// temporarily disable lazy print transform results
+					Boolean lazyPrintTransformDataEnabled = (Boolean) transformers[i].get(LAZY_PRINT_TRANSFORM_DATA_ENABLED);
+					Boolean lazyPrintTransformStatEnabled = (Boolean) transformers[i].get(LAZY_PRINT_TRANSFORM_STAT_ENABLED);
+					transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, false);
+					transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, false);
+
 					input = transformers[i].transform(input);
+
+					transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, lazyPrintTransformDataEnabled);
+					transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, lazyPrintTransformStatEnabled);
 				}
 			} else {
 				// After lastEstimatorIdx, there're only Transformer stages, so it's safe to do type cast.
