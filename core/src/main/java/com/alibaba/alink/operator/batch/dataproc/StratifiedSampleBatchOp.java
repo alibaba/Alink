@@ -1,7 +1,10 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.dataproc.StratifiedSampleParams;
+import com.alibaba.alink.params.dataproc.SampleSeedParam;
+import com.alibaba.alink.params.dataproc.SampleGroupColumnParam;
+import com.alibaba.alink.params.dataproc.SampleRatioParam;
+import com.alibaba.alink.params.dataproc.SampleWithReplacementParams;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.java.operators.GroupReduceOperator;
@@ -21,7 +24,10 @@ import java.util.Random;
 
 
 public final class StratifiedSampleBatchOp extends BatchOperator<StratifiedSampleBatchOp>
-        implements StratifiedSampleParams<StratifiedSampleBatchOp> {
+        implements SampleGroupColumnParam<StratifiedSampleBatchOp>,
+                   SampleRatioParam<StratifiedSampleBatchOp>,
+                   SampleSeedParam<StratifiedSampleBatchOp>,
+                   SampleWithReplacementParams<StratifiedSampleBatchOp> {
 
     public StratifiedSampleBatchOp() {
         this(new Params());
@@ -35,7 +41,7 @@ public final class StratifiedSampleBatchOp extends BatchOperator<StratifiedSampl
     }
     public StratifiedSampleBatchOp(String groupKey, String ratio, boolean withReplacement) {
         this(new Params()
-             .set(GROUP_KEY, groupKey)
+             .set(GROUP_COL, groupKey)
              .set(RATIO, ratio)
              .set(WITH_REPLACEMENT, withReplacement));
     }
@@ -44,7 +50,7 @@ public final class StratifiedSampleBatchOp extends BatchOperator<StratifiedSampl
     public StratifiedSampleBatchOp linkFrom(BatchOperator<?>... inputs) {
         BatchOperator<?> in = checkAndGetFirst(inputs);
         // compute index of group key
-        int index = computeGroupKeyIndex(in.getColNames(), getGroupKey());
+        int index = computeGroupCloIndex(in.getColNames(), getGroupCol());
 
         UnsortedGrouping<Row> groupingOperator = in.getDataSet().groupBy(index);
 
@@ -104,14 +110,7 @@ public final class StratifiedSampleBatchOp extends BatchOperator<StratifiedSampl
         }
     }
 
-    private int computeGroupKeyIndex(String[] schema, String groupKey) {
-        for (int i = 0; i < schema.length; i++) {
-            if (groupKey.equals(schema[i])){
-                return i;
-            }
-        }
-        throw new RuntimeException("unknown column name :" + groupKey);
-    }
+
 
     private class StratifiedSampleReduce <T> implements GroupReduceFunction<T, T>{
 

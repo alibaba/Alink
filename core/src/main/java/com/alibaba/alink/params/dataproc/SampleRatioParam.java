@@ -8,21 +8,11 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @auth：baijingjing
- * @createDatetime: 2020/7/7
- * @desc： defin param
- */
-public interface StratifiedSampleParams<T> extends
-        WithParams<T> {
+public interface SampleRatioParam<T> extends
+        WithParams<T>  {
 
     Pattern compile = Pattern.compile("(^0$)|(^0\\.\\d{1,2}$)|(^1$)");
 
-    ParamInfo<String> GROUP_KEY = ParamInfoFactory
-            .createParamInfo("groupKey", String.class)
-            .setDescription("name of group key")
-            .setRequired()
-            .build();
 
     ParamInfo<String> RATIO = ParamInfoFactory
             .createParamInfo("ratio", String.class)
@@ -31,25 +21,6 @@ public interface StratifiedSampleParams<T> extends
             .setValidator(new RatioValidator())
             .build();
 
-    ParamInfo<Long> SEED = ParamInfoFactory
-            .createParamInfo("seed", Long.class)
-            .setDescription("seed of random")
-            .build();
-
-    ParamInfo<Boolean> WITH_REPLACEMENT = ParamInfoFactory
-            .createParamInfo("withReplacement", Boolean.class)
-            .setDescription("Indicates whether to enable sampling with replacement, default is without replcement")
-            .setHasDefaultValue(false)
-            .build();
-
-    default String getGroupKey() {
-        return getParams().get(GROUP_KEY);
-    }
-
-    default T setGroupKey(String value) {
-        return set(GROUP_KEY, value);
-    }
-
     default String getRatio() {
         return getParams().get(RATIO);
     }
@@ -57,25 +28,6 @@ public interface StratifiedSampleParams<T> extends
     default T setRatio(String value) {
         return set(RATIO, value);
     }
-
-    default Long getSeed() {
-        return getParams().get(SEED);
-    }
-
-    default T setSeed(long value) {
-        return set(SEED, value);
-    }
-
-    default Boolean getWithReplacement() {
-        return getParams().get(WITH_REPLACEMENT);
-    }
-
-    default T setWithReplacement(Boolean value) {
-        return set(WITH_REPLACEMENT, value);
-    }
-
-
-
     final class RatioValidator implements ParamValidator<String> {
 
         @Override
@@ -100,8 +52,4 @@ public interface StratifiedSampleParams<T> extends
         }
 
     }
-
-
-
-
 }

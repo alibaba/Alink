@@ -6,15 +6,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.ParamValidator;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface StratifiedSampleWithSizeParams<T> extends
+public interface SampleSizeParams<T> extends
         WithParams<T> {
-
-
-    ParamInfo<String> GROUP_KEY = ParamInfoFactory
-            .createParamInfo("groupKey", String.class)
-            .setDescription("name of group key")
-            .setRequired()
-            .build();
 
     ParamInfo<String> SIZE = ParamInfoFactory
             .createParamInfo("size", String.class)
@@ -23,27 +16,6 @@ public interface StratifiedSampleWithSizeParams<T> extends
             .setValidator(new RatioValidator())
             .build();
 
-    ParamInfo<Long> SEED = ParamInfoFactory
-            .createParamInfo("seed", Long.class)
-            .setDescription("seed of random")
-            .setOptional()
-            .build();
-
-    ParamInfo<Boolean> WITH_REPLACEMENT = ParamInfoFactory
-            .createParamInfo("withReplacement", Boolean.class)
-            .setDescription("Indicates whether to enable sampling with replacement, default is without replcement")
-            .setHasDefaultValue(false)
-            .build();
-
-
-    default String getGroupKey() {
-        return getParams().get(GROUP_KEY);
-    }
-
-    default T setGroupKey(String value) {
-        return set(GROUP_KEY, value);
-    }
-
     default String getSize() {
         return getParams().get(SIZE);
     }
@@ -51,24 +23,6 @@ public interface StratifiedSampleWithSizeParams<T> extends
     default T setSize(String value) {
         return set(SIZE, value);
     }
-
-    default Long getSeed() {
-        return getParams().get(SEED);
-    }
-
-    default T setSeed(Long value) {
-        return set(SEED, value);
-    }
-
-    default Boolean getWithReplacement() {
-        return getParams().get(WITH_REPLACEMENT);
-    }
-
-    default T setWithReplacement(Boolean value) {
-        return set(WITH_REPLACEMENT, value);
-    }
-
-
 
     final class RatioValidator implements ParamValidator<String> {
 

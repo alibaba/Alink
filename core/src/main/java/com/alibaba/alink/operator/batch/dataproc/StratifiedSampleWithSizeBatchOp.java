@@ -1,7 +1,10 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.dataproc.StratifiedSampleWithSizeParams;
+import com.alibaba.alink.params.dataproc.SampleSeedParam;
+import com.alibaba.alink.params.dataproc.SampleGroupColumnParam;
+import com.alibaba.alink.params.dataproc.SampleSizeParams;
+import com.alibaba.alink.params.dataproc.SampleWithReplacementParams;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
@@ -30,7 +33,10 @@ import java.util.stream.Collectors;
  * @desc：fencengcaiyang main class
  */
 public final class StratifiedSampleWithSizeBatchOp extends BatchOperator<StratifiedSampleWithSizeBatchOp>
-        implements StratifiedSampleWithSizeParams<StratifiedSampleWithSizeBatchOp> {
+        implements SampleGroupColumnParam<StratifiedSampleWithSizeBatchOp>,
+                   SampleSizeParams<StratifiedSampleWithSizeBatchOp>,
+                   SampleSeedParam<StratifiedSampleWithSizeBatchOp>,
+                   SampleWithReplacementParams<StratifiedSampleWithSizeBatchOp> {
 
     public StratifiedSampleWithSizeBatchOp() {
         this(new Params());
@@ -45,7 +51,7 @@ public final class StratifiedSampleWithSizeBatchOp extends BatchOperator<Stratif
     }
     public StratifiedSampleWithSizeBatchOp(String groupKey, String size, boolean withReplacement) {
         this(new Params()
-             .set(GROUP_KEY, groupKey)
+             .set(GROUP_COL, groupKey)
              .set(SIZE, size)
              .set(WITH_REPLACEMENT, withReplacement));
     }
@@ -54,7 +60,7 @@ public final class StratifiedSampleWithSizeBatchOp extends BatchOperator<Stratif
     public StratifiedSampleWithSizeBatchOp linkFrom(BatchOperator<?>... inputs) {
         BatchOperator<?> in = checkAndGetFirst(inputs);
         // compute index of group key
-        int index = computeGroupKeyIndex(in.getColNames(), getGroupKey());
+        int index = computeGroupCloIndex(in.getColNames(), getGroupCol());
 
         UnsortedGrouping<Row> groupingOperator = in.getDataSet().groupBy(index);
 
@@ -96,15 +102,6 @@ public final class StratifiedSampleWithSizeBatchOp extends BatchOperator<Stratif
             throw new RuntimeException(e);
         }
         return this;
-    }
-
-    private int computeGroupKeyIndex(String[] schema, String groupKey) {
-        for (int i = 0; i < schema.length; i++) {
-            if (groupKey.equals(schema[i])){
-                return i;
-            }
-        }
-        return -1;
     }
 
     private class CountPerGroupFunction implements GroupReduceFunction<Row, Tuple2<Object, Long>> {
