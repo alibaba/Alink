@@ -23,7 +23,7 @@ import java.util.Map;
  * This mapper maps some table columns to a binary vector. It encoding some columns to a key-value format.
  */
 public class OneHotModelMapper extends ModelMapper {
-    private OneHotMapperBuilder mapperBuilder;
+    OneHotMapperBuilder mapperBuilder;
 
     /**
      * Deal with the abnormal cases.
@@ -229,6 +229,9 @@ public class OneHotModelMapper extends ModelMapper {
                 vectorSize.put(index, invalidStrategy.getVectorSizeFunc.apply(maxIdx));
                 if (paramsBuilder.dropLast) {
                     dropIndex.put(index, maxIdx);
+                    if(maxIdx < 0){
+                        vectorSize.put(index, vectorSize.get(index) + 1);
+                    }
                 }
             }
 

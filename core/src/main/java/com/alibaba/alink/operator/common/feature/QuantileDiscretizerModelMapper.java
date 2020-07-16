@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.feature;
 
+import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -13,19 +14,11 @@ import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.feature.binning.Bin;
-import com.alibaba.alink.operator.common.feature.binning.BinTypes;
-import com.alibaba.alink.operator.common.feature.binning.BinningUtil;
-import com.alibaba.alink.operator.common.feature.binning.FeatureBorder;
 import com.alibaba.alink.operator.common.tree.Preprocessing;
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.HasEncodeWithoutWoe;
-import com.alibaba.alink.params.feature.HasEncodeWithoutWoeDefaultAsIndex;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.params.shared.colname.HasOutputCol;
-import com.alibaba.alink.params.shared.colname.HasOutputColsDefaultAsNull;
-import com.alibaba.alink.params.shared.colname.HasReservedCols;
-import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -33,13 +26,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import static com.alibaba.alink.operator.common.tree.Preprocessing.isMissing;
 
 /**
  * quantile discretizer model data mapper.
  */
-public class QuantileDiscretizerModelMapper extends ModelMapper {
+public class QuantileDiscretizerModelMapper extends ModelMapper implements Cloneable {
 	private DiscretizerMapperBuilder mapperBuilder;
 
 	public QuantileDiscretizerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
@@ -53,19 +47,11 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 		model.load(modelRows);
 
 		for (int i = 0; i < mapperBuilder.paramsBuilder.selectedCols.length; i++) {
-			FeatureBorder border = model.data.get(mapperBuilder.paramsBuilder.selectedCols[i]);
-			Preconditions.checkNotNull(border, "%s not found in model", mapperBuilder.paramsBuilder.selectedCols[i]);
-			List<Bin.BaseBin> norm = border.bin.normBins;
-			int size = norm.size();
-			Long maxIndex = norm.get(0).getIndex();
-			Long lastIndex = norm.get(size - 1).getIndex();
-			for (int j = 0; j < norm.size(); ++j) {
-				if (maxIndex < norm.get(j).getIndex()) {
-					maxIndex = norm.get(j).getIndex();
-				}
-			}
+			ContinuousRanges featureInterval = model.data.get(mapperBuilder.paramsBuilder.selectedCols[i]);
+			Preconditions.checkNotNull(featureInterval, "%s not found in model", mapperBuilder.paramsBuilder.selectedCols[i]);
+			long maxIndex = (long) featureInterval.getIntervalNum() - 1;
 
-			long maxIndexWithNull = Math.max(maxIndex, border.bin.nullBin.getIndex());
+			long maxIndexWithNull = featureInterval.getIntervalNum();
 
 			switch (mapperBuilder.paramsBuilder.handleInvalidStrategy) {
 				case KEEP:
@@ -80,10 +66,10 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 			}
 
 			if (mapperBuilder.paramsBuilder.dropLast) {
-				mapperBuilder.dropIndex.put(i, lastIndex);
+				mapperBuilder.dropIndex.put(i, maxIndex);
 			}
 
-			mapperBuilder.discretizers[i] = createQuantileDiscretizer(border, model.meta);
+			mapperBuilder.discretizers[i] = createQuantileDiscretizer(featureInterval, model.meta);
 		}
 
 		mapperBuilder.setAssembledVectorSize();
@@ -99,7 +85,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 		return mapperBuilder.map(row);
 	}
 
-	public static class DiscretizerMapperBuilder implements Serializable {
+	public static class DiscretizerMapperBuilder implements Serializable, Cloneable {
 		DiscretizerParamsBuilder paramsBuilder;
 		int[] selectedColIndicesInData;
 		Map<Integer, Long> vectorSize;
@@ -108,8 +94,8 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 		NumericQuantileDiscretizer[] discretizers;
 		Long[] predictIndices;
 
-		public DiscretizerMapperBuilder(Params params, TableSchema dataSchema){
-			paramsBuilder = new DiscretizerParamsBuilder(params, dataSchema, params.get(HasEncodeWithoutWoeDefaultAsIndex.ENCODE));
+		public DiscretizerMapperBuilder(Params params, TableSchema dataSchema) {
+			paramsBuilder = new DiscretizerParamsBuilder(params, dataSchema, params.get(QuantileDiscretizerPredictParams.ENCODE));
 			this.selectedColIndicesInData = TableUtil.findColIndicesWithAssert(
 				dataSchema,
 				paramsBuilder.selectedCols
@@ -117,10 +103,9 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 			vectorSize = new HashMap<>();
 			dropIndex = new HashMap<>();
 			discretizers = new NumericQuantileDiscretizer[paramsBuilder.selectedCols.length];
-
 		}
 
-		void setAssembledVectorSize(){
+		void setAssembledVectorSize() {
 			assembledVectorSize = vectorSize.values().stream().mapToInt(Long::intValue).sum();
 			if (paramsBuilder.dropLast) {
 				assembledVectorSize -= vectorSize.size();
@@ -129,7 +114,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 			predictIndices = new Long[paramsBuilder.selectedCols.length];
 		}
 
-		Row map(Row row){
+		Row map(Row row) {
 			for (int i = 0; i < paramsBuilder.selectedCols.length; i++) {
 				int colIdxInData = selectedColIndicesInData[i];
 				Object val = row.getField(colIdxInData);
@@ -170,71 +155,71 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 		public OutputColsHelper outputColsHelper;
 		public boolean dropLast;
 
-        public DiscretizerParamsBuilder(Params params, TableSchema dataSchema, HasEncodeWithoutWoe.Encode encode) {
-            String[] reservedCols = params.get(HasReservedCols.RESERVED_COLS);
-            handleInvalidStrategy = params.get(HasHandleInvalid.HANDLE_INVALID);
+		public DiscretizerParamsBuilder(Params params, TableSchema dataSchema, HasEncodeWithoutWoe.Encode encode) {
+			String[] reservedCols = params.get(QuantileDiscretizerPredictParams.RESERVED_COLS);
+			handleInvalidStrategy = params.get(QuantileDiscretizerPredictParams.HANDLE_INVALID);
 			this.encode = encode;
 
-            //To delete when open source
-            if (!params.contains(HasOutputColsDefaultAsNull.OUTPUT_COLS) && params.contains(HasOutputCol.OUTPUT_COL)) {
-                params.set(HasOutputColsDefaultAsNull.OUTPUT_COLS, new String[] {params.get(HasOutputCol.OUTPUT_COL)});
-            }
-            if (!params.contains(HasSelectedCols.SELECTED_COLS)) {
-                Preconditions.checkArgument(
-                    encode.equals(HasEncodeWithoutWoe.Encode.ASSEMBLED_VECTOR),
-                    "Not given selectedCols, encode must be ASSEMBLED_VECTOR!"
-                );
-            } else {
-                selectedCols = params.get(HasSelectedCols.SELECTED_COLS);
-            }
+			//To delete when open source
+			if (!params.contains(QuantileDiscretizerPredictParams.OUTPUT_COLS) && params.contains(HasOutputCol.OUTPUT_COL)) {
+				params.set(QuantileDiscretizerPredictParams.OUTPUT_COLS, new String[]{params.get(HasOutputCol.OUTPUT_COL)});
+			}
+			if (!params.contains(QuantileDiscretizerPredictParams.SELECTED_COLS)) {
+				Preconditions.checkArgument(
+					encode.equals(HasEncodeWithoutWoe.Encode.ASSEMBLED_VECTOR),
+					"Not given selectedCols, encode must be ASSEMBLED_VECTOR!"
+				);
+			} else {
+				selectedCols = params.get(QuantileDiscretizerPredictParams.SELECTED_COLS);
+			}
 
-            switch (encode) {
-                case INDEX: {
-                    String[] outputCols = params.get(HasOutputColsDefaultAsNull.OUTPUT_COLS);
-                    if (null == outputCols) {
-                        outputCols = selectedCols;
-                    }
-                    Preconditions.checkArgument(outputCols.length == selectedCols.length,
-                        "Input column name is not match output column name.");
-                    outputColsHelper = new OutputColsHelper(
-                        dataSchema,
-                        outputCols,
-                        Arrays.stream(outputCols).map(x -> Types.LONG).toArray(TypeInformation[]::new),
-                        reservedCols);
-                    break;
-                }
-                case VECTOR: {
-                    String[] outputCols = params.get(HasOutputColsDefaultAsNull.OUTPUT_COLS);
-                    if (null == outputCols) {
-                        outputCols = selectedCols;
-                    }
-                    Preconditions.checkArgument(outputCols.length == selectedCols.length,
-                        "Input column name is not match output column name.");
-                    outputColsHelper = new OutputColsHelper(
-                        dataSchema,
-                        outputCols,
-                        Arrays.stream(outputCols).map(x -> VectorTypes.SPARSE_VECTOR).toArray(TypeInformation[]::new),
-                        reservedCols);
-                    break;
-                }
-                case ASSEMBLED_VECTOR: {
-                    String[] outputCols = params.get(HasOutputColsDefaultAsNull.OUTPUT_COLS);
-                    Preconditions.checkArgument(null != outputCols && outputCols.length == 1,
-                        "When encode is ASSEMBLED_VECTOR, outputCols must be given and the length must be 1!");
-                    outputColsHelper = new OutputColsHelper(
-                        dataSchema,
-                        outputCols[0],
-                        VectorTypes.SPARSE_VECTOR,
-                        reservedCols
-                    );
-                    break;
-                }
-                default: {
-                    throw new IllegalArgumentException("Not support encode: " + encode.name());
-                }
-            }
-            dropLast = params.get(QuantileDiscretizerPredictParams.DROP_LAST);
-        }
+			switch (encode) {
+				case INDEX: {
+					String[] outputCols = params.get(QuantileDiscretizerPredictParams.OUTPUT_COLS);
+					if (null == outputCols) {
+						outputCols = selectedCols;
+					}
+					Preconditions.checkArgument(outputCols.length == selectedCols.length,
+						"Input column name is not match output column name.");
+					outputColsHelper = new OutputColsHelper(
+						dataSchema,
+						outputCols,
+						Arrays.stream(outputCols).map(x -> Types.LONG).toArray(TypeInformation[]::new),
+						reservedCols);
+					break;
+				}
+				case VECTOR: {
+					String[] outputCols = params.get(QuantileDiscretizerPredictParams.OUTPUT_COLS);
+					if (null == outputCols) {
+						outputCols = selectedCols;
+					}
+					Preconditions.checkArgument(outputCols.length == selectedCols.length,
+						"Input column name is not match output column name.");
+					outputColsHelper = new OutputColsHelper(
+						dataSchema,
+						outputCols,
+						Arrays.stream(outputCols).map(x -> VectorTypes.SPARSE_VECTOR).toArray(TypeInformation[]::new),
+						reservedCols);
+					break;
+				}
+				case ASSEMBLED_VECTOR: {
+					String[] outputCols = params.get(QuantileDiscretizerPredictParams.OUTPUT_COLS);
+					Preconditions.checkArgument(null != outputCols && outputCols.length == 1,
+						"When encode is ASSEMBLED_VECTOR, outputCols must be given and the length must be 1!");
+					outputColsHelper = new OutputColsHelper(
+						dataSchema,
+						outputCols[0],
+						VectorTypes.SPARSE_VECTOR,
+						reservedCols
+					);
+					break;
+				}
+				default: {
+					throw new IllegalArgumentException("Not support encode: " + encode.name());
+				}
+			}
+			dropLast = params.get(QuantileDiscretizerPredictParams.DROP_LAST);
+		}
 	}
 
 
@@ -334,74 +319,48 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 		}
 	}
 
-	public static class GenericNumericQuantileDiscretizer implements NumericQuantileDiscretizer {
-		FeatureBorder border;
-
-		public GenericNumericQuantileDiscretizer(FeatureBorder border) {
-			this.border = border;
-		}
-
-		@Override
-		public boolean isValid(int index) {
-			return index != border.bin.nullBin.getIndex();
-		}
-
-		@Override
-		public int findIndex(Object number) {
-			return BinningUtil.findNumericBin(number, border, border.colType).getIndex().intValue();
-		}
-	}
-
 	public static NumericQuantileDiscretizer createQuantileDiscretizer(
-		FeatureBorder featureBorder, Params params) {
-		if (BinningUtil.isFeatureContinuous(featureBorder)) {
-			List<Bin.BaseBin> norm = featureBorder.bin.normBins;
-			int size = norm.size();
-			boolean isLeftOpen = !norm.get(0).right().isOpen();
-			int nullIndex = featureBorder.bin.nullBin.getIndex().intValue();
+		ContinuousRanges featureBorder, Params params) {
+		int size = featureBorder.splitsArray.length + 1;
+		boolean isLeftOpen = featureBorder.getLeftOpen();
+		int nullIndex = featureBorder.getIntervalNum();
 
-			int[] boundIndex = new int[size + 1];
+		int[] boundIndex = IntStream.range(0, size + 2).toArray();
+		boundIndex[size] = size - 1;
 
-			for (int i = 0; i < size; ++i) {
-				boundIndex[i] = norm.get(i).getIndex().intValue();
+		if (!featureBorder.isFloat()) {
+			long[] bounds = new long[size + 1];
+			bounds[0] = -Long.MAX_VALUE;
+			for (int i = 0; i < size - 1; ++i) {
+				bounds[i + 1] = featureBorder.splitsArray[i].longValue();
 			}
-
-			boundIndex[size] = norm.get(size - 1).getIndex().intValue();
-
-			if (featureBorder.colType.equals(BinTypes.ColType.LONG)) {
-				long[] bounds = new long[size + 1];
-				bounds[0] = -Long.MAX_VALUE;
-				for (int i = 0; i < size - 1; ++i) {
-					bounds[i + 1] = ((Number) norm.get(i).right().getRecord()).longValue();
-				}
-				bounds[size] = Long.MAX_VALUE;
-				return new LongQuantileDiscretizer(
-					bounds, isLeftOpen, boundIndex, nullIndex,
-					params.get(Preprocessing.ZERO_AS_MISSING));
-			} else {
-				double[] bounds = new double[size + 1];
-				bounds[0] = Double.NEGATIVE_INFINITY;
-				for (int i = 0; i < size - 1; ++i) {
-					bounds[i + 1] = ((Number) norm.get(i).right().getRecord()).doubleValue();
-				}
-				bounds[size] = Double.POSITIVE_INFINITY;
-				return new DoubleNumericQuantileDiscretizer(
-					bounds, isLeftOpen, boundIndex, nullIndex,
-					params.get(Preprocessing.ZERO_AS_MISSING)
-				);
-			}
+			bounds[size] = Long.MAX_VALUE;
+			return new LongQuantileDiscretizer(
+				bounds, isLeftOpen, boundIndex, nullIndex,
+				params.get(Preprocessing.ZERO_AS_MISSING));
 		} else {
-			return new GenericNumericQuantileDiscretizer(featureBorder);
+			double[] bounds = new double[size + 1];
+			bounds[0] = Double.NEGATIVE_INFINITY;
+			for (int i = 0; i < size - 1; ++i) {
+				bounds[i + 1] = featureBorder.splitsArray[i].doubleValue();
+			}
+			bounds[size] = Double.POSITIVE_INFINITY;
+
+			return new DoubleNumericQuantileDiscretizer(
+				bounds, isLeftOpen, boundIndex, nullIndex,
+				params.get(Preprocessing.ZERO_AS_MISSING)
+			);
 		}
 	}
 
 	/**
 	 * Set the result row when predict index is gotten.
-	 * @param predictIndices predict indices.
-	 * @param encode Encode type.
-	 * @param dropIndex If dropLast is true, this index is drop.
-	 * @param vectorSize The vectorsizes of each column.
-	 * @param dropLast Drop the last token or not.
+	 *
+	 * @param predictIndices      predict indices.
+	 * @param encode              Encode type.
+	 * @param dropIndex           If dropLast is true, this index is drop.
+	 * @param vectorSize          The vectorsizes of each column.
+	 * @param dropLast            Drop the last token or not.
 	 * @param assembledVectorSize If encode is ASSEMBLED_VECTOR, this size is used.
 	 * @return the result row.
 	 */
@@ -429,7 +388,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 					Tuple2<Integer, Integer> tuple = getVectorSizeAndIndex(predictIndices[i], dropIndex.get(i),
 						vectorSize.get(i), dropLast);
 					result.setField(i, null == tuple.f1 ? new SparseVector(tuple.f0)
-						: new SparseVector(tuple.f0, new int[] {tuple.f1}, new double[] {1.0}));
+						: new SparseVector(tuple.f0, new int[]{tuple.f1}, new double[]{1.0}));
 				}
 				return result;
 			}
@@ -438,7 +397,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 				int startIndex = 0;
 				for (int i = 0; i < predictIndices.length; i++) {
 					if (null == predictIndices[i]) {
-						return Row.of(null);
+						return Row.of((Object) null);
 					}
 					Tuple2<Integer, Integer> tuple = getVectorSizeAndIndex(predictIndices[i], dropIndex.get(i),
 						vectorSize.get(i), dropLast);
@@ -460,12 +419,14 @@ public class QuantileDiscretizerModelMapper extends ModelMapper {
 			}
 		}
 	}
+
 	/**
 	 * Return the vectorsize the final index.
-	 * @param predictIndex predict index.
-	 * @param dropIndex the index to drop, if dropLast is true, the return index is null.
+	 *
+	 * @param predictIndex     predict index.
+	 * @param dropIndex        the index to drop, if dropLast is true, the return index is null.
 	 * @param originVectorSize origin vectorsize.
-	 * @param dropLast Drop the last index or not.
+	 * @param dropLast         Drop the last index or not.
 	 * @return (vectorSize, index)
 	 */
 	private static Tuple2<Integer, Integer> getVectorSizeAndIndex(Long predictIndex,

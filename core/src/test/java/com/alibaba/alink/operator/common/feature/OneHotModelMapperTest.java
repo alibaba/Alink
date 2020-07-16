@@ -11,6 +11,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -61,8 +62,14 @@ public class OneHotModelMapperTest {
 		Row.of(2L, "1", 4L)
 	};
 
+	private Row[] nullRows = new Row[]{
+		Row.of(-1L, "{\"selectedCols\":\"[\\\"docid\\\",\\\"word\\\",\\\"cnt\\\"]\","
+			+ "\"enableElse\":\"true\"}", null)
+	};
+
 	private List <Row> model = Arrays.asList(rows);
 	private List<Row> newModel = Arrays.asList(newRows);
+	private List<Row> nullModel = Arrays.asList(nullRows);
 	private TableSchema modelSchema = new OneHotModelDataConverter().getModelSchema();
 	private TableSchema dataSchema = new TableSchema(
 		new String[] {"docid", "word", "cnt"},
@@ -226,5 +233,21 @@ public class OneHotModelMapperTest {
 		}catch (Exception e){
 			assertEquals(e.getMessage(), "Unseen token: 梅");
 		}
+	}
+
+	@Test
+	public void testNullModel() throws Exception{
+		Params params = new Params()
+			.set(OneHotPredictParams.ENCODE, HasEncodeWithoutWoe.Encode.VECTOR)
+			.set(OneHotPredictParams.SELECTED_COLS, new String[]{"cnt", "word", "docid"});
+
+		OneHotModelMapper mapper = new OneHotModelMapper(modelSchema, dataSchema, params);
+		mapper.loadModel(nullModel);
+
+		Assert.assertEquals(mapper.map(defaultRow), Row.of(
+			new SparseVector(2, new int[]{1}, new double[]{1.0}),
+			new SparseVector(2, new int[]{1}, new double[]{1.0}),
+			new SparseVector(2, new int[]{1}, new double[]{1.0})
+		));
 	}
 }

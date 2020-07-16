@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.feature;
 
+import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.BucketizerParams;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Unit test for BucketizerMapper.
@@ -57,5 +59,25 @@ public class BucketizerMapperTest {
         assertEquals(mapper.map(Row.of(0.5, 0.4)).getField(1), 3L);
         assertEquals(mapper.map(Row.of(0.5, null)).getField(1), 5L);
         assertEquals(mapper.getOutputSchema(), schema);
+    }
+
+    @Test
+    public void testSkipAndError() throws Exception {
+        TableSchema schema = new TableSchema(new String[] {"featureA", "featureB"},
+            new TypeInformation<?>[] {Types.LONG, Types.LONG});
+
+        Params params = new Params()
+            .set(BucketizerParams.SELECTED_COLS, new String[] {"featureA", "featureB"})
+            .set(BucketizerParams.CUTS_ARRAY, cutsArray)
+            .set(BucketizerParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalid.SKIP);
+
+        BucketizerMapper mapper = new BucketizerMapper(schema, params);
+        assertNull(mapper.map(Row.of(0.5, null)).getField(1));
+        assertEquals(mapper.getOutputSchema(), schema);
+
+        thrown.expect(RuntimeException.class);
+        params.set(BucketizerParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalid.ERROR);
+        mapper = new BucketizerMapper(schema, params);
+        mapper.map(Row.of(0.5, null));
     }
 }

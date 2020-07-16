@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.feature;
 
+import com.alibaba.alink.common.model.SimpleModelDataConverter;
+import com.google.common.reflect.TypeToken;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -7,13 +9,6 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.Preconditions;
-
-import com.alibaba.alink.common.model.SimpleModelDataConverter;
-import com.alibaba.alink.operator.common.feature.binning.Bin;
-import com.alibaba.alink.operator.common.feature.binning.BinTypes;
-import com.alibaba.alink.operator.common.feature.binning.BinningUtil;
-import com.alibaba.alink.operator.common.feature.binning.FeatureBorder;
-import com.google.common.reflect.TypeToken;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,13 +27,13 @@ public class QuantileDiscretizerModelDataConverter
 		.build();
 
 	public Params meta;
-	public Map<String, FeatureBorder> data;
+	public Map<String, ContinuousRanges> data;
 
 	public QuantileDiscretizerModelDataConverter() {
 		this(new HashMap<>(), new Params());
 	}
 
-	public QuantileDiscretizerModelDataConverter(Map<String, FeatureBorder> data, Params meta) {
+	public QuantileDiscretizerModelDataConverter(Map<String, ContinuousRanges> data, Params meta) {
 		this.data = data;
 		this.meta = meta;
 		this.meta.set(VERSION, "v2");
@@ -66,7 +61,7 @@ public class QuantileDiscretizerModelDataConverter
 			for (Map.Entry<String, Double[]> d : oldData.entrySet()) {
 				this.data.put(
 					d.getKey(),
-					arraySplit2FeatureBorder(d.getKey(), Types.DOUBLE, d.getValue(), true, BinTypes.BinDivideType.QUANTILE)
+					arraySplit2ContinuousRanges(d.getKey(), Types.DOUBLE, d.getValue(), true)
 				);
 			}
 
@@ -74,54 +69,46 @@ public class QuantileDiscretizerModelDataConverter
 		}
 
 		for (String d : data) {
-			FeatureBorder border = FeatureBorder.deSerialize(d)[0];
-
-			this.data.put(border.featureName, border);
+			ContinuousRanges featureInterval = ContinuousRanges.deSerialize(d);
+			this.data.put(featureInterval.featureName, featureInterval);
 		}
 
 		return this;
 	}
 
 	public int getFeatureSize(String featureName) {
-		FeatureBorder modelData = this.data.get(featureName);
+		ContinuousRanges featureInterval = this.data.get(featureName);
 
-		if (modelData == null) {
+		if (featureInterval == null) {
 			return 0;
 		}
 
-		int ret = 0;
-
-		for (Bin.BaseBin bin : modelData.bin.normBins) {
-			ret = Math.max(bin.getIndex().intValue(), ret);
-		}
-
-		return modelData.bin.normBins.size();
+		return featureInterval.getIntervalNum();
 	}
 
 	public int missingIndex(String featureName) {
-		FeatureBorder modelData = this.data.get(featureName);
+		ContinuousRanges featureInterval = this.data.get(featureName);
 
-		if (modelData == null) {
+		if (featureInterval == null) {
 			return 0;
 		}
 
-		return modelData.bin.nullBin.getIndex().intValue();
+		return featureInterval.getIntervalNum();
 	}
 
 	public double getFeatureValue(String featureName, int index) {
-		FeatureBorder modelData = data.get(featureName);
-		Preconditions.checkNotNull(modelData);
-		return ((Number) modelData.bin.normBins.get(index).right().getRecord()).doubleValue();
+		ContinuousRanges featureInterval = data.get(featureName);
+		Preconditions.checkNotNull(featureInterval);
+		return featureInterval.splitsArray[index].doubleValue();
 	}
 
-	public static FeatureBorder arraySplit2FeatureBorder(
+	public static ContinuousRanges arraySplit2ContinuousRanges(
 		String featureName,
 		TypeInformation<?> featureType,
 		Number[] splits,
-		boolean leftOpen,
-		BinTypes.BinDivideType binDivideType) {
-		return new FeatureBorder(binDivideType, featureName, featureType,
-			BinningUtil.createNumericBin(splits, leftOpen), leftOpen);
+		boolean leftOpen) {
+		return new ContinuousRanges(featureName, featureType,
+			splits, leftOpen);
 	}
 
 	class ModelSerializeIterable implements Iterable<String> {
@@ -133,7 +120,7 @@ public class QuantileDiscretizerModelDataConverter
 	}
 
 	class ModelSerializeIterator implements Iterator<String> {
-		Iterator<Map.Entry<String, FeatureBorder>> mapIter
+		Iterator<Map.Entry<String, ContinuousRanges>> mapIter
 			= QuantileDiscretizerModelDataConverter.this.data.entrySet().iterator();
 
 		@Override
@@ -143,7 +130,7 @@ public class QuantileDiscretizerModelDataConverter
 
 		@Override
 		public String next() {
-			return FeatureBorder.serialize(mapIter.next().getValue());
+			return ContinuousRanges.serialize(mapIter.next().getValue());
 		}
 	}
 

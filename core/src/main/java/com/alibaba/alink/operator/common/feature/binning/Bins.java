@@ -1,10 +1,11 @@
 package com.alibaba.alink.operator.common.feature.binning;
 
-import com.google.common.base.Joiner;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.flink.util.Preconditions;
+
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.flink.util.Preconditions;
+
+import com.google.common.base.Joiner;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,14 +16,14 @@ import java.util.List;
  * Bin for Featureborder.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Bin implements Serializable {
+public class Bins implements Serializable {
     /**
      * Join delimiter for discrete values.
      */
-    private static String JOIN_DELIMITER = ",";
+    public static String JOIN_DELIMITER = ",";
 
     /**
-     * Normal bin.
+     * Normal bin, it could not be null.
      */
     @JsonProperty("NORM")
     public List<BaseBin> normBins;
@@ -39,18 +40,16 @@ public class Bin implements Serializable {
     @JsonProperty("ELSE")
     public BaseBin elseBin;
 
+    public Bins(){
+        this.normBins = new ArrayList<>();
+    }
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class BaseBin implements Serializable {
         /**
          * Values can be converted to and from borders. It's only used before serialize.
          */
         List<String> values;
-
-        /**
-         * Borders can be converted to and from values. It's used in calculation.
-         */
-        @JsonIgnore
-        ArrayList<BinTypes.SingleBorder> borders;
 
         /**
          * The woe of this bin, it could be null.
@@ -64,7 +63,7 @@ public class Bin implements Serializable {
         Long total;
 
         /**
-         * The positve total of this bin, it could be null.
+         * The positive total of this bin, it could be null.
          */
         Long positive;
 
@@ -110,11 +109,11 @@ public class Bin implements Serializable {
         private Double iv;
 
         public Double getIV() {
-            return BinningUtil.keepGivenDecimal(iv, 3);
+            return FeatureBinsUtil.keepGivenDecimal(iv, 3);
         }
 
         public Double getPositivePercentage() {
-            return BinningUtil.keepGivenDecimal(positivePercentage, 4);
+            return FeatureBinsUtil.keepGivenDecimal(positivePercentage, 4);
         }
 
         public List<String> getValues() {
@@ -123,10 +122,6 @@ public class Bin implements Serializable {
 
         public String getValueStr(BinTypes.ColType colType) {
             return colType.isNumeric ? values.get(0) : Joiner.on(JOIN_DELIMITER).join(values);
-        }
-
-        public ArrayList<BinTypes.SingleBorder> getBorders() {
-            return borders;
         }
 
         public Long getIndex() {
@@ -142,7 +137,7 @@ public class Bin implements Serializable {
         }
 
         public Double getWoe() {
-            return BinningUtil.keepGivenDecimal(woe, 3);
+            return FeatureBinsUtil.keepGivenDecimal(woe, 3);
         }
 
         public Long getNegative() {
@@ -150,29 +145,21 @@ public class Bin implements Serializable {
         }
 
         public Double getPositiveRate() {
-            return BinningUtil.keepGivenDecimal(positiveRate, 4);
+            return FeatureBinsUtil.keepGivenDecimal(positiveRate, 4);
         }
 
         public Double getNegativeRate() {
-            return BinningUtil.keepGivenDecimal(negativeRate, 4);
+            return FeatureBinsUtil.keepGivenDecimal(negativeRate, 4);
         }
 
 
         public Double getTotalRate() {
-            return BinningUtil.keepGivenDecimal(totalRate, 4);
+            return FeatureBinsUtil.keepGivenDecimal(totalRate, 4);
         }
 
         BaseBin() {}
 
-        public BaseBin(Long index, BinTypes.SingleBorder... singleBorders) {
-            this.index = index;
-            if (singleBorders.length > 0) {
-                borders = new ArrayList<>();
-                borders.addAll(Arrays.asList(singleBorders));
-            }
-        }
-
-        public BaseBin(Long index, String[] strs){
+        public BaseBin(Long index, String... strs){
             this.index = index;
             if(strs.length > 0){
                 values = new ArrayList<>();
@@ -180,6 +167,12 @@ public class Bin implements Serializable {
             }
         }
 
+        /**
+         * Adjusted Woe = ln((N(noevent + 0.5)/N(total_noevent))/(N(event + 0.5)/N(total_event))
+         * @param total
+         * @param colType
+         * @param positiveTotal
+         */
         void setStatisticsData(Long total, BinTypes.ColType colType, Long positiveTotal) {
             this.total = null == this.total ? 0L : this.total;
             Preconditions.checkNotNull(total, "Total is NULL!");
@@ -195,32 +188,16 @@ public class Bin implements Serializable {
                 if (this.total > 0) {
                     positivePercentage = 1.0 * positive / this.total;
                 }
-                if (positiveTotal > 0) {
-                    positiveRate = 1.0 * positive / positiveTotal;
-                }
-                if (total - positiveTotal > 0) {
-                    negativeRate = 1.0 * negative / (total - positiveTotal);
-                    if (negative > 0 && positive > 0) {
-                        woe = Math.log(positiveRate / negativeRate);
-                        iv = (positiveRate - negativeRate) * woe;
-                    }
+
+                woe = FeatureBinsUtil.calcWoe(this.total, this.positive, positiveTotal, total - positiveTotal);
+                if(woe.equals(Double.NaN)){
+                    woe = null;
+                }else{
+                    iv = (1.0 * positive / positiveTotal - 1.0 * negative / (total - positiveTotal)) * woe;
                 }
             }
 
-        }
-
-        void bordersToValues(BinTypes.ColType colType) {
-            if (null != borders) {
-                values = BinningUtil.singleBorderArrayToStr(borders, colType);
-            }
-        }
-
-        public BinTypes.SingleBorder left() {
-            return borders.get(0);
-        }
-
-        public BinTypes.SingleBorder right() {
-            return borders.get(1);
         }
     }
+
 }
