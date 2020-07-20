@@ -22,4 +22,11 @@ public class OptimVariable {
     public final static String objFunc = "objFunc";
     public final static int numCorrections = 10;
     public final static double learningRate = 0.1;
+
+    public final static String fmTrainData = "fmTrainData";
+    public final static String fmModel = "fmModel";
+    public final static String sigmaGii = "sigmaGii";
+    public final static String weights = "weights";
+    public final static String factorAllReduce = "factorAllReduce";
+    public final static String lossAucAllReduce = "lossAucAllReduce";
 }

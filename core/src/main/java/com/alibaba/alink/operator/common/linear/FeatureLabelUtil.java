@@ -69,7 +69,7 @@ public class FeatureLabelUtil {
      * After jsonized and un-jsonized, the label type may be changed.
      * So here we recover the label type.
      */
-    static Object[] recoverLabelType(Object[] labels, TypeInformation labelType) {
+    public static Object[] recoverLabelType(Object[] labels, TypeInformation labelType) {
 
         if (labels == null) {
             return null;

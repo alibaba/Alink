@@ -137,4 +137,34 @@ public class ModelParamName {
 		.setDescription("lossCurve")
 		.setRequired()
 		.build();
+
+	public final static ParamInfo<String> TASK = ParamInfoFactory
+		.createParamInfo("task", String.class)
+		.setDescription("task")
+		.setRequired()
+		.build();
+
+	public final static ParamInfo<int[]> DIM = ParamInfoFactory
+		.createParamInfo("dim", int[].class)
+		.setDescription("dim")
+		.setRequired()
+		.build();
+
+	public final static ParamInfo<int[]> FIELD_POS = ParamInfoFactory
+		.createParamInfo("filedPos", int[].class)
+		.setDescription("field pos")
+		.setRequired()
+		.build();
+
+	public final static ParamInfo<String> LABEL_COL_NAME = ParamInfoFactory
+		.createParamInfo("labelColName", String.class)
+		.setDescription("label col name")
+		.setRequired()
+		.build();
+
+	public static ParamInfo<String[]> FEATURE_COL_NAMES = ParamInfoFactory
+		.createParamInfo("featureColNames", String[].class)
+		.setDescription("feature column names")
+		.setRequired()
+		.build();
 }
