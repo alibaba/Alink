@@ -4,7 +4,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface SampleWithReplacementParams<T> extends
+public interface HashWithReplacementParams<T> extends
         WithParams<T> {
 
     ParamInfo<Boolean> WITH_REPLACEMENT = ParamInfoFactory

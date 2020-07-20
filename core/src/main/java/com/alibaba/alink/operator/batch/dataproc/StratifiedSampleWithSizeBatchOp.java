@@ -1,130 +1,56 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.dataproc.SampleSeedParam;
-import com.alibaba.alink.params.dataproc.SampleGroupColumnParam;
-import com.alibaba.alink.params.dataproc.SampleSizeParams;
-import com.alibaba.alink.params.dataproc.SampleWithReplacementParams;
-import com.google.common.base.Joiner;
-import org.apache.commons.lang3.StringUtils;
+import com.alibaba.alink.params.dataproc.StrafiedSampleWithSizeParams;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
-import org.apache.flink.api.java.operators.GroupReduceOperator;
-import org.apache.flink.api.java.operators.UnsortedGrouping;
-import org.apache.flink.api.java.sampling.IntermediateSampleData;
-import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.sampling.DistributedRandomSampler;
+import org.apache.flink.api.java.sampling.ReservoirSamplerWithReplacement;
+import org.apache.flink.api.java.sampling.ReservoirSamplerWithoutReplacement;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.XORShiftRandom;
+import org.apache.flink.util.Preconditions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
- * @auth：baijingjing
- * @createDatetime: 2020/7/7
- * @desc：fencengcaiyang main class
+ * StratifiedSample with given size with or without replacement.
  */
 public final class StratifiedSampleWithSizeBatchOp extends BatchOperator<StratifiedSampleWithSizeBatchOp>
-        implements SampleGroupColumnParam<StratifiedSampleWithSizeBatchOp>,
-                   SampleSizeParams<StratifiedSampleWithSizeBatchOp>,
-                   SampleSeedParam<StratifiedSampleWithSizeBatchOp>,
-                   SampleWithReplacementParams<StratifiedSampleWithSizeBatchOp> {
+        implements StrafiedSampleWithSizeParams<StratifiedSampleWithSizeBatchOp>{
 
     public StratifiedSampleWithSizeBatchOp() {
         this(new Params());
     }
 
     public StratifiedSampleWithSizeBatchOp(Params params){
-        super(params.set(SEED, new Random().nextLong()));
-    }
-
-    public StratifiedSampleWithSizeBatchOp(String groupKey, String size) {
-        this(groupKey, size, false);
-    }
-    public StratifiedSampleWithSizeBatchOp(String groupKey, String size, boolean withReplacement) {
-        this(new Params()
-             .set(GROUP_COL, groupKey)
-             .set(SIZE, size)
-             .set(WITH_REPLACEMENT, withReplacement));
+        super(params);
     }
 
     @Override
     public StratifiedSampleWithSizeBatchOp linkFrom(BatchOperator<?>... inputs) {
         BatchOperator<?> in = checkAndGetFirst(inputs);
         // compute index of group key
-        int index = computeGroupCloIndex(in.getColNames(), getGroupCol());
+        int index = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), getGroupCol());
 
-        UnsortedGrouping<Row> groupingOperator = in.getDataSet().groupBy(index);
+        Integer size = getSize();
+        String sizes = getSizes();
+        Preconditions.checkArgument(null == size ^ null == sizes,
+            "You can either set size or sizes!");
 
-        String size = getSize();
-        //step2: count total number of records per group
-        try {
-            List<Tuple2<Object, Long>> totalNumberPerGroupList = groupingOperator.reduceGroup(new CountPerGroupFunction(index)).collect();
-            Map<Object, Integer> groupSampleSize = new HashMap<>();
-            if (StringUtils.isNumeric(size)) {
-                for (Tuple2<Object, Long> tuple2 : totalNumberPerGroupList) {
-                    groupSampleSize.put(tuple2.f0, Integer.valueOf(size));
-                }
-            } else {
-                //step2.2 :the string ratio defines different ratio per group
-                String[] keySizes= size.split(",");
-                List<Object> dataValue = totalNumberPerGroupList.stream().map(t -> t.f0).collect(Collectors.toList());
-                List<Object> difference = new ArrayList<>(dataValue);
-                List<String> defineValue = Arrays.asList(keySizes).stream().map(ks -> ks.split(":")[0]).collect(Collectors.toList());
-                difference.removeAll(defineValue);
-                if (!difference.isEmpty() || totalNumberPerGroupList.size() != keySizes.length) {
-                    throw new IllegalStateException("data set value is :" + Joiner.on(",").join(dataValue) +
-                            ", but define value is :" + Joiner.on(",").join(defineValue));
-                }
-                for (String keySize : keySizes) {
-                    String[] sizes = keySize.split(":");
-                    for (Tuple2<Object, Long> tuple2 : totalNumberPerGroupList) {
-                        if (tuple2.f0.equals(sizes[0])) {
-                            groupSampleSize.put(tuple2.f0, Integer.valueOf(sizes[1]));
-                            break;
-                        }
-                    }
-                }
-            }
+        long seed = new Random().nextLong();
+        DataSet<Row> res = in
+            .getDataSet()
+            .groupBy(index)
+            .reduceGroup(new StratifiedSampleWithSizeReduce(getWithReplacement(), seed, index, size, sizes));
 
-            final GroupReduceOperator result = groupingOperator.reduceGroup(new StratifiedSampleWithSizeReduce(getWithReplacement(), getSeed(), index, groupSampleSize));
-
-            this.setOutput(result, in.getSchema());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        this.setOutput(res, in.getSchema());
         return this;
-    }
-
-    private class CountPerGroupFunction implements GroupReduceFunction<Row, Tuple2<Object, Long>> {
-
-        int index;
-
-        public CountPerGroupFunction(int index) {
-            this.index = index;
-        }
-
-        @Override
-        public void reduce(Iterable<Row> iterable, Collector<Tuple2<Object, Long>> collector) throws Exception {
-            Iterator<Row> iterator = iterable.iterator();
-            long count = 1L;
-            Row next = iterator.next();
-            Object key = next.getField(index);
-            while (iterator.hasNext()) {
-                iterator.next();
-                count++;
-            }
-            collector.collect(new Tuple2<Object, Long>(key, count));
-        }
-
     }
 
     private class StratifiedSampleWithSizeReduce<T> implements GroupReduceFunction<T, T> {
@@ -133,77 +59,59 @@ public final class StratifiedSampleWithSizeBatchOp extends BatchOperator<Stratif
         private boolean withReplacement;
         private long seed;
         private int keyIndex;
+        private Integer sampleSize;
         private Map<Object, Integer> sampleNumsMap;
 
-        public StratifiedSampleWithSizeReduce(boolean withReplacement, long seed, int keyIndex, Map<Object, Integer> sampleNumsMap) {
+        public StratifiedSampleWithSizeReduce(boolean withReplacement,
+                                              long seed,
+                                              int keyIndex,
+                                              Integer size,
+                                              String sizes) {
             this.withReplacement = withReplacement;
             this.seed = seed;
             this.keyIndex = keyIndex;
-            this.sampleNumsMap = sampleNumsMap;
+            if (null != size) {
+                //step2.1 if ratio is number, there is same ratio for each group, so we do nothing but sample directly
+                sampleSize = size;
+            } else {
+                //step2.2 :the string ratio defines different ratio per group， we should
+                sampleNumsMap = new HashMap<>();
+                String[] keyRatios = sizes.split(StratifiedSampleBatchOp.COLUMN_DELIMITER);
+                for (String keyRatio : keyRatios) {
+                    String[] sizeArray = keyRatio.split(StratifiedSampleBatchOp.KEY_VALUE_DELIMITER);
+                    int groupSize = new Integer(sizeArray[1]);
+                    Preconditions.checkArgument(groupSize >= 0, "SampleSize must be non-negative!");
+                    sampleNumsMap.put(sizeArray[0], groupSize);
+                }
+            }
         }
 
         @Override
         public void reduce(Iterable<T> values, Collector<T> out) throws Exception {
-
-            Iterator<IntermediateSampleData<T>> sampled;
-            Iterator<T> iterator = values.iterator();
-            if (iterator.hasNext()){
-                sampled = reservoirSample(iterator);
-                while (sampled.hasNext()) {
-                    out.collect(sampled.next().getElement());
+            StratifiedSampleBatchOp.GetFirstIterator iterator = new StratifiedSampleBatchOp.GetFirstIterator(values.iterator());
+            Integer numSample = sampleSize;
+            if (null == numSample) {
+                Row first = (Row)iterator.getFirst();
+                if (null != first) {
+                    Object key = first.getField(keyIndex);
+                    numSample = sampleNumsMap.get(key);
+                    Preconditions.checkNotNull(numSample, key + "is not contained in map!");
+                } else {
+                    return;
                 }
             }
-        }
 
-        protected Iterator<IntermediateSampleData<T>> reservoirSample(Iterator<T> input){
-
-            T next = input.next();
-            Row row = (Row)next;
-            Object keys = row.getField(keyIndex);
-            int numSamples = sampleNumsMap.get(keys).intValue();
-            if (numSamples == 0) {
-                return new ArrayList<IntermediateSampleData<T>>().iterator();
-            }
-            long seedAndIndex = seed + keys.hashCode();
-            Random random = new XORShiftRandom(seedAndIndex);
-            // This queue holds a fixed number of elements with the top K weight for current partition.
-            PriorityQueue<IntermediateSampleData<T>> queue = new PriorityQueue<IntermediateSampleData<T>>(numSamples);
-            IntermediateSampleData<T> smallest = null;
-
+            DistributedRandomSampler<T> sampler;
             if (withReplacement) {
-                for (int i = 0; i < numSamples; i++) {
-                    queue.add(new IntermediateSampleData<T>(random.nextDouble(), next));
-                    smallest = queue.peek();
-                }
+                sampler = new ReservoirSamplerWithReplacement<>(numSample, seed);
             } else {
-                int index = 0;
-                while (input.hasNext()) {
-                    T element = input.next();
-                    if (index == numSamples) {
-                        break;
-                    }
-                    queue.add(new IntermediateSampleData<T>(random.nextDouble(), element));
-                    smallest = queue.peek();
+                sampler = new ReservoirSamplerWithoutReplacement<>(numSample, seed);
+            }
 
-                    index++;
-                }
+            Iterator<T> sampled = sampler.sample(iterator);
+            while (sampled.hasNext()) {
+                out.collect(sampled.next());
             }
-            while (input.hasNext()) {
-                T element = input.next();
-                // To sample with replacement, we generate K random weights for each element, so that it's
-                // possible to be selected multi times.
-                for (int i = 0; i < numSamples; i++) {
-                    // If current element weight is larger than the smallest one in queue, remove the element
-                    // with the smallest weight, and append current element into the queue.
-                    double rand = random.nextDouble();
-                    if (rand > smallest.getWeight()) {
-                        queue.remove();
-                        queue.add(new IntermediateSampleData<T>(rand, element));
-                        smallest = queue.peek();
-                    }
-                }
-            }
-            return queue.iterator();
         }
     }
 }
