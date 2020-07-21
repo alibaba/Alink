@@ -15,6 +15,9 @@ import org.apache.flink.types.Row;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Test cases for linear regression.
+ */
 public class LinearRegressionTest {
     Row[] vecrows = new Row[] {
         Row.of("$3$0:1.0 1:7.0 2:9.0", "1.0 7.0 9.0", 1.0, 7.0, 9.0, 16.8),
@@ -23,11 +26,13 @@ public class LinearRegressionTest {
         Row.of("$3$0:1.0 1:3.0 2:4.0", "1.0 3.0 4.0", 1.0, 3.0, 4.0, 8.0)
     };
     String[] veccolNames = new String[] {"svec", "vec", "f0", "f1", "f2", "label"};
-    BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
-    StreamOperator svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
+
 
     @Test
     public void regressionPipelineTest() throws Exception {
+        BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
+        StreamOperator svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
+
         String[] xVars = new String[] {"f0", "f1", "f2"};
         String yVar = "label";
         String vec = "vec";
@@ -35,16 +40,20 @@ public class LinearRegressionTest {
         LinearRegression linear = new LinearRegression()
             .setLabelCol(yVar)
             .setFeatureCols(xVars)
+            .setMaxIter(20)
+            .setOptimMethod("newton")
             .setPredictionCol("linpred");
 
         LinearRegression vlinear = new LinearRegression()
             .setLabelCol(yVar)
             .setVectorCol(vec)
+            .setMaxIter(20)
             .setPredictionCol("vlinpred");
 
         LinearRegression svlinear = new LinearRegression()
             .setLabelCol(yVar)
             .setVectorCol(svec)
+            .setMaxIter(20)
             .setPredictionCol("svlinpred");
 
         Pipeline pl = new Pipeline().add(linear).add(vlinear).add(svlinear);
@@ -67,8 +76,8 @@ public class LinearRegressionTest {
         }
 
         // below is stream test code
-        model.transform(svecdata).print();
-        StreamOperator.execute();
+        // model.transform(svecdata).print();
+        // StreamOperator.execute();
     }
 
 }

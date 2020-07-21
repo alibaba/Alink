@@ -9,7 +9,7 @@ import com.alibaba.alink.operator.batch.evaluation.EvalBinaryClassBatchOp;
 import com.alibaba.alink.operator.batch.regression.FmRegressorPredictBatchOp;
 import com.alibaba.alink.operator.batch.regression.FmRegressorTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.common.fm.FmModelInfo;
+import com.alibaba.alink.operator.common.fm.FmClassifierModelInfo;
 import com.alibaba.alink.operator.common.fm.FmPredictBatchOp;
 import com.alibaba.alink.pipeline.classification.FmClassifier;
 import com.alibaba.alink.pipeline.classification.FmModel;
@@ -17,8 +17,7 @@ import com.alibaba.alink.pipeline.classification.FmModel;
 import org.junit.Test;
 
 /**
- * @author weibo zhao
- * @date 16/06/2020 8:46 PM
+ * Test cases for fm.
  */
 public class FmTrainOpTest {
     @Test
@@ -42,6 +41,7 @@ public class FmTrainOpTest {
             .setEpsilon(0.0001)
             .linkFrom(trainData);
         adagrad.lazyPrintModelInfo();
+
         new FmRegressorPredictBatchOp().setVectorCol("vec").setPredictionCol("pred")
             .setPredictionDetailCol("details")
             .linkFrom(adagrad, trainData)
@@ -70,15 +70,13 @@ public class FmTrainOpTest {
             .linkFrom(trainData);
 
         adagrad.lazyPrintModelInfo();
-        adagrad.lazyCollectModelInfo(new Consumer<FmModelInfo>() {
+        adagrad.lazyCollectModelInfo(new Consumer<FmClassifierModelInfo>() {
             @Override
-            public void accept(FmModelInfo modelinfo) {
-                String[] names = modelinfo.getColNames();
+            public void accept(FmClassifierModelInfo modelinfo) {
+                String[] names = modelinfo.getFeatureColNames();
                 String tast = modelinfo.getTask();
                 double[][] factors = modelinfo.getFactors();
-                int[] dim = modelinfo.getDim();
-                int[] pos = modelinfo.getFiledPos();
-                int size = modelinfo.getVectorSize();
+                int size = modelinfo.getNumFeature();
             }
         });
 

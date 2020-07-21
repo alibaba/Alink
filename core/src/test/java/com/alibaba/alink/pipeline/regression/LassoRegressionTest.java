@@ -5,16 +5,16 @@ import java.util.List;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
-import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 
 import org.apache.flink.types.Row;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Test cases for lasso regression.
+ */
 public class LassoRegressionTest {
     Row[] vecrows = new Row[] {
         Row.of("$3$0:1.0 1:7.0 2:9.0", "1.0 7.0 9.0", 1.0, 7.0, 9.0, 16.8),
@@ -23,12 +23,14 @@ public class LassoRegressionTest {
         Row.of("$3$0:1.0 1:3.0 2:4.0", "1.0 3.0 4.0", 1.0, 3.0, 4.0, 8.0)
     };
     String[] veccolNames = new String[] {"svec", "vec", "f0", "f1", "f2", "label"};
-    BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
-    StreamOperator svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
+
 
     @Test
     public void regressionPipelineTest() throws Exception {
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
+        BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
+        //StreamOperator svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
+
+//        MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
 
         String[] xVars = new String[] {"f0", "f1", "f2"};
         String yVar = "label";
@@ -38,17 +40,22 @@ public class LassoRegressionTest {
             .setLabelCol(yVar)
             .setFeatureCols(xVars)
             .setLambda(0.01)
+            .setMaxIter(20)
+            .setOptimMethod("owlqn")
             .setPredictionCol("linpred");
 
         LassoRegression vlasso = new LassoRegression()
             .setLabelCol(yVar)
             .setVectorCol(vec)
+            .setMaxIter(20)
             .setLambda(0.01)
-            .setPredictionCol("vlinpred");
+            .setOptimMethod("newton")
+            .setPredictionCol("vlinpred").enableLazyPrintModelInfo();
 
         LassoRegression svlasso = new LassoRegression()
             .setLabelCol(yVar)
             .setVectorCol(svec)
+            .setMaxIter(20)
             .setLambda(0.01)
             .setPredictionCol("svlinpred");
 
@@ -70,7 +77,7 @@ public class LassoRegressionTest {
             }
         }
         // below is stream test code
-        model.transform(svecdata).print();
-        StreamOperator.execute();
+        // model.transform(svecdata).print();
+        // StreamOperator.execute();
     }
 }

@@ -10,27 +10,29 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 /**
- * FmModelInfoBatchOp can be linked to the output of BaseFmTrainBatchOp to summary the Fm model.
+ * FmClassifierModelInfoBatchOp can be linked to the output of BaseFmTrainBatchOp to info the Fm model.
  */
-public class FmModelInfoBatchOp
-    extends ExtractModelInfoBatchOp<FmModelInfo, FmModelInfoBatchOp> {
+public class FmClassifierModelInfoBatchOp
+    extends ExtractModelInfoBatchOp<FmClassifierModelInfo, FmClassifierModelInfoBatchOp> {
     private TypeInformation labelType;
-    public FmModelInfoBatchOp(TypeInformation labelType) {
+
+    public FmClassifierModelInfoBatchOp(TypeInformation labelType) {
         this(new Params());
         this.labelType = labelType;
     }
 
     /**
      * construct function.
+     *
      * @param params
      */
-    public FmModelInfoBatchOp(Params params) {
+    public FmClassifierModelInfoBatchOp(Params params) {
         super(params);
     }
 
     @Override
-    protected FmModelInfo createModelInfo(List<Row> rows) {
-        return new FmModelInfo(rows, labelType);
+    protected FmClassifierModelInfo createModelInfo(List<Row> rows) {
+        return new FmClassifierModelInfo(rows, labelType);
     }
 
     @Override

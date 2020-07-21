@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.FmDataFormat;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 
@@ -13,49 +12,60 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.types.Row;
 
 /**
- * Model info of FM.
+ * Model info of FmRegressor.
  */
-public class FmModelInfo {
+public class FmRegressorModelInfo {
 
-    private int[] dim;
-    private String task;
-    private int vectorSize;
-    private FmDataFormat factors;
-    private int[] filedPos;
-    private String[] colNames;
+    protected boolean hasIntercept;
+    protected boolean hasLinearItem;
+    protected int numFactor;
+    protected String task;
+    protected int numFeature;
+    protected FmDataFormat factors;
+    protected String[] featureColNames;
+    protected Object[] labelValues;
 
-    public int[] getDim() {
-        return dim;
+    public boolean hasIntercept() {
+        return hasIntercept;
+    }
+
+    public boolean hasLinearItem() {
+        return hasLinearItem;
+    }
+
+    public int getNumFactor() {
+        return numFactor;
     }
 
     public String getTask() {
         return task;
     }
 
-    public int getVectorSize() {
-        return vectorSize;
+    public int getNumFeature() {
+        return numFeature;
     }
 
     public double[][] getFactors() {
         return factors.factors;
     }
 
-    public int[] getFiledPos() {
-        return filedPos;
+    public String[] getFeatureColNames() {
+        return featureColNames;
     }
 
-    public String[] getColNames() {
-        return colNames;
-    }
-
-    public FmModelInfo(List<Row> rows, TypeInformation labelType) {
+    public FmRegressorModelInfo(List<Row> rows, TypeInformation labelType) {
         FmModelData modelData = new FmModelDataConverter(labelType).load(rows);
-        this.dim = modelData.dim;
+        this.hasIntercept = modelData.dim[0] == 1;
+        this.hasLinearItem = modelData.dim[1] == 1;
+        this.numFactor = modelData.dim[2];
         this.task = modelData.task.toString();
-        this.vectorSize = modelData.vectorSize;
-        this.colNames = modelData.featureColNames;
-        this.filedPos = modelData.fieldPos;
+        this.numFeature = modelData.vectorSize;
+        this.featureColNames = modelData.featureColNames;
         this.factors = modelData.fmModel;
+        processLabelValues(modelData);
+    }
+
+    protected void processLabelValues(FmModelData modelData) {
     }
 
     @Override
@@ -63,27 +73,30 @@ public class FmModelInfo {
         StringBuilder sbd = new StringBuilder();
         DecimalFormat df = new DecimalFormat("#0.00000000");
 
-        sbd.append(PrettyDisplayUtils.displayHeadline("meta info", '-'));
+        sbd.append(PrettyDisplayUtils.displayHeadline("model meta info", '-'));
         Map<String, String> map = new HashMap<>();
-        map.put("vectorSize", String.valueOf(vectorSize));
-        map.put("task", task);
-        map.put("dim", JsonConverter.toJson(dim));
-        if (filedPos != null) {
-            map.put("filedPos", JsonConverter.toJson(filedPos));
-        }
+        map.put("numFeature", String.valueOf(numFeature));
+        map.put("hasIntercept", String.valueOf(hasIntercept));
+        map.put("hasLinearItem", String.valueOf(hasLinearItem));
+        map.put("numFactor", String.valueOf(numFactor));
         double bias = factors.bias;
         map.put("bias", String.valueOf(bias));
-        sbd.append(PrettyDisplayUtils.displayMap(map, 3, true) + "\n");
+        sbd.append(PrettyDisplayUtils.displayMap(map, 3, false) + "\n");
+
+        if (labelValues != null && labelValues.length > 1) {
+            sbd.append(PrettyDisplayUtils.displayHeadline("model label values", '-'));
+            sbd.append(PrettyDisplayUtils.displayList(java.util.Arrays.asList(labelValues)) + "\n");
+        }
 
         sbd.append(PrettyDisplayUtils.displayHeadline("model info", '-'));
-        int k = dim[2];
-        if (colNames != null) {
-            int printSize = colNames.length < 10 ? colNames.length : 10;
+        int k = numFactor;
+        if (featureColNames != null) {
+            int printSize = featureColNames.length < 10 ? featureColNames.length : 10;
             Object[][] out = new Object[printSize + 1][3];
 
             for (int i = 0; i < printSize; ++i) {
-                out[i][0] = colNames[i];
-                if (dim[1] > 0) {
+                out[i][0] = featureColNames[i];
+                if (hasLinearItem) {
                     out[i][1] = df.format(factors.linearItems[i]);
                 } else {
                     out[i][1] = df.format(0.0);
@@ -95,7 +108,7 @@ public class FmModelInfo {
                 }
                 out[i][2] = factor;
             }
-            if (colNames.length >= 10) {
+            if (featureColNames.length >= 10) {
                 for (int i = 0; i < 3; ++i) {
                     out[printSize - 1][i] = "... ...";
                 }
@@ -105,12 +118,12 @@ public class FmModelInfo {
                 new String[] {"colName", "linearItem", "factor"}, null,
                 printSize, 3));
         } else {
-            int printSize = vectorSize < 10 ? vectorSize : 10;
+            int printSize = numFeature < 10 ? numFeature : 10;
             Object[][] out = new Object[printSize + 1][3];
 
             for (int i = 0; i < printSize; ++i) {
                 out[i][0] = String.valueOf(i);
-                if (dim[1] > 0) {
+                if (hasLinearItem) {
                     out[i][1] = df.format(factors.linearItems[i]);
                 } else {
                     out[i][1] = df.format(0.0);
@@ -122,7 +135,7 @@ public class FmModelInfo {
                 }
                 out[i][2] = factor;
             }
-            if (vectorSize >= 10) {
+            if (numFeature >= 10) {
                 for (int i = 0; i < 3; ++i) {
                     out[printSize - 1][i] = "... ...";
                 }

@@ -1,20 +1,19 @@
 package com.alibaba.alink.operator.common.linear;
 
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.classification.SoftmaxPredictParams;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
 
 import static com.alibaba.alink.common.utils.JsonConverter.gson;
 
@@ -24,6 +23,7 @@ import static com.alibaba.alink.common.utils.JsonConverter.gson;
  */
 public class SoftmaxModelMapper extends RichModelMapper {
 
+	private static final long serialVersionUID = -4309479266141950255L;
 	protected int vectorColIndex = -1;
 	private LinearModelData model;
 	private int[] featureIdx;
@@ -73,7 +73,7 @@ public class SoftmaxModelMapper extends RichModelMapper {
 
 		double t;
 		for (int k = 0; k < lableSize - 1; k++) {
-			t = MatVecOp.dot(aVector, coefVectors[k]);
+			t = FeatureLabelUtil.dot(aVector, coefVectors[k]);
 			if (t > maxVal) {
 				maxVal = t;
 				maxIdx = k;
@@ -112,7 +112,7 @@ public class SoftmaxModelMapper extends RichModelMapper {
 
 		double s = 1;
 		for (int k = 0; k < k1 - 1; k++) {
-			probs[k] = Math.exp(MatVecOp.dot(vector, coefVectors[k]));
+			probs[k] = Math.exp(FeatureLabelUtil.dot(vector, coefVectors[k]));
 			s += probs[k];
 		}
 		probs[k1 - 1] = 1.0;

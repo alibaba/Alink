@@ -18,6 +18,7 @@ public class OptimVariable {
     public final static String hessian = "hessian";
     public final static String sKyK = "sKyK";
     public final static String gradHessAllReduce = "gradHessAllReduce";
+    public final static String convergenceInfo = "convergenceInfo";
     public final static String lossCurve = "lossCurve";
     public final static String objFunc = "objFunc";
     public final static int numCorrections = 10;

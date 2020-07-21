@@ -1,4 +1,4 @@
-package com.alibaba.alink.pipeline.classification;
+package com.alibaba.alink.operator.batch.classification;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,19 +8,16 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
-import com.alibaba.alink.pipeline.Pipeline;
-import com.alibaba.alink.pipeline.PipelineModel;
 
 import org.apache.flink.types.Row;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Test cases for svm pipeline.
+ * Test cases for lr.
  */
-public class SvmTest {
+public class LogisticRegressionTest {
 
 	AlgoOperator getData(boolean isBatch) {
 		Row[] array = new Row[] {
@@ -44,59 +41,54 @@ public class SvmTest {
 	}
 
 	@Test
-	public void pipelineTest() throws Exception {
+	public void batchTest() throws Exception {
 		MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
 
 		String[] xVars = new String[] {"f0", "f1", "f2", "f3"};
 		String yVar = "labels";
 		String vectorName = "vec";
 		String svectorName = "svec";
+		BatchOperator trainData = (BatchOperator) getData(true);
 
-		LinearSvm svm = new LinearSvm()
+		LogisticRegressionTrainBatchOp svm = new LogisticRegressionTrainBatchOp()
 			.setLabelCol(yVar)
+			.setWithIntercept(false)
+			.setStandardization(false)
 			.setFeatureCols(xVars)
-			.setOptimMethod("gd")
-			.setPredictionCol("svmpred");
+			.setOptimMethod("lbfgs").linkFrom(trainData);
 
-		LinearSvm vectorSvm = new LinearSvm()
+		LogisticRegressionTrainBatchOp vectorSvm = new LogisticRegressionTrainBatchOp()
 			.setLabelCol(yVar)
-			.setVectorCol(vectorName)
-			.setPredictionCol("vsvmpred").enableLazyPrintModelInfo().enableLazyPrintTrainInfo();
+			.setWithIntercept(false)
+			.setStandardization(false)
+			.setVectorCol(vectorName).linkFrom(trainData);
 
-		LinearSvm sparseVectorSvm = new LinearSvm()
+		LogisticRegressionTrainBatchOp sparseVectorSvm = new LogisticRegressionTrainBatchOp()
 			.setLabelCol(yVar)
 			.setVectorCol(svectorName)
-			.setOptimMethod("lbfgs")
-			.setMaxIter(10)
-			.setPredictionCol("svsvmpred")
-			.setPredictionDetailCol("detail");
+			.setWithIntercept(false)
+			.setStandardization(false)
+			.setOptimMethod("newton")
+			.setMaxIter(10).linkFrom(trainData);
 
+		BatchOperator result1 = new LogisticRegressionPredictBatchOp()
+			.setPredictionCol("lrpred").linkFrom(svm, trainData);
 
-		Pipeline plSvm = new Pipeline().add(svm).add(vectorSvm).add(sparseVectorSvm);
-		BatchOperator trainData = (BatchOperator) getData(true);
-		PipelineModel model = plSvm.fit(trainData);
+		BatchOperator result2 = new LogisticRegressionPredictBatchOp()
+			.setPredictionCol("svpred").linkFrom(vectorSvm, result1);
+		BatchOperator result3 = new LogisticRegressionPredictBatchOp()
+			.setPredictionCol("dvpred").linkFrom(sparseVectorSvm, result2);
 
-
-		BatchOperator result = model.transform(trainData).select(
-			new String[] {"labels", "svmpred", "vsvmpred", "svsvmpred"});
-
-		result.lazyCollect(new Consumer<List<Row>>() {
+		result3.lazyCollect(new Consumer<List<Row>>() {
 			@Override
 			public void accept(List<Row> d) {
 				for (Row row : d) {
-					for (int i = 1; i < 3; ++i) {
-						Assert.assertEquals(row.getField(0), row.getField(i));
+					for (int i = 7; i < 10; ++i) {
+						Assert.assertEquals(row.getField(6), row.getField(i));
 					}
 				}
 			}
 		});
-
-		// below is stream test code.
-		model.transform((StreamOperator)getData(false)).select(
-			new String[] {"labels", "svmpred", "vsvmpred", "svsvmpred"}).print();
-
-		StreamOperator.execute();
-
-
+		result3.collect();
 	}
 }

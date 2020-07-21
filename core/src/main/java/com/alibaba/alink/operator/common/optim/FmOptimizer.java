@@ -76,7 +76,7 @@ public class FmOptimizer {
      *
      * @return fm model.
      */
-    public DataSet<FmDataFormat> optimize() {
+    public DataSet<Tuple2<FmDataFormat, double[]>> optimize() {
         DataSet<Row> model = new IterativeComQueue()
             .initWithPartitionedData(OptimVariable.fmTrainData, trainData)
             .initWithBroadcastData(OptimVariable.fmModel, fmModel)
@@ -120,19 +120,32 @@ public class FmOptimizer {
             int numBatches = (batchSize == -1 || batchSize > numSamplesOnNode0) ? maxIter
                 : (numSamplesOnNode0 / batchSize + 1) * maxIter;
 
+            double[] lossCurve = context.getObj(OptimVariable.convergenceInfo);
+            if (lossCurve == null) {
+                lossCurve = new double[numBatches * 3];
+                context.putObj(OptimVariable.convergenceInfo, lossCurve);
+            }
+
+            int step = context.getStepNo() - 1;
             double[] loss = context.getObj(OptimVariable.lossAucAllReduce);
+            lossCurve[3 * step] = loss[0] / loss[1];
+            lossCurve[3 * step + 2] = loss[3] / loss[1];
             if (task.equals(Task.BINARY_CLASSIFICATION)) {
-                System.out.println("step : " + context.getStepNo() + " loss : "
+                lossCurve[3 * step + 1] = loss[2] / context.getNumTask();
+                System.out.println("step : " + step + " loss : "
                     + loss[0] / loss[1] + "  auc : " + loss[2] / context.getNumTask() + " accuracy : "
                     + loss[3] / loss[1] + " time : " + (System.currentTimeMillis()
                     - oldTime));
                 oldTime = System.currentTimeMillis();
+
             } else {
-                System.out.println("step : " + context.getStepNo() + " loss : "
+                lossCurve[3 * step + 1] = loss[2] / loss[1];
+                System.out.println("step : " + step + " loss : "
                     + loss[0] / loss[1] + "  mae : " + loss[2] / loss[1] + " mse : "
                     + loss[3] / loss[1] + " time : " + (System.currentTimeMillis()
                     - oldTime));
                 oldTime = System.currentTimeMillis();
+
             }
 
             if (context.getStepNo() == numBatches) {
@@ -161,7 +174,7 @@ public class FmOptimizer {
         public CalcLossAndEvaluation(int[] dim, String task) {
             this.dim = dim;
             this.task = Task.valueOf(task.toUpperCase());
-            if (task.equals(Task.REGRESSION)) {
+            if (this.task.equals(Task.REGRESSION)) {
                 double minTarget = -1.0e20;
                 double maxTarget = 1.0e20;
                 double d = maxTarget - minTarget;
@@ -271,7 +284,6 @@ public class FmOptimizer {
         public void calc(ComContext context) {
             double[] buffer = context.getObj(OptimVariable.factorAllReduce);
             FmDataFormat sigmaGii = context.getObj(OptimVariable.sigmaGii);
-
             FmDataFormat factors = ((List<FmDataFormat>)context.getObj(OptimVariable.fmModel)).get(0);
 
             int vectorSize = (buffer.length - 2 * dim[0]) / (2 * dim[2] + 2 * dim[1] + 1);
@@ -337,7 +349,6 @@ public class FmOptimizer {
         @Override
         public void calc(ComContext context) {
             ArrayList<Tuple3<Double, Double, Vector>> labledVectors = context.getObj(OptimVariable.fmTrainData);
-
             if (batchSize == -1) {
                 batchSize = labledVectors.size();
             }
@@ -452,26 +463,34 @@ public class FmOptimizer {
             if (context.getTaskId() != 0) {
                 return null;
             }
+            double[] lossCurve = context.getObj(OptimVariable.convergenceInfo);
+
             FmDataFormat factors = ((List<FmDataFormat>)context.getObj(OptimVariable.fmModel)).get(0);
             List<Row> model = new ArrayList<>();
-            model.add(Row.of(JsonConverter.toJson(factors)));
+            model.add(Row.of(0, JsonConverter.toJson(factors)));
+            model.add(Row.of(1, JsonConverter.toJson(lossCurve)));
             return model;
         }
     }
 
-    public class ParseRowModel extends RichMapPartitionFunction<Row, FmDataFormat> {
+    public class ParseRowModel extends RichMapPartitionFunction<Row, Tuple2<FmDataFormat, double[]>> {
         private static final long serialVersionUID = -2078134573230730223L;
 
         @Override
         public void mapPartition(Iterable<Row> iterable,
-                                 Collector<FmDataFormat> collector) throws Exception {
+                                 Collector<Tuple2<FmDataFormat, double[]>> collector) throws Exception {
             int taskId = getRuntimeContext().getIndexOfThisSubtask();
             if (taskId == 0) {
+                FmDataFormat factor = new FmDataFormat();
+                double[] cinfo = new double[0];
                 for (Row row : iterable) {
-
-                    FmDataFormat factor = JsonConverter.fromJson((String)row.getField(0), FmDataFormat.class);
-                    collector.collect(factor);
+                    if ((int)row.getField(0) == 0) {
+                        factor = JsonConverter.fromJson((String)row.getField(1), FmDataFormat.class);
+                    } else {
+                        cinfo = JsonConverter.fromJson((String)row.getField(1), double[].class);
+                    }
                 }
+                collector.collect(Tuple2.of(factor, cinfo));
             }
         }
     }
@@ -529,5 +548,4 @@ public class FmOptimizer {
         }
         return Tuple2.of(y, vx);
     }
-
 }

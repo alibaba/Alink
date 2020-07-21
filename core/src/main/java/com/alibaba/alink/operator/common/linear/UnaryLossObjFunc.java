@@ -15,7 +15,8 @@ import org.apache.flink.ml.api.misc.param.Params;
  * Unary loss object function.
  */
 public class UnaryLossObjFunc extends OptimObjFunc {
-    private UnaryLossFunc unaryLossFunc;
+	private static final long serialVersionUID = 1178693053439209380L;
+	private UnaryLossFunc unaryLossFunc;
 
     /**
      * Constructor.

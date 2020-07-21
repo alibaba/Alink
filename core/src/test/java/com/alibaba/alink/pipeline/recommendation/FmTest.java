@@ -1,14 +1,7 @@
 package com.alibaba.alink.pipeline.recommendation;
 
-import java.util.function.Consumer;
-
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.FmClassifierTrainBatchOp;
-import com.alibaba.alink.operator.batch.dataproc.JsonValueBatchOp;
-import com.alibaba.alink.operator.batch.evaluation.EvalBinaryClassBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.common.fm.FmModelInfo;
-import com.alibaba.alink.operator.common.fm.FmPredictBatchOp;
 import com.alibaba.alink.pipeline.classification.FmClassifier;
 import com.alibaba.alink.pipeline.classification.FmModel;
 import com.alibaba.alink.pipeline.regression.FmRegressor;
@@ -41,7 +34,8 @@ public class FmTest {
             .setEpsilon(0.0001)
             .setPredictionCol("pred")
             .setPredictionDetailCol("details")
-            .enableLazyPrintModelInfo();
+            .enableLazyPrintModelInfo()
+            .enableLazyPrintTrainInfo();
 
         FmModel model = adagrad.fit(trainData);
         BatchOperator result = model.transform(trainData);
@@ -69,7 +63,8 @@ public class FmTest {
             .setEpsilon(0.0001)
             .setPredictionCol("pred")
             .setPredictionDetailCol("details")
-            .enableLazyPrintModelInfo();
+            .enableLazyPrintModelInfo()
+            .enableLazyPrintTrainInfo();
 
         FmModel model = adagrad.fit(trainData);
         BatchOperator result = model.transform(trainData);

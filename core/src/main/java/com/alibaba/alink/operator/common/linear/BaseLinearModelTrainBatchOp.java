@@ -1,42 +1,65 @@
 package com.alibaba.alink.operator.common.linear;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.model.ModelParamName;
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.linear.unarylossfunc.*;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.LogLossFunc;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.PerceptronLossFunc;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.SmoothHingeLossFunc;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.SquareLossFunc;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.SvrLossFunc;
 import com.alibaba.alink.operator.common.optim.Lbfgs;
 import com.alibaba.alink.operator.common.optim.OptimizerFactory;
 import com.alibaba.alink.operator.common.optim.Owlqn;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.SparseVectorSummary;
 import com.alibaba.alink.params.regression.LassoRegTrainParams;
 import com.alibaba.alink.params.regression.LinearSvrTrainParams;
 import com.alibaba.alink.params.regression.RidgeRegTrainParams;
 import com.alibaba.alink.params.shared.linear.HasL1;
+import com.alibaba.alink.params.shared.linear.HasL2;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
-import org.apache.flink.api.common.functions.*;
+import com.alibaba.alink.params.shared.linear.LinearTrainParams.OptimMethod;
+
+import org.apache.flink.api.common.functions.AbstractRichFunction;
+import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.MapPartitionFunction;
+import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
+import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple5;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Base class of linear model training. Linear binary classification and linear regression algorithms should inherit
@@ -44,7 +67,9 @@ import java.util.List;
  *
  * @param <T> parameter of this class. Maybe the Svm, linearRegression or Lr parameter.
  */
-public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrainBatchOp<T>> extends BatchOperator<T> {
+public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrainBatchOp<T>> extends BatchOperator<T>
+    implements WithTrainInfo<LinearModelTrainInfo, T> {
+    private static final long serialVersionUID = 6162495789625212086L;
     private String modelName;
     private LinearModelType linearModelType;
     private static final int NUM_FEATURE_THRESHOLD = 10000;
@@ -70,125 +95,453 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
         // Get parameters of this algorithm.
         Params params = getParams();
         // Get type of processing: regression or not
-        boolean isRegProc = getIsRegProc(params, linearModelType, modelName);
-        // Get label info : including label values and label type.
-        Tuple2<DataSet<Object>, TypeInformation> labelInfo = getLabelInfo(in, params, isRegProc);
-        // Transform data to Tuple3 format.//weight, label, feature vector.
-        DataSet<Tuple3<Double, Double, Vector>> initData = transform(in, params, labelInfo.f0, isRegProc);
-        // Get statistics variables : including vector size, mean and variance of train data.
-        Tuple2<DataSet<Integer>, DataSet<DenseVector[]>>
-            statInfo = getStatInfo(initData, params.get(LinearTrainParams.STANDARDIZATION));
-        // Do standardization and interception to train data.
-        DataSet<Tuple3<Double, Double, Vector>> trainData = preProcess(initData, params, statInfo.f1);
+        final boolean isRegProc = getIsRegProc(params, linearModelType, modelName);
+        final boolean standardization = params.get(LinearTrainParams.STANDARDIZATION);
+        TypeInformation labelType = isRegProc ? Types.DOUBLE : in.getColTypes()[TableUtil
+            .findColIndexWithAssertAndHint(in.getColNames(), params.get(LinearTrainParams.LABEL_COL))];
+
+        // Transform data to Tuple3 format <weight, label, feature vector>.
+        DataSet<Tuple3<Double, Object, Vector>> initData = transform(in, params, isRegProc, standardization);
+
+        DataSet<Tuple3<DenseVector[], Object[], Integer>> utilInfo = getUtilInfo(initData, standardization, isRegProc);
+
+        DataSet<DenseVector[]> meanVar = utilInfo.map(
+            new MapFunction<Tuple3<DenseVector[], Object[], Integer>, DenseVector[]>() {
+                private static final long serialVersionUID = 7127767376687624403L;
+
+                @Override
+                public DenseVector[] map(Tuple3<DenseVector[], Object[], Integer> value)
+                    throws Exception {
+                    return value.f0;
+                }
+            });
+
+        DataSet<Integer> featSize = utilInfo.map(
+            new MapFunction<Tuple3<DenseVector[], Object[], Integer>, Integer>() {
+                private static final long serialVersionUID = 2773811388068064638L;
+
+                @Override
+                public Integer map(Tuple3<DenseVector[], Object[], Integer> value)
+                    throws Exception {
+                    return value.f2;
+                }
+            });
+
+        DataSet<Object[]> labelValues = utilInfo.flatMap(
+            new FlatMapFunction<Tuple3<DenseVector[], Object[], Integer>, Object[]>() {
+
+                private static final long serialVersionUID = 5375954526931728363L;
+
+                @Override
+                public void flatMap(Tuple3<DenseVector[], Object[], Integer> value,
+                                    Collector<Object[]> out)
+                    throws Exception {
+                    if (!isRegProc) {
+                        Preconditions.checkState((value.f1.length == 2),
+                            "labels count should be 2 in in classification algo.");
+                    }
+
+                    out.collect(value.f1);
+                }
+            });
+
+        DataSet<Tuple3<Double, Double, Vector>>
+            trainData = preProcess(initData, params, isRegProc, meanVar, labelValues);
         // Solve the optimization problem.
-        DataSet<Tuple2<DenseVector, double[]>> coefVectorSet = optimize(params, statInfo.f0,
+        DataSet<Tuple2<DenseVector, double[]>> coefVectorSet = optimize(params, featSize,
             trainData, linearModelType, MLEnvironmentFactory.get(getMLEnvironmentId()));
-        // Prepare the meta info of linear model.
-        DataSet<Params> meta = labelInfo.f0
-            .mapPartition(new CreateMeta(modelName, linearModelType, isRegProc, params))
+        //// Prepare the meta info of linear model.
+        DataSet<Params> meta = labelValues
+            .mapPartition(new CreateMeta(modelName, linearModelType, params))
             .setParallelism(1);
         // Build linear model rows, the format to be output.
         DataSet<Row> modelRows;
         String[] featureColTypes = getFeatureTypes(in, params.get(LinearTrainParams.FEATURE_COLS));
         modelRows = coefVectorSet
-            .mapPartition(new BuildModelFromCoefs(labelInfo.f1,
+            .mapPartition(new BuildModelFromCoefs(labelType,
                 params.get(LinearTrainParams.FEATURE_COLS),
                 params.get(LinearTrainParams.STANDARDIZATION),
                 params.get(LinearTrainParams.WITH_INTERCEPT), featureColTypes))
             .withBroadcastSet(meta, META)
-            .withBroadcastSet(statInfo.f1, MEAN_VAR)
+            .withBroadcastSet(meanVar, MEAN_VAR)
             .setParallelism(1);
         // Convert the model rows to table.
-        this.setOutput(modelRows, new LinearModelDataConverter(labelInfo.f1).getModelSchema());
+        this.setOutput(modelRows, new LinearModelDataConverter(labelType).getModelSchema());
+
+        this.setSideOutputTables(getSideTablesOfCoefficient(modelRows, initData, featSize,
+            params.get(LinearTrainParams.FEATURE_COLS),
+            params.get(LinearTrainParams.WITH_INTERCEPT),
+            getMLEnvironmentId()));
         return (T)this;
     }
 
-    /**
-     * @param trainData       train data.
-     * @param standardization do standardization or not.
-     * @return return one element. 1. vector size. 2. mean and variance of train data for standardization
-     */
-    private Tuple2<DataSet<Integer>, DataSet<DenseVector[]>> getStatInfo(
-        DataSet<Tuple3<Double, Double, Vector>> trainData,
-        final boolean standardization) {
-        if (standardization) {
-            DataSet<BaseVectorSummary> summary = StatisticsHelper.summary(trainData.map(
-                new MapFunction<Tuple3<Double, Double, Vector>, Vector>() {
-                    @Override
-                    public Vector map(Tuple3<Double, Double, Vector> value) throws Exception {
-                        return value.f2;
-                    }
-                }).withForwardedFields());
+    public static DataSet<Tuple3<DenseVector[], Object[], Integer>> getUtilInfo(
+        DataSet<Tuple3<Double, Object, Vector>> initData,
+        boolean standardization,
+        boolean isRegProc) {
+        return initData.filter(
+            new FilterFunction<Tuple3<Double, Object, Vector>>() {
+                private static final long serialVersionUID = 4129133776653527498L;
 
-            DataSet<Integer> coefficientDim = summary.map(new MapFunction<BaseVectorSummary, Integer>() {
                 @Override
-                public Integer map(BaseVectorSummary value) throws Exception {
-                    return value.vectorSize();
-                }
-            });
-
-            DataSet<DenseVector[]> meanVar = summary.map(new MapFunction<BaseVectorSummary, DenseVector[]>() {
-                @Override
-                public DenseVector[] map(BaseVectorSummary value) {
-                    if (value instanceof SparseVectorSummary) {
-                        // If train data format is sparse vector, use maxAbs as variance and set mean zero,
-                        // then, the standardization operation will turn into a scale operation.
-                        // Because if do standardization to sparse vector, vector will be convert to be a dense one.
-                        DenseVector max = ((SparseVector)value.max()).toDenseVector();
-                        DenseVector min = ((SparseVector)value.min()).toDenseVector();
-                        for (int i = 0; i < max.size(); ++i) {
-                            max.set(i, Math.max(Math.abs(max.get(i)), Math.abs(min.get(i))));
-                            min.set(i, 0.0);
-                        }
-                        return new DenseVector[] {min, max};
+                public boolean filter(Tuple3<Double, Object, Vector> value) throws Exception {
+                    if (value.f0 < 0.0) {
+                        return true;
                     } else {
-                        return new DenseVector[] {(DenseVector)value.mean(),
-                            (DenseVector)value.standardDeviation()};
+                        return false;
                     }
                 }
-            });
-            return Tuple2.of(coefficientDim, meanVar);
-        } else {
-            // If not do standardization, the we use mapReduce to get vector Dim. Mean and var set zero vector.
-            DataSet<Integer> coefficientDim = trainData.mapPartition(
-                new MapPartitionFunction<Tuple3<Double, Double, Vector>, Integer>() {
-                    @Override
-                    public void mapPartition(Iterable<Tuple3<Double, Double, Vector>> values, Collector<Integer> out)
-                        throws Exception {
-                        int ret = -1;
-                        for (Tuple3<Double, Double, Vector> val : values) {
-                            if (val.f2 instanceof DenseVector) {
-                                ret = ((DenseVector)val.f2).getData().length;
-                                break;
-                            } else {
-                                int[] ids = ((SparseVector)val.f2).getIndices();
-                                for (int id : ids) {
-                                    ret = Math.max(ret, id + 1);
+            }).reduceGroup(
+            new GroupReduceFunction<Tuple3<Double, Object, Vector>, Tuple3<DenseVector[], Object[],
+                Integer>>() {
+                private static final long serialVersionUID = -4819473589070441623L;
+
+                @Override
+                public void reduce(Iterable<Tuple3<Double, Object, Vector>> values,
+                                   Collector<Tuple3<DenseVector[], Object[], Integer>> out)
+                    throws Exception {
+                    int size = -1;
+                    Set<Object> labelValues = new HashSet<>();
+                    DenseVector meanVar = null;
+                    boolean isSparse = false;
+                    boolean calcMeanVar = true;
+                    for (Tuple3<Double, Object, Vector> value : values) {
+                        isSparse = (value.f0 == -1.0) ? true : false;
+                        Tuple2<Integer, Object[]>
+                            labelVals = (Tuple2<Integer, Object[]>)value.f1;
+                        for (int i = 0; i < labelVals.f1.length; ++i) {
+                            labelValues.add(labelVals.f1[i]);
+                        }
+                        if (meanVar == null) {
+                            meanVar = (DenseVector)value.f2;
+                            calcMeanVar = (meanVar != null && meanVar.size() != 0);
+                            size = labelVals.f0;
+                        } else if (size == labelVals.f0) {
+                            if (calcMeanVar) {
+                                if (isSparse) {
+                                    for (int i = 0; i < meanVar.size(); ++i) {
+                                        meanVar.set(i, Math.max(meanVar.get(i), Math.abs(value.f2.get(i))));
+                                    }
+                                } else {
+                                    meanVar.plusEqual(value.f2);
                                 }
                             }
+                        } else {
+                            // only when data is sparse vector, size will be changed.
+                            if (calcMeanVar) {
+                                if (labelVals.f0 < size) {
+                                    for (int i = 0; i < labelVals.f0; ++i) {
+                                        meanVar.set(i, Math.max(meanVar.get(i), Math.abs(value.f2.get(i))));
+                                    }
+                                } else {
+                                    for (int i = 0; i < size; ++i) {
+                                        value.f2.set(i, Math.max(Math.abs(value.f2.get(i)), meanVar.get(i)));
+                                    }
+                                    meanVar = (DenseVector)value.f2;
+                                }
+                            }
+                            size = Math.max(size, labelVals.f0);
                         }
-                        out.collect(ret);
                     }
-                }).reduceGroup(new GroupReduceFunction<Integer, Integer>() {
+                    DenseVector[] meanAndVar = new DenseVector[2];
+                    Object[] labelssort = isRegProc ? labelValues.toArray() : orderLabels(labelValues);
+                    meanAndVar[0] = calcMeanVar ? new DenseVector(size) : new DenseVector(0);
+                    meanAndVar[1] = calcMeanVar ? new DenseVector(size) : new DenseVector(0);
+
+                    if (calcMeanVar) {
+                        if (isSparse) {
+                            meanAndVar[1] = meanVar;
+                            modifyMeanVar(standardization, meanAndVar);
+                        } else {
+                            for (int i = 0; i < size; ++i) {
+                                meanAndVar[0].set(i, meanVar.get(i) / meanVar.get(2 * size));
+                                meanAndVar[1].set(i, meanVar.get(size + i)
+                                    - meanVar.get(2 * size) * meanAndVar[0].get(i) * meanAndVar[0].get(i));
+                            }
+                            for (int i = 0; i < size; ++i) {
+                                meanAndVar[1].set(i, Math.max(0.0, meanAndVar[1].get(i)));
+                                meanAndVar[1].set(i, Math.sqrt(meanAndVar[1].get(i) / (meanVar.get(2 * size) - 1)));
+                            }
+                            modifyMeanVar(standardization, meanAndVar);
+                        }
+                    }
+                    out.collect(Tuple3.of(meanAndVar, labelssort, size));
+                }
+            });
+    }
+
+    public static Table[] getSideTablesOfCoefficient(DataSet<Row> modelRow,
+                                                     DataSet<Tuple3<Double, Object, Vector>> inputData,
+                                                     DataSet<Integer> vecSize,
+                                                     final String[] featureNames,
+                                                     final boolean hasInterception,
+                                                     long environmentId) {
+        DataSet<LinearModelData> model = modelRow.mapPartition(new MapPartitionFunction<Row, LinearModelData>() {
+            private static final long serialVersionUID = 2063366042018382802L;
+
+            @Override
+            public void mapPartition(Iterable<Row> values, Collector<LinearModelData> out) throws Exception {
+                List<Row> rows = new ArrayList<>();
+                for (Row row : values) {
+                    rows.add(row);
+                }
+                out.collect(new LinearModelDataConverter().load(rows));
+            }
+        }).setParallelism(1);
+
+        DataSet<Tuple5<String, String[], double[], double[], double[]>> allInfo = inputData
+            .mapPartition(
+                new RichMapPartitionFunction<Tuple3<Double, Object, Vector>, Tuple3<Integer, double[], double[]>>() {
+                    private static final long serialVersionUID = 8785824618242390100L;
+                    private int vectorSize;
+
+                    @Override
+                    public void open(Configuration parameters) throws Exception {
+                        super.open(parameters);
+                        this.vectorSize = (int)getRuntimeContext().getBroadcastVariable("vectorSize").get(0);
+                        if (hasInterception) {
+                            vectorSize--;
+                        }
+                    }
+
+                    @Override
+                    public void mapPartition(Iterable<Tuple3<Double, Object, Vector>> values,
+                                             Collector<Tuple3<Integer, double[], double[]>> out) throws Exception {
+                        int iter = 0;
+                        double[] mu = new double[vectorSize];
+                        double[] mu2 = new double[vectorSize];
+                        if (featureNames == null) {
+                            for (Tuple3<Double, Object, Vector> t3 : values) {
+                                if (t3.f0 < 0.0) {
+                                    continue;
+                                }
+                                if (t3.f2 instanceof SparseVector) {
+                                    SparseVector tmp = (SparseVector)t3.f2;
+                                    tmp.setSize(vectorSize);
+
+                                    double[] vals = tmp.getValues();
+                                    int[] idx = tmp.getIndices();
+                                    for (int i = 0; i < vals.length; ++i) {
+                                        if (hasInterception) {
+                                            if (idx[i] > 0) {
+                                                mu[idx[i] - 1] += vals[i];
+                                                mu2[idx[i] - 1] += vals[i] * vals[i];
+                                            }
+                                        } else {
+                                            mu[idx[i]] += vals[i];
+                                            mu2[idx[i]] += vals[i] * vals[i];
+                                        }
+                                    }
+                                    iter++;
+                                } else {
+                                    for (int i = 0; i < vectorSize; ++i) {
+                                        double val = t3.f2.get(i + (hasInterception ? 1 : 0));
+                                        mu[i] += val;
+                                        mu2[i] += val * val;
+                                    }
+                                    iter++;
+                                }
+                            }
+                        } else {
+                            for (Tuple3<Double, Object, Vector> t3 : values) {
+                                if (t3.f0 < 0.0) {
+                                    continue;
+                                }
+                                for (int i = 0; i < vectorSize; ++i) {
+                                    double val = t3.f2.get(i + (hasInterception ? 1 : 0));
+                                    mu[i] += val;
+                                    mu2[i] += val * val;
+                                }
+                                iter++;
+                            }
+                        }
+                        out.collect(Tuple3.of(iter, mu, mu2));
+                    }
+                }).withBroadcastSet(vecSize, "vectorSize")
+            .reduce(new ReduceFunction<Tuple3<Integer, double[], double[]>>() {
+                private static final long serialVersionUID = 7062783877162095989L;
+
                 @Override
-                public void reduce(Iterable<Integer> values, Collector<Integer> out) {
-                    int ret = -1;
-                    for (int vSize : values) {
-                        ret = Math.max(ret, vSize);
+                public Tuple3<Integer, double[], double[]> reduce(Tuple3<Integer, double[], double[]> t1,
+                                                                  Tuple3<Integer, double[], double[]> t2)
+                    throws Exception {
+                    t2.f0 = t1.f0 + t2.f0;
+                    for (int i = 0; i < t1.f1.length; ++i) {
+                        t2.f1[i] = t1.f1[i] + t2.f1[i];
+                        t2.f2[i] = t1.f2[i] + t2.f2[i];
                     }
-                    out.collect(ret);
+
+                    return t2;
+                }
+            })
+            .flatMap(new RichFlatMapFunction<Tuple3<Integer, double[], double[]>,
+                Tuple5<String, String[], double[], double[], double[]>>() {
+                private static final long serialVersionUID = 7815111101106759520L;
+                private DenseVector coefVec;
+                private LinearModelData model;
+                private double[] cinfo;
+                private String[] colNames;
+
+                @Override
+                public void open(Configuration parameters) throws Exception {
+                    super.open(parameters);
+                    model = ((LinearModelData)getRuntimeContext().getBroadcastVariable("model").get(0));
+                    coefVec = model.coefVector;
+                    cinfo = model.convergenceInfo;
+                }
+
+                @Override
+                public void flatMap(Tuple3<Integer, double[], double[]> value,
+                                    Collector<Tuple5<String, String[], double[], double[], double[]>> out)
+                    throws Exception {
+                    double[] importance;
+                    if (featureNames == null) {
+                        colNames = new String[coefVec.size() - (hasInterception ? 1 : 0)];
+                        for (int i = 0; i < colNames.length; ++i) {
+                            colNames[i] = String.valueOf(i);
+                        }
+                    } else {
+                        colNames = featureNames;
+                    }
+
+                    if (hasInterception) {
+                        importance = new double[coefVec.size() - 1];
+                    } else {
+                        importance = new double[coefVec.size()];
+                    }
+                    for (int i = 0; i < value.f1.length; ++i) {
+
+                        double nu = value.f1[i] / value.f0;
+                        double sigma = value.f2[i] - value.f0 * nu * nu;
+                        if (value.f0 == 1) {
+                            sigma = 0.0;
+                        } else {
+                            sigma = Math.sqrt(Math.max(0.0, sigma) / (value.f0 - 1));
+                        }
+                        importance[i] = Math.abs(coefVec.get(i + (hasInterception ? 1 : 0)) * sigma);
+                    }
+
+                    out.collect(
+                        Tuple5.of(JsonConverter.toJson(model.getMetaInfo()), colNames, coefVec.getData(),
+                            importance, cinfo));
+
+                }
+            }).setParallelism(1).withBroadcastSet(model, "model");
+
+        DataSet<Row> importance = allInfo.mapPartition(
+            new MapPartitionFunction<Tuple5<String, String[], double[], double[], double[]>, Row>() {
+                private static final long serialVersionUID = -3263497114974298286L;
+
+                @Override
+                public void mapPartition(Iterable<Tuple5<String, String[], double[], double[], double[]>> tuple5s,
+                                         Collector<Row> out) throws Exception {
+
+                    String[] colNames = null;
+                    double[] importanceVals = null;
+                    for (Tuple5<String, String[], double[], double[], double[]> r : tuple5s) {
+                        colNames = r.f1;
+                        importanceVals = r.f3;
+                    }
+
+                    for (int i = 0; i < colNames.length; ++i) {
+                        out.collect(Row.of(colNames[i], importanceVals[i]));
+                    }
+                }
+            });
+        DataSet<Row> weights = allInfo.mapPartition(
+            new MapPartitionFunction<Tuple5<String, String[], double[], double[], double[]>, Row>() {
+                private static final long serialVersionUID = -6164289179429722407L;
+
+                @Override
+                public void mapPartition(Iterable<Tuple5<String, String[], double[], double[], double[]>> tuple5s,
+                                         Collector<Row> out) throws Exception {
+                    String[] colNames = null;
+                    double[] weights = null;
+                    for (Tuple5<String, String[], double[], double[], double[]> r : tuple5s) {
+                        colNames = r.f1;
+                        weights = r.f2;
+                    }
+                    if (weights.length == colNames.length) {
+                        for (int i = 0; i < colNames.length; ++i) {
+                            out.collect(Row.of(colNames[i], weights[i]));
+                        }
+                    } else {
+                        out.collect(Row.of("_intercept_", weights[0]));
+                        for (int i = 0; i < colNames.length; ++i) {
+                            out.collect(Row.of(colNames[i], weights[i + 1]));
+                        }
+                    }
                 }
             });
 
-            DataSet<DenseVector[]> meanVar = coefficientDim.map(new MapFunction<Integer, DenseVector[]>() {
+        DataSet<Row> summary = allInfo.mapPartition(
+            new MapPartitionFunction<Tuple5<String, String[], double[], double[], double[]>, Row>() {
+                private static final long serialVersionUID = -6164289179429722407L;
+                private final static int NUM_COLLECT_THRESHOLD = 10000;
                 @Override
-                public DenseVector[] map(Integer value) {
-                    return new DenseVector[] {new DenseVector(0), new DenseVector(0)};
+                public void mapPartition(Iterable<Tuple5<String, String[], double[], double[], double[]>> tuple5s,
+                                         Collector<Row> out) throws Exception {
+
+                    for (Tuple5<String, String[], double[], double[], double[]> r : tuple5s) {
+                        if (r.f1.length < NUM_COLLECT_THRESHOLD) {
+                            out.collect(Row.of(0, r.f0));
+                            out.collect(Row.of(1, JsonConverter.toJson(r.f1)));
+                            out.collect(Row.of(2, JsonConverter.toJson(r.f2)));
+                            out.collect(Row.of(3, JsonConverter.toJson(r.f3)));
+                            out.collect(Row.of(4, JsonConverter.toJson(r.f4)));
+                        } else {
+                            List<Tuple3<String, Double, Double>> array = new ArrayList<>(r.f1.length);
+                            int startIdx = hasInterception ? 1 : 0;
+                            for (int i = 0; i < r.f1.length; ++i) {
+                                array.add(Tuple3.of(r.f1[i], r.f2[i + startIdx], r.f3[i]));
+                            }
+                            array.sort(compare);
+                            System.out.println(array);
+                            String[] colName = new String[NUM_COLLECT_THRESHOLD];
+                            double[] weight = new double[NUM_COLLECT_THRESHOLD];
+                            double[] importance = new double[NUM_COLLECT_THRESHOLD];
+                            for (int i = 0; i < NUM_COLLECT_THRESHOLD / 2; ++i) {
+                                colName[i] = array.get(i).f0;
+                                weight[i] = array.get(i).f1;
+                                importance[i] = array.get(i).f2;
+                                int srcIdx = r.f1.length - i - 1;
+                                int destIdx = NUM_COLLECT_THRESHOLD - i - 1;
+                                colName[destIdx] = array.get(srcIdx).f0;
+                                weight[destIdx] = array.get(srcIdx).f1;
+                                importance[destIdx] = array.get(srcIdx).f2;
+                            }
+
+                            out.collect(Row.of(0, r.f0));
+                            out.collect(Row.of(1, JsonConverter.toJson(colName)));
+                            out.collect(Row.of(2, JsonConverter.toJson(weight)));
+                            out.collect(Row.of(3, JsonConverter.toJson(importance)));
+                            out.collect(Row.of(4, JsonConverter.toJson(r.f4)));
+                        }
+                    }
                 }
             });
-            return Tuple2.of(coefficientDim, meanVar);
-        }
+
+        Table summaryTable = DataSetConversionUtil.toTable(environmentId, summary, new TableSchema(
+            new String[] {"id", "info"}, new TypeInformation[] {Types.INT, Types.STRING}));
+        Table importanceTable = DataSetConversionUtil.toTable(environmentId, importance, new TableSchema(
+            new String[] {"col_name", "importance"}, new TypeInformation[] {Types.STRING, Types.DOUBLE}));
+        Table weightTable = DataSetConversionUtil.toTable(environmentId, weights, new TableSchema(
+            new String[] {"col_name", "weight"}, new TypeInformation[] {Types.STRING, Types.DOUBLE}));
+        return new Table[] {summaryTable, importanceTable, weightTable};
     }
+
+    public static Comparator compare = new Comparator<Tuple3<String, Double, Double>>() {
+        @Override
+        public int compare(Tuple3<String, Double, Double> o1, Tuple3<String, Double, Double> o2) {
+            if (o1.f2 < o2.f2) {
+                return 1;
+            } else if (o1.f2 > o2.f2) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+    };
 
     /**
      * order by the dictionary order,
@@ -203,9 +556,11 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
             tmpArr.add(row);
         }
         Object[] labels = tmpArr.toArray(new Object[0]);
-        Preconditions.checkState((labels.length == 2), "labels count should be 2 in 2 classification algo.");
+
+        Preconditions.checkState((labels.length >= 2), "labels count should be more than 2 in classification algo.");
         String str0 = labels[0].toString();
         String str1 = labels[1].toString();
+
         String positiveLabelValueString = (str1.compareTo(str0) > 0) ? str1 : str0;
 
         if (labels[1].toString().equals(positiveLabelValueString)) {
@@ -229,7 +584,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
     public static DataSet<Tuple2<DenseVector, double[]>> optimize(Params params,
                                                                   DataSet<Integer> vectorSize,
                                                                   DataSet<Tuple3<Double, Double, Vector>> trainData,
-                                                                  LinearModelType modelType,
+                                                                  final LinearModelType modelType,
                                                                   MLEnvironment session) {
         boolean hasInterceptItem = params.get(LinearTrainParams.WITH_INTERCEPT);
         String[] featureColNames = params.get(LinearTrainParams.FEATURE_COLS);
@@ -240,24 +595,27 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
         if (org.apache.commons.lang3.ArrayUtils.isEmpty(featureColNames)) {
             featureColNames = null;
         }
-
         DataSet<Integer> coefficientDim;
-
         if (vectorColName != null && vectorColName.length() != 0) {
-            coefficientDim = session.getExecutionEnvironment().fromElements(0)
-                .map(new DimTrans(hasInterceptItem, modelType))
-                .withBroadcastSet(vectorSize, VECTOR_SIZE);
+            coefficientDim = vectorSize
+                .map(new MapFunction<Integer, Integer>() {
+                    private static final long serialVersionUID = 5249103591725412746L;
+
+                    @Override
+                    public Integer map(Integer value) throws Exception {
+                        return value + (modelType.equals(LinearModelType.AFT) ? 1 : 0);
+                    }
+                });
         } else {
             coefficientDim = session.getExecutionEnvironment().fromElements(featureColNames.length
                 + (hasInterceptItem ? 1 : 0) + (modelType.equals(LinearModelType.AFT) ? 1 : 0));
         }
-
         // Loss object function
         DataSet<OptimObjFunc> objFunc = session.getExecutionEnvironment()
             .fromElements(getObjFunction(modelType, params));
 
         if (params.contains(LinearTrainParams.OPTIM_METHOD)) {
-            LinearTrainParams.OptimMethod method = params.get(LinearTrainParams.OPTIM_METHOD);
+            OptimMethod method = params.get(LinearTrainParams.OPTIM_METHOD);
             return OptimizerFactory.create(objFunc, trainData, coefficientDim, params, method).optimize();
         } else if (params.get(HasL1.L_1) > 0) {
             return new Owlqn(objFunc, trainData, coefficientDim, params).optimize();
@@ -303,54 +661,22 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
     }
 
     /**
-     * Get label info: including label values and label type.
-     *
-     * @param in        input train data in BatchOperator format.
-     * @param params    train parameters.
-     * @param isRegProc is regression process or not.
-     * @return label info.
-     */
-    private Tuple2<DataSet<Object>, TypeInformation> getLabelInfo(BatchOperator in,
-                                                                  Params params,
-                                                                  boolean isRegProc) {
-        String labelName = params.get(LinearTrainParams.LABEL_COL);
-        // Prepare label values
-        DataSet<Object> labelValues;
-        TypeInformation<?> labelType = null;
-        if (isRegProc) {
-            labelType = Types.DOUBLE;
-            labelValues = MLEnvironmentFactory.get(in.getMLEnvironmentId())
-                .getExecutionEnvironment().fromElements(new Object());
-        } else {
-            labelType = in.getColTypes()[TableUtil.findColIndexWithAssertAndHint(in.getColNames(), labelName)];
-            labelValues = in.select(new String[] {labelName}).distinct().getDataSet().map(
-                new MapFunction<Row, Object>() {
-                    @Override
-                    public Object map(Row row) {
-                        return row.getField(0);
-                    }
-                });
-        }
-        return Tuple2.of(labelValues, labelType);
-    }
-
-    /**
      * Transform train data to Tuple3 format.
      *
-     * @param in          train data in row format.
-     * @param params      train parameters.
-     * @param labelValues label values.
-     * @param isRegProc   is regression process or not.
+     * @param in        train data in row format.
+     * @param params    train parameters.
+     * @param isRegProc is regression process or not.
      * @return Tuple3 format train data <weight, label, vector></>.
      */
-    private DataSet<Tuple3<Double, Double, Vector>> transform(BatchOperator in,
-                                                              Params params,
-                                                              DataSet<Object> labelValues,
-                                                              boolean isRegProc) {
+    public static DataSet<Tuple3<Double, Object, Vector>> transform(BatchOperator in,
+                                                                    Params params,
+                                                                    boolean isRegProc,
+                                                                    boolean calcMeanVar) {
         String[] featureColNames = params.get(LinearTrainParams.FEATURE_COLS);
         String labelName = params.get(LinearTrainParams.LABEL_COL);
         String weightColName = params.get(LinearTrainParams.WEIGHT_COL);
         String vectorColName = params.get(LinearTrainParams.VECTOR_COL);
+        final boolean hasIntercept = params.get(LinearTrainParams.WITH_INTERCEPT);
         TableSchema dataSchema = in.getSchema();
         if (null == featureColNames && null == vectorColName) {
             featureColNames = TableUtil.getNumericCols(dataSchema, new String[] {labelName});
@@ -369,11 +695,13 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                     "linear algorithm only support numerical data type. type is : " + type);
             }
         }
-        int weightIdx = weightColName != null ? TableUtil.findColIndexWithAssertAndHint(in.getColNames(), weightColName) : -1;
-        int vecIdx = vectorColName != null ? TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorColName) : -1;
+        int weightIdx = weightColName != null ? TableUtil.findColIndexWithAssertAndHint(in.getColNames(), weightColName)
+            : -1;
+        int vecIdx = vectorColName != null ? TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorColName)
+            : -1;
 
-        return in.getDataSet().map(new Transform(isRegProc, weightIdx, vecIdx, featureIndices, labelIdx))
-            .withBroadcastSet(labelValues, LABEL_VALUES);
+        return in.getDataSet().mapPartition(new Transform(isRegProc, weightIdx,
+            vecIdx, featureIndices, labelIdx, hasIntercept, calcMeanVar));
     }
 
     /**
@@ -383,7 +711,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
      * @param featureColNames feature column names.
      * @return feature types.
      */
-    private String[] getFeatureTypes(BatchOperator in, String[] featureColNames) {
+    protected static String[] getFeatureTypes(BatchOperator in, String[] featureColNames) {
         if (featureColNames != null) {
             String[] featureColTypes = new String[featureColNames.length];
             for (int i = 0; i < featureColNames.length; ++i) {
@@ -414,92 +742,72 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
     /**
      * Do standardization and interception to train data.
      *
-     * @param initData initial data.
-     * @param params   train parameters.
-     * @param meanVar  mean and variance of train data.
+     * @param initData  initial data.
+     * @param params    train parameters.
+     * @param isRegProc train process is regression or classification.
+     * @param meanVar   mean and variance of train data.
      * @return train data after standardization.
      */
-    private DataSet<Tuple3<Double, Double, Vector>> preProcess(
-        DataSet<Tuple3<Double, Double, Vector>> initData,
+    protected static DataSet<Tuple3<Double, Double, Vector>> preProcess(
+        DataSet<Tuple3<Double, Object, Vector>> initData,
         Params params,
-        DataSet<DenseVector[]> meanVar) {
+        final boolean isRegProc,
+        DataSet<DenseVector[]> meanVar,
+        DataSet<Object[]> labelValues) {
         // Get parameters.
-        final boolean hasInterceptItem = params.get(LinearTrainParams.WITH_INTERCEPT);
         final boolean standardization = params.get(LinearTrainParams.STANDARDIZATION);
-
-        return initData.map(
-            new RichMapFunction<Tuple3<Double, Double, Vector>, Tuple3<Double, Double, Vector>>() {
+        final boolean hasIntercept = params.get(LinearTrainParams.WITH_INTERCEPT);
+        return initData.mapPartition(
+            new RichMapPartitionFunction<Tuple3<Double, Object, Vector>, Tuple3<Double, Double, Vector>>() {
+                private static final long serialVersionUID = -3931917328901089041L;
                 private DenseVector[] meanVar;
+                private Object[] labelValues = null;
 
                 @Override
                 public void open(Configuration parameters) throws Exception {
                     this.meanVar = (DenseVector[])getRuntimeContext()
                         .getBroadcastVariable(MEAN_VAR).get(0);
+                    this.labelValues = (Object[])getRuntimeContext()
+                        .getBroadcastVariable(LABEL_VALUES).get(0);
                     modifyMeanVar(standardization, meanVar);
                 }
 
                 @Override
-                public Tuple3<Double, Double, Vector> map(Tuple3<Double, Double, Vector> value)
-                    throws Exception {
+                public void mapPartition(Iterable<Tuple3<Double, Object, Vector>> values,
+                                         Collector<Tuple3<Double, Double, Vector>> out) throws Exception {
+                    for (Tuple3<Double, Object, Vector> value : values) {
+                        Vector aVector = value.f2;
 
-                    Vector aVector = value.f2;
-                    if (aVector instanceof DenseVector) {
-                        DenseVector bVector;
-                        if (standardization) {
-                            if (hasInterceptItem) {
-                                bVector = new DenseVector(aVector.size() + 1);
-                                bVector.set(0, 1.0);
-                                for (int i = 0; i < aVector.size(); ++i) {
-                                    bVector.set(i + 1, (aVector.get(i) - meanVar[0].get(i)) / meanVar[1].get(i));
+                        if (value.f0 > 0) {
+                            Double label = isRegProc ? Double.valueOf(value.f1.toString())
+                                : (value.f1.equals(labelValues[0]) ? 1.0 : -1.0);
+                            if (aVector instanceof DenseVector) {
+                                if (standardization) {
+                                    if (hasIntercept) {
+                                        for (int i = 0; i < aVector.size(); ++i) {
+                                            aVector.set(i, (aVector.get(i) - meanVar[0].get(i)) / meanVar[1].get(i));
+                                        }
+                                    } else {
+                                        for (int i = 0; i < aVector.size(); ++i) {
+                                            aVector.set(i, aVector.get(i) / meanVar[1].get(i));
+                                        }
+                                    }
                                 }
                             } else {
-                                bVector = (DenseVector)aVector;
-                                for (int i = 0; i < aVector.size(); ++i) {
-                                    bVector.set(i, aVector.get(i) / meanVar[1].get(i));
+                                if (standardization) {
+                                    int[] indices = ((SparseVector)aVector).getIndices();
+                                    double[] vals = ((SparseVector)aVector).getValues();
+                                    for (int i = 0; i < indices.length; ++i) {
+                                        vals[i] = vals[i] / meanVar[1].get(i);
+                                    }
                                 }
                             }
-                        } else {
-                            if (hasInterceptItem) {
-                                bVector = new DenseVector(aVector.size() + 1);
-                                bVector.set(0, 1.0);
-                                for (int i = 0; i < aVector.size(); ++i) {
-                                    bVector.set(i + 1, aVector.get(i));
-                                }
-                            } else {
-                                bVector = (DenseVector)aVector;
-                            }
+                            out.collect(Tuple3.of(value.f0, label, aVector));
                         }
-                        return Tuple3.of(value.f0, value.f1, bVector);
-
-                    } else {
-                        SparseVector bVector = (SparseVector)aVector;
-
-                        if (standardization) {
-                            if (hasInterceptItem) {
-
-                                int[] indices = bVector.getIndices();
-                                double[] vals = bVector.getValues();
-                                for (int i = 0; i < indices.length; ++i) {
-                                    vals[i] = (vals[i] - meanVar[0].get(indices[i])) / meanVar[1].get(
-                                        indices[i]);
-                                }
-                                bVector = bVector.prefix(1.0);
-                            } else {
-                                int[] indices = bVector.getIndices();
-                                double[] vals = bVector.getValues();
-                                for (int i = 0; i < indices.length; ++i) {
-                                    vals[i] = vals[i] / meanVar[1].get(indices[i]);
-                                }
-                            }
-                        } else {
-                            if (hasInterceptItem) {
-                                bVector = bVector.prefix(1.0);
-                            }
-                        }
-                        return Tuple3.of(value.f0, value.f1, bVector);
                     }
                 }
-            }).withBroadcastSet(meanVar, MEAN_VAR);
+            }).withBroadcastSet(meanVar, MEAN_VAR)
+            .withBroadcastSet(labelValues, LABEL_VALUES);
     }
 
     /**
@@ -516,14 +824,14 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
             if ("Ridge Regression".equals(modelName)) {
                 double lambda = params.get(RidgeRegTrainParams.LAMBDA);
                 Preconditions.checkState((lambda > 0), "lambda must be positive number or zero! lambda is : " + lambda);
-                params.set(ModelParamName.L2, lambda);
+                params.set(HasL2.L_2, lambda);
                 params.remove(RidgeRegTrainParams.LAMBDA);
             } else if ("LASSO".equals(modelName)) {
                 double lambda = params.get(LassoRegTrainParams.LAMBDA);
                 if (lambda < 0) {
                     throw new RuntimeException("lambda must be positive number or zero!");
                 }
-                params.set(ModelParamName.L1, lambda);
+                params.set(HasL1.L_1, lambda);
                 params.remove(RidgeRegTrainParams.LAMBDA);
             }
             return true;
@@ -536,9 +844,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
             if (cParam <= 0) {
                 throw new RuntimeException("Parameter C must be positive number!");
             }
-            params.remove(ModelParamName.L1);
-            params.remove(ModelParamName.L2);
-            params.set(ModelParamName.L2, 1.0 / cParam);
+
+            params.set(HasL2.L_2, 1.0 / cParam);
             params.remove(LinearSvrTrainParams.C);
             return true;
         } else {
@@ -568,7 +875,6 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
         if (!(LinearModelType.AFT.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE)))) {
             modifyMeanVar(standardization, meanVar);
         }
-
         meta.set(ModelParamName.VECTOR_SIZE, coefVector.f0.size()
             - (meta.get(ModelParamName.HAS_INTERCEPT_ITEM) ? 1 : 0)
             - (LinearModelType.AFT.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE).toString()) ? 1 : 0));
@@ -577,9 +883,9 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                 int n = meanVar[0].size();
                 if (hasIntercept) {
                     double sum = 0.0;
-                    for (int i = 0; i < n; ++i) {
-                        sum += coefVector.f0.get(i + 1) * meanVar[0].get(i) / meanVar[1].get(i);
-                        coefVector.f0.set(i + 1, coefVector.f0.get(i + 1) / meanVar[1].get(i));
+                    for (int i = 1; i < n; ++i) {
+                        sum += coefVector.f0.get(i) * meanVar[0].get(i) / meanVar[1].get(i);
+                        coefVector.f0.set(i, coefVector.f0.get(i) / meanVar[1].get(i));
                     }
                     coefVector.f0.set(0, coefVector.f0.get(0) - sum);
                 } else {
@@ -591,7 +897,9 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
         }
 
         LinearModelData modelData = new LinearModelData(labelType, meta, featureNames, coefVector.f0);
-        modelData.lossCurve = coefVector.f1;
+        modelData.convergenceInfo = coefVector.f1;
+        modelData.labelName = meta.get(LinearTrainParams.LABEL_COL);
+        modelData.featureTypes = meta.get(ModelParamName.FEATURE_TYPES);
 
         return modelData;
     }
@@ -599,35 +907,33 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
     /**
      * Create meta info.
      */
-    public static class CreateMeta implements MapPartitionFunction<Object, Params> {
+    public static class CreateMeta implements MapPartitionFunction<Object[], Params> {
+        private static final long serialVersionUID = 536971312646228170L;
         private String modelName;
         private LinearModelType modelType;
         private boolean hasInterceptItem;
-        private boolean isRegProc;
         private String vectorColName;
         private String labelName;
 
-        public CreateMeta(String modelName, LinearModelType modelType,
-                          boolean isRegProc, Params params) {
+        public CreateMeta(String modelName, LinearModelType modelType, Params params) {
             this.modelName = modelName;
             this.modelType = modelType;
             this.hasInterceptItem = params.get(LinearTrainParams.WITH_INTERCEPT);
-            this.isRegProc = isRegProc;
             this.vectorColName = params.get(LinearTrainParams.VECTOR_COL);
             this.labelName = params.get(LinearTrainParams.LABEL_COL);
         }
 
         @Override
-        public void mapPartition(Iterable<Object> rows, Collector<Params> metas) throws Exception {
-            Object[] labels = null;
-            if (!this.isRegProc) {
-                labels = orderLabels(rows);
-            }
+        public void mapPartition(Iterable<Object[]> rows, Collector<Params> metas) throws Exception {
+            Object[] labels = rows.iterator().next();
 
             Params meta = new Params();
             meta.set(ModelParamName.MODEL_NAME, this.modelName);
             meta.set(ModelParamName.LINEAR_MODEL_TYPE, this.modelType);
-            meta.set(ModelParamName.LABEL_VALUES, labels);
+            if (LinearModelType.LinearReg != modelType && LinearModelType.SVR != modelType
+                && LinearModelType.AFT != modelType) {
+                meta.set(ModelParamName.LABEL_VALUES, labels);
+            }
             meta.set(ModelParamName.HAS_INTERCEPT_ITEM, this.hasInterceptItem);
             meta.set(ModelParamName.VECTOR_COL_NAME, vectorColName);
             meta.set(LinearTrainParams.LABEL_COL, labelName);
@@ -638,80 +944,198 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
     /**
      * Transform the train data to Tuple3 format: Tuple3<weightValue, labelValue, featureVector>
      */
-    private static class Transform extends RichMapFunction<Row, Tuple3<Double, Double, Vector>> {
-        private String positiveLableValueString = null;
+    private static class Transform extends RichMapPartitionFunction<Row, Tuple3<Double, Object, Vector>> {
 
+        private static final long serialVersionUID = 4360321564414289067L;
         private boolean isRegProc;
         private int weightIdx;
         private int vecIdx;
         private int labelIdx;
         private int[] featureIndices;
+        private boolean hasIntercept;
+        private boolean calcMeanVar;
+        private boolean isSparse = false;
+        private boolean hasNull = false;
+        private Map<Integer, double[]> meanVarMap = new HashMap<>();
 
-        public Transform(boolean isRegProc, int weightIdx, int vecIdx, int[] featureIndices, int labelIdx) {
+        public Transform(boolean isRegProc, int weightIdx, int vecIdx,
+                         int[] featureIndices, int labelIdx, boolean hasIntercept, boolean calcMeanVar) {
             this.isRegProc = isRegProc;
             this.weightIdx = weightIdx;
             this.vecIdx = vecIdx;
             this.featureIndices = featureIndices;
             this.labelIdx = labelIdx;
+            this.hasIntercept = hasIntercept;
+            this.calcMeanVar = calcMeanVar;
         }
 
         @Override
-        public void open(Configuration parameters) throws Exception {
-
-            if (!this.isRegProc) {
-                List<Object> labelRows = getRuntimeContext().getBroadcastVariable(LABEL_VALUES);
-                this.positiveLableValueString = orderLabels(labelRows)[0].toString();
+        public void close() throws Exception {
+            super.close();
+            if (hasNull) {
+                throw new RuntimeException("the input data has null values, please check it!");
             }
+
         }
 
         @Override
-        public Tuple3<Double, Double, Vector> map(Row row) throws Exception {
-            Double weight = weightIdx != -1 ? ((Number)row.getField(weightIdx)).doubleValue() : 1.0;
-            Double val = FeatureLabelUtil.getLabelValue(row, this.isRegProc,
-                labelIdx, this.positiveLableValueString);
+        public void mapPartition(Iterable<Row> values, Collector<Tuple3<Double, Object, Vector>> out)
+            throws Exception {
+
+            Set<Object> labelValues = new HashSet<>();
+            int size = -1;
+
+            Vector meanVar;
             if (featureIndices != null) {
-                DenseVector vec = new DenseVector(featureIndices.length);
-                for (int i = 0; i < featureIndices.length; ++i) {
-                    vec.set(i, ((Number)row.getField(featureIndices[i])).doubleValue());
-                }
-                return Tuple3.of(weight, val, vec);
+                size = hasIntercept ? featureIndices.length + 1 : featureIndices.length;
+                meanVar = calcMeanVar ? new DenseVector(2 * size + 1) : new DenseVector(0);
             } else {
-                Vector vec = VectorUtil.getVector(row.getField(vecIdx));
-                Preconditions.checkState((vec != null),
-                    "vector for linear model train is null, please check your input data.");
-
-                return Tuple3.of(weight, val, vec);
+                meanVar = calcMeanVar ? null : new DenseVector(0);
             }
 
-        }
-    }
+            for (Row row : values) {
+                Double weight = weightIdx != -1 ? ((Number)row.getField(weightIdx)).doubleValue() : 1.0;
+                Object val = row.getField(labelIdx);
 
-    /**
-     * The size of coefficient. Transform dimension of trainData, if has Intercept item, dimension++,
-     * if modelType is Aft, then dimension++,
-     * because there is another coefficient so that coefficient size is one more larger then data size.
-     */
-    private static class DimTrans extends AbstractRichFunction
-        implements MapFunction<Integer, Integer> {
-        private boolean hasInterceptItem;
-        private LinearModelType linearModelType;
-        private Integer featureDim = null;
+                if (!this.isRegProc) {
+                    labelValues.add(val);
+                } else {
+                    labelValues.add(0.0);
+                }
+                if (featureIndices != null) {
+                    if (hasIntercept) {
+                        DenseVector vec = new DenseVector(featureIndices.length + 1);
+                        vec.set(0, 1.0);
+                        if (calcMeanVar) {
+                            meanVar.add(0, 1.0);
+                            meanVar.add(size, 1.0);
+                        }
+                        for (int i = 1; i < featureIndices.length + 1; ++i) {
+                            if (row.getField(featureIndices[i - 1]) == null) {
+                                hasNull = true;
+                            } else {
+                                double fval = ((Number)row.getField(featureIndices[i - 1])).doubleValue();
+                                vec.set(i, fval);
+                                if (calcMeanVar) {
+                                    meanVar.add(i, fval);
+                                    meanVar.add(size + i, fval * fval);
+                                }
+                            }
+                        }
+                        if (calcMeanVar) {
+                            meanVar.add(2 * size, 1.0);
+                        }
+                        out.collect(Tuple3.of(weight, val, vec));
+                    } else {
+                        DenseVector vec = new DenseVector(featureIndices.length);
+                        for (int i = 0; i < featureIndices.length; ++i) {
+                            if (row.getField(featureIndices[i]) == null) {
+                                hasNull = true;
+                            } else {
+                                double fval = ((Number)row.getField(featureIndices[i])).doubleValue();
+                                vec.set(i, fval);
+                                if (calcMeanVar) {
+                                    meanVar.add(i, fval);
+                                    meanVar.add(size + i, fval * fval);
+                                }
+                            }
+                        }
+                        if (calcMeanVar) {
+                            meanVar.add(2 * size, 1.0);
+                        }
+                        out.collect(Tuple3.of(weight, val, vec));
+                    }
+                } else {
+                    Vector vec = VectorUtil.getVector(row.getField(vecIdx));
+                    Preconditions.checkState((vec != null),
+                        "vector for linear model train is null, please check your input data.");
+                    if (vec instanceof SparseVector) {
+                        isSparse = true;
+                        if (hasIntercept) {
+                            Vector vecNew = vec.prefix(1.0);
+                            int[] indices = ((SparseVector)vecNew).getIndices();
+                            double[] vals = ((SparseVector)vecNew).getValues();
+                            for (int i = 0; i < indices.length; ++i) {
+                                size = (vecNew.size() > 0) ? vecNew.size() : Math.max(size, indices[i] + 1);
+                                if (calcMeanVar) {
+                                    if (meanVarMap.containsKey(indices[i])) {
+                                        double[] mv = meanVarMap.get(indices[i]);
+                                        mv[0] = Math.max(mv[0], Math.abs(vals[i]));
+                                    } else {
+                                        meanVarMap.put(indices[i], new double[] {Math.abs(vals[i])});
+                                    }
+                                }
+                            }
+                            out.collect(Tuple3.of(weight, val, vecNew));
+                        } else {
+                            int[] indices = ((SparseVector)vec).getIndices();
+                            double[] vals = ((SparseVector)vec).getValues();
+                            for (int i = 0; i < indices.length; ++i) {
+                                size = (vec.size() > 0) ? vec.size() : Math.max(size, indices[i] + 1);
+                                if (calcMeanVar) {
+                                    if (meanVarMap.containsKey(indices[i])) {
+                                        double[] mv = meanVarMap.get(indices[i]);
+                                        mv[0] = Math.max(mv[0], Math.abs(vals[i]));
+                                    } else {
+                                        meanVarMap.put(indices[i], new double[] {Math.abs(vals[i])});
+                                    }
+                                }
+                            }
+                            out.collect(Tuple3.of(weight, val, vec));
+                        }
+                    } else {
+                        if (hasIntercept) {
+                            Vector vecNew = vec.prefix(1.0);
+                            double[] vals = ((DenseVector)vecNew).getData();
+                            size = vals.length;
+                            if (calcMeanVar) {
+                                if (meanVar == null) {
+                                    meanVar = new DenseVector(2 * size + 1);
+                                }
 
-        public DimTrans(boolean hasInterceptItem, LinearModelType linearModelType) {
-            this.hasInterceptItem = hasInterceptItem;
-            this.linearModelType = linearModelType;
-        }
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            this.featureDim = (Integer)getRuntimeContext()
-                .getBroadcastVariable(VECTOR_SIZE).get(0);
-        }
-
-        @Override
-        public Integer map(Integer integer) throws Exception {
-            return this.featureDim + (this.hasInterceptItem ? 1 : 0)
-                + (this.linearModelType.equals(LinearModelType.AFT) ? 1 : 0);
+                                for (int i = 0; i < size; ++i) {
+                                    double fval = vecNew.get(i);
+                                    meanVar.add(i, fval);
+                                    meanVar.add(size + i, fval * fval);
+                                }
+                                meanVar.add(2 * size, 1.0);
+                            }
+                            out.collect(Tuple3.of(weight, val, vecNew));
+                        } else {
+                            double[] vals = ((DenseVector)vec).getData();
+                            size = vals.length;
+                            if (calcMeanVar) {
+                                if (meanVar == null) {
+                                    meanVar = new DenseVector(2 * size + 1);
+                                }
+                                for (int i = 0; i < size; ++i) {
+                                    double fval = vec.get(i);
+                                    meanVar.add(i, fval);
+                                    meanVar.add(size + i, fval * fval);
+                                }
+                                meanVar.add(2 * size, 1.0);
+                            }
+                            out.collect(Tuple3.of(weight, val, vec));
+                        }
+                    }
+                }
+            }
+            if (meanVar == null) {
+                if (isSparse) {
+                    meanVar = new DenseVector(size);
+                    for (Integer idx : meanVarMap.keySet()) {
+                        double[] mv = meanVarMap.get(idx);
+                        meanVar.set(idx, mv[0]);
+                    }
+                }
+            }
+            if (isSparse) {
+                out.collect(
+                    Tuple3.of(-1.0, Tuple2.of(size, labelValues.toArray()), meanVar));
+            } else {
+                out.collect(
+                    Tuple3.of(-2.0, Tuple2.of(size, labelValues.toArray()), meanVar));
+            }
         }
     }
 
@@ -720,6 +1144,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
      */
     public static class BuildModelFromCoefs extends AbstractRichFunction implements
         MapPartitionFunction<Tuple2<DenseVector, double[]>, Row> {
+        private static final long serialVersionUID = -8526938457839413291L;
         private Params meta;
         private String[] featureNames;
         private String[] featureColTypes;
@@ -783,7 +1208,14 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
             }
         }
     }
+
+    @Override
+    public LinearModelTrainInfo createTrainInfo(List<Row> rows) {
+        return new LinearModelTrainInfo(rows);
+    }
+
+    @Override
+    public BatchOperator<?> getSideOutputTrainInfo() {
+        return this.getSideOutput(0);
+    }
 }
-
-
-

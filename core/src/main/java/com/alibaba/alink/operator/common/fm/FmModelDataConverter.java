@@ -45,6 +45,7 @@ public class FmModelDataConverter extends LabeledModelDataConverter<FmModelData,
             .set(ModelParamName.FEATURE_COL_NAMES, modelData.featureColNames)
             .set(ModelParamName.LABEL_VALUES, modelData.labelValues)
             .set(ModelParamName.DIM, modelData.dim)
+            .set(ModelParamName.LOSS_CURVE, modelData.convergenceInfo)
             .set(ModelParamName.FIELD_POS, modelData.fieldPos);
         FmDataFormat factors = modelData.fmModel;
 
@@ -76,6 +77,7 @@ public class FmModelDataConverter extends LabeledModelDataConverter<FmModelData,
         modelData.dim = meta.get(ModelParamName.DIM);
         modelData.vectorSize = meta.get(ModelParamName.VECTOR_SIZE);
         modelData.fieldPos = meta.get(ModelParamName.FIELD_POS);
+        modelData.convergenceInfo = meta.get(ModelParamName.LOSS_CURVE);
 
         if (meta.contains(ModelParamName.LABEL_VALUES)) {
             modelData.labelValues = FeatureLabelUtil.recoverLabelType(meta.get(ModelParamName.LABEL_VALUES),

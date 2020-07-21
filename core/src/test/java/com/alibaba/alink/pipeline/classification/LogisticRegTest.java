@@ -7,7 +7,6 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
@@ -16,6 +15,9 @@ import org.apache.flink.types.Row;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Test cases for lr pipeline.
+ */
 public class LogisticRegTest {
 
     AlgoOperator getData(boolean isBatch) {
@@ -50,17 +52,17 @@ public class LogisticRegTest {
         LogisticRegression lr = new LogisticRegression()
             .setLabelCol(yVar)
             .setFeatureCols(xVars)
-            .setPredictionCol("lrpred");
+            .setPredictionCol("lrpred").enableLazyPrintModelInfo().enableLazyPrintTrainInfo();
 
         LogisticRegression vectorLr = new LogisticRegression()
             .setLabelCol(yVar)
             .setVectorCol(vectorName)
-            .setPredictionCol("vlrpred");
+            .setPredictionCol("vlrpred").enableLazyPrintModelInfo().enableLazyPrintTrainInfo();;
 
         LogisticRegression sparseVectorLr = new LogisticRegression()
             .setLabelCol(yVar)
             .setVectorCol(svectorName)
-            .setPredictionCol("svlrpred");
+            .setPredictionCol("svlrpred").enableLazyPrintModelInfo().enableLazyPrintTrainInfo();;
 
         Pipeline plLr = new Pipeline().add(lr).add(vectorLr).add(sparseVectorLr);
         BatchOperator trainData = (BatchOperator)getData(true);

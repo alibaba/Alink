@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -23,6 +22,7 @@ import org.apache.flink.types.Row;
  */
 public class LinearModelMapper extends RichModelMapper {
 
+	private static final long serialVersionUID = -1820786486066749971L;
 	private int vectorColIndex = -1;
 	private LinearModelData model;
 	private int[] featureIdx;
@@ -130,7 +130,7 @@ public class LinearModelMapper extends RichModelMapper {
 	 * Predict the label information.
 	 */
 	public Object predict(Vector vector) throws Exception {
-		double dotValue = MatVecOp.dot(vector, model.coefVector);
+		double dotValue = FeatureLabelUtil.dot(vector, model.coefVector);
 
 		switch (model.linearModelType) {
 			case LR:
@@ -149,7 +149,7 @@ public class LinearModelMapper extends RichModelMapper {
 	 * Predict the label information with the probability of each label.
 	 */
 	public Tuple2 <Object, Double[]> predictWithProb(Vector vector) {
-		double dotValue = MatVecOp.dot(vector, model.coefVector);
+		double dotValue = FeatureLabelUtil.dot(vector, model.coefVector);
 
 		switch (model.linearModelType) {
 			case LR:

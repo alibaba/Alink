@@ -20,4 +20,5 @@ public class FmModelData implements Serializable {
     public int[] fieldPos;
     public Object[] labelValues = null;
     public Task task;
+    public double[] convergenceInfo;
 }

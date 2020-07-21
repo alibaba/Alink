@@ -8,6 +8,7 @@ import com.alibaba.alink.params.recommendation.FmTrainParams;
 
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 
@@ -48,11 +49,11 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
      * @return
      */
     @Override
-    protected DataSet<FmDataFormat> optimize(DataSet<Tuple3<Double, Double, Vector>> trainData,
-                                             DataSet<Integer> vecSize,
-                                             final Params params,
-                                             final int[] dim,
-                                             MLEnvironment session) {
+    protected DataSet<Tuple2<FmDataFormat, double[]>> optimize(DataSet<Tuple3<Double, Double, Vector>> trainData,
+                                                               DataSet<Integer> vecSize,
+                                                               final Params params,
+                                                               final int[] dim,
+                                                               MLEnvironment session) {
 
         final double initStdev = params.get(FmTrainParams.INIT_STDEV);
 
@@ -72,6 +73,5 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
         return optimizer.optimize();
     }
 }
-
 
 

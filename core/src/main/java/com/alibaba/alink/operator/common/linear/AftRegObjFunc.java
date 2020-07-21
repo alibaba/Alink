@@ -12,7 +12,9 @@ import org.apache.flink.ml.api.misc.param.Params;
  */
 public class AftRegObjFunc extends OptimObjFunc {
 
-    /**
+	private static final long serialVersionUID = -25113151208677581L;
+
+	/**
      * Constructor.
      *
      * @param params input parameters.
@@ -36,11 +38,14 @@ public class AftRegObjFunc extends OptimObjFunc {
             int[] indices = ((SparseVector)labelVector).getIndices();
             double[] values = ((SparseVector)labelVector).getValues();
             for (int i = 0; i < indices.length; ++i) {
-                sum += values[i] * data[indices[i]];
+                if (indices[i] < data.length) {
+                    sum += values[i] * data[indices[i]];
+                }
             }
         } else {
             double[] vecData = ((DenseVector)labelVector).getData();
-            for (int i = 0; i < vecData.length; i++) {
+            int size = Math.min(vecData.length, data.length);
+            for (int i = 0; i < size; i++) {
                 sum += vecData[i] * data[i];
             }
         }

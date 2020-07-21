@@ -9,12 +9,13 @@ import java.util.Set;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.model.ModelParamName;
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.recommendation.FmTrainParams;
@@ -23,6 +24,7 @@ import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -32,6 +34,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
@@ -40,14 +43,13 @@ import org.apache.flink.util.Preconditions;
 /**
  * Base FM model training.
  */
-public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extends BatchOperator<T> implements
-    WithModelInfoBatchOp<FmModelInfo, T, FmModelInfoBatchOp> {
+public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extends BatchOperator<T> {
 
     public static final String LABEL_VALUES = "labelValues";
     public static final String VEC_SIZE = "vecSize";
     private static final long serialVersionUID = -5308557491809175331L;
     private int[] dim;
-    private TypeInformation labelType;
+    protected TypeInformation labelType;
 
     /**
      * @param params parameters needed by training process.
@@ -73,11 +75,12 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      * @param session   environment.
      * @return model coefficient.
      */
-    protected abstract DataSet<FmDataFormat> optimize(DataSet<Tuple3<Double, Double, Vector>> trainData,
-                                                      DataSet<Integer> vecSize,
-                                                      final Params params,
-                                                      final int[] dim,
-                                                      MLEnvironment session);
+    protected abstract DataSet<Tuple2<FmDataFormat, double[]>>
+    optimize(DataSet<Tuple3<Double, Double, Vector>> trainData,
+             DataSet<Integer> vecSize,
+             final Params params,
+             final int[] dim,
+             MLEnvironment session);
 
     /**
      * do the operation of this op.
@@ -130,7 +133,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         DataSet<Tuple3<Double, Double, Vector>>
             trainData = transferLabel(initData, isRegProc, labelValues);
 
-        DataSet<FmDataFormat> model
+        DataSet<Tuple2<FmDataFormat, double[]>> model
             = optimize(trainData, featSize, params, dim, MLEnvironmentFactory.get(getMLEnvironmentId()));
 
         DataSet<Row> modelRows = model.flatMap(new GenerateModelRows(params, dim, labelType, isRegProc))
@@ -138,6 +141,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
             .withBroadcastSet(featSize, VEC_SIZE);
 
         this.setOutput(modelRows, new FmModelDataConverter(labelType).getModelSchema());
+        this.setSideOutputTables(getSideTablesOfCoefficient(modelRows, labelType));
         return (T)this;
     }
 
@@ -230,7 +234,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
     /**
      * generate model in row format.
      */
-    public static class GenerateModelRows extends RichFlatMapFunction<FmDataFormat, Row> {
+    public static class GenerateModelRows extends RichFlatMapFunction<Tuple2<FmDataFormat, double[]>, Row> {
         private static final long serialVersionUID = -380930181466110905L;
         private Params params;
         private int[] dim;
@@ -255,14 +259,15 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         }
 
         @Override
-        public void flatMap(FmDataFormat value, Collector<Row> out) throws Exception {
+        public void flatMap(Tuple2<FmDataFormat, double[]> value, Collector<Row> out) throws Exception {
             FmModelData modelData = new FmModelData();
-            modelData.fmModel = value;
+            modelData.fmModel = value.f0;
             modelData.vectorColName = params.get(FmTrainParams.VECTOR_COL);
             modelData.featureColNames = params.get(FmTrainParams.FEATURE_COLS);
             modelData.dim = dim;
             modelData.labelColName = params.get(FmTrainParams.LABEL_COL);
             modelData.task = Task.valueOf(params.get(ModelParamName.TASK).toUpperCase());
+            modelData.convergenceInfo = value.f1;
             if (fieldPos != null) {
                 modelData.fieldPos = fieldPos;
             }
@@ -403,6 +408,48 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
 
     }
 
+    private Table[] getSideTablesOfCoefficient(DataSet<Row> modelRow, final TypeInformation labelType) {
+        DataSet<FmModelData> model = modelRow.mapPartition(new MapPartitionFunction<Row, FmModelData>() {
+            private static final long serialVersionUID = 2063366042018382802L;
+
+            @Override
+            public void mapPartition(Iterable<Row> values, Collector<FmModelData> out) throws Exception {
+                List<Row> rows = new ArrayList<>();
+                for (Row row : values) {
+                    rows.add(row);
+                }
+                out.collect(new FmModelDataConverter(labelType).load(rows));
+            }
+        }).setParallelism(1);
+
+        DataSet<Row> summary = model
+            .mapPartition(
+                new RichMapPartitionFunction<FmModelData, Row>() {
+                    private static final long serialVersionUID = 8785824618242390100L;
+
+                    @Override
+                    public void mapPartition(Iterable<FmModelData> values, Collector<Row> out) throws Exception {
+
+                        FmModelData model = values.iterator().next();
+                        double[] cinfo = model.convergenceInfo;
+                        Params meta = new Params();
+                        meta.set(ModelParamName.VECTOR_SIZE, model.vectorSize);
+                        meta.set(ModelParamName.LABEL_VALUES, model.labelValues);
+                        meta.set(FmTrainParams.WITH_LINEAR_ITEM, model.dim[1] == 1);
+                        meta.set(FmTrainParams.WITH_INTERCEPT, model.dim[0] == 1);
+                        meta.set(FmTrainParams.NUM_FACTOR, model.dim[2]);
+                        out.collect(Row.of(0, JsonConverter.toJson(meta)));
+                        out.collect(Row.of(1, JsonConverter.toJson(cinfo)));
+
+                    }
+                }).setParallelism(1).withBroadcastSet(model, "model");
+
+        Table summaryTable = DataSetConversionUtil.toTable(getMLEnvironmentId(), summary, new TableSchema(
+            new String[] {"title", "info"}, new TypeInformation[] {Types.INT, Types.STRING}));
+
+        return new Table[] {summaryTable};
+    }
+
     public enum Task {
         /**
          * regression problem.
@@ -476,7 +523,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
             double logit = sigmoid(y);
             if (yTruth < 0.5) {
                 return -Math.log(1. - logit);
-            } else if (yTruth > 0.5) {
+            } else if (yTruth >= 0.5) {
                 return -Math.log(logit);
             } else {
                 throw new RuntimeException("Invalid label: " + yTruth);
@@ -543,17 +590,6 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                 }
             }
         }
-
-    }
-
-    /**
-     * get model info of this train process.
-     *
-     * @return
-     */
-    @Override
-    public FmModelInfoBatchOp getModelInfoBatchOp() {
-        return new FmModelInfoBatchOp(this.labelType).linkFrom(this);
     }
 }
 

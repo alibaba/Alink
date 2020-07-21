@@ -6,50 +6,56 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.model.ModelParamName;
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
+import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp;
 import com.alibaba.alink.operator.common.linear.LinearModelData;
 import com.alibaba.alink.operator.common.linear.LinearModelDataConverter;
+import com.alibaba.alink.operator.common.linear.LinearModelTrainInfo;
+import com.alibaba.alink.operator.common.linear.SoftmaxModelInfo;
+import com.alibaba.alink.operator.common.linear.SoftmaxModelInfoBatchOp;
 import com.alibaba.alink.operator.common.linear.SoftmaxObjFunc;
 import com.alibaba.alink.operator.common.optim.Lbfgs;
 import com.alibaba.alink.operator.common.optim.OptimizerFactory;
 import com.alibaba.alink.operator.common.optim.Owlqn;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.SparseVectorSummary;
 import com.alibaba.alink.params.classification.SoftmaxTrainParams;
-import com.alibaba.alink.params.shared.linear.HasL1;
-import com.alibaba.alink.params.shared.linear.HasL2;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 import org.apache.flink.api.common.functions.AbstractRichFunction;
+import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 /**
  * Softmax is a classifier for multi-class problem.
- *
  */
 public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp>
-    implements SoftmaxTrainParams<SoftmaxTrainBatchOp> {
+    implements SoftmaxTrainParams<SoftmaxTrainBatchOp>, WithTrainInfo<LinearModelTrainInfo, SoftmaxTrainBatchOp>,
+    WithModelInfoBatchOp<SoftmaxModelInfo, SoftmaxTrainBatchOp, SoftmaxModelInfoBatchOp> {
+    private static final long serialVersionUID = 2291776467437931890L;
 
     public SoftmaxTrainBatchOp() {
         this(null);
@@ -71,7 +77,6 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
         final boolean standardization = getParams().get(LinearTrainParams.STANDARDIZATION);
         String[] featureColNames = getFeatureCols();
         String labelName = getLabelCol();
-        String weightColName = getWeightCol();
         TypeInformation<?> labelType = null;
         String vectorColName = getVectorCol();
         TableSchema dataSchema = in.getSchema();
@@ -81,66 +86,82 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
         }
 
         if (null == labelType) {
-            labelType = in.getColTypes()[TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), labelName)];
+            labelType = TableUtil.findColTypeWithAssertAndHint(dataSchema, labelName);
         }
 
-        DataSet<Row> labelIds = in
-            .select(labelName)
-            .distinct()
-            .getDataSet().reduceGroup(new GroupReduceFunction<Row, Row>() {
+        DataSet<Tuple3<Double, Object, Vector>>
+            initData = BaseLinearModelTrainBatchOp.transform(in, getParams(), false, standardization);
+
+        DataSet<Tuple3<DenseVector[], Object[], Integer>>
+            utilInfo = BaseLinearModelTrainBatchOp.getUtilInfo(initData, standardization, false);
+
+        DataSet<Row> labelIds = utilInfo.flatMap(new FlatMapFunction<Tuple3<DenseVector[], Object[], Integer>, Row>() {
+            private static final long serialVersionUID = 6773656778135257500L;
+
+            @Override
+            public void flatMap(Tuple3<DenseVector[], Object[], Integer> value, Collector<Row> out) throws Exception {
+                List<Row> rows = new ArrayList<>();
+                for (Object obj : value.f1) {
+                    rows.add(Row.of(obj));
+                }
+                RowComparator rowComparator = new RowComparator(0);
+                Collections.sort(rows, rowComparator);
+
+                for (Long i = 0L; i < rows.size(); ++i) {
+                    Row ret = new Row(2);
+                    ret.setField(0, rows.get(i.intValue()).getField(0));
+                    ret.setField(1, i);
+                    out.collect(ret);
+                }
+            }
+        });
+
+        DataSet<DenseVector[]> meanVar = utilInfo.map(
+            new MapFunction<Tuple3<DenseVector[], Object[], Integer>, DenseVector[]>() {
+                private static final long serialVersionUID = 2633660310293456071L;
+
                 @Override
-                public void reduce(Iterable<Row> values, Collector<Row> out) throws Exception {
-                    List<Row> rows = new ArrayList<>();
-                    for (Row row : values) {
-                        rows.add(row);
-                    }
-
-                    RowComparator rowComparator = new RowComparator(0);
-                    Collections.sort(rows, rowComparator);
-
-                    for (Long i = 0L; i < rows.size(); ++i) {
-                        Row ret = new Row(2);
-                        ret.setField(0, rows.get(i.intValue()).getField(0));
-                        ret.setField(1, i);
-                        out.collect(ret);
-                    }
+                public DenseVector[] map(Tuple3<DenseVector[], Object[], Integer> value)
+                    throws Exception {
+                    return value.f0;
                 }
             });
 
-        String[] keepColNames = (weightColName == null) ? new String[] {labelName}
-            : new String[] {weightColName, labelName};
+        DataSet<Integer> featSize = utilInfo.map(
+            new MapFunction<Tuple3<DenseVector[], Object[], Integer>, Integer>() {
+                private static final long serialVersionUID = -8902907232968104891L;
 
-        // getStaticInfo produce three things: 1. transform train to vector,
-        //                                     2. vector size,
-        //                                     3. mean and variance of train data for standardization
-        Tuple3<DataSet<Tuple2<Vector, Row>>, DataSet<Integer>, DataSet<DenseVector[]>>
-            staticInfo = getStaticInfo(in, featureColNames, vectorColName, keepColNames, standardization);
+                @Override
+                public Integer map(Tuple3<DenseVector[], Object[], Integer> value)
+                    throws Exception {
+                    return value.f2;
+                }
+            });
 
         // this op will transform the data to labelVector and set labels to ids : 0, 1, 2, ...
-        DataSet<Tuple3<Double, Double, Vector>> trainData = staticInfo.f0
-            .mapPartition(new Transform(hasInterceptItem, standardization))
-            .withBroadcastSet(staticInfo.f1, "vectorSize")
+        DataSet<Tuple3<Double, Double, Vector>> trainData = initData
+            .mapPartition(new PreProcess(hasInterceptItem, standardization))
             .withBroadcastSet(labelIds, "labelIDs")
-            .withBroadcastSet(staticInfo.f2, "meanVar");
+            .withBroadcastSet(meanVar, "meanVar");
 
         // construct a new function to do the solver opt and get a coef result. not a model.
         DataSet<Tuple2<DenseVector, double[]>> coefs
-            = optimize(this.getParams(), staticInfo.f1, trainData, hasInterceptItem, labelIds);
+            = optimize(this.getParams(), featSize, trainData, hasInterceptItem, labelIds);
 
         DataSet<Params> meta = labelIds
             .mapPartition(
-                new CreateMeta(modelName, labelType, hasInterceptItem, vectorColName))
-            .withBroadcastSet(staticInfo.f1, "vectorSize")
+                new CreateMeta(modelName, hasInterceptItem, vectorColName))
             .setParallelism(1);
 
         DataSet<Row> modelRows = coefs
             .mapPartition(new BuildModelFromCoefs(labelType, featureColNames, standardization))
             .withBroadcastSet(meta, "meta")
             .setParallelism(1)
-            .withBroadcastSet(staticInfo.f2, "meanVar");
+            .withBroadcastSet(meanVar, "meanVar");
 
         this.setOutput(modelRows, new LinearModelDataConverter(labelType).getModelSchema());
 
+        this.setSideOutputTables(getSideTablesOfCoefficient(modelRows));
         return this;
     }
 
@@ -148,18 +169,14 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
                                                             DataSet<Tuple3<Double, Double, Vector>> trainData,
                                                             boolean hasInterceptItem,
                                                             DataSet<Row> labelIDs) {
-        final double l1 = this.getParams().get(HasL1.L_1);
-        final double l2 = this.getParams().get(HasL2.L_2);
+        final double l1 = getL1();
+        final double l2 = getL2();
         String[] featureColNames = params.get(SoftmaxTrainParams.FEATURE_COLS);
         String vectorColName = params.get(SoftmaxTrainParams.VECTOR_COL);
-        if (vectorColName != null && "".equals(vectorColName)) {
-            vectorColName = null;
-        }
-        if (featureColNames != null && featureColNames.length == 0) {
-            featureColNames = null;
-        }
 
         DataSet<Integer> numClass = labelIDs.reduceGroup(new GroupReduceFunction<Row, Integer>() {
+            private static final long serialVersionUID = -8665284351311032858L;
+
             @Override
             public void reduce(Iterable<Row> values, Collector<Integer> out) throws Exception {
                 int nClass = 0;
@@ -172,15 +189,29 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
 
         DataSet<Integer> coefDim;
         if (vectorColName != null && vectorColName.length() != 0) {
-            coefDim = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment().fromElements(0)
-                .map(new DimTrans(hasInterceptItem))
-                .withBroadcastSet(numClass, "numClass")
-                .withBroadcastSet(sFeatureDim, "vectorSize");
+            coefDim = sFeatureDim.map(new RichMapFunction<Integer, Integer>() {
+                private static final long serialVersionUID = 3041217732252202526L;
+                private int k1;
+
+                @Override
+                public void open(Configuration parameters) throws Exception {
+                    super.open(parameters);
+                    this.k1 = (Integer)getRuntimeContext()
+                        .getBroadcastVariable("numClass").get(0) - 1;
+                }
+
+                @Override
+                public Integer map(Integer value) throws Exception {
+                    return k1 * value;
+                }
+            }).withBroadcastSet(numClass, "numClass");
         } else {
             coefDim = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment()
                 .fromElements((featureColNames.length + (hasInterceptItem ? 1 : 0))).map(
                     new RichMapFunction<Integer, Integer>() {
+                        private static final long serialVersionUID = 3133807849008897754L;
                         private int k1;
+
                         @Override
                         public void open(Configuration parameters) throws Exception {
                             super.open(parameters);
@@ -196,13 +227,14 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
         }
 
         DataSet<OptimObjFunc> objFunc = numClass.reduceGroup(new GroupReduceFunction<Integer, OptimObjFunc>() {
+            private static final long serialVersionUID = -4647154716237314079L;
+
             @Override
             public void reduce(Iterable<Integer> values, Collector<OptimObjFunc> out) throws Exception {
                 int nClass = 0;
                 for (Integer ele : values) {
                     nClass = ele;
                 }
-
                 Params params = new Params().set(SoftmaxTrainParams.L_1, l1)
                     .set(SoftmaxTrainParams.L_2, l2)
                     .set(ModelParamName.NUM_CLASSES, nClass);
@@ -222,94 +254,25 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
         }
     }
 
-    public static class DimTrans extends AbstractRichFunction
-        implements MapFunction<Integer, Integer> {
-        private int k1;
-        private boolean hasInterceptItem;
-        private Integer featureDim = null;
-
-        public DimTrans(boolean hasInterceptItem) {
-            this.hasInterceptItem = hasInterceptItem;
-        }
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            this.featureDim = (Integer)getRuntimeContext()
-                .getBroadcastVariable("vectorSize").get(0);
-            this.k1 = (Integer)getRuntimeContext()
-                .getBroadcastVariable("numClass").get(0) - 1;
-        }
-
-        @Override
-        public Integer map(Integer integer) throws Exception {
-            return this.k1 * (this.featureDim + (this.hasInterceptItem ? 1 : 0));
-        }
-    }
-
-    /**
-     * @param in              train data batch operator.
-     * @param featureColNames feature column names.
-     * @param vectorColName   vector column name.
-     * @param keepColNames    column names kept for train process.
-     * @param standardization do standardization or not.
-     * @return 1. train data in vector format. 2. vector size. 3. mean and variance of train data for standardization
-     */
-    public static Tuple3<DataSet<Tuple2<Vector, Row>>, DataSet<Integer>, DataSet<DenseVector[]>>
-    getStaticInfo(BatchOperator in, String[] featureColNames, String vectorColName,
-                  String[] keepColNames, boolean standardization) {
-        Tuple2<DataSet<Tuple2<Vector, Row>>, DataSet<BaseVectorSummary>> dataSrt
-            = StatisticsHelper.summaryHelper(in, featureColNames, vectorColName, keepColNames);
-        DataSet<Tuple2<Vector, Row>> data = dataSrt.f0.rebalance();
-        DataSet<BaseVectorSummary> srt = dataSrt.f1;
-        // feature size.
-        DataSet<Integer> vectorSize = srt.map(new MapFunction<BaseVectorSummary, Integer>() {
-            @Override
-            public Integer map(BaseVectorSummary value) throws Exception {
-                return value.vectorSize();
-            }
-        });
-        DataSet<DenseVector[]> meanVar = srt.map(new MapFunction<BaseVectorSummary, DenseVector[]>() {
-            @Override
-            public DenseVector[] map(BaseVectorSummary value) throws Exception {
-                if (standardization) {
-                    if (value instanceof SparseVectorSummary) {
-                        DenseVector var = ((SparseVector)value.standardDeviation()).toDenseVector();
-                        DenseVector mean = new DenseVector(var.size());
-                        return new DenseVector[] {mean, var};
-                    } else {
-                        return new DenseVector[] {(DenseVector)value.mean(),
-                            (DenseVector)value.standardDeviation()};
-                    }
-                } else {
-                    return new DenseVector[0];
-                }
-            }
-        });
-        return Tuple3.of(data, vectorSize, meanVar);
-    }
-
     /**
      * here, we define current labels to ids :  0, 1, 2, ...
      */
-    public static class Transform extends AbstractRichFunction
-        implements MapPartitionFunction<Tuple2<Vector, Row>, Tuple3<Double, Double, Vector>> {
+    public static class PreProcess extends AbstractRichFunction
+        implements MapPartitionFunction<Tuple3<Double, Object, Vector>, Tuple3<Double, Double, Vector>> {
+        private static final long serialVersionUID = -5610968130256583178L;
         private boolean hasInterceptItem = true;
-        private Integer vectorSize;
         private int labelSize;
         private boolean standardization;
         private HashMap<String, Double> labelMap = new HashMap<>();
         private DenseVector[] meanVar;
 
-        public Transform(boolean hasInterceptItem, boolean standardization) {
+        public PreProcess(boolean hasInterceptItem, boolean standardization) {
             this.hasInterceptItem = hasInterceptItem;
             this.standardization = standardization;
         }
 
         @Override
         public void open(Configuration parameters) throws Exception {
-            this.vectorSize = (Integer)getRuntimeContext()
-                .getBroadcastVariable("vectorSize").get(0);
-
             List<Object> rows = getRuntimeContext()
                 .getBroadcastVariable("labelIDs");
             this.labelSize = rows.size();
@@ -321,98 +284,52 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
 
             this.meanVar = (DenseVector[])getRuntimeContext()
                 .getBroadcastVariable("meanVar").get(0);
-            if (standardization) {
-                for (int i = 0; i < meanVar[1].size(); ++i) {
-                    if (meanVar[1].get(i) == 0) {
-                        meanVar[1].set(i, 1.0);
-                        meanVar[0].set(i, 0.0);
-                    }
-                }
-            }
         }
 
         @Override
-        public void mapPartition(Iterable<Tuple2<Vector, Row>> rows, Collector<Tuple3<Double, Double, Vector>> out)
+        public void mapPartition(Iterable<Tuple3<Double, Object, Vector>> rows,
+                                 Collector<Tuple3<Double, Double, Vector>> out)
             throws Exception {
-            for (Tuple2<Vector, Row> ele : rows) {
-                Double weight = (ele.f1.getArity() == 2) ? (double)ele.f1.getField(0) : 1.0;
-                Vector aVector = ele.f0;
-                Double val = this.labelMap.get(ele.f1.getField((ele.f1.getArity() == 2) ? 1 : 0).toString());
-
-                if (aVector instanceof DenseVector) {
-                    DenseVector bVector;
-                    if (standardization) {
-                        if (hasInterceptItem) {
-                            bVector = new DenseVector(aVector.size() + 1);
-                            bVector.set(0, 1.0);
-                            for (int i = 0; i < vectorSize; ++i) {
-                                bVector.set(i + 1, (aVector.get(i) - meanVar[0].get(i)) / meanVar[1].get(i));
-                            }
-                        } else {
-                            bVector = (DenseVector)aVector;
-                            for (int i = 0; i < vectorSize; ++i) {
-                                bVector.set(i, aVector.get(i) / meanVar[1].get(i));
+            for (Tuple3<Double, Object, Vector> ele : rows) {
+                Double weight = ele.f0;
+                Vector aVector = ele.f2;
+                Double val = this.labelMap.get(ele.f1.toString());
+                if (ele.f0 > 0) {
+                    if (aVector instanceof DenseVector) {
+                        if (standardization) {
+                            if (hasInterceptItem) {
+                                for (int i = 0; i < aVector.size(); ++i) {
+                                    aVector.set(i, (aVector.get(i) - meanVar[0].get(i)) / meanVar[1].get(i));
+                                }
+                            } else {
+                                for (int i = 0; i < aVector.size(); ++i) {
+                                    aVector.set(i, aVector.get(i) / meanVar[1].get(i));
+                                }
                             }
                         }
                     } else {
-                        if (hasInterceptItem) {
-                            bVector = new DenseVector(aVector.size() + 1);
-                            bVector.set(0, 1.0);
-                            for (int i = 0; i < vectorSize; ++i) {
-                                bVector.set(i + 1, aVector.get(i));
+                        if (standardization) {
+                            for (int i = 0; i < aVector.size(); ++i) {
+                                aVector.set(i, (aVector.get(i) - meanVar[0].get(i)) / meanVar[1].get(i));
                             }
-                        } else {
-                            bVector = (DenseVector)aVector;
                         }
                     }
-                    out.collect(Tuple3.of(weight, val, bVector));
-
-                } else {
-                    SparseVector bVector = (SparseVector)aVector;
-
-                    if (standardization) {
-                        if (hasInterceptItem) {
-                            bVector = bVector.prefix(1.0);
-                            int[] indices = bVector.getIndices();
-                            double[] vals = bVector.getValues();
-                            for (int i = 1; i < indices.length; ++i) {
-                                vals[i] = (vals[i] - meanVar[0].get(indices[i] - 1)) / meanVar[1].get(indices[i] - 1);
-                            }
-                        } else {
-                            int[] indices = bVector.getIndices();
-                            double[] vals = bVector.getValues();
-                            for (int i = 0; i < indices.length; ++i) {
-                                vals[i] = vals[i] / meanVar[1].get(indices[i]);
-                            }
-                        }
-                    } else {
-                        if (hasInterceptItem) {
-                            bVector.setSize(vectorSize);
-                            bVector = bVector.prefix(1.0);
-                        }
-                    }
-                    out.collect(Tuple3.of(weight, val, bVector));
+                    out.collect(Tuple3.of(weight, val, aVector));
                 }
             }
         }
     }
 
-    public static class CreateMeta extends RichMapPartitionFunction<Row, Params> {
+    public static class CreateMeta implements MapPartitionFunction<Row, Params> {
+        private static final long serialVersionUID = 8430372703655142394L;
         private String modelName;
-        private TypeInformation<?> labelType;
         private boolean hasInterceptItem;
         private String vectorColName;
 
-        private CreateMeta(String modelName, TypeInformation<?> labelType,
-                           boolean hasInterceptItem, String vectorColName) {
+        private CreateMeta(String modelName, boolean hasInterceptItem, String vectorColName) {
             this.modelName = modelName;
-            this.labelType = labelType;
             this.hasInterceptItem = hasInterceptItem;
             this.vectorColName = vectorColName;
-        }
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
         }
 
         @Override
@@ -439,6 +356,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
 
     public class BuildModelFromCoefs extends AbstractRichFunction implements
         MapPartitionFunction<Tuple2<DenseVector, double[]>, Row> {
+        private static final long serialVersionUID = -5211654314835044657L;
         private String[] featureNames;
         private Params meta;
         private int labelSize;
@@ -458,16 +376,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
                 .getBroadcastVariable("meta").get(0);
             this.meanVar = (DenseVector[])getRuntimeContext()
                 .getBroadcastVariable("meanVar").get(0);
-            int iter = 0;
             this.labelSize = this.meta.get(ModelParamName.NUM_CLASSES);
-            if (standardization) {
-                for (int i = 0; i < meanVar[1].size(); ++i) {
-                    if (meanVar[1].get(i) == 0) {
-                        meanVar[1].set(i, 1.0);
-                        meanVar[0].set(i, 0.0);
-                    }
-                }
-            }
         }
 
         @Override
@@ -475,17 +384,19 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
                                  Collector<Row> collector) throws Exception {
             List<DenseVector> coefVectors = new ArrayList<>();
             boolean hasIntercept = this.meta.get(ModelParamName.HAS_INTERCEPT_ITEM);
+            double[] convInfo = null;
             for (Tuple2<DenseVector, double[]> coefVector : iterable) {
+                convInfo = coefVector.f1;
                 this.meta.set(ModelParamName.VECTOR_SIZE, coefVector.f0.size() / (labelSize - 1)
                     - (hasIntercept ? 1 : 0));
                 this.meta.set(ModelParamName.LOSS_CURVE, coefVector.f1);
                 if (standardization) {
                     if (hasIntercept) {
-                        int vecSize = meanVar[0].size() + 1;
+                        int vecSize = meanVar[0].size();
                         for (int i = 0; i < labelSize - 1; ++i) {
                             double sum = 0.0;
-                            for (int j = 0; j < vecSize - 1; ++j) {
-                                int idx = i * vecSize + j + 1;
+                            for (int j = 1; j < vecSize; ++j) {
+                                int idx = i * vecSize + j;
 
                                 sum += coefVector.f0.get(idx) * meanVar[0].get(j) / meanVar[1].get(j);
 
@@ -500,23 +411,65 @@ public final class SoftmaxTrainBatchOp extends BatchOperator<SoftmaxTrainBatchOp
                         }
                     }
                 }
-
                 coefVectors.add(coefVector.f0);
             }
 
             LinearModelData modelData = new LinearModelData(labelType, meta, featureNames, coefVectors.get(0));
-            //modelData.featureNames = featureNames;
-            //modelData.vectorSize
-            //    = meta.contains(ModelParamName.VECTOR_SIZE) ? meta.get(ModelParamName.VECTOR_SIZE) : 0;
-            //modelData.vectorColName = meta.get(HasVectorCol.VECTOR_COL);
-            //
-            //modelData.coefVector = coefVectors.get(0);
-            //modelData.modelName = meta.get(ModelParamName.MODEL_NAME);
-            //modelData.labelValues
-            //    = FeatureLabelUtil.recoverLabelType(meta.get(ModelParamName.LABEL_VALUES), labelType);
-            ////modelData.linearModelType = meta.get(ModelParamName.LINEAR_MODEL_TYPE);
-            //modelData.hasInterceptItem = meta.get(ModelParamName.HAS_INTERCEPT_ITEM);
+            modelData.convergenceInfo = convInfo;
             new LinearModelDataConverter(this.labelType).save(modelData, collector);
         }
     }
+
+    private Table[] getSideTablesOfCoefficient(DataSet<Row> modelRow) {
+        DataSet<LinearModelData> model = modelRow.mapPartition(new MapPartitionFunction<Row, LinearModelData>() {
+            private static final long serialVersionUID = 2063366042018382802L;
+
+            @Override
+            public void mapPartition(Iterable<Row> values, Collector<LinearModelData> out) throws Exception {
+                List<Row> rows = new ArrayList<>();
+                for (Row row : values) {
+                    rows.add(row);
+                }
+                out.collect(new LinearModelDataConverter().load(rows));
+            }
+        }).setParallelism(1);
+
+        DataSet<Row> summary = model
+            .mapPartition(
+                new RichMapPartitionFunction<LinearModelData, Row>() {
+                    private static final long serialVersionUID = 8785824618242390100L;
+
+                    @Override
+                    public void mapPartition(Iterable<LinearModelData> values, Collector<Row> out) throws Exception {
+
+                    LinearModelData model = values.iterator().next();
+                    double[] cinfo = model.convergenceInfo;
+                    out.collect(Row.of(0, JsonConverter.toJson(model.getMetaInfo())));
+                    out.collect(Row.of(4, JsonConverter.toJson(cinfo)));
+
+                }
+            }).setParallelism(1).withBroadcastSet(model, "model");
+
+        Table summaryTable = DataSetConversionUtil.toTable(getMLEnvironmentId(), summary, new TableSchema(
+            new String[] {"title", "info"}, new TypeInformation[] {Types.INT, Types.STRING}));
+
+        return new Table[] {summaryTable};
+    }
+
+    @Override
+    public SoftmaxModelInfoBatchOp getModelInfoBatchOp() {
+        return new SoftmaxModelInfoBatchOp().linkFrom(this);
+    }
+
+    @Override
+    public LinearModelTrainInfo createTrainInfo(List<Row> rows) {
+        return new LinearModelTrainInfo(rows);
+    }
+
+    @Override
+    public BatchOperator<?> getSideOutputTrainInfo() {
+        return this.getSideOutput(0);
+    }
+
 }
+

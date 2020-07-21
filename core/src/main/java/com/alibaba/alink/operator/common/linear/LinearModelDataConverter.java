@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.linear;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -91,8 +92,8 @@ public class LinearModelDataConverter extends LabeledModelDataConverter<LinearMo
         meta.set(ModelParamName.LINEAR_MODEL_TYPE, data.linearModelType);
         if (data.vectorColName != null) {
             meta.set(HasVectorCol.VECTOR_COL, data.vectorColName);
-            meta.set(ModelParamName.VECTOR_SIZE, data.vectorSize);
         }
+        meta.set(ModelParamName.VECTOR_SIZE, data.vectorSize);
         meta.set(HasLabelCol.LABEL_COL, data.labelName);
         return meta;
     }
@@ -120,6 +121,7 @@ public class LinearModelDataConverter extends LabeledModelDataConverter<LinearMo
         modelData.featureColTypes = data.featureTypes;
         modelData.coefVector = data.coefVector;
         modelData.coefVectors = data.coefVectors;
+        modelData.convergenceInfo = data.convergenceInfo;
         return modelData;
     }
 
@@ -130,6 +132,7 @@ public class LinearModelDataConverter extends LabeledModelDataConverter<LinearMo
         data.featureNames = modelData.featureColNames;
         data.featureTypes = modelData.featureColTypes;
         data.coefVector = modelData.coefVector;
+        data.convergenceInfo = modelData.convergenceInfo;
 
         if (data.modelName.equals("softmax")) {
             double[] w = modelData.coefVector.getData();
@@ -148,12 +151,13 @@ public class LinearModelDataConverter extends LabeledModelDataConverter<LinearMo
     /**
      * The coefficient data of linear model.
      */
-    public static class ModelData {
+    public static class ModelData implements Serializable {
         public String[] featureColNames = null;
         public String[] featureColTypes = null;
         // coefficient for binary classification.
         public DenseVector coefVector = null;
         // coefficients for multiple classification.
         public DenseVector[] coefVectors = null;
+        public double[] convergenceInfo = null;
     }
 }

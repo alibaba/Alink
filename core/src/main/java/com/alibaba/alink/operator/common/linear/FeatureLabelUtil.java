@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.linear;
 
+import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -14,7 +15,7 @@ import org.apache.flink.types.Row;
 public class FeatureLabelUtil {
 
     /**
-     *  Retrieve the feature vector from the input row data.
+     * Retrieve the feature vector from the input row data.
      */
     public static Vector getFeatureVector(Row row, boolean hasInterceptItem, int featureN,
                                           int[] featureIdx,
@@ -81,16 +82,16 @@ public class FeatureLabelUtil {
                 continue;
             }
             if (label instanceof String) {
-                String strLable = (String) label;
+                String strLable = (String)label;
                 try {
                     LabelTypeEnum.StringTypeEnum operation =
-                            LabelTypeEnum.StringTypeEnum.valueOf(labelType.toString().toUpperCase());
+                        LabelTypeEnum.StringTypeEnum.valueOf(labelType.toString().toUpperCase());
                     labels[i] = operation.getOperation().apply(strLable);
                 } catch (Exception e) {
                     throw new RuntimeException("unknown label type: " + labelType);
                 }
             } else if (label instanceof Double) {
-                Double dLabel = (Double) label;
+                Double dLabel = (Double)label;
                 LabelTypeEnum.DoubleTypeEnum operation =
                     LabelTypeEnum.DoubleTypeEnum.valueOf(labelType.toString().toUpperCase());
                 labels[i] = operation.getOperation().apply(dLabel);
@@ -99,6 +100,24 @@ public class FeatureLabelUtil {
         return labels;
     }
 
+    /**
+     * Compute vec1 \cdot vec2 for linear model mapper specially.
+     */
+    public static double dot(Vector vec1, DenseVector vec2) {
+        if (vec1 instanceof DenseVector) {
+            return BLAS.dot((DenseVector)vec1, vec2);
+        } else {
+            double[] values = ((SparseVector)vec1).getValues();
+            int[] indices = ((SparseVector)vec1).getIndices();
+            double s = 0.;
+            for (int i = 0; i < indices.length; i++) {
+                if (indices[i] < vec2.size()) {
+                    s += values[i] * vec2.get(indices[i]);
+                }
+            }
+            return s;
+        }
+    }
 
     /**
      * Get the weight value.

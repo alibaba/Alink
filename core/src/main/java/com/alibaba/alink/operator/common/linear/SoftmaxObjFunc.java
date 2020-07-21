@@ -17,7 +17,8 @@ import java.util.Arrays;
  * Softmax object function.
  */
 public class SoftmaxObjFunc extends OptimObjFunc {
-    /**
+	private static final long serialVersionUID = -5686349186208428792L;
+	/**
      * k1 = numClass - 1
      */
     private final int k1;
