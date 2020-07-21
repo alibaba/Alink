@@ -1,14 +1,21 @@
 package com.alibaba.alink.operator.batch.feature;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.SortUtils;
+import com.alibaba.alink.operator.common.dataproc.SortUtilsNext;
 import com.alibaba.alink.operator.common.feature.ContinuousRanges;
-import com.alibaba.alink.operator.common.feature.binning.BinDivideType;
-import com.alibaba.alink.operator.common.feature.binning.FeatureBinsCalculator;
-import com.alibaba.alink.operator.common.feature.binning.FeatureBinsCalculatorTransformer;
-
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelInfo;
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelInfoBatchOp;
+import com.alibaba.alink.operator.common.feature.quantile.PairComparable;
+import com.alibaba.alink.operator.common.tree.Preprocessing;
+import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
+import com.alibaba.alink.params.statistics.HasRoundMode;
 import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.functions.RichReduceFunction;
@@ -20,16 +27,6 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.dataproc.SortUtils;
-import com.alibaba.alink.operator.common.dataproc.SortUtilsNext;
-import com.alibaba.alink.operator.common.feature.quantile.PairComparable;
-import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
-import com.alibaba.alink.operator.common.tree.Preprocessing;
-import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
-import com.alibaba.alink.params.statistics.HasRoundMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +45,9 @@ import java.util.stream.StreamSupport;
  * Fit a quantile discretizer model.
  */
 public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<QuantileDiscretizerTrainBatchOp>
-	implements QuantileDiscretizerTrainParams<QuantileDiscretizerTrainBatchOp> {
+	implements QuantileDiscretizerTrainParams<QuantileDiscretizerTrainBatchOp>,
+	WithModelInfoBatchOp<QuantileDiscretizerModelInfo, QuantileDiscretizerTrainBatchOp, QuantileDiscretizerModelInfoBatchOp> {
+
 	private static final Logger LOG = LoggerFactory.getLogger(QuantileDiscretizerTrainBatchOp.class);
 
 	public QuantileDiscretizerTrainBatchOp() {
@@ -487,50 +486,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 		}
 	}
 
-
-	public static DataSet<FeatureBinsCalculator> transformModelToFeatureBins(DataSet<Row> modelDataSet,
-																			 BinDivideType binDivideType) {
-		return modelDataSet
-			.reduceGroup(
-				new GroupReduceFunction<Row, FeatureBinsCalculator>() {
-
-					@Override
-					public void reduce(Iterable<Row> values, Collector<FeatureBinsCalculator> out) {
-						List<Row> list = new ArrayList<>();
-						values.forEach(list::add);
-						QuantileDiscretizerModelDataConverter model
-							= new QuantileDiscretizerModelDataConverter().load(list);
-						for (ContinuousRanges featureInterval : model.data.values()) {
-							out.collect(FeatureBinsCalculatorTransformer
-								.fromContinuousFeatureInterval(featureInterval, binDivideType));
-						}
-					}
-				}
-			);
-	}
-
-	public static DataSet<Row> transformFeatureBinsToModel(DataSet<FeatureBinsCalculator> featureBorderDataSet) {
-		return featureBorderDataSet.mapPartition(new MapPartitionFunction<FeatureBinsCalculator, Row>() {
-
-			@Override
-			public void mapPartition(Iterable<FeatureBinsCalculator> values, Collector<Row> out) throws Exception {
-				transformFeatureBinsToModel(values, out);
-			}
-		}).setParallelism(1);
-	}
-
-	public static void transformFeatureBinsToModel(Iterable<FeatureBinsCalculator> values, Collector<Row> out) {
-		List<String> selectedCols = new ArrayList<>();
-		Map<String, ContinuousRanges> m = new HashMap<>();
-		for (FeatureBinsCalculator featureBinsCalculator : values) {
-			m.put(featureBinsCalculator.getFeatureName(),
-				FeatureBinsCalculatorTransformer.toContinuousFeatureInterval(featureBinsCalculator));
-			selectedCols.add(featureBinsCalculator.getFeatureName());
-		}
-		Params meta = new Params().set(QuantileDiscretizerTrainParams.SELECTED_COLS,
-			selectedCols.toArray(new String[0]));
-		QuantileDiscretizerModelDataConverter model = new QuantileDiscretizerModelDataConverter(m, meta);
-
-		model.save(model, out);
+	@Override
+	public QuantileDiscretizerModelInfoBatchOp getModelInfoBatchOp(){
+		return new QuantileDiscretizerModelInfoBatchOp().linkFrom(this);
 	}
 }

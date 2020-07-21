@@ -58,6 +58,14 @@ public class KMeansTrainModelData implements Serializable {
             this.clusterId = clusterId;
             this.weight = weight;
         }
+
+        public double getWeight() {
+            return weight;
+        }
+
+        public long getClusterId() {
+            return clusterId;
+        }
     }
 
     public static class ParamSummary implements Serializable {

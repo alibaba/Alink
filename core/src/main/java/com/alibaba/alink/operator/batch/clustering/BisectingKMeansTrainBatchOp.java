@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.batch.clustering;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -8,6 +9,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelData;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelData.ClusterSummary;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelDataConverter;
+import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelInfoBatchOp;
 import com.alibaba.alink.operator.common.clustering.DistanceType;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
@@ -54,7 +56,8 @@ import java.util.Comparator;
  * 2000.</a>
  */
 public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKMeansTrainBatchOp>
-    implements BisectingKMeansTrainParams<BisectingKMeansTrainBatchOp> {
+    implements BisectingKMeansTrainParams<BisectingKMeansTrainBatchOp>,
+    WithModelInfoBatchOp<BisectingKMeansModelInfoBatchOp.BisectingKMeansModelInfo, BisectingKMeansTrainBatchOp, BisectingKMeansModelInfoBatchOp> {
 
     public final static long ROOT_INDEX = 1;
     private static final Logger LOG = LoggerFactory.getLogger(BisectingKMeansTrainBatchOp.class);
@@ -69,6 +72,11 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
 
     public BisectingKMeansTrainBatchOp(Params params) {
         super(params);
+    }
+
+    @Override
+    public BisectingKMeansModelInfoBatchOp getModelInfoBatchOp(){
+        return new BisectingKMeansModelInfoBatchOp().linkFrom(this);
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.alibaba.alink.operator.batch.clustering;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.clustering.GmmModelInfoBatchOp;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -45,7 +47,8 @@ import java.util.List;
  * to find a global optimum.
  */
 public final class GmmTrainBatchOp extends BatchOperator<GmmTrainBatchOp>
-    implements GmmTrainParams<GmmTrainBatchOp> {
+    implements GmmTrainParams<GmmTrainBatchOp>,
+    WithModelInfoBatchOp<GmmModelInfoBatchOp.GmmModelInfo, GmmTrainBatchOp, GmmModelInfoBatchOp> {
 
     private static final Logger LOG = LoggerFactory.getLogger(GmmTrainBatchOp.class);
 
@@ -55,6 +58,11 @@ public final class GmmTrainBatchOp extends BatchOperator<GmmTrainBatchOp>
 
     public GmmTrainBatchOp(Params params) {
         super(params);
+    }
+
+    @Override
+    public GmmModelInfoBatchOp getModelInfoBatchOp() {
+        return new GmmModelInfoBatchOp(new Params()).linkFrom(this);
     }
 
     /**

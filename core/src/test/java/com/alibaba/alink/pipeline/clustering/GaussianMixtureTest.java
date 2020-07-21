@@ -1,11 +1,15 @@
 package com.alibaba.alink.pipeline.clustering;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.clustering.BisectingKMeansTrainBatchOp;
+import com.alibaba.alink.operator.batch.clustering.GmmTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.MatVecOp;
+import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelInfoBatchOp;
 import com.alibaba.alink.operator.common.clustering.GmmModelData;
 import com.alibaba.alink.operator.common.clustering.GmmModelDataConverter;
+import com.alibaba.alink.operator.common.clustering.GmmModelInfoBatchOp;
 import org.apache.flink.types.Row;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,6 +17,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Test cases for {@link GaussianMixture}.
@@ -149,5 +154,26 @@ public class GaussianMixtureTest {
             actual.add(cluster2D2);
             compareClusterSummariesOfTwoClusters(actual, modelData.data);
         }
+    }
+
+    @Test
+    public void testLazy() throws Exception{
+        BatchOperator data = new MemSourceBatchOp(Arrays.asList(denseData2D), new String[]{"x"});
+
+        GmmTrainBatchOp model = new GmmTrainBatchOp()
+            .setVectorCol("x")
+            .setTol(0.)
+            .linkFrom(data);
+
+        model.lazyCollectModelInfo(new Consumer<GmmModelInfoBatchOp.GmmModelInfo>() {
+            @Override
+            public void accept(GmmModelInfoBatchOp.GmmModelInfo gmmModelInfo) {
+                Assert.assertEquals(gmmModelInfo.getClusterNumber(), 2);
+            }
+        });
+
+        model.lazyPrintModelInfo();
+
+        BatchOperator.execute();
     }
 }

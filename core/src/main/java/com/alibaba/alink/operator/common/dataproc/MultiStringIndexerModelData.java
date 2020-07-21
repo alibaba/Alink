@@ -6,6 +6,7 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.Preconditions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,5 +39,19 @@ public class MultiStringIndexerModelData {
         int colIndex = TableUtil.findColIndexWithAssertAndHint(meta.get(HasSelectedCols.SELECTED_COLS), columnName);
         Preconditions.checkArgument(tokenNumber != null);
         return tokenNumber.get(colIndex);
+    }
+
+    public List<String> getTokens(String column) {
+        Integer colIndex = TableUtil.findColIndex(meta.get(HasSelectedCols.SELECTED_COLS), column);
+
+        List<String> ret = new ArrayList<>();
+
+        for (Tuple3<Integer, String, Long> index : tokenAndIndex) {
+            if (index.f0.equals(colIndex)) {
+                ret.add(index.f1);
+            }
+        }
+
+        return ret;
     }
 }

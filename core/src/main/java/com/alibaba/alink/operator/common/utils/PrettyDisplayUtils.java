@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -41,6 +42,8 @@ public class PrettyDisplayUtils {
             return displayDouble((Double)v, useRawDoubleFormat);
         } else if (DenseVector.class.isAssignableFrom(clz)) {
             return displayDenseVector((DenseVector)v);
+        } else if (DenseMatrix.class.isAssignableFrom(clz)) {
+            return displayDenseMatrix((DenseMatrix)v);
         }
         return v.toString();
     }
@@ -127,6 +130,22 @@ public class PrettyDisplayUtils {
     public static String displayDenseVector(DenseVector dv) {
         double[] data = dv.getData();
         return display(Arrays.asList(ArrayUtils.toObject(data)));
+    }
+
+    /**
+     * display a dense matrix
+     * @param dm
+     * @return
+     */
+    public static String displayDenseMatrix(DenseMatrix dm) {
+        StringBuilder sbd = new StringBuilder();
+        sbd.append(String.format("mat[%d,%d]:\n", dm.numRows(), dm.numCols()));
+        List<DenseVector> list = new ArrayList<>();
+        for (int i = 0; i < dm.numRows(); i++) {
+            list.add(new DenseVector(dm.getRow(i)));
+        }
+        sbd.append(displayList(list, 2, true));
+        return sbd.toString();
     }
 
     /**

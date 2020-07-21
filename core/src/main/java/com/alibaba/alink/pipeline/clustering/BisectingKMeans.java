@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.clustering;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.BisectingKMeansTrainBatchOp;
 import com.alibaba.alink.params.clustering.BisectingKMeansPredictParams;
@@ -20,7 +21,8 @@ import org.apache.flink.ml.api.misc.param.Params;
  */
 public class BisectingKMeans extends Trainer <BisectingKMeans, BisectingKMeansModel> implements
 	BisectingKMeansTrainParams <BisectingKMeans>,
-	BisectingKMeansPredictParams <BisectingKMeans> {
+	BisectingKMeansPredictParams <BisectingKMeans>,
+	HasLazyPrintModelInfo<BisectingKMeans> {
 
 	public BisectingKMeans() {
 		super();

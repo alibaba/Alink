@@ -190,7 +190,7 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
         }
     }
 
-    private static class Tree {
+    static class Tree {
         TreeNode root;
         List<Long> treeNodeIds;
 
@@ -261,6 +261,10 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
 
         public Tuple2<Long, Long> predict(DenseVector x, ContinuousDistance distance) {
             return root.predict(x, distance);
+        }
+
+        public List<Long> getTreeNodeIds() {
+            return treeNodeIds;
         }
     }
 }

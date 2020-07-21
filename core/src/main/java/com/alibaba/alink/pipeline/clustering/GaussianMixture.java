@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.clustering;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.GmmTrainBatchOp;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -23,7 +24,8 @@ import com.alibaba.alink.pipeline.Trainer;
  */
 public class GaussianMixture extends Trainer <GaussianMixture, GaussianMixtureModel> implements
 	GmmTrainParams <GaussianMixture>,
-	GmmPredictParams <GaussianMixture> {
+	GmmPredictParams <GaussianMixture>,
+	HasLazyPrintModelInfo <GaussianMixture> {
 
 	public GaussianMixture() {
 		super();

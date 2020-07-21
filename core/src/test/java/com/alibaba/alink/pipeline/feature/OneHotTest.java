@@ -7,6 +7,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.OneHotPredictBatchOp;
 import com.alibaba.alink.operator.batch.feature.OneHotTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.feature.OneHotModelInfo;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
@@ -22,6 +23,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
@@ -63,6 +65,7 @@ public class OneHotTest {
 		OneHotEncoder oneHot = new OneHotEncoder()
 			.setSelectedCols(binaryNames)
 			.setOutputCols("results")
+			.enableLazyPrintModelInfo("onehot")
 			.setDropLast(false);
 
 		VectorAssembler va = new VectorAssembler()
@@ -119,5 +122,24 @@ public class OneHotTest {
 			VectorUtil.getVector("$18$2:1.0 9:1.0 14:1.0").size());
 		assertEquals(map.get("1").size(),
 			VectorUtil.getVector("$18$1:1.0 11:1.0 15:1.0").size());
+	}
+
+	@Test
+	public void testLazy() throws Exception{
+		OneHotTrainBatchOp op = new OneHotTrainBatchOp()
+			.setSelectedCols(binaryNames)
+			.linkFrom((BatchOperator)getData(true));
+
+		op.lazyPrintModelInfo();
+
+		op.lazyCollectModelInfo(new Consumer<OneHotModelInfo>() {
+			@Override
+			public void accept(OneHotModelInfo oneHotModelInfo) {
+				System.out.println(Arrays.toString(oneHotModelInfo.getTokens("word")));
+				Assert.assertEquals(oneHotModelInfo.getSelectedColsInModel().length, binaryNames.length);
+			}
+		});
+
+		BatchOperator.execute();
 	}
 }

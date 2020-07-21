@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.clustering;
 
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.clustering.DistanceType;
@@ -29,7 +30,8 @@ import org.apache.flink.util.Preconditions;
  * (https://en.wikipedia.org/wiki/K-means_clustering)
  */
 public final class KMeansTrainBatchOp extends BatchOperator <KMeansTrainBatchOp>
-	implements KMeansTrainParams <KMeansTrainBatchOp> {
+	implements KMeansTrainParams <KMeansTrainBatchOp>,
+	WithModelInfoBatchOp<KMeansModelInfoBatchOp.KMeansModelInfo, KMeansTrainBatchOp, KMeansModelInfoBatchOp> {
 
 	public static final String TRAIN_DATA = "trainData";
 	public static final String INIT_CENTROID = "initCentroid";
@@ -53,6 +55,11 @@ public final class KMeansTrainBatchOp extends BatchOperator <KMeansTrainBatchOp>
 	 */
 	public KMeansTrainBatchOp(Params params) {
 		super(params);
+	}
+
+	@Override
+	public KMeansModelInfoBatchOp getModelInfoBatchOp(){
+		return new KMeansModelInfoBatchOp().linkFrom(this);
 	}
 
 	static DataSet <Row> iterateICQ(DataSet <FastDistanceMatrixData> initCentroid,

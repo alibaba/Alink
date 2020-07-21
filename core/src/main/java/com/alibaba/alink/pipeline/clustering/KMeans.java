@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.clustering;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.KMeansTrainBatchOp;
 import com.alibaba.alink.params.clustering.KMeansPredictParams;
@@ -16,7 +17,8 @@ import org.apache.flink.ml.api.misc.param.Params;
  */
 public class KMeans extends Trainer <KMeans, KMeansModel> implements
 	KMeansTrainParams <KMeans>,
-	KMeansPredictParams <KMeans> {
+	KMeansPredictParams <KMeans>,
+	HasLazyPrintModelInfo <KMeans> {
 
 	public KMeans() {
 		super();
