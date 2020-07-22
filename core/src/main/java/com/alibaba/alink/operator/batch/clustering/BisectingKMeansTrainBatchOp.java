@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.clustering;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -10,7 +11,6 @@ import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelData;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelData.ClusterSummary;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelDataConverter;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelInfoBatchOp;
-import com.alibaba.alink.operator.common.clustering.DistanceType;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
@@ -282,16 +282,16 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
      * @param iterInfo          Iter Info.
      * @return Updated assignment of each samples.
      */
-    private static DataSet<Tuple3<Long, DenseVector, Long>> updateAssignment(
-        DataSet<Tuple3<Long, DenseVector, Long>> data,
+    private static DataSet<Tuple3<Long, Vector, Long>> updateAssignment(
+        DataSet<Tuple3<Long, Vector, Long>> data,
         DataSet<Long> divisibleIndices,
         DataSet<Tuple2<Long, DenseVector>> newClusterCenters,
         final ContinuousDistance distance,
         DataSet<Tuple1<IterInfo>> iterInfo) {
 
         return data
-            .map(new RichMapFunction<Tuple3<Long, DenseVector, Long>,
-                Tuple4<Integer, Long, DenseVector, Long>>() {
+            .map(new RichMapFunction<Tuple3<Long, Vector, Long>,
+                Tuple4<Integer, Long, Vector, Long>>() {
                 private transient int taskId;
 
                 @Override
@@ -300,7 +300,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
                 }
 
                 @Override
-                public Tuple4<Integer, Long, DenseVector, Long> map(Tuple3<Long, DenseVector, Long> value) {
+                public Tuple4<Integer, Long, Vector, Long> map(Tuple3<Long, Vector, Long> value) {
                     return Tuple4.of(taskId, value.f0, value.f1, value.f2);
                 }
             })
@@ -321,7 +321,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
             .name("update_assignment");
     }
 
-    static class UpdateAssignment extends RichGroupReduceFunction<Tuple4<Integer, Long, DenseVector, Long>, Tuple3<Long, DenseVector,
+    static class UpdateAssignment extends RichGroupReduceFunction<Tuple4<Integer, Long, Vector, Long>, Tuple3<Long, Vector,
         Long>> {
         transient Set<Long> divisibleIndices;
         transient Map<Long, DenseVector> newClusterCenters;
@@ -370,10 +370,10 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
         }
 
         @Override
-        public void reduce(Iterable<Tuple4<Integer, Long, DenseVector, Long>> samples,
-                           Collector<Tuple3<Long, DenseVector, Long>> out) {
+        public void reduce(Iterable<Tuple4<Integer, Long, Vector, Long>> samples,
+                           Collector<Tuple3<Long, Vector, Long>> out) {
             int pos = 0;
-            for (Tuple4<Integer, Long, DenseVector, Long> sample : samples) {
+            for (Tuple4<Integer, Long, Vector, Long> sample : samples) {
                 long parentClusterId = sample.f3;
                 if (shouldInitState) {
                     assignmentInState.add(Tuple2.of(sample.f1, sample.f3));
@@ -389,7 +389,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
                     long clusterId;
                     if (distance instanceof EuclideanDistance) {
                         Tuple2<DenseVector, Double> plane = middlePlanes.get(parentClusterId);
-                        double d = BLAS.dot(sample.f2, plane.f0);
+                        double d = MatVecOp.dot(sample.f2, plane.f0);
                         clusterId = d < plane.f1 ? leftChildIdx : rightChildIdx;
                     } else {
                         clusterId = getClosestNode(leftChildIdx, newClusterCenters.get(leftChildIdx),
@@ -410,7 +410,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
                                       DenseVector leftNodeVec,
                                       long rightNode,
                                       DenseVector rightNodeVec,
-                                      DenseVector sample,
+                                      Vector sample,
                                       ContinuousDistance distance) {
         double distanceLeft = distance.calc(sample, leftNodeVec);
         double distanceRight = distance.calc(sample, rightNodeVec);
@@ -426,14 +426,14 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
      * @return <ClusterId, ClusterSummary> pair.
      */
     private static DataSet<Tuple2<Long, ClusterSummary>>
-    summary(DataSet<Tuple2<Long, DenseVector>> assignment, DataSet<Integer> dim, final DistanceType distanceType) {
+    summary(DataSet<Tuple2<Long, Vector>> assignment, DataSet<Integer> dim, final DistanceType distanceType) {
         return assignment
             .mapPartition(
-                new RichMapPartitionFunction<Tuple2<Long, DenseVector>,
+                new RichMapPartitionFunction<Tuple2<Long, Vector>,
                     Tuple2<Long, ClusterSummaryAggregator>>() {
 
                     @Override
-                    public void mapPartition(Iterable<Tuple2<Long, DenseVector>> values,
+                    public void mapPartition(Iterable<Tuple2<Long, Vector>> values,
                                              Collector<Tuple2<Long, ClusterSummaryAggregator>> out) {
                         Map<Long, ClusterSummaryAggregator> aggregators = new HashMap(0);
                         final int dim = (Integer)(getRuntimeContext().getBroadcastVariable(VECTOR_SIZE).get(0));
@@ -531,12 +531,12 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
         });
 
         // tuple: sampleId, features, assignment
-        DataSet<Tuple3<Long, DenseVector, Long>> initialAssignment = DataSetUtils.zipWithUniqueId(vectorsAndStat.f0)
+        DataSet<Tuple3<Long, Vector, Long>> initialAssignment = DataSetUtils.zipWithUniqueId(vectorsAndStat.f0)
             .map(
-                new MapFunction<Tuple2<Long, Vector>, Tuple3<Long, DenseVector, Long>>() {
+                new MapFunction<Tuple2<Long, Vector>, Tuple3<Long, Vector, Long>>() {
                     @Override
-                    public Tuple3<Long, DenseVector, Long> map(Tuple2<Long, Vector> value) {
-                        return Tuple3.of(value.f0, (DenseVector)value.f1, ROOT_INDEX);
+                    public Tuple3<Long, Vector, Long> map(Tuple2<Long, Vector> value) {
+                        return Tuple3.of(value.f0, value.f1, ROOT_INDEX);
                     }
                 });
 
@@ -563,7 +563,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
         DataSet<Long> divisibleClusterIndices = getDivisibleClusterIndices(allClusters);
         DataSet<Tuple2<Long, DenseVector>> newClusterCenters = getNewClusterCenters(allClusters);
 
-        DataSet<Tuple3<Long, DenseVector, Long>> newAssignment = updateAssignment(
+        DataSet<Tuple3<Long, Vector, Long>> newAssignment = updateAssignment(
             initialAssignment, divisibleClusterIndices, newClusterCenters, distance, iterInfo);
 
         DataSet<Tuple2<Long, ClusterSummary>> newClusterSummaries = summary(
@@ -648,15 +648,14 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator<BisectingKM
         }
 
         ClusterSummaryAggregator(int dim, DistanceType distanceType) {
-            Preconditions.checkArgument(distanceType == DistanceType.EUCLIDEAN || distanceType == DistanceType.COSINE,
-                "distanceType not support: {}", distanceType);
             sum = new DenseVector(dim);
             this.distanceType = distanceType;
         }
 
-        public void add(DenseVector v) {
+        public void add(Vector v) {
             count++;
-            double norm = BLAS.dot(v, v);
+
+            double norm = MatVecOp.dot(v, v);
             sumSqured += norm;
 
             if (distanceType == DistanceType.EUCLIDEAN) {

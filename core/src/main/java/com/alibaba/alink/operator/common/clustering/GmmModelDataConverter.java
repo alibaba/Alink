@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.common.clustering;
 
-import com.alibaba.alink.operator.common.clustering.GmmModelData.ClusterSummary;
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.params.clustering.GmmTrainParams;
@@ -24,7 +23,7 @@ public class GmmModelDataConverter extends SimpleModelDataConverter<GmmModelData
     @Override
     public Tuple2<Params, Iterable<String>> serializeModel(GmmModelData modelData) {
         List<String> data = new ArrayList<>();
-        for (ClusterSummary clusterSummary : modelData.data) {
+        for (GmmClusterSummary clusterSummary : modelData.data) {
             data.add(JsonConverter.toJson(clusterSummary));
         }
         Params meta = new Params()
@@ -43,7 +42,7 @@ public class GmmModelDataConverter extends SimpleModelDataConverter<GmmModelData
         modelData.dim = meta.get(NUM_FEATURES);
         modelData.data = new ArrayList<>(modelData.k);
         for (String row : data) {
-            modelData.data.add(JsonConverter.fromJson(row, ClusterSummary.class));
+            modelData.data.add(JsonConverter.fromJson(row, GmmClusterSummary.class));
         }
 
         return modelData;

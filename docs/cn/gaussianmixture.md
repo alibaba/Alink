@@ -48,7 +48,7 @@ gmm = GaussianMixture() \
     .setPredictionCol("cluster_id") \
     .setVectorCol("features") \
     .setPredictionDetailCol("cluster_detail")
-    .setTol(0.)
+    .setEpsilon(0.)
 
 gmm.fit(data).transform(data).print()
 ```
