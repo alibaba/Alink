@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.io.BaseDB;
+import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
@@ -46,6 +47,11 @@ public class AnnotationUtils {
     private static final Map<String, Wrapper<BaseDB>> DB_CLASSES = loadDBClasses();
 
     /**
+     * All annotated FileSystem classes, annotated name as key.
+     */
+    private static final Map<String, Class<? extends BaseFileSystem<?>>> FILE_SYSTEM_CLASSES = loadFileSystemClasses();
+
+    /**
      * All annotated IO operator classes, annotated name as row key, IOType as column key.
      */
     private static final Table<String, IOType, Wrapper<AlgoOperator>> IO_OP_CLASSES = loadIoOpClasses();
@@ -69,6 +75,31 @@ public class AnnotationUtils {
             if (origin != null) {
                 LOG.error("Multiple DB class with same name {}: {} and {}",
                         name, origin.clazz.getCanonicalName(), clazz.getCanonicalName());
+            }
+        }
+
+        return ImmutableMap.copyOf(map);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Class<? extends BaseFileSystem<?>>> loadFileSystemClasses() {
+        Reflections reflections = new Reflections("com.alibaba.alink");
+        Map<String, Class<? extends BaseFileSystem<?>>> map = new HashMap<>();
+        Set<Class<?>> set = reflections.getTypesAnnotatedWith(FSAnnotation.class);
+        for (Class<?> clazz : set) {
+            if (!BaseFileSystem.class.isAssignableFrom(clazz)) {
+                LOG.error("DB class annotated with @DBAnnotation should be subclass of BaseDB: {}",
+                    clazz.getCanonicalName());
+                continue;
+            }
+
+            FSAnnotation annotation = clazz.getAnnotation(FSAnnotation.class);
+            String name = annotation.name();
+            Class<? extends BaseFileSystem<?>> origin = map.put(name, (Class<? extends BaseFileSystem<?>>) clazz);
+            if (origin != null) {
+                LOG.error("Multiple DB class with same name {}: {} and {}",
+                    name, origin.getCanonicalName(), clazz.getCanonicalName());
             }
         }
 
@@ -117,6 +148,9 @@ public class AnnotationUtils {
             return annotation == null ? null : annotation.name();
         } else if (BaseDB.class.isAssignableFrom(clazz)) {
             DBAnnotation annotation = clazz.getAnnotation(DBAnnotation.class);
+            return annotation == null ? null : annotation.name();
+        } else if (BaseFileSystem.class.isAssignableFrom(clazz)) {
+            FSAnnotation annotation = clazz.getAnnotation(FSAnnotation.class);
             return annotation == null ? null : annotation.name();
         } else {
             throw new IllegalStateException(
@@ -208,6 +242,14 @@ public class AnnotationUtils {
         return result;
     }
 
+    /**
+     * Get all annotated names of FileSystem classes.
+     *
+     * @return name list.
+     */
+    public static List<String> allFileSystemNames() {
+        return new ArrayList<>(FILE_SYSTEM_CLASSES.keySet());
+    }
 
     /**
      * Create a DB object with given name attribute. The constructor with single {@link Params} argument will be called.
@@ -221,6 +263,20 @@ public class AnnotationUtils {
         Wrapper<BaseDB> db = DB_CLASSES.get(name);
         Preconditions.checkArgument(db != null, "No DB named %s", name);
         return db.clazz.getConstructor(Params.class).newInstance(parameter);
+    }
+
+    /**
+     * Create a FileSystem object with given name attribute. The constructor with single {@link Params} argument will be called.
+     *
+     * @param name      annotated name of FileSystem.
+     * @param parameter the param passed to constructor.
+     * @return the crete FileSystem object.
+     * @throws Exception if given name is invalid or exception thrown in constructor.
+     */
+    public static BaseFileSystem<?> createFileSystem(String name, Params parameter) throws Exception {
+        Class<? extends BaseFileSystem<?>> fileSystem = FILE_SYSTEM_CLASSES.get(name);
+        Preconditions.checkArgument(fileSystem != null, "No DB named %s", name);
+        return fileSystem.getConstructor(Params.class).newInstance(parameter);
     }
 
     /**
@@ -260,6 +316,15 @@ public class AnnotationUtils {
         return op.hasTimestamp;
     }
 
+    /**
+     * Check if there is a FileSystem has given annotated name.
+     *
+     * @param name FileSystem name to check.
+     * @return true if there is.
+     */
+    public static boolean isFileSystem(String name) {
+        return FILE_SYSTEM_CLASSES.containsKey(name);
+    }
 
     /**
      * Create a IO operator object with given name and ioType attribute. The constructor with single {@link Params}

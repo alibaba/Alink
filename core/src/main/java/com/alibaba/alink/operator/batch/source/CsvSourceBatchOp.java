@@ -4,7 +4,6 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
-import org.apache.flink.api.java.io.RowCsvInputFormat;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -16,6 +15,8 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
+import com.alibaba.alink.common.io.filesystem.FilePath;
+import com.alibaba.alink.common.io.filesystem.copy.csv.RowCsvInputFormat;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.csv.GenericCsvInputFormat;
@@ -50,14 +51,14 @@ public final class CsvSourceBatchOp extends BaseSourceBatchOp<CsvSourceBatchOp>
 
     public CsvSourceBatchOp(String filePath, String schemaStr) {
         this(new Params()
-            .set(FILE_PATH, filePath)
+            .set(FILE_PATH, new FilePath(filePath).serialize())
             .set(SCHEMA_STR, schemaStr)
         );
     }
 
     public CsvSourceBatchOp(String filePath, TableSchema schema) {
         this(new Params()
-            .set(FILE_PATH, filePath)
+            .set(FILE_PATH, new FilePath(filePath).serialize())
             .set(SCHEMA_STR, CsvUtil.schema2SchemaStr(schema))
         );
     }
@@ -65,7 +66,7 @@ public final class CsvSourceBatchOp extends BaseSourceBatchOp<CsvSourceBatchOp>
     public CsvSourceBatchOp(String filePath, String[] colNames, TypeInformation<?>[] colTypes,
                             String fieldDelim, String rowDelim) {
         this(new Params()
-            .set(FILE_PATH, filePath)
+            .set(FILE_PATH, new FilePath(filePath).serialize())
             .set(SCHEMA_STR, CsvUtil.schema2SchemaStr(new TableSchema(colNames, colTypes)))
             .set(FIELD_DELIMITER, fieldDelim)
             .set(ROW_DELIMITER, rowDelim)
@@ -74,12 +75,13 @@ public final class CsvSourceBatchOp extends BaseSourceBatchOp<CsvSourceBatchOp>
 
     @Override
     public Table initializeDataSource() {
-        final String filePath = getFilePath();
+        final String filePath = getFilePath().getPathStr();
         final String schemaStr = getSchemaStr();
         final String fieldDelim = getFieldDelimiter();
         final String rowDelim = getRowDelimiter();
         final Character quoteChar = getQuoteChar();
         final boolean skipBlankLine = getSkipBlankLine();
+        final boolean lenient = getLenient();
 
         final String[] colNames = CsvUtil.getColNames(schemaStr);
         final TypeInformation[] colTypes = CsvUtil.getColTypes(schemaStr);
@@ -105,12 +107,15 @@ public final class CsvSourceBatchOp extends BaseSourceBatchOp<CsvSourceBatchOp>
                 .name("http_csv_source");
         } else {
             RowCsvInputFormat inputFormat = new RowCsvInputFormat(
-                new Path(filePath), dummySchema.getFieldTypes(), rowDelim, rowDelim, new int[]{0}, true);
+                new Path(filePath), dummySchema.getFieldTypes(),
+                rowDelim, rowDelim, new int[]{0}, true,
+                getFilePath().getFileSystem()
+            );
             inputFormat.setSkipFirstLineAsHeader(ignoreFirstLine);
             rows = execEnv.createInput(inputFormat).name("csv_source");
         }
 
-        rows = rows.flatMap(new CsvUtil.ParseCsvFunc(colTypes, fieldDelim, quoteChar, skipBlankLine));
+        rows = rows.flatMap(new CsvUtil.ParseCsvFunc(colTypes, fieldDelim, quoteChar, skipBlankLine, lenient));
 
         return DataSetConversionUtil.toTable(getMLEnvironmentId(), rows, colNames, colTypes);
     }

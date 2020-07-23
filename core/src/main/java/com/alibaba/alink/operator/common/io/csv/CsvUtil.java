@@ -1,7 +1,6 @@
 package com.alibaba.alink.operator.common.io.csv;
 
-import com.alibaba.alink.common.VectorTypes;
-import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -11,12 +10,19 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
 
 /**
  * A utility class for reading and writing csv files.
  */
 public class CsvUtil {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CsvUtil.class);
 
     /**
      * Extract the TableSchema from a string. The format of the string is comma
@@ -89,18 +95,22 @@ public class CsvUtil {
      * Parse a text line to a {@link Row}.
      */
     public static class ParseCsvFunc extends RichFlatMapFunction<Row, Row> {
+        private static final long serialVersionUID = -6692520343934146759L;
         private TypeInformation[] colTypes;
         private String fieldDelim;
         private Character quoteChar;
         private boolean skipBlankLine;
+        private boolean lenient;
         private transient CsvParser parser;
         private Row emptyRow;
 
-        public ParseCsvFunc(TypeInformation[] colTypes, String fieldDelim, Character quoteChar, boolean skipBlankLine) {
+        public ParseCsvFunc(TypeInformation[] colTypes, String fieldDelim, Character quoteChar,
+                            boolean skipBlankLine, boolean lenient) {
             this.colTypes = colTypes;
             this.fieldDelim = fieldDelim;
             this.quoteChar = quoteChar;
             this.skipBlankLine = skipBlankLine;
+            this.lenient = lenient;
         }
 
         @Override
@@ -118,10 +128,15 @@ public class CsvUtil {
                 }
             } else {
                 Tuple2<Boolean, Row> parsed = parser.parse(line);
-                if (!parsed.f0) {
-                    throw new RuntimeException("Fail to parse line \"" + line + "\"");
+                if (parsed.f0) {
+                    out.collect(parsed.f1);
+                } else {
+                    if (!lenient) {
+                        throw new RuntimeException("Fail to parse line: \"" + line + "\"");
+                    } else {
+                        LOG.warn("Fail to parse line: \"" + line + "\"");
+                    }
                 }
-                out.collect(parsed.f1);
             }
         }
     }
@@ -171,4 +186,28 @@ public class CsvUtil {
     public static TypeInformation[] getColTypes(String schemaStr) {
         return schemaStr2Schema(schemaStr).getFieldTypes();
     }
+
+    public static class FlattenCsvFromRow implements MapFunction<Row, String> {
+        private final String rowDelimiter;
+
+        public FlattenCsvFromRow(String rowDelimiter) {
+            this.rowDelimiter = rowDelimiter;
+        }
+
+        @Override
+        public String map(Row value) throws Exception {
+            StringBuilder builder = new StringBuilder();
+            Object o;
+            for (int i = 0; i < value.getArity(); i++) {
+                if (builder.length() != 0) {
+                    builder.append(rowDelimiter == null ? "\n" : rowDelimiter);
+                }
+                if ((o = value.getField(i)) != null) {
+                    builder.append(o);
+                }
+            }
+            return builder.toString();
+        }
+    }
+
 }

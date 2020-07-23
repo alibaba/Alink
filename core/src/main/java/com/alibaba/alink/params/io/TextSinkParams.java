@@ -7,7 +7,7 @@ import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
 
 public interface TextSinkParams<T> extends WithParams<T>,
-    HasFilePath<T>,
+    HasFilePathWithFileSystem<T>,
 	HasOverwriteSink<T>,
 	HasNumFiles<T> {
 }
