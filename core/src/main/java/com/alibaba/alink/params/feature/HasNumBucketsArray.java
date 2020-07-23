@@ -17,7 +17,7 @@ public interface HasNumBucketsArray<T> extends WithParams<T> {
 		return get(NUM_BUCKETS_ARRAY);
 	}
 
-	default T setNumBucketsArray(Integer[] value) {
+	default T setNumBucketsArray(Integer... value) {
 		return set(NUM_BUCKETS_ARRAY, value);
 	}
 }

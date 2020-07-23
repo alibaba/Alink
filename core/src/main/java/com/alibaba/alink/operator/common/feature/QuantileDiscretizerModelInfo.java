@@ -40,8 +40,8 @@ public class QuantileDiscretizerModelInfo implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sbd = new StringBuilder(PrettyDisplayUtils.displayHeadline("QuantileDiscretizerModelInfo", '-'));
-        sbd.append("Quantile discretizes on ")
+        StringBuilder sbd = new StringBuilder(PrettyDisplayUtils.displayHeadline(getClass().getSimpleName(), '-'));
+        sbd.append("Discretizes on ")
             .append(cutsArray.size())
             .append(" features: ")
             .append(PrettyDisplayUtils.displayList(new ArrayList<>(cutsArray.keySet()), 3, false))
