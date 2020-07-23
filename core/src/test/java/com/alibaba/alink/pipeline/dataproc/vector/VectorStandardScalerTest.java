@@ -3,7 +3,10 @@ package com.alibaba.alink.pipeline.dataproc.vector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.vector.VectorStandardScalerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelInfo;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.pipeline.TestUtil;
@@ -66,5 +69,21 @@ public class VectorStandardScalerTest {
     @Test
     public void testPipeline1() throws Exception {
         testPipeline(true, true);
+    }
+
+    @Test
+    public void testModelInfo() {
+        BatchOperator batchData = new TableSourceBatchOp(GenerateData.getDenseBatch());
+        VectorStandardScalerTrainBatchOp trainOp = new VectorStandardScalerTrainBatchOp()
+            .setWithMean(true).setWithStd(true)
+            .setSelectedCol("vec")
+            .linkFrom(batchData);
+        VectorStandardScalerModelInfo modelInfo = trainOp.getModelInfoBatchOp().collectModelInfo();
+        System.out.println(modelInfo.getMeans().length);
+        System.out.println(modelInfo.getStdDevs().length);
+        System.out.println(modelInfo.isWithMeans());
+        System.out.println(modelInfo.isWithStdDevs());
+        System.out.println(modelInfo.toString());
+
     }
 }

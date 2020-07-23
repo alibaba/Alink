@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.dataproc;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.StandardScalerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.StandardPredictParams;
@@ -11,7 +12,8 @@ import com.alibaba.alink.pipeline.Trainer;
  */
 public class StandardScaler extends Trainer <StandardScaler, StandardScalerModel> implements
 	StandardTrainParams <StandardScaler>,
-	StandardPredictParams <StandardScaler> {
+	StandardPredictParams <StandardScaler>,
+	HasLazyPrintModelInfo<StandardScaler> {
 
 	public StandardScaler() {
 		super();

@@ -1,7 +1,7 @@
 package com.alibaba.alink.operator.common.dataproc;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
@@ -47,10 +47,10 @@ public class StandardScalerModelMapper extends ModelMapper {
     @Override
     public void loadModel(List<Row> modelRows) {
         StandardScalerModelDataConverter converter = new StandardScalerModelDataConverter();
-        Tuple2<double[], double[]> tuple2 = converter.load(modelRows);
+        Tuple4<Boolean, Boolean, double[], double[]> tuple4 = converter.load(modelRows);
 
-        means = tuple2.f0;
-        stddevs = tuple2.f1;
+        means = tuple4.f2;
+        stddevs = tuple4.f3;
     }
 
     /**

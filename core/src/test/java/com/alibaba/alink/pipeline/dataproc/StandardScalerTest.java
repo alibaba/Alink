@@ -3,7 +3,10 @@ package com.alibaba.alink.pipeline.dataproc;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.StandardScalerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.StandardScalerModelInfo;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -85,5 +88,21 @@ public class StandardScalerTest {
 
         model.transform(streamData).print();
         StreamOperator.execute();
+    }
+
+    @Test
+    public void testModelInfo() {
+        BatchOperator batchData = new TableSourceBatchOp(GenerateData.getBatchTable());
+        StandardScalerTrainBatchOp trainOp = new StandardScalerTrainBatchOp()
+            .setWithMean(true).setWithStd(true)
+            .setSelectedCols("f0")
+            .linkFrom(batchData);
+        StandardScalerModelInfo modelInfo = trainOp.getModelInfoBatchOp().collectModelInfo();
+        System.out.println(modelInfo.getMeans().length);
+        System.out.println(modelInfo.getStdDevs().length);
+        System.out.println(modelInfo.isWithMeans());
+        System.out.println(modelInfo.isWithStdDevs());
+        System.out.println(modelInfo.toString());
+
     }
 }

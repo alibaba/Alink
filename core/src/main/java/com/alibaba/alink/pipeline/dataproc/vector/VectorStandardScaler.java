@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.dataproc.vector;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorStandardScalerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.vector.VectorStandardPredictParams;
@@ -13,7 +14,8 @@ import com.alibaba.alink.pipeline.Trainer;
  */
 public class VectorStandardScaler extends Trainer <VectorStandardScaler, VectorStandardScalerModel> implements
 	VectorStandardTrainParams <VectorStandardScaler>,
-	VectorStandardPredictParams <VectorStandardScaler> {
+	VectorStandardPredictParams <VectorStandardScaler>,
+	HasLazyPrintModelInfo<VectorStandardScaler> {
 
 	public VectorStandardScaler() {
 		super();

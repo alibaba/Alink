@@ -1,6 +1,9 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.dataproc.StandardScalerModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.StandardScalerModelInfo;
+import com.alibaba.alink.operator.common.dataproc.StandardScalerModelInfoBatchOp;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -20,7 +23,8 @@ import org.apache.flink.util.Collector;
  * StandardScaler transforms a dataset, normalizing each feature to have unit standard deviation and/or zero mean.
  */
 public class StandardScalerTrainBatchOp extends BatchOperator<StandardScalerTrainBatchOp>
-    implements StandardTrainParams<StandardScalerTrainBatchOp> {
+    implements StandardTrainParams<StandardScalerTrainBatchOp>,
+    WithModelInfoBatchOp<StandardScalerModelInfo, StandardScalerTrainBatchOp, StandardScalerModelInfoBatchOp> {
 
     public StandardScalerTrainBatchOp() {
         super(null);
@@ -55,6 +59,11 @@ public class StandardScalerTrainBatchOp extends BatchOperator<StandardScalerTrai
         this.setOutput(rows, converter.getModelSchema());
 
         return this;
+    }
+
+    @Override
+    public StandardScalerModelInfoBatchOp getModelInfoBatchOp() {
+        return new StandardScalerModelInfoBatchOp().linkFrom(this);
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.dataproc;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MinMaxScalerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.MinMaxScalerPredictParams;
@@ -12,7 +13,8 @@ import com.alibaba.alink.pipeline.Trainer;
  */
 public class MinMaxScaler extends Trainer <MinMaxScaler, MinMaxScalerModel> implements
 	MinMaxScalerTrainParams <MinMaxScaler>,
-	MinMaxScalerPredictParams <MinMaxScaler> {
+	MinMaxScalerPredictParams <MinMaxScaler>,
+	HasLazyPrintModelInfo<MinMaxScaler> {
 
 	public MinMaxScaler() {
 		super();

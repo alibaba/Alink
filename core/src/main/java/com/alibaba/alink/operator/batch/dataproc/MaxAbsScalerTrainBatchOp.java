@@ -1,6 +1,9 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.common.dataproc.MaxAbsScalarModelInfo;
 import com.alibaba.alink.operator.common.dataproc.MaxAbsScalerModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.MaxAbsScalerModelInfoBatchOp;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -22,7 +25,8 @@ import org.apache.flink.util.Collector;
  * MaxAbsScalerTrain will train a model.
  */
 public class MaxAbsScalerTrainBatchOp extends BatchOperator<MaxAbsScalerTrainBatchOp>
-    implements MaxAbsScalerTrainParams<MaxAbsScalerTrainBatchOp> {
+    implements MaxAbsScalerTrainParams<MaxAbsScalerTrainBatchOp>,
+    WithModelInfoBatchOp<MaxAbsScalarModelInfo, MaxAbsScalerTrainBatchOp, MaxAbsScalerModelInfoBatchOp> {
 
     public MaxAbsScalerTrainBatchOp() {
         super(null);
@@ -54,6 +58,11 @@ public class MaxAbsScalerTrainBatchOp extends BatchOperator<MaxAbsScalerTrainBat
         this.setOutput(rows, converter.getModelSchema());
 
         return this;
+    }
+
+    @Override
+    public MaxAbsScalerModelInfoBatchOp getModelInfoBatchOp() {
+        return new MaxAbsScalerModelInfoBatchOp().linkFrom(this);
     }
 
     /**

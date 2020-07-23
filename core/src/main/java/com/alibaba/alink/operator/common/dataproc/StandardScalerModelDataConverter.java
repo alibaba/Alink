@@ -7,6 +7,7 @@ import com.alibaba.alink.params.dataproc.StandardTrainParams;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
@@ -16,7 +17,7 @@ import java.util.List;
 
 public class StandardScalerModelDataConverter extends RichModelDataConverter<
     Tuple3<Boolean, Boolean, TableSummary>,
-    Tuple2<double[], double[]>> {
+    Tuple4<Boolean, Boolean, double[], double[]>> {
 
     public String[] selectedColNames;
     public TypeInformation[] selectedColTypes;
@@ -91,9 +92,11 @@ public class StandardScalerModelDataConverter extends RichModelDataConverter<
      * @return The deserialized model data.
      */
     @Override
-    public Tuple2<double[], double[]> deserializeModel(Params meta, Iterable<String> data, Iterable<Row> additionData) {
+    public Tuple4<Boolean, Boolean, double[], double[]> deserializeModel(Params meta, Iterable<String> data, Iterable<Row> additionData) {
         Iterator<String> iter = data.iterator();
-        return new Tuple2<>(
+        return new Tuple4<>(
+            meta.get(StandardTrainParams.WITH_MEAN),
+            meta.get(StandardTrainParams.WITH_STD),
             JsonConverter.fromJson(iter.next(), double[].class),
             JsonConverter.fromJson(iter.next(), double[].class)
         );

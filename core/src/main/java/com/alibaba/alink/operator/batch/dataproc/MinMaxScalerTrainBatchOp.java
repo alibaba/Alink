@@ -1,6 +1,9 @@
 package com.alibaba.alink.operator.batch.dataproc;
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelInfo;
+import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelInfoBatchOp;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -20,7 +23,8 @@ import org.apache.flink.util.Collector;
  * MinMaxScalerTrain will train a model.
  */
 public class MinMaxScalerTrainBatchOp extends BatchOperator<MinMaxScalerTrainBatchOp>
-    implements MinMaxScalerTrainParams<MinMaxScalerTrainBatchOp> {
+    implements MinMaxScalerTrainParams<MinMaxScalerTrainBatchOp>,
+    WithModelInfoBatchOp<MinMaxScalerModelInfo, MinMaxScalerTrainBatchOp, MinMaxScalerModelInfoBatchOp> {
 
     public MinMaxScalerTrainBatchOp() {
         super(null);
@@ -54,6 +58,11 @@ public class MinMaxScalerTrainBatchOp extends BatchOperator<MinMaxScalerTrainBat
 
         this.setOutput(rows, converter.getModelSchema());
         return this;
+    }
+
+    @Override
+    public MinMaxScalerModelInfoBatchOp getModelInfoBatchOp() {
+        return new MinMaxScalerModelInfoBatchOp().linkFrom(this);
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.classification;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.NaiveBayesTextTrainBatchOp;
 import com.alibaba.alink.params.classification.NaiveBayesTextPredictParams;
@@ -19,7 +20,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 public class NaiveBayesTextClassifier
 	extends Trainer<NaiveBayesTextClassifier, NaiveBayesTextModel> implements
 		NaiveBayesTextTrainParams<NaiveBayesTextClassifier>,
-        NaiveBayesTextPredictParams<NaiveBayesTextClassifier> {
+        NaiveBayesTextPredictParams<NaiveBayesTextClassifier>,
+	HasLazyPrintModelInfo<NaiveBayesTextClassifier> {
 
 	public NaiveBayesTextClassifier() {
 		super();

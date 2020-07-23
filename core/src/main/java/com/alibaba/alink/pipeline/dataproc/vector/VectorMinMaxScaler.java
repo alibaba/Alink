@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.dataproc.vector;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorMinMaxScalerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerPredictParams;
@@ -13,7 +14,8 @@ import com.alibaba.alink.pipeline.Trainer;
  */
 public class VectorMinMaxScaler extends Trainer <VectorMinMaxScaler, VectorMinMaxScalerModel> implements
 	VectorMinMaxScalerTrainParams <VectorMinMaxScaler>,
-	VectorMinMaxScalerPredictParams <VectorMinMaxScaler> {
+	VectorMinMaxScalerPredictParams <VectorMinMaxScaler>,
+	HasLazyPrintModelInfo<VectorMinMaxScaler> {
 
 	public VectorMinMaxScaler() {
 		super();

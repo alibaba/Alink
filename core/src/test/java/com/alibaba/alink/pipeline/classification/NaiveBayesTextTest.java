@@ -5,6 +5,7 @@ import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.classification.NaiveBayesTextModelInfo;
 import com.alibaba.alink.operator.batch.classification.NaiveBayesTextPredictBatchOp;
 import com.alibaba.alink.operator.batch.classification.NaiveBayesTextTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -88,15 +89,25 @@ public class NaiveBayesTextTest {
 	public void testBatch() throws Exception {
 		String labelName = "labels";
 		NaiveBayesTextTrainBatchOp op = new NaiveBayesTextTrainBatchOp()
-				.setModelType("Bernoulli")
-				.setLabelCol(labelName)
-				.setVectorCol("vec")
-				.setSmoothing(0.5).linkFrom((BatchOperator) getData(true));
+			.setModelType("Bernoulli")
+			.setLabelCol(labelName)
+			.setVectorCol("vec")
+			.setSmoothing(0.5).linkFrom((BatchOperator) getData(true));
+		NaiveBayesTextModelInfo modelInfo = op.getModelInfoBatchOp().collectModelInfo();
+		System.out.println(modelInfo.getVectorColName());
+		System.out.println(modelInfo.getModelType());
+		System.out.println(modelInfo.getLabelList().length);
+		System.out.println(modelInfo.getFeatureLabelInfo().length);
+		System.out.println(modelInfo.getPositiveFeatureProportionPerLabel().length);
+		System.out.println(modelInfo.toString());
+		op.lazyPrint(-1);
 		NaiveBayesTextPredictBatchOp predict = new NaiveBayesTextPredictBatchOp()
-				.setPredictionCol("predsvResult")
-				.setVectorCol("vec")
-				.setPredictionDetailCol("predsvResultColName");
-		predict.linkFrom(op, (BatchOperator) getData(true)).print();
+			.setPredictionCol("predsvResult")
+			.setVectorCol("vec")
+			.setPredictionDetailCol("detail");
+		predict = predict.linkFrom(op, (BatchOperator) getData(true));
+		predict.lazyCollect();
+		BatchOperator.execute();
 	}
 
 	@Test

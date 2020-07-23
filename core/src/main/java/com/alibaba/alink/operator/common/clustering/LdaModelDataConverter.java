@@ -5,6 +5,7 @@ import com.alibaba.alink.operator.common.clustering.lda.LdaUtil;
 import com.alibaba.alink.operator.common.clustering.lda.LdaEvaluateParams;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.linalg.DenseMatrix;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.clustering.LdaTrainParams;
 import com.alibaba.alink.params.clustering.lda.HasAlphaArray;
 import com.alibaba.alink.params.clustering.lda.HasBetaArray;
 import com.alibaba.alink.params.clustering.lda.HasVocabularySize;
+import org.apache.flink.types.Row;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,6 +116,11 @@ public class LdaModelDataConverter extends SimpleModelDataConverter<LdaModelData
         DenseMatrix matrix = JsonConverter.fromJson(sbd.toString(), DenseMatrix.class);
         return Tuple2.of(matrix, docCountData);
 
+    }
+
+    public Tuple4<Double, Double, Integer, Integer> loadSummary(List<Row> rows) {
+        LdaModelData modelData = new LdaModelDataConverter().load(rows);
+        return Tuple4.of(modelData.logPerplexity, modelData.logLikelihood, modelData.topicNum, modelData.vocabularySize);
     }
 
 }

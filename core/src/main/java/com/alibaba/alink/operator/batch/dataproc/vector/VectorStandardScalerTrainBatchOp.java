@@ -1,6 +1,9 @@
 package com.alibaba.alink.operator.batch.dataproc.vector;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelInfo;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelInfoBatchOp;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.DataSet;
@@ -19,7 +22,8 @@ import org.apache.flink.util.Collector;
  * If withMean is false, set mean as 0; if withStd is false, set std as 1.
  */
 public final class VectorStandardScalerTrainBatchOp extends BatchOperator<VectorStandardScalerTrainBatchOp>
-    implements VectorStandardTrainParams<VectorStandardScalerTrainBatchOp> {
+    implements VectorStandardTrainParams<VectorStandardScalerTrainBatchOp>,
+    WithModelInfoBatchOp<VectorStandardScalerModelInfo, VectorStandardScalerTrainBatchOp, VectorStandardScalerModelInfoBatchOp> {
 
     public VectorStandardScalerTrainBatchOp() {
         this(new Params());
@@ -43,6 +47,11 @@ public final class VectorStandardScalerTrainBatchOp extends BatchOperator<Vector
         setOutput(rows, converter.getModelSchema());
 
         return this;
+    }
+
+    @Override
+    public VectorStandardScalerModelInfoBatchOp getModelInfoBatchOp() {
+        return new VectorStandardScalerModelInfoBatchOp().linkFrom(this);
     }
 
     /**

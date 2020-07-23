@@ -2,7 +2,10 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.MaxAbsScalerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.MaxAbsScalarModelInfo;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -79,5 +82,16 @@ public class MaxAbsScalerTest {
 	@Test
 	public void testPipeline() throws Exception {
 		testPipelineI();
+	}
+
+	@Test
+	public void testModelInfo() {
+		BatchOperator batchData = new TableSourceBatchOp(GenerateData.getBatchTable());
+		MaxAbsScalerTrainBatchOp trainOp = new MaxAbsScalerTrainBatchOp()
+			.setSelectedCols("f0")
+			.linkFrom(batchData);
+		MaxAbsScalarModelInfo modelInfo = trainOp.getModelInfoBatchOp().collectModelInfo();
+		System.out.println(modelInfo.getMaxAbs().length);
+		System.out.println(modelInfo.toString());
 	}
 }

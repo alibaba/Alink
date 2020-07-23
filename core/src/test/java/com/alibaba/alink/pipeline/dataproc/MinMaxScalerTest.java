@@ -2,7 +2,10 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.MinMaxScalerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelInfo;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -81,5 +84,17 @@ public class MinMaxScalerTest {
 		model.transform(streamData).print();
 		StreamOperator.execute();
 
+	}
+
+	@Test
+	public void testModelInfo() {
+		BatchOperator batchData = new TableSourceBatchOp(GenerateData.getBatchTable());
+		MinMaxScalerTrainBatchOp trainOp = new MinMaxScalerTrainBatchOp()
+			.setSelectedCols("f0")
+			.linkFrom(batchData);
+		MinMaxScalerModelInfo modelInfo = trainOp.getModelInfoBatchOp().collectModelInfo();
+		System.out.println(modelInfo.getEMaxs().length);
+		System.out.println(modelInfo.getEMins().length);
+		System.out.println(modelInfo.toString());
 	}
 }

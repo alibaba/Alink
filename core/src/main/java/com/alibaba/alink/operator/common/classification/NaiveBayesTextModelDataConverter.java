@@ -1,28 +1,35 @@
 package com.alibaba.alink.operator.common.classification;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import com.alibaba.alink.common.linalg.DenseMatrix;
+import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.model.LabeledModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.operator.batch.classification.NaiveBayesTextModelInfo;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.classification.NaiveBayesTextTrainParams.ModelType;
 import com.alibaba.alink.params.classification.NaiveBayesTextTrainParams;
 
+import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.google.common.collect.Iterables;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.types.Row;
 
 /**
  * This converter can help serialize and deserialize the model data.
  */
 public class NaiveBayesTextModelDataConverter extends
-        LabeledModelDataConverter<NaiveBayesTextTrainModelData, NaiveBayesTextPredictModelData> {
+    LabeledModelDataConverter<NaiveBayesTextTrainModelData, NaiveBayesTextPredictModelData> {
 
-    public NaiveBayesTextModelDataConverter() {}
+    public NaiveBayesTextModelDataConverter() {
+    }
 
     public NaiveBayesTextModelDataConverter(TypeInformation labelType) {
         super(labelType);
@@ -44,6 +51,8 @@ public class NaiveBayesTextModelDataConverter extends
         NaiveBayesTextProbInfo dataInfo = JsonConverter.fromJson(json, NaiveBayesTextProbInfo.class);
         modelData.pi = dataInfo.piArray;
         modelData.theta = dataInfo.theta;
+        modelData.modelArray = dataInfo.modelArray;
+        modelData.vectorSize = dataInfo.vectorSize;
         modelData.label = Iterables.toArray(distinctLabels, Object.class);
         modelData.vectorColName = modelData.meta.get(NaiveBayesTextTrainParams.VECTOR_COL);
         modelData.modelType = modelData.meta.get(NaiveBayesTextTrainParams.MODEL_TYPE);
@@ -74,11 +83,13 @@ public class NaiveBayesTextModelDataConverter extends
     @Override
     public Tuple3<Params, Iterable<String>, Iterable<Object>> serializeModel(NaiveBayesTextTrainModelData modelData) {
         Params meta = new Params()
-                .set(NaiveBayesTextTrainParams.MODEL_TYPE, ParamUtil.searchEnum(NaiveBayesTextTrainParams.MODEL_TYPE, modelData.modelType.name()))
-                .set(HasVectorCol.VECTOR_COL, modelData.vectorColName);
+            .set(NaiveBayesTextTrainParams.MODEL_TYPE, ParamUtil.searchEnum(NaiveBayesTextTrainParams.MODEL_TYPE, modelData.modelType.name()))
+            .set(HasVectorCol.VECTOR_COL, modelData.vectorColName);
         NaiveBayesTextProbInfo data = new NaiveBayesTextProbInfo();
         data.piArray = modelData.pi;
         data.theta = modelData.theta;
+        data.modelArray = modelData.modelArray;
+        data.vectorSize = modelData.vectorSize;
         return Tuple3.of(meta, Collections.singletonList(JsonConverter.toJson(data)), Arrays.asList(modelData.label));
     }
 
@@ -91,7 +102,12 @@ public class NaiveBayesTextModelDataConverter extends
          * the probability matrix.
          */
         public DenseMatrix theta;
+        public ArrayList<Tuple3<Object, Double, DenseVector>> modelArray;
+        public int vectorSize;
+    }
+
+    public NaiveBayesTextModelInfo loadModelInfo(List<Row> rows) {
+        return JsonConverter.fromJson((String) rows.get(0).getField(0),
+            NaiveBayesTextModelInfo.class);
     }
 }
-
-

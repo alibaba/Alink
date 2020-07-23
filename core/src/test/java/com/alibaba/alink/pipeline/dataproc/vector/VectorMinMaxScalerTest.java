@@ -3,13 +3,14 @@ package com.alibaba.alink.pipeline.dataproc.vector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.vector.VectorMinMaxScalerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelInfo;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
-import com.alibaba.alink.pipeline.TestUtil;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.table.api.Table;
 import com.alibaba.alink.pipeline.dataproc.GenerateData;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
@@ -71,6 +72,19 @@ public class VectorMinMaxScalerTest {
     @Test
     public void testPipeline4() throws Exception {
         testPipeline(true, 2, true, -3);
+    }
+
+    @Test
+    public void testModelInfo() {
+        BatchOperator batchData = new TableSourceBatchOp(GenerateData.getDenseBatch());
+        VectorMinMaxScalerTrainBatchOp trainOp = new VectorMinMaxScalerTrainBatchOp()
+            .setSelectedCol("vec")
+            .linkFrom(batchData);
+        VectorMinMaxScalerModelInfo modelInfo = trainOp.getModelInfoBatchOp().collectModelInfo();
+        System.out.println(modelInfo.getEMaxs().length);
+        System.out.println(modelInfo.getEMins().length);
+        System.out.println(modelInfo.toString());
+
     }
 
 }

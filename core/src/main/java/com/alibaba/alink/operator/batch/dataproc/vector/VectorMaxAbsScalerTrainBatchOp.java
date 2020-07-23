@@ -1,7 +1,10 @@
 package com.alibaba.alink.operator.batch.dataproc.vector;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorMaxAbsScalarModelInfo;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMaxAbsScalerModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorMaxAbsScalerModelInfoBatchOp;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.dataproc.vector.VectorMaxAbsScalerTrainParams;
@@ -17,7 +20,8 @@ import org.apache.flink.util.Collector;
  * MaxAbsScalerTrain will train a model.
  */
 public final class VectorMaxAbsScalerTrainBatchOp extends BatchOperator<VectorMaxAbsScalerTrainBatchOp>
-    implements VectorMaxAbsScalerTrainParams<VectorMaxAbsScalerTrainBatchOp> {
+    implements VectorMaxAbsScalerTrainParams<VectorMaxAbsScalerTrainBatchOp>,
+    WithModelInfoBatchOp<VectorMaxAbsScalarModelInfo, VectorMaxAbsScalerTrainBatchOp, VectorMaxAbsScalerModelInfoBatchOp> {
 
     public VectorMaxAbsScalerTrainBatchOp() {
         this(new Params());
@@ -41,6 +45,11 @@ public final class VectorMaxAbsScalerTrainBatchOp extends BatchOperator<VectorMa
         setOutput(rows, converter.getModelSchema());
 
         return this;
+    }
+
+    @Override
+    public VectorMaxAbsScalerModelInfoBatchOp getModelInfoBatchOp() {
+        return new VectorMaxAbsScalerModelInfoBatchOp().linkFrom(this);
     }
 
     /**

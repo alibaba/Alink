@@ -1,6 +1,9 @@
 package com.alibaba.alink.operator.batch.dataproc.vector;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelInfo;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelInfoBatchOp;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.DataSet;
@@ -20,7 +23,8 @@ import org.apache.flink.util.Collector;
  * MinMaxScalerTrain will train a model.
  */
 public final class VectorMinMaxScalerTrainBatchOp extends BatchOperator<VectorMinMaxScalerTrainBatchOp>
-    implements VectorMinMaxScalerTrainParams<VectorMinMaxScalerTrainBatchOp> {
+    implements VectorMinMaxScalerTrainParams<VectorMinMaxScalerTrainBatchOp>,
+    WithModelInfoBatchOp<VectorMinMaxScalerModelInfo, VectorMinMaxScalerTrainBatchOp, VectorMinMaxScalerModelInfoBatchOp> {
 
     public VectorMinMaxScalerTrainBatchOp() {
         this(new Params());
@@ -44,6 +48,11 @@ public final class VectorMinMaxScalerTrainBatchOp extends BatchOperator<VectorMi
         setOutput(rows, converter.getModelSchema());
 
         return this;
+    }
+
+    @Override
+    public VectorMinMaxScalerModelInfoBatchOp getModelInfoBatchOp() {
+        return new VectorMinMaxScalerModelInfoBatchOp().linkFrom(this);
     }
 
     /**

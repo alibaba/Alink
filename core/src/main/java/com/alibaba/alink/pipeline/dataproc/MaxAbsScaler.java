@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.dataproc;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MaxAbsScalerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.MaxAbsScalerPredictParams;
@@ -12,7 +13,8 @@ import com.alibaba.alink.pipeline.Trainer;
  */
 public class MaxAbsScaler extends Trainer <MaxAbsScaler, MaxAbsScalerModel> implements
 	MaxAbsScalerTrainParams <MaxAbsScaler>,
-	MaxAbsScalerPredictParams <MaxAbsScaler> {
+	MaxAbsScalerPredictParams <MaxAbsScaler>,
+	HasLazyPrintModelInfo<MaxAbsScaler> {
 
 	public MaxAbsScaler() {
 		super();

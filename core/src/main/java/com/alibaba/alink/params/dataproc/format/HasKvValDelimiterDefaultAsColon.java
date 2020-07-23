@@ -12,7 +12,7 @@ public interface HasKvValDelimiterDefaultAsColon<T> extends WithParams<T> {
 	ParamInfo <String> KV_VAL_DELIMITER = ParamInfoFactory
 		.createParamInfo("kvValDelimiter", String.class)
 		.setDescription("Delimiter used between keys and values when data in the input table is in sparse format")
-		.setAlias(new String[]{"kvDelimiter"})
+		.setAlias(new String[]{"valDelimiter"})
 		.setHasDefaultValue(":")
 		.build();
 

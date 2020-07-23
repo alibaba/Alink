@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.batch.clustering;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.common.clustering.lda.*;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
@@ -28,15 +30,6 @@ import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.clustering.LdaModelData;
 import com.alibaba.alink.operator.common.clustering.LdaModelDataConverter;
 import com.alibaba.alink.operator.common.clustering.LdaModelMapper;
-import com.alibaba.alink.operator.common.clustering.lda.BuildEmLdaModel;
-import com.alibaba.alink.operator.common.clustering.lda.BuildOnlineLdaModel;
-import com.alibaba.alink.operator.common.clustering.lda.EmCorpusStep;
-import com.alibaba.alink.operator.common.clustering.lda.EmLogLikelihood;
-import com.alibaba.alink.operator.common.clustering.lda.LdaUtil;
-import com.alibaba.alink.operator.common.clustering.lda.LdaVariable;
-import com.alibaba.alink.operator.common.clustering.lda.OnlineCorpusStep;
-import com.alibaba.alink.operator.common.clustering.lda.OnlineLogLikelihood;
-import com.alibaba.alink.operator.common.clustering.lda.UpdateLambdaAndAlpha;
 import com.alibaba.alink.operator.common.nlp.DocCountVectorizerModelData;
 import com.alibaba.alink.operator.common.nlp.DocCountVectorizerModelMapper;
 import com.alibaba.alink.operator.common.nlp.FeatureType;
@@ -56,7 +49,8 @@ import java.util.*;
  * perplexity which can evaluate the fitting effect of this algorithm.
  */
 public class LdaTrainBatchOp extends BatchOperator<LdaTrainBatchOp>
-        implements LdaTrainParams<LdaTrainBatchOp> {
+    implements LdaTrainParams<LdaTrainBatchOp>,
+    WithModelInfoBatchOp<LdaModelInfo, LdaTrainBatchOp, LdaModelInfoBatchOp> {
 
     /**
      * Constructor.
@@ -223,6 +217,11 @@ public class LdaTrainBatchOp extends BatchOperator<LdaTrainBatchOp>
                 logPerplexity, new String[]{"logPerplexity", "logLikelihood"},
                 new TypeInformation[]{Types.DOUBLE, Types.DOUBLE})
         });
+    }
+
+    @Override
+    public LdaModelInfoBatchOp getModelInfoBatchOp() {
+        return new LdaModelInfoBatchOp(getParams()).linkFrom(this);
     }
 
     /**
