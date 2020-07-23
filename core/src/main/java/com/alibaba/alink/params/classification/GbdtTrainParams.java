@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import com.alibaba.alink.params.shared.colname.HasGroupColDefaultAsNull;
+import com.alibaba.alink.params.shared.tree.HasFeatureImportanceType;
 import com.alibaba.alink.params.shared.tree.HasFeatureSubsamplingRatio;
 import com.alibaba.alink.params.shared.tree.HasFeatureSubsamplingRatioDefaultAs1;
 import com.alibaba.alink.params.shared.tree.HasMaxBins;

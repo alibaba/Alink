@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.tree;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -57,7 +58,7 @@ import java.util.*;
  * for an introduction on data-parallel, feature-parallel, etc., algorithms to construct decision forests.
  */
 public class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp<T>> extends BatchOperator<T>
-	implements GbdtTrainParams<T> {
+	implements GbdtTrainParams<T>, WithModelInfoBatchOp<TreeModelInfo.GbdtModelInfo, T, TreeModelInfoBatchOp.GbdtModelInfoBatchOp> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BaseGbdtTrainBatchOp.class);
 	// 0 = regression,
@@ -228,11 +229,13 @@ public class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp<T>> extends Bat
 			).getModelSchema()
 		);
 
-		DataSet<Row> importance = model.reduceGroup(new TreeModelDataConverter.FeatureImportanceReducer(getFeatureCols()))
-			.setParallelism(1);
+		DataSet<Row> importance = model
+			.reduceGroup(
+				new TreeModelDataConverter.FeatureImportanceReducer()
+			);
 
 		Table importanceTable = DataSetConversionUtil.toTable(getMLEnvironmentId(), importance,
-			new String[]{"feature", "importance"}, new TypeInformation[]{Types.STRING, Types.LONG});
+			new String[]{"feature", "importance"}, new TypeInformation[]{Types.STRING, Types.DOUBLE});
 		this.setSideOutputTables(new Table[]{importanceTable});
 
 		return (T) this;
@@ -532,6 +535,11 @@ public class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp<T>> extends Bat
 
 			out.collect(new Tuple2<>((long) 0, detail));
 		}
+	}
+
+	@Override
+	public TreeModelInfoBatchOp.GbdtModelInfoBatchOp getModelInfoBatchOp() {
+		return new TreeModelInfoBatchOp.GbdtModelInfoBatchOp(getParams()).linkFrom(this);
 	}
 
 	private static class CheckNumLabels4BinaryClassifier implements MapFunction<Object[], Object[]> {

@@ -41,6 +41,18 @@ public class MultiStringIndexerModelData {
         return tokenNumber.get(colIndex);
     }
 
+    public String getToken(String columnName, Long value) {
+        Integer colIndex = TableUtil.findColIndex(meta.get(HasSelectedCols.SELECTED_COLS), columnName);
+
+        for (Tuple3<Integer, String, Long> index : tokenAndIndex) {
+            if (index.f0.equals(colIndex) && index.f2.equals(value)) {
+                return index.f1;
+            }
+        }
+
+        throw new IllegalArgumentException("Could not find the token.");
+    }
+
     public List<String> getTokens(String column) {
         Integer colIndex = TableUtil.findColIndex(meta.get(HasSelectedCols.SELECTED_COLS), column);
 

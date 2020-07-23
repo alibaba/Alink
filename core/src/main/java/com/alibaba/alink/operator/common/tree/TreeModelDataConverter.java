@@ -14,6 +14,8 @@ import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import com.alibaba.alink.params.classification.GbdtTrainParams;
+import com.alibaba.alink.params.shared.tree.HasFeatureImportanceType;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -22,6 +24,7 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TreeModelDataConverter
 	extends LabeledModelDataConverter<TreeModelDataConverter, TreeModelDataConverter> implements Serializable {
@@ -34,6 +37,14 @@ public class TreeModelDataConverter
 		.createParamInfo("treePartition", Partitions.class)
 		.setDescription("treePartition")
 		.setRequired()
+		.build();
+	public final static ParamInfo<String> IMPORTANCE_FIRST_COL = ParamInfoFactory
+		.createParamInfo("importanceFirstCol", String.class)
+		.setHasDefaultValue("feature")
+		.build();
+	public final static ParamInfo<String> IMPORTANCE_SECOND_COL = ParamInfoFactory
+		.createParamInfo("importanceSecondCol", String.class)
+		.setHasDefaultValue("importance")
 		.build();
 
 	public List <Row> stringIndexerModelSerialized;
@@ -317,45 +328,95 @@ public class TreeModelDataConverter
 	}
 
 	//feature importance
-	public static class FeatureImportanceReducer extends RichGroupReduceFunction <Row, Row> {
-
-		String[] featureColNames;
-
-		public FeatureImportanceReducer(String[] featureColNames) {
-			this.featureColNames = featureColNames;
-		}
-
+	public static class FeatureImportanceReducer extends RichGroupReduceFunction<Row, Row> {
 		@Override
-		public void reduce(Iterable <Row> input, Collector <Row> output) throws Exception {
-			HashMap <Integer, Integer> finalMap = new HashMap <>(1000);
+		public void reduce(Iterable<Row> input, Collector<Row> output) throws Exception {
+			ArrayList<Row> modelData = new ArrayList<>();
+			for (Row row : input) {
+				modelData.add(row);
+			}
 
-			for (Row value : input) {
-				if ((Long)value.getField(0) == 0L || value.getField(2) != null) {
-					continue;
-				}
-				String nodeDetail = (String) value.getField(1);
-				TreeModelDataConverter.NodeSerializable lc = JsonConverter.fromJson(
-					nodeDetail, TreeModelDataConverter.NodeSerializable.class);
-				if (lc != null && lc.node != null) {
-					int featureId = lc.node.getFeatureIndex();
-					if (featureId < 0) {
+			TreeModelDataConverter modelDataConverter = new TreeModelDataConverter();
+			modelDataConverter.load(modelData);
+
+			Map<Integer, Double> featureImportanceMap = new HashMap<>();
+
+			HasFeatureImportanceType.FeatureImportanceType featureImportanceType
+				= modelDataConverter.meta.get(HasFeatureImportanceType.FEATURE_IMPORTANCE_TYPE);
+
+			// for back compatibility
+			if (modelDataConverter.meta.contains(BaseGbdtTrainBatchOp.ALGO_TYPE)) {
+				featureImportanceType = HasFeatureImportanceType.FeatureImportanceType.WEIGHT;
+			}
+
+			ArrayDeque<Node> deque = new ArrayDeque<>();
+
+			double sum = 0.0;
+			for (Node root : modelDataConverter.roots) {
+				deque.push(root);
+
+				while (!deque.isEmpty()) {
+					Node node = deque.pop();
+
+					if (node.isLeaf()) {
 						continue;
 					}
-					if (!finalMap.containsKey(featureId)) {
-						finalMap.put(featureId, 1);
-					} else {
-						finalMap.put(featureId, finalMap.get(featureId) + 1);
+
+					switch (featureImportanceType) {
+						case GAIN:
+							featureImportanceMap.merge(node.getFeatureIndex(), node.getGain(), Double::sum);
+							sum += node.getGain();
+							break;
+						case COVER:
+							featureImportanceMap
+								.merge(
+									node.getFeatureIndex(),
+									(double) node.getCounter().getNumInst(),
+									Double::sum
+								);
+							break;
+						case WEIGHT:
+							featureImportanceMap.merge(node.getFeatureIndex(), 1.0, Double::sum);
+							break;
+						default:
+							throw new IllegalArgumentException(
+								"Could not find the feature importace type. type: " + featureImportanceType
+							);
 					}
-					//System.out.println("lc " + );
+
+					for (Node child : node.getNextNodes()) {
+						deque.push(child);
+					}
 				}
 			}
-			for (HashMap.Entry <Integer, Integer> index : finalMap.entrySet()) {
-				//System.out.println("key "+index.getKey()+" value "+index.getValue());
-				Row row = new Row(2);
-				row.setField(0, featureColNames[index.getKey()]);
-				row.setField(1, (long) index.getValue());
-				output.collect(row);
-				//System.out.println("row "+row);
+
+			// normalize
+			if (sum > 0.0) {
+				final double localSum = sum;
+				for (Integer key : featureImportanceMap.keySet()) {
+					featureImportanceMap.compute(key, (integer, aDouble) -> aDouble / localSum);
+				}
+			}
+
+			if (modelDataConverter.meta != null
+				&& modelDataConverter.meta.contains(GbdtTrainParams.FEATURE_COLS)) {
+
+				String[] featureCols = modelDataConverter.meta.get(GbdtTrainParams.FEATURE_COLS);
+
+				for (int i = 0; i < featureCols.length; ++i) {
+					Row row = new Row(2);
+					row.setField(0, featureCols[i]);
+					row.setField(1, featureImportanceMap.getOrDefault(i, 0.0));
+					output.collect(row);
+				}
+			} else {
+
+				for (Map.Entry<Integer, Double> entry : featureImportanceMap.entrySet()) {
+					Row row = new Row(2);
+					row.setField(0, String.valueOf(entry.getKey()));
+					row.setField(1, entry.getValue());
+					output.collect(row);
+				}
 			}
 		}
 	}

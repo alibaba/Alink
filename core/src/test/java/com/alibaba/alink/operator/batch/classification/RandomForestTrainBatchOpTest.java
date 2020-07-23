@@ -11,6 +11,7 @@ import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.evaluation.RegressionMetrics;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -23,7 +24,7 @@ public class RandomForestTrainBatchOpTest {
 	@Test
 	public void linkFrom() throws Exception {
 		Row[] testArray =
-			new Row[] {
+			new Row[]{
 				Row.of(1, 2, 0.8),
 				Row.of(1, 2, 0.7),
 				Row.of(0, 3, 0.4),
@@ -33,7 +34,7 @@ public class RandomForestTrainBatchOpTest {
 				Row.of(4, 4, 0.3)
 			};
 
-		String[] colNames = new String[] {"col0", "col1", "label"};
+		String[] colNames = new String[]{"col0", "col1", "label"};
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
@@ -68,7 +69,7 @@ public class RandomForestTrainBatchOpTest {
 	@Test
 	public void linkFromDecisionTreeModeParallel() throws Exception {
 		Row[] testArray =
-			new Row[] {
+			new Row[]{
 				Row.of(1, 2, 0.8),
 				Row.of(1, 2, 0.7),
 				Row.of(0, 3, 0.4),
@@ -78,7 +79,7 @@ public class RandomForestTrainBatchOpTest {
 				Row.of(4, 4, 0.3)
 			};
 
-		String[] colNames = new String[] {"col0", "col1", "label"};
+		String[] colNames = new String[]{"col0", "col1", "label"};
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
@@ -116,7 +117,7 @@ public class RandomForestTrainBatchOpTest {
 	@Test
 	public void linkFromDecisionTreeClassifierParallel() throws Exception {
 		Row[] testArray =
-			new Row[] {
+			new Row[]{
 				Row.of(1, 2, 0.8),
 				Row.of(1, 2, 0.7),
 				Row.of(0, 3, 0.4),
@@ -126,7 +127,7 @@ public class RandomForestTrainBatchOpTest {
 				Row.of(4, 4, 0.3)
 			};
 
-		String[] colNames = new String[] {"col0", "col1", "label"};
+		String[] colNames = new String[]{"col0", "col1", "label"};
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
@@ -161,7 +162,7 @@ public class RandomForestTrainBatchOpTest {
 	@Test
 	public void linkFrom6() throws Exception {
 		Row[] testArray =
-			new Row[] {
+			new Row[]{
 				Row.of(1, 2, 0.8),
 				Row.of(1, 2, 0.7),
 				Row.of(0, 3, 0.4),
@@ -171,7 +172,7 @@ public class RandomForestTrainBatchOpTest {
 				Row.of(4, 4, 0.3)
 			};
 
-		String[] colNames = new String[] {"col0", "col1", "label"};
+		String[] colNames = new String[]{"col0", "col1", "label"};
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
@@ -185,7 +186,7 @@ public class RandomForestTrainBatchOpTest {
 	@Test
 	public void linkFrom7() throws Exception {
 		Row[] testArray =
-			new Row[] {
+			new Row[]{
 				Row.of(1, 2, 0.8),
 				Row.of(1, 2, 0.7),
 				Row.of(0, 3, 0.4),
@@ -195,7 +196,7 @@ public class RandomForestTrainBatchOpTest {
 				Row.of(4, 4, 0.3)
 			};
 
-		String[] colNames = new String[] {"col0", "col1", "label"};
+		String[] colNames = new String[]{"col0", "col1", "label"};
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
@@ -218,7 +219,7 @@ public class RandomForestTrainBatchOpTest {
 	@Test
 	public void linkFrom2() throws Exception {
 		Row[] testArray =
-			new Row[] {
+			new Row[]{
 				Row.of(1, 2, 0.8),
 				Row.of(1, 2, 0.7),
 				Row.of(0, 3, 0.4),
@@ -228,7 +229,7 @@ public class RandomForestTrainBatchOpTest {
 				Row.of(4, 4, 0.3)
 			};
 
-		String[] colNames = new String[] {"col0", "col1", "label"};
+		String[] colNames = new String[]{"col0", "col1", "label"};
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
@@ -250,7 +251,7 @@ public class RandomForestTrainBatchOpTest {
 	@Test
 	public void linkFrom3() throws Exception {
 		Row[] testArray =
-			new Row[] {
+			new Row[]{
 				Row.of(1, 2, 0.8),
 				Row.of(1, 2, 0.7),
 				Row.of(0, 3, 0.4),
@@ -260,7 +261,7 @@ public class RandomForestTrainBatchOpTest {
 				Row.of(4, 4, 0.3)
 			};
 
-		String[] colNames = new String[] {"col0", "col1", "label"};
+		String[] colNames = new String[]{"col0", "col1", "label"};
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
@@ -281,7 +282,7 @@ public class RandomForestTrainBatchOpTest {
 	@Test
 	public void linkFrom4() throws Exception {
 		Row[] testArray =
-			new Row[] {
+			new Row[]{
 				Row.of(1, 2, 0.8),
 				Row.of(1, 2, 0.7),
 				Row.of(0, 3, 0.4),
@@ -291,7 +292,7 @@ public class RandomForestTrainBatchOpTest {
 				Row.of(4, 4, 0.3)
 			};
 
-		String[] colNames = new String[] {"col0", "col1", "label"};
+		String[] colNames = new String[]{"col0", "col1", "label"};
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
@@ -315,7 +316,7 @@ public class RandomForestTrainBatchOpTest {
 	@Test
 	public void linkFrom5() throws Exception {
 		Row[] testArray =
-			new Row[] {
+			new Row[]{
 				Row.of(0, 2, 1),
 				Row.of(0, 3, 0),
 				Row.of(1, 2, 0),
@@ -325,7 +326,7 @@ public class RandomForestTrainBatchOpTest {
 				Row.of(4, 4, 0)
 			};
 
-		String[] colNames = new String[] {"col0", "col1", "label"};
+		String[] colNames = new String[]{"col0", "col1", "label"};
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
@@ -380,4 +381,55 @@ public class RandomForestTrainBatchOpTest {
 
 		decisionTreeRegTrainBatchOp.linkFrom(memSourceBatchOp).print();
 	}
+
+
+	@Test
+	public void testLazy() throws Exception {
+		final TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+		try {
+			temporaryFolder.create();
+
+			Row[] testArray =
+				new Row[]{
+					Row.of(1, 2, 0.8),
+					Row.of(1, 2, 0.7),
+					Row.of(0, 3, 0.4),
+					Row.of(0, 2, 0.4),
+					Row.of(1, 3, 0.6),
+					Row.of(4, 3, 0.2),
+					Row.of(4, 4, 0.3)
+				};
+
+			String[] colNames = new String[]{"col0", "col1", "label"};
+
+			MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
+
+			RandomForestTrainBatchOp rfOp = new RandomForestTrainBatchOp()
+				.setLabelCol(colNames[2])
+				.setFeatureCols(colNames[0], colNames[1])
+				.setMaxDepth(10)
+				.setNumTrees(100);
+
+			rfOp.linkFrom(memSourceBatchOp).lazyPrintModelInfo();
+
+			rfOp.linkFrom(memSourceBatchOp).lazyCollectModelInfo(treeModelInfo -> {
+				try {
+					System.out.println(treeModelInfo.getCaseWhenRule(0));
+					treeModelInfo.saveTreeAsImage(temporaryFolder.getRoot().toPath().toString() + "/tree_model_image.png", 0, true);
+				} catch (Exception e) {
+					Assert.fail(e.toString());
+				}
+			});
+
+			RandomForestPredictBatchOp predictBatchOp = new RandomForestPredictBatchOp()
+				.setPredictionCol("pred_result");
+
+			predictBatchOp.linkFrom(rfOp.linkFrom(memSourceBatchOp), memSourceBatchOp).collect();
+
+		} finally {
+			temporaryFolder.delete();
+		}
+	}
+
 }
