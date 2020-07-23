@@ -2,7 +2,7 @@ package com.alibaba.alink.operator.stream.evaluation;
 
 import com.alibaba.alink.operator.common.evaluation.BaseEvalClassStreamOp;
 import org.apache.flink.ml.api.misc.param.Params;
-import com.alibaba.alink.params.evaluation.BinaryEvaluationStreamParams;
+import com.alibaba.alink.params.evaluation.EvalBinaryClassStreamParams;
 
 /**
  * Calculate the evaluation data within time windows for binary classifiction.
@@ -12,7 +12,7 @@ import com.alibaba.alink.params.evaluation.BinaryEvaluationStreamParams;
  * If not given, the labels are sorted in descending order.
  */
 public class EvalBinaryClassStreamOp extends BaseEvalClassStreamOp<EvalBinaryClassStreamOp> implements
-	BinaryEvaluationStreamParams <EvalBinaryClassStreamOp> {
+	EvalBinaryClassStreamParams<EvalBinaryClassStreamOp> {
 
 	public EvalBinaryClassStreamOp() {
 		this(null);

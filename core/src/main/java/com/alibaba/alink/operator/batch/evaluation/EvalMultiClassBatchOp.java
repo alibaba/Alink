@@ -3,9 +3,11 @@ package com.alibaba.alink.operator.batch.evaluation;
 import com.alibaba.alink.operator.common.evaluation.BaseEvalClassBatchOp;
 import com.alibaba.alink.operator.common.evaluation.EvaluationMetricsCollector;
 import com.alibaba.alink.operator.common.evaluation.MultiClassMetrics;
-import com.google.common.base.Preconditions;
+import com.alibaba.alink.params.evaluation.EvalMultiClassParams;
 import org.apache.flink.ml.api.misc.param.Params;
-import com.alibaba.alink.params.evaluation.MultiEvaluationParams;
+import org.apache.flink.types.Row;
+
+import java.util.List;
 
 /**
  * Calculate the evaluation data for multi classifiction.
@@ -16,7 +18,7 @@ import com.alibaba.alink.params.evaluation.MultiEvaluationParams;
  * The labels are sorted in descending order in the output label array and confusion matrix..
  */
 public class EvalMultiClassBatchOp extends BaseEvalClassBatchOp<EvalMultiClassBatchOp> implements
-	MultiEvaluationParams <EvalMultiClassBatchOp>, EvaluationMetricsCollector<MultiClassMetrics> {
+	EvalMultiClassParams<EvalMultiClassBatchOp>, EvaluationMetricsCollector<MultiClassMetrics, EvalMultiClassBatchOp> {
 
 	public EvalMultiClassBatchOp() {
 		this(null);
@@ -27,8 +29,7 @@ public class EvalMultiClassBatchOp extends BaseEvalClassBatchOp<EvalMultiClassBa
 	}
 
 	@Override
-	public MultiClassMetrics collectMetrics() {
-		Preconditions.checkArgument(null != this.getOutputTable(), "Please provide the dataset to evaluate!");
-		return new MultiClassMetrics(this.collect().get(0));
+	public MultiClassMetrics createMetrics(List<Row> rows){
+		return new MultiClassMetrics(rows.get(0));
 	}
 }

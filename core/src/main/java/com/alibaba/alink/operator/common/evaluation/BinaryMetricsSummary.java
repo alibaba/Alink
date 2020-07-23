@@ -30,7 +30,7 @@ public final class BinaryMetricsSummary
     /**
      * Label array.
      */
-    String[] labels;
+    Object[] labels;
 
     /**
      * The count of samples.
@@ -50,7 +50,7 @@ public final class BinaryMetricsSummary
      */
     double logLoss;
 
-    public BinaryMetricsSummary(long[] positiveBin, long[] negativeBin, String[] labels, double logLoss,
+    public BinaryMetricsSummary(long[] positiveBin, long[] negativeBin, Object[] labels, double logLoss,
                                 long total) {
         this.positiveBin = positiveBin;
         this.negativeBin = negativeBin;
@@ -90,6 +90,10 @@ public final class BinaryMetricsSummary
      */
     @Override
     public BinaryClassMetrics toMetrics() {
+        String[] labelStrs = new String[labels.length];
+        for(int i = 0; i < labels.length; i++){
+            labelStrs[i] = labels[i].toString();
+        }
         Params params = new Params();
         Tuple3<ConfusionMatrix[], double[], EvaluationCurve[]> matrixThreCurve =
             extractMatrixThreCurve(positiveBin, negativeBin, total);
@@ -104,7 +108,7 @@ public final class BinaryMetricsSummary
         setComputationsArrayParams(params, sampledMatrixThreCurve.f1, sampledMatrixThreCurve.f0);
         setLoglossParams(params, logLoss, total);
         int middleIndex = getMiddleThresholdIndex(sampledMatrixThreCurve.f1);
-        setMiddleThreParams(params, matrices[middleIndex], labels);
+        setMiddleThreParams(params, matrices[middleIndex], labelStrs);
         return new BinaryClassMetrics(params);
     }
 
@@ -115,7 +119,7 @@ public final class BinaryMetricsSummary
      * @param confusionMatrix ConfusionMatrix.
      * @param labels          label array.
      */
-    private static void setMiddleThreParams(Params params, ConfusionMatrix confusionMatrix, String[] labels) {
+    static void setMiddleThreParams(Params params, ConfusionMatrix confusionMatrix, String[] labels) {
         params.set(BinaryClassMetrics.PRECISION,
             ClassificationEvaluationUtil.Computations.PRECISION.computer.apply(confusionMatrix, 0));
         params.set(BinaryClassMetrics.RECALL,
@@ -137,6 +141,7 @@ public final class BinaryMetricsSummary
         params.set(BinaryClassMetrics.ROC_CURVE, sampledMatrixThreCurve.f2[0].getXYArray());
         params.set(BinaryClassMetrics.RECALL_PRECISION_CURVE, sampledMatrixThreCurve.f2[1].getXYArray());
         params.set(BinaryClassMetrics.LIFT_CHART, sampledMatrixThreCurve.f2[2].getXYArray());
+        params.set(BinaryClassMetrics.LORENZ_CURVE, sampledMatrixThreCurve.f2[3].getXYArray());
     }
 
     /**
@@ -149,6 +154,7 @@ public final class BinaryMetricsSummary
         params.set(BinaryClassMetrics.AUC, curves[0].calcArea());
         params.set(BinaryClassMetrics.PRC, curves[1].calcArea());
         params.set(BinaryClassMetrics.KS, curves[0].calcKs());
+        params.set(BinaryClassMetrics.GINI, (curves[3].calcArea() - 0.5) / 0.5);
     }
 
     /**
@@ -157,7 +163,7 @@ public final class BinaryMetricsSummary
      * @param params   Params.
      * @param matrices ConfusionMatrix array.
      */
-    private static void setComputationsArrayParams(Params params, double[] thresholdArray, ConfusionMatrix[] matrices) {
+    static void setComputationsArrayParams(Params params, double[] thresholdArray, ConfusionMatrix[] matrices) {
         params.set(BinaryClassMetrics.THRESHOLD_ARRAY, thresholdArray);
         double[][] paramData = new double[ClassificationEvaluationUtil.Computations.values().length][matrices.length];
         for (int i = 0; i < matrices.length; i++) {
@@ -206,6 +212,7 @@ public final class BinaryMetricsSummary
         EvaluationCurvePoint[] rocCurve = new EvaluationCurvePoint[newLen];
         EvaluationCurvePoint[] recallPrecisionCurve = new EvaluationCurvePoint[newLen];
         EvaluationCurvePoint[] liftChart = new EvaluationCurvePoint[newLen];
+        EvaluationCurvePoint[] lorenzCurve = new EvaluationCurvePoint[newLen];
         ConfusionMatrix[] data = new ConfusionMatrix[newLen];
         double[] threshold = new double[newLen];
         long curTrue = 0;
@@ -218,10 +225,13 @@ public final class BinaryMetricsSummary
             data[i] = new ConfusionMatrix(
                 new long[][] {{curTrue, curFalse}, {totalTrue - curTrue, totalFalse - curFalse}});
             double tpr = (totalTrue == 0 ? 1.0 : 1.0 * curTrue / totalTrue);
-            rocCurve[i] = new EvaluationCurvePoint(totalFalse == 0 ? 1.0 : 1.0 * curFalse / totalFalse, tpr,
-                threshold[i]);
-            recallPrecisionCurve[i] = new EvaluationCurvePoint(tpr, curTrue + curTrue == 0 ? 1.0 : 1.0 * curTrue / (curTrue + curFalse), threshold[i]);
-            liftChart[i] = new EvaluationCurvePoint(1.0 * (curTrue + curFalse) / total, curTrue, threshold[i]);
+            double fpr = (totalFalse == 0 ? 1.0 : 1.0 * curFalse / totalFalse);
+            double precision = curTrue + curTrue == 0 ? 1.0 : 1.0 * curTrue / (curTrue + curFalse);
+            double pr = 1.0 * (curTrue + curFalse) / total;
+            rocCurve[i] = new EvaluationCurvePoint(fpr, tpr, threshold[i]);
+            recallPrecisionCurve[i] = new EvaluationCurvePoint(tpr, precision, threshold[i]);
+            liftChart[i] = new EvaluationCurvePoint(pr, curTrue, threshold[i]);
+            lorenzCurve[i] = new EvaluationCurvePoint(pr, tpr, threshold[i]);
         }
 
         threshold[0] = 1.0;
@@ -229,9 +239,10 @@ public final class BinaryMetricsSummary
         rocCurve[0] = new EvaluationCurvePoint(0, 0, threshold[0]);
         recallPrecisionCurve[0] = new EvaluationCurvePoint(0, recallPrecisionCurve[1].getY(), threshold[0]);
         liftChart[0] = new EvaluationCurvePoint(0, 0, threshold[0]);
+        lorenzCurve[0] = new EvaluationCurvePoint(0, 0, threshold[0]);
 
         return Tuple3.of(data, threshold, new EvaluationCurve[] {new EvaluationCurve(rocCurve),
-            new EvaluationCurve(recallPrecisionCurve), new EvaluationCurve(liftChart)});
+            new EvaluationCurve(recallPrecisionCurve), new EvaluationCurve(liftChart), new EvaluationCurve(lorenzCurve)});
     }
 
     /**
@@ -280,7 +291,7 @@ public final class BinaryMetricsSummary
         //remove the threshold at 1.0.
         double[] sampledP = new double[reservedData.size() - 1];
         ConfusionMatrix[] sampledData = new ConfusionMatrix[reservedData.size() - 1];
-        EvaluationCurvePoint[][] sampledCurvesPoints = new EvaluationCurvePoint[3][reservedData.size()];
+        EvaluationCurvePoint[][] sampledCurvesPoints = new EvaluationCurvePoint[curves.length][reservedData.size()];
 
         for (int i = 0; i < reservedData.size(); i++) {
             if(i > 0) {
@@ -291,9 +302,11 @@ public final class BinaryMetricsSummary
                 sampledCurvesPoints[j][i] = curves[j].getPoints()[reservedData.get(i)];
             }
         }
-        return Tuple3.of(sampledData, sampledP,
-            new EvaluationCurve[] {new EvaluationCurve(sampledCurvesPoints[0]),
-                new EvaluationCurve(sampledCurvesPoints[1]),
-                new EvaluationCurve(sampledCurvesPoints[2])});
+
+        EvaluationCurve[] newCurves = new EvaluationCurve[curves.length];
+        for(int i = 0; i < curves.length; i++){
+            newCurves[i] = new EvaluationCurve(sampledCurvesPoints[i]);
+        }
+        return Tuple3.of(sampledData, sampledP, newCurves);
     }
 }

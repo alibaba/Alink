@@ -6,8 +6,14 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.tuning.HasNumFolds;
 import com.alibaba.alink.pipeline.Pipeline;
 
-public class GridSearchCV extends BaseGridSearch <GridSearchCV, GridSearchCVModel>
-	implements HasNumFolds <GridSearchCV> {
+/**
+ * Grid search implemented by Cross validation.
+ *
+ * Grid search is an approach to parameter tuning that will methodically build and evaluate a model for each combination
+ * of algorithm parameters specified in a grid.
+ */
+public class GridSearchCV extends BaseGridSearch<GridSearchCV, GridSearchCVModel>
+	implements HasNumFolds<GridSearchCV> {
 
 	public GridSearchCV() {
 		super();

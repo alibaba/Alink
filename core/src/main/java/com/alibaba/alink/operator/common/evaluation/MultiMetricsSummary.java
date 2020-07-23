@@ -22,7 +22,7 @@ public final class MultiMetricsSummary implements BaseMetricsSummary<MultiClassM
     /**
      * Label array.
      */
-    String[] labels;
+    Object[] labels;
 
     /**
      * The count of samples.
@@ -34,7 +34,7 @@ public final class MultiMetricsSummary implements BaseMetricsSummary<MultiClassM
      */
     double logLoss;
 
-    public MultiMetricsSummary(long[][] matrix, String[] labels, double logLoss, long total) {
+    public MultiMetricsSummary(long[][] matrix, Object[] labels, double logLoss, long total) {
         Preconditions.checkArgument(matrix.length > 0 && matrix.length == matrix[0].length,
             "The row size must be equal to col size!");
         this.matrix = new LongMatrix(matrix);
@@ -66,6 +66,10 @@ public final class MultiMetricsSummary implements BaseMetricsSummary<MultiClassM
      */
     @Override
     public MultiClassMetrics toMetrics() {
+        String[] labelStrs = new String[labels.length];
+        for(int i = 0; i < labels.length; i++){
+            labelStrs[i] = labels[i].toString();
+        }
         Params params = new Params();
         ConfusionMatrix data = new ConfusionMatrix(matrix);
         params.set(MultiClassMetrics.PREDICT_LABEL_FREQUENCY, data.getPredictLabelFrequency());
@@ -74,7 +78,7 @@ public final class MultiMetricsSummary implements BaseMetricsSummary<MultiClassM
         for (ClassificationEvaluationUtil.Computations c : ClassificationEvaluationUtil.Computations.values()) {
             params.set(c.arrayParamInfo, ClassificationEvaluationUtil.getAllValues(c.computer, data));
         }
-        setClassificationCommonParams(params, data, labels);
+        setClassificationCommonParams(params, data, labelStrs);
         setLoglossParams(params, logLoss, total);
         return new MultiClassMetrics(params);
     }

@@ -1,18 +1,25 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.params.evaluation.MultiEvaluationParams;
+import com.alibaba.alink.params.evaluation.EvalMultiClassParams;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static com.alibaba.alink.operator.common.evaluation.BaseSimpleClassifierMetrics.ACCURACY;
 import static com.alibaba.alink.operator.common.evaluation.BaseSimpleClassifierMetrics.ACCURACY_ARRAY;
@@ -70,16 +77,54 @@ public class ClassificationEvaluationUtil implements Serializable {
     static final String STATISTICS_OUTPUT = "Statistics";
     static final Tuple2<String, Integer> WINDOW = Tuple2.of("window", 0);
     static final Tuple2<String, Integer> ALL = Tuple2.of("all", 1);
-
     /**
      * Divide [0,1] into <code>DETAIL_BIN_NUMBER</code> bins.
      */
     public static int DETAIL_BIN_NUMBER = 100000;
+    public static int TOTAL_TRUE = 2;
+    public static int TOTAL_FALSE = 3;
+    public static int CUR_TRUE = 0;
+    public static int CUR_FALSE = 1;
+    private static int TPR = 0;
+    private static int FPR = 1;
+    private static int PRECISION = 2;
+    private static int POSITIVE_RATE = 3;
+    public static int RECORD_LEN = 4;
+
+    private static double PROBABILITY_ERROR = 0.001;
 
     /**
      * Binary Classification label number.
      */
-    static int BINARY_LABEL_NUMBER = 2;
+    public static int BINARY_LABEL_NUMBER = 2;
+
+    /**
+     * return <score, positive/negative, logLoss>
+     * @param row Row contains two fields: (label, predicition)
+     * @param tuple [positiveLabel, negativeLabel]
+     * @param labelType the type of the label
+     * @return <score, positive/negative, logLoss>
+     */
+    public static Tuple3<Double, Boolean, Double> getBinaryDetailStatistics(Row row,
+                                                                            Object[] tuple,
+                                                                            TypeInformation labelType) {
+        Preconditions.checkArgument(tuple.length == 2, "Label length is not 2, Only support binary evaluation!");
+        if (EvaluationUtil.checkRowFieldNotNull(row)) {
+            TreeMap<Object, Double> labelProbMap = EvaluationUtil.extractLabelProbMap(row, labelType);
+            Object label = row.getField(0);
+            Preconditions.checkState(labelProbMap.size() == BINARY_LABEL_NUMBER,
+                "The number of labels must be equal to 2!");
+            double logLoss = EvaluationUtil.extractLogloss(labelProbMap, label);
+
+            double d = labelProbMap.get(tuple[0]);
+            if (label.equals(tuple[0])) {
+                return Tuple3.of(d, true, logLoss);
+            } else if (label.equals(tuple[1])) {
+                return Tuple3.of(d, false, logLoss);
+            }
+        }
+        return null;
+    }
 
     /**
      * The evaluation type.
@@ -104,9 +149,9 @@ public class ClassificationEvaluationUtil implements Serializable {
      */
     static Type judgeEvaluationType(Params params) {
         Type type;
-        if (params.contains(MultiEvaluationParams.PREDICTION_DETAIL_COL)) {
+        if (params.contains(EvalMultiClassParams.PREDICTION_DETAIL_COL)) {
             type = Type.PRED_DETAIL;
-        } else if (params.contains(MultiEvaluationParams.PREDICTION_COL)) {
+        } else if (params.contains(EvalMultiClassParams.PREDICTION_COL)) {
             type = Type.PRED_RESULT;
         } else {
             throw new IllegalArgumentException("Error Input, must give either predictionCol or predictionDetailCol!");
@@ -125,21 +170,23 @@ public class ClassificationEvaluationUtil implements Serializable {
      *                      always 0.
      * @return a map of label and ID, label array.
      */
-    public static Tuple2<Map<String, Integer>, String[]> buildLabelIndexLabelArray(HashSet<String> set,
+    public static Tuple2<Map<Object, Integer>, Object[]> buildLabelIndexLabelArray(HashSet<Object> set,
                                                                                    boolean binary,
-                                                                                   String positiveValue) {
-        String[] labels = set.toArray(new String[0]);
+                                                                                   String positiveValue,
+                                                                                   TypeInformation labelType) {
+        Object[] labels = set.toArray();
         Arrays.sort(labels, Collections.reverseOrder());
 
         Preconditions.checkArgument(labels.length >= 2, "The distinct label number less than 2!");
         Preconditions.checkArgument(!binary || labels.length == BINARY_LABEL_NUMBER,
             "The number of labels must be equal to 2!");
-        Map<String, Integer> map = new HashMap<>(labels.length);
+        Map<Object, Integer> map = new HashMap<>(labels.length);
         if (binary && null != positiveValue) {
-            if (labels[1].equals(positiveValue)) {
+            if (EvaluationUtil.labelCompare(labels[1], positiveValue, labelType)) {
+                Object tmp = labels[1];
                 labels[1] = labels[0];
-                labels[0] = positiveValue;
-            } else if (!labels[0].equals(positiveValue)) {
+                labels[0] = tmp;
+            } else if (!EvaluationUtil.labelCompare(labels[0], positiveValue, labelType)) {
                 throw new IllegalArgumentException("Not contain positiveValue");
             }
             map.put(labels[0], 0);
@@ -331,6 +378,135 @@ public class ClassificationEvaluationUtil implements Serializable {
             this.weightedParamInfo = weightedParamInfo;
             this.macroParamInfo = macroParamInfo;
             this.microParamInfo = microParamInfo;
+        }
+    }
+
+    public static class BinaryPartitionSummary {
+        Integer taskId;
+        double maxScore;
+        long curPositive;
+        long curNegative;
+
+        public BinaryPartitionSummary(Integer taskId, double maxScore, long curPositive, long curNegative) {
+            this.taskId = taskId;
+            this.maxScore = maxScore;
+            this.curPositive = curPositive;
+            this.curNegative = curNegative;
+        }
+    }
+
+    /**
+     *
+     * @param values Summary of different partitions.
+     * @param taskId current taskId.
+     * @return <The first partition, [curTrue, curFalse, TotalTrue, TotalFalse])
+     */
+    public static Tuple2<Boolean, long[]> reduceBinaryPartitionSummary(List<BinaryPartitionSummary> values, int taskId) {
+        List<BinaryPartitionSummary> list = new ArrayList<>();
+        values.forEach(list::add);
+        list.sort(Comparator.comparingDouble(t -> -t.maxScore));
+        long curTrue = 0;
+        long curFalse = 0;
+        long totalTrue = 0;
+        long totalFalse = 0;
+
+        boolean firstBin = true;
+
+        for(BinaryPartitionSummary statistics : list){
+            if(statistics.taskId == taskId){
+                firstBin = (totalTrue + totalFalse == 0);
+                curFalse = totalFalse;
+                curTrue = totalTrue;
+            }
+            totalTrue += statistics.curPositive;
+            totalFalse += statistics.curNegative;
+        }
+        return Tuple2.of(firstBin, new long[]{curTrue, curFalse, totalTrue, totalFalse});
+    }
+
+    public static boolean isMiddlePoint(Tuple3<Double, Boolean, Double> t){
+        if(Double.compare(t.f0, 0.5) == 0 && t.f1 && Double.isNaN(t.f2)){
+            return true;
+        }
+        return false;
+    }
+
+    public static Tuple3<Double, Boolean, Double> middlePoint = Tuple3.of(0.5, true, Double.NaN);
+
+    public static void updateBinaryPartitionSummary(BinaryPartitionSummary statistics,
+                                                    Tuple3<Double, Boolean, Double> t){
+        if(!isMiddlePoint(t)) {
+            if (t.f1) {
+                statistics.curPositive++;
+            } else {
+                statistics.curNegative++;
+            }
+        }
+        int compare = Double.compare(statistics.maxScore, t.f0);
+        if(compare < 0){
+            statistics.maxScore = t.f0;
+        }
+    }
+
+    public static void updateAccurateBinaryMetricsSummary(Tuple3<Double, Boolean, Double> cur,
+                                                          AccurateBinaryMetricsSummary binaryMetricsSummary,
+                                                          long[] countValues,
+                                                          double[] recordValues,
+                                                          boolean first) {
+        if(binaryMetricsSummary.total == 0) {
+            recordValues[TPR] = countValues[TOTAL_TRUE] == 0 ? 1.0 : 1.0 * countValues[CUR_TRUE] / countValues[TOTAL_TRUE];
+            recordValues[FPR] = countValues[TOTAL_FALSE] == 0 ? 1.0 : 1.0 * countValues[CUR_FALSE] / countValues[TOTAL_FALSE];
+            recordValues[PRECISION] = countValues[CUR_TRUE] + countValues[CUR_FALSE] == 0 ? 1.0
+                : 1.0 * countValues[CUR_TRUE] / (countValues[CUR_TRUE] + countValues[CUR_FALSE]);
+            recordValues[POSITIVE_RATE] = 1.0 * (countValues[CUR_TRUE] + countValues[CUR_FALSE]) / (countValues[TOTAL_TRUE] + countValues[TOTAL_FALSE]);
+        }
+
+        if(!isMiddlePoint(cur)) {
+            binaryMetricsSummary.total++;
+            binaryMetricsSummary.logLoss += cur.f2;
+            if (cur.f1) {
+                countValues[CUR_TRUE]++;
+            } else {
+                countValues[CUR_FALSE]++;
+            }
+        }
+
+        double threshold = cur.f0;
+        double tpr = countValues[TOTAL_TRUE] == 0 ? 1.0 : 1.0 * countValues[CUR_TRUE] / countValues[TOTAL_TRUE];
+        double fpr = countValues[TOTAL_FALSE] == 0 ? 1.0 : 1.0 * countValues[CUR_FALSE] / countValues[TOTAL_FALSE];
+        double precision = countValues[CUR_TRUE] + countValues[CUR_FALSE] == 0 ? 1.0
+            : 1.0 * countValues[CUR_TRUE] / (countValues[CUR_TRUE] + countValues[CUR_FALSE]);
+        double positiveRate = 1.0 * (countValues[CUR_TRUE] + countValues[CUR_FALSE]) / (countValues[TOTAL_TRUE] + countValues[TOTAL_FALSE]);
+
+        if(binaryMetricsSummary.total == 1 && first){
+            recordValues[PRECISION] = precision;
+            ConfusionMatrix confusionMatrix = new ConfusionMatrix(
+                new long[][] {{0, 0}, {countValues[TOTAL_TRUE], countValues[TOTAL_FALSE]}});
+            binaryMetricsSummary.metricsInfoList.add(Tuple2.of(1.0, confusionMatrix));
+        }
+
+        //binaryMetricsSummary.auc += ((fpr - recordValues[FPR]) * (tpr + recordValues[TPR]) / 2);
+        binaryMetricsSummary.gini += ((positiveRate - recordValues[POSITIVE_RATE]) * (tpr + recordValues[TPR]) / 2);
+        binaryMetricsSummary.prc += ((tpr - recordValues[TPR]) * (precision + recordValues[PRECISION]) / 2);
+        binaryMetricsSummary.ks = Math.max(Math.abs(fpr - tpr), binaryMetricsSummary.ks);
+
+        recordValues[TPR] = tpr;
+        recordValues[FPR] = fpr;
+        recordValues[PRECISION] = precision;
+        recordValues[POSITIVE_RATE] = positiveRate;
+
+        ConfusionMatrix confusionMatrix = new ConfusionMatrix(new long[][] {{countValues[CUR_TRUE], countValues[CUR_FALSE]},
+            {countValues[TOTAL_TRUE] - countValues[CUR_TRUE], countValues[TOTAL_FALSE] - countValues[CUR_FALSE]}});
+
+        //keep the middlePoint(p = 0.5), keep the first point(p = 1.0), then compare the threshold
+        if(binaryMetricsSummary.metricsInfoList.isEmpty() || (binaryMetricsSummary.total == 1 && first) || isMiddlePoint(cur) ||
+            Math.abs(threshold - binaryMetricsSummary.metricsInfoList.get(binaryMetricsSummary.metricsInfoList.size() - 1).f0)
+                >= PROBABILITY_ERROR) {
+            binaryMetricsSummary.metricsInfoList.add(Tuple2.of(threshold, confusionMatrix));
+        }else{
+            Tuple2<Double, ConfusionMatrix> metricsInfo = binaryMetricsSummary.metricsInfoList
+                .get(binaryMetricsSummary.metricsInfoList.size() - 1);
+            metricsInfo.f1 = confusionMatrix;
         }
     }
 }

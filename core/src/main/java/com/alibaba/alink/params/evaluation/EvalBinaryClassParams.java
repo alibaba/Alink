@@ -7,7 +7,7 @@ import com.alibaba.alink.params.shared.linear.HasPositiveLabelValueString;
 /**
  * Params for binary classification evaluation.
  */
-public interface BinaryEvaluationParams<T> extends
+public interface EvalBinaryClassParams<T> extends
 	HasLabelCol<T>,
 	HasPredictionDetailCol<T>,
 	HasPositiveLabelValueString <T> {

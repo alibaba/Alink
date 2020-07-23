@@ -1,10 +1,14 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
+
+import java.io.IOException;
+
 /**
  * Binary classification evaluation metrics.
  */
@@ -27,6 +31,13 @@ public final class BinaryClassMetrics extends BaseSimpleClassifierMetrics<Binary
         .setDescription("auc")
         .setRequired()
         .build();
+
+    public static final ParamInfo<Double> GINI = ParamInfoFactory
+        .createParamInfo("GINI", Double.class)
+        .setDescription("GINI")
+        .setRequired()
+        .build();
+
     public static final ParamInfo<Double> KS = ParamInfoFactory
         .createParamInfo("K-S", Double.class)
         .setDescription("ks")
@@ -45,6 +56,11 @@ public final class BinaryClassMetrics extends BaseSimpleClassifierMetrics<Binary
     public static final ParamInfo<double[][]> LIFT_CHART = ParamInfoFactory
         .createParamInfo("LiftChart", double[][].class)
         .setDescription("liftchart")
+        .setRequired()
+        .build();
+    public static final ParamInfo<double[][]> LORENZ_CURVE = ParamInfoFactory
+        .createParamInfo("LorenzCurve", double[][].class)
+        .setDescription("lorenzCurve")
         .setRequired()
         .build();
     public static final ParamInfo<double[]> THRESHOLD_ARRAY = ParamInfoFactory
@@ -75,6 +91,10 @@ public final class BinaryClassMetrics extends BaseSimpleClassifierMetrics<Binary
         double[][] curve = getParams().get(ROC_CURVE);
         return Tuple2.of(curve[0], curve[1]);
     }
+    public Tuple2<double[], double[]> getLorenzeCurve() {
+        double[][] curve = getParams().get(LORENZ_CURVE);
+        return Tuple2.of(curve[0], curve[1]);
+    }
 
     public Double getPrecision() {
         return get(PRECISION);
@@ -89,6 +109,10 @@ public final class BinaryClassMetrics extends BaseSimpleClassifierMetrics<Binary
     }
 
     public Double getAuc() {return get(AUC);}
+
+    public Double getGini() {
+        return get(GINI);
+    }
 
     public Double getKs() {return get(KS);}
 
@@ -132,5 +156,67 @@ public final class BinaryClassMetrics extends BaseSimpleClassifierMetrics<Binary
 
     public Tuple2<double[], double[]> getKappaByThreshold() {
         return Tuple2.of(getParams().get(THRESHOLD_ARRAY), getParams().get(KAPPA_ARRAY));
+    }
+
+    public void saveRocCurveAsImage(String path, boolean isOverwrite) throws IOException {
+        VisualizationUtil.saveAsImage(path,
+            isOverwrite,
+            "ROC Curve",
+            "FPR",
+            "TPR",
+            new String[]{"ROC"},
+            Tuple2.of("AUC", getAuc()),
+            getRocCurve());
+    }
+
+    public void saveKSAsImage(String path, boolean isOverwrite) throws IOException {
+        double[] thresholdArray =getThresholdArray();
+        double[] tprArray = getRocCurve().f1;
+        double[] fprArray = getRocCurve().f0;
+        ArrayUtils.reverse(thresholdArray);
+        ArrayUtils.reverse(tprArray);
+        ArrayUtils.reverse(fprArray);
+        VisualizationUtil.saveAsImage(path,
+            isOverwrite,
+            "K-S Curve",
+            "Thresholds",
+            "Rate",
+            new String[]{"TPR", "FPR"},
+            Tuple2.of("KS", getKs()),
+            Tuple2.of(thresholdArray, tprArray),
+            Tuple2.of(thresholdArray, fprArray));
+    }
+
+    public void saveLiftChartAsImage(String path, boolean isOverwrite) throws IOException {
+        VisualizationUtil.saveAsImage(path,
+            isOverwrite,
+            "LiftChart",
+            "Positive Rate",
+            "True Positive",
+            new String[]{"LiftChart"},
+            null,
+            getLiftChart());
+    }
+
+    public void saveRecallPrecisionCurveAsImage(String path, boolean isOverwrite) throws IOException {
+        VisualizationUtil.saveAsImage(path,
+            isOverwrite,
+            "RecallPrecisionCurve",
+            "Precision",
+            "Recall",
+            new String[]{"RecallPrecision"},
+            Tuple2.of("PRC", getPrc()),
+            getRecallPrecisionCurve());
+    }
+
+    public void saveLorenzCurveAsImage(String path, boolean isOverwrite) throws IOException {
+        VisualizationUtil.saveAsImage(path,
+            isOverwrite,
+            "LorenzCurve",
+            "Positive Rate",
+            "TPR",
+            new String[]{"LorenzCurve"},
+            Tuple2.of("GINI", getGini()),
+            getLorenzeCurve());
     }
 }

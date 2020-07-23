@@ -1,8 +1,14 @@
 package com.alibaba.alink.operator.common.evaluation;
 
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.operator.common.dataproc.SortUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.flink.api.common.functions.*;
+import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.flink.types.Row;
@@ -10,7 +16,12 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.BINARY_LABEL_NUMBER;
 import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.buildLabelIndexLabelArray;
@@ -21,6 +32,69 @@ import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluat
 public class EvaluationUtil implements Serializable {
     private static double LOG_LOSS_EPS = 1e-15;
     private static double PROB_SUM_EPS = 0.01;
+
+    public static boolean labelCompare(Object label1, Object label2, TypeInformation type){
+        return SortUtils.OBJECT_COMPARATOR.compare(castTo(label1, type), castTo(label2, type)) == 0;
+    }
+
+    public static int compare(Object o1, Object o2) {
+        if(o1 == null || o2 == null){
+            return (o1 == null) && (o2 == null) ? 0 : 1;
+        }
+        if(o1 instanceof Comparable && o2 instanceof Comparable && o1.getClass() == o2.getClass()){
+            return ((Comparable)o1).compareTo((Comparable)o2);
+        }else {
+            throw new RuntimeException("Input Labels are not comparable!");
+        }
+    }
+
+    public static Object castTo(Object x, TypeInformation t) {
+        if (x == null) {
+            return null;
+        } else if (t.equals(Types.BOOLEAN)) {
+            if (x instanceof Boolean) {
+                return x;
+            }
+            return Boolean.valueOf(x.toString());
+        } else if (t.equals(Types.BYTE)) {
+            if (x instanceof Number) {
+                return ((Number)x).byteValue();
+            }
+            return Byte.valueOf(x.toString());
+        } else if (t.equals(Types.SHORT)) {
+            if (x instanceof Number) {
+                return ((Number)x).shortValue();
+            }
+            return Short.valueOf(x.toString());
+        } else if (t.equals(Types.INT)) {
+            if (x instanceof Number) {
+                return ((Number)x).intValue();
+            }
+            return Integer.valueOf(x.toString());
+        } else if (t.equals(Types.LONG)) {
+            if (x instanceof Number) {
+                return ((Number)x).longValue();
+            }
+            return Long.valueOf(x.toString());
+        } else if (t.equals(Types.FLOAT)) {
+            if (x instanceof Number) {
+                return ((Number)x).floatValue();
+            }
+            return Float.valueOf(x.toString());
+        } else if (t.equals(Types.DOUBLE)) {
+            if (x instanceof Number) {
+                return ((Number)x).doubleValue();
+            }
+            return Double.valueOf(x.toString());
+        } else if (t.equals(Types.STRING)) {
+            if (x instanceof String) {
+                return x;
+            }
+            return x.toString();
+        } else {
+            throw new RuntimeException("unsupported type: " + t.getClass().getName());
+        }
+    }
 
     /**
      * Initialize the base classification evaluation metrics. There are two cases: BinaryClassMetrics and
@@ -34,8 +108,8 @@ public class EvaluationUtil implements Serializable {
      * @return If rows is empty, return null. If binary is true, return BinaryClassMetrics. If binary is false, return
      * MultiClassMetrics.
      */
-    public static BaseMetricsSummary getDetailStatistics(Iterable<Row> rows, String positiveValue, boolean binary) {
-        return getDetailStatistics(rows, positiveValue, binary, null);
+    public static BaseMetricsSummary getDetailStatistics(Iterable<Row> rows, String positiveValue, boolean binary, TypeInformation labelType) {
+        return getDetailStatistics(rows, positiveValue, binary, null, labelType);
     }
 
     /**
@@ -53,8 +127,9 @@ public class EvaluationUtil implements Serializable {
      */
     public static BaseMetricsSummary getDetailStatistics(Iterable<Row> rows,
                                                          boolean binary,
-                                                         Tuple2<Map<String, Integer>, String[]> labels) {
-        return getDetailStatistics(rows, null, binary, labels);
+                                                         Tuple2<Map<Object, Integer>, Object[]> labels,
+                                                         TypeInformation labelType) {
+        return getDetailStatistics(rows, null, binary, labels, labelType);
     }
 
     /**
@@ -75,10 +150,11 @@ public class EvaluationUtil implements Serializable {
     private static BaseMetricsSummary getDetailStatistics(Iterable<Row> rows,
                                                           String positiveValue,
                                                           boolean binary,
-                                                          Tuple2<Map<String, Integer>, String[]> tuple) {
+                                                          Tuple2<Map<Object, Integer>, Object[]> tuple,
+                                                          TypeInformation labelType) {
         BinaryMetricsSummary binaryMetricsSummary = null;
         MultiMetricsSummary multiMetricsSummary = null;
-        Tuple2<Map<String, Integer>, String[]> labelIndexLabelArray = tuple;
+        Tuple2<Map<Object, Integer>, Object[]> labelIndexLabelArray = tuple;
 
         Iterator<Row> iterator = rows.iterator();
         Row row = null;
@@ -87,15 +163,15 @@ public class EvaluationUtil implements Serializable {
         }
         if (checkRowFieldNotNull(row)) {
             if (null == labelIndexLabelArray) {
-                TreeMap<String, Double> labelProbMap = extractLabelProbMap(row);
+                TreeMap<Object, Double> labelProbMap = extractLabelProbMap(row, labelType);
                 labelIndexLabelArray = buildLabelIndexLabelArray(new HashSet<>(labelProbMap.keySet()), binary,
-                    positiveValue);
+                    positiveValue, labelType);
             }
         } else {
             return null;
         }
 
-        Map<String, Integer> labelIndexMap = null;
+        Map<Object, Integer> labelIndexMap = null;
         if (binary) {
             binaryMetricsSummary = new BinaryMetricsSummary(
                 new long[ClassificationEvaluationUtil.DETAIL_BIN_NUMBER],
@@ -110,8 +186,8 @@ public class EvaluationUtil implements Serializable {
 
         while (null != row) {
             if (checkRowFieldNotNull(row)) {
-                TreeMap<String, Double> labelProbMap = extractLabelProbMap(row);
-                String label = row.getField(0).toString();
+                TreeMap<Object, Double> labelProbMap = extractLabelProbMap(row, labelType);
+                Object label = row.getField(0);
                 if (ArrayUtils.indexOf(labelIndexLabelArray.f1, label) >= 0) {
                     if (binary) {
                         updateBinaryMetricsSummary(labelProbMap, label, binaryMetricsSummary);
@@ -130,7 +206,7 @@ public class EvaluationUtil implements Serializable {
         return row != null && row.getField(0) != null && row.getField(1) != null;
     }
 
-    private static double extractLogloss(TreeMap<String, Double> labelProbMap, String label) {
+    public static double extractLogloss(TreeMap<Object, Double> labelProbMap, Object label) {
         Double prob = labelProbMap.get(label);
         prob = null == prob ? 0. : prob;
         return -Math.log(Math.max(Math.min(prob, 1 - LOG_LOSS_EPS), LOG_LOSS_EPS));
@@ -142,12 +218,12 @@ public class EvaluationUtil implements Serializable {
      * @param row Input row, the second field is predDetail.
      * @return the  |label, probability| map.
      */
-    public static TreeMap<String, Double> extractLabelProbMap(Row row) {
-        TreeMap<String, Double> labelProbMap;
+    public static TreeMap<Object, Double> extractLabelProbMap(Row row, TypeInformation labelType) {
+        HashMap<String, Double> labelProbMap;
         final String detailStr = row.getField(1).toString();
         try {
             labelProbMap = JsonConverter.fromJson(detailStr,
-                new TypeReference<TreeMap<String, Double>>() {}.getType());
+                new TypeReference<HashMap<String, Double>>() {}.getType());
         } catch (Exception e) {
             throw new RuntimeException(
                 String.format("Fail to deserialize detail column %s!", detailStr));
@@ -159,11 +235,15 @@ public class EvaluationUtil implements Serializable {
         Preconditions.checkArgument(
             Math.abs(probabilities.stream().mapToDouble(Double::doubleValue).sum() - 1.0) < PROB_SUM_EPS,
             String.format("Probability sum in %s not equal to 1.0!", detailStr));
-        return labelProbMap;
+        TreeMap<Object, Double> castLabelProbMap = new TreeMap<>();
+        for(Map.Entry<String, Double> entry : labelProbMap.entrySet()){
+            castLabelProbMap.put(castTo(entry.getKey(), labelType), entry.getValue());
+        }
+        return castLabelProbMap;
     }
 
-    public static void updateBinaryMetricsSummary(TreeMap<String, Double> labelProbMap,
-                                                  String label,
+    public static void updateBinaryMetricsSummary(TreeMap<Object, Double> labelProbMap,
+                                                  Object label,
                                                   BinaryMetricsSummary binaryMetricsSummary) {
         Preconditions.checkState(labelProbMap.size() == BINARY_LABEL_NUMBER,
             "The number of labels must be equal to 2!");
@@ -178,24 +258,20 @@ public class EvaluationUtil implements Serializable {
                 binaryMetricsSummary.positiveBin[idx] += 1;
             } else if (label.equals(binaryMetricsSummary.labels[1])) {
                 binaryMetricsSummary.negativeBin[idx] += 1;
-            } else {
-                throw new RuntimeException(String
-                    .format("Label %s not contained in label Array %s in detail column!", label,
-                        labelProbMap.keySet().toString()));
             }
         }
     }
 
-    public static void updateMultiMetricsSummary(TreeMap<String, Double> labelProbMap,
-                                                 String label,
-                                                 Map<String, Integer> labels,
+    public static void updateMultiMetricsSummary(TreeMap<Object, Double> labelProbMap,
+                                                 Object label,
+                                                 Map<Object, Integer> labels,
                                                  MultiMetricsSummary multiMetricsSummary) {
         multiMetricsSummary.total++;
         multiMetricsSummary.logLoss += extractLogloss(labelProbMap, label);
-        String predict = null;
+        Object predict = null;
         double score = Double.NEGATIVE_INFINITY;
-        for (Map.Entry<String, Double> entry : labelProbMap.entrySet()) {
-            String key = entry.getKey();
+        for (Map.Entry<Object, Double> entry : labelProbMap.entrySet()) {
+            Object key = entry.getKey();
             Double v = entry.getValue();
 
             if (v > score) {
@@ -246,17 +322,17 @@ public class EvaluationUtil implements Serializable {
      * @return MultiMetricsSummary.
      */
     public static MultiMetricsSummary getMultiClassMetrics(Iterable<Row> rows,
-                                                           Tuple2<Map<String, Integer>, String[]>
+                                                           Tuple2<Map<Object, Integer>, Object[]>
                                                                labelIndexLabelArray) {
-        final String[] recordLabel = labelIndexLabelArray.f1;
-        final Map<String, Integer> labelIndexMap = labelIndexLabelArray.f0;
+        final Object[] recordLabel = labelIndexLabelArray.f1;
+        final Map<Object, Integer> labelIndexMap = labelIndexLabelArray.f0;
         final int n = recordLabel.length;
         MultiMetricsSummary multiMetricsSummary = new MultiMetricsSummary(new long[n][n], recordLabel, -1, 0L);
         for (Row r : rows) {
             if (checkRowFieldNotNull(r)) {
                 multiMetricsSummary.total++;
-                int label = labelIndexMap.get(r.getField(0).toString());
-                int prediction = labelIndexMap.get(r.getField(1).toString());
+                int label = labelIndexMap.get(r.getField(0));
+                int prediction = labelIndexMap.get(r.getField(1));
                 multiMetricsSummary.matrix.setValue(prediction, label,
                     multiMetricsSummary.matrix.getValue(prediction, label) + 1);
             }
@@ -290,21 +366,23 @@ public class EvaluationUtil implements Serializable {
      * Get all the distinct labels from label column and prediction column, and return the map of labels and their IDs.
      */
     public static class DistinctLabelIndexMap implements
-        GroupReduceFunction<String, Tuple2<Map<String, Integer>, String[]>> {
+        GroupReduceFunction<Object, Tuple2<Map<Object, Integer>, Object[]>> {
         private boolean binary;
         private String positiveValue;
+        private TypeInformation labelType;
 
-        public DistinctLabelIndexMap(boolean binary, String positiveValue) {
+        public DistinctLabelIndexMap(boolean binary, String positiveValue, TypeInformation labelType) {
             this.binary = binary;
             this.positiveValue = positiveValue;
+            this.labelType = labelType;
         }
 
         @Override
-        public void reduce(Iterable<String> rows, Collector<Tuple2<Map<String, Integer>, String[]>> collector)
+        public void reduce(Iterable<Object> rows, Collector<Tuple2<Map<Object, Integer>, Object[]>> collector)
             throws Exception {
-            HashSet<String> labels = new HashSet<>();
+            HashSet<Object> labels = new HashSet<>();
             rows.forEach(labels::add);
-            collector.collect(buildLabelIndexLabelArray(labels, binary, positiveValue));
+            collector.collect(buildLabelIndexLabelArray(labels, binary, positiveValue, labelType));
         }
     }
 

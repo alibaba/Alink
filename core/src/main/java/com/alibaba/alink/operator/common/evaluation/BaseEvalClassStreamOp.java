@@ -1,22 +1,22 @@
 package com.alibaba.alink.operator.common.evaluation;
 
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.common.utils.TimeUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.params.evaluation.BinaryEvaluationStreamParams;
-import com.alibaba.alink.params.evaluation.MultiEvaluationStreamParams;
+import com.alibaba.alink.params.evaluation.EvalBinaryClassParams;
+import com.alibaba.alink.params.evaluation.EvalBinaryClassStreamParams;
+import com.alibaba.alink.params.evaluation.EvalMultiClassStreamParams;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
 import java.util.HashSet;
-import java.util.concurrent.TimeUnit;
 
 import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.buildLabelIndexLabelArray;
 import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getDetailStatistics;
@@ -39,9 +39,15 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp<T>> extends S
     @Override
     public T linkFrom(StreamOperator<?>... inputs) {
         StreamOperator<?> in = checkAndGetFirst(inputs);
-        String labelColName = this.get(MultiEvaluationStreamParams.LABEL_COL);
-        String positiveValue = this.get(BinaryEvaluationStreamParams.POS_LABEL_VAL_STR);
-        Integer timeInterval = this.get(MultiEvaluationStreamParams.TIME_INTERVAL);
+        String labelColName = this.get(EvalMultiClassStreamParams.LABEL_COL);
+        TypeInformation labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelColName);
+        String positiveValue = this.get(EvalBinaryClassStreamParams.POS_LABEL_VAL_STR);
+        double timeInterval = this.get(EvalMultiClassStreamParams.TIME_INTERVAL);
+
+        if(binary){
+            Preconditions.checkArgument(getParams().contains(EvalBinaryClassParams.PREDICTION_DETAIL_COL),
+                "Binary Evaluation must give predictionDetailCol!");
+        }
 
         ClassificationEvaluationUtil.Type type = ClassificationEvaluationUtil.judgeEvaluationType(this.getParams());
 
@@ -49,25 +55,26 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp<T>> extends S
 
         switch (type) {
             case PRED_RESULT: {
-                String predResultColName = this.get(MultiEvaluationStreamParams.PREDICTION_COL);
+                String predResultColName = this.get(EvalMultiClassStreamParams.PREDICTION_COL);
                 TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predResultColName);
 
-                LabelPredictionWindow predMultiWindowFunction = new LabelPredictionWindow(binary, positiveValue);
+                LabelPredictionWindow predMultiWindowFunction = new LabelPredictionWindow(binary, positiveValue, labelType);
                 statistics = in.select(new String[] {labelColName, predResultColName})
                     .getDataStream()
-                    .timeWindowAll(Time.of(timeInterval, TimeUnit.SECONDS))
+                    .timeWindowAll(TimeUtil.convertTime(timeInterval))
                     .apply(predMultiWindowFunction);
                 break;
             }
             case PRED_DETAIL: {
-                String predDetailColName = this.get(MultiEvaluationStreamParams.PREDICTION_DETAIL_COL);
+                String predDetailColName = this.get(EvalMultiClassStreamParams.PREDICTION_DETAIL_COL);
                 TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predDetailColName);
 
-                PredDetailLabel eval = new PredDetailLabel(positiveValue, binary);
+                PredDetailLabel eval = new PredDetailLabel(positiveValue, binary, labelType);
 
                 statistics = in.select(new String[] {labelColName, predDetailColName})
                     .getDataStream()
-                    .timeWindowAll(Time.of(timeInterval, TimeUnit.SECONDS))
+                    //                    .timeWindowAll(Time.of(timeInterval, TimeUnit.SECONDS))
+                    .timeWindowAll(TimeUtil.convertTime(timeInterval))
                     .apply(eval);
                 break;
             }
@@ -96,24 +103,26 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp<T>> extends S
     static class LabelPredictionWindow implements AllWindowFunction<Row, BaseMetricsSummary, TimeWindow> {
         private boolean binary;
         private String positiveValue;
+        private TypeInformation labelType;
 
-        LabelPredictionWindow(boolean binary, String positiveValue) {
+        LabelPredictionWindow(boolean binary, String positiveValue, TypeInformation labelType) {
             this.binary = binary;
             this.positiveValue = positiveValue;
+            this.labelType = labelType;
         }
 
         @Override
         public void apply(TimeWindow timeWindow, Iterable<Row> rows, Collector<BaseMetricsSummary> collector)
             throws Exception {
-            HashSet<String> labels = new HashSet<>();
+            HashSet<Object> labels = new HashSet<>();
             for (Row row : rows) {
                 if (EvaluationUtil.checkRowFieldNotNull(row)) {
-                    labels.add(row.getField(0).toString());
-                    labels.add(row.getField(1).toString());
+                    labels.add(row.getField(0));
+                    labels.add(row.getField(1));
                 }
             }
             if (labels.size() > 0) {
-                collector.collect(getMultiClassMetrics(rows, buildLabelIndexLabelArray(labels, binary, positiveValue)));
+                collector.collect(getMultiClassMetrics(rows, buildLabelIndexLabelArray(labels, binary, positiveValue, labelType)));
             }
         }
     }
@@ -121,25 +130,27 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp<T>> extends S
     static class PredDetailLabel implements AllWindowFunction<Row, BaseMetricsSummary, TimeWindow> {
         private String positiveValue;
         private Boolean binary;
+        private TypeInformation labelType;
 
-        PredDetailLabel(String positiveValue, boolean binary) {
+        PredDetailLabel(String positiveValue, boolean binary, TypeInformation labelType) {
             this.positiveValue = positiveValue;
             this.binary = binary;
+            this.labelType = labelType;
         }
 
         @Override
         public void apply(TimeWindow timeWindow, Iterable<Row> rows, Collector<BaseMetricsSummary> collector)
             throws Exception {
-            HashSet<String> labels = new HashSet<>();
+            HashSet<Object> labels = new HashSet<>();
             for (Row row : rows) {
                 if (EvaluationUtil.checkRowFieldNotNull(row)) {
-                    labels.addAll(EvaluationUtil.extractLabelProbMap(row).keySet());
-                    labels.add(row.getField(0).toString());
+                    labels.addAll(EvaluationUtil.extractLabelProbMap(row, labelType).keySet());
+                    labels.add(row.getField(0));
                 }
             }
             if (labels.size() > 0) {
                 collector.collect(
-                    getDetailStatistics(rows, binary, buildLabelIndexLabelArray(labels, binary, positiveValue)));
+                    getDetailStatistics(rows, binary, buildLabelIndexLabelArray(labels, binary, positiveValue, labelType), labelType));
             }
         }
     }

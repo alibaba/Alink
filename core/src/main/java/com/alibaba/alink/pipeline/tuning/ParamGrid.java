@@ -15,7 +15,6 @@ import java.util.List;
  * ParamGrid.
  */
 public class ParamGrid implements Serializable {
-
 	private List<Tuple3<PipelineStageBase, ParamInfo, Object[]>> items = new ArrayList<>();
 
 	public <V> ParamGrid addGrid(PipelineStageBase stage, ParamInfo<V> info, V[] params) {

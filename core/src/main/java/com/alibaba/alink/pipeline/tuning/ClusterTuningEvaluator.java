@@ -1,13 +1,16 @@
 package com.alibaba.alink.pipeline.tuning;
 
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.evaluation.EvalClusterBatchOp;
-import com.alibaba.alink.operator.common.evaluation.BaseSimpleClusterMetrics;
-import com.alibaba.alink.params.evaluation.EvalClusterParams;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 
-public class ClusterTuningEvaluator extends TuningEvaluator <ClusterTuningEvaluator>
-    implements EvalClusterParams <ClusterTuningEvaluator> {
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.evaluation.EvalClusterBatchOp;
+import com.alibaba.alink.operator.common.evaluation.TuningClusterMetric;
+import com.alibaba.alink.params.evaluation.EvalClusterParams;
+import com.alibaba.alink.params.evaluation.HasTuningClusterMetric;
+
+public class ClusterTuningEvaluator extends TuningEvaluator<ClusterTuningEvaluator>
+    implements EvalClusterParams<ClusterTuningEvaluator>,
+    HasTuningClusterMetric<ClusterTuningEvaluator> {
 
     public ClusterTuningEvaluator() {
         super(null);
@@ -15,17 +18,22 @@ public class ClusterTuningEvaluator extends TuningEvaluator <ClusterTuningEvalua
 
     @Override
     public double evaluate(BatchOperator in) {
-        return (double) new EvalClusterBatchOp(getParams())
+        return new EvalClusterBatchOp(getParams())
             .linkFrom(in)
             .collectMetrics()
             .getParams()
-            .get(findParamInfo(BaseSimpleClusterMetrics.class, getMetricName()));
+            .get(getMetricParamInfo());
     }
 
     @Override
     public boolean isLargerBetter() {
-        ParamInfo paramInfo = findParamInfo(BaseSimpleClusterMetrics.class, getMetricName());
-        return (paramInfo.equals(BaseSimpleClusterMetrics.SEPERATION)
-            || paramInfo.equals(BaseSimpleClusterMetrics.CALINSKI_HARABAZ));
+        return getTuningClusterMetric().equals(TuningClusterMetric.SP)
+            || getTuningClusterMetric().equals(TuningClusterMetric.VRC)
+            || getTuningClusterMetric().equals(TuningClusterMetric.SSB);
+    }
+
+    @Override
+    ParamInfo<Double> getMetricParamInfo() {
+        return getTuningClusterMetric().getMetricKey();
     }
 }

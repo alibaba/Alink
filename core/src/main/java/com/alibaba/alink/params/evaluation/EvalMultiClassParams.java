@@ -7,7 +7,7 @@ import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
 /**
  * Params for multi classification evaluation.
  */
-public interface MultiEvaluationParams<T> extends
+public interface EvalMultiClassParams<T> extends
 	HasLabelCol <T>,
 	HasPredictionCol <T>,
 	HasPredictionDetailCol <T> {

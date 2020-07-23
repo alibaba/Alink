@@ -2,15 +2,28 @@ package com.alibaba.alink.operator.batch.evaluation;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.evaluation.BinaryClassMetrics;
-
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
+
+import java.util.Arrays;
 
 /**
  * Unit test for BinaryClassEvaluation.
  */
 public class EvalBinaryClassBatchOpTest {
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+
+	@Rule
+	public TemporaryFolder folder = new TemporaryFolder();
+
 	@Test
 	public void test() throws Exception {
 		Row[] data =
@@ -45,5 +58,29 @@ public class EvalBinaryClassBatchOpTest {
 		Assert.assertEquals(0.314, metrics.getMacroKappa(), 0.01);
 		Assert.assertEquals(0.666, metrics.getMicroPrecision(), 0.01);
 		Assert.assertEquals(0.666, metrics.getWeightedRecall(), 0.01);
+
+		metrics.saveRocCurveAsImage(folder.getRoot().toPath() + "rocCurve.png", true);
+		metrics.saveKSAsImage(folder.getRoot().toPath() + "ks.png", true);
+		metrics.saveLiftChartAsImage(folder.getRoot().toPath() + "liftchart.png", true);
+		metrics.saveRecallPrecisionCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
+		metrics.saveLorenzCurveAsImage(folder.getRoot().toPath() + "lorenzCurve.png", true);
+	}
+
+	@Test
+	public void testEmptyInput() throws Exception{
+		Row[] rows = new Row[]{
+			Row.of(null, null),
+			Row.of("1", null),
+			Row.of(null, "1")
+		};
+
+		MemSourceBatchOp data = new MemSourceBatchOp(Arrays.asList(rows), new TableSchema(new String[]{"pred", "label"},
+			new TypeInformation[]{Types.STRING, Types.STRING}));
+		thrown.expect(Exception.class);
+		EvalBinaryClassBatchOp op = new EvalBinaryClassBatchOp()
+			.setLabelCol("label")
+			.setPredictionDetailCol("pred")
+			.linkFrom(data);
+		op.print();
 	}
 }

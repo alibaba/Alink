@@ -5,7 +5,7 @@ import com.alibaba.alink.params.shared.HasTimeIntervalDv3;
 /**
  * Params for multi classification evaluation.
  */
-public interface MultiEvaluationStreamParams<T> extends
-	MultiEvaluationParams <T>,
+public interface EvalMultiClassStreamParams<T> extends
+    EvalMultiClassParams<T>,
 	HasTimeIntervalDv3 <T> {
 }

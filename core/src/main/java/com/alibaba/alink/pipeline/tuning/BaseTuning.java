@@ -16,11 +16,14 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.ExceptionUtils;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
+import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.SplitBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.pipeline.EstimatorBase;
@@ -32,30 +35,31 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 
 /**
  * BaseTuning.
  */
 public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTuningModel<M>>
-	extends EstimatorBase<T, M> {
+	extends EstimatorBase<T, M> implements HasLazyPrintTrainInfo<T> {
 
-	private EstimatorBase estimator;
-	private TuningEvaluator tuningEvaluator;
+	private EstimatorBase<?, ?> estimator;
+	private TuningEvaluator<?> tuningEvaluator;
 
 	public BaseTuning() {
 		super();
 	}
 
-	public EstimatorBase getEstimator() {
+	public EstimatorBase<?, ?> getEstimator() {
 		return estimator;
 	}
 
-	public T setEstimator(EstimatorBase value) {
+	public T setEstimator(EstimatorBase<?, ?> value) {
 		this.estimator = value;
 		return (T) this;
 	}
 
-	public T setTuningEvaluator(TuningEvaluator tuningEvaluator) {
+	public T setTuningEvaluator(TuningEvaluator<?> tuningEvaluator) {
 		this.tuningEvaluator = tuningEvaluator;
 		return (T) this;
 	}
@@ -63,7 +67,26 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 	@Override
 	public M fit(BatchOperator input) {
 		Tuple2<TransformerBase, Report> result = tuning(input);
-		return createModel(result.f0, result.f1);
+
+		if (getParams().get(LAZY_PRINT_TRAIN_INFO_ENABLED)) {
+			final String title = getParams().get(LAZY_PRINT_TRAIN_INFO_TITLE);
+			final Report localReport = result.f1;
+
+			new MemSourceBatchOp(new Integer[] {0}, "col0")
+				.setMLEnvironmentId(getMLEnvironmentId())
+				.lazyCollect(new Consumer<List<Row>>() {
+					@Override
+					public void accept(List<Row> rows) {
+						if (title != null) {
+							System.out.println(title);
+						}
+
+						System.out.println(localReport.toString());
+					}
+				});
+		}
+
+		return createModel(result.f0);
 	}
 
 	@Override
@@ -71,15 +94,15 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 		throw new UnsupportedOperationException("Tuning on stream not supported.");
 	}
 
-	private M createModel(TransformerBase transformer, Report report) {
+	private M createModel(TransformerBase transformer) {
 		try {
 			ParameterizedType pt =
 				(ParameterizedType) this.getClass().getGenericSuperclass();
 
 			Class<M> classM = (Class<M>) pt.getActualTypeArguments()[1];
 
-			return classM.getConstructor(TransformerBase.class, Report.class)
-				.newInstance(transformer, report);
+			return classM.getConstructor(TransformerBase.class)
+				.newInstance(transformer);
 
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
@@ -124,28 +147,46 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 					.fit(sbo)
 					.transform(sbo.getSideOutput(0))
 				);
+			} catch (Exception ex) {
+				System.out.println(String.format("BestTVSplit, i: %d, best: %f, metric: %f, exception: %s",
+					i, bestMetric, metric, ExceptionUtils.stringifyException(ex)));
+
+				experienceScores.add(i, metric);
 
 				reportElements.add(
 					new Report.ReportElement(
 						cur.f0,
 						cur.f1,
-						metric
+						metric,
+						ExceptionUtils.stringifyException(ex)
 					)
 				);
-			} catch (Exception ex) {
-				System.out.println(String.format("BestTVSplit, i: %d, best: %f, metric: %f, exception: %s",
-					i, bestMetric, metric, ExceptionUtils.stringifyException(ex)));
-				reportElements.add(
-					new Report.ReportElement(
-						cur.f0,
-						cur.f1,
-						metric
-					)
-				);
+
 				continue;
 			}
 
 			experienceScores.add(i, metric);
+
+			if (Double.isNaN(metric)) {
+				reportElements.add(
+					new Report.ReportElement(
+						cur.f0,
+						cur.f1,
+						metric,
+						"Metric is nan."
+					)
+				);
+
+				continue;
+			}
+
+			reportElements.add(
+				new Report.ReportElement(
+					cur.f0,
+					cur.f1,
+					metric
+				)
+			);
 
 			if (bestIdx == -1) {
 				bestMetric = metric;
@@ -162,10 +203,17 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 				i, bestMetric, metric));
 		}
 
+		if (bestIdx < 0) {
+			throw new RuntimeException(
+				"Can not find a best model. Report: "
+					+ new Report(tuningEvaluator, reportElements).toPrettyJson()
+			);
+		}
+
 		try {
 			return Tuple2.of(
 				candidates.get(bestIdx, experienceScores).f0,
-				new Report(reportElements)
+				new Report(tuningEvaluator, reportElements)
 			);
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
@@ -178,7 +226,7 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 
 		int nIter = candidates.size();
 		Double bestAvg = null;
-		Pipeline best = null;
+		Integer bestIdx = null;
 
 		ArrayList<Double> experienceScores = new ArrayList<>(nIter);
 		List<Report.ReportElement> reportElements = new ArrayList<>();
@@ -190,18 +238,19 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 				throw new RuntimeException(e);
 			}
 
-			double avg = kFoldCv(splitData, cur.f0, in.getSchema(), k);
+			Tuple2<Double, String> avg = kFoldCv(splitData, cur.f0, in.getSchema(), k);
 
-			experienceScores.add(i, avg);
+			experienceScores.add(i, avg.f0);
 
-			if (Double.isNaN(avg)) {
+			if (Double.isNaN(avg.f0)) {
 				System.out.println(String.format("BestCV, i: %d, best: %f, avg: %f",
-					i, bestAvg, avg));
+					i, bestAvg, avg.f0));
 				reportElements.add(
 					new Report.ReportElement(
 						cur.f0,
 						cur.f1,
-						avg
+						avg.f0,
+						avg.f1
 					)
 				);
 				continue;
@@ -211,38 +260,52 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 				new Report.ReportElement(
 					cur.f0,
 					cur.f1,
-					avg
+					avg.f0,
+					avg.f1
 				)
 			);
 
 			if (bestAvg == null) {
-				bestAvg = avg;
-				best = cur.f0;
-			} else if ((tuningEvaluator.isLargerBetter() && bestAvg < avg)
-				|| (!tuningEvaluator.isLargerBetter() && bestAvg > avg)) {
-				bestAvg = avg;
-				best = cur.f0;
+				bestAvg = avg.f0;
+				bestIdx = i;
+			} else if ((tuningEvaluator.isLargerBetter() && bestAvg < avg.f0)
+				|| (!tuningEvaluator.isLargerBetter() && bestAvg > avg.f0)) {
+				bestAvg = avg.f0;
+				bestIdx = i;
 			}
 
-			System.out.println(String.format("BestCV, i: %d, best: %f, avg: %f",
-				i, bestAvg, avg));
-
+			System.out.println(
+				String.format(
+					"BestCV, i: %d, best: %f, avg: %f",
+					i, bestAvg, avg.f0
+				)
+			);
 		}
 
-		if (best == null) {
-			throw new RuntimeException("Can not find a best model.");
+		if (bestIdx == null) {
+			throw new RuntimeException(
+				"Can not find a best model. Report: "
+					+ new Report(tuningEvaluator, reportElements).toPrettyJson()
+			);
 		}
 
-		return Tuple2.of(best, new Report(reportElements));
+		try {
+			return Tuple2.of(candidates.get(bestIdx, experienceScores).f0, new Report(tuningEvaluator, reportElements));
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	private double kFoldCv(
+	private Tuple2<Double, String> kFoldCv(
 		DataSet<Tuple2<Integer, Row>> splitData,
 		Pipeline pipeline,
 		TableSchema schema,
 		int k) {
 		double ret = 0.;
 		int validSize = 0;
+
+		StringBuilder reason = new StringBuilder();
+
 		for (int i = 0; i < k; ++i) {
 			final int loop = i;
 			DataSet<Row> trainInput = splitData
@@ -292,6 +355,9 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 				System.out.println(
 					String.format("kFoldCv err, k: %d, i: %d, metric: %f, exception: %s",
 						k, i, localMetric, ExceptionUtils.stringifyException(ex)));
+
+				reason.append(ExceptionUtils.stringifyException(ex)).append("\n");
+
 				continue;
 			}
 
@@ -300,15 +366,19 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 		}
 
 		if (validSize == 0) {
-			return Double.NaN;
+			reason.append("valid size is zero.").append("\n");
+
+			return Tuple2.of(Double.NaN, reason.toString());
 		}
 
 		ret /= validSize;
 
 		if (validSize > 0) {
-			return ret;
+			return Tuple2.of(ret, reason.toString());
 		} else {
-			return Double.NaN;
+			reason.append("valid size if negative.").append("\n");
+
+			return Tuple2.of(Double.NaN, reason.toString());
 		}
 	}
 

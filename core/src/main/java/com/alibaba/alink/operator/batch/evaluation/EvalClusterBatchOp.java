@@ -1,13 +1,18 @@
 package com.alibaba.alink.operator.batch.evaluation;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.operator.common.clustering.DistanceType;
-import com.alibaba.alink.operator.common.distance.*;
-import com.alibaba.alink.operator.common.evaluation.*;
+import com.alibaba.alink.operator.common.distance.FastDistance;
+import com.alibaba.alink.operator.common.evaluation.ClusterMetrics;
+import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
+import com.alibaba.alink.operator.common.evaluation.LongMatrix;
+import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
+import com.alibaba.alink.operator.common.evaluation.EvaluationMetricsCollector;
+import com.alibaba.alink.operator.common.evaluation.ClusterMetricsSummary;
+import com.alibaba.alink.operator.common.evaluation.ClusterEvaluationUtil;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.evaluation.EvalClusterParams;
-import com.google.common.base.Preconditions;
+
 import org.apache.flink.api.common.functions.*;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -27,12 +32,12 @@ import java.util.Map;
  * Calculate the cluster evaluation metrics for clustering.
  * <p>
  * PredictionCol is required for evaluation. LabelCol is optional, if given, NMI/Purity/RI/ARI will be calcuated.
- * VectorCol is also optional, if given, SilhouetteCoefficient/SSB/SSW/Compactness/SEPERATION/DAVIES_BOULDIN
- * /CALINSKI_HARABAZ will be calculated. If only predictionCol is given, only K/ClusterArray/CountArray will be
+ * VectorCol is also optional, if given, SilhouetteCoefficient/SSB/SSW/Compactness/SP/DB
+ * /VRC will be calculated. If only predictionCol is given, only K/ClusterArray/CountArray will be
  * calculated.
  */
 public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
-    implements EvalClusterParams<EvalClusterBatchOp>, EvaluationMetricsCollector<ClusterMetrics> {
+    implements EvalClusterParams<EvalClusterBatchOp>, EvaluationMetricsCollector<ClusterMetrics, EvalClusterBatchOp> {
     public static final String SILHOUETTE_COEFFICIENT = "silhouetteCoefficient";
     private static final String METRICS_SUMMARY = "metricsSummary";
     private static final String EVAL_RESULT = "cluster_eval_result";
@@ -48,9 +53,8 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
     }
 
     @Override
-    public ClusterMetrics collectMetrics() {
-        Preconditions.checkArgument(null != this.getOutputTable(), "Please provide the dataset to evaluate!");
-        return new ClusterMetrics(this.collect().get(0));
+    public ClusterMetrics createMetrics(List<Row> rows){
+        return new ClusterMetrics(rows.get(0));
     }
 
     @Override
@@ -60,7 +64,7 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
         String predResultColName = this.getPredictionCol();
         String vectorColName = this.getVectorCol();
         DistanceType distanceType = getDistanceType();
-        ContinuousDistance distance = distanceType.getFastDistance();
+        FastDistance distance = distanceType.getFastDistance();
 
         DataSet<Params> empty = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment().fromElements(
             new Params());
@@ -128,9 +132,9 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
     }
 
     public static class CalcClusterMetricsSummary implements GroupReduceFunction<Row, BaseMetricsSummary> {
-        private ContinuousDistance distance;
+        private FastDistance distance;
 
-        public CalcClusterMetricsSummary(ContinuousDistance distance) {
+        public CalcClusterMetricsSummary(FastDistance distance) {
             this.distance = distance;
         }
 
@@ -149,23 +153,23 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
 
     private static DataSet<LongMatrix> calLocalPredResult(DataSet<Row> data) {
 
-        DataSet<Tuple1<Map<String, Integer>>> labels = data.flatMap(new FlatMapFunction<Row, String>() {
+        DataSet<Tuple1<Map<Object, Integer>>> labels = data.flatMap(new FlatMapFunction<Row, Object>() {
             @Override
-            public void flatMap(Row row, Collector<String> collector) {
+            public void flatMap(Row row, Collector<Object> collector) {
                 if (EvaluationUtil.checkRowFieldNotNull(row)) {
-                    collector.collect(row.getField(0).toString());
+                    collector.collect(row.getField(0));
                 }
             }
-        }).reduceGroup(new EvaluationUtil.DistinctLabelIndexMap(false, null)).project(0);
+        }).reduceGroup(new EvaluationUtil.DistinctLabelIndexMap(false, null, null)).project(0);
 
-        DataSet<Tuple1<Map<String, Integer>>> predictions = data.flatMap(new FlatMapFunction<Row, String>() {
+        DataSet<Tuple1<Map<Object, Integer>>> predictions = data.flatMap(new FlatMapFunction<Row, Object>() {
             @Override
-            public void flatMap(Row row, Collector<String> collector) {
+            public void flatMap(Row row, Collector<Object> collector) {
                 if (EvaluationUtil.checkRowFieldNotNull(row)) {
-                    collector.collect(row.getField(1).toString());
+                    collector.collect(row.getField(1));
                 }
             }
-        }).reduceGroup(new EvaluationUtil.DistinctLabelIndexMap(false, null)).project(0);
+        }).reduceGroup(new EvaluationUtil.DistinctLabelIndexMap(false, null, null)).project(0);
 
         // Build the confusion matrix.
         DataSet<LongMatrix> statistics = data
@@ -178,11 +182,11 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
     }
 
     static class CalLocalPredResult extends RichMapPartitionFunction<Row, LongMatrix> {
-        private Map<String, Integer> labels, predictions;
+        private Map<Object, Integer> labels, predictions;
 
         @Override
         public void open(Configuration parameters) throws Exception {
-            List<Tuple1<Map<String, Integer>>> list = getRuntimeContext().getBroadcastVariable(LABELS);
+            List<Tuple1<Map<Object, Integer>>> list = getRuntimeContext().getBroadcastVariable(LABELS);
             this.labels = list.get(0).f0;
             list = getRuntimeContext().getBroadcastVariable(PREDICTIONS);
             this.predictions = list.get(0).f0;
@@ -193,8 +197,8 @@ public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
             long[][] matrix = new long[predictions.size()][labels.size()];
             for (Row r : rows) {
                 if (EvaluationUtil.checkRowFieldNotNull(r)) {
-                    int label = labels.get(r.getField(0).toString());
-                    int pred = predictions.get(r.getField(1).toString());
+                    int label = labels.get(r.getField(0));
+                    int pred = predictions.get(r.getField(1));
                     matrix[pred][label] += 1;
                 }
             }

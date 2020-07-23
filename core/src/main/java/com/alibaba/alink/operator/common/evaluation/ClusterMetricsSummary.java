@@ -1,28 +1,18 @@
 package com.alibaba.alink.operator.common.evaluation;
 
 import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.MatVecOp;
-import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
-import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple6;
+
 import org.apache.flink.ml.api.misc.param.Params;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
-import static com.alibaba.alink.operator.common.evaluation.ClusterEvaluationUtil.MEAN;
-import static com.alibaba.alink.operator.common.evaluation.ClusterEvaluationUtil.SUM_2;
 
 /**
  * Cluster Metrics.
  */
 public class ClusterMetricsSummary implements BaseMetricsSummary<ClusterMetrics, ClusterMetricsSummary> {
-
 	/**
 	 * Save the ClusterId from all clusters.
 	 */
@@ -69,12 +59,12 @@ public class ClusterMetricsSummary implements BaseMetricsSummary<ClusterMetrics,
 	ContinuousDistance distance;
 
 	public ClusterMetricsSummary(String clusterId,
-							 int clusterCnt,
-							 double compactness,
-							 double distanceSquareSum,
-							 double vectorNormL2Sum,
-							 DenseVector meanVector,
-							 ContinuousDistance distance){
+								 int clusterCnt,
+								 double compactness,
+								 double distanceSquareSum,
+								 double vectorNormL2Sum,
+								 DenseVector meanVector,
+								 ContinuousDistance distance){
 		this.clusterId.add(clusterId);
 		this.clusterCnt.add(clusterCnt);
 		this.compactness.add(compactness);
@@ -139,12 +129,12 @@ public class ClusterMetricsSummary implements BaseMetricsSummary<ClusterMetrics,
 		double DBIndex = StatUtils.sum(DBIndexArray) / k;
 		params.set(ClusterMetrics.SSB, ssb);
 		params.set(ClusterMetrics.SSW, ssw);
-		params.set(ClusterMetrics.COMPACTNESS, compactness / k);
+		params.set(ClusterMetrics.CP, compactness / k);
 		params.set(ClusterMetrics.K, k);
 		params.set(ClusterMetrics.COUNT, total);
-		params.set(ClusterMetrics.SEPERATION, 2 * seperation / (k * k - k));
-		params.set(ClusterMetrics.DAVIES_BOULDIN, DBIndex);
-		params.set(ClusterMetrics.CALINSKI_HARABAZ, ssb * (total - k) / ssw / (k - 1));
+		params.set(ClusterMetrics.SP, 2 * seperation / (k * k - k));
+		params.set(ClusterMetrics.DB, DBIndex);
+		params.set(ClusterMetrics.VRC, ssb * (total - k) / ssw / (k - 1));
 		params.set(ClusterMetrics.CLUSTER_ARRAY, clusters);
 		params.set(ClusterMetrics.COUNT_ARRAY, countArray);
 

@@ -6,7 +6,7 @@ import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 /**
  * Params for regression evaluation.
  */
-public interface RegressionEvaluationParams<T> extends
+public interface EvalRegressionParams<T> extends
 	HasLabelCol <T>,
 	HasPredictionCol <T> {
 }

@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.common.evaluation;
 
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.evaluation.BinaryEvaluationParams;
-import com.alibaba.alink.params.evaluation.MultiEvaluationParams;
+import com.alibaba.alink.params.evaluation.EvalBinaryClassParams;
+import com.alibaba.alink.params.evaluation.EvalMultiClassParams;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -32,7 +32,7 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getMul
  * You can either give label column and predResult column or give label column and predDetail column. Once predDetail
  * column is given, the predResult column is ignored.
  */
-public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends BatchOperator<T> {
+public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends BatchOperator<T>{
     private static final String LABELS = "labels";
     private static final String DATA_OUTPUT = "Data";
     private boolean binary;
@@ -45,28 +45,33 @@ public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends Bat
     @Override
     public T linkFrom(BatchOperator<?>... inputs) {
         BatchOperator<?> in = checkAndGetFirst(inputs);
-        String labelColName = this.get(MultiEvaluationParams.LABEL_COL);
-        String positiveValue = this.get(BinaryEvaluationParams.POS_LABEL_VAL_STR);
+        String labelColName = this.get(EvalMultiClassParams.LABEL_COL);
+        TypeInformation labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelColName);
+        String positiveValue = this.get(EvalBinaryClassParams.POS_LABEL_VAL_STR);
+
+        if(binary){
+            Preconditions.checkArgument(getParams().contains(EvalBinaryClassParams.PREDICTION_DETAIL_COL),
+                "Binary Evaluation must give predictionDetailCol!");
+        }
 
         // Judge the evaluation type from params.
         ClassificationEvaluationUtil.Type type = ClassificationEvaluationUtil.judgeEvaluationType(this.getParams());
-
         DataSet<BaseMetricsSummary> res;
         switch (type) {
             case PRED_RESULT: {
-                String predResultColName = this.get(MultiEvaluationParams.PREDICTION_COL);
+                String predResultColName = this.get(EvalMultiClassParams.PREDICTION_COL);
                 TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predResultColName);
 
                 DataSet<Row> data = in.select(new String[] {labelColName, predResultColName}).getDataSet();
-                res = calLabelPredictionLocal(data, positiveValue, binary);
+                res = calLabelPredictionLocal(data, positiveValue, binary, labelType);
                 break;
             }
             case PRED_DETAIL: {
-                String predDetailColName = this.get(MultiEvaluationParams.PREDICTION_DETAIL_COL);
+                String predDetailColName = this.get(EvalMultiClassParams.PREDICTION_DETAIL_COL);
                 TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predDetailColName);
 
                 DataSet<Row> data = in.select(new String[] {labelColName, predDetailColName}).getDataSet();
-                res = calLabelPredDetailLocal(data, positiveValue, binary);
+                res = calLabelPredDetailLocal(data, positiveValue, binary, labelType);
                 break;
             }
             default: {
@@ -86,18 +91,20 @@ public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends Bat
     /**
      * Calculate the evaluation metrics of every partition in case of inputs are prediction result.
      */
-    private static DataSet<BaseMetricsSummary> calLabelPredictionLocal(DataSet<Row> data, final String positiveValue,
-                                                                       boolean binary) {
+    private static DataSet<BaseMetricsSummary> calLabelPredictionLocal(DataSet<Row> data,
+                                                                       final String positiveValue,
+                                                                       boolean binary,
+                                                                       TypeInformation labelType) {
 
-        DataSet<Tuple2<Map<String, Integer>, String[]>> labels = data.flatMap(new FlatMapFunction<Row, String>() {
+        DataSet<Tuple2<Map<Object, Integer>, Object[]>> labels = data.flatMap(new FlatMapFunction<Row, Object>() {
             @Override
-            public void flatMap(Row row, Collector<String> collector) {
+            public void flatMap(Row row, Collector<Object> collector) {
                 if (EvaluationUtil.checkRowFieldNotNull(row)) {
-                    collector.collect(row.getField(0).toString());
-                    collector.collect(row.getField(1).toString());
+                    collector.collect(row.getField(0));
+                    collector.collect(row.getField(1));
                 }
             }
-        }).reduceGroup(new EvaluationUtil.DistinctLabelIndexMap(binary, positiveValue));
+        }).reduceGroup(new EvaluationUtil.DistinctLabelIndexMap(binary, positiveValue, labelType));
 
         // Build the confusion matrix.
         return data
@@ -109,23 +116,25 @@ public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends Bat
     /**
      * Calculate the evaluation metrics of every partition in case of inputs are label and prediction detail.
      */
-    private static DataSet<BaseMetricsSummary> calLabelPredDetailLocal(DataSet<Row> data, final String positiveValue,
-                                                                       boolean binary) {
-        DataSet<Tuple2<Map<String, Integer>, String[]>> labels = data.flatMap(new FlatMapFunction<Row, String>() {
+    private static DataSet<BaseMetricsSummary> calLabelPredDetailLocal(DataSet<Row> data,
+                                                                       final String positiveValue,
+                                                                       boolean binary,
+                                                                       TypeInformation labelType) {
+        DataSet<Tuple2<Map<Object, Integer>, Object[]>> labels = data.flatMap(new FlatMapFunction<Row, Object>() {
             @Override
-            public void flatMap(Row row, Collector<String> collector) {
-                TreeMap<String, Double> labelProbMap;
+            public void flatMap(Row row, Collector<Object> collector) {
+                TreeMap<Object, Double> labelProbMap;
                 if (EvaluationUtil.checkRowFieldNotNull(row)) {
-                    labelProbMap = EvaluationUtil.extractLabelProbMap(row);
+                    labelProbMap = EvaluationUtil.extractLabelProbMap(row, labelType);
                     labelProbMap.keySet().forEach(collector::collect);
-                    collector.collect(row.getField(0).toString());
+                    collector.collect(row.getField(0));
                 }
             }
-        }).reduceGroup(new EvaluationUtil.DistinctLabelIndexMap(binary, positiveValue));
+        }).reduceGroup(new EvaluationUtil.DistinctLabelIndexMap(binary, positiveValue, labelType));
 
         return data
             .rebalance()
-            .mapPartition(new CalLabelDetailLocal(binary))
+            .mapPartition(new CalLabelDetailLocal(binary, labelType))
             .withBroadcastSet(labels, LABELS);
     }
 
@@ -133,11 +142,11 @@ public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends Bat
      * Calculate the confusion matrix based on the label and predResult.
      */
     static class CalLabelPredictionLocal extends RichMapPartitionFunction<Row, BaseMetricsSummary> {
-        private Tuple2<Map<String, Integer>, String[]> map;
+        private Tuple2<Map<Object, Integer>, Object[]> map;
 
         @Override
         public void open(Configuration parameters) throws Exception {
-            List<Tuple2<Map<String, Integer>, String[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
+            List<Tuple2<Map<Object, Integer>, Object[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
             Preconditions.checkArgument(list.size() > 0,
                 "Please check the evaluation input! there is no effective row!");
             this.map = list.get(0);
@@ -153,16 +162,18 @@ public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends Bat
      * Calculate the confusion matrix based on the label and predResult.
      */
     static class CalLabelDetailLocal extends RichMapPartitionFunction<Row, BaseMetricsSummary> {
-        private Tuple2<Map<String, Integer>, String[]> map;
+        private Tuple2<Map<Object, Integer>, Object[]> map;
         private boolean binary;
+        private TypeInformation labelType;
 
-        public CalLabelDetailLocal(boolean binary) {
+        public CalLabelDetailLocal(boolean binary, TypeInformation labelType) {
             this.binary = binary;
+            this.labelType = labelType;
         }
 
         @Override
         public void open(Configuration parameters) throws Exception {
-            List<Tuple2<Map<String, Integer>, String[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
+            List<Tuple2<Map<Object, Integer>, Object[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
             Preconditions.checkArgument(list.size() > 0,
                 "Please check the evaluation input! there is no effective row!");
             this.map = list.get(0);
@@ -170,7 +181,7 @@ public class BaseEvalClassBatchOp<T extends BaseEvalClassBatchOp<T>> extends Bat
 
         @Override
         public void mapPartition(Iterable<Row> rows, Collector<BaseMetricsSummary> collector) {
-            collector.collect(getDetailStatistics(rows, binary, map));
+            collector.collect(getDetailStatistics(rows, binary, map, labelType));
         }
     }
 }
