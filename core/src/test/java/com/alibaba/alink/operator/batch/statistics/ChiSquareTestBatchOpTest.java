@@ -33,6 +33,6 @@ public class ChiSquareTestBatchOpTest {
 
         test.linkFrom(source);
 
-        Assert.assertEquals(test.collectChiSquareTestResult()[0].getP(), 0.004301310843500827, 10e-4);
+        Assert.assertEquals(test.collectChiSquareTest()[0].getP(), 0.004301310843500827, 10e-4);
     }
 }

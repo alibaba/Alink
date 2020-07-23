@@ -1,17 +1,19 @@
 package com.alibaba.alink.operator.batch.feature;
 
+import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.feature.ChisqSelectorModelInfo;
 import org.apache.flink.types.Row;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
-
-import static org.junit.Assert.assertArrayEquals;
+import java.util.function.Consumer;
 
 public class ChiSqSelectorBatchOpTest {
 
     @Test
-    public void test() {
+    public void test() throws Exception {
         Row[] testArray =
             new Row[]{
                 Row.of("a", 1L, 1, 2.0, true),
@@ -31,9 +33,22 @@ public class ChiSqSelectorBatchOpTest {
 
         selector.linkFrom(data);
 
-        String[] selectedColNames = selector.collectResult();
+        selector.lazyPrintModelInfo();
 
-        assertArrayEquals(new String[]{"f_string", "f_long"}, selectedColNames);
+        selector.lazyCollectModelInfo(
+            new Consumer<ChisqSelectorModelInfo>() {
+                @Override
+                public void accept(ChisqSelectorModelInfo chisqSelectorSummary) {
+                    Assert.assertEquals(chisqSelectorSummary.chisq("f_long"), 8.0, 10e-10);
+                    Assert.assertEquals(chisqSelectorSummary.chisq("f_int"), 8.0, 10e-10);
+                    Assert.assertEquals(chisqSelectorSummary.chisq("f_string"), 5.0, 10e-10);
+                    Assert.assertEquals(chisqSelectorSummary.chisq("f_double"), 5.0, 10e-10);
+                    Assert.assertEquals(chisqSelectorSummary.pValue("f_double"), 0.2872974951836462, 10e-10);
+                 }
+            }
+        );
+
+        BatchOperator.execute();
     }
 
 }

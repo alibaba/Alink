@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.feature.pca;
 
+import com.alibaba.alink.params.feature.HasCalculationType;
+
 public class PcaModelData {
 
     /**
@@ -15,7 +17,7 @@ public class PcaModelData {
     /**
      * pca type
      */
-    public String pcaType;
+    public HasCalculationType.CalculationType pcaType;
 
     /**
      * name of calculate cols
@@ -70,13 +72,11 @@ public class PcaModelData {
      * @param vec data
      * @return principal component
      */
-    public double[] calcPrinValue(double[] vec) {
+    double[] calcPrinValue(double[] vec) {
         int nx = vec.length;
         double[] v = new double[nx];
         double[] r = new double[p];
-        for (int i = 0; i < nx; i++) {
-            v[i] = vec[i];
-        }
+        System.arraycopy(vec, 0, v, 0, nx);
         for (int k = 0; k < p; k++) {
             r[k] = 0;
             for (int i = 0; i < nx; i++) {
@@ -90,24 +90,30 @@ public class PcaModelData {
     public String toString() {
         java.io.CharArrayWriter cw = new java.io.CharArrayWriter();
         java.io.PrintWriter pw = new java.io.PrintWriter(cw, true);
-        int nx = nameX.length;
-        pw.println("Eigenvalues of the CorrelationBak : ");
-        pw.println("      \tEigenvalue            \tProportion           \tCumulative");
+        int nx = featureColNames.length;
+        pw.println("Eigenvalues of the Correlation : ");
+        pw.println("      \tEigenvalue     \tProportion     \tCumulative");
         double sum = 0;
         for (int i = 0; i < p; i++) {
             double cur = lambda[i] / nx;
             sum += cur;
-            pw.println("Prin" + (i + 1) + " \t" + lambda[i] + " \t" + cur + " \t" + sum);
+            pw.println("Prin" + (i + 1) + " \t" + trim(lambda[i]) + " \t" + trim(cur) + " \t" + trim(sum));
         }
+
         pw.println("Principle Components : ");
         for (int i = 0; i < p; i++) {
-            pw.print("Prin" + (i + 1) + " = " + coef[i][0] + " * " + nameX[0]);
+            pw.print("Prin" + (i + 1) + " = " + coef[i][0] + " * " + featureColNames[0]);
             for (int j = 1; j < nx; j++) {
-                pw.print(" + " + coef[i][j] + " * " + nameX[j]);
+                pw.print(" + " + coef[i][j] + " * " + featureColNames[j]);
             }
             pw.println();
         }
         return cw.toString();
     }
+
+    private String trim(double val) {
+        return String.format("%.8f", val);
+    }
+
 
 }

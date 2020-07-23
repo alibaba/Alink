@@ -8,6 +8,7 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.CorrelationDa
 import com.alibaba.alink.operator.common.statistics.basicstatistic.CorrelationResult;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.SpearmanCorrelation;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -19,6 +20,8 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
+
+import java.util.function.Consumer;
 
 /**
  * Calculating the correlation between two series of data is a common operation in Statistics.
@@ -80,6 +83,36 @@ public final class VectorCorrelationBatchOp extends BatchOperator<VectorCorrelat
         Preconditions.checkArgument(null != this.getOutputTable(), "Please link from or link to.");
         return new CorrelationDataConverter().load(this.collect());
     }
+
+    @SafeVarargs
+    public final VectorCorrelationBatchOp lazyCollectCorrelation(Consumer<CorrelationResult>... callbacks) {
+        this.lazyCollect(d -> {
+            CorrelationResult correlationResult = new CorrelationDataConverter().load(d);
+            for (Consumer<CorrelationResult> callback : callbacks) {
+                callback.accept(correlationResult);
+            }
+        });
+        return this;
+    }
+
+    public final VectorCorrelationBatchOp lazyPrintCorrelation() {
+        return lazyPrintCorrelation(null);
+    }
+
+    public final VectorCorrelationBatchOp lazyPrintCorrelation(String title) {
+        lazyCollectCorrelation(new Consumer<CorrelationResult>() {
+            @Override
+            public void accept(CorrelationResult summary) {
+                if (title != null) {
+                    System.out.println(title);
+                }
+                System.out.println(PrettyDisplayUtils.displayHeadline("Correlation", '-'));
+                System.out.println(summary.toString());
+            }
+        });
+        return this;
+    }
+
 }
 
 

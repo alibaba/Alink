@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.feature;
 
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.PcaTrainBatchOp;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -14,7 +15,8 @@ import com.alibaba.alink.pipeline.Trainer;
  */
 public class PCA extends Trainer<PCA, PCAModel> implements
     PcaTrainParams<PCA>,
-    PcaPredictParams<PCA> {
+    PcaPredictParams<PCA>,
+    HasLazyPrintModelInfo<PCA> {
 
     public PCA() {
         super();

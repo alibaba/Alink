@@ -1,40 +1,29 @@
 package com.alibaba.alink.pipeline.feature;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.statistics.VectorSummarizerBatchOp;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummarizer;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
-import org.apache.flink.table.api.Table;
-import org.apache.flink.types.Row;
-
-import com.alibaba.alink.common.linalg.SparseVector;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.function.Consumer;
 
 public class PCATest {
 
-    private Table trainSparseBatch;
-    private Table predictSparseBatch;
+    @Test
+    public void test() throws Exception {
+        testTable();
+        testSparse();
+        testDense();
 
-    @Before
-    public void setUp() throws Exception {
-        genSparseTensor();
+        BatchOperator.execute();
     }
 
-    @Test
-    public void testPipeline() throws Exception {
-        String[] colNames = new String[] {"id", "vec"};
+    private void testDense() {
+        String[] colNames = new String[]{"id", "vec"};
 
-        Object[][] data = new Object[][] {
+        Object[][] data = new Object[][]{
             {1, "0.1 0.2 0.3 0.4"},
             {2, "0.2 0.1 0.2 0.6"},
             {3, "0.2 0.3 0.5 0.4"},
@@ -51,6 +40,8 @@ public class PCATest {
             .setReservedCols("id")
             .setVectorCol("vec");
 
+        pca.enableLazyPrintModelInfo();
+
         PCAModel model = pca.fit(source);
         BatchOperator predict = model.transform(source);
 
@@ -59,38 +50,91 @@ public class PCATest {
 
         summarizerOp.linkFrom(predict);
 
-        BaseVectorSummary summary = summarizerOp.collectVectorSummary();
-
-        Assert.assertEquals(4.840575043553453, Math.abs(summary.sum().get(0)), 10e-4);
+        summarizerOp.lazyCollectVectorSummary(
+            new Consumer<BaseVectorSummary>() {
+                @Override
+                public void accept(BaseVectorSummary summary) {
+                    Assert.assertEquals(3.4416913763379853E-15, Math.abs(summary.sum().get(0)), 10e-8);
+                }
+            }
+        );
 
     }
 
-    private void genSparseTensor() {
-        int row = 100;
-        int col = 10;
-        Random random = new Random(2018L);
+    private void testSparse() {
+        String[] colNames = new String[]{"id", "vec"};
 
-        String[] colNames = new String[2];
-        colNames[0] = "id";
-        colNames[1] = "matrix";
+        Object[][] data = new Object[][]{
+            {1, "0:0.1 1:0.2 2:0.3 3:0.4"},
+            {2, "0:0.2 1:0.1 2:0.2 3:0.6"},
+            {3, "0:0.2 1:0.3 2:0.5 3:0.4"},
+            {4, "0:0.3 1:0.1 2:0.3 3:0.7"},
+            {5, "0:0.4 1:0.2 2:0.4 3:0.4"}
+        };
 
-        int[] indices = new int[col];
-        for (int i = 0; i < col; i++) {
-            indices[i] = i;
-        }
+        MemSourceBatchOp source = new MemSourceBatchOp(data, colNames);
 
-        List<Row> rows = new ArrayList<>();
-        double[] data = new double[col];
-        for (int i = 0; i < row; i++) {
-            for (int j = 0; j < col; j++) {
-                data[j] = random.nextDouble();
+        PCA pca = new PCA()
+            .setK(3)
+            .setCalculationType("CORR")
+            .setPredictionCol("pred")
+            .setReservedCols("id")
+            .setVectorCol("vec");
+
+        pca.enableLazyPrintModelInfo();
+
+        PCAModel model = pca.fit(source);
+        BatchOperator predict = model.transform(source);
+
+        VectorSummarizerBatchOp summarizerOp = new VectorSummarizerBatchOp()
+            .setSelectedCol("pred");
+
+        summarizerOp.linkFrom(predict);
+
+        summarizerOp.lazyCollectVectorSummary(new Consumer<BaseVectorSummary>() {
+            @Override
+            public void accept(BaseVectorSummary summary) {
+                Assert.assertEquals(3.4416913763379853E-15, Math.abs(summary.sum().get(0)), 10e-8);
             }
-            SparseVector tensor = new SparseVector(col, indices, data);
+        });
 
-            rows.add(Row.of(i, VectorUtil.toString(tensor)));
-        }
+    }
 
-        trainSparseBatch = MLEnvironmentFactory.getDefault().createBatchTable(rows, colNames);
-        predictSparseBatch = MLEnvironmentFactory.getDefault().createBatchTable(rows, colNames);
+    public void testTable() throws Exception {
+        String[] colNames = new String[]{"id", "f0", "f1", "f2", "f3"};
+
+        Object[][] data = new Object[][]{
+            {1, 0.1, 0.2, 0.3, 0.4},
+            {2, 0.2, 0.1, 0.2, 0.6},
+            {3, 0.2, 0.3, 0.5, 0.4},
+            {4, 0.3, 0.1, 0.3, 0.7},
+            {5, 0.4, 0.2, 0.4, 0.4}
+        };
+
+        MemSourceBatchOp source = new MemSourceBatchOp(data, colNames);
+
+        PCA pca = new PCA()
+            .setK(3)
+            .setCalculationType("CORR")
+            .setPredictionCol("pred")
+            .setReservedCols("id")
+            .setSelectedCols("f0", "f1", "f2", "f3");
+
+        pca.enableLazyPrintModelInfo();
+
+        PCAModel model = pca.fit(source);
+        BatchOperator predict = model.transform(source);
+
+        VectorSummarizerBatchOp summarizerOp = new VectorSummarizerBatchOp()
+            .setSelectedCol("pred");
+
+        summarizerOp.linkFrom(predict);
+
+        summarizerOp.lazyCollectVectorSummary(new Consumer<BaseVectorSummary>() {
+            @Override
+            public void accept(BaseVectorSummary summary) {
+                Assert.assertEquals(3.1086244689504383E-15, Math.abs(summary.sum().get(0)), 10e-8);
+            }
+        });
     }
 }

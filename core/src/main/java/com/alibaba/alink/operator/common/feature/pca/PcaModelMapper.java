@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.feature.pca;
 
 import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.ModelMapper;
@@ -21,24 +22,21 @@ import java.util.List;
  */
 public class PcaModelMapper extends ModelMapper {
 
+    private static final long serialVersionUID = -6656670267982283314L;
     private PcaModelData model = null;
 
     private int[] featureIdxs = null;
     private boolean isVector;
 
-    private PcaPredictParams.TransformType transformType = null;
-    private String pcaType = null;
+    private HasCalculationType.CalculationType pcaType = null;
 
     private double[] sourceMean = null;
     private double[] sourceStd = null;
-    private double[] scoreStd = null;
 
     private OutputColsHelper outputColsHelper;
 
     public PcaModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
         super(modelSchema, dataSchema, params);
-
-        transformType = this.params.get(PcaPredictParams.TRANSFORM_TYPE);
 
         String[] keepColNames = this.params.get(PcaPredictParams.RESERVED_COLS);
         String predResultColName = this.params.get(PcaPredictParams.PREDICTION_COL);
@@ -76,42 +74,15 @@ public class PcaModelMapper extends ModelMapper {
         this.featureIdxs = checkGetColIndices(isVector, featureColNames, vectorColName);
         this.pcaType = model.pcaType;
         int nx = model.means.length;
-        int p = model.p;
-
-        HasCalculationType.CalculationType pcaTypeEnum = HasCalculationType.CalculationType.valueOf(this.pcaType.toUpperCase());
 
         //transform mean, stdDevs and scoreStd
         sourceMean = new double[nx];
         sourceStd = new double[nx];
-        scoreStd = new double[nx];
-
         Arrays.fill(sourceStd, 1);
-        Arrays.fill(scoreStd, 1);
 
-        if (HasCalculationType.CalculationType.CORR.equals(pcaTypeEnum)) {
+        if (HasCalculationType.CalculationType.CORR == this.pcaType) {
             sourceStd = model.stddevs;
-        }
-
-        switch (transformType) {
-            case SUBMEAN:
-                sourceMean = model.means;
-                break;
-            case NORMALIZATION:
-                sourceMean = model.means;
-                for (int i = 0; i < p; i++) {
-                    double tmp = 0;
-                    for (int j = 0; j < nx; j++) {
-                        for (int k = 0; k < nx; k++) {
-                            tmp += model.coef[i][j] * model.coef[i][k] * model.cov[j][k];
-                        }
-                    }
-                    scoreStd[i] = Math.sqrt(tmp);
-                }
-                break;
-            case SIMPLE:
-                break;
-            default:
-                throw new IllegalArgumentException("Error transformType: " + transformType);
+            sourceMean = model.means;
         }
     }
 
@@ -126,6 +97,11 @@ public class PcaModelMapper extends ModelMapper {
         double[] data = new double[this.model.nx];
         if (isVector) {
             Vector parsed = VectorUtil.getVector(in.getField(featureIdxs[0]));
+            if (parsed instanceof SparseVector) {
+                if (parsed.size() < 0) {
+                    ((SparseVector) parsed).setSize(model.nx);
+                }
+            }
             for (int i = 0; i < parsed.size(); i++) {
                 data[i] = parsed.get(i);
             }
@@ -154,12 +130,7 @@ public class PcaModelMapper extends ModelMapper {
             }
             predictData = model.calcPrinValue(data);
         }
-        for (int i = 0; i < predictData.length; i++) {
-            predictData[i] /= this.scoreStd[i];
-        }
 
         return outputColsHelper.getResultRow(in, Row.of(VectorUtil.toString(new DenseVector(predictData))));
     }
-
-
 }

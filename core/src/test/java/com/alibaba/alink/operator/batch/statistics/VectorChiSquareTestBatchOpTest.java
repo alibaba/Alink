@@ -30,7 +30,7 @@ public class VectorChiSquareTestBatchOpTest {
 
         test.linkFrom(source);
 
-        ChiSquareTestResult[] result = test.collectChiSquareTestResult();
+        ChiSquareTestResult[] result = test.collectChiSquareTest();
 
         Assert.assertEquals(result[0].getP(), 0.3864762307712323, 10e-4);
         Assert.assertEquals(result[0].getDf(), 1.0, 10e-4);

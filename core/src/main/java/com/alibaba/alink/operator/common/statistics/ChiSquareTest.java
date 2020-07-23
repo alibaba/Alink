@@ -1,9 +1,10 @@
 package com.alibaba.alink.operator.common.statistics;
 
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
@@ -13,17 +14,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.operator.common.feature.ChiSqSelectorModelDataConverter;
-import com.alibaba.alink.params.feature.BasedChisqSelectorParams;
-import com.google.common.primitives.Ints;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,15 +23,16 @@ import java.util.Map;
 public class ChiSquareTest {
 
     /**
-     * @param in: the last col is label col, others are selectedCols.
+     * @param in:        the last col is label col, others are selectedCols.
      * @param sessionId: sessionId
      * @return 3 cols, 1th is colId, 2th is pValue, 3th is chi-square value
-     *
      */
     protected static DataSet<Row> test(DataSet<Row> in, Long sessionId) {
         //flatting data to triple.
         DataSet<Row> dataSet = in
             .flatMap(new FlatMapFunction<Row, Row>() {
+                private static final long serialVersionUID = -5007568317570417558L;
+
                 @Override
                 public void flatMap(Row row, Collector<Row> result) {
                     int n = row.getArity() - 1;
@@ -68,13 +60,15 @@ public class ChiSquareTest {
             .select("col,feature,label,count(1) as count2"))
             .groupBy("col").reduceGroup(
                 new GroupReduceFunction<Row, Tuple2<Integer, Crosstab>>() {
+                    private static final long serialVersionUID = 3320220768468472007L;
+
                     @Override
                     public void reduce(Iterable<Row> iterable, Collector<Tuple2<Integer, Crosstab>> collector) {
                         Map<Tuple2<String, String>, Long> map = new HashMap<>();
                         int colIdx = -1;
                         for (Row row : iterable) {
                             map.put(Tuple2.of(row.getField(1).toString(),
-                                    row.getField(2).toString()),
+                                row.getField(2).toString()),
                                 (long) row.getField(3));
                             colIdx = (Integer) row.getField(0);
                         }
@@ -84,90 +78,12 @@ public class ChiSquareTest {
             .map(new ChiSquareTestFromCrossTable());
     }
 
-    /**
-     * chi-square selector for table data.
-     * @param chiSquareTest: first entry is colIdx, second entry is chi-square test.
-     * @param selectorType: "numTopFeatures", "percentile", "fpr", "fdr", "fwe"
-     * @param numTopFeatures: if selectorType is numTopFeatures, select the largest numTopFeatures features.
-     * @param percentile: if selectorType is percentile, select the largest percentile * numFeatures features.
-     * @param fpr: if selectorType is fpr, select feature which chi-square value less than fpr.
-     * @param fdr: if selectorType is fdr, select feature which chi-square value less than fdr * (i + 1) / n.
-     * @param fwe: if selectorType is fwe, select feature which chi-square value less than fwe / n.
-     * @return selected col indices.
-     */
-    protected static int[] selector(List<Row> chiSquareTest,
-                                    BasedChisqSelectorParams.SelectorType selectorType,
-                                    int numTopFeatures,
-                                    double percentile,
-                                    double fpr,
-                                    double fdr,
-                                    double fwe) {
-
-
-        int len = chiSquareTest.size();
-
-        List<Integer> selectedColIndices = new ArrayList<>();
-        switch (selectorType) {
-            case NumTopFeatures:
-                chiSquareTest.sort(new RowAscComparator());
-
-                for (int i = 0; i < numTopFeatures && i < len; i++) {
-                    selectedColIndices.add((int) chiSquareTest.get(i).getField(0));
-                }
-
-                break;
-            case PERCENTILE:
-                chiSquareTest.sort(new RowAscComparator());
-                int size = (int) (len * percentile);
-                if (size == 0) {
-                    size = 1;
-                }
-                for (int i = 0; i < size && i < len; i++) {
-                    selectedColIndices.add((int) chiSquareTest.get(i).getField(0));
-                }
-                break;
-            case FPR:
-                for (Row row : chiSquareTest) {
-                    if ((double) row.getField(1) < fpr) {
-                        selectedColIndices.add((int) row.getField(0));
-                    }
-                }
-                break;
-            case FDR:
-                chiSquareTest.sort(new RowAscComparator());
-                int maxIdx = 0;
-                for (int i = 0; i < len; i++) {
-                    Row row = chiSquareTest.get(i);
-                    if ((double) row.getField(1) <= fdr * (i + 1) / len) {
-                        maxIdx = i;
-                    }
-                }
-
-                for (int i = 0; i <= maxIdx; i++) {
-                    selectedColIndices.add((int) chiSquareTest.get(i).getField(0));
-                }
-                Collections.sort(selectedColIndices);
-                break;
-            case FWE:
-                for (Row row : chiSquareTest) {
-                    if ((double) row.getField(1) <= fwe / len) {
-                        selectedColIndices.add((int) row.getField(0));
-                    }
-                }
-                break;
-            default:
-                throw new RuntimeException("Selector Type not support. " + selectorType);
-        }
-
-        return Ints.toArray(selectedColIndices);
-    }
-
 
     /**
      * @param crossTabWithId: f0 is id, f1 is cross table
      * @return tuple4: f0 is id which is id of cross table, f1 is pValue, f2 is chi-square Value, f3 is df
      */
-    protected static Tuple4<Integer, Double, Double, Double> test(Tuple2<Integer, Crosstab> crossTabWithId) {
+    public static Tuple4<Integer, Double, Double, Double> test(Tuple2<Integer, Crosstab> crossTabWithId) {
         int colIdx = crossTabWithId.f0;
         Crosstab crosstab = crossTabWithId.f1;
 
@@ -200,67 +116,15 @@ public class ChiSquareTest {
             p = 1.0 - distribution.cumulativeProbability(Math.abs(chiSq));
         }
 
-        return Tuple4.of(colIdx, p, chiSq, (double)(rowLen - 1) * (colLen - 1));
-    }
-
-    /**
-     * chi-square selector and build model.
-     */
-    protected static class ChiSquareSelector implements MapPartitionFunction<Row, Row> {
-        private BasedChisqSelectorParams.SelectorType selectorType;
-        private int numTopFeatures;
-        private double percentile;
-        private double fpr;
-        private double fdr;
-        private double fwe;
-
-        ChiSquareSelector(BasedChisqSelectorParams.SelectorType selectorType, int numTopFeatures,
-                          double percentile, double fpr,
-                          double fdr, double fwe) {
-            this.selectorType = selectorType;
-            this.numTopFeatures = numTopFeatures;
-            this.percentile = percentile;
-            this.fpr = fpr;
-            this.fdr = fdr;
-            this.fwe = fwe;
-        }
-
-        @Override
-        public void mapPartition(Iterable<Row> iterable, Collector<Row> collector) {
-            List<Row> chiSquareTest = new ArrayList<>();
-            for (Row row : iterable) {
-                chiSquareTest.add(row);
-            }
-
-            int[] selectedIndices = selector(chiSquareTest,
-                selectorType,
-                numTopFeatures,
-                percentile,
-                fpr,
-                fdr,
-                fwe);
-
-            new ChiSqSelectorModelDataConverter().save(selectedIndices, collector);
-        }
-    }
-
-    /**
-     * row asc comparator.
-     */
-    static class RowAscComparator implements Comparator<Row> {
-        @Override
-        public int compare(Row o1, Row o2) {
-            double d1 = (double) o1.getField(1);
-            double d2 = (double) o2.getField(1);
-
-            return Double.compare(d1, d2);
-        }
+        return Tuple4.of(colIdx, p, chiSq, (double) (rowLen - 1) * (colLen - 1));
     }
 
     /**
      * calculate chi-square test value from cross table.
      */
-    public static class ChiSquareTestFromCrossTable implements MapFunction<Tuple2<Integer, Crosstab>, Row> {
+    static class ChiSquareTestFromCrossTable implements MapFunction<Tuple2<Integer, Crosstab>, Row> {
+
+        private static final long serialVersionUID = 4588157669356711825L;
 
         ChiSquareTestFromCrossTable() {
         }
@@ -276,7 +140,7 @@ public class ChiSquareTest {
          */
         @Override
         public Row map(Tuple2<Integer, Crosstab> crossTabWithId) throws Exception {
-            Tuple4 tuple4 = test(crossTabWithId);
+            Tuple4 tuple4 = ChiSquareTest.test(crossTabWithId);
 
             Row row = new Row(4);
             row.setField(0, tuple4.f0);
@@ -287,4 +151,6 @@ public class ChiSquareTest {
             return row;
         }
     }
+
+
 }

@@ -1,12 +1,13 @@
 package com.alibaba.alink.operator.batch.feature;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.feature.ChisqSelectorModelInfo;
 import org.apache.flink.types.Row;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
-
-import static org.junit.Assert.assertArrayEquals;
+import java.util.function.Consumer;
 
 public class VectorChiSqSelectorBatchOpTest {
 
@@ -32,7 +33,18 @@ public class VectorChiSqSelectorBatchOpTest {
 
         selector.linkFrom(source);
 
-        int[] selectedIndices = selector.collectResult();
-        assertArrayEquals(selectedIndices, new int[] {2, 0});
+        selector.lazyPrintModelInfo();
+
+        selector.lazyCollectModelInfo(
+            new Consumer<ChisqSelectorModelInfo>() {
+                @Override
+                public void accept(ChisqSelectorModelInfo chisqSelectorSummary) {
+                    Assert.assertEquals(chisqSelectorSummary.chisq("0"), 4.0, 10e-10);
+                    Assert.assertEquals(chisqSelectorSummary.chisq("1"), 2.0, 10e-10);
+                    Assert.assertEquals(chisqSelectorSummary.chisq("2"), 4.0, 10e-10);
+                }
+            }
+        );
+
     }
 }

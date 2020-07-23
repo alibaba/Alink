@@ -1,13 +1,16 @@
 package com.alibaba.alink.operator.common.statistics;
 
+import java.io.Serializable;
+
 /**
  * chi-square test result.
  */
-public class ChiSquareTestResult {
+public class ChiSquareTestResult implements Serializable {
+    private static final long serialVersionUID = 7324787640414737723L;
     /**
-     * comment: pearson chi-square independence test
+     * col name.
      */
-    private String comment;
+    private String colName;
 
     /**
      * freedom
@@ -22,29 +25,29 @@ public class ChiSquareTestResult {
      */
     private double value;
 
-
     public ChiSquareTestResult() {
 
     }
+
     /**
      * @param df:      degree freedom
      * @param p:       p value
      * @param value:   chi-square test value
-     * @param comment: comment
+     * @param colName: colName
      */
     public ChiSquareTestResult(double df,
                                double p,
                                double value,
-                               String comment) {
+                               String colName) {
         this.df = df;
         this.p = p;
         this.value = value;
-        this.comment = comment;
+        this.colName = colName;
     }
 
 
-    public String getComment() {
-        return comment;
+    public String getColName() {
+        return colName;
     }
 
     public double getDf() {
@@ -57,5 +60,9 @@ public class ChiSquareTestResult {
 
     public double getValue() {
         return value;
+    }
+
+    public void setColName(String colName) {
+        this.colName = colName;
     }
 }

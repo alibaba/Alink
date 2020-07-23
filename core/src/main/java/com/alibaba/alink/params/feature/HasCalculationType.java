@@ -1,16 +1,18 @@
 package com.alibaba.alink.params.feature;
 
+import com.alibaba.alink.params.ParamUtil;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-import com.alibaba.alink.params.ParamUtil;
-
 public interface HasCalculationType<T> extends WithParams<T> {
-
+    /**
+     * @cn-name 计算类型
+     * @cn 计算类型，包含"CORR", "COV"两种。
+     */
     ParamInfo<CalculationType> CALCULATION_TYPE = ParamInfoFactory
         .createParamInfo("calculationType", CalculationType.class)
-        .setDescription("compute type, be CORR, COV_SAMPLE, COVAR_POP.")
+        .setDescription("compute type, be CORR, COV.")
         .setHasDefaultValue(CalculationType.CORR)
         .setAlias(new String[]{"calcType", "pcaType"})
         .build();
@@ -32,17 +34,12 @@ public interface HasCalculationType<T> extends WithParams<T> {
      */
     enum CalculationType {
         /**
-         * correlation
+         * Correlation
          */
         CORR,
         /**
-         * sample variance
+         * Covariance
          */
-        COV_SAMPLE,
-
-        /**
-         *  population variance
-         */
-        COVAR_POP
+        COV
     }
 }

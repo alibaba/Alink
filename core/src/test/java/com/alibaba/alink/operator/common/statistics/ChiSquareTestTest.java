@@ -1,12 +1,12 @@
 package com.alibaba.alink.operator.common.statistics;
 
-import com.alibaba.alink.operator.common.statistics.ChiSquareTest;
-import com.alibaba.alink.operator.common.statistics.Crosstab;
+import com.alibaba.alink.operator.common.feature.ChisqSelectorUtil;
+import com.alibaba.alink.params.feature.BasedChisqSelectorParams;
+import org.apache.flink.api.common.functions.util.ListCollector;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.types.Row;
-
-import com.alibaba.alink.params.feature.BasedChisqSelectorParams;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class ChiSquareTestTest {
 
         assertEquals(2, selectedIndices.length);
         assertEquals(0, selectedIndices[0]);
-        assertEquals(2, selectedIndices[1]);
+        assertEquals(1, selectedIndices[1]);
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ChiSquareTestTest {
 
         assertEquals(2, selectedIndices.length);
         assertEquals(0, selectedIndices[0]);
-        assertEquals(2, selectedIndices[1]);
+        assertEquals(1, selectedIndices[1]);
     }
 
     @Test
@@ -114,19 +114,44 @@ public class ChiSquareTestTest {
         assertEquals(0, selectedIndices[0]);
     }
 
+    @Test
+    public void testChisqSelectorMap() {
+        ChisqSelectorUtil.ChiSquareSelector selector =
+            new ChisqSelectorUtil.ChiSquareSelector(null, BasedChisqSelectorParams.SelectorType.NumTopFeatures,
+                5, 0, 0, 0, 0);
+
+        List<Row> rowList = new ArrayList<>();
+        ListCollector<Row> rows = new ListCollector<Row>(rowList);
+
+        List<Row> test = new ArrayList<>();
+        test.add(Row.of("1", 0.1, 0.1, 1.0));
+        test.add(Row.of("2", 0.2, 0.2, 2.0));
+        test.add(Row.of("3", 0.3, 0.3, 3.0));
+        test.add(Row.of("4", 0.4, 0.4, 4.0));
+
+        selector.mapPartition(test, rows);
+
+        for(Row row: rowList) {
+            if((long)row.getField(0) == 1048576) {
+                Assert.assertEquals("{\"chiSqs\":[{\"colName\":\"1\",\"df\":1.0,\"p\":0.1,\"value\":0.1},{\"colName\":\"2\",\"df\":2.0,\"p\":0.2,\"value\":0.2},{\"colName\":\"3\",\"df\":3.0,\"p\":0.3,\"value\":0.3},{\"colName\":\"4\",\"df\":4.0,\"p\":0.4,\"value\":0.4}],\"colNames\":null,\"siftOutColNames\":[\"1\",\"2\",\"3\",\"4\"],\"selectorType\":\"NumTopFeatures\",\"numTopFeatures\":5,\"percentile\":0.0,\"fpr\":0.0,\"fdr\":0.0,\"fwe\":0.0}"
+                    , (String)row.getField(1));
+            }
+        }
+    }
+
     private int[] testSelector(BasedChisqSelectorParams.SelectorType selectorType, int numTopFeatures,
                                double percentile,
                                double fpr,
                                double fdr,
                                double fwe) {
-        List<Row> data = new ArrayList<>();
-        data.add(Row.of(0, 0.1, 1.0));
-        data.add(Row.of(1, 0.3, 2.0));
-        data.add(Row.of(2, 0.2, 4.0));
-        data.add(Row.of(3, 0.4, 3.0));
-        data.add(Row.of(4, 0.5, 4.0));
+        List<ChiSquareTestResult> data = new ArrayList<>();
+        data.add(new ChiSquareTestResult(0, 1.0, 0.1, "0"));
+        data.add(new ChiSquareTestResult(1, 2.0, 0.3, "1"));
+        data.add(new ChiSquareTestResult(2, 4.0, 0.2, "2"));
+        data.add(new ChiSquareTestResult(3, 3.0, 0.4, "3"));
+        data.add(new ChiSquareTestResult(4, 4.0, 0.5, "4"));
 
-        return ChiSquareTest.selector(data, selectorType, numTopFeatures, percentile, fpr, fdr, fwe);
+        return ChisqSelectorUtil.selector(data, selectorType, numTopFeatures, percentile, fpr, fdr, fwe);
     }
 
 }

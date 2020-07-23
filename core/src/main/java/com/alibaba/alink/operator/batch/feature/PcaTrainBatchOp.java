@@ -1,26 +1,34 @@
 package com.alibaba.alink.operator.batch.feature;
 
+import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.*;
-import org.apache.flink.api.common.functions.RichFlatMapFunction;
-import org.apache.flink.api.common.functions.RichMapPartitionFunction;
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.types.Row;
-import org.apache.flink.util.Collector;
-
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
-import com.alibaba.alink.operator.common.feature.pca.PcaModelDataConverter;
 import com.alibaba.alink.operator.common.feature.pca.PcaModelData;
+import com.alibaba.alink.operator.common.feature.pca.PcaModelDataConverter;
+import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummarizer;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
-
-import org.apache.flink.ml.api.misc.param.Params;
+import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import com.alibaba.alink.params.feature.PcaTrainParams;
+import org.apache.flink.api.common.functions.MapPartitionFunction;
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
+import org.apache.flink.api.common.functions.RichMapPartitionFunction;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.Table;
+import org.apache.flink.types.Row;
+import org.apache.flink.util.Collector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -29,8 +37,10 @@ import java.util.List;
  * The calculation is done using eigen on the correlation or covariance matrix.
  */
 public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
-    implements PcaTrainParams<PcaTrainBatchOp> {
+    implements PcaTrainParams<PcaTrainBatchOp>,
+    WithModelInfoBatchOp<PcaTrainBatchOp.PcaModelInfo, PcaTrainBatchOp, PcaTrainBatchOp.PcaModelInfoBatchOp> {
 
+    private static final long serialVersionUID = 6098674439183289020L;
     /**
      * block size when transmit
      */
@@ -40,7 +50,7 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
      * default constructor
      */
     public PcaTrainBatchOp() {
-        super(null);
+        this(null);
     }
 
     /**
@@ -50,9 +60,8 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
      *               selectedColNames: compute col names. when input is table, not tensor.
      *               tensorColName: compute tensor col. when input is tensor.
      *               isSparse: true is sparse tensor, false is dense tensor. default is false.
-     *               pcaType: compute type, be CORR, COV_SAMPLE, COVAR_POP.
-     *               CORR is correlation matrix，COV_SAMPLE is covariance of sample,COVAR_POP is covariance of
-     *               population.
+     *               pcaType: compute type, be CORR, COV_SAMPLE, COV_POPULATION.
+     *               CORR is correlation matrix，COV is covariance
      *               p: number of principal component
      */
     public PcaTrainBatchOp(Params params) {
@@ -80,7 +89,7 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
         VectorSplit vectorSplit = new VectorSplit();
 
         //combine vector
-        VecCombine vecCombine = new VecCombine(calcType.name(), k, selectedColNames, vectorColName);
+        VecCombine vecCombine = new VecCombine(calcType, k, selectedColNames, vectorColName);
 
         DataSet<Row> srt = data
             .mapPartition(new StatisticsHelper.VectorSummarizerPartition(true))
@@ -90,13 +99,28 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
         //convert model to table
         this.setOutput(srt, new PcaModelDataConverter().getModelSchema());
 
+        //cal model summary
+        DataSet<Row> modelSummary = srt
+            .mapPartition(new ModelInfoMapPartition(getCalculationType()))
+            .setParallelism(1);
+
+        Table[] tables = new Table[1];
+        tables[0] = DataSetConversionUtil.toTable(getMLEnvironmentId(), modelSummary,
+            new String[]{"modelinfo"},
+            new TypeInformation[]{Types.STRING});
+
+        this.setSideOutputTables(tables);
+
         return this;
     }
+
 
     /**
      * split rowNum,sum, squareSum, dot vector
      */
     public static class VectorSplit extends RichFlatMapFunction<BaseVectorSummarizer, Tuple2<Integer, DenseVector>> {
+        private static final long serialVersionUID = 4372448784539139888L;
+
         @Override
         public void flatMap(BaseVectorSummarizer srt, Collector<Tuple2<Integer, DenseVector>> collector)
             throws Exception {
@@ -138,9 +162,14 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
             vec[0] = (double) colNum;
             int vecIdx = 1;
             int collectIdx = 3;
+            int covSize = srt.getOuterProduct().numRows();
             for (int i = 0; i < colNum; i++) {
                 for (int j = i; j < colNum; j++) {
-                    vec[vecIdx] = srt.getOuterProduct().get(i, j);
+                    if (i < covSize && j < covSize) {
+                        vec[vecIdx] = srt.getOuterProduct().get(i, j);
+                    } else {
+                        vec[vecIdx] = 0;
+                    }
                     vecIdx++;
                     if (vecIdx == PcaTrainBatchOp.block + 1) {
                         DenseVector dotVec = new DenseVector(vec.clone());
@@ -165,12 +194,13 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
      */
     public static class VecCombine extends RichMapPartitionFunction<Tuple2<Integer, DenseVector>, Row> {
 
-        protected String pcaType;
+        private static final long serialVersionUID = 2228432228822829081L;
+        protected CalculationType pcaType;
         protected int p;
         protected String[] featureColNames;
         protected String tensorColName;
 
-        public VecCombine(String pcaType, int p, String[] featureColNames, String tensorColName) {
+        public VecCombine(CalculationType pcaType, int p, String[] featureColNames, String tensorColName) {
             this.pcaType = pcaType;
             this.p = p;
             this.featureColNames = featureColNames;
@@ -186,8 +216,8 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
          * @param colNum     col number
          * @return covariance matrix
          */
-        public static double[][] getCov(double[] counts, double[] sums, double[] dotProduct,
-                                        int colNum) {
+        static double[][] getCov(double[] counts, double[] sums, double[] dotProduct,
+                                 int colNum) {
             double[][] cov = new double[colNum][colNum];
             double d = 0;
             int idx = 0;
@@ -200,6 +230,36 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
                 }
             }
             return cov;
+        }
+
+        static double[] dotProdctionCut(double[] dotProduct, List<Integer> nonEqualColIdx, int nAll) {
+            int nCut = nonEqualColIdx.size();
+            double[] dotProductCut = new double[nCut * (nCut + 1) / 2];
+            int idx = 0;
+            int idxOrigin = 0;
+            for (int i = 0; i < nAll; i++) {
+                if (nonEqualColIdx.contains(i)) {
+                    for (int j = i; j < nAll; j++) {
+                        if (nonEqualColIdx.contains(j)) {
+                            dotProductCut[idx] = dotProduct[idxOrigin + j - i];
+                            idx++;
+                        }
+                    }
+                }
+                idxOrigin += (nAll - i);
+            }
+            return dotProductCut;
+        }
+
+        static double[] vectorCut(double[] vec, List<Integer> nonEqualColIdx) {
+            int nCut = nonEqualColIdx.size();
+            double[] vecCut = new double[nCut];
+            int i = 0;
+            for (int idx : nonEqualColIdx) {
+                vecCut[i] = vec[idx];
+                i++;
+            }
+            return vecCut;
         }
 
         /**
@@ -302,41 +362,23 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
             int nxNe = nonEqualColIdx.size();
             int nxAll = nx;
             if (nxNe != nx) {
-                double[] countsNe = new double[nxNe];
-                double[] sumsNe = new double[nxNe];
-                double[] sum2sNe = new double[nxNe];
-                double[] dotProductNe = new double[nxNe * (nxNe + 1) / 2];
-
-                int i = 0;
-                for (int idx : nonEqualColIdx) {
-                    countsNe[i] = counts[idx];
-                    sumsNe[i] = sums[idx];
-                    sum2sNe[i] = sum2s[idx];
-                    dotProductNe[i] = dotProduct[idx];
-                    i++;
-                }
-
-                counts = countsNe;
-                sums = sumsNe;
-                sum2s = sum2sNe;
-                dotProduct = dotProductNe;
-
+                counts = vectorCut(counts, nonEqualColIdx);
+                sums = vectorCut(sums, nonEqualColIdx);
+                sum2s = vectorCut(sum2s, nonEqualColIdx);
+                dotProduct = dotProdctionCut(dotProduct, nonEqualColIdx, nxAll);
                 nx = nxNe;
             }
 
             PcaModelData pcr = new PcaModelData();
 
             //get correlation or covariance matrix
-            CalculationType pcaTypeEnum = CalculationType.valueOf(pcaType.toUpperCase());
-
             double[][] corr = null;
 
-            switch (pcaTypeEnum) {
+            switch (pcaType) {
                 case CORR:
                     corr = getCorr(counts, sums, sum2s, dotProduct, nx);
                     break;
-                case COVAR_POP:
-                case COV_SAMPLE:
+                case COV:
                     corr = getCov(counts, sums, dotProduct, nx);
                     break;
                 default:
@@ -345,14 +387,6 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
 
 
             DenseMatrix calculateMatrix = new DenseMatrix(corr);
-            if (pcaTypeEnum.equals(CalculationType.COVAR_POP)) {
-                double cnt = counts[0];
-                if (cnt > 1) {
-                    calculateMatrix.scaleEqual(cnt / (cnt - 1));
-                } else {
-                    throw new RuntimeException("record num is less than 2!");
-                }
-            }
 
             //get mean and stddev
             pcr.means = new double[nx];
@@ -368,8 +402,7 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
                     "k is larger than vector size. k: " + p + " vectorSize: " + calculateMatrix.numCols());
             }
 
-            //get eig values and eig vectors
-            scala.Tuple2<DenseVector, DenseMatrix> eigValueAndVector = EigenSolver.solve(calculateMatrix, p, 10e-8, 300);
+            scala.Tuple2<DenseVector, DenseMatrix> eigValueAndVector = solve(calculateMatrix, p);
             if (eigValueAndVector._1.size() < p) {
                 throw new RuntimeException("Fail to converge when solving eig value problem.");
             }
@@ -389,6 +422,7 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
 
             buildModel(pcr, nonEqualColIdx, nxAll, model);
         }
+
 
         /**
          * build pca model.
@@ -410,6 +444,10 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
         }
     }
 
+    public synchronized static scala.Tuple2<DenseVector, DenseMatrix> solve(DenseMatrix calculateMatrix, int p) {
+        return EigenSolver.solve(calculateMatrix, p, 10e-8, 300);
+    }
+
 
     /**
      * dense vector or sparse vector to dense vector.
@@ -423,6 +461,156 @@ public final class PcaTrainBatchOp extends BatchOperator<PcaTrainBatchOp>
         } else {
             return ((SparseVector) vector).toDenseVector();
         }
+    }
+
+    @Override
+    public PcaModelInfoBatchOp getModelInfoBatchOp() {
+        return new PcaModelInfoBatchOp(getParams()).linkFrom(this.getSideOutput(0));
+    }
+
+    public static class PcaModelInfoBatchOp
+        extends ExtractModelInfoBatchOp<PcaModelInfo, PcaModelInfoBatchOp> {
+
+        public PcaModelInfoBatchOp() {
+            this(null);
+        }
+
+        public PcaModelInfoBatchOp(Params params) {
+            super(params);
+        }
+
+        @Override
+        protected PcaModelInfo createModelInfo(List<Row> rows) {
+            return JsonConverter.fromJson((String) rows.get(0).getField(0), PcaModelInfo.class);
+        }
+
+    }
+
+    private static class ModelInfoMapPartition implements MapPartitionFunction<Row, Row> {
+        private CalculationType calculationType;
+
+        public ModelInfoMapPartition(CalculationType calculationType) {
+            this.calculationType = calculationType;
+        }
+
+        @Override
+        public void mapPartition(Iterable<Row> values, Collector<Row> out) throws Exception {
+            List<Row> rows = new ArrayList<>();
+            values.forEach(k -> rows.add(k));
+
+            PcaModelData data = new PcaModelDataConverter().load(rows);
+            PcaModelInfo summary = new PcaModelInfo();
+            summary.featureCols = data.featureColNames;
+            summary.egenValues = data.lambda;
+            summary.p = data.p;
+            summary.nx = data.nx;
+            summary.calculationType = this.calculationType;
+            summary.egenVectors = data.coef;
+
+            Row outRow = new Row(1);
+            outRow.setField(0, JsonConverter.toJson(summary));
+            out.collect(outRow);
+        }
+    }
+
+    public static class PcaModelInfo {
+        private CalculationType calculationType;
+        private String[] featureCols;
+        private double[] egenValues;
+        private double[][] egenVectors;
+        private int p;
+        private int nx;
+
+        public String[] getCols() {
+            return featureCols;
+        }
+
+        public double[] getEgenValues() {
+            return egenValues;
+        }
+
+        public double[][] getEgenVectors() {
+            return egenVectors;
+        }
+
+        public double[] getProportions() {
+            double[] propertions = new double[p];
+            for (int i = 0; i < p; i++) {
+                propertions[i] = egenValues[i] / nx;
+            }
+            return propertions;
+        }
+
+        public double[] getCumulatives() {
+            double[] cumulatives = new double[p];
+            double sum = 0;
+            for (int i = 0; i < p; i++) {
+                double cur = egenValues[i] / nx;
+                sum += cur;
+                cumulatives[i] = sum;
+            }
+            return cumulatives;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sbd = new StringBuilder();
+            sbd.append(PrettyDisplayUtils.displayHeadline("PCA", '-'));
+            sbd.append("CalculationType: " + calculationType.name() + "\n");
+            sbd.append("Number of Principal Component: " + this.p + "\n");
+            sbd.append("\n");
+            sbd.append("EigenValues: \n");
+            String[] colColNames = new String[]{"Prin", "Eigenvalue", "Proportion", "Cumulative"};
+            double[] proportions = getProportions();
+            double[] cumulatives = getCumulatives();
+
+            Object[][] vals = new Object[p][4];
+            for (int i = 0; i < p; i++) {
+                vals[i][0] = "Prin" + i;
+                vals[i][1] = egenValues[i];
+                vals[i][2] = proportions[i];
+                vals[i][3] = cumulatives[i];
+            }
+
+            sbd.append(PrettyDisplayUtils.indentLines(PrettyDisplayUtils.displayTable(vals, p, 4, null, colColNames, null), 4));
+
+            sbd.append("\n");
+            sbd.append("\n");
+
+            sbd.append("EigenVectors: \n");
+            String[] vecColNames = new String[p + 1];
+            vecColNames[0] = "colName";
+            for (int i = 0; i < p; i++) {
+                vecColNames[i + 1] = "Prin" + i;
+            }
+
+            Object[][] vecVals = new Object[nx][p + 1];
+            ;
+            if (featureCols != null) {
+                for (int j = 0; j < nx; j++) {
+                    vecVals[j][0] = featureCols[j];
+                }
+            } else {
+                for (int j = 0; j < nx; j++) {
+                    vecVals[j][0] = j;
+                }
+            }
+            for (int i = 0; i < p; i++) {
+                for (int j = 0; j < nx; j++) {
+                    vecVals[j][i + 1] = egenVectors[i][j];
+                }
+            }
+
+            sbd.append(PrettyDisplayUtils.indentLines(
+                PrettyDisplayUtils.displayTable(vecVals,
+                    nx, p + 1, null, vecColNames,
+                    null, 100, 100),
+                4));
+
+
+            return sbd.toString();
+        }
+
     }
 
 }
