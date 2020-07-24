@@ -39,6 +39,7 @@ import org.apache.flink.util.Preconditions;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -514,14 +515,19 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		return (T) this;
 	}
 
-	@SafeVarargs
-	public final T lazyCollect(Consumer <List <Row>>... callbacks) {
+
+	public final T lazyCollect(List<Consumer <List <Row>>> callbacks) {
 		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(this);
 		LazyEvaluation<Pair<BatchOperator<?>, List<Row>>> lazyRowOps = lazyObjectsManager.genLazySink(this);
 		for (Consumer <List <Row>> callback : callbacks) {
 			lazyRowOps.addCallback(d -> callback.accept(d.getRight()));
 		}
 		return (T) this;
+	}
+
+	@SafeVarargs
+	public final T lazyCollect(Consumer <List <Row>>... callbacks) {
+		return lazyCollect(Arrays.asList(callbacks));
 	}
 
 	private static void triggerLazyEvaluation(MLEnvironment mlEnv) throws Exception {
@@ -584,9 +590,13 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		return getStatisticsOp().collectSummary();
 	}
 
-	public T lazyCollectStatistics(Consumer<TableSummary>... callbacks) {
-		getStatisticsOp().lazyCollectSummary(callbacks);
+	public T lazyCollectStatistics(List<Consumer<TableSummary>> callbacks) {
+		getStatisticsOp().lazyCollectSummary(callbacks.toArray(new Consumer[0]));
 		return (T)this;
+	}
+
+	public T lazyCollectStatistics(Consumer<TableSummary>... callbacks) {
+		return lazyCollectStatistics(Arrays.asList(callbacks));
 	}
 
 	public T lazyPrintStatistics() {

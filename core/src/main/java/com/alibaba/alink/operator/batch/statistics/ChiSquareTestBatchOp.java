@@ -12,6 +12,7 @@ import com.alibaba.alink.params.statistics.ChiSquareTestParams;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -74,8 +75,7 @@ public final class ChiSquareTestBatchOp extends BatchOperator<ChiSquareTestBatch
     /**
      * lazy collect result.
      */
-    @SafeVarargs
-    public final ChiSquareTestBatchOp lazyCollectChiSquareTest(Consumer<ChiSquareTestResult[]>... callbacks) {
+    public final ChiSquareTestBatchOp lazyCollectChiSquareTest(List<Consumer<ChiSquareTestResult[]>> callbacks) {
         this.lazyCollect(d -> {
             ChiSquareTestResult[] summary = toResult(d);
             for (Consumer<ChiSquareTestResult[]> callback : callbacks) {
@@ -83,6 +83,11 @@ public final class ChiSquareTestBatchOp extends BatchOperator<ChiSquareTestBatch
             }
         });
         return this;
+    }
+
+    @SafeVarargs
+    public final ChiSquareTestBatchOp lazyCollectChiSquareTest(Consumer<ChiSquareTestResult[]>... callbacks) {
+        return lazyCollectChiSquareTest(Arrays.asList(callbacks));
     }
 
     /**

@@ -15,6 +15,8 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -55,6 +57,10 @@ public class VectorSummarizerBatchOp extends BatchOperator<VectorSummarizerBatch
 
     @SafeVarargs
     public final VectorSummarizerBatchOp lazyCollectVectorSummary(Consumer<BaseVectorSummary>... callbacks) {
+        return lazyCollectVectorSummary(Arrays.asList(callbacks));
+    }
+
+    public final VectorSummarizerBatchOp lazyCollectVectorSummary(List<Consumer<BaseVectorSummary>> callbacks) {
         this.lazyCollect(d -> {
             BaseVectorSummary summary = new VectorSummaryDataConverter().load(d);
             for (Consumer<BaseVectorSummary> callback : callbacks) {

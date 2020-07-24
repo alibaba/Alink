@@ -21,6 +21,8 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -86,6 +88,10 @@ public final class VectorCorrelationBatchOp extends BatchOperator<VectorCorrelat
 
     @SafeVarargs
     public final VectorCorrelationBatchOp lazyCollectCorrelation(Consumer<CorrelationResult>... callbacks) {
+        return lazyCollectCorrelation(Arrays.asList(callbacks));
+    }
+
+    public final VectorCorrelationBatchOp lazyCollectCorrelation(List<Consumer<CorrelationResult>> callbacks) {
         this.lazyCollect(d -> {
             CorrelationResult correlationResult = new CorrelationDataConverter().load(d);
             for (Consumer<CorrelationResult> callback : callbacks) {

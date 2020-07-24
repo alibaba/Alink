@@ -13,6 +13,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -86,6 +87,10 @@ public class SummarizerBatchOp extends BatchOperator<SummarizerBatchOp>
 
     @SafeVarargs
     public final SummarizerBatchOp lazyCollectSummary(Consumer<TableSummary>... callbacks) {
+        return lazyCollectSummary(Arrays.asList(callbacks));
+    }
+
+    public final SummarizerBatchOp lazyCollectSummary(List<Consumer<TableSummary>> callbacks) {
         this.lazyCollect(d -> {
             TableSummary summary = new SummaryDataConverter().load(d);
             for (Consumer<TableSummary> callback : callbacks) {
