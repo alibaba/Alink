@@ -43,6 +43,11 @@ public final class FilePath implements Serializable {
 	}
 
 	public String getPathStr() {
+		if (null != fileSystem && !fileSystem.isDistributedFS()) {
+			if (!path.isAbsolute()) {
+				path = new Path(fileSystem.getWorkingDirectory(), path);
+			}
+		}
 		return path.toString();
 	}
 
