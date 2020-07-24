@@ -8,8 +8,12 @@ import org.apache.flink.ml.api.misc.param.Params;
 /**
  * Text Naive Bayes Predictor.
  *
- * We support the multinomial Naive Bayes and multinomial NB model, a probabilistic learning method.
- * here, feature values of train table must be nonnegative.
+ * We support the multinomial Naive Bayes and bernoulli Naive Bayes model, a probabilistic learning method.
+ * Here, the input data must be vector and the values must be nonnegative.
+ *
+ * Details info of the algorithm:
+ * https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-text-classification-1.html
+ *
  */
 public final class NaiveBayesTextPredictBatchOp extends ModelMapBatchOp<NaiveBayesTextPredictBatchOp>
 	implements NaiveBayesTextPredictParams<NaiveBayesTextPredictBatchOp> {

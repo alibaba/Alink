@@ -32,10 +32,13 @@ import org.apache.flink.util.Collector;
 /**
  * Text Naive Bayes Classifier.
  *
- * We support the multinomial Naive Bayes and multinomial Naive Bayes model, a probabilistic learning method.
- * Here, feature values of train table must be nonnegative.
+ * We support the multinomial Naive Bayes and bernoulli Naive Bayes model, a probabilistic learning method.
+ * Here, the input data must be vector and the values must be nonnegative.
+ *
+ * Details info of the algorithm:
+ * https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-text-classification-1.html
+ *
  */
-
 public class NaiveBayesTextTrainBatchOp
 	extends BatchOperator<NaiveBayesTextTrainBatchOp>
 	implements NaiveBayesTextTrainParams<NaiveBayesTextTrainBatchOp>,

@@ -9,7 +9,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 /**
- * Parameters of text naive bayes training process.
+ * Parameters of text naive bayes train process.
  */
 public interface NaiveBayesTextTrainParams<T> extends
         HasLabelCol<T>,
