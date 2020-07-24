@@ -71,19 +71,21 @@ public class RidgeRegressionTest {
 				for (Row row : d) {
 					if ((double)row.getField(0) == 16.8000) {
 						Assert.assertEquals((double)row.getField(1), 16.77322547668301, 0.1);
-						Assert.assertEquals((double)row.getField(2), 16.77322547668301, 0.1);
+						Assert.assertEquals((double)row.getField(2), 16.620448399254673, 0.1);
 						Assert.assertEquals((double)row.getField(3), 16.384437074591887, 0.1);
 					} else if ((double)row.getField(0) == 6.7000) {
 						Assert.assertEquals((double)row.getField(1), 6.932628087721653, 0.1);
-						Assert.assertEquals((double)row.getField(2), 6.932628087721653, 0.1);
+						Assert.assertEquals((double)row.getField(2), 6.775060404865803, 0.1);
 						Assert.assertEquals((double)row.getField(3), 7.425378715755974, 0.1);
 					}
 				}
 			}
 		});
 
+		BatchOperator.execute();
+
 		// below is stream test code
-		// model.transform(svecdata).print();
-		// StreamOperator.execute();
+		//model.transform(svecdata).print();
+		//StreamOperator.execute();
 	}
 }
