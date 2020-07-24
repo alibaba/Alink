@@ -11,34 +11,19 @@
     </parent>
 
     <properties>
-        <protobuf.java.version>3.6.1</protobuf.java.version>
+        <flink.oss.fs.version>1.10.0</flink.oss.fs.version>
     </properties>
 
-    <groupId>com.alibaba.alink</groupId>
-    <artifactId>shaded_protobuf_java</artifactId>
-    <version>${protobuf.java.version}-0.2-SNAPSHOT</version>
-    <name>alink-shaded-protobuf-java</name>
+    <artifactId>shaded_flink_oss_fs_hadoop</artifactId>
+    <version>${flink.oss.fs.version}-0.2-SNAPSHOT</version>
+    <name>alink-shaded-flink-oss-fs-hadoop</name>
 
     <dependencies>
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>${protobuf.java.version}</version>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-oss-fs-hadoop</artifactId>
+            <version>${flink.oss.fs.version}</version>
             <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 
@@ -64,8 +49,12 @@
                         <configuration>
                             <relocations combine.self="override">
                                 <relocation>
-                                    <pattern>com.google.</pattern>
-                                    <shadedPattern>org.apache.flink.calcite.shaded.com.google.</shadedPattern>
+                                    <pattern>org.apache.flink.runtime.</pattern>
+                                    <shadedPattern>com.alibaba.alink.shaded.org.apache.flink.runtime.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google.gson.</pattern>
+                                    <shadedPattern>com.alibaba.alink.shaded.com.google.gson.</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

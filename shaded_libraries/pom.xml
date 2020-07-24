@@ -7,7 +7,7 @@
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_shaded</artifactId>
     <packaging>pom</packaging>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
 
     <name>alink-shaded</name>
     <description>Alink is the Machine Learning algorithm platform based on Flink, developed by the PAI team of Alibaba computing platform.</description>
@@ -89,6 +89,7 @@
 
     <modules>
         <module>shaded_protobuf_java</module>
+        <module>shaded_flink_oss_fs_hadoop</module>
     </modules>
 
     <profiles>
