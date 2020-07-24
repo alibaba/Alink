@@ -53,7 +53,7 @@ public abstract class TreeModelInfo implements Serializable {
 		}
 	}
 
-	static class MultiTreeModelInfo extends TreeModelInfo {
+	public static class MultiTreeModelInfo extends TreeModelInfo {
 		public MultiTreeModelInfo(List<Row> rows) {
 			super(rows);
 		}
