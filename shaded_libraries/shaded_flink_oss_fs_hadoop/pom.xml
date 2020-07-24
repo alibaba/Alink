@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.alink</groupId>
         <artifactId>alink_shaded</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.2</version>
     </parent>
 
     <properties>
@@ -15,7 +15,7 @@
     </properties>
 
     <artifactId>shaded_flink_oss_fs_hadoop</artifactId>
-    <version>${flink.oss.fs.version}-0.2-SNAPSHOT</version>
+    <version>${flink.oss.fs.version}-0.2</version>
     <name>alink-shaded-flink-oss-fs-hadoop</name>
 
     <dependencies>
