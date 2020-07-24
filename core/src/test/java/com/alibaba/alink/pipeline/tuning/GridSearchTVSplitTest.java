@@ -66,7 +66,6 @@ public class GridSearchTVSplitTest {
 
         colNames = new String[]{"col0", "col1", "label"};
         memSourceBatchOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
-        MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(24);
     }
 
     @Test
