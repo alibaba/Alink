@@ -64,14 +64,14 @@ public interface LdaTrainParams<T> extends
 		.setHasDefaultValue(1024.0)
 		.build();
 	ParamInfo <Double> ONLINE_LEARNING_DECAY = ParamInfoFactory
-		.createParamInfo("learningDecay", Double.class)
+		.createParamInfo("onlineLearningDecay", Double.class)
 		.setDescription("(For online optimizer) " +
 			" Learning rate, set as an exponential decay rate. This should be between (0.5, 1.0] to" +
 			" guarantee asymptotic convergence.")
 		.setHasDefaultValue(0.51)
 		.build();
 	ParamInfo <Double> ONLINE_SUB_SAMPLING_RATE = ParamInfoFactory
-		.createParamInfo("subsamplingRate", Double.class)
+		.createParamInfo("onlineSubSamplingRate", Double.class)
 		.setDescription("For online optimizer " +
 			"Fraction of the corpus to be sampled and used in each iteration of mini-batch" +
 			"gradient descent, in range (0, 1].")
@@ -121,27 +121,27 @@ public interface LdaTrainParams<T> extends
 	default T setMethod(String value) {
 		return set(METHOD, ParamUtil.searchEnum(METHOD, value));
 	}
-	default Double getLearningOffset() {
+	default Double getOnlineLearningOffset() {
 		return get(ONLINE_LEARNING_OFFSET);
 	}
 
-	default T setLearningOffset(Double value) {
+	default T setOnlineLearningOffset(Double value) {
 		return set(ONLINE_LEARNING_OFFSET, value);
 	}
 
-	default Double getLearningDecay() {
+	default Double getOnlineLearningDecay() {
 		return get(ONLINE_LEARNING_DECAY);
 	}
 
-	default T setLearningDecay(Double value) {
+	default T setOnlineLearningDecay(Double value) {
 		return set(ONLINE_LEARNING_DECAY, value);
 	}
 
-	default Double getSubsamplingRate() {
+	default Double getOnlineSubSamplingRate() {
 		return get(ONLINE_SUB_SAMPLING_RATE);
 	}
 
-	default T setSubsamplingRate(Double value) {
+	default T setOnlineSubSamplingRate(Double value) {
 		return set(ONLINE_SUB_SAMPLING_RATE, value);
 	}
 

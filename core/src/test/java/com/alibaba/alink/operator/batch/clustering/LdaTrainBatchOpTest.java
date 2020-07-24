@@ -41,7 +41,7 @@ public class LdaTrainBatchOpTest {
             .setSelectedCol("libsvm")
             .setTopicNum(6)
             .setMethod("em")
-            .setSubsamplingRate(1.0)
+            .setOnlineSubSamplingRate(1.0)
             .setOptimizeDocConcentration(true)
             .setNumIter(50);
         LdaTrainBatchOp model = lda.linkFrom(data);
