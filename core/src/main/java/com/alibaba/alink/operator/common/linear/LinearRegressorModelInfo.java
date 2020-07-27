@@ -56,6 +56,7 @@ public class LinearRegressorModelInfo implements Serializable {
         vectorSize = modelData.vectorSize;
         modelName = modelData.modelName;
         hasInterceptItem = modelData.hasInterceptItem;
+        processLabelValues(modelData);
     }
 
     protected void processLabelValues(LinearModelData modelData) {
