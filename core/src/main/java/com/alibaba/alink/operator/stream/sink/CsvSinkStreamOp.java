@@ -68,12 +68,22 @@ public final class CsvSinkStreamOp extends BaseSinkStreamOp<CsvSinkStreamOp>
             writeMode = FileSystem.WriteMode.NO_OVERWRITE;
         }
 
-        DataStream<Row> output = ((DataStream<Row>) in.getDataStream())
+        DataStream<String> output = ((DataStream<Row>) in.getDataStream())
             .map(new CsvUtil.FormatCsvFunc(types, fieldDelim, quoteChar))
-            .setParallelism(numFiles);
+            .map(new CsvUtil.FlattenCsvFromRow(rowDelimiter));
 
-        CsvTableSink cts = new CsvTableSink(filePath, rowDelimiter, numFiles, writeMode);
-        cts.consumeDataStream(output);
+        TextOutputFormat<String> tof = new TextOutputFormat<>(
+            new Path(filePath), getFilePath().getFileSystem(), getRowDelimiter()
+        );
+
+        tof.setWriteMode(writeMode);
+
+        output
+            .addSink(
+                new OutputFormatSinkFunction<>(tof)
+            )
+            .name("csv_sink")
+            .setParallelism(numFiles);
         return this;
     }
 }
