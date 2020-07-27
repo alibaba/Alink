@@ -201,6 +201,7 @@
             <groupId>com.alibaba.alink</groupId>
             <artifactId>shaded_flink_oss_fs_hadoop</artifactId>
             <version>1.10.0-0.2</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
