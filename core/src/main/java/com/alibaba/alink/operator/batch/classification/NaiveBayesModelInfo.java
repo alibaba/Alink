@@ -25,8 +25,7 @@ public class NaiveBayesModelInfo implements Serializable {
     private int labelSize;
     public double[][] weightSum;
     public SparseVector[][] featureInfo;
-    @JsonIgnore
-    public List<Row> stringIndexerModelSerialized;
+    public transient List<Row> stringIndexerModelSerialized;
     private HashMap<Object, HashSet<Object>> cateFeatureValue;
 
     public NaiveBayesModelInfo() {
