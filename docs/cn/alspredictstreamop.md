@@ -35,16 +35,16 @@ df_data = pd.DataFrame({
 df_data["user"] = df_data["user"].astype('int')
 df_data["item"] = df_data["item"].astype('int')
 
-data = dataframeToOperator(df_data, schemaStr='user bigint, item bigint, rating double', op_type='stream')
-
+data_stream = dataframeToOperator(df_data, schemaStr='user bigint, item bigint, rating double', op_type='stream')
+data_batch = dataframeToOperator(df_data, schemaStr='user bigint, item bigint, rating double', op_type='batch')
 als = AlsTrainBatchOp().setUserCol("user").setItemCol("item").setRateCol("rating") \
     .setNumIter(10).setRank(10).setLambda(0.01)
-predictor = AlsPredictStreamOp()\
+model = als.linkFrom(data_batch)
+predictor = AlsPredictStreamOp(model)\
     .setUserCol("user").setItemCol("item").setPredictionCol("predicted_rating")
 
-model = als.linkFrom(data)
-predictor.linkFrom(model, data).print()
-
+predictor.linkFrom(data_stream).print()
+StreamOperator.execute()
 ```
 
 #### 脚本运行结果
