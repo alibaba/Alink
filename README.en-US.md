@@ -32,16 +32,16 @@ Welcome everyone to join the Alink open source user group to communicate.
 
 About package names and versions:
   - PyAlink provides different Python packages for Flink versions that Alink supports: 
-  package `pyalink` always maintains Alink Python API against the latest Flink version, which is 1.10, 
-  while `pyalink-flink-***` support old-version Flink, which are `pyalink-flink-1.9` for now. 
-  - The version of python packages always follows Alink Java version, like `1.1.0`.
+  package `pyalink` always maintains Alink Python API against the latest Flink version, which is 1.11, 
+  while `pyalink-flink-***` support old-version Flink, which are `pyalink-flink-1.10` and `pyalink-flink-1.9` for now. 
+  - The version of python packages always follows Alink Java version, like `1.2.0`.
   
 Installation steps:
 
 1. Make sure the version of python3 on your computer is 3.6 or 3.7.
 2. Make sure Java 8 is installed on your computer.
 3. Use pip to install:
-  `pip install pyalink` or `pip install pyalink-flink-1.9`.
+  `pip install pyalink`, `pip install pyalink-flink-1.10` or `pip install pyalink-flink-1.9`.
 
 
 Potential issues:
@@ -50,14 +50,15 @@ Potential issues:
 If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstall pyalink` or `pip uninstall pyalink-flink-***` to remove them.
 
 2. If `pip install` is slow of failed, refer to [this article](https://segmentfault.com/a/1190000006111096) to change the pip source, or use the following download links:
-   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.2.post0/pyalink-1.1.2.post0-py3-none-any.whl) (MD5: 6bf3a50a4437116793149ead57d9793c)
-   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.1.2.post0/pyalink_flink_1.9-1.1.2.post0-py3-none-any.whl) (MD5: e6d2a0ba3549662d77b51a4a37483479)
+   - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.2.0/pyalink-1.2.0-py3-none-any.whl) (MD5: 8a38e8009712afcbf5ecdb297db3c8ac)
+   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.2.0/pyalink_flink_1.10-1.2.0-py3-none-any.whl) (MD5: 8a38e8009712afcbf5ecdb297db3c8ac)
+   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.2.0/pyalink_flink_1.9-1.2.0-py3-none-any.whl) (MD5: 2f25eec02a692661c0f0f3a89e5c2f0c)
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 
 ### Start using: 
 -------
-We recommend using Jupyter Notebook to use PyAlink to provide a better experience.
+You can start using PyAlink with Jupyter Notebook to provide a better experience.
 
 Steps for usage: 
 
@@ -70,7 +71,7 @@ Steps for usage:
 
    ```useLocalEnv(parallism, flinkHome=None, config=None)```.
 
-   Among them, the parameter  ```parallism```  indicates the degree of parallelism used for execution;```flinkHome``` is the full path of flink,and the default flink-1.9.0 path of PyAlink is used; ```config``` is the configuration parameter accepted by Flink. After running, the following output appears, indicating that the initialization of the running environment is successful.
+   Among them, the parameter  ```parallism```  indicates the degree of parallelism used for execution;```flinkHome``` is the full path of flink, and usually no need to set; ```config``` is the configuration parameter accepted by Flink. After running, the following output appears, indicating that the initialization of the running environment is successful.
 ```
 JVM listening on ***
 Python listening on ***
@@ -87,19 +88,19 @@ print(df)
 
 ### Write code: 
 ------
-In PyAlink, the interface provided by the algorithm component is basically the same as the Java API, that is, an algorithm component is created through the default construction method, then the parameters are set through ```setXXX```, and other components are connected through ```link / linkTo / linkFrom```.
+In PyAlink, the interface provided by the algorithm component is basically the same as the Java APIs, that is, an algorithm component is created through the default construction method, then the parameters are set through ```setXXX```, and other components are connected through ```link / linkTo / linkFrom```.
 
-Here, Jupyter's auto-completion mechanism can be used to provide writing convenience.
+Here, Jupyter Notebook's auto-completion mechanism can be used to provide writing convenience.
 
 For batch jobs, you can trigger execution through methods such as ```print / collectToDataframe / collectToDataframes``` of batch components or ```BatchOperator.execute ()```; for streaming jobs, start the job with ```StreamOperator.execute ()```.
 
 ### More usage: 
 ------
- - [PyAlink Tutorial](docs/pyalink/pyalink-overview.md)
  - [Interchange between DataFrame and Operator](docs/pyalink/pyalink-dataframe.md)
  - [StreamOperator data preview](docs/pyalink/pyalink-stream-operator-preview.md)
  - [UDF/UDTF/SQL usage](docs/pyalink/pyalink-udf.md)
  - [Use with PyFlink](docs/pyalink/pyalink-pyflink.md)
+ - [PyAlink Q&A](docs/pyalink/pyalink-qa.md)
 
 ## Java API Manual
 
@@ -126,12 +127,31 @@ Pipeline pipeline = new Pipeline().add(va).add(kMeans);
 pipeline.fit(data).transform(data).print();
 ```
 
+### With Flink-1.11
+```xml
+<dependency>
+    <groupId>com.alibaba.alink</groupId>
+    <artifactId>alink_core_flink-1.11_2.11</artifactId>
+    <version>1.2.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-streaming-scala_2.11</artifactId>
+    <version>1.11.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-table-planner_2.11</artifactId>
+    <version>1.11.0</version>
+</dependency>
+```
+
 ### With Flink-1.10
 ```xml
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.10_2.11</artifactId>
-    <version>1.1.2</version>
+    <version>1.2.0</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -151,7 +171,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.9_2.11</artifactId>
-    <version>1.1.2</version>
+    <version>1.2.0</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -171,8 +191,8 @@ Run Alink Algorithm with a Flink Cluster
 
 1. Prepare a Flink Cluster:
 ```shell
-  wget https://archive.apache.org/dist/flink/flink-1.10.0/flink-1.10.0-bin-scala_2.11.tgz
-  tar -xf flink-1.10.0-bin-scala_2.11.tgz && cd flink-1.10.0
+  wget https://archive.apache.org/dist/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz
+  tar -xf flink-1.11.0-bin-scala_2.11.tgz && cd flink-1.11.0
   ./bin/start-cluster.sh
 ```
 
@@ -185,7 +205,7 @@ Run Alink Algorithm with a Flink Cluster
 3. Run Java examples:
 ```shell
   ./bin/flink run -p 1 -c com.alibaba.alink.ALSExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
-  # ./bin/flink run -p 2 -c com.alibaba.alink.GBDTExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
-  # ./bin/flink run -p 2 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
+  # ./bin/flink run -p 1 -c com.alibaba.alink.GBDTExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
+  # ./bin/flink run -p 1 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
 ```
 

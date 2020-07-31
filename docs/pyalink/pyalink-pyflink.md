@@ -4,7 +4,7 @@
 在最新的发布中，PyAlink 与 PyFlink 进行了一定的整合。
 用户在新版本的 PyAlink 中能够使用 PyFlink 的部分功能，同时 PyAlink 脚本也支持像 PyFlink 脚本一样使用 `flink run` 来提交作业了。
 
-需要注意的是：这个版本只有 Flink-1.10 对应的 Python 包 `pyalink` 才具有，`pyalink-flink-1.9` 没有以下功能。
+需要注意的是：这个版本只有 Flink-1.10 及以上对应的 Python 包 `pyalink` 才具有，`pyalink-flink-1.9` 没有以下功能。
 
 
 一个简单的例子
@@ -27,7 +27,7 @@ StreamOperator.execute()
 
 这段代码示例既可以直接在 Notebook 中运行，也可以直接保存成`.py` 的脚本文件，使用 PyFlink 脚本的运行方式来执行：
 1. `python ***.py`： 直接使用本地运行环境；
-2. `flink run -py ***.py`：将脚本提交给远程集群来运行，参考 [Job Submission Examples](https://ci.apache.org/projects/flink/flink-docs-release-1.10/ops/cli.html#job-submission-examples)。
+2. `flink run -py ***.py`：将脚本提交给远程集群来运行，参考 [Job Submission Examples](https://ci.apache.org/projects/flink/flink-docs-release-1.11/ops/cli.html#job-submission-examples)。
 
 
 ### 与 PyFlink 共用执行环境
