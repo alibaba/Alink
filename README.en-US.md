@@ -56,6 +56,30 @@ If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstal
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 
+
+Download file system and Hive dependency jar files:
+
+After PyAlink installed, you can run ```download_pyalink_dep_jars``` to download dependency jars for file system and Hive.
+
+If there is an error that could not find the command, you can run the python command ```python3 -c 'from pyalink.alink.download_pyalink_dep_jars import main;main()'``` directly.
+
+After executed the command, you'll see a prompt asking you about the dependencies and their versions to be downloaded. 
+The following dependencies and their versions of jars are supported:
+
+- OSS：1.10.0
+- Hadoop：2.4.1, 2.6.5, 2.7.5, 2.8.3
+- Hive：2-0-v0.1, 2-1-v0.1, 2-2-v0.1, 2-3-v0.1, 3-1-v0.1
+
+These jars will be installed to the ```lib``` folder of PyAlink. 
+Note that these command require the access for the folder.
+
+You can also add the argument ```-d``` when executing the command, i.e.  ```download_pyalink_dep_jars -d```.
+It will install the dependency jars with default versions:
+
+- OSS：1.10.0
+- Hadoop：2.8.3
+- Hive：2-3-v0.1
+
 ### Start using: 
 -------
 You can start using PyAlink with Jupyter Notebook to provide a better experience.
@@ -186,7 +210,7 @@ pipeline.fit(data).transform(data).print();
 ```
 
 
-Run Alink Algorithm with a Flink Cluster
+Get started to run Alink Algorithm with a Flink Cluster
 --------
 
 1. Prepare a Flink Cluster:
@@ -209,3 +233,7 @@ Run Alink Algorithm with a Flink Cluster
   # ./bin/flink run -p 1 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
 ```
 
+Deployment
+---------
+
+[Cluster](docs/deploy/cluster-deploy.en-US.md)

@@ -50,6 +50,27 @@
    - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.2.0/pyalink_flink_1.9-1.2.0-py3-none-any.whl) (MD5: 2f25eec02a692661c0f0f3a89e5c2f0c)  
 3. 如果有多个版本的 Python，可能需要使用特定版本的 `pip`，比如 `pip3`；如果使用 Anaconda，则需要在 Anaconda 命令行中进行安装。
 
+安装文件系统和 Hive 依赖 jar 包:
+
+安装 PyAlink 之后，可以直接运行 ```download_pyalink_dep_jars``` 命令，下载支持文件系统功能所需要的 jar 包。
+
+如果提示找不到这个命令，可以尝试直接运行脚本： ```python3 -c 'from pyalink.alink.download_pyalink_dep_jars import main;main()'```。
+
+运行这个命令后，将提问是否安装某种文件系统对应的 jar 包，并选择合适的版本。 当前支持的文件系统包括：
+ 
+- OSS：1.10.0
+- Hadoop：2.4.1, 2.6.5, 2.7.5, 2.8.3
+- Hive：2-0-v0.1, 2-1-v0.1, 2-2-v0.1, 2-3-v0.1, 3-1-v0.1
+
+这些 jar 包将被下载到 PyAlink 安装路径的 ```lib``` 目录下。
+注意，这里要求运行命令时有 PyAlink 安装目录的权限。
+
+运行命令时，也可以增加参数：```download_pyalink_dep_jars -d```，将下载默认的 jar 包：
+
+- OSS：1.10.0
+- Hadoop：2.8.3
+- Hive：2-3-v0.1
+
 ### 开始使用：
 -------
 可以通过 Jupyter Notebook 来开始使用 PyAlink，能获得更好的使用体验。
@@ -176,7 +197,7 @@ pipeline.fit(data).transform(data).print();
 
 
 
-## 如何在集群上运行Alink算法
+## 快速开始在集群上运行Alink算法
 --------
 
 1. 准备Flink集群
@@ -198,3 +219,8 @@ pipeline.fit(data).transform(data).print();
   # ./bin/flink run -p 1 -c com.alibaba.alink.GBDTExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
   # ./bin/flink run -p 1 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
 ```
+
+## 部署
+----------
+
+[集群部署](docs/deploy/cluster-deploy.md)
