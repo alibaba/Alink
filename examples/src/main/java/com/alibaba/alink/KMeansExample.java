@@ -25,9 +25,11 @@ public class KMeansExample {
             .setPredictionCol("prediction_result")
             .setPredictionDetailCol("prediction_detail")
             .setReservedCols("category")
-            .setMaxIter(100);
+            .setMaxIter(4);
 
         Pipeline pipeline = new Pipeline().add(va).add(kMeans);
-        pipeline.fit(data).transform(data).print();
+        BatchOperator bop = pipeline.fit(data).transform(data);
+        bop.setParallelism(4);
+        bop.print();
     }
 }

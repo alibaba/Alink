@@ -186,6 +186,15 @@ public class DenseVector extends Vector {
         return new DenseVector(data);
     }
 
+    public DenseVector concatenate(DenseVector d){
+        int len1 = this.size();
+        int len2 = d.size();
+        double[] data = new double[len1 + len2];
+        System.arraycopy(this.data, 0, data, 0, len1);
+        System.arraycopy(d.getData(), 0, data, len1, len2);
+        return new DenseVector(data);
+    }
+
     @Override
     public void scaleEqual(double d) {
         BLAS.scal(d, this);

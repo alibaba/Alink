@@ -70,6 +70,7 @@ public class FTRLExample {
                 .setWithIntercept(true)
                 .setMaxIter(10);
         BatchOperator<?> initModel = featurePipelineModel.transform(trainBatchData).link(lr);
+        //BatchOperator<?> initModel = lr.linkFrom(featurePipelineModel.transform(trainBatchData));
         // ftrl train
         FtrlTrainStreamOp model = new FtrlTrainStreamOp(initModel)
                 .setVectorCol(vecColName)
