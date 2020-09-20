@@ -29,7 +29,7 @@ import java.util.Map;
 
 /**
  * MultilayerPerceptronClassifier is a neural network based multi-class classifier.
- * Valina neural network with all dense layers are used, the output layer is a softmax layer.
+ * Vanilla neural network with all dense layers are used, the output layer is a softmax layer.
  * Number of inputs has to be equal to the size of feature vectors.
  * Number of outputs has to be equal to the total number of labels.
  */
