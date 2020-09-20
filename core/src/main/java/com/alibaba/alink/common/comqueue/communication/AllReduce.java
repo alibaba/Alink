@@ -33,8 +33,8 @@ import java.util.function.BiConsumer;
  *
  * There're mainly three stages:
  * <ol>
- *     <li>1. All workers send the there partial data to other workers for reduce.</li>
- *     <li>2. All workers do reduce on all data it received and then send partial results to others.</li>
+ *     <li>1. All workers send their partial data to the other workers for reduce.</li>
+ *     <li>2. All workers do reduce on all data they received and then send partial results to the others.</li>
  *     <li>3. All workers merge partial results into final result and put it into session context with pre-defined
  *     object name.</li>
  * </ol>

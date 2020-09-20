@@ -29,7 +29,7 @@ import java.util.Map;
 
 /**
  * MultilayerPerceptronClassifier is a neural network based multi-class classifier.
- * Valina neural network with all dense layers are used, the output layer is a softmax layer.
+ * Vanilla neural network with all dense layers are used, the output layer is a softmax layer.
  * Number of inputs has to be equal to the size of feature vectors.
  * Number of outputs has to be equal to the total number of labels.
  */
@@ -143,7 +143,8 @@ public final class MultilayerPerceptronTrainBatchOp
         final int[] layerSize = getLayers();
         final int blockSize = getBlockSize();
         final DenseVector initialWeights = getInitialWeights();
-        Topology topology = FeedForwardTopology.multiLayerPerceptron(layerSize, true);
+        final double dropoutRate = getDropoutRate();
+        Topology topology = FeedForwardTopology.multiLayerPerceptron(layerSize, true, dropoutRate);
         FeedForwardTrainer trainer = new FeedForwardTrainer(topology,
             layerSize[0], layerSize[layerSize.length - 1], true, blockSize, initialWeights);
         DataSet<DenseVector> weights = trainer.train(trainData, getParams());

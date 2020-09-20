@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * An interface indicating a BatchOperator can information for its training process.
+ * An interface indicating the information a BatchOperator can provide for its training process.
  *
  * @param <S> the class which conveys the train information.
  * @param <T> the BatchOperator class which provides the train information.
