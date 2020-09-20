@@ -19,6 +19,13 @@ public class FeedForwardTopology extends Topology {
     }
 
     public static FeedForwardTopology multiLayerPerceptron(int[] layerSize, boolean softmaxOnTop, double dropoutRate) {
+        return multiLayerPerceptron(layerSize, softmaxOnTop, dropoutRate, "sigmoid");
+    }
+
+    public static FeedForwardTopology multiLayerPerceptron(int[] layerSize,
+                                                           boolean softmaxOnTop,
+                                                           double dropoutRate,
+                                                           String activation) {
         List<Layer> layers = new ArrayList<>((layerSize.length - 1) * 2);
         for (int i = 0; i < layerSize.length - 1; i++) {
             layers.add(new AffineLayer(layerSize[i], layerSize[i + 1]));
@@ -29,7 +36,15 @@ public class FeedForwardTopology extends Topology {
                     layers.add(new SigmoidLayerWithSquaredError());
                 }
             } else {
-                layers.add(new FuntionalLayer(new SigmoidFunction()));
+                if (activation.toLowerCase().equals("sigmoid")) {
+                    layers.add(new FuntionalLayer(new SigmoidFunction()));
+                } else if (activation.toLowerCase().equals("relu")) {
+                    layers.add(new FuntionalLayer(new ReluFunction()));
+                } else if (activation.toLowerCase().equals("tanh")) {
+                    layers.add(new FuntionalLayer(new TanhFunction()));
+                } else {
+                    throw new RuntimeException("This activation method is not supported now.");
+                }
 
                 layers.add(new DropoutLayer(dropoutRate));
             }
