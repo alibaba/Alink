@@ -143,7 +143,8 @@ public final class MultilayerPerceptronTrainBatchOp
         final int[] layerSize = getLayers();
         final int blockSize = getBlockSize();
         final DenseVector initialWeights = getInitialWeights();
-        Topology topology = FeedForwardTopology.multiLayerPerceptron(layerSize, true);
+        final double dropoutRate = getDropoutRate();
+        Topology topology = FeedForwardTopology.multiLayerPerceptron(layerSize, true, dropoutRate);
         FeedForwardTrainer trainer = new FeedForwardTrainer(topology,
             layerSize[0], layerSize[layerSize.length - 1], true, blockSize, initialWeights);
         DataSet<DenseVector> weights = trainer.train(trainData, getParams());

@@ -64,7 +64,7 @@ public class MlpcModelMapper extends RichModelMapper {
 
         this.labels = model.labels;
         int[] layerSize0 = model.meta.get(MultilayerPerceptronTrainParams.LAYERS);
-        Topology topology = FeedForwardTopology.multiLayerPerceptron(layerSize0, true);
+        Topology topology = FeedForwardTopology.multiLayerPerceptron(layerSize0, true, 0);
         this.topo = topology.getModel(model.weights);
         this.predDetailMap = new HashMap<>(layerSize0[layerSize0.length - 1]);
         isVectorInput = model.meta.get(ModelParamName.IS_VECTOR_INPUT);

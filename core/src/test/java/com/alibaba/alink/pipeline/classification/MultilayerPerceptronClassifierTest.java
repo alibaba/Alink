@@ -17,6 +17,7 @@ public class MultilayerPerceptronClassifierTest {
             .setFeatureCols(Iris.getFeatureColNames())
             .setLabelCol(Iris.getLabelColName())
             .setLayers(new int[]{4, 5, 3})
+            .setDropoutRate(0.2)
             .setMaxIter(100)
             .setPredictionCol("pred_label")
             .setPredictionDetailCol("pred_detail");

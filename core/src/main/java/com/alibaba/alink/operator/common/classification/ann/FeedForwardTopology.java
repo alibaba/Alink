@@ -18,7 +18,7 @@ public class FeedForwardTopology extends Topology {
         this.layers = layers;
     }
 
-    public static FeedForwardTopology multiLayerPerceptron(int[] layerSize, boolean softmaxOnTop) {
+    public static FeedForwardTopology multiLayerPerceptron(int[] layerSize, boolean softmaxOnTop, double dropoutRate) {
         List<Layer> layers = new ArrayList<>((layerSize.length - 1) * 2);
         for (int i = 0; i < layerSize.length - 1; i++) {
             layers.add(new AffineLayer(layerSize[i], layerSize[i + 1]));
@@ -30,6 +30,8 @@ public class FeedForwardTopology extends Topology {
                 }
             } else {
                 layers.add(new FuntionalLayer(new SigmoidFunction()));
+
+                layers.add(new DropoutLayer(dropoutRate));
             }
         }
         return new FeedForwardTopology(layers);

@@ -36,6 +36,11 @@ public interface MultilayerPerceptronTrainParams<T> extends
         .setDescription("Initial weights.")
         .setHasDefaultValue(null)
         .build();
+    ParamInfo<Double> DROPOUT_RATE = ParamInfoFactory
+            .createParamInfo("dropoutRate", Double.class)
+            .setDescription("Dropout rate for MLP")
+            .setHasDefaultValue(0.)
+            .build();
 
     default int[] getLayers() {
         return get(LAYERS);
@@ -59,5 +64,13 @@ public interface MultilayerPerceptronTrainParams<T> extends
 
     default T setInitialWeights(DenseVector value) {
         return set(INITIAL_WEIGHTS, value);
+    }
+
+    default Double getDropoutRate() {
+        return get(DROPOUT_RATE);
+    }
+
+    default T setDropoutRate(Double value) {
+        return set(DROPOUT_RATE, value);
     }
 }
