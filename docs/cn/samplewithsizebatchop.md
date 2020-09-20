@@ -31,7 +31,7 @@ df = pd.DataFrame({"Y": data[:, 0]})
 # batch source 
 inOp = dataframeToOperator(df, schemaStr='Y string', op_type='batch')
 
-sampleOp = SampleBatchOp()\
+sampleOp = SampleWithSizeBatchOp()\
         .setSize(2)\
         .setWithReplacement(False)
 
