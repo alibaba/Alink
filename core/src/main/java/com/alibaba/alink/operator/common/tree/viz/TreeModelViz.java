@@ -7,11 +7,11 @@ import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.operator.common.tree.Node;
 import com.alibaba.alink.operator.common.tree.TreeModelDataConverter;
-
 import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -22,24 +22,21 @@ import java.util.List;
 public class TreeModelViz {
 
 	public static void toImageFile(
-		String path, List<Row> model, int treeIndex) throws IOException {
+		String path, List <Row> model, int treeIndex) throws IOException {
 		toImageFile(path, model, treeIndex, false);
 	}
 
 	public static void toImageFile(
-		String path, List<Row> model, int treeIndex, boolean isOverwrite) throws IOException {
+		String path, List <Row> model, int treeIndex, boolean isOverwrite) throws IOException {
 		File file = new File(path);
 
-		Preconditions.checkArgument(
-			isOverwrite || !file.exists(),
-			"File: %s is exists.", path
-		);
+		Preconditions.checkArgument(isOverwrite || !file.exists(), "File: %s is exists.", path);
 
-		toImage(model, treeIndex, new FileImageOutputStream(file));
+		toImage(model, treeIndex, getFormat(path), new FileImageOutputStream(file));
 	}
 
 	public static void toImage(
-		List<Row> model, int treeIndex, ImageOutputStream imageOutputStream) throws IOException {
+		List <Row> model, int treeIndex, String formatName, ImageOutputStream imageOutputStream) throws IOException {
 		TreeModelDataConverter modelDataConverter = toModel(model);
 
 		Preconditions.checkArgument(
@@ -48,6 +45,7 @@ public class TreeModelViz {
 		);
 
 		exportOtherShapesImage(imageOutputStream,
+			formatName,
 			drawTree2JPanel(
 				modelDataConverter.roots[treeIndex],
 				modelDataConverter,
@@ -65,13 +63,21 @@ public class TreeModelViz {
 			"File: %s is exists.", path
 		);
 
-		toImage(model, treeIndex, new FileImageOutputStream(file));
+		toImage(model, getFormat(path), treeIndex, new FileImageOutputStream(file));
+	}
+
+	public static String getFormat(String filePath) {
+		int indexOfDot = filePath.lastIndexOf(".");
+
+		return indexOfDot < 0 ? "png" : filePath.substring(indexOfDot + 1);
 	}
 
 	public static void toImage(
-		TreeModelDataConverter modelDataConverter, int treeIndex, ImageOutputStream imageOutputStream) throws IOException {
+		TreeModelDataConverter modelDataConverter, String formatName, int treeIndex,
+		ImageOutputStream imageOutputStream) throws IOException {
 
 		exportOtherShapesImage(imageOutputStream,
+			formatName,
 			drawTree2JPanel(
 				modelDataConverter.roots[treeIndex],
 				modelDataConverter,
@@ -80,21 +86,22 @@ public class TreeModelViz {
 		);
 	}
 
-	public static TreeModelDataConverter toModel(List<Row> model) {
+	public static TreeModelDataConverter toModel(List <Row> model) {
 		return new TreeModelDataConverter().load(model);
 	}
 
-	private static void exportOtherShapesImage(ImageOutputStream stream, JPanel panel) throws IOException {
+	private static void exportOtherShapesImage(ImageOutputStream stream, String formatName, JPanel panel)
+		throws IOException {
 		Dimension imageSize = panel.getSize();
 		BufferedImage image = new BufferedImage(imageSize.width,
-			imageSize.height, BufferedImage.TYPE_INT_ARGB);
+			imageSize.height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = image.createGraphics();
 		panel.paint(g);
 		g.dispose();
-		ImageIO.write(image, "png", stream);
+		ImageIO.write(image, formatName, stream);
 	}
 
-	private static Tuple2<Double, Double> minMaxPercent(
+	private static Tuple2 <Double, Double> minMaxPercent(
 		TreeModelDataConverter model, Node4CalcPos[] node4CalcPoses) {
 		double max = 0.0, min = 1.0;
 
@@ -117,10 +124,10 @@ public class TreeModelViz {
 		Node root, TreeModelDataConverter model, NodeDimension nd) {
 		JPanel treePanel = new JPanel();
 
-		Tuple3<Integer, Integer, Node4CalcPos[]> range
+		Tuple3 <Integer, Integer, Node4CalcPos[]> range
 			= calcNodePos(root, nd.nodeWidth, nd.widthSpace, nd.nodeHigh, nd.heightSpace);
 
-		Tuple2<Double, Double> minMaxPercent = minMaxPercent(model, range.f2);
+		Tuple2 <Double, Double> minMaxPercent = minMaxPercent(model, range.f2);
 
 		for (Node4CalcPos node4CalcPos : range.f2) {
 			if (!node4CalcPos.node.isLeaf()) {
@@ -146,7 +153,7 @@ public class TreeModelViz {
 		return treePanel;
 	}
 
-	private static Tuple3<Integer, Integer, Node4CalcPos[]>
+	private static Tuple3 <Integer, Integer, Node4CalcPos[]>
 	calcNodePos(Node root, double widthNode, double widthSpace, double heightNode, double heightSpace) {
 		Node4CalcPos[] nodes = getNodeArray(root);
 		double[][] levelRange = subPosition(nodes, widthNode, widthSpace);
@@ -178,7 +185,7 @@ public class TreeModelViz {
 
 	private static double[][] subPosition(
 		Node4CalcPos[] nodes, double widthNode, double widthSpace) {
-		ArrayList<double[][]> subTreeLevelRange = new ArrayList<>();
+		ArrayList <double[][]> subTreeLevelRange = new ArrayList <>();
 		for (int i = 0; i < nodes.length; i++) {
 			subTreeLevelRange.add(new double[0][2]);
 		}
@@ -269,7 +276,7 @@ public class TreeModelViz {
 	}
 
 	private static Node4CalcPos[] getNodeArray(Node root) {
-		ArrayList<Node4CalcPos> nodelist = new ArrayList<Node4CalcPos>();
+		ArrayList <Node4CalcPos> nodelist = new ArrayList <Node4CalcPos>();
 		Node4CalcPos tnode = new Node4CalcPos();
 		tnode.node = root;
 		tnode.parentIdx = -1;
@@ -281,7 +288,7 @@ public class TreeModelViz {
 		return nodelist.toArray(new Node4CalcPos[0]);
 	}
 
-	private static void addChildren(ArrayList<Node4CalcPos> nodelist, int idx) {
+	private static void addChildren(ArrayList <Node4CalcPos> nodelist, int idx) {
 		if (idx >= nodelist.size()) {
 			throw new RuntimeException();
 		}

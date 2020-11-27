@@ -2,23 +2,22 @@ package com.alibaba.alink.operator.batch.source;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.DataSet;
-
-import com.alibaba.alink.operator.batch.BatchOperator;
-
-import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.operator.batch.BatchOperator;
 
 /**
  * A BatchOperator that wraps a DataSet.
  */
-public final class DataSetWrapperBatchOp extends BatchOperator<DataSetWrapperBatchOp> {
+public final class DataSetWrapperBatchOp extends BatchOperator <DataSetWrapperBatchOp> {
 
-	final DataSet<Row> rawData;
+	private static final long serialVersionUID = -6352627701658703146L;
+	final DataSet <Row> rawData;
 	final String[] rawColNames;
-	final TypeInformation<?>[] rawColTypes;
+	final TypeInformation <?>[] rawColTypes;
 
-	public DataSetWrapperBatchOp(DataSet<Row> batchOperator, String[] colNames, TypeInformation <?>[] colTypes) {
+	public DataSetWrapperBatchOp(DataSet <Row> batchOperator, String[] colNames, TypeInformation <?>[] colTypes) {
 		super(null);
 		this.rawData = batchOperator;
 		this.rawColNames = colNames;
@@ -26,20 +25,20 @@ public final class DataSetWrapperBatchOp extends BatchOperator<DataSetWrapperBat
 	}
 
 	@Override
-	public DataSet<Row> getDataSet() {
+	public DataSet <Row> getDataSet() {
 		return rawData;
 	}
 
 	@Override
 	public Table getOutputTable() {
-		if (super.getOutputTable() == null) {
+		if (isNullOutputTable()) {
 			super.setOutput(rawData, rawColNames, rawColTypes);
 		}
 		return super.getOutputTable();
 	}
 
 	@Override
-	public DataSetWrapperBatchOp linkFrom(BatchOperator<?>... inputs) {
+	public DataSetWrapperBatchOp linkFrom(BatchOperator <?>... inputs) {
 		throw new RuntimeException("Unsupported now.");
 	}
 }

@@ -9,26 +9,27 @@ import java.io.Serializable;
 /**
  * Adapt a {@link Mapper} to run within flink.
  */
-public class MapperAdapter extends RichMapFunction<Row, Row> implements Serializable {
+public class MapperAdapter extends RichMapFunction <Row, Row> implements Serializable {
 
-    private final Mapper mapper;
+	private static final long serialVersionUID = -1927258770772096125L;
+	private final Mapper mapper;
 
-    public MapperAdapter(Mapper mapper) {
-        this.mapper = mapper;
-    }
+	public MapperAdapter(Mapper mapper) {
+		this.mapper = mapper;
+	}
 
-    @Override
-    public Row map(Row row) throws Exception {
-        return this.mapper.map(row);
-    }
+	@Override
+	public Row map(Row row) throws Exception {
+		return this.mapper.map(row);
+	}
 
-    @Override
-    public void open(Configuration parameters) throws Exception {
-        this.mapper.open();
-    }
+	@Override
+	public void open(Configuration parameters) throws Exception {
+		this.mapper.open();
+	}
 
-    @Override
-    public void close() throws Exception {
-        this.mapper.close();
-    }
+	@Override
+	public void close() throws Exception {
+		this.mapper.close();
+	}
 }

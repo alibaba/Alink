@@ -30,8 +30,8 @@ public class ParamInfoFactory {
 	 * @param <V>        value type of the new ParamInfo
 	 * @return a ParamInfoBuilder
 	 */
-	public static <V> ParamInfoBuilder<V> createParamInfo(String name, Class<V> valueClass) {
-		return new ParamInfoBuilder<>(name, valueClass);
+	public static <V> ParamInfoBuilder <V> createParamInfo(String name, Class <V> valueClass) {
+		return new ParamInfoBuilder <>(name, valueClass);
 	}
 
 	/**
@@ -47,10 +47,10 @@ public class ParamInfoFactory {
 		private boolean isOptional = true;
 		private boolean hasDefaultValue = false;
 		private V defaultValue;
-		private ParamValidator<V> validator;
-		private Class<V> valueClass;
+		private ParamValidator <V> validator;
+		private Class <V> valueClass;
 
-		ParamInfoBuilder(String name, Class<V> valueClass) {
+		ParamInfoBuilder(String name, Class <V> valueClass) {
 			this.name = name;
 			this.valueClass = valueClass;
 		}
@@ -60,7 +60,7 @@ public class ParamInfoFactory {
 		 *
 		 * @return the builder itself
 		 */
-		public ParamInfoBuilder<V> setAlias(String[] alias) {
+		public ParamInfoBuilder <V> setAlias(String[] alias) {
 			this.alias = alias;
 			return this;
 		}
@@ -70,7 +70,7 @@ public class ParamInfoFactory {
 		 *
 		 * @return the builder itself
 		 */
-		public ParamInfoBuilder<V> setDescription(String description) {
+		public ParamInfoBuilder <V> setDescription(String description) {
 			this.description = description;
 			return this;
 		}
@@ -80,7 +80,7 @@ public class ParamInfoFactory {
 		 *
 		 * @return the builder itself
 		 */
-		public ParamInfoBuilder<V> setOptional() {
+		public ParamInfoBuilder <V> setOptional() {
 			this.isOptional = true;
 			return this;
 		}
@@ -90,7 +90,7 @@ public class ParamInfoFactory {
 		 *
 		 * @return the builder itself
 		 */
-		public ParamInfoBuilder<V> setRequired() {
+		public ParamInfoBuilder <V> setRequired() {
 			this.isOptional = false;
 			return this;
 		}
@@ -100,7 +100,7 @@ public class ParamInfoFactory {
 		 *
 		 * @return the builder itself
 		 */
-		public ParamInfoBuilder<V> setHasDefaultValue(V defaultValue) {
+		public ParamInfoBuilder <V> setHasDefaultValue(V defaultValue) {
 			this.hasDefaultValue = true;
 			this.defaultValue = defaultValue;
 			return this;
@@ -111,7 +111,7 @@ public class ParamInfoFactory {
 		 *
 		 * @return the builder itself
 		 */
-		public ParamInfoBuilder<V> setValidator(ParamValidator<V> validator) {
+		public ParamInfoBuilder <V> setValidator(ParamValidator <V> validator) {
 			this.validator = validator;
 			return this;
 		}
@@ -121,8 +121,11 @@ public class ParamInfoFactory {
 		 *
 		 * @return the defined ParamInfo
 		 */
-		public ParamInfo<V> build() {
-			return new ParamInfo<>(name, alias, description, isOptional, hasDefaultValue,
+		public ParamInfo <V> build() {
+			if (validator != null) {
+				validator.setParamName(this.name);
+			}
+			return new ParamInfo <>(name, alias, description, isOptional, hasDefaultValue,
 				defaultValue, validator, valueClass);
 		}
 	}

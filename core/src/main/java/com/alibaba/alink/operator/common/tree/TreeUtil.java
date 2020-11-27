@@ -10,7 +10,6 @@ import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelDataCon
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
-import com.alibaba.alink.params.shared.tree.HasTreeType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,12 +18,16 @@ import java.util.List;
 import java.util.Map;
 
 public class TreeUtil {
-	public static Map<String, Integer> extractCategoricalColsSize(
-		List<Row> stringIndexerModelData, String[] lookUpColNames) {
+	public static Map <String, Integer> extractCategoricalColsSize(
+		List <Row> stringIndexerModelData, String[] lookUpColNames) {
 		MultiStringIndexerModelData stringIndexerModel
 			= new MultiStringIndexerModelDataConverter().load(stringIndexerModelData);
+		return extractCategoricalColsSize(stringIndexerModel, lookUpColNames);
+	}
 
-		Map<String, Integer> categoricalColsSize = new HashMap<>();
+	public static Map <String, Integer> extractCategoricalColsSize(
+		MultiStringIndexerModelData stringIndexerModel, String[] lookUpColNames) {
+		Map <String, Integer> categoricalColsSize = new HashMap <>();
 
 		for (String lookUpColName : lookUpColNames) {
 			categoricalColsSize.put(lookUpColName, (int) stringIndexerModel.getNumberOfTokensOfColumn(lookUpColName));
@@ -35,7 +38,7 @@ public class TreeUtil {
 
 	public static FeatureMeta[] getFeatureMeta(
 		String[] featureColNames,
-		Map<String, Integer> categoricalSizes) {
+		Map <String, Integer> categoricalSizes) {
 		FeatureMeta[] featureMetas = new FeatureMeta[featureColNames.length];
 		for (int i = 0; i < featureColNames.length; ++i) {
 			if (categoricalSizes.containsKey(featureColNames[i])) {
@@ -49,7 +52,7 @@ public class TreeUtil {
 	}
 
 	public static FeatureMeta getLabelMeta(
-		String labelColName, int labelColIndex, Map<String, Integer> categoricalSizes) {
+		String labelColName, int labelColIndex, Map <String, Integer> categoricalSizes) {
 		if (categoricalSizes.containsKey(labelColName)) {
 			return new FeatureMeta(labelColName, labelColIndex, categoricalSizes.get(labelColName));
 		} else {
@@ -58,7 +61,7 @@ public class TreeUtil {
 	}
 
 	public static String[] trainColNames(Params params) {
-		ArrayList<String> colNames = new ArrayList<>(
+		ArrayList <String> colNames = new ArrayList <>(
 			Arrays.asList(params.get(HasFeatureCols.FEATURE_COLS))
 		);
 
@@ -73,12 +76,12 @@ public class TreeUtil {
 		return colNames.toArray(new String[0]);
 	}
 
-	public static ParamInfo<TreeType> TREE_TYPE = ParamInfoFactory
-		.createParamInfo("treeType", TreeType.class)
+	public static ParamInfo <TreeType> TREE_TYPE = ParamInfoFactory
+		.createParamInfo("treeType", TreeUtil.TreeType.class)
 		.setDescription("The criteria of the tree. " +
-			"There are three options: \"AVG\", \"partition\" or \"gini(infoGain, infoGainRatio)\""
+			"There are three options: \"AVG\", \"partition\" or \"gini(infoGain, infoGainRatio, mse)\""
 		)
-		.setHasDefaultValue(TreeType.AVG)
+		.setHasDefaultValue(TreeUtil.TreeType.AVG)
 		.build();
 
 	/**

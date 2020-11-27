@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class JsonReader extends FormatReader {
 
+	private static final long serialVersionUID = -5403483533106321191L;
 	final int jsonColIndex;
 
 	public JsonReader(int jsonColIndex) {
@@ -21,8 +22,11 @@ public class JsonReader extends FormatReader {
 		Map map = JsonConverter.fromJson(line, Map.class);
 
 		map.forEach((key, value) -> {
-			out.put(key.toString(), value.toString());
-
+			if (null != value) {
+				out.put(key.toString(), value.toString());
+			} else {
+				out.put(key.toString(), null);
+			}
 		});
 		return true;
 	}

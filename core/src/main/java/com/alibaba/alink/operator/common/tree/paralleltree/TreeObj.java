@@ -8,13 +8,8 @@ import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
 import com.alibaba.alink.operator.common.tree.FeatureMeta;
 import com.alibaba.alink.operator.common.tree.Node;
+import com.alibaba.alink.params.classification.GbdtTrainParams;
 import com.alibaba.alink.params.classification.RandomForestTrainParams;
-import com.alibaba.alink.params.shared.tree.HasFeatureSubsamplingRatio;
-import com.alibaba.alink.params.shared.tree.HasMaxBins;
-import com.alibaba.alink.params.shared.tree.HasMaxDepth;
-import com.alibaba.alink.params.shared.tree.HasMaxMemoryInMB;
-import com.alibaba.alink.params.shared.tree.HasMinSamplesPerLeaf;
-import com.alibaba.alink.params.shared.tree.HasSeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,22 +26,29 @@ import java.util.Random;
 public abstract class TreeObj<LABELARRAY> implements Serializable {
 	private static final Logger LOG = LoggerFactory.getLogger(TreeObj.class);
 
-	public final static ParamInfo<Integer> N_LOCAL_ROW = ParamInfoFactory
+	public final static ParamInfo <Integer> N_LOCAL_ROW = ParamInfoFactory
 		.createParamInfo("nLocalRow", Integer.class)
 		.setDescription("n local row")
 		.setRequired()
 		.build();
 
-	public final static ParamInfo<Integer> TASK_ID = ParamInfoFactory
+	public final static ParamInfo <Integer> TASK_ID = ParamInfoFactory
 		.createParamInfo("taskId", Integer.class)
 		.setDescription("task id")
 		.setRequired()
 		.build();
 
-	public final static ParamInfo<Integer> NUM_OF_SUBTASKS = ParamInfoFactory
+	public final static ParamInfo <Integer> NUM_OF_SUBTASKS = ParamInfoFactory
 		.createParamInfo("numOfSubTasks", Integer.class)
 		.setDescription("numOfSubTasks")
 		.setRequired()
+		.build();
+	private static final long serialVersionUID = 790791300919497663L;
+
+	public final ParamInfo <Long> SEED = ParamInfoFactory
+		.createParamInfo("seed", Long.class)
+		.setDescription("seed")
+		.setHasDefaultValue(0L)
 		.build();
 
 	protected int maxHistBufferSize;
@@ -67,9 +69,9 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 
 	protected BufferPool parentHistPool;
 
-	protected List<Node> roots = new LinkedList<>();
+	protected List <Node> roots = new LinkedList <>();
 
-	protected Deque<NodeInfoPair> queue;
+	protected Deque <NodeInfoPair> queue;
 
 	protected NodeInfoPair[] loopBuffer;
 	protected int loopBufferSize;
@@ -106,17 +108,17 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 		numTrees = params.get(RandomForestTrainParams.NUM_TREES);
 		nFeatureCol = params.get(RandomForestTrainParams.FEATURE_COLS).length;
 		numLocalRow = params.get(N_LOCAL_ROW);
-		nBin = params.get(HasMaxBins.MAX_BINS);
+		nBin = params.get(GbdtTrainParams.MAX_BINS);
 		taskId = params.get(TASK_ID);
 		subSamplingRatio = params.get(RandomForestTrainParams.SUBSAMPLING_RATIO);
 		numOfSubTasks = params.get(NUM_OF_SUBTASKS);
-		maxHistBufferSize = params.get(HasMaxMemoryInMB.MAX_MEMORY_IN_MB) * 1024 * 1024 / 8;
+		maxHistBufferSize = params.get(RandomForestTrainParams.MAX_MEMORY_IN_MB) * 1024 * 1024 / 8;
 		numLocalBaggingRow = (int) Math.min(numLocalRow, Math.ceil(numLocalRow * subSamplingRatio));
 
-		randomSample = new Random(params.get(HasSeed.SEED));
-		randomFeature = new Random(params.get(HasSeed.SEED));
-		maxDepth = params.get(HasMaxDepth.MAX_DEPTH);
-		minSamplesPerLeaf = params.get(HasMinSamplesPerLeaf.MIN_SAMPLES_PER_LEAF);
+		randomSample = new Random(params.get(SEED));
+		randomFeature = new Random(params.get(SEED));
+		maxDepth = params.get(RandomForestTrainParams.MAX_DEPTH);
+		minSamplesPerLeaf = params.get(RandomForestTrainParams.MIN_SAMPLES_PER_LEAF);
 	}
 
 	public final static Node ofNode() {
@@ -152,7 +154,7 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 	void initBuffer() {
 		maxLoopBufferSize = maxHistBufferSize / lenStatUnit();
 
-		queue = new ArrayDeque<>(maxLoopBufferSize * 2);
+		queue = new ArrayDeque <>(maxLoopBufferSize * 2);
 		loopBuffer = new NodeInfoPair[maxLoopBufferSize];
 		loopBufferSize = 0;
 
@@ -243,7 +245,7 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 
 	abstract public void stat(int loop, int start, int end, int bufStart, int bufEnd);
 
-	public final Deque<NodeInfoPair> getQueue() {
+	public final Deque <NodeInfoPair> getQueue() {
 		return queue;
 	}
 
@@ -299,7 +301,8 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 
 				System.arraycopy(randomShuffleBuf, 0, loopBuffer[i].baggingFeatures, 0, baggingFeatureCount);
 
-				LOG.info("taskId: {}, loopBuffer: {}, randomFeatureEnd", taskId, JsonConverter.gson.toJson(loopBuffer[i]));
+				LOG.info("taskId: {}, loopBuffer: {}, randomFeatureEnd", taskId,
+					JsonConverter.gson.toJson(loopBuffer[i]));
 			}
 		}
 	}
@@ -472,7 +475,7 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 		return queue.isEmpty();
 	}
 
-	public final List<Node> getRoots() {
+	public final List <Node> getRoots() {
 		return roots;
 	}
 
@@ -480,11 +483,10 @@ public abstract class TreeObj<LABELARRAY> implements Serializable {
 		return baggingFeatureCount() != nFeatureCol && !rootBagging;
 	}
 
-
 	protected int baggingFeatureCount() {
 		return Math.max(1,
 			Math.min(
-				(int) (params.get(HasFeatureSubsamplingRatio.FEATURE_SUBSAMPLING_RATIO) * nFeatureCol),
+				(int) (params.get(RandomForestTrainParams.FEATURE_SUBSAMPLING_RATIO) * nFeatureCol),
 				nFeatureCol
 			)
 		);

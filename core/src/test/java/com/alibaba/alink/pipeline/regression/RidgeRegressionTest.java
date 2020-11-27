@@ -1,24 +1,22 @@
 package com.alibaba.alink.pipeline.regression;
 
+import org.apache.flink.types.Row;
+
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
+import com.alibaba.alink.pipeline.Pipeline;
+import com.alibaba.alink.pipeline.PipelineModel;
+import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.pipeline.Pipeline;
-import com.alibaba.alink.pipeline.PipelineModel;
-import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
-
-import org.apache.flink.types.Row;
-import org.junit.Assert;
-import org.junit.Test;
-
-/**
- * Test cases for ridge regression.
- */
-public class RidgeRegressionTest {
+public class RidgeRegressionTest extends AlinkTestBase {
 	Row[] vecrows = new Row[] {
 		Row.of("$3$0:1.0 1:7.0 2:9.0", "1.0 7.0 9.0", 1.0, 7.0, 9.0, 16.8),
 		Row.of("$3$0:1.0 1:3.0 2:3.0", "1.0 3.0 3.0", 1.0, 3.0, 3.0, 6.7),
@@ -26,7 +24,6 @@ public class RidgeRegressionTest {
 		Row.of("$3$0:1.0 1:3.0 2:4.0", "1.0 3.0 4.0", 1.0, 3.0, 4.0, 8.0)
 	};
 	String[] veccolNames = new String[] {"svec", "vec", "f0", "f1", "f2", "label"};
-
 
 	@Test
 	public void regressionPipelineTest() throws Exception {
@@ -65,27 +62,25 @@ public class RidgeRegressionTest {
 		BatchOperator result = model.transform(vecdata).select(
 			new String[] {"label", "linpred", "vlinpred", "svlinpred"});
 
-		result.lazyCollect(new Consumer<List<Row>>() {
+		result.lazyCollect(new Consumer <List <Row>>() {
 			@Override
-			public void accept(List<Row> d) {
+			public void accept(List <Row> d) {
 				for (Row row : d) {
-					if ((double)row.getField(0) == 16.8000) {
-						Assert.assertEquals((double)row.getField(1), 16.77322547668301, 0.1);
-						Assert.assertEquals((double)row.getField(2), 16.620448399254673, 0.1);
-						Assert.assertEquals((double)row.getField(3), 16.384437074591887, 0.1);
-					} else if ((double)row.getField(0) == 6.7000) {
-						Assert.assertEquals((double)row.getField(1), 6.932628087721653, 0.1);
-						Assert.assertEquals((double)row.getField(2), 6.775060404865803, 0.1);
-						Assert.assertEquals((double)row.getField(3), 7.425378715755974, 0.1);
+					if ((double) row.getField(0) == 16.8000) {
+						Assert.assertEquals((double) row.getField(1), 16.77322547668301, 0.01);
+						Assert.assertEquals((double) row.getField(2), 16.77322547668301, 0.01);
+						Assert.assertEquals((double) row.getField(3), 16.384437074591887, 0.01);
+					} else if ((double) row.getField(0) == 6.7000) {
+						Assert.assertEquals((double) row.getField(1), 6.932628087721653, 0.01);
+						Assert.assertEquals((double) row.getField(2), 6.932628087721653, 0.01);
+						Assert.assertEquals((double) row.getField(3), 7.425378715755974, 0.01);
 					}
 				}
 			}
 		});
 
-		BatchOperator.execute();
-
 		// below is stream test code
-		//model.transform(svecdata).print();
-		//StreamOperator.execute();
+		// model.transform(svecdata).print();
+		// StreamOperator.execute();
 	}
 }

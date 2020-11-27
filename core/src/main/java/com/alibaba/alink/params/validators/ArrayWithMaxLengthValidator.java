@@ -1,24 +1,30 @@
 package com.alibaba.alink.params.validators;
 
-import org.apache.flink.ml.api.misc.param.ParamValidator;
-
-public class ArrayWithMaxLengthValidator<T> implements ParamValidator <T[]> {
+public class ArrayWithMaxLengthValidator<T> extends Validator <T[]> {
+	private static final long serialVersionUID = -1883428012126683112L;
 	final Integer maxLength;
+	boolean isNullValid = false;
 
 	public ArrayWithMaxLengthValidator(int maxLength) {
 		this.maxLength = maxLength;
 	}
 
+	public ArrayWithMaxLengthValidator <T> setNullValid(boolean nullValid) {
+		isNullValid = nullValid;
+		return this;
+	}
+
 	@Override
 	public boolean validate(T[] v) {
-		if (v.length > maxLength) {
-			return false;
+		if (v == null) {
+			return isNullValid;
 		}
-		return true;
+		return v.length <= maxLength;
 	}
 
 	@Override
 	public String toString() {
 		return "lengthOfArray <= " + maxLength;
 	}
+
 }

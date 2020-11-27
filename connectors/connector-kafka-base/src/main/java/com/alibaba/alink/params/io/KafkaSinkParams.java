@@ -1,7 +1,7 @@
 package com.alibaba.alink.params.io;
 
-import com.alibaba.alink.params.io.shared_params.HasDataFormat;
-import com.alibaba.alink.params.io.shared_params.HasTopic;
+import com.alibaba.alink.params.io.shared.HasDataFormat;
+import com.alibaba.alink.params.io.shared.HasTopic;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;

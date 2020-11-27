@@ -22,7 +22,7 @@ package com.alibaba.alink.operator.stream.sink;
 import com.alibaba.alink.operator.common.io.kafka.BaseKafkaSinkBuilder;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.KafkaSinkParams;
-import com.alibaba.alink.params.io.shared_params.HasDataFormat;
+import com.alibaba.alink.params.io.shared.HasDataFormat;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.types.Row;

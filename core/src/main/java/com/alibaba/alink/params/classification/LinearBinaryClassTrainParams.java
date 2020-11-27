@@ -6,7 +6,6 @@ import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 /**
  * parameters of binary class training process.
- *
  */
 public interface LinearBinaryClassTrainParams<T> extends
 	LinearTrainParams <T>,

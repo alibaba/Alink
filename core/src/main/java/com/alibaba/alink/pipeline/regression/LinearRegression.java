@@ -1,5 +1,7 @@
 package com.alibaba.alink.pipeline.regression;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -8,16 +10,13 @@ import com.alibaba.alink.params.regression.LinearRegPredictParams;
 import com.alibaba.alink.params.regression.LinearRegTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
 
-import org.apache.flink.ml.api.misc.param.Params;
-
 /**
  * Linear regression pipeline op.
- *
  */
 public class LinearRegression extends Trainer <LinearRegression, LinearRegressionModel> implements
 	LinearRegTrainParams <LinearRegression>,
 	LinearRegPredictParams <LinearRegression>,
-	HasLazyPrintTrainInfo<LinearRegression>, HasLazyPrintModelInfo<LinearRegression> {
+	HasLazyPrintTrainInfo <LinearRegression>, HasLazyPrintModelInfo <LinearRegression> {
 
 	private static final long serialVersionUID = -6669772164060969665L;
 
@@ -30,7 +29,7 @@ public class LinearRegression extends Trainer <LinearRegression, LinearRegressio
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new LinearRegTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 

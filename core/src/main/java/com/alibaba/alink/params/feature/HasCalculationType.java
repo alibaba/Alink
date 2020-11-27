@@ -1,45 +1,42 @@
 package com.alibaba.alink.params.feature;
 
-import com.alibaba.alink.params.ParamUtil;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasCalculationType<T> extends WithParams<T> {
-    /**
-     * @cn-name 计算类型
-     * @cn 计算类型，包含"CORR", "COV"两种。
-     */
-    ParamInfo<CalculationType> CALCULATION_TYPE = ParamInfoFactory
-        .createParamInfo("calculationType", CalculationType.class)
-        .setDescription("compute type, be CORR, COV.")
-        .setHasDefaultValue(CalculationType.CORR)
-        .setAlias(new String[]{"calcType", "pcaType"})
-        .build();
+import com.alibaba.alink.params.ParamUtil;
 
-    default CalculationType getCalculationType() {
-        return get(CALCULATION_TYPE);
-    }
+public interface HasCalculationType<T> extends WithParams <T> {
+	ParamInfo <CalculationType> CALCULATION_TYPE = ParamInfoFactory
+		.createParamInfo("calculationType", CalculationType.class)
+		.setDescription("compute type, be CORR, COV.")
+		.setHasDefaultValue(CalculationType.CORR)
+		.setAlias(new String[] {"calcType", "pcaType"})
+		.build();
 
-    default T setCalculationType(CalculationType value) {
-        return set(CALCULATION_TYPE, value);
-    }
+	default CalculationType getCalculationType() {
+		return get(CALCULATION_TYPE);
+	}
 
-    default T setCalculationType(String value) {
-        return set(CALCULATION_TYPE, ParamUtil.searchEnum(CALCULATION_TYPE, value));
-    }
+	default T setCalculationType(CalculationType value) {
+		return set(CALCULATION_TYPE, value);
+	}
 
-    /**
-     * pca calculation type.
-     */
-    enum CalculationType {
-        /**
-         * Correlation
-         */
-        CORR,
-        /**
-         * Covariance
-         */
-        COV
-    }
+	default T setCalculationType(String value) {
+		return set(CALCULATION_TYPE, ParamUtil.searchEnum(CALCULATION_TYPE, value));
+	}
+
+	/**
+	 * pca calculation type.
+	 */
+	enum CalculationType {
+		/**
+		 * Correlation
+		 */
+		CORR,
+		/**
+		 * Covariance
+		 */
+		COV
+	}
 }

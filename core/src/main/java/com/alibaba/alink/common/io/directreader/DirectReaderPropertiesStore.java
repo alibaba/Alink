@@ -8,24 +8,25 @@ import java.util.Properties;
  */
 public class DirectReaderPropertiesStore implements Serializable {
 
-    private static Properties PROPERTIES = new Properties();
+	private static final long serialVersionUID = 5410131486151673899L;
+	private static Properties PROPERTIES = new Properties();
 
-    /**
-     * Set the global properties to new value.
-     *
-     * @param newProperties to set.
-     */
-    public static synchronized void setProperties(Properties newProperties) {
-        PROPERTIES = newProperties;
-    }
+	/**
+	 * Set the global properties to new value.
+	 *
+	 * @param newProperties to set.
+	 */
+	public static synchronized void setProperties(Properties newProperties) {
+		PROPERTIES = newProperties;
+	}
 
-    /**
-     * Get the current global properties.
-     *
-     * @return current global properties
-     */
-    public static synchronized Properties getProperties() {
-        return PROPERTIES;
-    }
+	/**
+	 * Get the current global properties.
+	 *
+	 * @return current global properties
+	 */
+	public static synchronized Properties getProperties() {
+		return PROPERTIES;
+	}
 
 }

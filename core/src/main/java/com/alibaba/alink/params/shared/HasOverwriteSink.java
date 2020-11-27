@@ -2,10 +2,9 @@ package com.alibaba.alink.params.shared;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasOverwriteSink<T> extends WithParams<T> {
+public interface HasOverwriteSink<T> extends WithParams <T> {
 	ParamInfo <Boolean> OVERWRITE_SINK = ParamInfoFactory
 		.createParamInfo("overwriteSink", Boolean.class)
 		.setDescription("Whether to overwrite existing data.")

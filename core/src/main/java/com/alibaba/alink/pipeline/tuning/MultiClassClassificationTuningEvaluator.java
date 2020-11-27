@@ -8,16 +8,16 @@ import com.alibaba.alink.operator.common.evaluation.TuningMultiClassMetric;
 import com.alibaba.alink.params.evaluation.EvalMultiClassParams;
 import com.alibaba.alink.params.evaluation.HasTuningMultiClassMetric;
 
-public class MultiClassClassificationTuningEvaluator extends TuningEvaluator<MultiClassClassificationTuningEvaluator>
-	implements EvalMultiClassParams<MultiClassClassificationTuningEvaluator>,
-	HasTuningMultiClassMetric<MultiClassClassificationTuningEvaluator> {
+public class MultiClassClassificationTuningEvaluator extends TuningEvaluator <MultiClassClassificationTuningEvaluator>
+	implements EvalMultiClassParams <MultiClassClassificationTuningEvaluator>,
+	HasTuningMultiClassMetric <MultiClassClassificationTuningEvaluator> {
 
 	public MultiClassClassificationTuningEvaluator() {
 		super(null);
 	}
 
 	@Override
-	public double evaluate(BatchOperator input) {
+	public double evaluate(BatchOperator <?> input) {
 		return new EvalMultiClassBatchOp(getParams())
 			.linkFrom(input)
 			.collectMetrics()
@@ -31,7 +31,7 @@ public class MultiClassClassificationTuningEvaluator extends TuningEvaluator<Mul
 	}
 
 	@Override
-	ParamInfo<Double> getMetricParamInfo() {
+	ParamInfo <Double> getMetricParamInfo() {
 		return getTuningMultiClassMetric().getMetricKey();
 	}
 }

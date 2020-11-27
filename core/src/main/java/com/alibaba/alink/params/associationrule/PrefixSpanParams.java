@@ -7,6 +7,6 @@ import com.alibaba.alink.params.shared.associationrules.HasMinSupportCountDefaul
 import com.alibaba.alink.params.shared.associationrules.HasMinSupportPercentDefaultAs002;
 
 public interface PrefixSpanParams<T> extends
-    HasItemsCol<T>, HasMinSupportCountDefaultAsNeg1<T>, HasMinSupportPercentDefaultAs002<T>,
-	HasMinConfidenceDefaultAs005<T>, HasMaxPatternLengthDefaultAs10<T> {
+	HasItemsCol <T>, HasMinSupportCountDefaultAsNeg1 <T>, HasMinSupportPercentDefaultAs002 <T>,
+	HasMinConfidenceDefaultAs005 <T>, HasMaxPatternLengthDefaultAs10 <T> {
 }

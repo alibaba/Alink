@@ -1,17 +1,17 @@
 package com.alibaba.alink.params.evaluation;
 
-import com.alibaba.alink.params.shared.clustering.HasClusteringDistanceType;
-import com.alibaba.alink.params.shared.colname.HasPredictionCol;
-
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+
+import com.alibaba.alink.params.shared.clustering.HasClusteringDistanceType;
+import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 
 /**
  * Params for EvalCluster.
  */
 public interface EvalClusterParams<T> extends
 	HasPredictionCol <T>,
-	HasClusteringDistanceType<T> {
+	HasClusteringDistanceType <T> {
 
 	ParamInfo <String> LABEL_COL = ParamInfoFactory
 		.createParamInfo("labelCol", String.class)

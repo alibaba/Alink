@@ -14,18 +14,18 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface IoOpAnnotation {
 
-    /**
-     * Datasource name. For example, sqlite, mysql, etc.
-     */
-    String name();
+	/**
+	 * Datasource name. For example, sqlite, mysql, etc.
+	 */
+	String name();
 
-    /**
-     * Does the targeting data source or data sink has a timestamp column by default.
-     */
-    boolean hasTimestamp() default false;
+	/**
+	 * Does the targeting data source or data sink has a timestamp column by default.
+	 */
+	boolean hasTimestamp() default false;
 
-    /**
-     * The {@link IOType} of the annotated operator.
-     */
-    IOType ioType();
+	/**
+	 * The {@link IOType} of the annotated operator.
+	 */
+	IOType ioType();
 }

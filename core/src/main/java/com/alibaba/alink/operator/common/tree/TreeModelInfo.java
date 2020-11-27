@@ -2,16 +2,19 @@ package com.alibaba.alink.operator.common.tree;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelData;
 import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelDataConverter;
+import com.alibaba.alink.operator.common.tree.parallelcart.BaseGbdtTrainBatchOp;
+import com.alibaba.alink.operator.common.tree.parallelcart.loss.LossUtils;
 import com.alibaba.alink.operator.common.tree.viz.TreeModelViz;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import com.alibaba.alink.params.classification.RandomForestTrainParams;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -20,16 +23,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.alibaba.alink.operator.common.tree.BaseGbdtTrainBatchOp.ALGO_TYPE;
-
 public abstract class TreeModelInfo implements Serializable {
-	final static ParamInfo<String> FEATURE_IMPORTANCE = ParamInfoFactory
+	private static final long serialVersionUID = 316584854790096878L;
+	final static ParamInfo <String> FEATURE_IMPORTANCE = ParamInfoFactory
 		.createParamInfo("featureImportance", String.class)
 		.build();
 
 	public static class DecisionTreeModelInfo extends TreeModelInfo {
+		private static final long serialVersionUID = -3670502627904480174L;
 
-		public DecisionTreeModelInfo(List<Row> rows) {
+		public DecisionTreeModelInfo(List <Row> rows) {
 			super(rows);
 		}
 
@@ -53,8 +56,11 @@ public abstract class TreeModelInfo implements Serializable {
 		}
 	}
 
-	public static class MultiTreeModelInfo extends TreeModelInfo {
-		public MultiTreeModelInfo(List<Row> rows) {
+	static class MultiTreeModelInfo extends TreeModelInfo {
+
+		private static final long serialVersionUID = -8437257628657305619L;
+
+		public MultiTreeModelInfo(List <Row> rows) {
 			super(rows);
 		}
 
@@ -68,23 +74,29 @@ public abstract class TreeModelInfo implements Serializable {
 	}
 
 	public static final class RandomForestModelInfo extends MultiTreeModelInfo {
-		public RandomForestModelInfo(List<Row> rows) {
+
+		private static final long serialVersionUID = -6423403615369604045L;
+
+		public RandomForestModelInfo(List <Row> rows) {
 			super(rows);
 		}
 	}
 
 	public static final class GbdtModelInfo extends MultiTreeModelInfo {
-		public GbdtModelInfo(List<Row> rows) {
+
+		private static final long serialVersionUID = -859598180490206967L;
+
+		public GbdtModelInfo(List <Row> rows) {
 			super(rows);
 		}
 	}
 
 	TreeModelDataConverter dataConverter;
 	MultiStringIndexerModelData multiStringIndexerModelData;
-	Map<String, Double> featureImportance;
+	Map <String, Double> featureImportance;
 	boolean isRegressionTree;
 
-	public TreeModelInfo(List<Row> rows) {
+	public TreeModelInfo(List <Row> rows) {
 		dataConverter = new TreeModelDataConverter().load(rows);
 
 		if (dataConverter.stringIndexerModelSerialized != null) {
@@ -96,7 +108,7 @@ public abstract class TreeModelInfo implements Serializable {
 		if (dataConverter.meta.contains(FEATURE_IMPORTANCE)) {
 			featureImportance = JsonConverter.fromJson(
 				dataConverter.meta.get(FEATURE_IMPORTANCE),
-				new TypeReference<Map<String, Double>>() {
+				new TypeReference <Map <String, Double>>() {
 				}.getType()
 			);
 		}
@@ -105,7 +117,8 @@ public abstract class TreeModelInfo implements Serializable {
 	}
 
 	private boolean isRegressionTree() {
-		if (dataConverter.meta.contains(ALGO_TYPE)) {
+		if (dataConverter.meta.contains(LossUtils.LOSS_TYPE)
+			|| dataConverter.meta.contains(BaseGbdtTrainBatchOp.ALGO_TYPE)) {
 			return true;
 		} else {
 			return Criteria.isRegression(dataConverter.meta.get(TreeUtil.TREE_TYPE));
@@ -129,7 +142,8 @@ public abstract class TreeModelInfo implements Serializable {
 		}
 	}
 
-	protected TreeModelInfo saveTreeAsImageFromTreeId(String path, int treeId, boolean isOverwrite) throws IOException {
+	protected TreeModelInfo saveTreeAsImageFromTreeId(String path, int treeId, boolean isOverwrite) throws
+		IOException {
 		Preconditions.checkArgument(
 			treeId >= 0 && treeId < dataConverter.roots.length,
 			"treeId should be in range [0, %d), treeId: %d",
@@ -142,7 +156,7 @@ public abstract class TreeModelInfo implements Serializable {
 		return this;
 	}
 
-	public Map<String, Double> getFeatureImportance() {
+	public Map <String, Double> getFeatureImportance() {
 		return featureImportance;
 	}
 
@@ -166,7 +180,7 @@ public abstract class TreeModelInfo implements Serializable {
 		}
 	}
 
-	public List<String> getCategoricalValues(String categoricalCol) {
+	public List <String> getCategoricalValues(String categoricalCol) {
 		if (multiStringIndexerModelData != null) {
 			return multiStringIndexerModelData.getTokens(categoricalCol);
 		} else {
@@ -216,15 +230,15 @@ public abstract class TreeModelInfo implements Serializable {
 			Object[][] categoricalTable = new Object[categoricalCols.length][2];
 
 			for (int i = 0; i < categoricalCols.length; ++i) {
-				List<String> categoricalValues = getCategoricalValues(categoricalCols[i]);
+				List <String> categoricalValues = getCategoricalValues(categoricalCols[i]);
 
-				categoricalTable[i] = new Object[]{
+				categoricalTable[i] = new Object[] {
 					categoricalCols[i],
 					categoricalValues == null ? 0 : categoricalValues.size()
 				};
 			}
 
-			String[] categoricalColSummaryHeader = new String[]{"feature", "number of categorical value"};
+			String[] categoricalColSummaryHeader = new String[] {"feature", "number of categorical value"};
 
 			sbd.append(
 				PrettyDisplayUtils.displayTable(
@@ -234,25 +248,30 @@ public abstract class TreeModelInfo implements Serializable {
 		}
 
 		if (getFeatureImportance() != null && !getFeatureImportance().isEmpty()) {
-			sbd.append("\nTable of feature importance: ").append("\n");
+			Map <String, Double> featureImportance = getFeatureImportance();
+			int topN = Math.min(featureImportance.size(), 50);
 
-			Map<String, Double> featureImportance = getFeatureImportance();
+			sbd.append("\nTable of feature importance Top ").append(topN).append(": ").append("\n");
+
 			Object[][] featureImportanceTable = new Object[featureImportance.size()][2];
 			int index = 0;
-			for (Map.Entry<String, Double> entry : featureImportance.entrySet()) {
-				featureImportanceTable[index] = new Object[]{entry.getKey(), entry.getValue()};
+			for (Map.Entry <String, Double> entry : featureImportance.entrySet()) {
+				featureImportanceTable[index] = new Object[] {entry.getKey(), entry.getValue()};
 				index++;
 			}
 
 			Arrays.sort(featureImportanceTable, (o1, o2) -> Double.compare((double) o2[1], (double) o1[1]));
 
-			String[] featureImportanceTableHeader = new String[]{"feature", "importance"};
+			featureImportanceTable = ArrayUtils.subarray(featureImportanceTable, 0, topN);
+
+			String[] featureImportanceTableHeader = new String[] {"feature", "importance"};
 
 			sbd.append(
 				PrettyDisplayUtils.displayTable(
 					featureImportanceTable,
 					featureImportanceTable.length,
-					2, null, featureImportanceTableHeader, null
+					2, null, featureImportanceTableHeader, null,
+					topN, 0, 2, false
 				)
 			);
 		}

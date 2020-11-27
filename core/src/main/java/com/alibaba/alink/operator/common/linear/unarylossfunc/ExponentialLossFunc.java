@@ -5,6 +5,8 @@ package com.alibaba.alink.operator.common.linear.unarylossfunc;
  * https://en.wikipedia.org/wiki/Loss_functions_for_classification#Exponential_loss
  */
 public class ExponentialLossFunc implements UnaryLossFunc {
+	private static final long serialVersionUID = -7976736283876322615L;
+
 	public ExponentialLossFunc() { }
 
 	@Override

@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelMapper;
 import com.alibaba.alink.params.dataproc.MinMaxScalerPredictParams;
 
 /**
@@ -13,6 +13,8 @@ import com.alibaba.alink.params.dataproc.MinMaxScalerPredictParams;
  */
 public final class MinMaxScalerPredictBatchOp extends ModelMapBatchOp <MinMaxScalerPredictBatchOp>
 	implements MinMaxScalerPredictParams <MinMaxScalerPredictBatchOp> {
+
+	private static final long serialVersionUID = -4480727458655762970L;
 
 	public MinMaxScalerPredictBatchOp() {
 		this(new Params());

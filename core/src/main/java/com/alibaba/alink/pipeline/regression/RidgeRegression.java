@@ -1,5 +1,7 @@
 package com.alibaba.alink.pipeline.regression;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -8,16 +10,13 @@ import com.alibaba.alink.params.regression.RidgeRegPredictParams;
 import com.alibaba.alink.params.regression.RidgeRegTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
 
-import org.apache.flink.ml.api.misc.param.Params;
-
 /**
  * Ridge regression pipeline op.
- *
  */
 public class RidgeRegression extends Trainer <RidgeRegression, RidgeRegressionModel> implements
 	RidgeRegTrainParams <RidgeRegression>,
 	RidgeRegPredictParams <RidgeRegression>,
-	HasLazyPrintTrainInfo<RidgeRegression>, HasLazyPrintModelInfo<RidgeRegression> {
+	HasLazyPrintTrainInfo <RidgeRegression>, HasLazyPrintModelInfo <RidgeRegression> {
 
 	private static final long serialVersionUID = -8067455400000733035L;
 
@@ -30,7 +29,7 @@ public class RidgeRegression extends Trainer <RidgeRegression, RidgeRegressionMo
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new RidgeRegTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 

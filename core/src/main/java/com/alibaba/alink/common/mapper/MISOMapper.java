@@ -13,6 +13,7 @@ import com.alibaba.alink.params.mapper.MISOMapperParams;
  * Mapper with Multi-Input columns and Single Output column(MISO).
  */
 public abstract class MISOMapper extends Mapper {
+	private static final long serialVersionUID = 7808362775563479371L;
 	/**
 	 * The OutputColsHelper which helps to arrange final output from input and predicted result.
 	 */
@@ -52,7 +53,7 @@ public abstract class MISOMapper extends Mapper {
 	 * Map input objects to single object.
 	 *
 	 * @param input input objects.
-	 * @return      output object.
+	 * @return output object.
 	 */
 	protected abstract Object map(Object[] input) throws Exception;
 

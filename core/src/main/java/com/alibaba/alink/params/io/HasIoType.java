@@ -2,14 +2,14 @@ package com.alibaba.alink.params.io;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.common.io.annotations.IOType;
-import org.apache.flink.ml.api.misc.param.WithParams;
 
 /**
  * IO type.
  */
-public interface HasIoType<T> extends WithParams<T> {
+public interface HasIoType<T> extends WithParams <T> {
 	ParamInfo <IOType> IO_TYPE = ParamInfoFactory
 		.createParamInfo("ioType", IOType.class)
 		.setDescription("io type")

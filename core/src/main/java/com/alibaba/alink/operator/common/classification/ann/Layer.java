@@ -8,24 +8,26 @@ import java.io.Serializable;
  * @see {@link LayerModel}.
  */
 public abstract class Layer implements Serializable {
-    /**
-     * Create a <code>LayerModel</code>.
-     */
-    public abstract LayerModel createModel();
+	private static final long serialVersionUID = 7445130696999143464L;
 
-    /**
-     * Get the size of weights of the layer.
-     */
-    public abstract int getWeightSize();
+	/**
+	 * Create a <code>LayerModel</code>.
+	 */
+	public abstract LayerModel createModel();
 
-    /**
-     * Get the size of output.
-     */
-    public abstract int getOutputSize(int inputSize);
+	/**
+	 * Get the size of weights of the layer.
+	 */
+	public abstract int getWeightSize();
 
-    /**
-     * If true, the memory is not allocated for the output of this layer.
-     * The memory allocated to the previous layer is used to write the output of this layer.
-     */
-    public abstract boolean isInPlace();
+	/**
+	 * Get the size of output.
+	 */
+	public abstract int getOutputSize(int inputSize);
+
+	/**
+	 * If true, the memory is not allocated for the output of this layer.
+	 * The memory allocated to the previous layer is used to write the output of this layer.
+	 */
+	public abstract boolean isInPlace();
 }

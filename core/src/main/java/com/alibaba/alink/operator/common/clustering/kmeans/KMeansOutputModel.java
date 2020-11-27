@@ -1,17 +1,16 @@
 package com.alibaba.alink.operator.common.clustering.kmeans;
 
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.types.Row;
+
 import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.CompleteResultFunction;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.batch.clustering.KMeansTrainBatchOp;
-import com.alibaba.alink.operator.common.clustering.DistanceType;
 import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
 import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
-
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.types.Row;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +19,7 @@ import java.util.List;
  * Tranform the centroids to KmeansModel.
  */
 public class KMeansOutputModel extends CompleteResultFunction {
+	private static final long serialVersionUID = 329508348067566812L;
 	private HasKMeansWithHaversineDistanceType.DistanceType distanceType;
 	private String vectorColName;
 	private String latitudeColName;
@@ -42,8 +42,8 @@ public class KMeansOutputModel extends CompleteResultFunction {
 		Integer vectorSize = context.getObj(KMeansTrainBatchOp.VECTOR_SIZE);
 		Integer k = context.getObj(KMeansTrainBatchOp.K);
 
-		Tuple2<Integer, FastDistanceMatrixData> stepNoCentroids1 = context.getObj(KMeansTrainBatchOp.CENTROID1);
-		Tuple2<Integer, FastDistanceMatrixData> stepNoCentroids2 = context.getObj(KMeansTrainBatchOp.CENTROID2);
+		Tuple2 <Integer, FastDistanceMatrixData> stepNoCentroids1 = context.getObj(KMeansTrainBatchOp.CENTROID1);
+		Tuple2 <Integer, FastDistanceMatrixData> stepNoCentroids2 = context.getObj(KMeansTrainBatchOp.CENTROID2);
 		double[] buffer = context.getObj(KMeansTrainBatchOp.CENTROID_ALL_REDUCE);
 
 		FastDistanceMatrixData centroid;
@@ -54,16 +54,16 @@ public class KMeansOutputModel extends CompleteResultFunction {
 		}
 
 		KMeansTrainModelData modelData = new KMeansTrainModelData();
-		modelData.centroids = new ArrayList<>();
+		modelData.centroids = new ArrayList <>();
 		DenseMatrix matrix = centroid.getVectors();
 
 		int weightIndex = vectorSize;
 		for (int id = 0; id < k; id++) {
 			modelData.centroids.add(
 				new KMeansTrainModelData.ClusterSummary(
-				new DenseVector(matrix.getColumn(id)),
-				id,
-				buffer[weightIndex]));
+					new DenseVector(matrix.getColumn(id)),
+					id,
+					buffer[weightIndex]));
 			weightIndex += vectorSize + 1;
 		}
 		modelData.params = new KMeansTrainModelData.ParamSummary();

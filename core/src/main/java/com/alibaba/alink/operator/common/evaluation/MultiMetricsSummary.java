@@ -13,73 +13,74 @@ import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluat
  * <p>
  * The evaluation metrics include ACCURACY, PRECISION, RECALL, LOGLOSS, SENSITIVITY, SPECITIVITY and KAPPA.
  */
-public final class MultiMetricsSummary implements BaseMetricsSummary<MultiClassMetrics, MultiMetricsSummary> {
-    /**
-     * Confusion matrix.
-     */
-    LongMatrix matrix;
+public final class MultiMetricsSummary implements BaseMetricsSummary <MultiClassMetrics, MultiMetricsSummary> {
+	private static final long serialVersionUID = -8742985165888894890L;
+	/**
+	 * Confusion matrix.
+	 */
+	LongMatrix matrix;
 
-    /**
-     * Label array.
-     */
-    Object[] labels;
+	/**
+	 * Label array.
+	 */
+	Object[] labels;
 
-    /**
-     * The count of samples.
-     */
-    long total;
+	/**
+	 * The count of samples.
+	 */
+	long total;
 
-    /**
-     * Logloss = sum_i{sum_j{y_ij * log(p_ij)}}
-     */
-    double logLoss;
+	/**
+	 * Logloss = sum_i{sum_j{y_ij * log(p_ij)}}
+	 */
+	double logLoss;
 
-    public MultiMetricsSummary(long[][] matrix, Object[] labels, double logLoss, long total) {
-        Preconditions.checkArgument(matrix.length > 0 && matrix.length == matrix[0].length,
-            "The row size must be equal to col size!");
-        this.matrix = new LongMatrix(matrix);
-        this.labels = labels;
-        this.logLoss = logLoss;
-        this.total = total;
-    }
+	public MultiMetricsSummary(long[][] matrix, Object[] labels, double logLoss, long total) {
+		Preconditions.checkArgument(matrix.length > 0 && matrix.length == matrix[0].length,
+			"The row size must be equal to col size!");
+		this.matrix = new LongMatrix(matrix);
+		this.labels = labels;
+		this.logLoss = logLoss;
+		this.total = total;
+	}
 
-    /**
-     * Merge the confusion matrix, and add the logLoss.
-     *
-     * @param multiClassMetrics the MultiMetricsSummary to merge.
-     * @return the merged result.
-     */
-    @Override
-    public MultiMetricsSummary merge(MultiMetricsSummary multiClassMetrics) {
-        if (null == multiClassMetrics) {
-            return this;
-        }
-        Preconditions.checkState(Arrays.equals(labels, multiClassMetrics.labels), "The labels are not the same!");
-        this.matrix.plusEqual(multiClassMetrics.matrix);
-        this.logLoss += multiClassMetrics.logLoss;
-        this.total += multiClassMetrics.total;
-        return this;
-    }
+	/**
+	 * Merge the confusion matrix, and add the logLoss.
+	 *
+	 * @param multiClassMetrics the MultiMetricsSummary to merge.
+	 * @return the merged result.
+	 */
+	@Override
+	public MultiMetricsSummary merge(MultiMetricsSummary multiClassMetrics) {
+		if (null == multiClassMetrics) {
+			return this;
+		}
+		Preconditions.checkState(Arrays.equals(labels, multiClassMetrics.labels), "The labels are not the same!");
+		this.matrix.plusEqual(multiClassMetrics.matrix);
+		this.logLoss += multiClassMetrics.logLoss;
+		this.total += multiClassMetrics.total;
+		return this;
+	}
 
-    /**
-     * Calculate the detail info based on the confusion matrix.
-     */
-    @Override
-    public MultiClassMetrics toMetrics() {
-        String[] labelStrs = new String[labels.length];
-        for(int i = 0; i < labels.length; i++){
-            labelStrs[i] = labels[i].toString();
-        }
-        Params params = new Params();
-        ConfusionMatrix data = new ConfusionMatrix(matrix);
-        params.set(MultiClassMetrics.PREDICT_LABEL_FREQUENCY, data.getPredictLabelFrequency());
-        params.set(MultiClassMetrics.PREDICT_LABEL_PROPORTION, data.getPredictLabelProportion());
+	/**
+	 * Calculate the detail info based on the confusion matrix.
+	 */
+	@Override
+	public MultiClassMetrics toMetrics() {
+		String[] labelStrs = new String[labels.length];
+		for (int i = 0; i < labels.length; i++) {
+			labelStrs[i] = labels[i].toString();
+		}
+		Params params = new Params();
+		ConfusionMatrix data = new ConfusionMatrix(matrix);
+		params.set(MultiClassMetrics.PREDICT_LABEL_FREQUENCY, data.getPredictLabelFrequency());
+		params.set(MultiClassMetrics.PREDICT_LABEL_PROPORTION, data.getPredictLabelProportion());
 
-        for (ClassificationEvaluationUtil.Computations c : ClassificationEvaluationUtil.Computations.values()) {
-            params.set(c.arrayParamInfo, ClassificationEvaluationUtil.getAllValues(c.computer, data));
-        }
-        setClassificationCommonParams(params, data, labelStrs);
-        setLoglossParams(params, logLoss, total);
-        return new MultiClassMetrics(params);
-    }
+		for (ClassificationEvaluationUtil.Computations c : ClassificationEvaluationUtil.Computations.values()) {
+			params.set(c.arrayParamInfo, ClassificationEvaluationUtil.getAllValues(c.computer, data));
+		}
+		setClassificationCommonParams(params, data, labelStrs);
+		setLoglossParams(params, logLoss, total);
+		return new MultiClassMetrics(params);
+	}
 }

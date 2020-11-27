@@ -8,20 +8,22 @@ import com.alibaba.alink.operator.batch.BatchOperator;
  * Intersect two batch  operators. It returns records that exist in both batch
  * operators. Duplicated records are kept.
  */
-public final class IntersectAllBatchOp extends BatchOperator<IntersectAllBatchOp> {
-    public IntersectAllBatchOp() {
-        this(new Params());
-    }
+public final class IntersectAllBatchOp extends BatchOperator <IntersectAllBatchOp> {
+	private static final long serialVersionUID = -8644196260740789294L;
 
-    public IntersectAllBatchOp(Params params) {
-        super(params);
-    }
+	public IntersectAllBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public IntersectAllBatchOp linkFrom(BatchOperator<?>... inputs) {
-        checkOpSize(2, inputs);
+	public IntersectAllBatchOp(Params params) {
+		super(params);
+	}
 
-        this.setOutputTable(inputs[0].getOutputTable().intersectAll(inputs[1].getOutputTable()));
-        return this;
-    }
+	@Override
+	public IntersectAllBatchOp linkFrom(BatchOperator <?>... inputs) {
+		checkOpSize(2, inputs);
+
+		this.setOutputTable(inputs[0].getOutputTable().intersectAll(inputs[1].getOutputTable()));
+		return this;
+	}
 }

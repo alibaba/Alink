@@ -1,13 +1,14 @@
 package com.alibaba.alink.operator.batch.utils;
 
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.functions.TableFunction;
+
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.utils.UDFHelper;
 import com.alibaba.alink.params.dataproc.UDTFParams;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
-import org.apache.flink.table.functions.TableFunction;
 
 /**
  * This class provides the UDTF feature which is similar with Flink user-defined table functions.
@@ -22,48 +23,50 @@ import org.apache.flink.table.functions.TableFunction;
  * <p>
  * (https://ci.apache.org/projects/flink/flink-docs-stable/dev/table/udfs.html#table-functions)
  */
-public class UDTFBatchOp extends BatchOperator<UDTFBatchOp>
-    implements UDTFParams<UDTFBatchOp> {
+public class UDTFBatchOp extends BatchOperator <UDTFBatchOp>
+	implements UDTFParams <UDTFBatchOp> {
 
-    private TableFunction<?> func;
+	private static final long serialVersionUID = 7007323021840765107L;
+	private TableFunction <?> func;
 
-    public UDTFBatchOp() {
-        super(null);
-    }
+	public UDTFBatchOp() {
+		this(null);
+	}
 
-    public UDTFBatchOp(Params params) {
-        super(params);
-    }
+	public UDTFBatchOp(Params params) {
+		super(params);
+	}
 
-    public UDTFBatchOp setFunc(TableFunction<?> func) {
-        this.func = func;
-        return this;
-    }
+	public UDTFBatchOp setFunc(TableFunction <?> func) {
+		this.func = func;
+		return this;
+	}
 
-    public TableFunction<?> getFunc() {
-        return this.func;
-    }
+	public TableFunction <?> getFunc() {
+		return this.func;
+	}
 
-    @Override
-    public UDTFBatchOp linkFrom(BatchOperator<?>... inputs) {
-        if (null == getFunc() && null == getFuncName()) {
-            throw new IllegalArgumentException("A TableFunction or a registered function name must be set using setFunc or setFuncName.");
-        }
-        BatchOperator<?> in = checkAndGetFirst(inputs);
-        String[] reservedCols = ObjectUtils.defaultIfNull(getReservedCols(), in.getColNames());
+	@Override
+	public UDTFBatchOp linkFrom(BatchOperator <?>... inputs) {
+		if (null == getFunc() && null == getFuncName()) {
+			throw new IllegalArgumentException(
+				"A TableFunction or a registered function name must be set using setFunc or setFuncName.");
+		}
+		BatchOperator <?> in = checkAndGetFirst(inputs);
+		String[] reservedCols = ObjectUtils.defaultIfNull(getReservedCols(), in.getColNames());
 
-        BatchTableEnvironment tEnv = MLEnvironmentFactory.get(getMLEnvironmentId()).getBatchTableEnvironment();
+		BatchTableEnvironment tEnv = MLEnvironmentFactory.get(getMLEnvironmentId()).getBatchTableEnvironment();
 
-        String funcName = getFuncName();
-        if (null == funcName) {
-            funcName = UDFHelper.generateRandomFuncName();
-            tEnv.registerFunction(funcName, func);
-        }
+		String funcName = getFuncName();
+		if (null == funcName) {
+			funcName = UDFHelper.generateRandomFuncName();
+			tEnv.registerFunction(funcName, func);
+		}
 
-        String clause = UDFHelper.generateUDTFClause(in.getOutputTable().toString(), funcName,
-            getOutputCols(), getSelectedCols(), reservedCols);
-        this.setOutputTable(tEnv.sqlQuery(clause));
-        return this;
-    }
+		String clause = UDFHelper.generateUDTFClause(in.getOutputTable().toString(), funcName,
+			getOutputCols(), getSelectedCols(), reservedCols);
+		this.setOutputTable(tEnv.sqlQuery(clause));
+		return this;
+	}
 
 }

@@ -1,5 +1,8 @@
 package com.alibaba.alink.pipeline.dataproc;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.ImputerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.ImputerPredictParams;
@@ -17,14 +20,21 @@ import com.alibaba.alink.pipeline.Trainer;
  */
 public class Imputer extends Trainer <Imputer, ImputerModel> implements
 	ImputerTrainParams <Imputer>,
-	ImputerPredictParams <Imputer> {
+	ImputerPredictParams <Imputer>,
+	HasLazyPrintModelInfo<Imputer> {
+
+	private static final long serialVersionUID = 2312681208119505001L;
 
 	public Imputer() {
 		super();
 	}
 
+	public Imputer(Params params) {
+		super(params);
+	}
+
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new ImputerTrainBatchOp(params).linkFrom(in);
 	}
 

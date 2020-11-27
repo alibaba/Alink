@@ -11,7 +11,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.HashMap;
 
-public final class NumericSerializer extends TypeSerializerSingleton<Number> {
+public final class NumericSerializer extends TypeSerializerSingleton <Number> {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -75,19 +75,19 @@ public final class NumericSerializer extends TypeSerializerSingleton<Number> {
 	}
 
 	@Override
-	public TypeSerializerSnapshot<Number> snapshotConfiguration() {
+	public TypeSerializerSnapshot <Number> snapshotConfiguration() {
 		return new NumericSerializerSnapshot();
 	}
 
 	@SuppressWarnings("WeakerAccess")
-	public static final class NumericSerializerSnapshot extends SimpleTypeSerializerSnapshot<Number> {
+	public static final class NumericSerializerSnapshot extends SimpleTypeSerializerSnapshot <Number> {
 		public NumericSerializerSnapshot() {
 			super(() -> INSTANCE);
 		}
 	}
 
-	private static final HashMap<Class<?>, Tuple2<BiConsumerThrows, Integer>> TYPE_TO_BYTE = new HashMap<>();
-	private static final HashMap<Integer, FunctionThrows> BYTE_TO_TYPE = new HashMap<>();
+	private static final HashMap <Class <?>, Tuple2 <BiConsumerThrows, Integer>> TYPE_TO_BYTE = new HashMap <>();
+	private static final HashMap <Integer, FunctionThrows> BYTE_TO_TYPE = new HashMap <>();
 
 	static {
 		TYPE_TO_BYTE.put(Long.class, Tuple2.of((x, y) -> {

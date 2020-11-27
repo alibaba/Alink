@@ -52,7 +52,7 @@ public class PipelineCandidatesGrid extends PipelineCandidatesBase {
 	}
 
 	@Override
-	public Tuple2<Pipeline, List<Tuple3<Integer, ParamInfo, Object>>> get(
+	public Tuple2 <Pipeline, List <Tuple3 <Integer, ParamInfo, Object>>> get(
 		int index, List <Double> experienceScores) throws CloneNotSupportedException {
 		ArrayList <Tuple3 <Integer, ParamInfo, Object>> paramList = new ArrayList <>();
 		for (int i = this.dim - 1; i >= 0; i--) {

@@ -1,6 +1,6 @@
 package com.alibaba.alink.pipeline;
 
-import java.lang.reflect.ParameterizedType;
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
@@ -12,8 +12,7 @@ import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.Table;
+import java.lang.reflect.ParameterizedType;
 
 import static com.alibaba.alink.common.lazy.HasLazyPrintModelInfo.LAZY_PRINT_MODEL_INFO_ENABLED;
 import static com.alibaba.alink.common.lazy.HasLazyPrintModelInfo.LAZY_PRINT_MODEL_INFO_TITLE;
@@ -30,8 +29,10 @@ import static com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo.LAZY_PRINT_TRA
  * @param <T> The class type of the {@link Trainer} implementation itself
  * @param <M> class type of the {@link ModelBase} this Trainer produces.
  */
-public abstract class Trainer<T extends Trainer <T, M>, M extends ModelBase<M>>
-	extends EstimatorBase<T, M> implements HasLazyPrintTransformInfo<T> {
+public abstract class Trainer<T extends Trainer <T, M>, M extends ModelBase <M>>
+	extends EstimatorBase <T, M> implements HasLazyPrintTransformInfo <T> {
+
+	private static final long serialVersionUID = -3065228676122699535L;
 
 	public Trainer() {
 		super();
@@ -42,23 +43,23 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends ModelBase<M>>
 	}
 
 	@Override
-	public M fit(BatchOperator input) {
-		BatchOperator<?> trainer = postProcessTrainOp(train(input));
-		return postProcessModel(createModel(trainer.getOutputTable()));
+	public M fit(BatchOperator <?> input) {
+		BatchOperator <?> trainer = postProcessTrainOp(train(input));
+		return postProcessModel(createModel(trainer));
 	}
 
-	protected BatchOperator<?> postProcessTrainOp(BatchOperator<?> trainOp) {
+	protected BatchOperator <?> postProcessTrainOp(BatchOperator <?> trainOp) {
 		LazyObjectsManager lazyObjectsManager = MLEnvironmentFactory.get(trainOp.getMLEnvironmentId())
 			.getLazyObjectsManager();
 		lazyObjectsManager.genLazyTrainOp(this).addValue(trainOp);
 		if (this instanceof HasLazyPrintTrainInfo) {
 			if (get(LAZY_PRINT_TRAIN_INFO_ENABLED)) {
-				((WithTrainInfo<?, ?>)trainOp).lazyPrintTrainInfo(get(LAZY_PRINT_TRAIN_INFO_TITLE));
+				((WithTrainInfo <?, ?>) trainOp).lazyPrintTrainInfo(get(LAZY_PRINT_TRAIN_INFO_TITLE));
 			}
 		}
 		if (this instanceof HasLazyPrintModelInfo) {
 			if (get(LAZY_PRINT_MODEL_INFO_ENABLED)) {
-				((WithModelInfoBatchOp<?, ?, ?>)trainOp).lazyPrintModelInfo(get(LAZY_PRINT_MODEL_INFO_TITLE));
+				((WithModelInfoBatchOp <?, ?, ?>) trainOp).lazyPrintModelInfo(get(LAZY_PRINT_MODEL_INFO_TITLE));
 			}
 		}
 		return trainOp;
@@ -82,11 +83,11 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends ModelBase<M>>
 	}
 
 	@Override
-	public M fit(StreamOperator input) {
+	public M fit(StreamOperator <?> input) {
 		throw new UnsupportedOperationException("Only support batch fit!");
 	}
 
-	private M createModel(Table model) {
+	private M createModel(BatchOperator <?> model) {
 		try {
 			ParameterizedType pt =
 				(ParameterizedType) this.getClass().getGenericSuperclass();
@@ -102,9 +103,9 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends ModelBase<M>>
 		}
 	}
 
-	protected abstract BatchOperator train(BatchOperator in);
+	protected abstract BatchOperator <?> train(BatchOperator <?> in);
 
-	protected StreamOperator train(StreamOperator in) {
+	protected StreamOperator <?> train(StreamOperator <?> in) {
 		throw new UnsupportedOperationException("Only support batch fit!");
 	}
 

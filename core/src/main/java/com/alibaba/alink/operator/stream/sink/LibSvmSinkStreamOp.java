@@ -20,44 +20,52 @@ import com.alibaba.alink.params.io.LibSvmSinkParams;
  * StreamOperator to sink data in libsvm format.
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SinkStream)
-public final class LibSvmSinkStreamOp extends BaseSinkStreamOp<LibSvmSinkStreamOp>
-    implements LibSvmSinkParams<LibSvmSinkStreamOp> {
+public final class LibSvmSinkStreamOp extends BaseSinkStreamOp <LibSvmSinkStreamOp>
+	implements LibSvmSinkParams <LibSvmSinkStreamOp> {
 
-    public LibSvmSinkStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -8838742868638097880L;
 
-    public LibSvmSinkStreamOp(Params params) {
-        super(AnnotationUtils.annotatedName(LibSvmSinkStreamOp.class), params);
-    }
+	public LibSvmSinkStreamOp() {
+		this(new Params());
+	}
 
-    @Override
-    public LibSvmSinkStreamOp sinkFrom(StreamOperator in) {
-        final String vectorCol = getVectorCol();
-        final String labelCol = getLabelCol();
+	public LibSvmSinkStreamOp(Params params) {
+		super(AnnotationUtils.annotatedName(LibSvmSinkStreamOp.class), params);
+	}
 
-        final int vectorColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorCol);
-        final int labelColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), labelCol);
+	@Override
+	public LibSvmSinkStreamOp sinkFrom(StreamOperator<?> in) {
+		final String vectorCol = getVectorCol();
+		final String labelCol = getLabelCol();
 
-        DataStream<Row> outputRows = ((DataStream<Row>) in.getDataStream())
-            .map(new MapFunction<Row, Row>() {
-                @Override
-                public Row map(Row value) throws Exception {
-                    return Row.of(LibSvmSinkBatchOp.formatLibSvm(value.getField(labelColIdx), value.getField(vectorColIdx)));
-                }
-            });
+		final int vectorColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorCol);
+		final int labelColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), labelCol);
+		final int startIndex = getParams().get(LibSvmSinkParams.START_INDEX);
 
-        StreamOperator outputStreamOp = StreamOperator.fromTable(
-            DataStreamConversionUtil.toTable(getMLEnvironmentId(), outputRows, new String[]{"f"}, new TypeInformation[]{Types.STRING})
-        ).setMLEnvironmentId(getMLEnvironmentId());
+		DataStream <Row> outputRows = in.getDataStream()
+			.map(new MapFunction <Row, Row>() {
+				private static final long serialVersionUID = 8548456443314432148L;
 
-        CsvSinkStreamOp sink = new CsvSinkStreamOp()
-            .setMLEnvironmentId(getMLEnvironmentId())
-            .setFilePath(getFilePath())
-            .setOverwriteSink(getOverwriteSink())
-            .setFieldDelimiter(" ");
+				@Override
+				public Row map(Row value) throws Exception {
+					return Row.of(LibSvmSinkBatchOp
+						.formatLibSvm(value.getField(labelColIdx), value.getField(vectorColIdx), startIndex));
+				}
+			});
 
-        outputStreamOp.link(sink);
-        return this;
-    }
+		StreamOperator<?> outputStreamOp = StreamOperator.fromTable(
+			DataStreamConversionUtil
+				.toTable(getMLEnvironmentId(), outputRows, new String[] {"f"}, new TypeInformation[] {Types.STRING})
+		).setMLEnvironmentId(getMLEnvironmentId());
+
+		CsvSinkStreamOp sink = new CsvSinkStreamOp()
+			.setMLEnvironmentId(getMLEnvironmentId())
+			.setFilePath(getFilePath())
+			.setQuoteChar(null)
+			.setOverwriteSink(getOverwriteSink())
+			.setFieldDelimiter(" ");
+
+		outputStreamOp.link(sink);
+		return this;
+	}
 }

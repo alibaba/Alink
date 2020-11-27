@@ -68,6 +68,6 @@ public abstract class PipelineCandidatesBase {
 
 	public abstract int size();
 
-	public abstract Tuple2<Pipeline, List<Tuple3<Integer, ParamInfo, Object>>>
+	public abstract Tuple2 <Pipeline, List <Tuple3 <Integer, ParamInfo, Object>>>
 	get(int index, List <Double> experienceScores) throws CloneNotSupportedException;
 }

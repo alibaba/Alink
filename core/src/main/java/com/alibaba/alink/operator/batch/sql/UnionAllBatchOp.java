@@ -7,25 +7,27 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 /**
  * Union with another <code>BatchOperator</code>. The duplicated records are kept.
  */
-public final class UnionAllBatchOp extends BatchOperator<UnionAllBatchOp> {
+public final class UnionAllBatchOp extends BatchOperator <UnionAllBatchOp> {
 
-    public UnionAllBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 2468662188701775196L;
 
-    public UnionAllBatchOp(Params params) {
-        super(params);
-    }
+	public UnionAllBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public UnionAllBatchOp linkFrom(BatchOperator<?>... inputs) {
-        checkMinOpSize(1, inputs);
+	public UnionAllBatchOp(Params params) {
+		super(params);
+	}
 
-        this.setOutputTable(inputs[0].getOutputTable());
-        for (int i = 1; i < inputs.length; i++) {
-            this.setOutputTable(this.getOutputTable().unionAll(inputs[i].getOutputTable()));
-        }
+	@Override
+	public UnionAllBatchOp linkFrom(BatchOperator <?>... inputs) {
+		checkMinOpSize(1, inputs);
 
-        return this;
-    }
+		this.setOutputTable(inputs[0].getOutputTable());
+		for (int i = 1; i < inputs.length; i++) {
+			this.setOutputTable(this.getOutputTable().unionAll(inputs[i].getOutputTable()));
+		}
+
+		return this;
+	}
 }

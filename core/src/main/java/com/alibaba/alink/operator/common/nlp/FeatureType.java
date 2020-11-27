@@ -4,6 +4,9 @@ import com.alibaba.alink.common.utils.Functional;
 
 import java.io.Serializable;
 
+/**
+ * FeatureType for DocCountVectorizer.
+ */
 public enum FeatureType implements Serializable {
 	/**
 	 * IDF type, the output value is inverse document frequency.
@@ -36,9 +39,9 @@ public enum FeatureType implements Serializable {
 		(idf, termFrequency, tokenRatio) -> termFrequency * tokenRatio
 	);
 
-	final Functional.SerializableTriFunction<Double, Double, Double, Double> featureValueFunc;
+	public final Functional.SerializableTriFunction <Double, Double, Double, Double> featureValueFunc;
 
-	FeatureType(Functional.SerializableTriFunction<Double, Double, Double, Double> featureValueFunc) {
+	FeatureType(Functional.SerializableTriFunction <Double, Double, Double, Double> featureValueFunc) {
 		this.featureValueFunc = featureValueFunc;
 	}
 }

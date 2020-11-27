@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.stream.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.dataproc.StandardScalerModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.StandardScalerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.dataproc.StandardPredictParams;
 
@@ -12,6 +12,8 @@ import com.alibaba.alink.params.dataproc.StandardPredictParams;
  */
 public class StandardScalerPredictStreamOp extends ModelMapStreamOp <StandardScalerPredictStreamOp>
 	implements StandardPredictParams <StandardScalerPredictStreamOp> {
+
+	private static final long serialVersionUID = -24812532674204029L;
 
 	public StandardScalerPredictStreamOp(BatchOperator srt) {
 		this(srt, new Params());

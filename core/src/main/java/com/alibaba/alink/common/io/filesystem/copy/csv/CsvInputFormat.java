@@ -36,7 +36,7 @@ import java.util.Arrays;
  * @param <OUT>
  */
 @Internal
-public abstract class CsvInputFormat<OUT> extends GenericCsvInputFormat<OUT> {
+public abstract class CsvInputFormat<OUT> extends GenericCsvInputFormat <OUT> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -46,7 +46,7 @@ public abstract class CsvInputFormat<OUT> extends GenericCsvInputFormat<OUT> {
 
 	protected transient Object[] parsedValues;
 
-	protected CsvInputFormat(Path filePath, BaseFileSystem<?> fs) {
+	protected CsvInputFormat(Path filePath, BaseFileSystem <?> fs) {
 		super(filePath, fs);
 	}
 
@@ -55,7 +55,12 @@ public abstract class CsvInputFormat<OUT> extends GenericCsvInputFormat<OUT> {
 		super.open(split);
 
 		@SuppressWarnings("unchecked")
-		FieldParser<Object>[] fieldParsers = (FieldParser<Object>[]) getFieldParsers();
+		FieldParser <Object>[] fieldParsers = (FieldParser <Object>[]) getFieldParsers();
+
+		//throw exception if no field parsers are available
+		if (fieldParsers.length == 0) {
+			throw new IOException("CsvInputFormat.open(FileInputSplit split) - no field parsers to parse input");
+		}
 
 		// create the value holders
 		this.parsedValues = new Object[fieldParsers.length];
@@ -64,7 +69,8 @@ public abstract class CsvInputFormat<OUT> extends GenericCsvInputFormat<OUT> {
 		}
 
 		// left to right evaluation makes access [0] okay
-		// this marker is used to fasten up readRecord, so that it doesn't have to check each call if the line ending is set to default
+		// this marker is used to fasten up readRecord, so that it doesn't have to check each call if the line ending
+		// is set to default
 		if (this.getDelimiter().length == 1 && this.getDelimiter()[0] == '\n') {
 			this.lineDelimiterIsLinebreak = true;
 		}
@@ -119,7 +125,7 @@ public abstract class CsvInputFormat<OUT> extends GenericCsvInputFormat<OUT> {
 
 	protected abstract OUT fillRecord(OUT reuse, Object[] parsedValues);
 
-	public Class<?>[] getFieldTypes() {
+	public Class <?>[] getFieldTypes() {
 		return super.getGenericFieldTypes();
 	}
 
@@ -154,7 +160,8 @@ public abstract class CsvInputFormat<OUT> extends GenericCsvInputFormat<OUT> {
 
 	@Override
 	public String toString() {
-		return "CSV Input (" + StringUtils.showControlCharacters(String.valueOf(getFieldDelimiter())) + ") " + Arrays.toString(getFilePaths());
+		return "CSV Input (" + StringUtils.showControlCharacters(String.valueOf(getFieldDelimiter())) + ") " + Arrays
+			.toString(getFilePaths());
 	}
 
 }

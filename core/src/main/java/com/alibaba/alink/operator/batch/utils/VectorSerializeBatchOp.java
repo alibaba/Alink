@@ -6,6 +6,8 @@ import com.alibaba.alink.operator.common.dataproc.vector.VectorSerializeMapper;
 
 public final class VectorSerializeBatchOp extends MapBatchOp <VectorSerializeBatchOp> {
 
+	private static final long serialVersionUID = 7868363049236528925L;
+
 	public VectorSerializeBatchOp() {
 		this(null);
 	}

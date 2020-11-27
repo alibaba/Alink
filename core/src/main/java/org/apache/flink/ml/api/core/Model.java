@@ -35,5 +35,5 @@ import org.apache.flink.table.api.Table;
  *            org.apache.flink.ml.api.misc.param.WithParams}
  */
 @PublicEvolving
-public interface Model<M extends Model<M>> extends Transformer<M> {
+public interface Model<M extends Model <M>> extends Transformer <M> {
 }

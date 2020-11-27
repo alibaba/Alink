@@ -6,8 +6,9 @@ import org.apache.flink.api.common.typeutils.TypeSerializer;
 
 import java.util.Objects;
 
-public final class NumericType extends TypeInformation<Number> {
-	public static final TypeInformation<Number> NUMERIC_TYPE = new NumericType();
+public final class NumericType extends TypeInformation <Number> {
+	public static final TypeInformation <Number> NUMERIC_TYPE = new NumericType();
+	private static final long serialVersionUID = 6189435511095768393L;
 
 	@Override
 	public boolean isBasicType() {
@@ -30,7 +31,7 @@ public final class NumericType extends TypeInformation<Number> {
 	}
 
 	@Override
-	public Class<Number> getTypeClass() {
+	public Class <Number> getTypeClass() {
 		return Number.class;
 	}
 
@@ -40,7 +41,7 @@ public final class NumericType extends TypeInformation<Number> {
 	}
 
 	@Override
-	public TypeSerializer<Number> createSerializer(ExecutionConfig config) {
+	public TypeSerializer <Number> createSerializer(ExecutionConfig config) {
 		return NumericSerializer.INSTANCE;
 	}
 

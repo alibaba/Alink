@@ -1,10 +1,5 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.RowUtil;
-import com.alibaba.alink.params.dataproc.AppendIdParams;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
@@ -19,16 +14,23 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.RowUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.params.dataproc.AppendIdParams;
+import org.apache.commons.lang3.ArrayUtils;
+
 /**
  * Append an id column to BatchOperator. the id can be DENSE or UNIQUE
  *
  * @see DataSetUtils#zipWithIndex
  * @see DataSetUtils#zipWithUniqueId
  */
-public final class AppendIdBatchOp extends BatchOperator<AppendIdBatchOp>
+public final class AppendIdBatchOp extends BatchOperator <AppendIdBatchOp>
 	implements AppendIdParams <AppendIdBatchOp> {
 	public final static String appendIdColName = "append_id";
 	public final static TypeInformation appendIdColType = BasicTypeInfo.LONG_TYPE_INFO;
+	private static final long serialVersionUID = 1506253726488454655L;
 
 	public AppendIdBatchOp() {
 		super(null);
@@ -70,16 +72,13 @@ public final class AppendIdBatchOp extends BatchOperator<AppendIdBatchOp>
 				ret = DataSetUtils.zipWithUniqueId(dataSet)
 					.map(new TransTupleToRowMapper());
 				ret = dataSet.map(new AppendIdMapper());
-				break;
-			default:
-				throw new IllegalArgumentException("Error append type.");
 		}
 
 		return DataSetConversionUtil.toTable(sessionId, ret, colNames, colTypes);
 	}
 
 	@Override
-	public AppendIdBatchOp linkFrom(BatchOperator<?>... inputs) {
+	public AppendIdBatchOp linkFrom(BatchOperator <?>... inputs) {
 		checkOpSize(1, inputs);
 		this.setOutputTable(appendId(
 			inputs[0].getDataSet(),
@@ -93,6 +92,7 @@ public final class AppendIdBatchOp extends BatchOperator<AppendIdBatchOp>
 	}
 
 	public static class AppendIdMapper extends RichMapFunction <Row, Row> {
+		private static final long serialVersionUID = -1274439106082046078L;
 		private long parallelism;
 		private long counter;
 
@@ -112,6 +112,8 @@ public final class AppendIdBatchOp extends BatchOperator<AppendIdBatchOp>
 	}
 
 	public static class TransTupleToRowMapper implements MapFunction <Tuple2 <Long, Row>, Row> {
+
+		private static final long serialVersionUID = 8239750120292573304L;
 
 		@Override
 		public Row map(Tuple2 <Long, Row> value) throws Exception {

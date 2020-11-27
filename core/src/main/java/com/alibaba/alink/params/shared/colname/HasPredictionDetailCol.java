@@ -2,7 +2,6 @@ package com.alibaba.alink.params.shared.colname;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 /**
@@ -10,7 +9,7 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  *
  * <p>The detail is the information of prediction result, such as the probability of each label in classifier.
  */
-public interface HasPredictionDetailCol<T> extends WithParams<T> {
+public interface HasPredictionDetailCol<T> extends WithParams <T> {
 
 	ParamInfo <String> PREDICTION_DETAIL_COL = ParamInfoFactory
 		.createParamInfo("predictionDetailCol", String.class)

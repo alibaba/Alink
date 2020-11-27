@@ -1,16 +1,17 @@
 package com.alibaba.alink.operator.batch.statistics;
 
-import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.operator.common.statistics.ChiSquareTestResult;
-import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.flink.ml.api.misc.param.Params;
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.statistics.ChiSquareTestUtil;
-import com.alibaba.alink.params.statistics.ChiSquareTestParams;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.statistics.ChiSquareTestResult;
+import com.alibaba.alink.operator.common.statistics.ChiSquareTestResults;
+import com.alibaba.alink.operator.common.statistics.ChiSquareTestUtil;
+import com.alibaba.alink.params.statistics.ChiSquareTestParams;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,122 +23,105 @@ import java.util.function.Consumer;
  * Its zero hypothesis is that the two factors are independent of each other.
  * More information on chi-square test: http://en.wikipedia.org/wiki/Chi-squared_test
  */
-public final class ChiSquareTestBatchOp extends BatchOperator<ChiSquareTestBatchOp>
-    implements ChiSquareTestParams<ChiSquareTestBatchOp> {
+public final class ChiSquareTestBatchOp extends BatchOperator <ChiSquareTestBatchOp>
+	implements ChiSquareTestParams <ChiSquareTestBatchOp> {
 
-    /**
-     * default constructor
-     */
-    public ChiSquareTestBatchOp() {
-        super(null);
-    }
+	private static final long serialVersionUID = 8407644021306410753L;
 
-    public ChiSquareTestBatchOp(Params params) {
-        super(params);
-    }
+	/**
+	 * default constructor
+	 */
+	public ChiSquareTestBatchOp() {
+		super(null);
+	}
 
-    /**
-     * overwrite linkFrom in BatchOperator
-     *
-     * @param inputs input batch op
-     * @return BatchOperator
-     */
-    @Override
-    public ChiSquareTestBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator<?> in = checkAndGetFirst(inputs);
-        String[] selectedColNames = getSelectedCols();
-        String labelColName = getLabelCol();
+	public ChiSquareTestBatchOp(Params params) {
+		super(params);
+	}
 
-        Preconditions.checkArgument(!ArrayUtils.isEmpty(selectedColNames),
-            "selectedColNames must be set.");
+	/**
+	 * overwrite linkFrom in BatchOperator
+	 *
+	 * @param inputs input batch op
+	 * @return BatchOperator
+	 */
+	@Override
+	public ChiSquareTestBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
+		String[] selectedColNames = getSelectedCols();
+		String labelColName = getLabelCol();
 
-        TableUtil.assertSelectedColExist(in.getColNames(), selectedColNames);
-        TableUtil.assertSelectedColExist(in.getColNames(), labelColName);
+		Preconditions.checkArgument(!ArrayUtils.isEmpty(selectedColNames),
+			"selectedColNames must be set.");
 
-        this.setOutputTable(ChiSquareTestUtil.buildResult(
-            ChiSquareTestUtil.test(in, selectedColNames, labelColName),
-            selectedColNames,
-            null,
-            getMLEnvironmentId()));
+		TableUtil.assertSelectedColExist(in.getColNames(), selectedColNames);
+		TableUtil.assertSelectedColExist(in.getColNames(), labelColName);
 
-        return this;
-    }
+		this.setOutputTable(ChiSquareTestUtil.buildResult(
+			ChiSquareTestUtil.test(in, selectedColNames, labelColName),
+			selectedColNames,
+			null,
+			getMLEnvironmentId()));
 
+		return this;
+	}
 
-    /**
-     * Collect result.
-     */
-    public ChiSquareTestResult[] collectChiSquareTest() {
-        Preconditions.checkArgument(null != this.getOutputTable(), "Please link from or link to.");
-        return toResult(this.collect());
-    }
+	public ChiSquareTestResults collectChiSquareTest() {
+		Preconditions.checkArgument(null != this.getOutputTable(), "Please link from or link to.");
+		return toResult(this.collect());
+	}
 
-    /**
-     * lazy collect result.
-     */
-    public final ChiSquareTestBatchOp lazyCollectChiSquareTest(List<Consumer<ChiSquareTestResult[]>> callbacks) {
-        this.lazyCollect(d -> {
-            ChiSquareTestResult[] summary = toResult(d);
-            for (Consumer<ChiSquareTestResult[]> callback : callbacks) {
-                callback.accept(summary);
-            }
-        });
-        return this;
-    }
+	@SafeVarargs
+	public final ChiSquareTestBatchOp lazyCollectChiSquareTest(Consumer <ChiSquareTestResults>... callbacks) {
+		return lazyCollectChiSquareTest(Arrays.asList(callbacks));
+	}
 
-    @SafeVarargs
-    public final ChiSquareTestBatchOp lazyCollectChiSquareTest(Consumer<ChiSquareTestResult[]>... callbacks) {
-        return lazyCollectChiSquareTest(Arrays.asList(callbacks));
-    }
+	public final ChiSquareTestBatchOp lazyCollectChiSquareTest(List <Consumer <ChiSquareTestResults>> callbacks) {
+		this.lazyCollect(d -> {
+			ChiSquareTestResults summary = toResult(d);
+			for (Consumer <ChiSquareTestResults> callback : callbacks) {
+				callback.accept(summary);
+			}
+		});
+		return this;
+	}
 
-    /**
-     * lazy print.
-     */
-    public final ChiSquareTestBatchOp lazyPrintChiSquareTest() {
-        return lazyPrintChiSquareTest(null);
-    }
+	public final ChiSquareTestBatchOp lazyPrintChiSquareTest() {
+		return lazyPrintChiSquareTest(null);
+	}
 
-    /**
-     * lazy print with title.
-     */
-    public final ChiSquareTestBatchOp lazyPrintChiSquareTest(String title) {
-        lazyCollectChiSquareTest(new Consumer<ChiSquareTestResult[]>() {
-            @Override
-            public void accept(ChiSquareTestResult[] summary) {
-                if (title != null) {
-                    System.out.println(title);
-                }
+	public final ChiSquareTestBatchOp lazyPrintChiSquareTest(String title) {
+		lazyCollectChiSquareTest(new Consumer <ChiSquareTestResults>() {
+			@Override
+			public void accept(ChiSquareTestResults summary) {
+				if (title != null) {
+					System.out.println(title);
+				}
 
-                System.out.println(PrettyDisplayUtils.displayHeadline("ChiSquareTest", '-'));
-                Object[][] data = new Object[summary.length][3];
-                for (int i = 0; i < summary.length; i++) {
-                    data[i][0] = summary[i].getP();
-                    data[i][1] = summary[i].getValue();
-                    data[i][2] = summary[i].getDf();
-                }
-                String re = PrettyDisplayUtils.displayTable(data, summary.length, 3,
-                    getSelectedCols(), new String[]{"p", "value", "df"}, "col");
-                System.out.println(re);
-            }
-        });
-        return this;
-    }
+				System.out.println(summary.toString());
+			}
+		});
+		return this;
+	}
 
+	private ChiSquareTestResults toResult(List <Row> rows) {
+		//get result
+		ChiSquareTestResult[] result = new ChiSquareTestResult[rows.size()];
+		String[] selectedColNames = getSelectedCols();
 
-    private ChiSquareTestResult[] toResult(List<Row> rows) {
-        //get result
-        ChiSquareTestResult[] result = new ChiSquareTestResult[rows.size()];
-        String[] selectedColNames = getSelectedCols();
+		for (Row row : rows) {
+			String colName = (String) row.getField(0);
 
-        for (Row row : rows) {
-            String colName = (String) row.getField(0);
+			TableUtil.assertSelectedColExist(selectedColNames, colName);
 
-            TableUtil.assertSelectedColExist(selectedColNames, colName);
+			result[TableUtil.findColIndexWithAssertAndHint(selectedColNames, colName)] =
+				JsonConverter.fromJson((String) row.getField(1), ChiSquareTestResult.class);
+		}
 
-            result[TableUtil.findColIndexWithAssertAndHint(selectedColNames, colName)] =
-                JsonConverter.fromJson((String) row.getField(1), ChiSquareTestResult.class);
-        }
+		ChiSquareTestResults chiSquareTestResults = new ChiSquareTestResults();
+		chiSquareTestResults.results = result;
+		chiSquareTestResults.selectedCols = getSelectedCols();
+		return chiSquareTestResults;
+	}
 
-        return result;
-    }
 }

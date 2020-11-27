@@ -1,39 +1,50 @@
 package com.alibaba.alink.operator.batch.classification;
 
-import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.operator.common.classification.NaiveBayesTextModelDataConverter;
-import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple5;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.linalg.DenseMatrix;
+import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
+
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class NaiveBayesTextModelInfo implements Serializable {
-    private ArrayList<Tuple3<Object, Double, DenseVector>> modelArray;
+    private static final long serialVersionUID = -233174684705817660L;
+    private DenseMatrix theta;
+    private double[] piArray;
+    private Object[] labels;
     private int vectorSize;
     public String vectorColName;
     public String modelType;
 
-    public NaiveBayesTextModelInfo() {}
+    public NaiveBayesTextModelInfo() {
+    }
 
-    NaiveBayesTextModelInfo(ArrayList <Tuple3 <Object, Double, DenseVector>> modelArray,
+    NaiveBayesTextModelInfo(DenseMatrix theta,
+                            double[] piArray,
+                            Object[] labels,
                             int vectorSize,
                             String vectorColName,
                             String modelType) {
-        this.modelArray = modelArray;
+        this.theta = theta;
+        this.piArray = piArray;
+        this.labels = labels;
         this.vectorSize = vectorSize;
         this.vectorColName = vectorColName;
         this.modelType = modelType;
     }
 
-    public NaiveBayesTextModelInfo(List<Row> rows) {
-        NaiveBayesTextModelInfo modelInfo = new NaiveBayesTextModelDataConverter().loadModelInfo(rows);
-        this.modelArray = modelInfo.modelArray;
+    public NaiveBayesTextModelInfo(List <Row> rows) {
+        NaiveBayesTextModelInfo modelInfo = JsonConverter.fromJson((String) rows.get(0).getField(0),
+            NaiveBayesTextModelInfo.class);
+        this.theta = modelInfo.theta;
+        this.piArray = modelInfo.piArray;
+        this.labels = modelInfo.labels;
         this.vectorSize = modelInfo.vectorSize;
         this.vectorColName = modelInfo.vectorColName;
         this.modelType = modelInfo.modelType;
@@ -48,146 +59,107 @@ public class NaiveBayesTextModelInfo implements Serializable {
     }
 
     public Object[] getLabelList() {
-        Object[] labels = new Object[modelArray.size()];
-        for (int i = 0; i < labels.length; i++) {
-            labels[i] = modelArray.get(i).f0;
-        }
         return labels;
     }
 
-    public Map<Comparable, Double> getLabelProportion() {
-        HashMap<Comparable, Double> labelProportion = new HashMap<>();
-        for (Tuple3<Object, Double, DenseVector> tuple3 : modelArray) {
-            labelProportion.put((Comparable) tuple3.f0, tuple3.f1);
+    public double[] getPriorProbability() {
+        int piArraySize = piArray.length;
+        double[] priorProb = new double[piArraySize];
+        for (int i = 0; i < piArraySize; i++) {
+            priorProb[i] = Math.exp(piArray[i]);
         }
-        normalizeArray(labelProportion);
-        return labelProportion;
+        return priorProb;
     }
 
-    public Map<Comparable, Double>[] getFeatureLabelInfo() {
-        Map<Comparable, Double>[] featureLabelInfo = new HashMap[vectorSize];
-        for (int i = 0; i < vectorSize; i++) {
-            featureLabelInfo[i] = new HashMap<>(modelArray.size());
-            for (Tuple3<Object, Double, DenseVector> tuple3 : modelArray) {
-                int finalI = i;
-                featureLabelInfo[i].compute(
-                    (Comparable) tuple3.f0, (k, v) -> v == null ? tuple3.f2.get(finalI) : v + tuple3.f2.get(finalI));
+    public DenseMatrix getFeatureProbability() {
+        int rowSize = theta.numRows();
+        int colSize = theta.numCols();
+        DenseMatrix maxLikelihood = new DenseMatrix(rowSize, colSize);
+        for (int col = 0; col < colSize; col++) {
+            for (int row = 0; row < rowSize; row++) {
+                maxLikelihood.set(row, col, Math.exp(theta.get(row, col)));
             }
         }
 
-        return featureLabelInfo;
-    }
-
-    public Map<Comparable, Double>[] getPositiveFeatureProportionPerLabel() {
-        Map<Comparable, Double>[] featureProportionInfo = new HashMap[vectorSize];
-        for (int i = 0; i < vectorSize; i++) {
-            featureProportionInfo[i] = new HashMap<>(modelArray.size());
-            for (Tuple3<Object, Double, DenseVector> tuple3 : modelArray) {
-                featureProportionInfo[i].put((Comparable) tuple3.f0, tuple3.f2.get(i)/tuple3.f1);
-            }
-        }
-
-        return featureProportionInfo;
+        return maxLikelihood.transpose();
     }
 
     @Override
     public String toString() {
         StringBuilder res = new StringBuilder();
-        res.append(PrettyDisplayUtils.displayHeadline("NaiveBayesTextModelInfo", '-')+"\n");
+        res.append(PrettyDisplayUtils.displayHeadline("NaiveBayesTextModelInfo", '-') + "\n");
 
-        Map<String, String> map = new HashMap<>();
+        Map <String, String> map = new HashMap <>();
         map.put("vector col name", vectorColName);
         map.put("vector size", String.valueOf(vectorSize));
         map.put("model type", modelType);
-        res.append(PrettyDisplayUtils.displayHeadline("model meta info", '-'));
+        res.append(PrettyDisplayUtils.displayHeadline("model meta info", '='));
         res.append(PrettyDisplayUtils.displayMap(map, 10, false) + "\n");
 
-        res.append(PrettyDisplayUtils.displayHeadline("label proportion information", '=')+"\n");
-        Tuple3<String[], Double[][], Integer> labelProportionTable = generateLabelProportionTable(getLabelProportion());
+        res.append(PrettyDisplayUtils.displayHeadline("label proportion information", '=') + "\n");
+        Tuple3 <String[], Double[][], Integer> labelProportionTable = generateLabelProportionTable(
+            getPriorProbability());
         String labelProportions = PrettyDisplayUtils.displayTable(
             labelProportionTable.f1, 1, labelProportionTable.f2,
             null, labelProportionTable.f0, null, 3, 3);
         res.append(labelProportions + "\n");
-        res.append(PrettyDisplayUtils.displayHeadline("positive feature proportion information", '=')+"\n");
 
-        Tuple5<String[], String[], Double[][], Integer, Integer> featureLabelProportionTable = generateFeatureLabelTable();
-        String featureLabelProportions = PrettyDisplayUtils.displayTable(
-            featureLabelProportionTable.f2, featureLabelProportionTable.f3, featureLabelProportionTable.f4,
-            featureLabelProportionTable.f0, featureLabelProportionTable.f1, null, 3, 3);
-        res.append(featureLabelProportions + "\n");
-        res.append(PrettyDisplayUtils.displayHeadline("feature label information", '=')+"\n");
-        Tuple5<String[], String[], Double[][], Integer, Integer> featureProportionTable = generateFeatureProportionTable();
+        res.append(PrettyDisplayUtils.displayHeadline("feature probability information", '=') + "\n");
+        Tuple5 <String[], String[], Double[][], Integer, Integer> featureProportionTable
+            = generateFeatureProportionTable();
         String featureProportions = PrettyDisplayUtils.displayTable(
             featureProportionTable.f2, featureProportionTable.f3, featureProportionTable.f4,
-            featureProportionTable.f0, featureProportionTable.f1, null, 3, 3);
+            featureProportionTable.f0, featureProportionTable.f1, "vector index", 3, 3);
         res.append(featureProportions + "\n");
 
         return res.toString();
     }
 
-    private static void normalizeArray(HashMap<Comparable, Double> labelProportion) {
-        double sum = 0;
-        for (double val : labelProportion.values()) {
-            sum += val;
-        }
-        double finalSum = sum;
-        for (Comparable key : labelProportion.keySet()) {
-            labelProportion.compute(key, (k, v) -> v /= finalSum);
-        }
-    }
-
-    private static Tuple3<String[], Double[][], Integer> generateLabelProportionTable(Map<Comparable, Double> labelProportion) {
-        int length = labelProportion.size();
+    public Tuple3 <String[], Double[][], Integer> generateLabelProportionTable(double[] priorProb) {
+        int length = priorProb.length;
         String[] labels = new String[length];
         Double[] probabilities = new Double[length];
-        int count = 0;
-        for (Map.Entry<Comparable, Double> entry : labelProportion.entrySet()) {
-            labels[count] = entry.getKey().toString();
-            probabilities[count] = entry.getValue();
-            count++;
+        for (int i = 0; i < priorProb.length; i++) {
+            labels[i] = this.labels[i].toString();
+            probabilities[i] = priorProb[i];
         }
         return Tuple3.of(labels, new Double[][] {probabilities}, length);
     }
 
-    private Tuple5<String[], String[], Double[][], Integer, Integer>
-    generateFeatureLabelTable() {
-        int rowSize = this.modelArray.get(0).f2.size();//feature size
-        int colSize = this.modelArray.size();//how much label
-        String[] rowName = new String[rowSize];
-        String[] colName = new String[colSize];
-        int count = 0;
-        for (Tuple3<Object, Double, DenseVector> tuple3 : modelArray) {
-            colName[count] = tuple3.f0.toString();
-            count++;
-        }
-        Double[][] data = new Double[rowSize][colSize];
-        for (int i = 0; i < rowSize; i++) {
-            rowName[i] = "f" + i;
-            for (int j = 0; j < colSize; j++) {
-                data[i][j] = modelArray.get(j).f2.get(i);
-            }
-        }
-        return Tuple5.of(rowName, colName, data, rowSize, colSize);
-    }
-
-    private Tuple5<String[], String[], Double[][], Integer, Integer>
+    private Tuple5 <String[], String[], Double[][], Integer, Integer>
     generateFeatureProportionTable() {
-        int rowSize = this.modelArray.get(0).f2.size();//feature size
-        int colSize = this.modelArray.size();//how much label
-        String[] rowName = new String[rowSize];
-        String[] colName = new String[colSize];
-        int count = 0;
-        for (Tuple3<Object, Double, DenseVector> tuple3 : modelArray) {
-            colName[count] = tuple3.f0.toString();
-            count++;
+        int numLabel = theta.numRows();//feature size
+        int numFeature = theta.numCols();//how much label
+
+        String[] rowName = new String[numLabel];
+        String[] colName = new String[numFeature];
+        for (int i = 0; i < labels.length; i++) {
+            rowName[i] = labels[i].toString();
         }
-        Double[][] data = new Double[rowSize][colSize];
-        for (int i = 0; i < rowSize; i++) {
-            rowName[i] = "f" + i;
-            for (int j = 0; j < colSize; j++) {
-                data[i][j] = modelArray.get(j).f2.get(i)/modelArray.get(j).f1;
+        Double[][] data = new Double[numFeature][numLabel];
+        DenseMatrix matrix = getFeatureProbability();
+        if ("Bernoulli".equals(modelType)) {
+            for (int j = 0; j < numLabel; j++) {
+                double sum = 0;
+                for (int i = 0; i < numFeature; i++) {
+                    sum += matrix.get(i, j);
+                    data[i][j] = matrix.get(i, j);
+                }
+                for (int i = 0; i < numFeature; i++) {
+                    data[i][j] /= sum;
+                }
+            }
+            for (int i = 0; i < numFeature; i++) {
+                colName[i] = String.valueOf(i);
+            }
+        } else {
+            for (int i = 0; i < numFeature; i++) {
+                colName[i] = String.valueOf(i);
+                for (int j = 0; j < numLabel; j++) {
+                    data[i][j] = matrix.get(i, j);
+                }
             }
         }
-        return Tuple5.of(rowName, colName, data, rowSize, colSize);
+        return Tuple5.of(colName, rowName, data, numFeature, numLabel);
     }
 }

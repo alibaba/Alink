@@ -12,6 +12,8 @@ import com.alibaba.alink.params.nlp.SegmentParams;
 public final class SegmentStreamOp extends MapStreamOp <SegmentStreamOp>
 	implements SegmentParams <SegmentStreamOp> {
 
+	private static final long serialVersionUID = 1270248884300654255L;
+
 	public SegmentStreamOp() {
 		this(null);
 	}

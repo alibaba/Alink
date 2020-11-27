@@ -22,15 +22,15 @@ public class DirectReaderTest {
 
 	@Before
 	public void setUp() throws Exception {
-		inputArray = new String[]{"a", "b", "c"};
+		inputArray = new String[] {"a", "b", "c"};
 		input = new MemSourceBatchOp(inputArray, "col0");
 	}
 
 	@Test
 	public void testDirectRead() {
-		Set<String> inputSet = new HashSet<>(Arrays.asList(inputArray));
+		Set <String> inputSet = new HashSet <>(Arrays.asList(inputArray));
 
-		List<Row> collected = DirectReader.directRead(input);
+		List <Row> collected = DirectReader.directRead(input);
 
 		Assert.assertEquals(inputSet.size(), collected.size());
 		for (Row r : collected) {

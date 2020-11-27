@@ -10,6 +10,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
+import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -18,68 +19,92 @@ import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.io.LibSvmSinkParams;
 
-
 /**
  * Sink the data to files in libsvm format.
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SinkBatch)
-public final class LibSvmSinkBatchOp extends BaseSinkBatchOp<LibSvmSinkBatchOp>
-    implements LibSvmSinkParams<LibSvmSinkBatchOp> {
+public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
+	implements LibSvmSinkParams <LibSvmSinkBatchOp> {
 
-    public LibSvmSinkBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 1706349265088035032L;
 
-    public LibSvmSinkBatchOp(Params params) {
-        super(AnnotationUtils.annotatedName(LibSvmSinkBatchOp.class), params);
-    }
+	public LibSvmSinkBatchOp() {
+		this(new Params());
+	}
 
-    public static String formatLibSvm(Object label, Object vector) {
-        String labelStr = "";
-        if (label != null) {
-            labelStr = String.valueOf(label);
-        }
-        String vectorStr = "";
-        if (vector != null) {
-            Vector v = VectorUtil.getVector(vector);
-            if (v instanceof SparseVector) {
-                int[] indices = ((SparseVector) v).getIndices();
-                for (int i = 0; i < indices.length; i++) {
-                    indices[i] = indices[i] + 1;
-                }
-            }
-            vectorStr = v.toString();
-        }
-        return labelStr + " " + vectorStr;
-    }
+	public LibSvmSinkBatchOp(Params params) {
+		super(AnnotationUtils.annotatedName(LibSvmSinkBatchOp.class), params);
+	}
 
-    @Override
-    public LibSvmSinkBatchOp sinkFrom(BatchOperator in) {
-        final String vectorCol = getVectorCol();
-        final String labelCol = getLabelCol();
+	public static String formatLibSvm(Object label, Object vector, int startIndex) {
+		String labelStr = "";
+		if (label != null) {
+			labelStr = String.valueOf(label);
+		}
+		String vectorStr = "";
+		if (vector != null) {
+			if (vector instanceof String) {
+				if (((String) vector).startsWith(("[")) && ((String) vector).endsWith("]")) {
+					vector = ((String) vector).substring(1, ((String) vector).length() - 1);
+				}
+			}
+			Vector v = VectorUtil.getVector(vector);
+			if (v instanceof DenseVector) {
+				v = toSparseVector((DenseVector) v);
+			}
+			int[] indices = ((SparseVector) v).getIndices();
+			for (int i = 0; i < indices.length; i++) {
+				indices[i] = indices[i] + startIndex;
+			}
+			vectorStr = v.toString();
+		}
+		return labelStr + " " + vectorStr;
+	}
 
-        final int vectorColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorCol);
-        final int labelColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), labelCol);
+	private static SparseVector toSparseVector(DenseVector v) {
+		int[] indices = new int[v.size()];
+		double[] values = v.getData();
+		for (int i = 0; i < indices.length; i++) {
+			indices[i] = i;
+		}
+		return new SparseVector(-1, indices, values);
+	}
 
-        DataSet<Row> outputRows = ((DataSet<Row>) in.getDataSet())
-            .map(new MapFunction<Row, Row>() {
-                @Override
-                public Row map(Row value) throws Exception {
-                    return Row.of(formatLibSvm(value.getField(labelColIdx), value.getField(vectorColIdx)));
-                }
-            });
+	@Override
+	public LibSvmSinkBatchOp sinkFrom(BatchOperator<?> in) {
+		final String vectorCol = getVectorCol();
+		final String labelCol = getLabelCol();
 
-        BatchOperator outputBatchOp = BatchOperator.fromTable(
-            DataSetConversionUtil.toTable(getMLEnvironmentId(), outputRows, new String[]{"f"}, new TypeInformation[]{Types.STRING})
-        ).setMLEnvironmentId(getMLEnvironmentId());
+		final int vectorColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorCol);
+		final int labelColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), labelCol);
+		final int startIndex = getParams().get(LibSvmSinkParams.START_INDEX);
 
-        CsvSinkBatchOp sink = new CsvSinkBatchOp()
-            .setMLEnvironmentId(getMLEnvironmentId())
-            .setFilePath(getFilePath())
-            .setOverwriteSink(getOverwriteSink())
-            .setFieldDelimiter(" ");
+		DataSet <Row> outputRows = in.getDataSet()
+			.map(new MapFunction <Row, Row>() {
+				private static final long serialVersionUID = 8796282303884042197L;
 
-        outputBatchOp.link(sink);
-        return this;
-    }
+				@Override
+				public Row map(Row value) throws Exception {
+					return Row.of(
+						formatLibSvm(value.getField(labelColIdx), value.getField(vectorColIdx), startIndex)
+					);
+				}
+			});
+
+		BatchOperator<?> outputBatchOp = BatchOperator.fromTable(
+			DataSetConversionUtil.toTable(
+				getMLEnvironmentId(), outputRows, new String[] {"f"}, new TypeInformation[] {Types.STRING}
+			)
+		).setMLEnvironmentId(getMLEnvironmentId());
+
+		CsvSinkBatchOp sink = new CsvSinkBatchOp()
+			.setMLEnvironmentId(getMLEnvironmentId())
+			.setQuoteChar(null)
+			.setFilePath(getFilePath())
+			.setOverwriteSink(getOverwriteSink())
+			.setFieldDelimiter(" ");
+
+		outputBatchOp.link(sink);
+		return this;
+	}
 }

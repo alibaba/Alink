@@ -1,10 +1,11 @@
 package com.alibaba.alink.operator.stream.feature;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * EqualWidth discretizer keeps every interval the same width, output the interval
@@ -13,6 +14,8 @@ import org.apache.flink.ml.api.misc.param.Params;
  */
 public class EqualWidthDiscretizerPredictStreamOp extends ModelMapStreamOp <EqualWidthDiscretizerPredictStreamOp>
 	implements QuantileDiscretizerPredictParams <EqualWidthDiscretizerPredictStreamOp> {
+
+	private static final long serialVersionUID = -4788685477954335971L;
 
 	public EqualWidthDiscretizerPredictStreamOp(BatchOperator model) {
 		this(model, null);

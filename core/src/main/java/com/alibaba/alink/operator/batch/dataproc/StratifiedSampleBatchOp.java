@@ -1,8 +1,5 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.dataproc.StrafiedSampleParams;
 import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.sampling.BernoulliSampler;
@@ -13,137 +10,131 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.params.dataproc.HashWithReplacementParams;
+import com.alibaba.alink.params.dataproc.StratifiedSampleParams;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 
 /**
- * StratifiedSample with given ratio with or without replacement.
+ * StratifiedSample with given ratio with/without replacement.
  */
-public final class StratifiedSampleBatchOp extends BatchOperator<StratifiedSampleBatchOp>
-        implements StrafiedSampleParams<StratifiedSampleBatchOp>{
+public final class StratifiedSampleBatchOp extends BatchOperator <StratifiedSampleBatchOp>
+	implements StratifiedSampleParams <StratifiedSampleBatchOp>, HashWithReplacementParams <StratifiedSampleBatchOp> {
 
-    static String COLUMN_DELIMITER = ",";
-    static String KEY_VALUE_DELIMITER = ":";
+	private static final long serialVersionUID = 8815784097940967758L;
 
-    static class GetFirstIterator<E> implements Iterator<E>{
-        private Iterator<E> originIterator;
-        private E first;
+	public StratifiedSampleBatchOp() {
+		this(new Params());
+	}
 
-        public GetFirstIterator(Iterator<E> iterator){
-            this.originIterator = iterator;
-            if(this.originIterator.hasNext()){
-                first = this.originIterator.next();
-            }
-        }
+	public StratifiedSampleBatchOp(Params params) {
+		super(params);
+	}
 
-        public E getFirst(){
-            return first;
-        }
+	@Override
+	public StratifiedSampleBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
+		// compute index of group key
+		int index = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), getStrataCol());
 
-        @Override
-        public boolean hasNext(){
-            return (null != first || originIterator.hasNext());
-        }
+		DataSet <Row> res = in
+			.getDataSet()
+			.groupBy(index)
+			.reduceGroup(
+				new StratifiedSampleReduce(getWithReplacement(), 2020, index, getStrataRatio(), getStrataRatios()));
+		this.setOutput(res, in.getSchema());
+		return this;
+	}
 
-        @Override
-        public E next(){
-            if(null != first){
-                E tmp = first;
-                first = null;
-                return tmp;
-            }else{
-                return originIterator.next();
-            }
-        }
-    }
+	private class StratifiedSampleReduce<T> extends RichGroupReduceFunction <T, T> {
+		private static final long serialVersionUID = 2257608997204962490L;
+		private boolean withReplacement;
+		private long seed;
+		private int index;
+		private Double sampleRatio;
+		private Map <Object, Double> fractionMap;
 
-    public StratifiedSampleBatchOp() {
-        this(new Params());
-    }
+		public StratifiedSampleReduce(boolean withReplacement, long seed, int index, Double ratio, String ratios) {
+			this.withReplacement = withReplacement;
+			this.seed = seed;
+			this.index = index;
+			this.sampleRatio = ratio;
+			fractionMap = new HashMap <>();
+			String[] keyRatios = ratios.split(",");
+			for (String keyRatio : keyRatios) {
+				String[] ratioArray = keyRatio.split(":");
+				Double groupRatio = new Double(ratioArray[1]);
+				Preconditions.checkArgument(groupRatio >= 0.0 && groupRatio <= 1.0,
+					"Ratio must be in range [0, 1].");
+				fractionMap.put(ratioArray[0], groupRatio);
+			}
 
-    private StratifiedSampleBatchOp(Params params){
-        super(params);
-    }
+		}
 
-    @Override
-    public StratifiedSampleBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator<?> in = checkAndGetFirst(inputs);
+		@Override
+		public void reduce(Iterable <T> values, Collector <T> out) throws Exception {
+			GetFirstIterator iterator = new GetFirstIterator(values.iterator());
+			Double fraction = sampleRatio;
+			if (null == fraction || fraction < 0) {
+				Row first = (Row) iterator.getFirst();
+				if (null != first) {
+					Object key = first.getField(index);
+					fraction = fractionMap.get(key);
+					Preconditions.checkNotNull(fraction, key + " is not contained in map!");
+				} else {
+					return;
+				}
+			}
 
-        // compute index of group key
-        int index = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), getGroupCol());
-        Double ratio = getRatio();
-        String ratios = getRatios();
-        Preconditions.checkArgument(null == ratio ^ null == ratios,
-            "You can either set Ratio or Ratios!");
+			RandomSampler <T> sampler;
+			long seedAndIndex = this.seed + (long) this.getRuntimeContext().getIndexOfThisSubtask();
+			if (withReplacement) {
+				sampler = new PoissonSampler <T>(fraction, seedAndIndex);
+			} else {
+				sampler = new BernoulliSampler <T>(fraction, seedAndIndex);
+			}
+			Iterator <T> sampled = sampler.sample(iterator);
+			while (sampled.hasNext()) {
+				out.collect(sampled.next());
+			}
+		}
+	}
 
-        long seed = new Random().nextLong();
-        DataSet<Row> res = in
-            .getDataSet()
-            .groupBy(index)
-            .reduceGroup(new StratifiedSampleReduce(getWithReplacement(), seed, index, ratio, ratios));
+	static class GetFirstIterator<E> implements Iterator <E> {
+		private Iterator <E> originIterator;
+		private E first;
 
-        this.setOutput(res, in.getSchema());
-        return this;
-    }
+		public GetFirstIterator(Iterator <E> iterator) {
+			this.originIterator = iterator;
+			if (this.originIterator.hasNext()) {
+				first = this.originIterator.next();
+			}
+		}
 
-    private class StratifiedSampleReduce <T> extends RichGroupReduceFunction<T, T> {
-        private static final long serialVersionUID = 2257608997204962490L;
-        private boolean withReplacement;
-        private long seed;
-        private int index;
-        private Double sampleRatio;
-        private Map<Object, Double> fractionMap;
+		public E getFirst() {
+			return first;
+		}
 
-        public StratifiedSampleReduce(boolean withReplacement, long seed, int index, Double ratio, String ratios) {
-            this.withReplacement = withReplacement;
-            this.seed = seed;
-            this.index = index;
-            if (null != ratio) {
-                //step2.1 if ratio is number, there is same ratio for each group, so we do nothing but sample directly
-                sampleRatio = ratio;
-            } else {
-                //step2.2 :the string ratio defines different ratio per group， we should
-                fractionMap = new HashMap<>();
-                String[] keyRatios = ratios.split(COLUMN_DELIMITER);
-                for (String keyRatio : keyRatios) {
-                    String[] ratioArray = keyRatio.split(KEY_VALUE_DELIMITER);
-                    Double groupRatio = new Double(ratioArray[1]);
-                    Preconditions.checkArgument(groupRatio >= 0.0 && groupRatio <= 1.0,
-                        "Ratio must be in range [0, 1].");
-                    fractionMap.put(ratioArray[0], groupRatio);
-                }
-            }
-        }
+		@Override
+		public boolean hasNext() {
+			return (null != first || originIterator.hasNext());
+		}
 
-        @Override
-        public void reduce(Iterable<T> values, Collector<T> out) throws Exception {
-            GetFirstIterator iterator = new GetFirstIterator(values.iterator());
-            Double fraction = sampleRatio;
-            if (null == fraction) {
-                Row first = (Row)iterator.getFirst();
-                if (null != first) {
-                    Object key = first.getField(index);
-                    fraction = fractionMap.get(key);
-                    Preconditions.checkNotNull(fraction, key + " is not contained in map!");
-                } else {
-                    return;
-                }
-            }
-
-            RandomSampler<T> sampler;
-            long seedAndIndex = this.seed + (long)this.getRuntimeContext().getIndexOfThisSubtask();
-            if (withReplacement) {
-                sampler = new PoissonSampler<T>(fraction, seedAndIndex);
-            } else {
-                sampler = new BernoulliSampler<T>(fraction, seedAndIndex);
-            }
-            Iterator<T> sampled = sampler.sample(iterator);
-            while (sampled.hasNext()) {
-                out.collect(sampled.next());
-            }
-        }
-    }
+		@Override
+		public E next() {
+			if (null != first) {
+				E tmp = first;
+				first = null;
+				return tmp;
+			} else {
+				return originIterator.next();
+			}
+		}
+	}
 
 }
+

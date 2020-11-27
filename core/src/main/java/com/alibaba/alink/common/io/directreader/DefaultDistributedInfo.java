@@ -1,10 +1,11 @@
 package com.alibaba.alink.common.io.directreader;
 
-
 /**
  * An range based implementation of {@link DistributedInfo}.
  */
-public class DefaultDistributedInfo implements DistributedInfo {
+public final class DefaultDistributedInfo implements DistributedInfo {
+
+	private static final long serialVersionUID = -6343669035998389436L;
 
 	@Override
 	public long startPos(long taskId, long parallelism, long globalRowCnt) {
@@ -32,5 +33,18 @@ public class DefaultDistributedInfo implements DistributedInfo {
 		} else {
 			return div + 1;
 		}
+	}
+
+	@Override
+	public long where(long pos, long parallelism, long globalRowCnt) {
+		long div = globalRowCnt / parallelism;
+		long mod = globalRowCnt % parallelism;
+		if (div == 0) {
+			return pos;
+		}
+		if ((pos - mod) / div >= mod) {
+			return (pos - mod) / div;
+		}
+		return pos / (div + 1);
 	}
 }

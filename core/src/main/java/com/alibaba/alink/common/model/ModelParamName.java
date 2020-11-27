@@ -1,10 +1,10 @@
 package com.alibaba.alink.common.model;
 
-import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.operator.common.linear.LinearModelType;
-
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+
+import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.operator.common.linear.LinearModelType;
 
 /**
  * Params for the meta data of some models.
@@ -44,7 +44,7 @@ public class ModelParamName {
 	public static ParamInfo <String> LABEL_TYPE_NAME = ParamInfoFactory
 		.createParamInfo("labelTypeName", String.class)
 		.setDescription("labelTypeName")
-		.setAlias(new String[]{"labelType"})
+		.setAlias(new String[] {"labelType"})
 		.setRequired()
 		.build();
 
@@ -63,6 +63,12 @@ public class ModelParamName {
 	public static ParamInfo <String[]> FEATURE_TYPES = ParamInfoFactory
 		.createParamInfo("featureTypes", String[].class)
 		.setDescription("feature types")
+		.setRequired()
+		.build();
+
+	public static ParamInfo <String[]> FEATURE_COL_NAMES = ParamInfoFactory
+		.createParamInfo("featureColNames", String[].class)
+		.setDescription("feature column names")
 		.setRequired()
 		.build();
 
@@ -120,51 +126,34 @@ public class ModelParamName {
 		.setRequired()
 		.build();
 
-	public static ParamInfo <Double> L2 = ParamInfoFactory
-		.createParamInfo("l2", Double.class)
-		.setDescription("label values")
-		.setRequired()
-		.build();
-
-	public static ParamInfo <Double> L1 = ParamInfoFactory
-		.createParamInfo("l1", Double.class)
-		.setDescription("label values")
-		.setRequired()
-		.build();
-
 	public static ParamInfo <double[]> LOSS_CURVE = ParamInfoFactory
 		.createParamInfo("lossCurve", double[].class)
 		.setDescription("lossCurve")
 		.setRequired()
 		.build();
 
-	public final static ParamInfo<String> TASK = ParamInfoFactory
+	public final static ParamInfo <String> TASK = ParamInfoFactory
 		.createParamInfo("task", String.class)
 		.setDescription("task")
 		.setRequired()
 		.build();
 
-	public final static ParamInfo<int[]> DIM = ParamInfoFactory
+	public final static ParamInfo <int[]> DIM = ParamInfoFactory
 		.createParamInfo("dim", int[].class)
 		.setDescription("dim")
 		.setRequired()
 		.build();
 
-	public final static ParamInfo<int[]> FIELD_POS = ParamInfoFactory
+	public final static ParamInfo <int[]> FIELD_POS = ParamInfoFactory
 		.createParamInfo("filedPos", int[].class)
 		.setDescription("field pos")
 		.setRequired()
 		.build();
 
-	public final static ParamInfo<String> LABEL_COL_NAME = ParamInfoFactory
+	public final static ParamInfo <String> LABEL_COL_NAME = ParamInfoFactory
 		.createParamInfo("labelColName", String.class)
 		.setDescription("label col name")
 		.setRequired()
 		.build();
 
-	public static ParamInfo<String[]> FEATURE_COL_NAMES = ParamInfoFactory
-		.createParamInfo("featureColNames", String[].class)
-		.setDescription("feature column names")
-		.setRequired()
-		.build();
 }

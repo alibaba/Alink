@@ -19,28 +19,30 @@
 
 package com.alibaba.alink.operator.common.io.serde;
 
-import com.alibaba.alink.operator.common.io.csv.CsvFormatter;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.operator.common.io.csv.CsvFormatter;
+
 import java.nio.charset.StandardCharsets;
 
-public class RowToCsvSerialization implements SerializationSchema<Row> {
-    private String fieldDelim;
-    private TypeInformation<?>[] typeInfos;
-    private CsvFormatter formatter;
+public class RowToCsvSerialization implements SerializationSchema <Row> {
+	private static final long serialVersionUID = 9151287912131065711L;
+	private String fieldDelim;
+	private TypeInformation <?>[] typeInfos;
+	private CsvFormatter formatter;
 
-    public RowToCsvSerialization(TypeInformation<?>[] typeInfos, String fieldDelim) {
-        this.fieldDelim = fieldDelim;
-        this.typeInfos = typeInfos;
-    }
+	public RowToCsvSerialization(TypeInformation <?>[] typeInfos, String fieldDelim) {
+		this.fieldDelim = fieldDelim;
+		this.typeInfos = typeInfos;
+	}
 
-    @Override
-    public byte[] serialize(Row element) {
-        if (this.formatter == null) {
-            this.formatter = new CsvFormatter(typeInfos, fieldDelim, '\"');
-        }
-        return this.formatter.format(element).getBytes(StandardCharsets.UTF_8);
-    }
+	@Override
+	public byte[] serialize(Row element) {
+		if (this.formatter == null) {
+			this.formatter = new CsvFormatter(typeInfos, fieldDelim, '\"');
+		}
+		return this.formatter.format(element).getBytes(StandardCharsets.UTF_8);
+	}
 }

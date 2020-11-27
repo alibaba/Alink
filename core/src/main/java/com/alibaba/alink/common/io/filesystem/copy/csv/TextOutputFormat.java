@@ -34,10 +34,11 @@ import java.nio.charset.UnsupportedCharsetException;
  * A {@link FileOutputFormat} that writes objects to a text file.
  *
  * <p>Objects are converted to Strings using either {@link Object#toString()} or a {@link TextFormatter}.
+ *
  * @param <T> type of elements
  */
 @PublicEvolving
-public class TextOutputFormat<T> extends FileOutputFormat<T> {
+public class TextOutputFormat<T> extends FileOutputFormat <T> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -50,20 +51,20 @@ public class TextOutputFormat<T> extends FileOutputFormat<T> {
 	private String rowDelimiter;
 	// --------------------------------------------------------------------------------------------
 
-
 	/**
 	 * Formatter that transforms values into their {@link String} representations.
+	 *
 	 * @param <IN> type of input elements
 	 */
 	public interface TextFormatter<IN> extends Serializable {
 		String format(IN value);
 	}
 
-	public TextOutputFormat(Path outputPath, BaseFileSystem<?> fs, String rowDelimiter) {
+	public TextOutputFormat(Path outputPath, BaseFileSystem <?> fs, String rowDelimiter) {
 		this(outputPath, "UTF-8", fs, rowDelimiter);
 	}
 
-	public TextOutputFormat(Path outputPath, String charset, BaseFileSystem<?> fs, String rowDelimiter) {
+	public TextOutputFormat(Path outputPath, String charset, BaseFileSystem <?> fs, String rowDelimiter) {
 		super(outputPath, fs);
 		this.charsetName = charset;
 		this.rowDelimiter = rowDelimiter;
@@ -93,11 +94,9 @@ public class TextOutputFormat<T> extends FileOutputFormat<T> {
 
 		try {
 			this.charset = Charset.forName(charsetName);
-		}
-		catch (IllegalCharsetNameException e) {
+		} catch (IllegalCharsetNameException e) {
 			throw new IOException("The charset " + charsetName + " is not valid.", e);
-		}
-		catch (UnsupportedCharsetException e) {
+		} catch (UnsupportedCharsetException e) {
 			throw new IOException("The charset " + charsetName + " is not supported.", e);
 		}
 	}

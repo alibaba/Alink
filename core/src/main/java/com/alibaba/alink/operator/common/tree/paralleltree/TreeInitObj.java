@@ -1,20 +1,15 @@
 package com.alibaba.alink.operator.common.tree.paralleltree;
 
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.comqueue.ComContext;
+import com.alibaba.alink.common.comqueue.ComputeFunction;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
 import com.alibaba.alink.operator.common.tree.Criteria;
 import com.alibaba.alink.operator.common.tree.FeatureMeta;
 import com.alibaba.alink.operator.common.tree.TreeUtil;
-import com.alibaba.alink.common.comqueue.ComContext;
-import com.alibaba.alink.common.comqueue.ComputeFunction;
-import org.apache.flink.ml.api.misc.param.Params;
-
 import com.alibaba.alink.params.classification.RandomForestTrainParams;
-import com.alibaba.alink.params.shared.colname.HasCategoricalCols;
-import com.alibaba.alink.params.shared.colname.HasFeatureCols;
-import com.alibaba.alink.params.shared.colname.HasLabelCol;
-import com.alibaba.alink.params.shared.tree.HasTreeType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +21,7 @@ import static com.alibaba.alink.operator.common.tree.paralleltree.TreeObj.N_LOCA
 import static com.alibaba.alink.operator.common.tree.paralleltree.TreeObj.TASK_ID;
 
 public class TreeInitObj extends ComputeFunction {
+	private static final long serialVersionUID = 1809146149000002401L;
 	private Params params;
 
 	public TreeInitObj(Params params) {
@@ -34,7 +30,8 @@ public class TreeInitObj extends ComputeFunction {
 
 	private static QuantileDiscretizerModelDataConverter initialMapping(List <Row> quantileModel) {
 		if (!quantileModel.isEmpty()) {
-			QuantileDiscretizerModelDataConverter quantileDiscretizerModel = new QuantileDiscretizerModelDataConverter();
+			QuantileDiscretizerModelDataConverter quantileDiscretizerModel
+				= new QuantileDiscretizerModelDataConverter();
 			quantileDiscretizerModel.load(quantileModel);
 
 			return quantileDiscretizerModel;
@@ -52,7 +49,7 @@ public class TreeInitObj extends ComputeFunction {
 		List <Row> dataRows = context.getObj("treeInput");
 		List <Row> quantileModel = context.getObj("quantileModel");
 		List <Row> stringIndexerModel = context.getObj("stringIndexerModel");
-		List<Object[]> labels = context.getObj("labels");
+		List <Object[]> labels = context.getObj("labels");
 
 		int nLocalRow = dataRows == null ? 0 : dataRows.size();
 
@@ -63,27 +60,27 @@ public class TreeInitObj extends ComputeFunction {
 
 		QuantileDiscretizerModelDataConverter quantileDiscretizerModel = initialMapping(quantileModel);
 
-		List<String> lookUpColNames = new ArrayList<>();
+		List <String> lookUpColNames = new ArrayList <>();
 
-		if (params.get(HasCategoricalCols.CATEGORICAL_COLS) != null) {
-			lookUpColNames.addAll(Arrays.asList(params.get(HasCategoricalCols.CATEGORICAL_COLS)));
+		if (params.get(RandomForestTrainParams.CATEGORICAL_COLS) != null) {
+			lookUpColNames.addAll(Arrays.asList(params.get(RandomForestTrainParams.CATEGORICAL_COLS)));
 		}
 
-		Map<String, Integer> categoricalColsSize = TreeUtil.extractCategoricalColsSize(
+		Map <String, Integer> categoricalColsSize = TreeUtil.extractCategoricalColsSize(
 			stringIndexerModel, lookUpColNames.toArray(new String[0]));
 
 		if (!Criteria.isRegression(params.get(TreeUtil.TREE_TYPE))) {
-			categoricalColsSize.put(params.get(HasLabelCol.LABEL_COL), labels.get(0).length);
+			categoricalColsSize.put(params.get(RandomForestTrainParams.LABEL_COL), labels.get(0).length);
 		}
 
 		FeatureMeta[] featureMetas = TreeUtil.getFeatureMeta(
-			params.get(HasFeatureCols.FEATURE_COLS),
+			params.get(RandomForestTrainParams.FEATURE_COLS),
 			categoricalColsSize
 		);
 
 		FeatureMeta labelMeta = TreeUtil.getLabelMeta(
-			params.get(HasLabelCol.LABEL_COL),
-			params.get(HasFeatureCols.FEATURE_COLS).length,
+			params.get(RandomForestTrainParams.LABEL_COL),
+			params.get(RandomForestTrainParams.FEATURE_COLS).length,
 			categoricalColsSize);
 
 		TreeObj treeObj;

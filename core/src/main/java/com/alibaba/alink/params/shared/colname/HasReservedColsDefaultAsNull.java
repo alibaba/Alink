@@ -7,9 +7,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 /**
  * An interface for classes with a parameter specifying the names of the columns to be retained in the output table.
  */
-public interface HasReservedColsDefaultAsNull<T> extends WithParams<T> {
-
-	ParamInfo<String[]> RESERVED_COLS = ParamInfoFactory
+public interface HasReservedColsDefaultAsNull<T> extends WithParams <T> {
+	ParamInfo <String[]> RESERVED_COLS = ParamInfoFactory
 		.createParamInfo("reservedCols", String[].class)
 		.setDescription("Names of the columns to be retained in the output table")
 		.setAlias(new String[] {"keepColNames"})

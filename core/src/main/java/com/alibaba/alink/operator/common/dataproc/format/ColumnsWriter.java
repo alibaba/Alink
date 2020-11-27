@@ -14,6 +14,7 @@ import java.util.Map;
 
 public class ColumnsWriter extends FormatWriter {
 
+	private static final long serialVersionUID = -6737455830561787000L;
 	final int nCols;
 	final String[] colNames;
 	private FieldParser <?>[] parsers;
@@ -45,12 +46,12 @@ public class ColumnsWriter extends FormatWriter {
 		Row row = new Row(nCols);
 		try {
 			for (Map.Entry <String, String> entry : in.entrySet()) {
-				Integer idx =  keyToFieldIdx.get(entry.getKey());
+				Integer idx = keyToFieldIdx.get(entry.getKey());
 				if (null != idx) {
 					Tuple2 <Boolean, Object> parsed = parseField(parsers[idx], entry.getValue(), isString[idx]);
 					if (parsed.f0) {
 						row.setField(idx, parsed.f1);
-					}else{
+					} else {
 						success = false;
 						break;
 					}

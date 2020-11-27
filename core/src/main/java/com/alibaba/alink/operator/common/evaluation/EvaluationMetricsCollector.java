@@ -1,8 +1,9 @@
 package com.alibaba.alink.operator.common.evaluation;
 
-import com.alibaba.alink.operator.batch.BatchOperator;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.operator.batch.BatchOperator;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,32 +12,41 @@ import java.util.function.Consumer;
 /**
  * Collector the evaluation metrics to local.
  */
-public interface EvaluationMetricsCollector<S, T extends BatchOperator<T>> {
+public interface EvaluationMetricsCollector<S, T extends BatchOperator <T>> {
 
-    S createMetrics(List<Row> rows);
+	S createMetrics(List <Row> rows);
 
-    default T lazyPrintMetrics() {
-        return lazyCollectMetrics(System.out::println);
-    }
+	default T lazyPrintMetrics() {
+		return lazyPrintMetrics(null);
+	}
 
-    default T lazyCollectMetrics(Consumer<S>... callbacks) {
-        return lazyCollectMetrics(Arrays.asList(callbacks));
-    }
+	default T lazyPrintMetrics(String title) {
+		return lazyCollectMetrics(d -> {
+			if (null != title) {
+				System.out.println(title);
+			}
+			System.out.println(d);
+		});
+	}
 
-    default T lazyCollectMetrics(List<Consumer<S>> callbacks) {
-        ((T)this).lazyCollect(d -> {
-            S summary = createMetrics(d);
-            for (Consumer <S> callback : callbacks) {
-                callback.accept(summary);
-            }
-        });
+	default T lazyCollectMetrics(Consumer <S>... callbacks) {
+		return lazyCollectMetrics(Arrays.asList(callbacks));
+	}
 
-        return ((T) this);
-    }
+	default T lazyCollectMetrics(List <Consumer <S>> callbacks) {
+		((T) this).lazyCollect(d -> {
+			S summary = createMetrics(d);
+			for (Consumer <S> callback : callbacks) {
+				callback.accept(summary);
+			}
+		});
 
-    default S collectMetrics() {
-        List<Row> list = ((T)this).collect();
-        Preconditions.checkArgument(list.size() > 0, "There is no data in evaluation result");
-        return createMetrics(list);
-    }
+		return ((T) this);
+	}
+
+	default S collectMetrics() {
+		List <Row> list = ((T) this).collect();
+		Preconditions.checkArgument(list.size() > 0, "There is no data in evaluation result");
+		return createMetrics(list);
+	}
 }

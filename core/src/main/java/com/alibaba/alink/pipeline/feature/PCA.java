@@ -1,9 +1,10 @@
 package com.alibaba.alink.pipeline.feature;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.PcaTrainBatchOp;
-import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.params.feature.PcaPredictParams;
 import com.alibaba.alink.params.feature.PcaTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -13,21 +14,23 @@ import com.alibaba.alink.pipeline.Trainer;
  * PcaTrainBatchOp is train a model which can be used to batch predict and stream predict
  * The calculation is done using eigen on the correlation or covariance matrix.
  */
-public class PCA extends Trainer<PCA, PCAModel> implements
-    PcaTrainParams<PCA>,
-    PcaPredictParams<PCA>,
-    HasLazyPrintModelInfo<PCA> {
+public class PCA extends Trainer <PCA, PCAModel> implements
+	PcaTrainParams <PCA>,
+	PcaPredictParams <PCA>,
+	HasLazyPrintModelInfo <PCA> {
 
-    public PCA() {
-        super();
-    }
+	private static final long serialVersionUID = 7745465302322281797L;
 
-    public PCA(Params params) {
-        super(params);
-    }
+	public PCA() {
+		super();
+	}
 
-    @Override
-    protected BatchOperator train(BatchOperator in) {
-        return new PcaTrainBatchOp(this.getParams()).linkFrom(in);
-    }
+	public PCA(Params params) {
+		super(params);
+	}
+
+	@Override
+	protected BatchOperator <?> train(BatchOperator <?> in) {
+		return new PcaTrainBatchOp(this.getParams()).linkFrom(in);
+	}
 }

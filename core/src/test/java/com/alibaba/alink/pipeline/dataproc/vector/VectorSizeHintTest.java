@@ -1,26 +1,28 @@
 package com.alibaba.alink.pipeline.dataproc.vector;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.types.Row;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class VectorSizeHintTest {
+public class VectorSizeHintTest extends AlinkTestBase {
 
 	AlgoOperator getData(boolean isBatch) {
 		TableSchema schema = new TableSchema(
@@ -44,9 +46,9 @@ public class VectorSizeHintTest {
 	public void pipelineBatchTest() throws Exception {
 		BatchOperator res = new VectorSizeHint().setSelectedCol("c0")
 			.setOutputCol("filter_result")
-			.setSize(8).transform((BatchOperator)getData(true));
+			.setSize(8).transform((BatchOperator) getData(true));
 		List rows = res.getDataSet().collect();
-		HashMap<String, Vector> map = new HashMap<String, Vector>();
+		HashMap <String, Vector> map = new HashMap <String, Vector>();
 		map.put((String) ((Row) rows.get(0)).getField(0), VectorUtil.getVector(((Row) rows.get(0)).getField(4)));
 		map.put((String) ((Row) rows.get(1)).getField(0), VectorUtil.getVector(((Row) rows.get(1)).getField(4)));
 		assertEquals(map.get("0"),
@@ -59,7 +61,7 @@ public class VectorSizeHintTest {
 	public void pipelineStreamTest() throws Exception {
 		new VectorSizeHint().setSelectedCol("c0")
 			.setOutputCol("filter_result")
-			.setSize(8).transform((StreamOperator)getData(false)).print();
+			.setSize(8).transform((StreamOperator) getData(false)).print();
 		StreamOperator.execute();
 	}
 }

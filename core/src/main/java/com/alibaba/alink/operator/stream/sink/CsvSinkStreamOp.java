@@ -7,7 +7,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.sink.OutputFormatSinkFunction;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.sinks.CsvTableSink;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
@@ -21,69 +20,61 @@ import com.alibaba.alink.params.io.CsvSinkParams;
 /**
  * Sink to local or HDFS files in CSV format.
  */
-
 @IoOpAnnotation(name = "csv", ioType = IOType.SinkStream)
-public final class CsvSinkStreamOp extends BaseSinkStreamOp<CsvSinkStreamOp>
-    implements CsvSinkParams<CsvSinkStreamOp> {
+public final class CsvSinkStreamOp extends BaseSinkStreamOp <CsvSinkStreamOp>
+	implements CsvSinkParams <CsvSinkStreamOp> {
 
-    private TableSchema schema;
+	private static final long serialVersionUID = 5959220866408439695L;
+	private TableSchema schema;
 
-    public CsvSinkStreamOp() {
-        this(new Params());
-    }
+	public CsvSinkStreamOp() {
+		this(new Params());
+	}
 
-    public CsvSinkStreamOp(String filePath) {
-        this(new Params().set(FILE_PATH, filePath));
-    }
+	public CsvSinkStreamOp(Params params) {
+		super(AnnotationUtils.annotatedName(CsvSinkStreamOp.class), params);
+	}
 
-    public CsvSinkStreamOp(String filePath, String fieldDelimiter) {
-        this(new Params().set(FILE_PATH, filePath)
-            .set(FIELD_DELIMITER, fieldDelimiter));
-    }
+	@Override
+	public TableSchema getSchema() {
+		return this.schema;
+	}
 
-    public CsvSinkStreamOp(Params params) {
-        super(AnnotationUtils.annotatedName(CsvSinkStreamOp.class), params);
-    }
+	@Override
+	public CsvSinkStreamOp sinkFrom(StreamOperator<?> in) {
+		this.schema = in.getSchema();
 
-    @Override
-    public TableSchema getSchema() {
-        return this.schema;
-    }
+		final String filePath = getFilePath().getPathStr();
+		final String fieldDelim = getFieldDelimiter();
+		final String rowDelimiter = getRowDelimiter();
+		final int numFiles = getNumFiles();
+		final TypeInformation<?>[] types = in.getColTypes();
+		final Character quoteChar = getQuoteChar();
 
-    @Override
-    public CsvSinkStreamOp sinkFrom(StreamOperator in) {
-        this.schema = in.getSchema();
+		FileSystem.WriteMode writeMode;
+		if (getOverwriteSink()) {
+			writeMode = FileSystem.WriteMode.OVERWRITE;
+		} else {
+			writeMode = FileSystem.WriteMode.NO_OVERWRITE;
+		}
 
-        final String filePath = getFilePath().getPathStr();
-        final String fieldDelim = getFieldDelimiter();
-        final String rowDelimiter = getRowDelimiter();
-        final int numFiles = getNumFiles();
-        final TypeInformation[] types = in.getColTypes();
-        final Character quoteChar = getQuoteChar();
+		DataStream <String> output = in.getDataStream()
+			.map(new CsvUtil.FormatCsvFunc(types, fieldDelim, quoteChar))
+			.map(new CsvUtil.FlattenCsvFromRow(rowDelimiter));
 
-        FileSystem.WriteMode writeMode;
-        if (getOverwriteSink()) {
-            writeMode = FileSystem.WriteMode.OVERWRITE;
-        } else {
-            writeMode = FileSystem.WriteMode.NO_OVERWRITE;
-        }
+		TextOutputFormat <String> tof = new TextOutputFormat <>(
+			new Path(filePath), getFilePath().getFileSystem(), getRowDelimiter()
+		);
 
-        DataStream<String> output = ((DataStream<Row>) in.getDataStream())
-            .map(new CsvUtil.FormatCsvFunc(types, fieldDelim, quoteChar))
-            .map(new CsvUtil.FlattenCsvFromRow(rowDelimiter));
+		tof.setWriteMode(writeMode);
 
-        TextOutputFormat<String> tof = new TextOutputFormat<>(
-            new Path(filePath), getFilePath().getFileSystem(), getRowDelimiter()
-        );
+		output
+			.addSink(
+				new OutputFormatSinkFunction <>(tof)
+			)
+			.name("csv_sink")
+			.setParallelism(numFiles);
 
-        tof.setWriteMode(writeMode);
-
-        output
-            .addSink(
-                new OutputFormatSinkFunction<>(tof)
-            )
-            .name("csv_sink")
-            .setParallelism(numFiles);
-        return this;
-    }
+		return this;
+	}
 }

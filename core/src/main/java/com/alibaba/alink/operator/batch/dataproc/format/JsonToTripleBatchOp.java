@@ -1,20 +1,23 @@
 package com.alibaba.alink.operator.batch.dataproc.format;
 
-import com.alibaba.alink.operator.common.dataproc.format.FormatType;
-import com.alibaba.alink.params.dataproc.format.JsonToTripleParams;
 import org.apache.flink.ml.api.misc.param.Params;
 
-public class JsonToTripleBatchOp extends AnyToTripleBatchOp<JsonToTripleBatchOp>
-    implements JsonToTripleParams<JsonToTripleBatchOp> {
+import com.alibaba.alink.operator.common.dataproc.format.FormatType;
+import com.alibaba.alink.params.dataproc.format.JsonToTripleParams;
 
-    private static final long serialVersionUID = 7543648266815893977L;
+/**
+ * Transform data type from Json to Triple.
+ */
+public class JsonToTripleBatchOp extends AnyToTripleBatchOp <JsonToTripleBatchOp>
+	implements JsonToTripleParams <JsonToTripleBatchOp> {
 
-    public JsonToTripleBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 602168951085593347L;
 
-    public JsonToTripleBatchOp(Params params) {
-        super(FormatType.JSON, params);
-    }
+	public JsonToTripleBatchOp() {
+		this(new Params());
+	}
 
+	public JsonToTripleBatchOp(Params params) {
+		super(FormatType.JSON, params);
+	}
 }

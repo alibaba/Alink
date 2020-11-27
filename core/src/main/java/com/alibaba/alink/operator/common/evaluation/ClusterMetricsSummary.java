@@ -1,10 +1,11 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
+import com.alibaba.alink.operator.common.distance.CosineDistance;
 import org.apache.commons.math3.stat.StatUtils;
-
-import org.apache.flink.ml.api.misc.param.Params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,31 +13,33 @@ import java.util.List;
 /**
  * Cluster Metrics.
  */
-public class ClusterMetricsSummary implements BaseMetricsSummary<ClusterMetrics, ClusterMetricsSummary> {
+public class ClusterMetricsSummary implements BaseMetricsSummary <ClusterMetrics, ClusterMetricsSummary> {
+
+	private static final long serialVersionUID = -8098955200262101253L;
 	/**
 	 * Save the ClusterId from all clusters.
 	 */
-	public List<String> clusterId = new ArrayList<>();
+	public List <String> clusterId = new ArrayList <>();
 	/**
 	 * Save the ClusterCnt from all clusters, the size must be equal to k.
 	 */
-	List<Integer> clusterCnt = new ArrayList<>();
+	List <Integer> clusterCnt = new ArrayList <>();
 	/**
 	 * Save the Compactness from all clusters, the size must be equal to k.
 	 */
-	List<Double> compactness = new ArrayList<>();
+	List <Double> compactness = new ArrayList <>();
 	/**
 	 * Save the DistanceSquareSum from all clusters, the size must be equal to k.
 	 */
-	List<Double> distanceSquareSum = new ArrayList<>();
+	List <Double> distanceSquareSum = new ArrayList <>();
 	/**
 	 * Save the VectorNormL2Sum from all clusters, the size must be equal to k.
 	 */
-	List<Double> vectorNormL2Sum = new ArrayList<>();
+	List <Double> vectorNormL2Sum = new ArrayList <>();
 	/**
 	 * Save the MeanVector from all clusters, the size must be equal to k.
 	 */
-	List<DenseVector> meanVector = new ArrayList<>();
+	List <DenseVector> meanVector = new ArrayList <>();
 
 	/**
 	 * Sum of all the samples.
@@ -64,7 +67,8 @@ public class ClusterMetricsSummary implements BaseMetricsSummary<ClusterMetrics,
 								 double distanceSquareSum,
 								 double vectorNormL2Sum,
 								 DenseVector meanVector,
-								 ContinuousDistance distance){
+								 ContinuousDistance distance,
+								 DenseVector sumVector) {
 		this.clusterId.add(clusterId);
 		this.clusterCnt.add(clusterCnt);
 		this.compactness.add(compactness);
@@ -73,7 +77,7 @@ public class ClusterMetricsSummary implements BaseMetricsSummary<ClusterMetrics,
 		this.meanVector.add(meanVector);
 
 		this.k = 1;
-		this.sumVector = meanVector.scale(clusterCnt);
+		this.sumVector = sumVector;
 		this.total = clusterCnt;
 		this.distance = distance;
 	}
@@ -100,6 +104,10 @@ public class ClusterMetricsSummary implements BaseMetricsSummary<ClusterMetrics,
 		Params params = new Params();
 
 		DenseVector meanVector = sumVector.scale(1.0 / total);
+		if (distance instanceof CosineDistance) {
+			meanVector.scaleEqual(1.0 / meanVector.normL2());
+		}
+
 		String[] clusters = new String[k];
 		double[] countArray = new double[k];
 		double ssb = 0.0;
@@ -107,7 +115,7 @@ public class ClusterMetricsSummary implements BaseMetricsSummary<ClusterMetrics,
 		double compactness = 0.0;
 		double seperation = 0.0;
 
-		for(int i = 0; i < this.k; i++){
+		for (int i = 0; i < this.k; i++) {
 			clusters[i] = clusterId.get(i);
 			countArray[i] = clusterCnt.get(i);
 			ssb += Math.pow(distance.calc(this.meanVector.get(i), meanVector), 2) * clusterCnt.get(i);

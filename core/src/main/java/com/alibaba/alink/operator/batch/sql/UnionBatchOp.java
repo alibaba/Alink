@@ -7,23 +7,25 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 /**
  * Union with other <code>BatchOperator</code>s.
  */
-public final class UnionBatchOp extends BatchOperator<UnionBatchOp> {
+public final class UnionBatchOp extends BatchOperator <UnionBatchOp> {
 
-    public UnionBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 6141413513148024360L;
 
-    public UnionBatchOp(Params params) {
-        super(params);
-    }
+	public UnionBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public UnionBatchOp linkFrom(BatchOperator<?>... inputs) {
-        checkMinOpSize(1, inputs);
-        this.setOutputTable(inputs[0].getOutputTable());
-        for (int i = 1; i < inputs.length; i++) {
-            this.setOutputTable(this.getOutputTable().union(inputs[i].getOutputTable()));
-        }
-        return this;
-    }
+	public UnionBatchOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public UnionBatchOp linkFrom(BatchOperator <?>... inputs) {
+		checkMinOpSize(1, inputs);
+		this.setOutputTable(inputs[0].getOutputTable());
+		for (int i = 1; i < inputs.length; i++) {
+			this.setOutputTable(this.getOutputTable().union(inputs[i].getOutputTable()));
+		}
+		return this;
+	}
 }

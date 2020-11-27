@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.feature.BinarizerMapper;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.common.feature.BinarizerMapper;
 import com.alibaba.alink.params.feature.BinarizerParams;
 
 /**
@@ -11,6 +11,8 @@ import com.alibaba.alink.params.feature.BinarizerParams;
  */
 public final class BinarizerBatchOp extends MapBatchOp <BinarizerBatchOp>
 	implements BinarizerParams <BinarizerBatchOp> {
+	private static final long serialVersionUID = -8285479274916036924L;
+
 	public BinarizerBatchOp() {
 		this(null);
 	}

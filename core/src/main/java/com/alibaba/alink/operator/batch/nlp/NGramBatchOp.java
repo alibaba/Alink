@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.nlp.NGramMapper;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.common.nlp.NGramMapper;
 import com.alibaba.alink.params.nlp.NGramParams;
 
 /**
@@ -14,6 +14,8 @@ import com.alibaba.alink.params.nlp.NGramParams;
  */
 public class NGramBatchOp extends MapBatchOp <NGramBatchOp>
 	implements NGramParams <NGramBatchOp> {
+
+	private static final long serialVersionUID = -5377006723757981207L;
 
 	public NGramBatchOp() {
 		this(null);

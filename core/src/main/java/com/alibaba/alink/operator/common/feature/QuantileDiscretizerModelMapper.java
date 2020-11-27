@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.common.feature;
 
-import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -28,27 +27,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import static com.alibaba.alink.operator.common.tree.Preprocessing.isMissing;
-
 /**
  * quantile discretizer model data mapper.
  */
 public class QuantileDiscretizerModelMapper extends ModelMapper implements Cloneable {
-	private DiscretizerMapperBuilder mapperBuilder;
+	private static final long serialVersionUID = 5400967430347827818L;
+	private DiscreteMapperBuilder mapperBuilder;
 
 	public QuantileDiscretizerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
-		mapperBuilder = new DiscretizerMapperBuilder(params, getDataSchema());
+		mapperBuilder = new DiscreteMapperBuilder(params, getDataSchema());
 	}
 
 	@Override
-	public void loadModel(List<Row> modelRows) {
+	public void loadModel(List <Row> modelRows) {
 		QuantileDiscretizerModelDataConverter model = new QuantileDiscretizerModelDataConverter();
 		model.load(modelRows);
 
 		for (int i = 0; i < mapperBuilder.paramsBuilder.selectedCols.length; i++) {
 			ContinuousRanges featureInterval = model.data.get(mapperBuilder.paramsBuilder.selectedCols[i]);
-			Preconditions.checkNotNull(featureInterval, "%s not found in model", mapperBuilder.paramsBuilder.selectedCols[i]);
+			Preconditions.checkNotNull(featureInterval, "%s not found in model",
+				mapperBuilder.paramsBuilder.selectedCols[i]);
 			long maxIndex = (long) featureInterval.getIntervalNum() - 1;
 
 			long maxIndexWithNull = featureInterval.getIntervalNum();
@@ -76,6 +75,18 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 	}
 
 	@Override
+	protected ModelMapper mirror() {
+		try {
+			QuantileDiscretizerModelMapper mapper = (QuantileDiscretizerModelMapper) this.clone();
+			mapper.mapperBuilder = mapper.mapperBuilder.mirror();
+
+			return mapper;
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
 	public TableSchema getOutputSchema() {
 		return mapperBuilder.paramsBuilder.outputColsHelper.getResultSchema();
 	}
@@ -85,23 +96,25 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 		return mapperBuilder.map(row);
 	}
 
-	public static class DiscretizerMapperBuilder implements Serializable, Cloneable {
-		DiscretizerParamsBuilder paramsBuilder;
+	public static class DiscreteMapperBuilder implements Serializable, Cloneable {
+		private static final long serialVersionUID = -1726998479492235578L;
+		DiscreteParamsBuilder paramsBuilder;
 		int[] selectedColIndicesInData;
-		Map<Integer, Long> vectorSize;
-		Map<Integer, Long> dropIndex;
+		Map <Integer, Long> vectorSize;
+		Map <Integer, Long> dropIndex;
 		Integer assembledVectorSize;
 		NumericQuantileDiscretizer[] discretizers;
 		Long[] predictIndices;
 
-		public DiscretizerMapperBuilder(Params params, TableSchema dataSchema) {
-			paramsBuilder = new DiscretizerParamsBuilder(params, dataSchema, params.get(QuantileDiscretizerPredictParams.ENCODE));
+		public DiscreteMapperBuilder(Params params, TableSchema dataSchema) {
+			paramsBuilder = new DiscreteParamsBuilder(params, dataSchema,
+				params.get(QuantileDiscretizerPredictParams.ENCODE));
 			this.selectedColIndicesInData = TableUtil.findColIndicesWithAssert(
 				dataSchema,
 				paramsBuilder.selectedCols
 			);
-			vectorSize = new HashMap<>();
-			dropIndex = new HashMap<>();
+			vectorSize = new HashMap <>();
+			dropIndex = new HashMap <>();
 			discretizers = new NumericQuantileDiscretizer[paramsBuilder.selectedCols.length];
 		}
 
@@ -112,6 +125,17 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 			}
 
 			predictIndices = new Long[paramsBuilder.selectedCols.length];
+		}
+
+		DiscreteMapperBuilder mirror() {
+			try {
+				DiscreteMapperBuilder discreteMapperBuilder = (DiscreteMapperBuilder) this.clone();
+				discreteMapperBuilder.predictIndices = new Long[paramsBuilder.selectedCols.length];
+
+				return discreteMapperBuilder;
+			} catch (CloneNotSupportedException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		Row map(Row row) {
@@ -148,21 +172,24 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 		}
 	}
 
-	public static class DiscretizerParamsBuilder implements Serializable {
+	public static class DiscreteParamsBuilder implements Serializable {
+		private static final long serialVersionUID = 8218203038244120910L;
 		public HasEncodeWithoutWoe.Encode encode;
 		public HasHandleInvalid.HandleInvalid handleInvalidStrategy;
 		public String[] selectedCols;
 		public OutputColsHelper outputColsHelper;
 		public boolean dropLast;
 
-		public DiscretizerParamsBuilder(Params params, TableSchema dataSchema, HasEncodeWithoutWoe.Encode encode) {
+		public DiscreteParamsBuilder(Params params, TableSchema dataSchema, HasEncodeWithoutWoe.Encode encode) {
 			String[] reservedCols = params.get(QuantileDiscretizerPredictParams.RESERVED_COLS);
 			handleInvalidStrategy = params.get(QuantileDiscretizerPredictParams.HANDLE_INVALID);
 			this.encode = encode;
 
-			//To delete when open source
-			if (!params.contains(QuantileDiscretizerPredictParams.OUTPUT_COLS) && params.contains(HasOutputCol.OUTPUT_COL)) {
-				params.set(QuantileDiscretizerPredictParams.OUTPUT_COLS, new String[]{params.get(HasOutputCol.OUTPUT_COL)});
+			//To delete when open source, to be compatible with previous versions
+			if (!params.contains(QuantileDiscretizerPredictParams.OUTPUT_COLS) && params.contains(
+				HasOutputCol.OUTPUT_COL)) {
+				params.set(QuantileDiscretizerPredictParams.OUTPUT_COLS,
+					new String[] {params.get(HasOutputCol.OUTPUT_COL)});
 			}
 			if (!params.contains(QuantileDiscretizerPredictParams.SELECTED_COLS)) {
 				Preconditions.checkArgument(
@@ -222,7 +249,6 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 		}
 	}
 
-
 	public interface NumericQuantileDiscretizer extends Serializable {
 		boolean isValid(int index);
 
@@ -230,6 +256,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 	}
 
 	public static class DoubleNumericQuantileDiscretizer implements NumericQuantileDiscretizer {
+		private static final long serialVersionUID = -1681225445245237307L;
 		double[] bounds;
 		boolean isLeftOpen;
 		int[] boundIndex;
@@ -258,7 +285,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 
 			double dVal = ((Number) number).doubleValue();
 
-			if (isMissing(dVal, zeroAsMissing)) {
+			if (Preprocessing.isMissing(dVal, zeroAsMissing)) {
 				return nullIndex;
 			}
 
@@ -275,6 +302,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 	}
 
 	public static class LongQuantileDiscretizer implements NumericQuantileDiscretizer {
+		private static final long serialVersionUID = 8869074090757935247L;
 		long[] bounds;
 		boolean isLeftOpen;
 		int[] boundIndex;
@@ -303,7 +331,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 
 			long lVal = ((Number) number).longValue();
 
-			if (isMissing(lVal, zeroAsMissing)) {
+			if (Preprocessing.isMissing(lVal, zeroAsMissing)) {
 				return nullIndex;
 			}
 
@@ -366,8 +394,8 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 	 */
 	public static Row setResultRow(Long[] predictIndices,
 								   HasEncodeWithoutWoe.Encode encode,
-								   Map<Integer, Long> dropIndex,
-								   Map<Integer, Long> vectorSize,
+								   Map <Integer, Long> dropIndex,
+								   Map <Integer, Long> vectorSize,
 								   boolean dropLast,
 								   int assembledVectorSize) {
 		switch (encode) {
@@ -385,21 +413,21 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 						result.setField(i, null);
 						continue;
 					}
-					Tuple2<Integer, Integer> tuple = getVectorSizeAndIndex(predictIndices[i], dropIndex.get(i),
+					Tuple2 <Integer, Integer> tuple = getVectorSizeAndIndex(predictIndices[i], dropIndex.get(i),
 						vectorSize.get(i), dropLast);
 					result.setField(i, null == tuple.f1 ? new SparseVector(tuple.f0)
-						: new SparseVector(tuple.f0, new int[]{tuple.f1}, new double[]{1.0}));
+						: new SparseVector(tuple.f0, new int[] {tuple.f1}, new double[] {1.0}));
 				}
 				return result;
 			}
 			case ASSEMBLED_VECTOR: {
-				List<Integer> list = new ArrayList<>();
+				List <Integer> list = new ArrayList <>();
 				int startIndex = 0;
 				for (int i = 0; i < predictIndices.length; i++) {
 					if (null == predictIndices[i]) {
 						return Row.of((Object) null);
 					}
-					Tuple2<Integer, Integer> tuple = getVectorSizeAndIndex(predictIndices[i], dropIndex.get(i),
+					Tuple2 <Integer, Integer> tuple = getVectorSizeAndIndex(predictIndices[i], dropIndex.get(i),
 						vectorSize.get(i), dropLast);
 					if (tuple.f1 != null) {
 						list.add(startIndex + tuple.f1);
@@ -429,10 +457,10 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 	 * @param dropLast         Drop the last index or not.
 	 * @return (vectorSize, index)
 	 */
-	private static Tuple2<Integer, Integer> getVectorSizeAndIndex(Long predictIndex,
-																  Long dropIndex,
-																  Long originVectorSize,
-																  boolean dropLast) {
+	private static Tuple2 <Integer, Integer> getVectorSizeAndIndex(Long predictIndex,
+																   Long dropIndex,
+																   Long originVectorSize,
+																   boolean dropLast) {
 		if (dropLast) {
 			int vectorSize = originVectorSize.intValue() - 1;
 			if (predictIndex.equals(dropIndex)) {

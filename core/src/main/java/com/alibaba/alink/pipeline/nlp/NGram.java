@@ -12,8 +12,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * and each ngram is connected by a "_" character. All the ngrams are joined together with space in the
  * new document.
  */
-public class NGram extends MapTransformer<NGram>
+public class NGram extends MapTransformer <NGram>
 	implements NGramParams <NGram> {
+
+	private static final long serialVersionUID = 408416150341471427L;
 
 	public NGram() {
 		this(null);

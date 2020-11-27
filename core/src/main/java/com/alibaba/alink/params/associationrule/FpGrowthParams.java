@@ -9,7 +9,7 @@ import com.alibaba.alink.params.shared.associationrules.HasMinSupportCountDefaul
 import com.alibaba.alink.params.shared.associationrules.HasMinSupportPercentDefaultAs002;
 
 public interface FpGrowthParams<T> extends
-    HasItemsCol<T>, HasMinSupportCountDefaultAsNeg1<T>, HasMinSupportPercentDefaultAs002<T>,
-	HasMinConfidenceDefaultAs005<T>, HasMaxPatternLengthDefaultAs10<T>, HasMaxConsequentLengthDefaultAs1<T>,
-	HasMinLiftDefaultAs1<T> {
+	HasItemsCol <T>, HasMinSupportCountDefaultAsNeg1 <T>, HasMinSupportPercentDefaultAs002 <T>,
+	HasMinConfidenceDefaultAs005 <T>, HasMaxPatternLengthDefaultAs10 <T>, HasMaxConsequentLengthDefaultAs1 <T>,
+	HasMinLiftDefaultAs1 <T> {
 }

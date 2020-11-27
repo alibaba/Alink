@@ -11,8 +11,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * takes parameter p, which specifies the p-norm used for normalization. This normalization can help standardize your
  * input data and improve the behavior of learning algorithms.
  */
-public class VectorNormalizer extends MapTransformer<VectorNormalizer>
+public class VectorNormalizer extends MapTransformer <VectorNormalizer>
 	implements VectorNormalizeParams <VectorNormalizer> {
+
+	private static final long serialVersionUID = 8820199496618097191L;
 
 	public VectorNormalizer() {
 		this(null);

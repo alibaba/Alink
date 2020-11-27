@@ -15,20 +15,19 @@ import java.io.Serializable;
 /**
  * Params: Distance type for clustering, support EUCLIDEAN, COSINE and CITYBLOCK.
  */
-public interface HasClusteringDistanceType<T> extends WithParams<T> {
-
-	ParamInfo<DistanceType> DISTANCE_TYPE = ParamInfoFactory
+public interface HasClusteringDistanceType<T> extends WithParams <T> {
+	ParamInfo <DistanceType> DISTANCE_TYPE = ParamInfoFactory
 		.createParamInfo("distanceType", DistanceType.class)
 		.setDescription("Distance type for clustering")
 		.setHasDefaultValue(DistanceType.EUCLIDEAN)
-		.setAlias(new String[]{"metric"})
+		.setAlias(new String[] {"metric"})
 		.build();
 
 	default DistanceType getDistanceType() {return get(DISTANCE_TYPE);}
 
 	default T setDistanceType(DistanceType value) {return set(DISTANCE_TYPE, value);}
 
-	default T setDistanceType(String value){
+	default T setDistanceType(String value) {
 		return set(DISTANCE_TYPE, ParamUtil.searchEnum(DISTANCE_TYPE, value));
 	}
 
@@ -55,10 +54,9 @@ public interface HasClusteringDistanceType<T> extends WithParams<T> {
 
 		private FastDistance fastDistance;
 
-		DistanceType(FastDistance fastDistance){
+		DistanceType(FastDistance fastDistance) {
 			this.fastDistance = fastDistance;
 		}
-
 
 	}
 }

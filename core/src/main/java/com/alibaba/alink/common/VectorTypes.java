@@ -2,35 +2,34 @@ package com.alibaba.alink.common;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 
-import org.apache.flink.shaded.guava18.com.google.common.collect.HashBiMap;
-
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.google.common.collect.HashBiMap;
 
 /**
  * Built-in vector types. <br/>
  * This class contains bi-direction mapping between <code>TypeInformation</code>s and their names.
  */
 public class VectorTypes {
-	private static final HashBiMap<String, TypeInformation> TYPES = HashBiMap.create();
+	private static final HashBiMap <String, TypeInformation> TYPES = HashBiMap.create();
 
 	/**
 	 * <code>DenseVector</code> type information.
 	 */
-	public static final TypeInformation<DenseVector> DENSE_VECTOR = TypeInformation.of(DenseVector.class);
+	public static final TypeInformation <DenseVector> DENSE_VECTOR = TypeInformation.of(DenseVector.class);
 
 	/**
 	 * <code>SparseVector</code> type information.
 	 */
-	public static final TypeInformation<SparseVector> SPARSE_VECTOR = TypeInformation.of(SparseVector.class);
+	public static final TypeInformation <SparseVector> SPARSE_VECTOR = TypeInformation.of(SparseVector.class);
 
 	/**
 	 * <code>Vector</code> type information.
 	 * For efficiency, use type information of sub-class <code>DenseVector</code> and <code>SparseVector</code>
 	 * as much as possible. When an operator output both sub-class type of vectors, use this one.
 	 */
-	public static final TypeInformation<Vector> VECTOR = TypeInformation.of(Vector.class);
+	public static final TypeInformation <Vector> VECTOR = TypeInformation.of(Vector.class);
 
 	static {
 		TYPES.put("VEC_TYPES_DENSE_VECTOR", DENSE_VECTOR);

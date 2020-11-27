@@ -2,10 +2,9 @@ package com.alibaba.alink.params.shared.tree;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasSubsamplingRatio<T> extends WithParams<T> {
+public interface HasSubsamplingRatio<T> extends WithParams <T> {
 	ParamInfo <Double> SUBSAMPLING_RATIO = ParamInfoFactory
 		.createParamInfo("subsamplingRatio", Double.class)
 		.setDescription("Ratio of the training samples used for learning each decision tree.")

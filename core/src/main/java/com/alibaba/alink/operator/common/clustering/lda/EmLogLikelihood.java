@@ -1,9 +1,9 @@
 package com.alibaba.alink.operator.common.clustering.lda;
 
-import com.alibaba.alink.common.linalg.BLAS;
-import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.ComputeFunction;
+import com.alibaba.alink.common.linalg.BLAS;
+import com.alibaba.alink.common.linalg.DenseMatrix;
 
 import java.util.List;
 
@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class EmLogLikelihood extends ComputeFunction {
 
+	private static final long serialVersionUID = 5852918530626254844L;
 	private int numTopic;
 	private double alpha;
 	private double beta;
@@ -19,10 +20,11 @@ public class EmLogLikelihood extends ComputeFunction {
 
 	/**
 	 * Constructor.
+	 *
 	 * @param numTopic the number of topics.
-	 * @param alpha alpha param.
-	 * @param beta beta param.
-	 * @param numIter the number of iterations.
+	 * @param alpha    alpha param.
+	 * @param beta     beta param.
+	 * @param numIter  the number of iterations.
 	 */
 	public EmLogLikelihood(int numTopic, double alpha, double beta, int numIter) {
 		this.numTopic = numTopic;
@@ -33,15 +35,18 @@ public class EmLogLikelihood extends ComputeFunction {
 
 	@Override
 	public void calc(ComContext context) {
-		int vocabularySize = ((List<Integer>) context.getObj(LdaVariable.vocabularySize)).get(0);
-
-		double[] logLikelihoodHook = new double[]{0};
-		context.putObj(LdaVariable.logLikelihood, logLikelihoodHook);
-		if (context.getStepNo() == numIter) {
+		int stepNo = context.getStepNo();
+		if (stepNo == 1) {
+			double[] logLikelihoodHook = new double[1];
+			context.putObj(LdaVariable.logLikelihood, logLikelihoodHook);
+		}
+		if (stepNo == this.numIter) {
+			double[] logLikelihoodHook = context.getObj(LdaVariable.logLikelihood);
 			Document[] docs = context.getObj(LdaVariable.corpus);
 			if (docs == null) {
 				return;
 			}
+			int vocabularySize = ((List <Integer>) context.getObj(LdaVariable.vocabularySize)).get(0);
 			DenseMatrix nDocTopics = context.getObj(LdaVariable.nDocTopics);
 			DenseMatrix nWordTopics = new DenseMatrix(vocabularySize + 1, numTopic,
 				context.getObj(LdaVariable.nWordTopics), false);
@@ -59,7 +64,8 @@ public class EmLogLikelihood extends ComputeFunction {
 					int wordId = doc.getWordIdxs(j);
 					for (int k = 0; k < numTopic; k++) {
 						//the probability that word i of a certain doc belongs to k
-						probWordGivenTopic[k] = (nWordTopics.get(wordId, k) + beta) / (nWordTopics.get(vocabularySize, k)
+						probWordGivenTopic[k] = (nWordTopics.get(wordId, k) + beta) / (nWordTopics.get(vocabularySize,
+							k)
 							+ beta * vocabularySize);
 					}
 					double wSum = BLAS.dot(probTopicGivenDoc, probWordGivenTopic);

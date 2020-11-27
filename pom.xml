@@ -91,8 +91,8 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <alink.flink.major.version>1.11</alink.flink.major.version>
-        <flink.version>1.11.0</flink.version>
+        <alink.flink.major.version>1.9</alink.flink.major.version>
+        <flink.version>1.9.0</flink.version>
         <alink.scala.major.version>2.11</alink.scala.major.version>
         <scala.version>2.11.11</scala.version>
         <alink.mvn.apache-httpclient.version>4.5.3</alink.mvn.apache-httpclient.version>
@@ -102,6 +102,7 @@
     </properties>
 
     <modules>
+        <module>test_utils</module>
         <module>core</module>
         <module>connectors</module>
         <module>examples</module>

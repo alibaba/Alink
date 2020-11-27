@@ -5,13 +5,13 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.operator.common.dataproc.ScalerUtil;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.common.dataproc.ScalerUtil;
+import com.alibaba.alink.params.regression.IsotonicRegPredictParams;
 import com.alibaba.alink.params.regression.IsotonicRegTrainParams;
-import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
@@ -21,6 +21,7 @@ import java.util.List;
  * This mapper predicts the isotonic regression result.
  */
 public class IsotonicRegressionModelMapper extends ModelMapper {
+	private static final long serialVersionUID = 4565470971830328037L;
 	private int colIdx;
 	private IsotonicRegressionModelData modelData;
 	private String vectorColName;
@@ -65,7 +66,7 @@ public class IsotonicRegressionModelMapper extends ModelMapper {
 	 */
 	@Override
 	public TableSchema getOutputSchema() {
-		String predictResultColName = this.params.get(HasPredictionCol.PREDICTION_COL);
+		String predictResultColName = this.params.get(IsotonicRegPredictParams.PREDICTION_COL);
 		TableSchema dataSchema = getDataSchema();
 		return new TableSchema(
 			ArrayUtils.add(dataSchema.getFieldNames(), predictResultColName),
@@ -79,7 +80,7 @@ public class IsotonicRegressionModelMapper extends ModelMapper {
 	 * @param row the input Row type data.
 	 * @return one Row type data.
 	 * @throws Exception This method may throw exceptions. Throwing
-	 *                   an exception will cause the operation to fail.
+	 * an exception will cause the operation to fail.
 	 */
 	@Override
 	public Row map(Row row) throws Exception {
@@ -89,9 +90,9 @@ public class IsotonicRegressionModelMapper extends ModelMapper {
 		if (null == row.getField(colIdx)) {
 			return RowUtil.merge(row, (Object) null);
 		}
-		//use Binary search method to search for the boundaries.
+		//use Binary Search method to search for the boundaries.
 		double feature = (null == this.vectorColName ? ((Number) row.getField(colIdx)).doubleValue() :
-				VectorUtil.getVector(row.getField(colIdx)).get(this.featureIndex));
+			VectorUtil.getVector(row.getField(colIdx)).get(this.featureIndex));
 		int foundIndex = Arrays.binarySearch(modelData.boundaries, feature);
 		int insertIndex = -foundIndex - 1;
 		double predict;
@@ -100,8 +101,9 @@ public class IsotonicRegressionModelMapper extends ModelMapper {
 		} else if (insertIndex == modelData.boundaries.length) {
 			predict = modelData.values[modelData.values.length - 1];
 		} else if (foundIndex < 0) {
-			predict = ScalerUtil.minMaxScaler(feature, modelData.boundaries[insertIndex - 1], modelData.boundaries[insertIndex],
-					modelData.values[insertIndex], modelData.values[insertIndex - 1]);
+			predict = ScalerUtil.minMaxScaler(feature, modelData.boundaries[insertIndex - 1],
+				modelData.boundaries[insertIndex],
+				modelData.values[insertIndex], modelData.values[insertIndex - 1]);
 		} else {
 			predict = modelData.values[foundIndex];
 		}

@@ -1,7 +1,6 @@
 package com.alibaba.alink.operator.common.dataproc;
 
 import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
-import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
@@ -12,6 +11,9 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,6 +23,7 @@ import java.util.Set;
 
 public class SortUtils {
 	public static final ComparableComparator OBJECT_COMPARATOR = new ComparableComparator();
+	private static final Logger LOG = LoggerFactory.getLogger(SortUtils.class);
 
 	public final static int SPLIT_POINT_SIZE = 1000;
 
@@ -39,7 +42,7 @@ public class SortUtils {
 		DataSet <Row> input, int index) {
 
 		DataSet <Tuple2 <Object, Integer>> splitPoints = input
- 			.mapPartition(new SampleSplitPoint(index))
+			.mapPartition(new SampleSplitPoint(index))
 			.reduceGroup(new SplitPointReducer());
 
 		DataSet <Tuple2 <Integer, Row>> splitData = input
@@ -49,7 +52,21 @@ public class SortUtils {
 		DataSet <Tuple2 <Integer, Long>> allCount = splitData
 			.groupBy(0)
 			.withPartitioner(new AvgPartition())
-			.reduceGroup(new GroupReduceFunction <Tuple2 <Integer, Row>, Tuple2 <Integer, Long>>() {
+			.reduceGroup(new RichGroupReduceFunction <Tuple2 <Integer, Row>, Tuple2 <Integer, Long>>() {
+				private static final long serialVersionUID = 819186091051991112L;
+
+				@Override
+				public void open(Configuration parameters) throws Exception {
+					super.open(parameters);
+					LOG.info("{} open.", getRuntimeContext().getTaskName());
+				}
+
+				@Override
+				public void close() throws Exception {
+					super.close();
+					LOG.info("{} close.", getRuntimeContext().getTaskName());
+				}
+
 				@Override
 				public void reduce(
 					Iterable <Tuple2 <Integer, Row>> values,
@@ -82,6 +99,7 @@ public class SortUtils {
 	 *
 	 */
 	public static class SampleSplitPoint extends RichMapPartitionFunction <Row, Tuple2 <Object, Integer>> {
+		private static final long serialVersionUID = 5794681315388872420L;
 		private int taskId;
 		private int index;
 
@@ -94,6 +112,15 @@ public class SortUtils {
 			super.open(parameters);
 
 			this.taskId = getRuntimeContext().getIndexOfThisSubtask();
+
+			LOG.info("{} open.", getRuntimeContext().getTaskName());
+		}
+
+		@Override
+		public void close() throws Exception {
+			super.close();
+
+			LOG.info("{} close.", getRuntimeContext().getTaskName());
 		}
 
 		@Override
@@ -111,9 +138,9 @@ public class SortUtils {
 
 			int size = allValues.size();
 
-			ArrayList <Object> splitPoints = new ArrayList <>();
-
 			int localSplitPointSize = Math.min(SPLIT_POINT_SIZE, size - 1);
+
+			ArrayList <Object> splitPoints = new ArrayList <>(localSplitPointSize);
 
 			for (int i = 0; i < localSplitPointSize; ++i) {
 				int index = genSampleIndex(
@@ -147,12 +174,21 @@ public class SortUtils {
 	public static class SplitPointReducer
 		extends RichGroupReduceFunction <Tuple2 <Object, Integer>, Tuple2 <Object, Integer>> {
 
+		private static final long serialVersionUID = 2757032418456975057L;
+
 		public SplitPointReducer() {
 		}
 
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			super.open(parameters);
+			LOG.info("{} open.", getRuntimeContext().getTaskName());
+		}
+
+		@Override
+		public void close() throws Exception {
+			super.close();
+			LOG.info("{} close.", getRuntimeContext().getTaskName());
 		}
 
 		@Override
@@ -202,12 +238,19 @@ public class SortUtils {
 	}
 
 	public static class SplitData extends RichMapPartitionFunction <Row, Tuple2 <Integer, Row>> {
+		private static final long serialVersionUID = -8110878379231333376L;
 		private int taskId;
 		private List <Tuple2 <Object, Integer>> splitPoints;
 		private int index;
 
 		public SplitData(int index) {
 			this.index = index;
+		}
+
+		@Override
+		public void close() throws Exception {
+			super.close();
+			LOG.info("{} close.", getRuntimeContext().getTaskName());
 		}
 
 		@Override
@@ -232,6 +275,8 @@ public class SortUtils {
 						return sortedData;
 					}
 				});
+
+			LOG.info("{} open.", getRuntimeContext().getTaskName());
 		}
 
 		/**
@@ -303,6 +348,8 @@ public class SortUtils {
 
 	public static class AvgPartition implements Partitioner <Integer> {
 
+		private static final long serialVersionUID = 7926524547138192316L;
+
 		@Override
 		public int partition(Integer key, int numPartitions) {
 			return key % numPartitions;
@@ -310,6 +357,8 @@ public class SortUtils {
 	}
 
 	public static class AvgLongPartitioner implements Partitioner <Long> {
+
+		private static final long serialVersionUID = -4797639155425333832L;
 
 		@Override
 		public int partition(Long key, int numPartitions) {

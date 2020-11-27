@@ -1,13 +1,13 @@
 package com.alibaba.alink.operator.common.nlp;
 
-import com.alibaba.alink.operator.common.nlp.jiebasegment.JiebaSegmenter;
-import com.alibaba.alink.operator.common.nlp.jiebasegment.SegToken;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.mapper.SISOMapper;
+import com.alibaba.alink.operator.common.nlp.jiebasegment.JiebaSegmenter;
+import com.alibaba.alink.operator.common.nlp.jiebasegment.SegToken;
 import com.alibaba.alink.params.nlp.SegmentParams;
 
 import java.util.List;
@@ -16,6 +16,7 @@ import java.util.List;
  * Segment Chinese document into words.
  */
 public class SegmentMapper extends SISOMapper {
+	private static final long serialVersionUID = -1424070986531304900L;
 	private transient JiebaSegmenter segmentor = null;
 
 	public SegmentMapper(TableSchema dataSchema, Params params) {
@@ -23,11 +24,11 @@ public class SegmentMapper extends SISOMapper {
 	}
 
 	@Override
-	public void open(){
+	public void open() {
 		segmentor = new JiebaSegmenter();
 		String[] userDefinedDict = this.params.get(SegmentParams.USER_DEFINED_DICT);
 		if (null != userDefinedDict) {
-			for(String word : userDefinedDict){
+			for (String word : userDefinedDict) {
 				segmentor.addUserWord2Dict(word);
 			}
 		}

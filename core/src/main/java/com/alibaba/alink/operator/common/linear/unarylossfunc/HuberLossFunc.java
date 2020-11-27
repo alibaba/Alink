@@ -5,6 +5,7 @@ package com.alibaba.alink.operator.common.linear.unarylossfunc;
  * https://en.wikipedia.org/wiki/Huber_loss
  */
 public class HuberLossFunc implements UnaryLossFunc {
+	private static final long serialVersionUID = 618967763754853703L;
 	private double delta;
 
 	public HuberLossFunc(double delta) {

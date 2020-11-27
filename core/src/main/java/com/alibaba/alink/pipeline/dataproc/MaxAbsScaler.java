@@ -14,14 +14,16 @@ import com.alibaba.alink.pipeline.Trainer;
 public class MaxAbsScaler extends Trainer <MaxAbsScaler, MaxAbsScalerModel> implements
 	MaxAbsScalerTrainParams <MaxAbsScaler>,
 	MaxAbsScalerPredictParams <MaxAbsScaler>,
-	HasLazyPrintModelInfo<MaxAbsScaler> {
+	HasLazyPrintModelInfo <MaxAbsScaler> {
+
+	private static final long serialVersionUID = 2515889163832988532L;
 
 	public MaxAbsScaler() {
 		super();
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new MaxAbsScalerTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

@@ -1,20 +1,5 @@
 package com.alibaba.alink.operator.batch.classification;
 
-import java.util.ArrayList;
-
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.linalg.DenseMatrix;
-import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.classification.NaiveBayesTextModelDataConverter;
-import com.alibaba.alink.operator.common.classification.NaiveBayesTextTrainModelData;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
-import com.alibaba.alink.params.classification.NaiveBayesTextTrainParams;
-
 import org.apache.flink.api.common.functions.AbstractRichFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -29,6 +14,22 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.linalg.DenseMatrix;
+import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.classification.NaiveBayesTextModelData;
+import com.alibaba.alink.operator.common.classification.NaiveBayesTextModelDataConverter;
+import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
+import com.alibaba.alink.params.classification.NaiveBayesTextTrainParams;
+import com.alibaba.alink.params.shared.colname.HasFeatureCols;
+
+import java.util.ArrayList;
+
 /**
  * Text Naive Bayes Classifier.
  *
@@ -37,12 +38,14 @@ import org.apache.flink.util.Collector;
  *
  * Details info of the algorithm:
  * https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-text-classification-1.html
- *
  */
+
 public class NaiveBayesTextTrainBatchOp
-	extends BatchOperator<NaiveBayesTextTrainBatchOp>
-	implements NaiveBayesTextTrainParams<NaiveBayesTextTrainBatchOp>,
-	WithModelInfoBatchOp<NaiveBayesTextModelInfo, NaiveBayesTextTrainBatchOp, NaiveBayesTextModelInfoBatchOp> {
+	extends BatchOperator <NaiveBayesTextTrainBatchOp>
+	implements NaiveBayesTextTrainParams <NaiveBayesTextTrainBatchOp>,
+	WithModelInfoBatchOp <NaiveBayesTextModelInfo, NaiveBayesTextTrainBatchOp, NaiveBayesTextModelInfoBatchOp> {
+
+	private static final long serialVersionUID = 1343509041059789517L;
 
 	/**
 	 * Constructor.
@@ -60,15 +63,9 @@ public class NaiveBayesTextTrainBatchOp
 		super(params);
 	}
 
-	/**
-	 * Train data and get a model.
-	 *
-	 * @param inputs input data.
-	 * @return the model of naive bayes.
-	 */
 	@Override
-	public NaiveBayesTextTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
-		BatchOperator<?> in = checkAndGetFirst(inputs);
+	public NaiveBayesTextTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
 		TypeInformation <?> labelType;
 		String labelColName = getLabelCol();
 		ModelType modelType = getModelType();
@@ -79,13 +76,15 @@ public class NaiveBayesTextTrainBatchOp
 		labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelColName);
 
 		String[] keepColNames = (weightColName == null) ? new String[] {labelColName}
-				: new String[] {weightColName, labelColName};
+			: new String[] {weightColName, labelColName};
 		Tuple2 <DataSet <Tuple2 <Vector, Row>>, DataSet <BaseVectorSummary>> dataSrt
-				= StatisticsHelper.summaryHelper(in, null, vectorColName, keepColNames);
+			= StatisticsHelper.summaryHelper(in, null, vectorColName, keepColNames);
 		DataSet <Tuple2 <Vector, Row>> data = dataSrt.f0;
 		DataSet <BaseVectorSummary> srt = dataSrt.f1;
 
 		DataSet <Integer> vectorSize = srt.map(new MapFunction <BaseVectorSummary, Integer>() {
+			private static final long serialVersionUID = -4626037497952553113L;
+
 			@Override
 			public Integer map(BaseVectorSummary value) {
 				return value.vectorSize();
@@ -94,15 +93,18 @@ public class NaiveBayesTextTrainBatchOp
 
 		// Transform data in the form of label, weight, feature.
 		DataSet <Tuple3 <Object, Double, Vector>> trainData = data
-				.mapPartition(new Transform());
-
-		DataSet<Tuple3 <Object, Double, Vector>> labelFeatureInfo = trainData
+			.mapPartition(new Transform());
+		DataSet <Tuple3 <Object, Double, Vector>> labelFeatureInfo = trainData
 			.groupBy(new SelectLabel())
 			.reduceGroup(new ReduceItem())
 			.withBroadcastSet(vectorSize, "vectorSize");
 
+		String[] featureCols = null;
+		if (getParams().contains(HasFeatureCols.FEATURE_COLS)) {
+			featureCols = getParams().get(HasFeatureCols.FEATURE_COLS);
+		}
 		DataSet <Row> probs = labelFeatureInfo
-			.mapPartition(new GenerateModel(smoothing, modelType, vectorColName, labelType))
+			.mapPartition(new GenerateModel(smoothing, modelType, vectorColName, featureCols, labelType))
 			.withBroadcastSet(vectorSize, "vectorSize")
 			.setParallelism(1);
 
@@ -111,33 +113,31 @@ public class NaiveBayesTextTrainBatchOp
 		return this;
 	}
 
-	@Override
-	public NaiveBayesTextModelInfoBatchOp getModelInfoBatchOp() {
-		return new NaiveBayesTextModelInfoBatchOp(getParams()).linkFrom(this);
-	}
-
 	/**
 	 * Generate model.
 	 */
 	public static class GenerateModel extends AbstractRichFunction
-			implements MapPartitionFunction <Tuple3 <Object, Double, Vector>, Row> {
+		implements MapPartitionFunction <Tuple3 <Object, Double, Vector>, Row> {
+		private static final long serialVersionUID = -8763129628694985528L;
 		private int numFeature;
 		private double smoothing;
 		private ModelType modelType;
 		private String vectorColName;
+		private String[] featureCols;
 		private TypeInformation labelType;
 
-		GenerateModel(double smoothing, ModelType modelType,
-					  String vectorColName, TypeInformation labelType) {
+		GenerateModel(double smoothing, ModelType modelType, String vectorColName, String[] featureCols,
+					  TypeInformation labelType) {
 			this.smoothing = smoothing;
 			this.modelType = modelType;
 			this.labelType = labelType;
 			this.vectorColName = vectorColName;
+			this.featureCols = featureCols;
 		}
 
 		@Override
 		public void mapPartition(Iterable <Tuple3 <Object, Double, Vector>> values, Collector <Row> collector)
-				throws Exception {
+			throws Exception {
 			double numDocs = 0.0;
 			ArrayList <Tuple3 <Object, Double, DenseVector>> modelArray = new ArrayList <>();
 
@@ -153,13 +153,14 @@ public class NaiveBayesTextTrainBatchOp
 			Object[] labels = new Object[numLabels];
 			for (int i = 0; i < numLabels; ++i) {
 				DenseVector feature = modelArray.get(i).f2;
-				double numTerm = 0.0;
-				for (int j = 0; j < feature.size(); ++j) {
-					numTerm += feature.get(j);
-				}
+
 				double thetaLog = 0.0;
 				switch (this.modelType) {
 					case Multinomial: {
+						double numTerm = 0.0;
+						for (int j = 0; j < feature.size(); ++j) {
+							numTerm += feature.get(j);
+						}
 						thetaLog += Math.log(numTerm + this.numFeature * this.smoothing);
 						break;
 					}
@@ -171,7 +172,6 @@ public class NaiveBayesTextTrainBatchOp
 						break;
 					}
 				}
-
 				labels[i] = modelArray.get(i).f0;
 				piArray[i] = Math.log(modelArray.get(i).f1 + this.smoothing) - piLog;
 
@@ -180,13 +180,13 @@ public class NaiveBayesTextTrainBatchOp
 				}
 			}
 
-			NaiveBayesTextTrainModelData trainResultData = new NaiveBayesTextTrainModelData();
+			NaiveBayesTextModelData trainResultData = new NaiveBayesTextModelData();
 			trainResultData.pi = piArray;
-			trainResultData.label = labels;
+			trainResultData.labels = labels;
 			trainResultData.theta = theta;
 			trainResultData.vectorColName = vectorColName;
 			trainResultData.modelType = modelType;
-			trainResultData.modelArray = modelArray;
+			trainResultData.featureColNames = featureCols;
 			trainResultData.vectorSize = modelArray.get(0).f2.size();
 
 			new NaiveBayesTextModelDataConverter(labelType).save(trainResultData, collector);
@@ -195,7 +195,7 @@ public class NaiveBayesTextTrainBatchOp
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			this.numFeature = (Integer) getRuntimeContext()
-					.getBroadcastVariable("vectorSize").get(0);
+				.getBroadcastVariable("vectorSize").get(0);
 		}
 	}
 
@@ -203,20 +203,22 @@ public class NaiveBayesTextTrainBatchOp
 	 * Transform the data format.
 	 */
 	public static class Transform
-			implements MapPartitionFunction <Tuple2 <Vector, Row>, Tuple3 <Object, Double, Vector>> {
+		implements MapPartitionFunction <Tuple2 <Vector, Row>, Tuple3 <Object, Double, Vector>> {
+
+		private static final long serialVersionUID = -1962725988758297056L;
 
 		@Override
 		public void mapPartition(Iterable <Tuple2 <Vector, Row>> values,
 								 Collector <Tuple3 <Object, Double, Vector>> out)
-				throws Exception {
+			throws Exception {
 			for (Tuple2 <Vector, Row> in : values) {
 				Vector feature = in.f0;
 				Object labelVal = in.f1.getArity() == 2 ? in.f1.getField(1) : in.f1.getField(0);
 				Double weightVal = in.f1.getArity() == 2 ?
-						in.f1.getField(0) instanceof Number ?
-								((Number) in.f1.getField(0)).doubleValue() :
-								Double.parseDouble(in.f1.getField(0).toString())
-						: 1.0;
+					in.f1.getField(0) instanceof Number ?
+						((Number) in.f1.getField(0)).doubleValue() :
+						Double.parseDouble(in.f1.getField(0).toString())
+					: 1.0;
 				out.collect(new Tuple3 <>(labelVal, weightVal, feature));
 
 			}
@@ -228,6 +230,8 @@ public class NaiveBayesTextTrainBatchOp
 	 */
 	public static class SelectLabel implements KeySelector <Tuple3 <Object, Double, Vector>, String> {
 
+		private static final long serialVersionUID = -3406893536674801451L;
+
 		@Override
 		public String getKey(Tuple3 <Object, Double, Vector> t3) {
 			return t3.f0.toString();
@@ -238,7 +242,8 @@ public class NaiveBayesTextTrainBatchOp
 	 * Calculate the sum of feature with same label and the label weight.
 	 */
 	public static class ReduceItem extends AbstractRichFunction
-			implements GroupReduceFunction <Tuple3 <Object, Double, Vector>, Tuple3 <Object, Double, Vector>> {
+		implements GroupReduceFunction <Tuple3 <Object, Double, Vector>, Tuple3 <Object, Double, Vector>> {
+		private static final long serialVersionUID = -3644173529201603819L;
 		private int vectorSize = 0;
 
 		@Override
@@ -275,9 +280,14 @@ public class NaiveBayesTextTrainBatchOp
 		public void open(Configuration parameters) throws Exception {
 
 			this.vectorSize = (Integer) getRuntimeContext()
-					.getBroadcastVariable("vectorSize").get(0);
+				.getBroadcastVariable("vectorSize").get(0);
 		}
 
+	}
+
+	@Override
+	public NaiveBayesTextModelInfoBatchOp getModelInfoBatchOp() {
+		return new NaiveBayesTextModelInfoBatchOp(getParams()).linkFrom(this);
 	}
 
 }

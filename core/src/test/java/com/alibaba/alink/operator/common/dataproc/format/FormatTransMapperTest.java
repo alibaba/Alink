@@ -1,10 +1,18 @@
 package com.alibaba.alink.operator.common.dataproc.format;
 
-import com.alibaba.alink.params.dataproc.format.*;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.params.dataproc.format.ColumnsToVectorParams;
+import com.alibaba.alink.params.dataproc.format.CsvToKvParams;
+import com.alibaba.alink.params.dataproc.format.JsonToColumnsParams;
+import com.alibaba.alink.params.dataproc.format.KvToColumnsParams;
+import com.alibaba.alink.params.dataproc.format.KvToCsvParams;
+import com.alibaba.alink.params.dataproc.format.KvToJsonParams;
+import com.alibaba.alink.params.dataproc.format.KvToVectorParams;
+import com.alibaba.alink.params.dataproc.format.VectorToColumnsParams;
+import com.alibaba.alink.params.dataproc.format.VectorToKvParams;
 import org.junit.Assert;
 import org.junit.Test;
 

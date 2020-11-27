@@ -1,12 +1,13 @@
 package com.alibaba.alink.pipeline.clustering;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.KMeansTrainBatchOp;
 import com.alibaba.alink.params.clustering.KMeansPredictParams;
 import com.alibaba.alink.params.clustering.KMeansTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * k-mean clustering is a method of vector quantization, originally from signal processing, that is popular for cluster
@@ -20,6 +21,8 @@ public class KMeans extends Trainer <KMeans, KMeansModel> implements
 	KMeansPredictParams <KMeans>,
 	HasLazyPrintModelInfo <KMeans> {
 
+	private static final long serialVersionUID = 2156954924576577186L;
+
 	public KMeans() {
 		super();
 	}
@@ -29,7 +32,7 @@ public class KMeans extends Trainer <KMeans, KMeansModel> implements
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new KMeansTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

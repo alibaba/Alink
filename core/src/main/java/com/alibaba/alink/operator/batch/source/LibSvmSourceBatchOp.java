@@ -26,63 +26,63 @@ import com.alibaba.alink.params.io.LibSvmSourceParams;
  * A data source that reads libsvm format data.
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SourceBatch)
-public final class LibSvmSourceBatchOp extends BaseSourceBatchOp<LibSvmSourceBatchOp>
-    implements LibSvmSourceParams<LibSvmSourceBatchOp> {
+public final class LibSvmSourceBatchOp extends BaseSourceBatchOp <LibSvmSourceBatchOp>
+	implements LibSvmSourceParams <LibSvmSourceBatchOp> {
 
-    public LibSvmSourceBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -5424376385045080942L;
 
-    public LibSvmSourceBatchOp(Params params) {
-        super(AnnotationUtils.annotatedName(LibSvmSourceBatchOp.class), params);
-    }
+	public LibSvmSourceBatchOp() {
+		this(new Params());
+	}
 
-    public LibSvmSourceBatchOp(String filePath) {
-        this(new Params()
-            .set(FILE_PATH, filePath)
-        );
-    }
+	public LibSvmSourceBatchOp(Params params) {
+		super(AnnotationUtils.annotatedName(LibSvmSourceBatchOp.class), params);
+	}
 
-    public static Tuple2<Double, Vector> parseLibSvmFormat(String line) {
-        if (StringUtils.isNullOrWhitespaceOnly(line)) {
-            return Tuple2.of(null, null);
-        }
-        int firstSpacePos = line.indexOf(' ');
-        if (firstSpacePos < 0) {
-            return Tuple2.of(Double.valueOf(line), VectorUtil.getVector(""));
-        }
-        String labelStr = line.substring(0, firstSpacePos);
-        String featuresStr = line.substring(firstSpacePos + 1);
-        Vector featuresVec = VectorUtil.getVector(featuresStr);
-        if (featuresVec instanceof SparseVector) {
-            int[] indices = ((SparseVector) featuresVec).getIndices();
-            for (int i = 0; i < indices.length; i++) {
-                indices[i] = indices[i] - 1;
-            }
-        }
-        return Tuple2.of(Double.valueOf(labelStr), featuresVec);
-    }
+	public static Tuple2 <Double, Vector> parseLibSvmFormat(String line, int startIndex) {
+		if (StringUtils.isNullOrWhitespaceOnly(line)) {
+			return Tuple2.of(null, null);
+		}
+		int firstSpacePos = line.indexOf(' ');
+		if (firstSpacePos < 0) {
+			return Tuple2.of(Double.valueOf(line), VectorUtil.getVector(""));
+		}
+		String labelStr = line.substring(0, firstSpacePos);
+		String featuresStr = line.substring(firstSpacePos + 1);
+		Vector featuresVec = VectorUtil.getVector(featuresStr);
+		if (featuresVec instanceof SparseVector) {
+			int[] indices = ((SparseVector) featuresVec).getIndices();
+			for (int i = 0; i < indices.length; i++) {
+				indices[i] = indices[i] - startIndex;
+			}
+		}
+		return Tuple2.of(Double.valueOf(labelStr), featuresVec);
+	}
 
-    public static final TableSchema LIB_SVM_TABLE_SCHEMA = new TableSchema(new String[]{"label", "features"},
-        new TypeInformation[]{Types.DOUBLE(), VectorTypes.VECTOR});
+	public static final TableSchema LIB_SVM_TABLE_SCHEMA = new TableSchema(new String[] {"label", "features"},
+		new TypeInformation[] {Types.DOUBLE(), VectorTypes.VECTOR});
 
-    @Override
-    public Table initializeDataSource() {
-        BatchOperator source = new CsvSourceBatchOp()
-            .setMLEnvironmentId(getMLEnvironmentId())
-            .setFilePath(getFilePath())
-            .setFieldDelimiter("\n")
-            .setSchemaStr("content string");
+	@Override
+	public Table initializeDataSource() {
+		BatchOperator<?> source = new CsvSourceBatchOp()
+			.setMLEnvironmentId(getMLEnvironmentId())
+			.setFilePath(getFilePath())
+			.setFieldDelimiter("\n")
+			.setSchemaStr("content string");
 
-        DataSet<Row> data = ((DataSet<Row>) source.getDataSet())
-            .map(new MapFunction<Row, Row>() {
-                @Override
-                public Row map(Row value) throws Exception {
-                    String line = (String) value.getField(0);
-                    Tuple2<Double, Vector> labelAndFeatures = parseLibSvmFormat(line);
-                    return Row.of(labelAndFeatures.f0, labelAndFeatures.f1);
-                }
-            });
-        return DataSetConversionUtil.toTable(getMLEnvironmentId(), data, LIB_SVM_TABLE_SCHEMA);
-    }
+		final int startIndex = getParams().get(LibSvmSourceParams.START_INDEX);
+
+		DataSet <Row> data = source.getDataSet()
+			.map(new MapFunction <Row, Row>() {
+				private static final long serialVersionUID = 2844973160952262773L;
+
+				@Override
+				public Row map(Row value) throws Exception {
+					String line = (String) value.getField(0);
+					Tuple2 <Double, Vector> labelAndFeatures = parseLibSvmFormat(line, startIndex);
+					return Row.of(labelAndFeatures.f0, labelAndFeatures.f1);
+				}
+			});
+		return DataSetConversionUtil.toTable(getMLEnvironmentId(), data, LIB_SVM_TABLE_SCHEMA);
+	}
 }

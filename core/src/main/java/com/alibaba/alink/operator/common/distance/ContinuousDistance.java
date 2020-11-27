@@ -14,6 +14,7 @@ public interface ContinuousDistance extends Serializable {
 
 	/**
 	 * Calculate the distance between two double arrays, the length of the array must be equal.
+	 *
 	 * @param array1 array1
 	 * @param array2 array2
 	 * @return the distance
@@ -22,6 +23,7 @@ public interface ContinuousDistance extends Serializable {
 
 	/**
 	 * Calculate the distance between two vectors.
+	 *
 	 * @param vec1 vector1
 	 * @param vec2 vector2
 	 * @return the distance
@@ -30,6 +32,7 @@ public interface ContinuousDistance extends Serializable {
 
 	/**
 	 * Calculate the distance between two dense vectors
+	 *
 	 * @param vec1 densevector1
 	 * @param vec2 densevector2
 	 * @return the distance

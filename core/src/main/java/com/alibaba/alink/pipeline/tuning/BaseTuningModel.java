@@ -1,11 +1,13 @@
 package com.alibaba.alink.pipeline.tuning;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.pipeline.ModelBase;
 import com.alibaba.alink.pipeline.TransformerBase;
-import com.alibaba.alink.operator.stream.StreamOperator;
 
-public abstract class BaseTuningModel<M extends BaseTuningModel <M>> extends ModelBase<M> {
+public abstract class BaseTuningModel<M extends BaseTuningModel <M>> extends ModelBase <M> {
+
+	private static final long serialVersionUID = -1991753518931044555L;
 	private final TransformerBase transformer;
 
 	public BaseTuningModel(TransformerBase transformer) {
@@ -14,12 +16,12 @@ public abstract class BaseTuningModel<M extends BaseTuningModel <M>> extends Mod
 	}
 
 	@Override
-	public BatchOperator transform(BatchOperator input) {
+	public BatchOperator <?> transform(BatchOperator <?> input) {
 		return postProcessTransformResult(this.transformer.transform(input));
 	}
 
 	@Override
-	public StreamOperator transform(StreamOperator input) {
+	public StreamOperator <?> transform(StreamOperator <?> input) {
 		return this.transformer.transform(input);
 	}
 }

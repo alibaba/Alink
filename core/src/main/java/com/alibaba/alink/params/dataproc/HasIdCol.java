@@ -2,14 +2,14 @@ package com.alibaba.alink.params.dataproc;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.operator.batch.dataproc.AppendIdBatchOp;
-import org.apache.flink.ml.api.misc.param.WithParams;
 
 /**
  * Param: idColName.
  */
-public interface HasIdCol<T> extends WithParams<T> {
+public interface HasIdCol<T> extends WithParams <T> {
 
 	ParamInfo <String> ID_COL = ParamInfoFactory
 		.createParamInfo("idCol", String.class)

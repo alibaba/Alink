@@ -15,14 +15,16 @@ import com.alibaba.alink.pipeline.Trainer;
 public class VectorStandardScaler extends Trainer <VectorStandardScaler, VectorStandardScalerModel> implements
 	VectorStandardTrainParams <VectorStandardScaler>,
 	VectorStandardPredictParams <VectorStandardScaler>,
-	HasLazyPrintModelInfo<VectorStandardScaler> {
+	HasLazyPrintModelInfo <VectorStandardScaler> {
+
+	private static final long serialVersionUID = -4030303533710714585L;
 
 	public VectorStandardScaler() {
 		super();
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new VectorStandardScalerTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

@@ -1,15 +1,18 @@
 package com.alibaba.alink.pipeline.clustering;
 
-import com.alibaba.alink.operator.common.clustering.kmeans.KMeansModelMapper;
 import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.operator.common.clustering.kmeans.KMeansModelMapper;
 import com.alibaba.alink.params.clustering.KMeansPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
 
 /**
- * Find  the closest cluster center for every point.
+ * Model fitted by KMeans.
  */
-public class KMeansModel extends MapModel<KMeansModel>
+public class KMeansModel extends MapModel <KMeansModel>
 	implements KMeansPredictParams <KMeansModel> {
+
+	private static final long serialVersionUID = -8633365072503327616L;
 
 	public KMeansModel() {this(null);}
 

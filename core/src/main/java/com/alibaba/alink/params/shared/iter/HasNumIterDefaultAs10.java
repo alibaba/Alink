@@ -2,10 +2,9 @@ package com.alibaba.alink.params.shared.iter;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasNumIterDefaultAs10<T> extends WithParams<T> {
+public interface HasNumIterDefaultAs10<T> extends WithParams <T> {
 	ParamInfo <Integer> NUM_ITER = ParamInfoFactory
 		.createParamInfo("numIter", Integer.class)
 		.setDescription("Number of iterations, The default value is 10")

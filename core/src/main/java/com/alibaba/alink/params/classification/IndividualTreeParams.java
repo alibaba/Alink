@@ -8,11 +8,11 @@ import com.alibaba.alink.params.shared.tree.HasMinSamplesPerLeaf;
 import com.alibaba.alink.params.shared.tree.TreeTrainParams;
 
 public interface IndividualTreeParams<T> extends
-	ClassifierTrainParams<T>,
-	TreeTrainParams<T>,
-	HasMaxDepth<T>,
-	HasMinSamplesPerLeaf<T>,
-	HasCreateTreeMode<T>,
-	HasMaxBins<T>,
-	HasMaxMemoryInMB<T> {
+	ClassifierTrainParams <T>,
+	TreeTrainParams <T>,
+	HasMaxDepth <T>,
+	HasMinSamplesPerLeaf <T>,
+	HasCreateTreeMode <T>,
+	HasMaxBins <T>,
+	HasMaxMemoryInMB <T> {
 }

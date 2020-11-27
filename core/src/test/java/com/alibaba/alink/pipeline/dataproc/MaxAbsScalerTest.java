@@ -1,18 +1,19 @@
 package com.alibaba.alink.pipeline.dataproc;
 
-import com.alibaba.alink.operator.AlgoOperator;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.MaxAbsScalerTrainBatchOp;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
-import com.alibaba.alink.operator.common.dataproc.MaxAbsScalarModelInfo;
-import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.operator.AlgoOperator;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.MaxAbsScalerPredictBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.MaxAbsScalerTrainBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -21,17 +22,17 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class MaxAbsScalerTest {
+public class MaxAbsScalerTest extends AlinkTestBase {
 	public static AlgoOperator getMultiTypeData(boolean isBatch) {
 		Row[] testArray =
-			new Row[]{
+			new Row[] {
 				Row.of("0", 1.0, 2.0),
 				Row.of("1", -1.0, -3.0),
 				Row.of("2", 4.0, 2.0),
 				Row.of("3", null, null),
 			};
-		String[] colNames = new String[]{"id", "f0", "f1"};
-		TypeInformation[] colTypes = new TypeInformation[]{Types.STRING, Types.DOUBLE, Types.DOUBLE};
+		String[] colNames = new String[] {"id", "f0", "f1"};
+		TypeInformation[] colTypes = new TypeInformation[] {Types.STRING, Types.DOUBLE, Types.DOUBLE};
 		TableSchema schema = new TableSchema(
 			colNames,
 			colTypes
@@ -43,6 +44,7 @@ public class MaxAbsScalerTest {
 			return new MemSourceStreamOp(Arrays.asList(testArray), schema);
 		}
 	}
+
 	private static void testPipelineI() throws Exception {
 
 		BatchOperator batchData = (BatchOperator) getMultiTypeData(true);
@@ -57,7 +59,7 @@ public class MaxAbsScalerTest {
 
 		BatchOperator res = model.transform(batchData);
 		List rows = res.getDataSet().collect();
-		HashMap<String, Tuple2<Double, Double>> map = new HashMap<String, Tuple2<Double, Double>>();
+		HashMap <String, Tuple2 <Double, Double>> map = new HashMap <String, Tuple2 <Double, Double>>();
 		map.put((String) ((Row) rows.get(0)).getField(0), Tuple2.of(
 			(Double) ((Row) rows.get(0)).getField(1),
 			(Double) ((Row) rows.get(0)).getField(2)));
@@ -70,10 +72,10 @@ public class MaxAbsScalerTest {
 		map.put((String) ((Row) rows.get(3)).getField(0), Tuple2.of(
 			(Double) ((Row) rows.get(3)).getField(1),
 			(Double) ((Row) rows.get(3)).getField(2)));
-		assertEquals(map.get("0"), new Tuple2<>(0.25, 0.6666666666666666));
-		assertEquals(map.get("1"), new Tuple2<>(-0.25, -1.0));
-		assertEquals(map.get("2"), new Tuple2<>(1.0, 0.6666666666666666));
-		assertEquals(map.get("3"), new Tuple2<>(null, null));
+		assertEquals(map.get("0"), new Tuple2 <>(0.25, 0.6666666666666666));
+		assertEquals(map.get("1"), new Tuple2 <>(-0.25, -1.0));
+		assertEquals(map.get("2"), new Tuple2 <>(1.0, 0.6666666666666666));
+		assertEquals(map.get("3"), new Tuple2 <>(null, null));
 
 		model.transform(streamData).print();
 		StreamOperator.execute();
@@ -85,13 +87,12 @@ public class MaxAbsScalerTest {
 	}
 
 	@Test
-	public void testModelInfo() {
-		BatchOperator batchData = new TableSourceBatchOp(GenerateData.getBatchTable());
-		MaxAbsScalerTrainBatchOp trainOp = new MaxAbsScalerTrainBatchOp()
-			.setSelectedCols("f0")
-			.linkFrom(batchData);
-		MaxAbsScalarModelInfo modelInfo = trainOp.getModelInfoBatchOp().collectModelInfo();
-		System.out.println(modelInfo.getMaxAbs().length);
-		System.out.println(modelInfo.toString());
+	public void test() throws Exception {
+		BatchOperator batchData = (BatchOperator) getMultiTypeData(true);
+		String[] selectedColNames = new String[] {"f0", "f1"};
+		MaxAbsScalerTrainBatchOp maxabs = new MaxAbsScalerTrainBatchOp()
+			.setSelectedCols(selectedColNames).linkFrom(batchData);
+		MaxAbsScalerPredictBatchOp pred = new MaxAbsScalerPredictBatchOp();
+		pred.linkFrom(maxabs, batchData).print();
 	}
 }

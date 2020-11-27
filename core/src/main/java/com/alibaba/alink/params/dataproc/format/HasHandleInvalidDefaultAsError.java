@@ -1,16 +1,13 @@
 package com.alibaba.alink.params.dataproc.format;
 
-import com.alibaba.alink.params.ParamUtil;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.params.ParamUtil;
+
 public interface HasHandleInvalidDefaultAsError<T> extends WithParams <T> {
-	/**
-	 * @cn-name 解析异常处理策略
-	 * @cn 解析异常处理策略
-	 */
-	ParamInfo<HandleInvalid> HANDLE_INVALID = ParamInfoFactory
+	ParamInfo <HandleInvalid> HANDLE_INVALID = ParamInfoFactory
 		.createParamInfo("handleInvalid", HandleInvalid.class)
 		.setDescription("Strategy to handle unseen token")
 		.setHasDefaultValue(HandleInvalid.ERROR)

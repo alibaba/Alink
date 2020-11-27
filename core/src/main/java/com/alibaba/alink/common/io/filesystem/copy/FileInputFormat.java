@@ -62,20 +62,19 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
  * {@link #nextRecord(Object)} and {@link #reachedEnd()} methods need to be implemented.
  * Additionally, one may override {@link #open(FileInputSplit)} and {@link #close()} to
  * change the life cycle behavior.
- * 
+ *
  * <p>After the {@link #open(FileInputSplit)} method completed, the file input data is available
  * from the {@link #stream} field.</p>
  */
 @Public
-public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputSplit> {
-	
+public abstract class FileInputFormat<OT> extends RichInputFormat <OT, FileInputSplit> {
+
 	// -------------------------------------- Constants -------------------------------------------
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(FileInputFormat.class);
-	
+
 	private static final long serialVersionUID = 1L;
-	
-	
+
 	/**
 	 * The fraction that the last split may be larger than the others.
 	 */
@@ -90,9 +89,9 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	 * A mapping of file extensions to decompression algorithms based on DEFLATE. Such compressions lead to
 	 * unsplittable files.
 	 */
-	protected static final Map<String, InflaterInputStreamFactory<?>> INFLATER_INPUT_STREAM_FACTORIES =
-			new HashMap<String, InflaterInputStreamFactory<?>>();
-	
+	protected static final Map <String, InflaterInputStreamFactory <?>> INFLATER_INPUT_STREAM_FACTORIES =
+		new HashMap <String, InflaterInputStreamFactory <?>>();
+
 	/**
 	 * The splitLength is set to -1L for reading the whole split.
 	 */
@@ -106,6 +105,7 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	/**
 	 * Initialize defaults for input format. Needs to be a static method because it is configured for local
 	 * cluster execution.
+	 *
 	 * @param configuration The configuration to load defaults from
 	 */
 	private static void initDefaultsFromConfiguration(Configuration configuration) {
@@ -123,13 +123,13 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	}
 
 	private static void initDefaultInflaterInputStreamFactories() {
-		InflaterInputStreamFactory<?>[] defaultFactories = {
-				DeflateInflaterInputStreamFactory.getInstance(),
-				GzipInflaterInputStreamFactory.getInstance(),
-				Bzip2InputStreamFactory.getInstance(),
-				XZInputStreamFactory.getInstance(),
+		InflaterInputStreamFactory <?>[] defaultFactories = {
+			DeflateInflaterInputStreamFactory.getInstance(),
+			GzipInflaterInputStreamFactory.getInstance(),
+			Bzip2InputStreamFactory.getInstance(),
+			XZInputStreamFactory.getInstance(),
 		};
-		for (InflaterInputStreamFactory<?> inputStreamFactory : defaultFactories) {
+		for (InflaterInputStreamFactory <?> inputStreamFactory : defaultFactories) {
 			for (String fileExtension : inputStreamFactory.getCommonFileExtensions()) {
 				registerInflaterInputStreamFactory(fileExtension, inputStreamFactory);
 			}
@@ -139,10 +139,13 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	/**
 	 * Registers a decompression algorithm through a {@link InflaterInputStreamFactory}
 	 * with a file extension for transparent decompression.
+	 *
 	 * @param fileExtension of the compressed files
-	 * @param factory to create an {@link java.util.zip.InflaterInputStream} that handles the decompression format
+	 * @param factory       to create an {@link java.util.zip.InflaterInputStream} that handles the decompression
+	 *                         format
 	 */
-	public static void registerInflaterInputStreamFactory(String fileExtension, InflaterInputStreamFactory<?> factory) {
+	public static void registerInflaterInputStreamFactory(String fileExtension,
+														  InflaterInputStreamFactory <?> factory) {
 		synchronized (INFLATER_INPUT_STREAM_FACTORIES) {
 			if (INFLATER_INPUT_STREAM_FACTORIES.put(fileExtension, factory) != null) {
 				LOG.warn("Overwriting an existing decompression algorithm for \"{}\" files.", fileExtension);
@@ -150,7 +153,7 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		}
 	}
 
-	protected static InflaterInputStreamFactory<?> getInflaterInputStreamFactory(String fileExtension) {
+	protected static InflaterInputStreamFactory <?> getInflaterInputStreamFactory(String fileExtension) {
 		synchronized (INFLATER_INPUT_STREAM_FACTORIES) {
 			return INFLATER_INPUT_STREAM_FACTORIES.get(fileExtension);
 		}
@@ -158,12 +161,13 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 
 	/**
 	 * Returns the extension of a file name (!= a path).
+	 *
 	 * @return the extension of the file name or {@code null} if there is no extension.
 	 */
 	protected static String extractFileExtension(String fileName) {
 		checkNotNull(fileName);
 		int lastPeriodIndex = fileName.lastIndexOf('.');
-		if (lastPeriodIndex < 0){
+		if (lastPeriodIndex < 0) {
 			return null;
 		} else {
 			return fileName.substring(lastPeriodIndex + 1);
@@ -203,7 +207,7 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	 * The path to the file that contains the input.
 	 *
 	 * @deprecated Please override {@link FileInputFormat#supportsMultiPaths()} and
-	 *             use {@link FileInputFormat#getFilePaths()} and {@link FileInputFormat#setFilePaths(Path...)}.
+	 * use {@link FileInputFormat#getFilePaths()} and {@link FileInputFormat#setFilePaths(Path...)}.
 	 */
 	@Deprecated
 	protected Path filePath;
@@ -245,15 +249,15 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	 */
 	private FilePathFilter filesFilter = new GlobFilePathFilter();
 
-	private final BaseFileSystem<?> fs;
+	private final BaseFileSystem <?> fs;
 
 	// --------------------------------------------------------------------------------------------
 	//  Constructors
 	// --------------------------------------------------------------------------------------------
 
-	public FileInputFormat(BaseFileSystem<?> fs) {this(null, fs);}
+	public FileInputFormat(BaseFileSystem <?> fs) {this(null, fs);}
 
-	protected FileInputFormat(Path filePath, BaseFileSystem<?> fs) {
+	protected FileInputFormat(Path filePath, BaseFileSystem <?> fs) {
 		if (filePath != null) {
 			setFilePath(filePath);
 		}
@@ -266,9 +270,7 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	// --------------------------------------------------------------------------------------------
 
 	/**
-	 *
 	 * @return The path of the file to read.
-	 *
 	 * @deprecated Please use getFilePaths() instead.
 	 */
 	@Deprecated
@@ -308,6 +310,10 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		}
 	}
 
+	public BaseFileSystem <?> getFileSystem() {
+		return this.fs;
+	}
+
 	public void setFilePath(String filePath) {
 		if (filePath == null) {
 			throw new IllegalArgumentException("File path cannot be null.");
@@ -326,7 +332,8 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		try {
 			this.setFilePath(new Path(filePath));
 		} catch (RuntimeException rex) {
-			throw new RuntimeException("Could not create a valid URI from the given file path name: " + rex.getMessage());
+			throw new RuntimeException(
+				"Could not create a valid URI from the given file path name: " + rex.getMessage());
 		}
 	}
 
@@ -410,7 +417,8 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 
 	public void setOpenTimeout(long openTimeout) {
 		if (openTimeout < 0) {
-			throw new IllegalArgumentException("The timeout for opening the input splits must be positive or zero (= infinite).");
+			throw new IllegalArgumentException(
+				"The timeout for opening the input splits must be positive or zero (= infinite).");
 		}
 		this.openTimeout = openTimeout;
 	}
@@ -477,7 +485,9 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	}
 
 	/**
-	 * Obtains basic file statistics containing only file size. If the input is a directory, then the size is the sum of all contained files.
+	 * Obtains basic file statistics containing only file size. If the input is a directory, then the size is the
+	 * sum of
+	 * all contained files.
 	 *
 	 * @see org.apache.flink.api.common.io.InputFormat#getStatistics(BaseStatistics)
 	 */
@@ -488,16 +498,19 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 			(FileBaseStatistics) cachedStats : null;
 
 		try {
-			return getFileStats(cachedFileStats, getFilePaths(), new ArrayList<>(getFilePaths().length));
+			return getFileStats(cachedFileStats, getFilePaths(), new ArrayList <>(getFilePaths().length));
 		} catch (IOException ioex) {
 			if (LOG.isWarnEnabled()) {
-				LOG.warn("Could not determine statistics for paths '" + Arrays.toString(getFilePaths()) + "' due to an io error: "
-						+ ioex.getMessage());
+				LOG.warn("Could not determine statistics for paths '" + Arrays.toString(getFilePaths())
+					+ "' due to an io error: "
+					+ ioex.getMessage());
 			}
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			if (LOG.isErrorEnabled()) {
-				LOG.error("Unexpected problem while getting the file statistics for paths '" + Arrays.toString(getFilePaths()) + "': "
+				LOG.error(
+					"Unexpected problem while getting the file statistics for paths '" + Arrays.toString
+						(getFilePaths())
+						+ "': "
 						+ t.getMessage(), t);
 			}
 		}
@@ -506,7 +519,8 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		return null;
 	}
 
-	protected FileBaseStatistics getFileStats(FileBaseStatistics cachedStats, Path[] filePaths, ArrayList<FileStatus> files) throws IOException {
+	protected FileBaseStatistics getFileStats(FileBaseStatistics cachedStats, Path[] filePaths,
+											  ArrayList <FileStatus> files) throws IOException {
 
 		long totalLength = 0;
 		long latestModTime = 0;
@@ -531,7 +545,8 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		return new FileBaseStatistics(latestModTime, totalLength, BaseStatistics.AVG_RECORD_BYTES_UNKNOWN);
 	}
 
-	protected FileBaseStatistics getFileStats(FileBaseStatistics cachedStats, Path filePath, FileSystem fs, ArrayList<FileStatus> files) throws IOException {
+	protected FileBaseStatistics getFileStats(FileBaseStatistics cachedStats, Path filePath, FileSystem fs,
+											  ArrayList <FileStatus> files) throws IOException {
 
 		// get the file info and check whether the cached statistics are still valid.
 		final FileStatus file = fs.getFileStatus(filePath);
@@ -576,7 +591,6 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	 *
 	 * @param minNumSplits The minimum desired number of file splits.
 	 * @return The computed file splits.
-	 *
 	 * @see org.apache.flink.api.common.io.InputFormat#createInputSplits(int)
 	 */
 	@Override
@@ -588,10 +602,10 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		// take the desired number of splits into account
 		minNumSplits = Math.max(minNumSplits, this.numSplits);
 
-		final List<FileInputSplit> inputSplits = new ArrayList<FileInputSplit>(minNumSplits);
+		final List <FileInputSplit> inputSplits = new ArrayList <FileInputSplit>(minNumSplits);
 
 		// get all the files that are involved in the splits
-		List<FileStatus> files = new ArrayList<>();
+		List <FileStatus> files = new ArrayList <>();
 		long totalLength = 0;
 
 		for (Path path : getFilePaths()) {
@@ -614,21 +628,20 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 			for (final FileStatus file : files) {
 				final FileSystem fs = FileSystemUtils.getFlinkFileSystem(this.fs, file.getPath().toString());
 				final BlockLocation[] blocks = fs.getFileBlockLocations(file, 0, file.getLen());
-				Set<String> hosts = new HashSet<String>();
-				for(BlockLocation block : blocks) {
+				Set <String> hosts = new HashSet <String>();
+				for (BlockLocation block : blocks) {
 					hosts.addAll(Arrays.asList(block.getHosts()));
 				}
 				long len = file.getLen();
-				if(testForUnsplittable(file)) {
+				if (testForUnsplittable(file)) {
 					len = READ_WHOLE_SPLIT_FLAG;
 				}
 				FileInputSplit fis = new FileInputSplit(splitNum++, file.getPath(), 0, len,
-						hosts.toArray(new String[hosts.size()]));
+					hosts.toArray(new String[hosts.size()]));
 				inputSplits.add(fis);
 			}
 			return inputSplits.toArray(new FileInputSplit[inputSplits.size()]);
 		}
-
 
 		final long maxSplitSize = totalLength / minNumSplits + (totalLength % minNumSplits == 0 ? 0 : 1);
 
@@ -643,8 +656,7 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 			final long minSplitSize;
 			if (this.minSplitSize <= blockSize) {
 				minSplitSize = this.minSplitSize;
-			}
-			else {
+			} else {
 				if (LOG.isWarnEnabled()) {
 					LOG.warn("Minimal split size of " + this.minSplitSize + " is larger than the block size of " +
 						blockSize + ". Decreasing minimal split size to block size.");
@@ -707,32 +719,36 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 
 	/**
 	 * Enumerate all files in the directory and recursive if enumerateNestedFiles is true.
+	 *
 	 * @return the total length of accepted files.
 	 */
-	private long addFilesInDir(Path path, List<FileStatus> files, boolean logExcludedFiles)
-			throws IOException {
+	private long addFilesInDir(Path path, List <FileStatus> files, boolean logExcludedFiles)
+		throws IOException {
 		final FileSystem fs = FileSystemUtils.getFlinkFileSystem(this.fs, path.toString());
 
 		long length = 0;
 
-		for(FileStatus dir: fs.listStatus(path)) {
+		for (FileStatus dir : fs.listStatus(path)) {
 			if (dir.isDir()) {
 				if (acceptFile(dir) && enumerateNestedFiles) {
 					length += addFilesInDir(dir.getPath(), files, logExcludedFiles);
 				} else {
 					if (logExcludedFiles && LOG.isDebugEnabled()) {
-						LOG.debug("Directory "+dir.getPath().toString()+" did not pass the file-filter and is excluded.");
+						LOG.debug(
+							"Directory " + dir.getPath().toString() + " did not pass the file-filter and is excluded"
+								+ ".");
 					}
 				}
-			}
-			else {
-				if(acceptFile(dir)) {
+			} else {
+				if (acceptFile(dir)) {
 					files.add(dir);
 					length += dir.getLen();
 					testForUnsplittable(dir);
 				} else {
 					if (logExcludedFiles && LOG.isDebugEnabled()) {
-						LOG.debug("Directory "+dir.getPath().toString()+" did not pass the file-filter and is excluded.");
+						LOG.debug(
+							"Directory " + dir.getPath().toString() + " did not pass the file-filter and is excluded"
+								+ ".");
 					}
 				}
 			}
@@ -741,14 +757,14 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	}
 
 	protected boolean testForUnsplittable(FileStatus pathFile) {
-		if(getInflaterInputStreamFactory(pathFile.getPath()) != null) {
+		if (getInflaterInputStreamFactory(pathFile.getPath()) != null) {
 			unsplittable = true;
 			return true;
 		}
 		return false;
 	}
 
-	private InflaterInputStreamFactory<?> getInflaterInputStreamFactory(Path path) {
+	private InflaterInputStreamFactory <?> getInflaterInputStreamFactory(Path path) {
 		String fileExtension = extractFileExtension(path.getName());
 		if (fileExtension != null) {
 			return getInflaterInputStreamFactory(fileExtension);
@@ -777,8 +793,8 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	 * Retrieves the index of the <tt>BlockLocation</tt> that contains the part of the file described by the given
 	 * offset.
 	 *
-	 * @param blocks The different blocks of the file. Must be ordered by their offset.
-	 * @param offset The offset of the position in the file.
+	 * @param blocks     The different blocks of the file. Must be ordered by their offset.
+	 * @param offset     The offset of the position in the file.
 	 * @param startIndex The earliest index to look at.
 	 * @return The index of the block containing the given position.
 	 */
@@ -818,9 +834,9 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		this.splitLength = fileSplit.getLength();
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Opening input split " + fileSplit.getPath() + " [" + this.splitStart + "," + this.splitLength + "]");
+			LOG.debug(
+				"Opening input split " + fileSplit.getPath() + " [" + this.splitStart + "," + this.splitLength + "]");
 		}
-
 
 		// open the split in an asynchronous thread
 		final InputSplitOpenThread isot = new InputSplitOpenThread(fileSplit, this.openTimeout, this.fs);
@@ -829,10 +845,9 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		try {
 			this.stream = isot.waitForCompletion();
 			this.stream = decorateInputStream(this.stream, fileSplit);
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			throw new IOException("Error opening the Input Split " + fileSplit.getPath() +
-					" [" + splitStart + "," + splitLength + "]: " + t.getMessage(), t);
+				" [" + splitStart + "," + splitLength + "]: " + t.getMessage(), t);
 		}
 
 		// get FSDataInputStream
@@ -842,9 +857,11 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	}
 
 	/**
-	 * This method allows to wrap/decorate the raw {@link FSDataInputStream} for a certain file split, e.g., for decoding.
+	 * This method allows to wrap/decorate the raw {@link FSDataInputStream} for a certain file split, e.g., for
+	 * decoding.
 	 * When overriding this method, also consider adapting {@link FileInputFormat#testForUnsplittable} if your
-	 * stream decoration renders the input file unsplittable. Also consider calling existing superclass implementations.
+	 * stream decoration renders the input file unsplittable. Also consider calling existing superclass
+	 * implementations.
 	 *
 	 * @param inputStream is the input stream to decorated
 	 * @param fileSplit   is the file split for which the input stream shall be decorated
@@ -852,9 +869,10 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	 * @throws Throwable if the decoration fails
 	 * @see InputStreamFSInputWrapper
 	 */
-	protected FSDataInputStream decorateInputStream(FSDataInputStream inputStream, FileInputSplit fileSplit) throws Throwable {
+	protected FSDataInputStream decorateInputStream(FSDataInputStream inputStream, FileInputSplit fileSplit) throws
+		Throwable {
 		// Wrap stream in a extracting (decompressing) stream if file ends with a known compression file extension.
-		InflaterInputStreamFactory<?> inflaterInputStreamFactory = getInflaterInputStreamFactory(fileSplit.getPath());
+		InflaterInputStreamFactory <?> inflaterInputStreamFactory = getInflaterInputStreamFactory(fileSplit.getPath());
 		if (inflaterInputStreamFactory != null) {
 			return new InputStreamFSInputWrapper(inflaterInputStreamFactory.create(stream));
 		}
@@ -879,7 +897,6 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	 * When this method will be removed, all FileInputFormats have to support multiple paths.
 	 *
 	 * @return True if the FileInputFormat supports multiple paths, false otherwise.
-	 *
 	 * @deprecated Will be removed for Flink 2.0.
 	 */
 	@Deprecated
@@ -890,7 +907,7 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 	public String toString() {
 		return getFilePaths() == null || getFilePaths().length == 0 ?
 			"File Input (unknown file)" :
-			"File Input (" +  Arrays.toString(this.getFilePaths()) + ')';
+			"File Input (" + Arrays.toString(this.getFilePaths()) + ')';
 	}
 
 	// ============================================================================================
@@ -911,12 +928,9 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		/**
 		 * Creates a new statistics object.
 		 *
-		 * @param fileModTime
-		 *        The timestamp of the latest modification of any of the involved files.
-		 * @param fileSize
-		 *        The size of the file, in bytes. <code>-1</code>, if unknown.
-		 * @param avgBytesPerRecord
-		 *        The average number of byte in a record, or <code>-1.0f</code>, if unknown.
+		 * @param fileModTime       The timestamp of the latest modification of any of the involved files.
+		 * @param fileSize          The size of the file, in bytes. <code>-1</code>, if unknown.
+		 * @param avgBytesPerRecord The average number of byte in a record, or <code>-1.0f</code>, if unknown.
 		 */
 		public FileBaseStatistics(long fileModTime, long fileSize, float avgBytesPerRecord) {
 			this.fileModTime = fileModTime;
@@ -967,37 +981,37 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 		public float getAverageRecordWidth() {
 			return this.avgBytesPerRecord;
 		}
-		
+
 		@Override
 		public String toString() {
 			return "size=" + this.fileSize + ", recWidth=" + this.avgBytesPerRecord + ", modAt=" + this.fileModTime;
 		}
 	}
-	
+
 	// ============================================================================================
-	
+
 	/**
 	 * Obtains a DataInputStream in an thread that is not interrupted.
 	 * This is a necessary hack around the problem that the HDFS client is very sensitive to InterruptedExceptions.
 	 */
 	public static class InputSplitOpenThread extends Thread {
-		
+
 		private final FileInputSplit split;
-		
+
 		private final long timeout;
 
 		private volatile FSDataInputStream fdis;
 
 		private volatile Throwable error;
-		
+
 		private volatile boolean aborted;
 
-		private final BaseFileSystem<?> fs;
+		private final BaseFileSystem <?> fs;
 
-		public InputSplitOpenThread(FileInputSplit split, long timeout, BaseFileSystem<?> fs) {
+		public InputSplitOpenThread(FileInputSplit split, long timeout, BaseFileSystem <?> fs) {
 			super("Transient InputSplit Opener");
 			setDaemon(true);
-			
+
 			this.split = split;
 			this.timeout = timeout;
 			this.fs = fs;
@@ -1008,37 +1022,35 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 			try {
 				final FileSystem fs = FileSystemUtils.getFlinkFileSystem(this.fs, this.split.getPath().toString());
 				this.fdis = fs.open(this.split.getPath());
-				
+
 				// check for canceling and close the stream in that case, because no one will obtain it
 				if (this.aborted) {
 					final FSDataInputStream f = this.fdis;
 					this.fdis = null;
 					f.close();
 				}
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				this.error = t;
 			}
 		}
-		
+
 		public FSDataInputStream waitForCompletion() throws Throwable {
 			final long start = System.currentTimeMillis();
 			long remaining = this.timeout;
-			
+
 			do {
 				try {
 					// wait for the task completion
 					this.join(remaining);
-				}
-				catch (InterruptedException iex) {
+				} catch (InterruptedException iex) {
 					// we were canceled, so abort the procedure
 					abortWait();
 					throw iex;
 				}
 			}
 			while (this.error == null && this.fdis == null &&
-					(remaining = this.timeout + start - System.currentTimeMillis()) > 0);
-			
+				(remaining = this.timeout + start - System.currentTimeMillis()) > 0);
+
 			if (this.error != null) {
 				throw this.error;
 			}
@@ -1050,17 +1062,17 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 				// b) the flag was set such that the stream did not see it and we have a valid stream
 				// In any case, close the stream and throw an exception.
 				abortWait();
-				
+
 				final boolean stillAlive = this.isAlive();
 				final StringBuilder bld = new StringBuilder(256);
 				for (StackTraceElement e : this.getStackTrace()) {
 					bld.append("\tat ").append(e.toString()).append('\n');
 				}
-				throw new IOException("Input opening request timed out. Opener was " + (stillAlive ? "" : "NOT ") + 
+				throw new IOException("Input opening request timed out. Opener was " + (stillAlive ? "" : "NOT ") +
 					" alive. Stack of split open thread:\n" + bld.toString());
 			}
 		}
-		
+
 		/**
 		 * Double checked procedure setting the abort flag and closing the stream.
 		 */
@@ -1075,13 +1087,13 @@ public abstract class FileInputFormat<OT> extends RichInputFormat<OT, FileInputS
 			}
 		}
 	}
-	
+
 	// ============================================================================================
 	//  Parameterization via configuration
 	// ============================================================================================
-	
+
 	// ------------------------------------- Config Keys ------------------------------------------
-	
+
 	/**
 	 * The config parameter which defines the input file path.
 	 */

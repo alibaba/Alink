@@ -9,10 +9,6 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasVectorSize<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 向量长度
-	 * @cn 向量长度
-	 */
 	ParamInfo <Long> VECTOR_SIZE = ParamInfoFactory
 		.createParamInfo("vectorSize", Long.class)
 		.setDescription("Size of the vector")

@@ -9,6 +9,8 @@ import java.util.Map;
 
 public class JsonWriter extends FormatWriter {
 
+	private static final long serialVersionUID = -1579550176944653654L;
+
 	public JsonWriter() {}
 
 	@Override

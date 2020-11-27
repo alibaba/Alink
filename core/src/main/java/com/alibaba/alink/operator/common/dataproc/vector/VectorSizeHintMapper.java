@@ -1,59 +1,61 @@
 package com.alibaba.alink.operator.common.dataproc.vector;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.SISOMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorSizeHintParams;
 import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.TableSchema;
 
 /**
  * This mapper checks the size of vector and give results as parameter define.
  */
 public class VectorSizeHintMapper extends SISOMapper {
-    private int size;
+	private static final long serialVersionUID = 5056834356417351493L;
+	private int size;
 
-    private HandleInvalidMethod handleMethod;
+	private HandleInvalidMethod handleMethod;
 
-    public VectorSizeHintMapper(TableSchema dataSchema, Params params) {
-        super(dataSchema, params);
-        this.handleMethod = this.params.get(VectorSizeHintParams.HANDLE_INVALID);
-        this.size = this.params.get(VectorSizeHintParams.SIZE);
-    }
+	public VectorSizeHintMapper(TableSchema dataSchema, Params params) {
+		super(dataSchema, params);
+		this.handleMethod = this.params.get(VectorSizeHintParams.HANDLE_INVALID);
+		this.size = this.params.get(VectorSizeHintParams.SIZE);
+	}
 
-    @Override
-    protected TypeInformation initOutputColType() {
-        return VectorTypes.VECTOR;
-    }
+	@Override
+	protected TypeInformation initOutputColType() {
+		return VectorTypes.VECTOR;
+	}
 
-    @Override
-    protected Object mapColumn(Object input) throws Exception {
-        Vector vec;
-        switch (handleMethod) {
-            case ERROR:
-                if (input == null) {
-                    throw new NullPointerException(
-                            "Got null vector in VectorSizeHint");
-                } else {
-                    vec = VectorUtil.getVector(input);
-                    if (vec.size() == size) {
-                        return vec;
-                    } else {
-                        throw new IllegalArgumentException(
-                                "VectorSizeHint : vec size (" + vec.size() + ") not equal param size (" + size + ").");
-                    }
-                }
-            case SKIP:
-                if (input != null) {
-                    return VectorUtil.getVector(input);
-                } else {
-                    return null;
-                }
-            default:
-                throw new IllegalArgumentException("Not support param " + handleMethod);
-        }
-    }
+	@Override
+	protected Object mapColumn(Object input) throws Exception {
+		Vector vec;
+		switch (handleMethod) {
+			case ERROR:
+				if (input == null) {
+					throw new NullPointerException(
+						"Got null vector in VectorSizeHint");
+				} else {
+					vec = VectorUtil.getVector(input);
+					if (vec.size() == size) {
+						return vec;
+					} else {
+						throw new IllegalArgumentException(
+							"VectorSizeHint : vec size (" + vec.size() + ") not equal param size (" + size + ").");
+					}
+				}
+			case SKIP:
+				if (input != null) {
+					return VectorUtil.getVector(input);
+				} else {
+					return null;
+				}
+			default:
+				throw new IllegalArgumentException("Not support param " + handleMethod);
+		}
+	}
 }

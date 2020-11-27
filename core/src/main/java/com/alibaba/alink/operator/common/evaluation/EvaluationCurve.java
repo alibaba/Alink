@@ -10,6 +10,7 @@ import java.io.Serializable;
  * For rocCurve, provide KS(The maximum difference between TPR(y coordinate) and FPR(x coordinate)).
  */
 public class EvaluationCurve implements Serializable {
+	private static final long serialVersionUID = 384064948738063993L;
 	private EvaluationCurvePoint[] points;
 
 	public EvaluationCurve(EvaluationCurvePoint[] points) {
@@ -21,7 +22,8 @@ public class EvaluationCurve implements Serializable {
 	}
 
 	/**
-	 * Calculate the area below the curve, only used in rocCurve and recall PrecisionCurve, it's meaningless for LiftChart.
+	 * Calculate the area below the curve, only used in rocCurve and recall PrecisionCurve, it's meaningless for
+	 * LiftChart.
 	 */
 	double calcArea() {
 		if (null == points) {
@@ -35,7 +37,8 @@ public class EvaluationCurve implements Serializable {
 	}
 
 	/**
-	 * Calculate the maximum difference between y x coordinate, only used in rocCurve. It's meaningless for Recall-Precision Curve and LiftChart.
+	 * Calculate the maximum difference between y x coordinate, only used in rocCurve. It's meaningless for
+	 * Recall-Precision Curve and LiftChart.
 	 */
 	double calcKs() {
 		if (null == points) {
@@ -49,7 +52,8 @@ public class EvaluationCurve implements Serializable {
 	}
 
 	/**
-	 * Return the X coordinates as one array and Y coordinate as another array. Union the two arrays as a two-dimension array.
+	 * Return the X coordinates as one array and Y coordinate as another array. Union the two arrays as a two-dimension
+	 * array.
 	 */
 	double[][] getXYArray() {
 		double[] x = new double[points.length];

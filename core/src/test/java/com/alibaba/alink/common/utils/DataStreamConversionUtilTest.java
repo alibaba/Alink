@@ -28,7 +28,8 @@ public class DataStreamConversionUtilTest {
 
 		DataStream <Row> input = env.fromElements(Row.of("a"));
 
-		Table table1 = DataStreamConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, input, new String[] {"word"});
+		Table table1 = DataStreamConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, input,
+			new String[] {"word"});
 		Assert.assertEquals(
 			new TableSchema(new String[] {"word"}, new TypeInformation[] {TypeInformation.of(String.class)}),
 			table1.getSchema()
@@ -52,8 +53,8 @@ public class DataStreamConversionUtilTest {
 			MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID,
 			input,
 			new TableSchema(
-				new String[]{"word"},
-				new TypeInformation[]{TypeInformation.of(Integer.class)}
+				new String[] {"word"},
+				new TypeInformation[] {TypeInformation.of(Integer.class)}
 			)
 		);
 
@@ -65,7 +66,8 @@ public class DataStreamConversionUtilTest {
 		thrown.expect(ValidationException.class);
 		DataStreamConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, input, new String[] {"f0"});
 
-		DataStream <Row> output = DataStreamConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID,table1);
+		DataStream <Row> output = DataStreamConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID,
+			table1);
 
 		output.print();
 
@@ -73,6 +75,8 @@ public class DataStreamConversionUtilTest {
 	}
 
 	private static class GenericTypeMap implements MapFunction <Row, Row> {
+
+		private static final long serialVersionUID = -6728167962369116447L;
 
 		@Override
 		public Row map(Row value) throws Exception {

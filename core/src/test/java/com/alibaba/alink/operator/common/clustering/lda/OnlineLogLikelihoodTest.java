@@ -5,6 +5,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
+import org.apache.commons.math3.random.RandomDataGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,19 +19,19 @@ public class OnlineLogLikelihoodTest {
 		List <Vector> data = new ArrayList <>();
 
 		Row[] testArray =
-			new Row[]{
-				Row.of(new Object[]{0, "0:1 1:2 2:6 3:0 4:2 5:3 6:1 7:1 8:0 9:0 10:3"}),
-				Row.of(new Object[]{1, "0:1 1:3 2:0 3:1 4:3 5:0 6:0 7:2 8:0 9:0 10:1"}),
-				Row.of(new Object[]{2, "0:1 1:4 2:1 3:0 4:0 5:4 6:9 7:0 8:1 9:2 10:0"}),
-				Row.of(new Object[]{3, "0:2 1:1 2:0 3:3 4:0 5:0 6:5 7:0 8:2 9:3 10:9"}),
-				Row.of(new Object[]{4, "0:3 1:1 2:1 3:9 4:3 5:0 6:2 7:0 8:0 9:1 10:3"}),
-				Row.of(new Object[]{5, "0:4 1:2 2:0 3:3 4:4 5:5 6:1 7:1 8:1 9:4 10:0"}),
-				Row.of(new Object[]{6, "0:2 1:1 2:0 3:3 4:0 5:0 6:5 7:0 8:2 9:2 10:9"}),
-				Row.of(new Object[]{7, "0:1 1:1 2:1 3:9 4:2 5:1 6:2 7:0 8:0 9:1 10:3"}),
-				Row.of(new Object[]{8, "0:4 1:4 2:0 3:3 4:4 5:2 6:1 7:3 8:0 9:0 10:0"}),
-				Row.of(new Object[]{9, "0:2 1:8 2:2 3:0 4:3 5:0 6:2 7:0 8:2 9:7 10:2"}),
-				Row.of(new Object[]{10, "0:1 1:1 2:1 3:9 4:0 5:2 6:2 7:0 8:0 9:3 10:3"}),
-				Row.of(new Object[]{11, "0:4 1:1 2:0 3:0 4:4 5:5 6:1 7:3 8:0 9:1 10:0"})
+			new Row[] {
+				Row.of(new Object[] {0, "0:1 1:2 2:6 3:0 4:2 5:3 6:1 7:1 8:0 9:0 10:3"}),
+				Row.of(new Object[] {1, "0:1 1:3 2:0 3:1 4:3 5:0 6:0 7:2 8:0 9:0 10:1"}),
+				Row.of(new Object[] {2, "0:1 1:4 2:1 3:0 4:0 5:4 6:9 7:0 8:1 9:2 10:0"}),
+				Row.of(new Object[] {3, "0:2 1:1 2:0 3:3 4:0 5:0 6:5 7:0 8:2 9:3 10:9"}),
+				Row.of(new Object[] {4, "0:3 1:1 2:1 3:9 4:3 5:0 6:2 7:0 8:0 9:1 10:3"}),
+				Row.of(new Object[] {5, "0:4 1:2 2:0 3:3 4:4 5:5 6:1 7:1 8:1 9:4 10:0"}),
+				Row.of(new Object[] {6, "0:2 1:1 2:0 3:3 4:0 5:0 6:5 7:0 8:2 9:2 10:9"}),
+				Row.of(new Object[] {7, "0:1 1:1 2:1 3:9 4:2 5:1 6:2 7:0 8:0 9:1 10:3"}),
+				Row.of(new Object[] {8, "0:4 1:4 2:0 3:3 4:4 5:2 6:1 7:3 8:0 9:0 10:0"}),
+				Row.of(new Object[] {9, "0:2 1:8 2:2 3:0 4:3 5:0 6:2 7:0 8:2 9:7 10:2"}),
+				Row.of(new Object[] {10, "0:1 1:1 2:1 3:9 4:0 5:2 6:2 7:0 8:0 9:3 10:3"}),
+				Row.of(new Object[] {11, "0:4 1:1 2:0 3:0 4:4 5:5 6:1 7:3 8:0 9:1 10:0"})
 			};
 
 		for (int i = 0; i < testArray.length; i++) {
@@ -106,9 +107,11 @@ public class OnlineLogLikelihoodTest {
 		int vocabularySize = 11;
 		double beta = 0.2;
 		int taskNum = 1;
+		RandomDataGenerator random = new RandomDataGenerator();
+		random.reSeed(1);
 
 		double loglikelihood = OnlineLogLikelihood.logLikelihood(data, lambda, alpha, gammad,
-			numTopic, vocabularySize, beta, taskNum);
+			numTopic, vocabularySize, beta, taskNum, 100, random);
 
 		Assert.assertEquals(-833.0890905595685, loglikelihood, 10e-4);
 
@@ -118,7 +121,7 @@ public class OnlineLogLikelihoodTest {
 	@Test
 	public void testSum() {
 		DenseMatrix gammad = new DenseMatrix(5, 1, new double[] {-0.7, 0.8, 0.9, 1.0, 1.1});
-		double sum = OnlineLogLikelihood.logSumExp(gammad);
+		double sum = LdaUtil.logSumExp(gammad);
 		System.out.println(sum);
 	}
 }

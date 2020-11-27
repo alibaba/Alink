@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 
 /**
@@ -11,6 +11,8 @@ import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
  */
 public final class QuantileDiscretizerPredictBatchOp extends ModelMapBatchOp <QuantileDiscretizerPredictBatchOp>
 	implements QuantileDiscretizerPredictParams <QuantileDiscretizerPredictBatchOp> {
+
+	private static final long serialVersionUID = -8459276043199364983L;
 
 	public QuantileDiscretizerPredictBatchOp() {
 		this(null);

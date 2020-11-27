@@ -12,6 +12,7 @@ import java.io.Serializable;
  */
 public abstract class Mapper implements Serializable {
 
+	private static final long serialVersionUID = -3634328096241559957L;
 	/**
 	 * schema of the input.
 	 */
@@ -57,4 +58,13 @@ public abstract class Mapper implements Serializable {
 	public void close() {
 	}
 
+	/**
+	 * Return a copy of 'this' object that is used in multi-threaded prediction.
+	 * Do not to share runtime buffer.
+	 *
+	 * If the ModelMapper is thread-safe (no runtime buffer), then just return 'this' is enough.
+	 */
+	protected Mapper mirror() {
+		return this;
+	}
 }

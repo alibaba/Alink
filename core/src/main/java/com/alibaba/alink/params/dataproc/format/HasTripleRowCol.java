@@ -9,13 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasTripleRowCol<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 三元组结构中行信息的列名
-	 * @cn 三元组结构中行信息的列名
-	 */
 	ParamInfo <String> TRIPLE_ROW_COL = ParamInfoFactory
 		.createParamInfo("tripleRowCol", String.class)
 		.setDescription("Name of the triple row column")
+		.setHasDefaultValue(null)
 		.build();
 
 	default String getTripleRowCol() {

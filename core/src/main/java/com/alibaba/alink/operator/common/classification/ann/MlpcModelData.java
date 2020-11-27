@@ -1,8 +1,9 @@
 package com.alibaba.alink.operator.common.classification.ann;
 
-import com.alibaba.alink.common.linalg.DenseVector;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.common.linalg.DenseVector;
 
 import java.util.List;
 
@@ -11,15 +12,15 @@ import java.util.List;
  */
 public class MlpcModelData {
 
-    public Params meta = new Params();
-    public DenseVector weights;
-    public TypeInformation labelType;
-    public List<Object> labels;
+	public Params meta = new Params();
+	public DenseVector weights;
+	public TypeInformation labelType;
+	public List <Object> labels;
 
-    public MlpcModelData() {
-    }
+	public MlpcModelData() {
+	}
 
-    public MlpcModelData(TypeInformation labelType) {
-        this.labelType = labelType;
-    }
+	public MlpcModelData(TypeInformation labelType) {
+		this.labelType = labelType;
+	}
 }

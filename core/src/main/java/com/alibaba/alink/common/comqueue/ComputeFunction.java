@@ -5,6 +5,8 @@ package com.alibaba.alink.common.comqueue;
  */
 public abstract class ComputeFunction implements ComQueueItem {
 
+	private static final long serialVersionUID = -6463146823942978868L;
+
 	/**
 	 * Perform the computation work.
 	 *

@@ -1,13 +1,14 @@
 package com.alibaba.alink.operator.stream.utils;
 
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
+import org.apache.flink.table.functions.TableFunction;
+
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.common.utils.UDFHelper;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.dataproc.UDTFParams;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.apache.flink.table.functions.TableFunction;
 
 /**
  * This class provides the UDTF feature which is similar with Flink user-defined table functions.
@@ -22,48 +23,50 @@ import org.apache.flink.table.functions.TableFunction;
  * <p>
  * (https://ci.apache.org/projects/flink/flink-docs-stable/dev/table/udfs.html#table-functions)
  */
-public class UDTFStreamOp extends StreamOperator<UDTFStreamOp>
-    implements UDTFParams<UDTFStreamOp> {
+public class UDTFStreamOp extends StreamOperator <UDTFStreamOp>
+	implements UDTFParams <UDTFStreamOp> {
 
-    private TableFunction<?> func;
+	private static final long serialVersionUID = 5649187451192809328L;
+	private TableFunction <?> func;
 
-    public UDTFStreamOp() {
-        super(null);
-    }
+	public UDTFStreamOp() {
+		this(null);
+	}
 
-    public UDTFStreamOp(Params params) {
-        super(params);
-    }
+	public UDTFStreamOp(Params params) {
+		super(params);
+	}
 
-    public UDTFStreamOp setFunc(TableFunction<?> udf) {
-        this.func = udf;
-        return this;
-    }
+	public UDTFStreamOp setFunc(TableFunction <?> udf) {
+		this.func = udf;
+		return this;
+	}
 
-    public TableFunction<?> getFunc() {
-        return this.func;
-    }
+	public TableFunction <?> getFunc() {
+		return this.func;
+	}
 
-    @Override
-    public UDTFStreamOp linkFrom(StreamOperator<?>... inputs) {
-        if (null == getFunc() && null == getFuncName()) {
-            throw new IllegalArgumentException("A TableFunction or a registered function name must be set using setFunc or setFuncName.");
-        }
-        StreamOperator<?> in = checkAndGetFirst(inputs);
-        String[] reservedCols = ObjectUtils.defaultIfNull(getReservedCols(), in.getColNames());
+	@Override
+	public UDTFStreamOp linkFrom(StreamOperator <?>... inputs) {
+		if (null == getFunc() && null == getFuncName()) {
+			throw new IllegalArgumentException(
+				"A TableFunction or a registered function name must be set using setFunc or setFuncName.");
+		}
+		StreamOperator <?> in = checkAndGetFirst(inputs);
+		String[] reservedCols = ObjectUtils.defaultIfNull(getReservedCols(), in.getColNames());
 
-        StreamTableEnvironment tEnv = MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment();
+		StreamTableEnvironment tEnv = MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment();
 
-        String funcName = getFuncName();
-        if (null == funcName) {
-            funcName = UDFHelper.generateRandomFuncName();
-            tEnv.registerFunction(funcName, func);
-        }
+		String funcName = getFuncName();
+		if (null == funcName) {
+			funcName = UDFHelper.generateRandomFuncName();
+			tEnv.registerFunction(funcName, func);
+		}
 
-        String clause = UDFHelper.generateUDTFClause(in.getOutputTable().toString(), funcName,
-            getOutputCols(), getSelectedCols(), reservedCols);
-        this.setOutputTable(tEnv.sqlQuery(clause));
-        return this;
-    }
+		String clause = UDFHelper.generateUDTFClause(in.getOutputTable().toString(), funcName,
+			getOutputCols(), getSelectedCols(), reservedCols);
+		this.setOutputTable(tEnv.sqlQuery(clause));
+		return this;
+	}
 
 }

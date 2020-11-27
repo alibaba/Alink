@@ -4,12 +4,13 @@ import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelData;
 import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelDataConverter;
 import com.alibaba.alink.operator.common.tree.TreeModelDataConverter;
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
-
 import javax.swing.*;
+
 import java.awt.*;
 
 public class EdgeJPanel extends JPanel {
 
+	private static final long serialVersionUID = 6315887142036282347L;
 	private TreeModelDataConverter model;
 	private MultiStringIndexerModelData stringIndexerModelData;
 	private TreeModelViz.Node4CalcPos node4CalcPos;
@@ -74,7 +75,6 @@ public class EdgeJPanel extends JPanel {
 		l2.setHorizontalAlignment(SwingConstants.CENTER);
 		l2.setToolTipText(showstr);
 		l2.setBounds(x - this.nd.nodeWidth / 2, y + (int) substep, this.nd.nodeWidth, (int) (2 * substep));
-
 
 		JLabel l3 = new JLabel("");
 		l3.setOpaque(true);
@@ -234,21 +234,20 @@ public class EdgeJPanel extends JPanel {
 			l4.setBackground(lineColor);
 			l4.setBounds(x3, steph, x2 - x3, thirdlinewidth);
 
-
 			this.add(l4);
 		}
 	}
 
 	private void initComponents() {
 
-		GroupLayout layout = new GroupLayout(this);
+		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
 		this.setLayout(layout);
 		layout.setHorizontalGroup(
-			layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+			layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
 				.addGap(0, 400, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(
-			layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+			layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
 				.addGap(0, 300, Short.MAX_VALUE)
 		);
 	}

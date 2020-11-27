@@ -4,8 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasCreateTreeMode<T> extends WithParams<T> {
-	ParamInfo<String> CREATE_TREE_MODE = ParamInfoFactory
+public interface HasCreateTreeMode<T> extends WithParams <T> {
+	ParamInfo <String> CREATE_TREE_MODE = ParamInfoFactory
 		.createParamInfo("createTreeMode", String.class)
 		.setDescription("series or parallel")
 		.setHasDefaultValue("series")

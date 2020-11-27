@@ -6,9 +6,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.params.ParamUtil;
 
-public interface HasHandleInvalid<T> extends WithParams<T> {
-
-	ParamInfo<HandleInvalid> HANDLE_INVALID = ParamInfoFactory
+public interface HasHandleInvalid<T> extends WithParams <T> {
+	ParamInfo <HandleInvalid> HANDLE_INVALID = ParamInfoFactory
 		.createParamInfo("handleInvalid", HandleInvalid.class)
 		.setDescription("Strategy to handle unseen token when doing prediction, one of \"keep\", \"skip\" or "
 			+ "\"error\"")

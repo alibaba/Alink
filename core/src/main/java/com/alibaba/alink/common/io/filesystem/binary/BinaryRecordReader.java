@@ -10,13 +10,14 @@ import java.io.Serializable;
 
 public class BinaryRecordReader implements Serializable {
 
-	private InputStream stream;
-	private RowSerializer serializer;
+	private static final long serialVersionUID = -8789744031720381820L;
+	private final InputStream stream;
+	private final RowSerializer serializer;
 	private transient int firstByte;
 	private transient int secondByte;
 	private transient int thirdByte;
 
-	public BinaryRecordReader(InputStream stream, String[] fieldNames, TypeInformation[] fieldTypes) {
+	public BinaryRecordReader(InputStream stream, String[] fieldNames, TypeInformation<?>[] fieldTypes) {
 		this.stream = stream;
 		this.serializer = new RowSerializer(fieldNames, fieldTypes);
 	}
@@ -28,6 +29,7 @@ public class BinaryRecordReader implements Serializable {
 		if (firstByte != BinaryRecordWriter.MAGIC1
 			|| secondByte != BinaryRecordWriter.MAGIC2
 			|| thirdByte != BinaryRecordWriter.MAGIC3) {
+
 			throw new RuntimeException("Illegal alink format, header mismatch");
 		}
 	}

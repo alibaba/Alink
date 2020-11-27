@@ -2,23 +2,25 @@ package com.alibaba.alink.operator.stream.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.regression.GlmModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.regression.GlmModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.regression.GlmPredictParams;
 
 /**
- * Generalized Linear Model stream predict.
+ * Generalized Linear Model stream predict. https://en.wikipedia.org/wiki/Generalized_linear_model.
  */
-public class GlmPredictStreamOp extends ModelMapStreamOp<GlmPredictStreamOp>
-    implements GlmPredictParams<GlmPredictStreamOp> {
+public class GlmPredictStreamOp extends ModelMapStreamOp <GlmPredictStreamOp>
+	implements GlmPredictParams <GlmPredictStreamOp> {
 
-    public GlmPredictStreamOp(BatchOperator model) {
-        this(model, new Params());
-    }
+	private static final long serialVersionUID = -5222784580816513033L;
 
-    public GlmPredictStreamOp(BatchOperator model, Params params) {
-        super(model, GlmModelMapper::new, params);
-    }
+	public GlmPredictStreamOp(BatchOperator model) {
+		this(model, new Params());
+	}
+
+	public GlmPredictStreamOp(BatchOperator model, Params params) {
+		super(model, GlmModelMapper::new, params);
+	}
 
 }

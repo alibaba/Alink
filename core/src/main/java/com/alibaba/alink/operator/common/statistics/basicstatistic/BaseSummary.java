@@ -1,50 +1,54 @@
 package com.alibaba.alink.operator.common.statistics.basicstatistic;
 
+import java.io.Serializable;
+
 /**
- * Summarizer is the base class to calculate summary and store intermediate results, and Summary is the result of Summarizer.
+ * Summarizer is the base class to calculate summary and store intermediate results, and Summary is the result of
+ * Summarizer.
  *
  * <p>Summarizer Inheritance relationship as follow:
- *         BaseSummarizer
- *            /       \
- *          /         \
+ * BaseSummarizer
+ * /       \
+ * /         \
  * TableSummarizer   BaseVectorSummarizer
- *                     /            \
- *                    /              \
- *      SparseVectorSummarizer    DenseVectorSummarizer
+ * /            \
+ * /              \
+ * SparseVectorSummarizer    DenseVectorSummarizer
  *
  * <p> TableSummarizer is for table data, BaseVectorSummarizer is for vector data.
- *  SparseVectorSummarizer is for sparse vector, DenseVectorSummarizer is for dense vector.
+ * SparseVectorSummarizer is for sparse vector, DenseVectorSummarizer is for dense vector.
  *
  * <p> Summary Inheritance relationship as follow:
- *            BaseSummary
- *            /       \
- *           /         \
- *  TableSummary     BaseVectorSummary
- *                     /            \
- *                    /              \
- *      SparseVectorSummary    DenseVectorSummary
+ * BaseSummary
+ * /       \
+ * /         \
+ * TableSummary     BaseVectorSummary
+ * /            \
+ * /              \
+ * SparseVectorSummary    DenseVectorSummary
  *
  * <p> You can get statistics value from summary.
  *
  * <p> example:
- *      Row data =  Row.of("a", 1L, 1, 2.0, true)
- *      TableSummarizer summarizer = new TableSummarizer(selectedColNames, numberIdxs, bCov);
- *      summarizer = summarizer.visit(data);
- *      TableSummary summary = summarizer.toSummary()
- *      double mean = summary.mean("col")
+ * Row data =  Row.of("a", 1L, 1, 2.0, true)
+ * TableSummarizer summarizer = new TableSummarizer(selectedColNames, numberIdxs, bCov);
+ * summarizer = summarizer.visit(data);
+ * TableSummary summary = summarizer.toSummary()
+ * double mean = summary.mean("col")
  */
-public abstract class BaseSummary {
+public abstract class BaseSummary implements Serializable {
 
-    /**
-     * count.
-     */
-    protected long count;
+	private static final long serialVersionUID = 7689437087967692154L;
+	/**
+	 * count.
+	 */
+	protected long count;
 
-    /**
-     * count.
-     */
-    public long count() {
-        return count;
-    }
+	/**
+	 * count.
+	 */
+	public long count() {
+		return count;
+	}
 
 }

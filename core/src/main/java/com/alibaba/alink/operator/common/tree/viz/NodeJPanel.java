@@ -1,30 +1,42 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/*
+ * NodeJPanel.java
+ *
+ * Created on 2013-1-15, 16:27:20
+ */
 package com.alibaba.alink.operator.common.tree.viz;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
 import com.alibaba.alink.operator.common.tree.Node;
 import com.alibaba.alink.operator.common.tree.TreeModelDataConverter;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class NodeJPanel extends JPanel {
+public class NodeJPanel extends javax.swing.JPanel {
 
+	private static final long serialVersionUID = -8394005027707336689L;
 	private Color panelColor = Color.WHITE;
 	private Color sourceColor = Color.WHITE;
 	private Color destColor = new Color(102, 204, 255);
 	private int panelBorderWidth = 2;
 	TreeModelDataConverter model;
 	TreeModelViz.Node4CalcPos node4CalcPos;
-	List<List<Object>> list;
+	List <List <Object>> list;
 	double maxPercent = 0.0;
 
-	public NodeJPanel(TreeModelDataConverter model, TreeModelViz.Node4CalcPos root, Tuple2<Double, Double> minMaxPercent) {
+	public NodeJPanel(TreeModelDataConverter model, TreeModelViz.Node4CalcPos root,
+					  Tuple2 <Double, Double> minMaxPercent) {
 		this.model = model;
 		this.node4CalcPos = root;
 		init(minMaxPercent);
@@ -36,8 +48,8 @@ public class NodeJPanel extends JPanel {
 	}
 
 	public static String print(double val) {
-//		return val == Math.floor(val) && !Double.isInfinite(val) ?
-//			String.format("%d", (int) val) : String.format("%f", val);
+		//		return val == Math.floor(val) && !Double.isInfinite(val) ?
+		//			String.format("%d", (int) val) : String.format("%f", val);
 		return String.valueOf(val);
 	}
 
@@ -67,16 +79,16 @@ public class NodeJPanel extends JPanel {
 		return multi;
 	}
 
-	private List<List<Object>> genInfo() {
-		ArrayList<List<Object>> list = new ArrayList<>();
+	private List <List <Object>> genInfo() {
+		ArrayList <List <Object>> list = new ArrayList <>();
 
-		list.add(Arrays.asList(new Object[]{
+		list.add(Arrays.asList(new Object[] {
 			"Instances",
 			String.valueOf(node4CalcPos.node.getCounter().getNumInst()),
 			""
 		}));
 
-		list.add(Arrays.asList(new Object[]{
+		list.add(Arrays.asList(new Object[] {
 			"Weights",
 			print(node4CalcPos.node.getCounter().getWeightSum()),
 			""
@@ -87,7 +99,7 @@ public class NodeJPanel extends JPanel {
 				for (int i = 0; i < model.labels.length; ++i) {
 					double distribution = node4CalcPos.node.getCounter().getDistributions()[i];
 					double weight = node4CalcPos.node.getCounter().getWeightSum();
-					list.add(Arrays.asList(new Object[]{
+					list.add(Arrays.asList(new Object[] {
 						String.valueOf(model.labels[i]),
 						print(distribution),
 						printOneDecimalWithSuffix(distribution / weight * 100)
@@ -97,7 +109,7 @@ public class NodeJPanel extends JPanel {
 				for (int i = 0; i < model.labels.length; ++i) {
 					double distribution = node4CalcPos.node.getCounter().getDistributions()[i];
 					double weight = node4CalcPos.node.getCounter().getWeightSum();
-					list.add(Arrays.asList(new Object[]{
+					list.add(Arrays.asList(new Object[] {
 						String.valueOf(model.labels[i]),
 						print(distribution * weight),
 						printOneDecimalWithSuffix(distribution * 100)
@@ -106,12 +118,12 @@ public class NodeJPanel extends JPanel {
 			}
 		} else {
 			if (!node4CalcPos.node.isLeaf()) {
-				list.add(Arrays.asList(new Object[]{
+				list.add(Arrays.asList(new Object[] {
 					"Sum",
 					print(node4CalcPos.node.getCounter().getDistributions()[0])
 				}));
 			} else {
-				list.add(Arrays.asList(new Object[]{
+				list.add(Arrays.asList(new Object[] {
 					"NormalizedSum",
 					print(node4CalcPos.node.getCounter().getDistributions()[0])
 				}));
@@ -121,7 +133,7 @@ public class NodeJPanel extends JPanel {
 		return list;
 	}
 
-	private void setMaxPercent(Tuple2<Double, Double> minMaxPercent) {
+	private void setMaxPercent(Tuple2 <Double, Double> minMaxPercent) {
 		if (model.labels != null) {
 			maxPercent = (multiNodeDistribution(node4CalcPos) - minMaxPercent.f0)
 				/ (minMaxPercent.f1 - minMaxPercent.f0);
@@ -130,7 +142,7 @@ public class NodeJPanel extends JPanel {
 		}
 	}
 
-	private void init(Tuple2<Double, Double> minMaxPercent) {
+	private void init(Tuple2 <Double, Double> minMaxPercent) {
 		initComponents();
 		list = genInfo();
 		setMaxPercent(minMaxPercent);
@@ -169,7 +181,7 @@ public class NodeJPanel extends JPanel {
 		jTable1.setModel(new javax.swing.table.DefaultTableModel(objs, objh) {
 
 			private static final long serialVersionUID = 2938204994714516699L;
-			boolean[] canEdit = new boolean[]{
+			boolean[] canEdit = new boolean[] {
 				false, false, false, false, false
 			};
 
@@ -268,20 +280,19 @@ public class NodeJPanel extends JPanel {
 		}
 	}
 
-
 	private void initComponents() {
 
 		setBackground(new Color(255, 255, 255));
-		setBorder(BorderFactory.createEtchedBorder());
+		setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-		GroupLayout layout = new GroupLayout(this);
+		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
 		this.setLayout(layout);
 		layout.setHorizontalGroup(
-			layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+			layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
 				.addGap(0, 94, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(
-			layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+			layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
 				.addGap(0, 125, Short.MAX_VALUE)
 		);
 	}

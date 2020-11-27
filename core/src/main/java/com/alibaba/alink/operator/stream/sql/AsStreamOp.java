@@ -8,24 +8,26 @@ import com.alibaba.alink.params.sql.AsParams;
 /**
  * Rename the fields of a stream operator.
  */
-public final class AsStreamOp extends BaseSqlApiStreamOp<AsStreamOp>
-    implements AsParams<AsStreamOp> {
+public final class AsStreamOp extends BaseSqlApiStreamOp <AsStreamOp>
+	implements AsParams <AsStreamOp> {
 
-    public AsStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -7230853155177883256L;
 
-    public AsStreamOp(String clause) {
-        this(new Params().set(CLAUSE, clause));
-    }
+	public AsStreamOp() {
+		this(new Params());
+	}
 
-    public AsStreamOp(Params params) {
-        super(params);
-    }
+	public AsStreamOp(String clause) {
+		this(new Params().set(CLAUSE, clause));
+	}
 
-    @Override
-    public AsStreamOp linkFrom(StreamOperator<?>... inputs) {
-        this.setOutputTable(inputs[0].as(getClause()).getOutputTable());
-        return this;
-    }
+	public AsStreamOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public AsStreamOp linkFrom(StreamOperator <?>... inputs) {
+		this.setOutputTable(inputs[0].as(getClause()).getOutputTable());
+		return this;
+	}
 }

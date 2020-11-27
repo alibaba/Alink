@@ -1,11 +1,12 @@
 package com.alibaba.alink.pipeline.dataproc;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * Encode several columns of strings to bigint type indices. The indices are consecutive bigint type
@@ -14,27 +15,29 @@ import org.apache.flink.ml.api.misc.param.Params;
  * <p>
  * <p>Several string order type is supported, including:
  * <ol>
- *     <li>random</li>
- *     <li>frequency_asc</li>
- *     <li>frequency_desc</li>
- *     <li>alphabet_asc</li>
- *     <li>alphabet_desc</li>
+ * <li>random</li>
+ * <li>frequency_asc</li>
+ * <li>frequency_desc</li>
+ * <li>alphabet_asc</li>
+ * <li>alphabet_desc</li>
  * </ol>
  */
-public class MultiStringIndexer extends Trainer<MultiStringIndexer, MultiStringIndexerModel> implements
-    MultiStringIndexerTrainParams<MultiStringIndexer>,
-    MultiStringIndexerPredictParams<MultiStringIndexer> {
+public class MultiStringIndexer extends Trainer <MultiStringIndexer, MultiStringIndexerModel> implements
+	MultiStringIndexerTrainParams <MultiStringIndexer>,
+	MultiStringIndexerPredictParams <MultiStringIndexer> {
 
-    public MultiStringIndexer() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 8719095455771046412L;
 
-    public MultiStringIndexer(Params params) {
-        super(params);
-    }
+	public MultiStringIndexer() {
+		this(new Params());
+	}
 
-    @Override
-    protected BatchOperator train(BatchOperator in) {
-        return new MultiStringIndexerTrainBatchOp(this.getParams()).linkFrom(in);
-    }
+	public MultiStringIndexer(Params params) {
+		super(params);
+	}
+
+	@Override
+	protected BatchOperator <?> train(BatchOperator <?> in) {
+		return new MultiStringIndexerTrainBatchOp(this.getParams()).linkFrom(in);
+	}
 }

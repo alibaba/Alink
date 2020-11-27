@@ -2,14 +2,13 @@ package com.alibaba.alink.params.feature;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 /**
  * Param: number of hash tables.
  */
 public interface HasNumHashTables<T> extends
-	WithParams<T> {
+	WithParams <T> {
 
 	ParamInfo <Integer> NUM_HASH_TABLES = ParamInfoFactory
 		.createParamInfo("numHashTables", Integer.class)

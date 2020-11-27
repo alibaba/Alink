@@ -1,8 +1,9 @@
 package com.alibaba.alink.pipeline.classification;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.MultilayerPerceptronTrainBatchOp;
-import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.params.classification.MultilayerPerceptronPredictParams;
 import com.alibaba.alink.params.classification.MultilayerPerceptronTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -18,6 +19,8 @@ public class MultilayerPerceptronClassifier
 	MultilayerPerceptronTrainParams <MultilayerPerceptronClassifier>,
 	MultilayerPerceptronPredictParams <MultilayerPerceptronClassifier> {
 
+	private static final long serialVersionUID = 4347540859245296560L;
+
 	public MultilayerPerceptronClassifier() {
 		this(new Params());
 	}
@@ -27,7 +30,7 @@ public class MultilayerPerceptronClassifier
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new MultilayerPerceptronTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

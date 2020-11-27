@@ -1,14 +1,15 @@
 package com.alibaba.alink.params.nlp;
 
-import com.alibaba.alink.params.mapper.SISOMapperParams;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+
+import com.alibaba.alink.params.mapper.SISOMapperParams;
 
 /**
  * Params for StopWordsRemover.
  */
 public interface StopWordsRemoverParams<T> extends
-	SISOMapperParams<T> {
+	SISOMapperParams <T> {
 
 	ParamInfo <Boolean> CASE_SENSITIVE = ParamInfoFactory
 		.createParamInfo("caseSensitive", Boolean.class)

@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.feature.FeatureHasherMapper;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.common.feature.FeatureHasherMapper;
 import com.alibaba.alink.params.feature.FeatureHasherParams;
 
 /**
@@ -13,6 +13,8 @@ import com.alibaba.alink.params.feature.FeatureHasherParams;
  */
 public final class FeatureHasherBatchOp extends MapBatchOp <FeatureHasherBatchOp>
 	implements FeatureHasherParams <FeatureHasherBatchOp> {
+	private static final long serialVersionUID = 6037792513321750824L;
+
 	public FeatureHasherBatchOp() {
 		this(null);
 	}

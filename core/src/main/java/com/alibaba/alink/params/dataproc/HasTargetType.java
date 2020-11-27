@@ -1,20 +1,18 @@
 package com.alibaba.alink.params.dataproc;
 
-import com.alibaba.alink.params.ParamUtil;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-import java.io.Serializable;
+import com.alibaba.alink.params.ParamUtil;
 
-public interface HasTargetType<T> extends WithParams<T> {
+public interface HasTargetType<T> extends WithParams <T> {
 
-	ParamInfo<TargetType> TARGET_TYPE = ParamInfoFactory
+	ParamInfo <TargetType> TARGET_TYPE = ParamInfoFactory
 		.createParamInfo("targetType", TargetType.class)
 		.setDescription("The target type of numerical column cast function.")
 		.setRequired()
-		.setAlias(new String[]{"newType"})
+		.setAlias(new String[] {"newType"})
 		.build();
 
 	default TargetType getTargetType() {
@@ -29,7 +27,15 @@ public interface HasTargetType<T> extends WithParams<T> {
 		return set(TARGET_TYPE, ParamUtil.searchEnum(TARGET_TYPE, value));
 	}
 
-	enum TargetType implements Serializable {
-		DOUBLE, INT, BIGINT
+	enum TargetType {
+		STRING,
+		VARCHAR,
+		FLOAT,
+		DOUBLE,
+		INT,
+		BIGINT,
+		LONG,
+		BOOLEAN
 	}
+
 }

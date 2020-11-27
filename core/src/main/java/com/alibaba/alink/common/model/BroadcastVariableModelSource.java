@@ -10,17 +10,18 @@ import java.util.List;
  */
 public class BroadcastVariableModelSource implements ModelSource {
 
-    /**
-     * The name of the broadcast variable that hosts the model.
-     */
-    private final String modelVariableName;
+	private static final long serialVersionUID = -5588929685733557159L;
+	/**
+	 * The name of the broadcast variable that hosts the model.
+	 */
+	private final String modelVariableName;
 
-    public BroadcastVariableModelSource(String modelVariableName) {
-        this.modelVariableName = modelVariableName;
-    }
+	public BroadcastVariableModelSource(String modelVariableName) {
+		this.modelVariableName = modelVariableName;
+	}
 
-    @Override
-    public List<Row> getModelRows(RuntimeContext runtimeContext) {
-        return runtimeContext.getBroadcastVariable(modelVariableName);
-    }
+	@Override
+	public List <Row> getModelRows(RuntimeContext runtimeContext) {
+		return runtimeContext.getBroadcastVariable(modelVariableName);
+	}
 }

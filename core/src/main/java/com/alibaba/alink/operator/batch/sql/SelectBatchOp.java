@@ -8,24 +8,26 @@ import com.alibaba.alink.params.sql.SelectParams;
 /**
  * Select the fields of a batch operator.
  */
-public final class SelectBatchOp extends BaseSqlApiBatchOp<SelectBatchOp>
-    implements SelectParams<SelectBatchOp> {
+public final class SelectBatchOp extends BaseSqlApiBatchOp <SelectBatchOp>
+	implements SelectParams <SelectBatchOp> {
 
-    public SelectBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -1867376056670775636L;
 
-    public SelectBatchOp(String clause) {
-        this(new Params().set(CLAUSE, clause));
-    }
+	public SelectBatchOp() {
+		this(new Params());
+	}
 
-    public SelectBatchOp(Params params) {
-        super(params);
-    }
+	public SelectBatchOp(String clause) {
+		this(new Params().set(CLAUSE, clause));
+	}
 
-    @Override
-    public SelectBatchOp linkFrom(BatchOperator<?>... inputs) {
-        this.setOutputTable(inputs[0].select(getClause()).getOutputTable());
-        return this;
-    }
+	public SelectBatchOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public SelectBatchOp linkFrom(BatchOperator <?>... inputs) {
+		this.setOutputTable(inputs[0].select(getClause()).getOutputTable());
+		return this;
+	}
 }

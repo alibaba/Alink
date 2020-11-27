@@ -1,12 +1,18 @@
 package com.alibaba.alink.pipeline.classification;
 
-import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.params.classification.DecisionTreePredictParams;
 import com.alibaba.alink.pipeline.MapModel;
 
-public class DecisionTreeClassificationModel extends MapModel<DecisionTreeClassificationModel>
+/**
+ * The model of decision tree classification.
+ */
+public class DecisionTreeClassificationModel extends MapModel <DecisionTreeClassificationModel>
 	implements DecisionTreePredictParams <DecisionTreeClassificationModel> {
+
+	private static final long serialVersionUID = -7770023408500542175L;
 
 	public DecisionTreeClassificationModel() {this(null);}
 

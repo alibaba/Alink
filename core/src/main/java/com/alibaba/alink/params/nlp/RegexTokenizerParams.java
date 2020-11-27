@@ -1,8 +1,9 @@
 package com.alibaba.alink.params.nlp;
 
-import com.alibaba.alink.params.mapper.SISOMapperParams;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+
+import com.alibaba.alink.params.mapper.SISOMapperParams;
 
 /**
  * Params for RegexTokenizer.
@@ -10,7 +11,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
  * @param <T>
  */
 public interface RegexTokenizerParams<T> extends
-	SISOMapperParams<T> {
+	SISOMapperParams <T> {
 
 	ParamInfo <String> PATTERN = ParamInfoFactory.createParamInfo("pattern", String.class)
 		.setDescription("If gaps is true, it's used as a delimiter; If gaps is false, it's used as a token")

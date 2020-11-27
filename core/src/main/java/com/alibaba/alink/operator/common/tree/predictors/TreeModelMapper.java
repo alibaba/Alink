@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.common.tree.predictors;
 
-import com.alibaba.alink.params.dataproc.HasTargetType;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
@@ -11,10 +10,11 @@ import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelMapper;
 import com.alibaba.alink.operator.common.dataproc.NumericalTypeCastMapper;
 import com.alibaba.alink.operator.common.tree.LabelCounter;
 import com.alibaba.alink.operator.common.tree.Node;
+import com.alibaba.alink.operator.common.tree.Preprocessing;
 import com.alibaba.alink.operator.common.tree.TreeModelDataConverter;
+import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
 import com.alibaba.alink.params.dataproc.NumericalTypeCastParams;
-import com.alibaba.alink.params.shared.HasHandleInvalid;
 import com.alibaba.alink.params.shared.colname.HasCategoricalCols;
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
@@ -23,6 +23,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.util.List;
 
 public abstract class TreeModelMapper extends RichModelMapper {
+	private static final long serialVersionUID = 9011361290985109124L;
 	protected TreeModelDataConverter treeModel = new TreeModelDataConverter();
 
 	protected int[] featuresIndex;
@@ -32,14 +33,13 @@ public abstract class TreeModelMapper extends RichModelMapper {
 	protected NumericalTypeCastMapper stringIndexerModelNumericalTypeCastMapper;
 	protected NumericalTypeCastMapper numericalTypeCastMapper;
 
+	protected boolean zeroAsMissing;
+
 	public TreeModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 	}
 
-	protected void init(List<Row> modelRows) {
-		TableSchema dataSchema = getDataSchema();
-		treeModel.load(modelRows);
-
+	private void initRowPredict() {
 		String[] categoricalColNames = null;
 
 		if (treeModel.meta.contains(HasCategoricalCols.CATEGORICAL_COLS)) {
@@ -50,32 +50,43 @@ public abstract class TreeModelMapper extends RichModelMapper {
 			TableSchema modelSchema = getModelSchema();
 			stringIndexerModelPredictor = new MultiStringIndexerModelMapper(
 				modelSchema,
-				dataSchema,
-				treeModel
-					.meta
+				getDataSchema(),
+				new Params()
 					.set(HasSelectedCols.SELECTED_COLS, categoricalColNames)
-					.set(MultiStringIndexerPredictParams.HANDLE_INVALID, "skip")
+					.set(MultiStringIndexerPredictParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalid.SKIP)
 			);
 
 			stringIndexerModelPredictor.loadModel(treeModel.stringIndexerModelSerialized);
 
-			stringIndexerModelNumericalTypeCastMapper = new NumericalTypeCastMapper(dataSchema,
+			stringIndexerModelNumericalTypeCastMapper = new NumericalTypeCastMapper(getDataSchema(),
 				new Params()
 					.set(NumericalTypeCastParams.SELECTED_COLS, categoricalColNames)
-					.set(NumericalTypeCastParams.TARGET_TYPE, HasTargetType.TargetType.INT)
+					.set(NumericalTypeCastParams.TARGET_TYPE, NumericalTypeCastParams.TargetType.valueOf("INT"))
 			);
 		}
 
-		numericalTypeCastMapper = new NumericalTypeCastMapper(dataSchema,
+		numericalTypeCastMapper = new NumericalTypeCastMapper(getDataSchema(),
 			new Params()
 				.set(
 					NumericalTypeCastParams.SELECTED_COLS,
 					ArrayUtils.removeElements(treeModel.meta.get(HasFeatureCols.FEATURE_COLS), categoricalColNames)
 				)
-				.set(NumericalTypeCastParams.TARGET_TYPE, HasTargetType.TargetType.DOUBLE)
+				.set(NumericalTypeCastParams.TARGET_TYPE, NumericalTypeCastParams.TargetType.valueOf("DOUBLE"))
 		);
 
-		initFeatureIndexes(treeModel.meta, dataSchema);
+		initFeatureIndices(treeModel.meta, getDataSchema());
+	}
+
+	protected void init(List <Row> modelRows) {
+		treeModel.load(modelRows);
+
+		zeroAsMissing = treeModel.meta.get(Preprocessing.ZERO_AS_MISSING);
+
+		if (Preprocessing.isSparse(params)) {
+			return;
+		}
+
+		initRowPredict();
 	}
 
 	protected Row transRow(Row row) throws Exception {
@@ -87,7 +98,8 @@ public abstract class TreeModelMapper extends RichModelMapper {
 		return numericalTypeCastMapper.map(row);
 	}
 
-	private void ProcessMissing(Row row, Node node, LabelCounter result, double weight) throws Exception {
+	private void processMissingByWeightConfidence(Row row, Node node, LabelCounter result, double weight)
+		throws Exception {
 		int subSize = node.getNextNodes().length;
 		double[] curWeights = new double[subSize];
 		double curSum = 0.;
@@ -107,11 +119,38 @@ public abstract class TreeModelMapper extends RichModelMapper {
 		}
 
 		for (int i = 0; i < subSize; ++i) {
-			Predict(row, node.getNextNodes()[i], result, weight * curWeights[i]);
+			predict(row, node.getNextNodes()[i], result, weight * curWeights[i]);
 		}
 	}
 
-	public void Predict(Row row, Node node, LabelCounter result, double weight) throws Exception {
+	private void processMissingByMissingSplit(Row row, Node node, LabelCounter result, double weight) throws
+		Exception {
+		int[] missingSplit = node.getMissingSplit();
+
+		int subSize = missingSplit.length;
+		double[] curWeights = new double[subSize];
+		double curSum = 0.;
+
+		for (int i = 0; i < subSize; ++i) {
+			double curWeight = node.getNextNodes()[missingSplit[i]].getCounter().getWeightSum();
+			curWeights[i] = curWeight;
+			curSum += curWeight;
+		}
+
+		if (curSum == 0) {
+			throw new Exception("Model is broken. Sum weight is zero.");
+		}
+
+		for (int i = 0; i < subSize; ++i) {
+			curWeights[i] /= curSum;
+		}
+
+		for (int i = 0; i < subSize; ++i) {
+			predict(row, node.getNextNodes()[missingSplit[i]], result, weight * curWeights[i]);
+		}
+	}
+
+	public void predict(Row row, Node node, LabelCounter result, double weight) throws Exception {
 		if (node.isLeaf()) {
 			result.add(node.getCounter(), weight);
 			return;
@@ -127,31 +166,35 @@ public abstract class TreeModelMapper extends RichModelMapper {
 
 		Object featureValue = row.getField(predictionFeatureIndex);
 
-		if (featureValue == null) {
-			ProcessMissing(row, node, result, weight);
-		} else {
-			int[] categoryHash = node.getCategoricalSplit();
+		int[] categoryHash = node.getCategoricalSplit();
 
+		if (Preprocessing.isMissing(featureValue, categoryHash == null, zeroAsMissing)) {
+			if (node.getMissingSplit() != null) {
+				processMissingByMissingSplit(row, node, result, weight);
+			} else {
+				processMissingByWeightConfidence(row, node, result, weight);
+			}
+		} else {
 			if (categoryHash == null) {
 				if ((Double) featureValue <= node.getContinuousSplit()) {
 					//left
-					Predict(row, node.getNextNodes()[0], result, weight);
+					predict(row, node.getNextNodes()[0], result, weight);
 				} else {
 					//right
-					Predict(row, node.getNextNodes()[1], result, weight);
+					predict(row, node.getNextNodes()[1], result, weight);
 				}
 			} else {
 				int hashValue = categoryHash[(int) featureValue];
 				if (hashValue < 0) {
-					ProcessMissing(row, node, result, weight);
+					processMissingByWeightConfidence(row, node, result, weight);
 				} else {
-					Predict(row, node.getNextNodes()[hashValue], result, weight);
+					predict(row, node.getNextNodes()[hashValue], result, weight);
 				}
 			}
 		}
 	}
 
-	private void initFeatureIndexes(Params meta, TableSchema dataSchema) {
+	private void initFeatureIndices(Params meta, TableSchema dataSchema) {
 		String[] featureNames = meta.get(HasFeatureCols.FEATURE_COLS);
 		this.featureSize = featureNames.length;
 		this.featuresIndex = new int[this.featureSize];

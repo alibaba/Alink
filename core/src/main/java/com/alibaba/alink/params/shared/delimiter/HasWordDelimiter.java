@@ -7,7 +7,7 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 /**
  * Params for wordDelimiter.
  */
-public interface HasWordDelimiter<T> extends WithParams<T> {
+public interface HasWordDelimiter<T> extends WithParams <T> {
 	ParamInfo <String> WORD_DELIMITER = ParamInfoFactory
 		.createParamInfo("wordDelimiter", String.class)
 		.setDescription("Delimiter of words")

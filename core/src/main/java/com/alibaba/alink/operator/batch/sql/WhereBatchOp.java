@@ -9,24 +9,26 @@ import com.alibaba.alink.params.sql.WhereParams;
 /**
  * Filter records in the batch operator.
  */
-public final class WhereBatchOp extends BaseSqlApiBatchOp<WhereBatchOp>
-    implements WhereParams<WhereBatchOp> {
+public final class WhereBatchOp extends BaseSqlApiBatchOp <WhereBatchOp>
+	implements WhereParams <WhereBatchOp> {
 
-    public WhereBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 2425170045693249109L;
 
-    public WhereBatchOp(String clause) {
-        this(new Params().set(HasClause.CLAUSE, clause));
-    }
+	public WhereBatchOp() {
+		this(new Params());
+	}
 
-    public WhereBatchOp(Params params) {
-        super(params);
-    }
+	public WhereBatchOp(String clause) {
+		this(new Params().set(HasClause.CLAUSE, clause));
+	}
 
-    @Override
-    public WhereBatchOp linkFrom(BatchOperator<?>... inputs) {
-        this.setOutputTable(inputs[0].where(getClause()).getOutputTable());
-        return this;
-    }
+	public WhereBatchOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public WhereBatchOp linkFrom(BatchOperator <?>... inputs) {
+		this.setOutputTable(inputs[0].where(getClause()).getOutputTable());
+		return this;
+	}
 }

@@ -6,8 +6,9 @@ import java.util.Map;
 
 public class ColumnsReader extends FormatReader {
 
-	final String[] colNames;
-	final int[] colIndices;
+	private static final long serialVersionUID = 1635505446891906400L;
+	private final String[] colNames;
+	private final int[] colIndices;
 
 	public ColumnsReader(int[] colIndices, String[] colNames) {
 		this.colNames = colNames;

@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class KvReader extends FormatReader {
 
+	private static final long serialVersionUID = -6643032534147603545L;
 	final int kvColIndex;
 	final String colDelimiter;
 	final String valDelimiter;

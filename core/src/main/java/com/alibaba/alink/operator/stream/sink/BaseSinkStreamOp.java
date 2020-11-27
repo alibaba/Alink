@@ -5,12 +5,11 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.TableException;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.io.annotations.AnnotationUtils;
-import com.alibaba.alink.common.io.BaseDB;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.VectorSerializeStreamOp;
@@ -19,11 +18,13 @@ import com.alibaba.alink.params.io.HasIoType;
 
 /**
  * Base class for all sinks.
+ *
  * @param <T>
  */
-public abstract class BaseSinkStreamOp<T extends BaseSinkStreamOp <T>> extends StreamOperator<T> {
+public abstract class BaseSinkStreamOp<T extends BaseSinkStreamOp <T>> extends StreamOperator <T> {
 
 	static final IOType IO_TYPE = IOType.SinkStream;
+	private static final long serialVersionUID = -7359864593021986768L;
 
 	protected BaseSinkStreamOp(String nameSrcSnk, Params params) {
 		super(params);
@@ -32,26 +33,26 @@ public abstract class BaseSinkStreamOp<T extends BaseSinkStreamOp <T>> extends S
 	}
 
 	@Override
-	public T linkFrom(StreamOperator<?>... inputs) {
-		StreamOperator<?> in = checkAndGetFirst(inputs);
+	public T linkFrom(StreamOperator <?>... inputs) {
+		StreamOperator <?> in = checkAndGetFirst(inputs);
 		return sinkFrom(in.link(new VectorSerializeStreamOp().setMLEnvironmentId(getMLEnvironmentId())));
 	}
 
-	protected abstract T sinkFrom(StreamOperator in);
+	protected abstract T sinkFrom(StreamOperator <?> in);
 
-	public static BaseSinkStreamOp of(Params params) throws Exception {
-		if (params.contains(HasIoType.IO_TYPE)
-			&& params.get(HasIoType.IO_TYPE).equals(IO_TYPE)
-			&& params.contains(HasIoName.IO_NAME)) {
-			if (BaseDB.isDB(params)) {
-				return new DBSinkStreamOp(BaseDB.of(params), params);
-			} else if (params.contains(HasIoName.IO_NAME)) {
-				String name = params.get(HasIoName.IO_NAME);
-				return (BaseSinkStreamOp) AnnotationUtils.createOp(name, IO_TYPE, params);
-			}
-		}
-		throw new RuntimeException("Parameter Error.");
+	@Override
+	public final Table getOutputTable() {
+		throw new RuntimeException("Sink Operator has no output data.");
+	}
 
+	@Override
+	public final StreamOperator <?> getSideOutput(int idx) {
+		throw new RuntimeException("Sink Operator has no side-output data.");
+	}
+
+	@Override
+	public final int getSideOutputCount() {
+		return 0;
 	}
 
 	/**
@@ -60,9 +61,14 @@ public abstract class BaseSinkStreamOp<T extends BaseSinkStreamOp <T>> extends S
 	 * @param table the Table to convert.
 	 * @return the converted DataStream.
 	 */
-	public  DataStream <Row> toRetractStream(Table table) {
-		return MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment().toRetractStream(table, Row.class)
+	public DataStream <Row> toRetractStream(Table table) {
+		return MLEnvironmentFactory
+			.get(getMLEnvironmentId())
+			.getStreamTableEnvironment()
+			.toRetractStream(table, Row.class)
 			.flatMap(new FlatMapFunction <Tuple2 <Boolean, Row>, Row>() {
+				private static final long serialVersionUID = -335704052194502150L;
+
 				@Override
 				public void flatMap(Tuple2 <Boolean, Row> tuple2, Collector <Row> collector) throws Exception {
 					if (tuple2.f0) {
@@ -76,14 +82,15 @@ public abstract class BaseSinkStreamOp<T extends BaseSinkStreamOp <T>> extends S
 	 * Judge whether the table only have insert (append) changes.
 	 *
 	 * @param table the Table to convert.
-	 * @return if the Table only have insert (append) changes, return true. If the Table also modifies
-	 * by update or delete changes, returns false.
+	 * @return if the Table only have insert (append) changes, return true. If the Table also modifies by update or
+	 * delete changes, returns false.
 	 */
 	public Boolean isAppendStream(Table table) {
 		try {
-			MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment().toAppendStream(table, Row.class);
+			MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment()
+				.toAppendStream(table, Row.class);
 			return true;
-		} catch (org.apache.flink.table.api.TableException ex) {
+		} catch (TableException ex) {
 			return false;
 		}
 	}

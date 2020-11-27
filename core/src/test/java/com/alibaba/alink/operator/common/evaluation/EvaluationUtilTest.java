@@ -1,9 +1,12 @@
 package com.alibaba.alink.operator.common.evaluation;
 
-import com.alibaba.alink.common.linalg.SparseVector;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.operator.common.recommendation.KObjectUtil;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getDetailStatistics;
+import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getRankingMetrics;
 import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getRegressionStatistics;
 
 /**
@@ -24,7 +28,7 @@ public class EvaluationUtilTest {
 	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
-	public void getRegressionStatisticsTest(){
+	public void getRegressionStatisticsTest() {
 		Row[] rows =
 			new Row[] {
 				Row.of(0.4, 0.5),
@@ -47,7 +51,7 @@ public class EvaluationUtilTest {
 	}
 
 	@Test
-	public void getDetailStatisticsBinary(){
+	public void getDetailStatisticsBinary() {
 		Row[] rows =
 			new Row[] {
 				Row.of("prefix1", "{\"prefix1\": 0.9, \"prefix0\": 0.1}"),
@@ -60,11 +64,13 @@ public class EvaluationUtilTest {
 		BaseMetricsSummary baseMetric = getDetailStatistics(Arrays.asList(rows), null, true, Types.STRING);
 		assertBinaryMetrics(baseMetric);
 
-		Map<Object, Integer> map = new HashMap<>();
+		Map <Object, Integer> map = new HashMap <>();
 		map.put("prefix0", 1);
 		map.put("prefix1", 0);
 
-		baseMetric = getDetailStatistics(Arrays.asList(rows), true, Tuple2.of(map, new Object[]{"prefix1", "prefix0"}), Types.STRING);
+		baseMetric = getDetailStatistics(Arrays.asList(rows), true, Tuple2.of(map, new Object[] {"prefix1",
+				"prefix0"}),
+			Types.STRING);
 		assertBinaryMetrics(baseMetric);
 
 		baseMetric = getDetailStatistics(Arrays.asList(rows), "prefix0", true, Types.STRING);
@@ -79,7 +85,7 @@ public class EvaluationUtilTest {
 	}
 
 	@Test
-	public void getDetailStatisticsBinaryDouble(){
+	public void getDetailStatisticsBinaryDouble() {
 		Row[] rows =
 			new Row[] {
 				Row.of(1.0, "{\"1.00\": 0.9, \"0.00\": 0.1}"),
@@ -92,11 +98,12 @@ public class EvaluationUtilTest {
 		BaseMetricsSummary baseMetric = getDetailStatistics(Arrays.asList(rows), null, true, Types.DOUBLE);
 		assertBinaryMetrics(baseMetric);
 
-		Map<Object, Integer> map = new HashMap<>();
+		Map <Object, Integer> map = new HashMap <>();
 		map.put(0.0, 1);
 		map.put(1.0, 0);
 
-		baseMetric = getDetailStatistics(Arrays.asList(rows), true,  Tuple2.of(map, new Object[]{1.0, 0.0}), Types.DOUBLE);
+		baseMetric = getDetailStatistics(Arrays.asList(rows), true, Tuple2.of(map, new Object[] {1.0, 0.0}),
+			Types.DOUBLE);
 		assertBinaryMetrics(baseMetric);
 
 		baseMetric = getDetailStatistics(Arrays.asList(rows), "0.000", true, Types.DOUBLE);
@@ -107,7 +114,63 @@ public class EvaluationUtilTest {
 
 	}
 
-	private void assertBinaryMetrics(BaseMetricsSummary baseMetric){
+	@Test
+	public void getRankingStatisticsTest() {
+		Row[] rows = new Row[] {
+			Row.of("{\"object\":\"[1,2,3,4,5]\"}", "{\"object\":\"[1, 6, 2, 7, 8, 3, 9, 10, 4, 5]\"}"),
+			Row.of("{\"object\":\"[4, 1, 5, 6, 2, 7, 3, 8, 9, 10]\"}", "{\"object\":\"[1, 2, 3]\"}"),
+			Row.of("{\"object\":\"[]\"}", "{\"object\":\"[1, 2, 3, 4, 5]\"}")
+		};
+		BaseMetricsSummary baseMetric = getRankingMetrics(
+			Arrays.asList(rows), Tuple3.of(10, String.class, 10),
+			KObjectUtil.OBJECT_NAME, KObjectUtil.OBJECT_NAME
+		);
+		RankingMetrics metrics = ((RankingMetricsSummary) baseMetric).merge(null).toMetrics();
+
+		Assert.assertEquals(metrics.getPrecisionAtK(1), 0.66, 0.01);
+		Assert.assertEquals(metrics.getPrecisionAtK(5), 0.33, 0.01);
+		Assert.assertEquals(metrics.getPrecisionAtK(11), 0.24, 0.01);
+		Assert.assertEquals(metrics.getPrecisionAtK(15), 0.17, 0.01);
+		Assert.assertEquals(metrics.getMap(), 0.30, 0.01);
+		Assert.assertEquals(metrics.getNdcg(3), 0.56, 0.01);
+		Assert.assertEquals(metrics.getNdcg(5), 0.41, 0.01);
+		Assert.assertEquals(metrics.getNdcg(10), 0.43, 0.01);
+		Assert.assertEquals(metrics.getNdcg(11), 0.43, 0.01);
+		Assert.assertEquals(metrics.getNdcg(12), 0.43, 0.01);
+		Assert.assertEquals(metrics.getNdcg(15), 0.43, 0.01);
+		Assert.assertEquals(metrics.getHitRate(), 0.33, 0.01);
+		Assert.assertEquals(metrics.getArHr(), 0.33, 0.01);
+	}
+
+	@Test
+	public void getRankingStatisticsTest1() {
+		Row[] rows = new Row[] {
+			Row.of("{\"object\":\"[0,2]\"}", "{\"object\":\"[0,1]\"}"),
+			Row.of("{\"object\":\"[0,1]\"}", "{\"object\":\"[0,2]\"}"),
+			Row.of("{\"object\":\"[2]\"}", "{\"object\":\"[2]\"}"),
+			Row.of("{\"object\":\"[2,0]\"}", "{\"object\":\"[2,0]\"}"),
+			Row.of("{\"object\":\"[0,1]\"}", "{\"object\":\"[0,1,2]\"}"),
+			Row.of("{\"object\":\"[1,2]\"}", "{\"object\":\"[1]\"}"),
+			Row.of("{\"object\":\"[0]\"}", "{\"object\":\"[]\"}"),
+			Row.of("{\"object\":\"[0]\"}", null)
+		};
+		BaseMetricsSummary baseMetric = getRankingMetrics(
+			Arrays.asList(rows), Tuple3.of(3, Integer.class, 3),
+			KObjectUtil.OBJECT_NAME, KObjectUtil.OBJECT_NAME
+		);
+		RankingMetrics metrics = ((RankingMetricsSummary) baseMetric).toMetrics();
+		Assert.assertEquals(metrics.getPrecision(), 0.67, 0.01);
+		Assert.assertEquals(metrics.getRecall(), 0.64, 0.01);
+		Assert.assertEquals(metrics.getAccuracy(), 0.54, 0.01);
+		Assert.assertEquals(metrics.getF1(), 0.63, 0.01);
+		Assert.assertEquals(metrics.getMicroF1(), 0.69, 0.01);
+		Assert.assertEquals(metrics.getMicroPrecision(), 0.72, 0.01);
+		Assert.assertEquals(metrics.getMicroRecall(), 0.66, 0.01);
+		Assert.assertEquals(metrics.getHammingLoss(), 0.33, 0.01);
+		Assert.assertEquals(metrics.getSubsetAccuracy(), 0.28, 0.01);
+	}
+
+	private void assertBinaryMetrics(BaseMetricsSummary baseMetric) {
 		Assert.assertTrue(baseMetric instanceof BinaryMetricsSummary);
 		BinaryMetricsSummary metrics = (BinaryMetricsSummary) baseMetric;
 		Assert.assertEquals(5, metrics.total);
@@ -126,7 +189,7 @@ public class EvaluationUtilTest {
 	}
 
 	@Test
-	public void getDetailStatisticsMulti(){
+	public void getDetailStatisticsMulti() {
 		Row[] rows =
 			new Row[] {
 				Row.of("prefix0", "{\"prefix0\": 0.3, \"prefix1\": 0.2, \"prefix2\": 0.5}"),
@@ -144,16 +207,17 @@ public class EvaluationUtilTest {
 		BaseMetricsSummary baseMetric = getDetailStatistics(Arrays.asList(rows), null, false, Types.STRING);
 		assertMultiMetrics(baseMetric);
 
-		Map<Object, Integer> map = new HashMap<>();
+		Map <Object, Integer> map = new HashMap <>();
 		map.put("prefix0", 2);
 		map.put("prefix1", 1);
 		map.put("prefix2", 0);
 
-		baseMetric = getDetailStatistics(Arrays.asList(rows), false, Tuple2.of(map, new Object[]{"prefix2", "prefix1", "prefix0"}), Types.STRING);
+		baseMetric = getDetailStatistics(Arrays.asList(rows), false,
+			Tuple2.of(map, new Object[] {"prefix2", "prefix1", "prefix0"}), Types.STRING);
 		assertMultiMetrics(baseMetric);
 	}
 
-	private void assertMultiMetrics(BaseMetricsSummary baseMetric){
+	private void assertMultiMetrics(BaseMetricsSummary baseMetric) {
 		Assert.assertTrue(baseMetric instanceof MultiMetricsSummary);
 		MultiMetricsSummary metrics = (MultiMetricsSummary) baseMetric;
 
@@ -168,7 +232,7 @@ public class EvaluationUtilTest {
 	}
 
 	@Test
-	public void predResultMatrixTest(){
+	public void predResultMatrixTest() {
 		Row[] rows =
 			new Row[] {
 				Row.of("prefix0", "prefix2"),
@@ -183,12 +247,13 @@ public class EvaluationUtilTest {
 				Row.of("prefix1", "prefix1")
 			};
 
-		Map<Object, Integer> map = new HashMap<>();
+		Map <Object, Integer> map = new HashMap <>();
 		map.put("prefix0", 2);
 		map.put("prefix1", 1);
 		map.put("prefix2", 0);
 
-		MultiMetricsSummary metrics = EvaluationUtil.getMultiClassMetrics(Arrays.asList(rows), Tuple2.of(map, new Object[]{"prefix2", "prefix1", "prefix0"}));
+		MultiMetricsSummary metrics = EvaluationUtil.getMultiClassMetrics(Arrays.asList(rows),
+			Tuple2.of(map, new Object[] {"prefix2", "prefix1", "prefix0"}));
 
 		Assert.assertEquals(10, metrics.total);
 		Assert.assertArrayEquals(new Object[] {"prefix2", "prefix1", "prefix0"}, metrics.labels);
@@ -198,37 +263,38 @@ public class EvaluationUtilTest {
 	}
 
 	@Test
-	public void testZeroEffitiveData(){
+	public void testZeroEffitiveData() {
 		Row[] rows =
 			new Row[] {
 				Row.of("prefix0", null)
 			};
 
-		Map<Object, Integer> map = new HashMap<>();
+		Map <Object, Integer> map = new HashMap <>();
 		map.put("prefix0", 2);
 		map.put("prefix1", 1);
 		map.put("prefix2", 0);
 
-		MultiMetricsSummary metrics = EvaluationUtil.getMultiClassMetrics(Arrays.asList(rows), Tuple2.of(map, new Object[]{"prefix2", "prefix1", "prefix0"}));
+		MultiMetricsSummary metrics = EvaluationUtil.getMultiClassMetrics(Arrays.asList(rows),
+			Tuple2.of(map, new Object[] {"prefix2", "prefix1", "prefix0"}));
 		Assert.assertNull(metrics);
 	}
 
 	@Test
-	public void testCastTo(){
+	public void testCastTo() {
 		Assert.assertTrue(EvaluationUtil.castTo("true", Types.BOOLEAN) instanceof Boolean);
 		Assert.assertTrue(EvaluationUtil.castTo(true, Types.BOOLEAN) instanceof Boolean);
 		Assert.assertTrue(EvaluationUtil.castTo("1", Types.SHORT) instanceof Short);
-		Assert.assertTrue(EvaluationUtil.castTo((short)1, Types.SHORT) instanceof Short);
+		Assert.assertTrue(EvaluationUtil.castTo((short) 1, Types.SHORT) instanceof Short);
 		Assert.assertTrue(EvaluationUtil.castTo("1", Types.INT) instanceof Integer);
 		Assert.assertTrue(EvaluationUtil.castTo(1, Types.INT) instanceof Integer);
 		Assert.assertTrue(EvaluationUtil.castTo("1", Types.LONG) instanceof Long);
 		Assert.assertTrue(EvaluationUtil.castTo(1L, Types.LONG) instanceof Long);
 		Assert.assertTrue(EvaluationUtil.castTo("1", Types.BYTE) instanceof Byte);
-		Assert.assertTrue(EvaluationUtil.castTo((byte)1, Types.BYTE) instanceof Byte);
+		Assert.assertTrue(EvaluationUtil.castTo((byte) 1, Types.BYTE) instanceof Byte);
 		Assert.assertTrue(EvaluationUtil.castTo("1", Types.FLOAT) instanceof Float);
-		Assert.assertTrue(EvaluationUtil.castTo((float)1, Types.FLOAT) instanceof Float);
+		Assert.assertTrue(EvaluationUtil.castTo((float) 1, Types.FLOAT) instanceof Float);
 		Assert.assertTrue(EvaluationUtil.castTo("1", Types.DOUBLE) instanceof Double);
-		Assert.assertTrue(EvaluationUtil.castTo((double)1, Types.DOUBLE) instanceof Double);
+		Assert.assertTrue(EvaluationUtil.castTo((double) 1, Types.DOUBLE) instanceof Double);
 		Assert.assertTrue(EvaluationUtil.castTo("1", Types.STRING) instanceof String);
 
 		thrown.expect(RuntimeException.class);
@@ -237,7 +303,7 @@ public class EvaluationUtilTest {
 	}
 
 	@Test
-	public void testCompare(){
+	public void testCompare() {
 		Assert.assertEquals(EvaluationUtil.compare(1L, 2L), -1);
 		Assert.assertEquals(EvaluationUtil.compare(1L, null), 1);
 		thrown.expect(RuntimeException.class);
@@ -246,9 +312,23 @@ public class EvaluationUtilTest {
 	}
 
 	@Test
-	public void testException1(){
+	public void testException1() {
 		thrown.expect(RuntimeException.class);
 		thrown.expectMessage("Fail to deserialize detail column a, b, c!");
 		EvaluationUtil.extractLabelProbMap(Row.of(null, "a, b, c"), Types.LONG);
+	}
+
+	@Test
+	public void binaryClassOneLabel() {
+		Row[] rows =
+			new Row[] {
+				Row.of("prefix1", "{\"prefix1\": 0.9, \"prefix0\": 0.1}"),
+				Row.of("prefix1", "{\"prefix1\": 0.8, \"prefix0\": 0.2}"),
+				Row.of("prefix1", "{\"prefix1\": 0.7, \"prefix0\": 0.3}"),
+				Row.of("prefix1", "{\"prefix1\": 0.75, \"prefix0\": 0.25}"),
+				Row.of("prefix1", "{\"prefix1\": 0.6, \"prefix0\": 0.4}")
+			};
+		BaseMetricsSummary baseMetric = getDetailStatistics(Arrays.asList(rows), null, true, Types.STRING);
+		Assert.assertEquals(Double.compare(((BinaryClassMetrics)baseMetric.toMetrics()).getAuc(), Double.NaN), 0);
 	}
 }

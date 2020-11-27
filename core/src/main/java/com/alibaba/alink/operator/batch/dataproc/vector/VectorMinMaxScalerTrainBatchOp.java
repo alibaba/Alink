@@ -1,84 +1,85 @@
 package com.alibaba.alink.operator.batch.dataproc.vector;
 
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelDataConverter;
-import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelInfo;
-import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelInfoBatchOp;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.types.Row;
-
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import org.apache.flink.ml.api.misc.param.Params;
-
-import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerTrainParams;
+import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
+
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelInfo;
+import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
+import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerTrainParams;
 
 /**
  * MinMaxScaler transforms a dataSet of rows, rescaling each feature
  * to a specific range [min, max). (often [0, 1]).
  * MinMaxScalerTrain will train a model.
  */
-public final class VectorMinMaxScalerTrainBatchOp extends BatchOperator<VectorMinMaxScalerTrainBatchOp>
-    implements VectorMinMaxScalerTrainParams<VectorMinMaxScalerTrainBatchOp>,
-    WithModelInfoBatchOp<VectorMinMaxScalerModelInfo, VectorMinMaxScalerTrainBatchOp, VectorMinMaxScalerModelInfoBatchOp> {
+public final class VectorMinMaxScalerTrainBatchOp extends BatchOperator <VectorMinMaxScalerTrainBatchOp>
+	implements VectorMinMaxScalerTrainParams <VectorMinMaxScalerTrainBatchOp>,
+	WithModelInfoBatchOp <VectorMinMaxScalerModelInfo, VectorMinMaxScalerTrainBatchOp,
+		VectorMinMaxScalerModelInfoBatchOp> {
 
-    public VectorMinMaxScalerTrainBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 569730809164955534L;
 
-    public VectorMinMaxScalerTrainBatchOp(Params params) {
-        super(params);
-    }
+	public VectorMinMaxScalerTrainBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public VectorMinMaxScalerTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator<?> in = checkAndGetFirst(inputs);
-        String vectorColName = getSelectedCol();
+	public VectorMinMaxScalerTrainBatchOp(Params params) {
+		super(params);
+	}
 
-        VectorMinMaxScalerModelDataConverter converter = new VectorMinMaxScalerModelDataConverter();
-        converter.vectorColName = vectorColName;
+	@Override
+	public VectorMinMaxScalerTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
+		String vectorColName = getSelectedCol();
 
-        DataSet<Row> rows = StatisticsHelper.vectorSummary(in, vectorColName)
-            .flatMap(new BuildVectorMinMaxModel(vectorColName, getMin(), getMax()));
+		VectorMinMaxScalerModelDataConverter converter = new VectorMinMaxScalerModelDataConverter();
+		converter.vectorColName = vectorColName;
 
-        setOutput(rows, converter.getModelSchema());
+		DataSet <Row> rows = StatisticsHelper.vectorSummary(in, vectorColName)
+			.flatMap(new BuildVectorMinMaxModel(vectorColName, getMin(), getMax()));
 
-        return this;
-    }
+		setOutput(rows, converter.getModelSchema());
 
-    @Override
-    public VectorMinMaxScalerModelInfoBatchOp getModelInfoBatchOp() {
-        return new VectorMinMaxScalerModelInfoBatchOp().linkFrom(this);
-    }
+		return this;
+	}
 
-    /**
-     * table summary build model.
-     */
-    public static class BuildVectorMinMaxModel implements FlatMapFunction<BaseVectorSummary, Row> {
-        private String selectedColName;
-        private double min;
-        private double max;
+	@Override
+	public VectorMinMaxScalerModelInfoBatchOp getModelInfoBatchOp() {
+		return new VectorMinMaxScalerModelInfoBatchOp(this.getParams()).linkFrom(this);
+	}
 
-        public BuildVectorMinMaxModel(String selectedColName, double min, double max) {
-            this.selectedColName = selectedColName;
-            this.min = min;
-            this.max = max;
-        }
+	/**
+	 * table summary build model.
+	 */
+	public static class BuildVectorMinMaxModel implements FlatMapFunction <BaseVectorSummary, Row> {
+		private static final long serialVersionUID = -824127373968536758L;
+		private String selectedColName;
+		private double min;
+		private double max;
 
-        @Override
-        public void flatMap(BaseVectorSummary srt, Collector<Row> collector) throws Exception {
-            if (null != srt) {
-                VectorMinMaxScalerModelDataConverter converter = new VectorMinMaxScalerModelDataConverter();
-                converter.vectorColName = selectedColName;
+		public BuildVectorMinMaxModel(String selectedColName, double min, double max) {
+			this.selectedColName = selectedColName;
+			this.min = min;
+			this.max = max;
+		}
 
-                converter.save(Tuple3.of(min, max, srt), collector);
-            }
-        }
-    }
+		@Override
+		public void flatMap(BaseVectorSummary srt, Collector <Row> collector) throws Exception {
+			if (null != srt) {
+				VectorMinMaxScalerModelDataConverter converter = new VectorMinMaxScalerModelDataConverter();
+				converter.vectorColName = selectedColName;
 
+				converter.save(Tuple3.of(min, max, srt), collector);
+			}
+		}
+	}
 
 }

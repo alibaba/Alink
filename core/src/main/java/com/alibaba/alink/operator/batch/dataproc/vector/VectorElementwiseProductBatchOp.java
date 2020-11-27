@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.dataproc.vector.VectorElementwiseProductMapper;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorElementwiseProductMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorElementwiseProductParams;
 
 /**
@@ -13,6 +13,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorElementwiseProductParams;
  */
 public final class VectorElementwiseProductBatchOp extends MapBatchOp <VectorElementwiseProductBatchOp>
 	implements VectorElementwiseProductParams <VectorElementwiseProductBatchOp> {
+
+	private static final long serialVersionUID = -508063650510821861L;
 
 	public VectorElementwiseProductBatchOp() {
 		this(null);

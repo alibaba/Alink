@@ -17,116 +17,119 @@ import static org.junit.Assert.assertEquals;
 
 public class VectorImputerMapperTest {
 
-    TableSchema modelSchema = new TableSchema(new String[]{"model_id", "model_info", "vec"},
-        new TypeInformation[]{Types.LONG, Types.STRING, Types.STRING});
+	TableSchema modelSchema = new TableSchema(new String[] {"model_id", "model_info", "vec"},
+		new TypeInformation[] {Types.LONG, Types.STRING, Types.STRING});
 
-    @Test
-    public void testMean() throws Exception {
-        Row[] rows = new Row[]{
-            Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"strategy\":\"\\\"mean\\\"\"}", null),
-            Row.of(1048576L, "[1.3333333333333333,-0.3333333333333333]", null)
-        };
+	@Test
+	public void testMean() throws Exception {
+		Row[] rows = new Row[] {
+			Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"strategy\":\"\\\"mean\\\"\"}", null),
+			Row.of(1048576L, "[1.3333333333333333,-0.3333333333333333]", null)
+		};
 
-        List<Row> model = Arrays.asList(rows);
+		List <Row> model = Arrays.asList(rows);
 
-        TableSchema dataSchema = new TableSchema(
-            new String[]{"vec"},
-            new TypeInformation<?>[]{Types.STRING}
-        );
-        Params params = new Params();
+		TableSchema dataSchema = new TableSchema(
+			new String[] {"vec"},
+			new TypeInformation <?>[] {Types.STRING}
+		);
+		Params params = new Params();
 
-        VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
-        mapper.loadModel(model);
+		VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
+		mapper.loadModel(model);
 
-        assertEquals(mapper.map(Row.of(new DenseVector(new double[]{1.0, Double.NaN}))).getField(0),
-                new DenseVector(new double[]{1.0, -0.3333333333333333}));
-    }
+		assertEquals(mapper.map(Row.of(new DenseVector(new double[] {1.0, Double.NaN}))).getField(0),
+			new DenseVector(new double[] {1.0, -0.3333333333333333}));
+	}
 
-    @Test
-    public void testMin() throws Exception {
-        Row[] rows = new Row[]{
-            Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"strategy\":\"\\\"min\\\"\"}", null),
-            Row.of(1048576L, "[1.3333333333333333,-3.0]", null)
-        };
+	@Test
+	public void testMin() throws Exception {
+		Row[] rows = new Row[] {
+			Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"strategy\":\"\\\"min\\\"\"}", null),
+			Row.of(1048576L, "[1.3333333333333333,-3.0]", null)
+		};
 
-        List<Row> model = Arrays.asList(rows);
+		List <Row> model = Arrays.asList(rows);
 
-        TableSchema dataSchema = new TableSchema(
-            new String[]{"vec"},
-            new TypeInformation<?>[]{Types.STRING}
-        );
-        Params params = new Params();
+		TableSchema dataSchema = new TableSchema(
+			new String[] {"vec"},
+			new TypeInformation <?>[] {Types.STRING}
+		);
+		Params params = new Params();
 
-        VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
-        mapper.loadModel(model);
+		VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
+		mapper.loadModel(model);
 
-        assertEquals(mapper.map(Row.of(new DenseVector(new double[]{1.0, Double.NaN}))).getField(0),
-                new DenseVector(new double[]{1.0, -3.0}));
-    }
+		assertEquals(mapper.map(Row.of(new DenseVector(new double[] {1.0, Double.NaN}))).getField(0),
+			new DenseVector(new double[] {1.0, -3.0}));
+	}
 
-    @Test
-    public void testMax() throws Exception {
-        Row[] rows = new Row[]{
-            Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"strategy\":\"\\\"max\\\"\"}", null),
-            Row.of(1048576L, "[1.3333333333333333,2.0]", null)
-        };
+	@Test
+	public void testMax() throws Exception {
+		Row[] rows = new Row[] {
+			Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"strategy\":\"\\\"max\\\"\"}", null),
+			Row.of(1048576L, "[1.3333333333333333,2.0]", null)
+		};
 
-        List<Row> model = Arrays.asList(rows);
+		List <Row> model = Arrays.asList(rows);
 
-        TableSchema dataSchema = new TableSchema(
-            new String[]{"vec"},
-            new TypeInformation<?>[]{Types.STRING}
-        );
-        Params params = new Params();
+		TableSchema dataSchema = new TableSchema(
+			new String[] {"vec"},
+			new TypeInformation <?>[] {Types.STRING}
+		);
+		Params params = new Params();
 
-        VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
-        mapper.loadModel(model);
+		VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
+		mapper.loadModel(model);
 
-        assertEquals(mapper.map(Row.of(new DenseVector(new double[]{1.0, Double.NaN}))).getField(0),
-                new DenseVector(new double[]{1.0, 2.0}));
-    }
+		assertEquals(mapper.map(Row.of(new DenseVector(new double[] {1.0, Double.NaN}))).getField(0),
+			new DenseVector(new double[] {1.0, 2.0}));
+	}
 
-    @Test
-    public void testSparseMax() throws Exception {
-        Row[] rows = new Row[]{
-                Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"strategy\":\"\\\"max\\\"\"}", null),
-                Row.of(1048576L, "[1.3333333333333333,0.0,2.0]", null)
-        };
+	@Test
+	public void testSparseMax() throws Exception {
+		Row[] rows = new Row[] {
+			Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"strategy\":\"\\\"max\\\"\"}", null),
+			Row.of(1048576L, "[1.3333333333333333,0.0,2.0]", null)
+		};
 
-        List<Row> model = Arrays.asList(rows);
+		List <Row> model = Arrays.asList(rows);
 
-        TableSchema dataSchema = new TableSchema(
-                new String[]{"vec"},
-                new TypeInformation<?>[]{Types.STRING}
-        );
-        Params params = new Params();
+		TableSchema dataSchema = new TableSchema(
+			new String[] {"vec"},
+			new TypeInformation <?>[] {Types.STRING}
+		);
+		Params params = new Params();
 
-        VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
-        mapper.loadModel(model);
+		VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
+		mapper.loadModel(model);
 
-        assertEquals(mapper.map(Row.of(new SparseVector(3, new int[]{0,2}, new double[]{1.0, Double.NaN}))).getField(0),
-                new SparseVector(3, new int[]{0,2}, new double[]{1.0, 2.0}));
-    }
+		assertEquals(
+			mapper.map(Row.of(new SparseVector(3, new int[] {0, 2}, new double[] {1.0, Double.NaN}))).getField(0),
+			new SparseVector(3, new int[] {0, 2}, new double[] {1.0, 2.0}));
+	}
 
-    @Test
-    public void testValue() throws Exception {
-        Row[] rows = new Row[]{
-                Row.of(0L, "{\"selectedCol\":\"\\\"vec\\\"\",\"fillValue\":\"\\\"-7.0\\\"\",\"strategy\":\"\\\"VALUE\\\"\"}", null)
-        };
+	@Test
+	public void testValue() throws Exception {
+		Row[] rows = new Row[] {
+			Row.of(0L,
+				"{\"selectedCol\":\"\\\"vec\\\"\",\"fillValue\":\"\\\"-7.0\\\"\",\"strategy\":\"\\\"VALUE\\\"\"}",
+				null)
+		};
 
-        List<Row> model = Arrays.asList(rows);
+		List <Row> model = Arrays.asList(rows);
 
-        TableSchema dataSchema = new TableSchema(
-                new String[]{"vec"},
-                new TypeInformation<?>[]{Types.STRING}
-        );
-        Params params = new Params();
+		TableSchema dataSchema = new TableSchema(
+			new String[] {"vec"},
+			new TypeInformation <?>[] {Types.STRING}
+		);
+		Params params = new Params();
 
-        VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
-        mapper.loadModel(model);
+		VectorImputerModelMapper mapper = new VectorImputerModelMapper(modelSchema, dataSchema, params);
+		mapper.loadModel(model);
 
-        assertEquals(mapper.map(Row.of(new SparseVector(3, new int[]{0,2}, new double[]{1.0, Double.NaN}))).getField(0),
-                new SparseVector(3, new int[]{0,2}, new double[]{1.0, -7.0}));
-    }
-
+		assertEquals(
+			mapper.map(Row.of(new SparseVector(3, new int[] {0, 2}, new double[] {1.0, Double.NaN}))).getField(0),
+			new SparseVector(3, new int[] {0, 2}, new double[] {1.0, -7.0}));
+	}
 }

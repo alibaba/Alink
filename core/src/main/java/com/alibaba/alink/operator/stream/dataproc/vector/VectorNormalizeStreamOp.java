@@ -10,10 +10,11 @@ import com.alibaba.alink.params.dataproc.vector.VectorNormalizeParams;
  * Normalizer is a Transformer which transforms a dataset of Vector rows, normalizing each Vector to have unit norm. It
  * takes parameter p, which specifies the p-norm used for normalization. This normalization can help standardize your
  * input data and improve the behavior of learning algorithms.
- *
  */
 public final class VectorNormalizeStreamOp extends MapStreamOp <VectorNormalizeStreamOp>
 	implements VectorNormalizeParams <VectorNormalizeStreamOp> {
+
+	private static final long serialVersionUID = -2793008097390444539L;
 
 	public VectorNormalizeStreamOp() {
 		this(null);

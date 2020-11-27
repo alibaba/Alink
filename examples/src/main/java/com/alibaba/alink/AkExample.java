@@ -22,11 +22,11 @@ public class AkExample {
 
 		// Note: Complete the parameter below with the right oss configure.
 		BaseFileSystem<?> ossFileSystem = new OssFileSystem(
-			"OssEndPoint", "OssBucket", "OssId", "OssKey"
+			"OssVersion", "OssEndPoint", "OssBucket", "OssId", "OssKey"
 		);
 
 		// Note: Complete the parameter below with the right hdfs configure.
-		BaseFileSystem hadoopFileSystem = new HadoopFileSystem("HdfsFileSystemUri");
+		BaseFileSystem<?> hadoopFileSystem = new HadoopFileSystem("HadoopVersion", "HdfsFileSystemUri");
 
 		// csv to oss
 		CsvSourceBatchOp csvSourceBatchOp = new CsvSourceBatchOp()

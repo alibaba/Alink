@@ -6,9 +6,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.mapper.Mapper;
-import com.alibaba.alink.common.VectorTypes;
 
 import java.util.ArrayList;
 
@@ -16,6 +16,7 @@ import java.util.ArrayList;
  * This mapper serializes vector in corresponding field of the input row.
  */
 public class VectorSerializeMapper extends Mapper {
+	private static final long serialVersionUID = -9127538856735420252L;
 	private final boolean needSerialize;
 	private final String[] colNames;
 	private final TypeInformation[] colTypes;
@@ -26,8 +27,8 @@ public class VectorSerializeMapper extends Mapper {
 		TypeInformation[] types = dataSchema.getFieldTypes();
 		for (int i = 0; i < types.length; i++) {
 			if (VectorTypes.VECTOR.equals(types[i]) ||
-					VectorTypes.DENSE_VECTOR.equals(types[i]) ||
-					VectorTypes.SPARSE_VECTOR.equals(types[i])) {
+				VectorTypes.DENSE_VECTOR.equals(types[i]) ||
+				VectorTypes.SPARSE_VECTOR.equals(types[i])) {
 				colIndices.add(i);
 			}
 		}

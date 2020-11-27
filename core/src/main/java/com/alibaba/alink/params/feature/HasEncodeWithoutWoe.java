@@ -6,43 +6,43 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.params.ParamUtil;
 
-public interface HasEncodeWithoutWoe<T> extends WithParams<T> {
-    ParamInfo<Encode> ENCODE = ParamInfoFactory
-        .createParamInfo("encode", Encode.class)
-        .setDescription("encode type: INDEX, VECTOR, ASSEMBLED_VECTOR.")
-        .setHasDefaultValue(Encode.ASSEMBLED_VECTOR)
-        .build();
+public interface HasEncodeWithoutWoe<T> extends WithParams <T> {
 
-    default Encode getEncode() {
-        return get(ENCODE);
-    }
+	ParamInfo <Encode> ENCODE = ParamInfoFactory
+		.createParamInfo("encode", Encode.class)
+		.setDescription("encode type: INDEX, VECTOR, ASSEMBLED_VECTOR.")
+		.setHasDefaultValue(Encode.ASSEMBLED_VECTOR)
+		.build();
 
-    default T setEncode(Encode value) {
-        return set(ENCODE, value);
-    }
+	default Encode getEncode() {
+		return get(ENCODE);
+	}
 
-    default T setEncode(String value) {
-        return set(ENCODE, ParamUtil.searchEnum(ENCODE, value));
-    }
+	default T setEncode(Encode value) {
+		return set(ENCODE, value);
+	}
 
-    /**
-     * Encode type for Binning.
-     */
-    enum Encode {
+	default T setEncode(String value) {
+		return set(ENCODE, ParamUtil.searchEnum(ENCODE, value));
+	}
 
-        /**
-         * Output a spasevector with only one Non-zero(the index of the bin) element.
-         */
-        VECTOR,
+	/**
+	 * Encode type for QuantileDiscrete.
+	 */
+	enum Encode {
+		/**
+		 * Output a sparse vector with only one Non-zero(the index of the bin) element.
+		 */
+		VECTOR,
 
-        /**
-         * If there are multi columns, first encode these columns as vectors, and output the assembled vector.
-         */
-        ASSEMBLED_VECTOR,
+		/**
+		 * If there are multi columns, first encode these columns as vectors, and then output the assembled vector.
+		 */
+		ASSEMBLED_VECTOR,
 
-        /**
-         * Output the index of the bin.
-         */
-        INDEX
-    }
+		/**
+		 * Output the index of the bin.
+		 */
+		INDEX
+	}
 }

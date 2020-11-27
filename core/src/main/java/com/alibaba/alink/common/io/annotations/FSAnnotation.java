@@ -14,10 +14,10 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface FSAnnotation {
 
-    /**
-     * Datasource name. For example, sqlite, mysql, etc.
-     *
-     * @return
-     */
-    String name();
+	/**
+	 * Datasource name. For example, sqlite, mysql, etc.
+	 *
+	 * @return
+	 */
+	String name();
 }

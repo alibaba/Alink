@@ -1,12 +1,17 @@
 package com.alibaba.alink.operator.stream.source;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.io.annotations.IOType;
+import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
+import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 
 import java.util.ArrayList;
@@ -16,10 +21,18 @@ import java.util.List;
 /**
  * Stream source that reads data from memory.
  */
-public final class MemSourceStreamOp extends StreamOperator<MemSourceStreamOp> {
+@IoOpAnnotation(name = MemSourceStreamOp.NAME, ioType = IOType.SourceStream)
+public final class MemSourceStreamOp extends BaseSourceStreamOp <MemSourceStreamOp> {
+
+	static final String NAME = "memory";
+	private static final long serialVersionUID = -6284651345216197637L;
+
+	private List <Row> rows;
+	private String[] colNames;
+	private TypeInformation <?>[] colTypes;
 
 	public MemSourceStreamOp(Object[] vals, String colName) {
-		super(null);
+		super(NAME, null);
 		List <Row> rows = new ArrayList <Row>();
 		for (Object str : vals) {
 			rows.add(Row.of(str));
@@ -28,7 +41,7 @@ public final class MemSourceStreamOp extends StreamOperator<MemSourceStreamOp> {
 	}
 
 	public MemSourceStreamOp(Object[][] vals, String[] colNames) {
-		super(null);
+		super(NAME, null);
 		List <Row> rows = new ArrayList <Row>();
 		for (int i = 0; i < vals.length; i++) {
 			rows.add(Row.of(vals[i]));
@@ -37,7 +50,7 @@ public final class MemSourceStreamOp extends StreamOperator<MemSourceStreamOp> {
 	}
 
 	public MemSourceStreamOp(List <Row> rows, TableSchema schema) {
-		super();
+		super(NAME, null);
 		init(rows, schema.getFieldNames(), schema.getFieldTypes());
 	}
 
@@ -46,7 +59,7 @@ public final class MemSourceStreamOp extends StreamOperator<MemSourceStreamOp> {
 	}
 
 	public MemSourceStreamOp(List <Row> rows, String[] colNames) {
-		super(null);
+		super(NAME, null);
 		init(rows, colNames);
 	}
 
@@ -72,22 +85,18 @@ public final class MemSourceStreamOp extends StreamOperator<MemSourceStreamOp> {
 		if (null == colNames || colNames.length < 1) {
 			throw new IllegalArgumentException("colNames can not be empty.");
 		}
-
-		DataStream <Row> dastr = MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment().fromCollection(rows);
-
-		StringBuilder sbd = new StringBuilder();
-		sbd.append(colNames[0]);
-		for (int i = 1; i < colNames.length; i++) {
-			sbd.append(",").append(colNames[i]);
-		}
-
-		this.setOutput(dastr, colNames, colTypes);
+		this.rows = rows;
+		this.colNames = colNames;
+		this.colTypes = colTypes;
 	}
 
 	@Override
-	public MemSourceStreamOp linkFrom(StreamOperator<?>... inputs) {
-		throw new UnsupportedOperationException(
-			"Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+	protected Table initializeDataSource() {
+		Long mlEnvironmentId = getMLEnvironmentId();
+		DataStream <Row> dataStream = MLEnvironmentFactory.get(mlEnvironmentId)
+			.getStreamExecutionEnvironment()
+			.fromCollection(rows, new RowTypeInfo(colTypes));
+		return DataStreamConversionUtil.toTable(mlEnvironmentId, dataStream, colNames, colTypes);
 	}
 
 }

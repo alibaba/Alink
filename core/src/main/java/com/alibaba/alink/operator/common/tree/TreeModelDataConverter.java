@@ -15,7 +15,6 @@ import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.classification.GbdtTrainParams;
-import com.alibaba.alink.params.shared.tree.HasFeatureImportanceType;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -27,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 public class TreeModelDataConverter
-	extends LabeledModelDataConverter<TreeModelDataConverter, TreeModelDataConverter> implements Serializable {
+	extends LabeledModelDataConverter <TreeModelDataConverter, TreeModelDataConverter> implements Serializable {
 	public final static ParamInfo <Partition> STRING_INDEXER_MODEL_PARTITION = ParamInfoFactory
 		.createParamInfo("stringIndexerModelPartition", Partition.class)
 		.setDescription("stringIndexerModelPartition")
@@ -38,14 +37,16 @@ public class TreeModelDataConverter
 		.setDescription("treePartition")
 		.setRequired()
 		.build();
-	public final static ParamInfo<String> IMPORTANCE_FIRST_COL = ParamInfoFactory
+
+	public final static ParamInfo <String> IMPORTANCE_FIRST_COL = ParamInfoFactory
 		.createParamInfo("importanceFirstCol", String.class)
 		.setHasDefaultValue("feature")
 		.build();
-	public final static ParamInfo<String> IMPORTANCE_SECOND_COL = ParamInfoFactory
+	public final static ParamInfo <String> IMPORTANCE_SECOND_COL = ParamInfoFactory
 		.createParamInfo("importanceSecondCol", String.class)
 		.setHasDefaultValue("importance")
 		.build();
+	private static final long serialVersionUID = 6997356679076377663L;
 
 	public List <Row> stringIndexerModelSerialized;
 	public Node[] roots;
@@ -61,7 +62,7 @@ public class TreeModelDataConverter
 	}
 
 	@Override
-	protected Tuple3<Params, Iterable<String>, Iterable<Object>> serializeModel(TreeModelDataConverter modelData) {
+	protected Tuple3 <Params, Iterable <String>, Iterable <Object>> serializeModel(TreeModelDataConverter modelData) {
 		List <String> serialized = new ArrayList <>();
 
 		int pStart = 0, pEnd = 0;
@@ -211,22 +212,23 @@ public class TreeModelDataConverter
 	}
 
 	@Override
-	protected TreeModelDataConverter deserializeModel(Params meta, Iterable<String> iterable, Iterable<Object> distinctLabels) {
+	protected TreeModelDataConverter deserializeModel(Params meta, Iterable <String> iterable,
+													  Iterable <Object> distinctLabels) {
 		// parseDense partition of categorical
 		Partition stringIndexerModelPartition = meta.get(
 			STRING_INDEXER_MODEL_PARTITION
 		);
 
-		List<String> data = new ArrayList<>();
+		List <String> data = new ArrayList <>();
 		iterable.forEach(data::add);
 		if (stringIndexerModelPartition.getF1() != stringIndexerModelPartition.getF0()) {
-			stringIndexerModelSerialized = new ArrayList<>();
+			stringIndexerModelSerialized = new ArrayList <>();
 
 			for (int i = stringIndexerModelPartition.getF0(); i < stringIndexerModelPartition.getF1(); ++i) {
 				Object[] deserialized = JsonConverter.fromJson(data.get(i), Object[].class);
 				stringIndexerModelSerialized.add(
 					Row.of(
-						((Integer)deserialized[0]).longValue(),
+						((Integer) deserialized[0]).longValue(),
 						deserialized[1],
 						deserialized[2]
 					)
@@ -246,7 +248,7 @@ public class TreeModelDataConverter
 			.toArray(Node[]::new);
 
 		this.meta = meta;
-		List<Object> labelList = new ArrayList<>();
+		List <Object> labelList = new ArrayList <>();
 		distinctLabels.forEach(labelList::add);
 		this.labels = labelList.toArray();
 
@@ -254,6 +256,7 @@ public class TreeModelDataConverter
 	}
 
 	private static class NodeSerializable implements Serializable {
+		private static final long serialVersionUID = 3621266425332831183L;
 		public Node node;
 		public int id;
 		public int[] nextIds;
@@ -275,6 +278,7 @@ public class TreeModelDataConverter
 	}
 
 	public static final class Partition implements Serializable {
+		private static final long serialVersionUID = -646027497988196810L;
 		private int f0;
 		private int f1;
 
@@ -307,6 +311,7 @@ public class TreeModelDataConverter
 	}
 
 	public static final class Partitions implements Serializable {
+		private static final long serialVersionUID = -6525488145026282786L;
 		private List <Partition> partitions = new ArrayList <>();
 
 		public Partitions() {
@@ -328,10 +333,12 @@ public class TreeModelDataConverter
 	}
 
 	//feature importance
-	public static class FeatureImportanceReducer extends RichGroupReduceFunction<Row, Row> {
+	public static class FeatureImportanceReducer extends RichGroupReduceFunction <Row, Row> {
+		private static final long serialVersionUID = -4934720404391098100L;
+
 		@Override
-		public void reduce(Iterable<Row> input, Collector<Row> output) throws Exception {
-			ArrayList<Row> modelData = new ArrayList<>();
+		public void reduce(Iterable <Row> input, Collector <Row> output) throws Exception {
+			ArrayList <Row> modelData = new ArrayList <>();
 			for (Row row : input) {
 				modelData.add(row);
 			}
@@ -339,17 +346,12 @@ public class TreeModelDataConverter
 			TreeModelDataConverter modelDataConverter = new TreeModelDataConverter();
 			modelDataConverter.load(modelData);
 
-			Map<Integer, Double> featureImportanceMap = new HashMap<>();
+			Map <Integer, Double> featureImportanceMap = new HashMap <>();
 
-			HasFeatureImportanceType.FeatureImportanceType featureImportanceType
-				= modelDataConverter.meta.get(HasFeatureImportanceType.FEATURE_IMPORTANCE_TYPE);
+			GbdtTrainParams.FeatureImportanceType featureImportanceType
+				= modelDataConverter.meta.get(GbdtTrainParams.FEATURE_IMPORTANCE_TYPE);
 
-			// for back compatibility
-			if (modelDataConverter.meta.contains(BaseGbdtTrainBatchOp.ALGO_TYPE)) {
-				featureImportanceType = HasFeatureImportanceType.FeatureImportanceType.WEIGHT;
-			}
-
-			ArrayDeque<Node> deque = new ArrayDeque<>();
+			ArrayDeque <Node> deque = new ArrayDeque <>();
 
 			double sum = 0.0;
 			for (Node root : modelDataConverter.roots) {
@@ -411,7 +413,7 @@ public class TreeModelDataConverter
 				}
 			} else {
 
-				for (Map.Entry<Integer, Double> entry : featureImportanceMap.entrySet()) {
+				for (Map.Entry <Integer, Double> entry : featureImportanceMap.entrySet()) {
 					Row row = new Row(2);
 					row.setField(0, String.valueOf(entry.getKey()));
 					row.setField(1, entry.getValue());

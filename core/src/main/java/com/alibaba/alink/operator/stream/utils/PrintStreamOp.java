@@ -24,21 +24,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * Print Stream op to screen.
+ */
 @IoOpAnnotation(name = "print", ioType = IOType.SinkStream)
-public class PrintStreamOp extends BaseSinkStreamOp<PrintStreamOp> {
-
-	public static final ParamInfo<Integer> REFRSH_INTERVAL = ParamInfoFactory
+public class PrintStreamOp extends BaseSinkStreamOp <PrintStreamOp> {
+	public static final ParamInfo <Integer> REFRESH_INTERVAL = ParamInfoFactory
 		.createParamInfo("refreshInterval", Integer.class)
 		.setDescription("refresh interval")
 		.setHasDefaultValue(-1)
 		.build();
 
-	public static final ParamInfo<Integer> MAX_LIMIT = ParamInfoFactory
+	public static final ParamInfo <Integer> MAX_LIMIT = ParamInfoFactory
 		.createParamInfo("maxLimit", Integer.class)
 		.setDescription("max limit")
 		.setHasDefaultValue(100)
 		.build();
+
+	private static final long serialVersionUID = -7482957550550215050L;
 
 	public PrintStreamOp() {
 		this(null);
@@ -53,24 +56,27 @@ public class PrintStreamOp extends BaseSinkStreamOp<PrintStreamOp> {
 	}
 
 	@Override
-	protected PrintStreamOp sinkFrom(StreamOperator in) {
+	protected PrintStreamOp sinkFrom(StreamOperator<?> in) {
 		try {
 			System.err.println(TableUtil.formatTitle(in.getColNames()));
-			final int refreshInterval = getParams().get(REFRSH_INTERVAL);
-			if(refreshInterval <= 0) {
-				DataStreamConversionUtil.fromTable(getMLEnvironmentId(),in.getOutputTable()).addSink(new StreamPrintSinkFunction());
-			}else {
+			final int refreshInterval = getParams().get(REFRESH_INTERVAL);
+			if (refreshInterval <= 0) {
+				DataStreamConversionUtil.fromTable(getMLEnvironmentId(), in.getOutputTable()).addSink(
+					new StreamPrintSinkFunction());
+			} else {
 				final int maxLimit = getParams().get(MAX_LIMIT);
 				DataStreamConversionUtil.fromTable(getMLEnvironmentId(), in.getOutputTable())
 					.timeWindowAll(Time.of(refreshInterval, TimeUnit.SECONDS))
-					.apply(new AllWindowFunction<Row, List<Row>, TimeWindow>() {
+					.apply(new AllWindowFunction <Row, List <Row>, TimeWindow>() {
+						private static final long serialVersionUID = -5002192700679782400L;
+
 						@Override
-						public void apply(TimeWindow window, Iterable<Row> values, Collector<List<Row>> out) {
-							List<Row> list = new ArrayList<>();
-							for(Row row : values){
-								if(list.size() < maxLimit){
+						public void apply(TimeWindow window, Iterable <Row> values, Collector <List <Row>> out) {
+							List <Row> list = new ArrayList <>();
+							for (Row row : values) {
+								if (list.size() < maxLimit) {
 									list.add(row);
-								}else{
+								} else {
 									break;
 								}
 							}
@@ -85,9 +91,10 @@ public class PrintStreamOp extends BaseSinkStreamOp<PrintStreamOp> {
 		return this;
 	}
 
-	public static class StreamPrintListRowSinkFunction extends RichSinkFunction <List<Row>> {
+	public static class StreamPrintListRowSinkFunction extends RichSinkFunction <List <Row>> {
 		private static final long serialVersionUID = 1L;
 		private transient PrintStream stream;
+
 		public StreamPrintListRowSinkFunction() {
 		}
 
@@ -97,8 +104,8 @@ public class PrintStreamOp extends BaseSinkStreamOp<PrintStreamOp> {
 			this.stream = System.err;
 		}
 
-		public void invoke(List<Row> records) {
-			for(Row record : records){
+		public void invoke(List <Row> records) {
+			for (Row record : records) {
 				this.stream.println(TableUtil.formatRows(record));
 			}
 		}
@@ -117,6 +124,7 @@ public class PrintStreamOp extends BaseSinkStreamOp<PrintStreamOp> {
 	public static class StreamPrintSinkFunction extends RichSinkFunction <Row> {
 		private static final long serialVersionUID = 1L;
 		private transient PrintStream stream;
+
 		public StreamPrintSinkFunction() {
 		}
 

@@ -14,6 +14,7 @@ import java.util.Map;
  */
 public class DocWordSplitCount extends TableFunction <Row> {
 
+	private static final long serialVersionUID = -2337310237381435009L;
 	private String delimiter;
 
 	public DocWordSplitCount(String delimiter) {

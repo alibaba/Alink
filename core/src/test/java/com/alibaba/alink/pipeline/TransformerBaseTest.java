@@ -39,6 +39,7 @@ public class TransformerBaseTest extends PipelineStageTestBase {
 	 */
 	private static class FakeTransFormer extends TransformerBase {
 
+		private static final long serialVersionUID = 7071280095911475103L;
 		boolean batchTransformed = false;
 		boolean streamTransformed = false;
 
@@ -64,7 +65,7 @@ public class TransformerBaseTest extends PipelineStageTestBase {
 	public void testFitBatchTable() {
 		Long id = MLEnvironmentFactory.getNewMLEnvironmentId();
 		MLEnvironment env = MLEnvironmentFactory.get(id);
-		DataSet<Integer> input = env.getExecutionEnvironment().fromElements(1, 2, 3);
+		DataSet <Integer> input = env.getExecutionEnvironment().fromElements(1, 2, 3);
 		Table table = env.getBatchTableEnvironment().fromDataSet(input);
 
 		FakeTransFormer transFormer = new FakeTransFormer();
@@ -79,7 +80,7 @@ public class TransformerBaseTest extends PipelineStageTestBase {
 	public void testFitStreamTable() {
 		Long id = MLEnvironmentFactory.getNewMLEnvironmentId();
 		MLEnvironment env = MLEnvironmentFactory.get(id);
-		DataStream<Integer> input = env.getStreamExecutionEnvironment().fromElements(1, 2, 3);
+		DataStream <Integer> input = env.getStreamExecutionEnvironment().fromElements(1, 2, 3);
 		Table table = env.getStreamTableEnvironment().fromDataStream(input);
 
 		FakeTransFormer transFormer = new FakeTransFormer();

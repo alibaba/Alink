@@ -1,7 +1,5 @@
 package com.alibaba.alink.operator.common.feature;
 
-import com.alibaba.alink.common.model.SimpleModelDataConverter;
-import com.google.common.reflect.TypeToken;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -10,9 +8,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.model.SimpleModelDataConverter;
+import com.google.common.reflect.TypeToken;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.alibaba.alink.common.utils.JsonConverter.gson;
 
@@ -20,45 +23,64 @@ import static com.alibaba.alink.common.utils.JsonConverter.gson;
  * quantile discretizer model data converter.
  */
 public class QuantileDiscretizerModelDataConverter
-	extends SimpleModelDataConverter<QuantileDiscretizerModelDataConverter, QuantileDiscretizerModelDataConverter> {
-	public final static ParamInfo<String> VERSION = ParamInfoFactory
+	extends SimpleModelDataConverter <QuantileDiscretizerModelDataConverter, QuantileDiscretizerModelDataConverter> {
+	public final static ParamInfo <String> VERSION = ParamInfoFactory
 		.createParamInfo("version", String.class)
 		.setHasDefaultValue("v1")
 		.build();
 
 	public Params meta;
-	public Map<String, ContinuousRanges> data;
+	public Map <String, ContinuousRanges> data;
 
 	public QuantileDiscretizerModelDataConverter() {
-		this(new HashMap<>(), new Params());
+		this(new HashMap <>(), new Params());
 	}
 
-	public QuantileDiscretizerModelDataConverter(Map<String, ContinuousRanges> data, Params meta) {
+	public QuantileDiscretizerModelDataConverter(Map <String, ContinuousRanges> data, Params meta) {
 		this.data = data;
 		this.meta = meta;
 		this.meta.set(VERSION, "v2");
 	}
 
 	@Override
-	public Tuple2<Params, Iterable<String>> serializeModel(QuantileDiscretizerModelDataConverter modelData) {
+	public Tuple2 <Params, Iterable <String>> serializeModel(QuantileDiscretizerModelDataConverter modelData) {
 		return Tuple2.of(meta, new ModelSerializeIterable());
 	}
 
+	public static class QuantileDiscretizerModelDataConverterV1 extends QuantileDiscretizerModelDataConverter {
+		@Override
+		public Tuple2 <Params, Iterable <String>> serializeModel(QuantileDiscretizerModelDataConverter modelData) {
+			Map <String, Double[]> oldMap = new HashMap <>();
+
+			for (Map.Entry <String, ContinuousRanges> entry : modelData.data.entrySet()) {
+				oldMap.put(
+					entry.getKey(),
+					Arrays.stream(entry.getValue().splitsArray).map(Number::doubleValue).toArray(Double[]::new)
+				);
+			}
+
+			return Tuple2.of(
+				modelData.meta.set(VERSION, "v1"),
+				Arrays.stream(new String[] {gson.toJson(oldMap)}).collect(Collectors.toList())
+			);
+		}
+	}
+
 	@Override
-	public QuantileDiscretizerModelDataConverter deserializeModel(Params meta, Iterable<String> data) {
+	public QuantileDiscretizerModelDataConverter deserializeModel(Params meta, Iterable <String> data) {
 		this.meta = meta;
 
 		if (meta.get(VERSION).trim().equalsIgnoreCase("v1")) {
 			String json = data.iterator().next();
-			Map<String, Double[]> oldData = gson.fromJson(
+			Map <String, Double[]> oldData = gson.fromJson(
 				json,
-				new TypeToken<HashMap<String, Double[]>>() {
+				new TypeToken <HashMap <String, Double[]>>() {
 				}.getType()
 			);
 
-			this.data = new HashMap<>();
+			this.data = new HashMap <>();
 
-			for (Map.Entry<String, Double[]> d : oldData.entrySet()) {
+			for (Map.Entry <String, Double[]> d : oldData.entrySet()) {
 				this.data.put(
 					d.getKey(),
 					arraySplit2ContinuousRanges(d.getKey(), Types.DOUBLE, d.getValue(), true)
@@ -104,23 +126,23 @@ public class QuantileDiscretizerModelDataConverter
 
 	public static ContinuousRanges arraySplit2ContinuousRanges(
 		String featureName,
-		TypeInformation<?> featureType,
+		TypeInformation <?> featureType,
 		Number[] splits,
 		boolean leftOpen) {
 		return new ContinuousRanges(featureName, featureType,
 			splits, leftOpen);
 	}
 
-	class ModelSerializeIterable implements Iterable<String> {
+	class ModelSerializeIterable implements Iterable <String> {
 
 		@Override
-		public Iterator<String> iterator() {
+		public Iterator <String> iterator() {
 			return new ModelSerializeIterator();
 		}
 	}
 
-	class ModelSerializeIterator implements Iterator<String> {
-		Iterator<Map.Entry<String, ContinuousRanges>> mapIter
+	class ModelSerializeIterator implements Iterator <String> {
+		Iterator <Map.Entry <String, ContinuousRanges>> mapIter
 			= QuantileDiscretizerModelDataConverter.this.data.entrySet().iterator();
 
 		@Override
@@ -133,6 +155,5 @@ public class QuantileDiscretizerModelDataConverter
 			return ContinuousRanges.serialize(mapIter.next().getValue());
 		}
 	}
-
 
 }

@@ -1,13 +1,12 @@
 package com.alibaba.alink.params.regression;
 
-import com.alibaba.alink.params.shared.linear.LinearTrainParams;
-
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.params.shared.linear.LinearTrainParams;
+
 /**
  * parameters of svr train process.
- *
  */
 public interface LinearSvrTrainParams<T> extends
 	LinearTrainParams <T> {

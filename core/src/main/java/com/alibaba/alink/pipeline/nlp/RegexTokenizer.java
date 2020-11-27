@@ -10,8 +10,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * If gaps is true, it splits the document with the given pattern. If gaps is false, it extract the tokens matching the
  * pattern.
  */
-public class RegexTokenizer extends MapTransformer<RegexTokenizer>
+public class RegexTokenizer extends MapTransformer <RegexTokenizer>
 	implements RegexTokenizerParams <RegexTokenizer> {
+
+	private static final long serialVersionUID = -4301133158150414620L;
 
 	public RegexTokenizer() {
 		this(null);

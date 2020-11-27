@@ -29,13 +29,17 @@ public class AkStream {
 
 	private FilePath filePath;
 
-	private AkUtils.AkMeta akMeta;
+	private final AkUtils.AkMeta akMeta;
+
+	public AkStream(FilePath filePath) throws IOException {
+		this(filePath, null);
+	}
 
 	public AkStream(FilePath filePath, AkUtils.AkMeta akMeta) throws IOException {
 		Preconditions.checkNotNull(filePath);
 		this.filePath = filePath;
 		if (akMeta == null) {
-			this.akMeta = initialMeta(filePath);
+			this.akMeta = AkUtils.getMetaFromAkFile(filePath);
 		} else {
 			this.akMeta = akMeta;
 		}
@@ -57,7 +61,7 @@ public class AkStream {
 		return new AkWriter();
 	}
 
-	public class AkReader implements Iterable<Row> {
+	public class AkReader implements Iterable <Row>, AutoCloseable {
 		ZipInputStream inputStream;
 
 		AkReader() throws IOException {
@@ -77,7 +81,7 @@ public class AkStream {
 			return new AkReadIterator();
 		}
 
-		public class AkReadIterator implements Iterator<Row> {
+		public class AkReadIterator implements Iterator <Row> {
 			BinaryRecordReader binaryRecordReader;
 
 			AkReadIterator() {
@@ -121,6 +125,7 @@ public class AkStream {
 			}
 		}
 
+		@Override
 		public void close() throws IOException {
 			if (inputStream != null) {
 				inputStream.close();
@@ -129,7 +134,7 @@ public class AkStream {
 		}
 	}
 
-	public class AkWriter {
+	public class AkWriter implements AutoCloseable {
 		ZipOutputStream zipOutputStream;
 
 		AkWriter() throws IOException {
@@ -163,7 +168,7 @@ public class AkStream {
 			}
 		}
 
-		public class AkCollector implements Collector<Row> {
+		public class AkCollector implements Collector <Row>, AutoCloseable {
 			BinaryRecordWriter binaryRecordWriter;
 
 			AkCollector() throws IOException {
@@ -196,6 +201,7 @@ public class AkStream {
 			}
 		}
 
+		@Override
 		public void close() throws IOException {
 			if (zipOutputStream != null) {
 				zipOutputStream.close();
@@ -214,25 +220,6 @@ public class AkStream {
 
 	AkWriter getWriter(OutputStream outputStream) throws IOException {
 		return new AkWriter(outputStream);
-	}
-
-	private static AkUtils.AkMeta initialMeta(FilePath filePath) throws IOException {
-
-		AkUtils.AkMeta meta = null;
-		ZipEntry entry;
-		try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(filePath.getFileSystem().open(filePath.getPathStr())))) {
-			while ((entry = zis.getNextEntry()) != null) {
-				if (entry.getName().equalsIgnoreCase(AkUtils.META_FILE)) {
-					meta = JsonConverter.fromJson(
-						IOUtils.toString(zis, StandardCharsets.UTF_8),
-						AkUtils.AkMeta.class
-					);
-					break;
-				}
-			}
-		}
-
-		return meta;
 	}
 
 	private static void writeMeta2Stream(

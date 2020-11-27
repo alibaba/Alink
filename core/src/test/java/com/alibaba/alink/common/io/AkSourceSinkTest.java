@@ -2,20 +2,21 @@ package com.alibaba.alink.common.io;
 
 import org.apache.flink.util.FileUtils;
 
-import com.alibaba.alink.common.utils.httpsrc.Iris;
+import com.alibaba.alink.common.utils.testhttpsrc.Iris;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.sink.AkSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.AkSourceStreamOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 
-public class AkSourceSinkTest {
+public class AkSourceSinkTest extends AlinkTestBase {
 	File path;
 
 	@Before
@@ -38,7 +39,8 @@ public class AkSourceSinkTest {
 		BatchOperator data = Iris.getBatchData();
 
 		data.link(new AkSinkBatchOp().setFilePath(new File(path, "af1").getAbsolutePath()).setOverwriteSink(true));
-		data.link(new AkSinkBatchOp().setFilePath(new File(path, "ad2").getAbsolutePath()).setNumFiles(2).setOverwriteSink(true));
+		data.link(new AkSinkBatchOp().setFilePath(new File(path, "ad2").getAbsolutePath()).setNumFiles(2)
+			.setOverwriteSink(true));
 		BatchOperator.execute();
 	}
 
@@ -46,7 +48,8 @@ public class AkSourceSinkTest {
 		StreamOperator data = Iris.getStreamData();
 
 		data.link(new AkSinkStreamOp().setFilePath(new File(path, "af1s").getAbsolutePath()).setOverwriteSink(true));
-		data.link(new AkSinkStreamOp().setFilePath(new File(path, "ad2s").getAbsolutePath()).setNumFiles(2).setOverwriteSink(true));
+		data.link(new AkSinkStreamOp().setFilePath(new File(path, "ad2s").getAbsolutePath()).setNumFiles(2)
+			.setOverwriteSink(true));
 		StreamOperator.execute();
 	}
 

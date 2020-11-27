@@ -5,7 +5,6 @@ import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 /**
  * parameters of lasso regression train process.
- *
  */
 public interface LassoRegTrainParams<T> extends
 	LinearTrainParams <T>,

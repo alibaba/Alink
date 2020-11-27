@@ -15,12 +15,17 @@ import com.alibaba.alink.operator.stream.StreamOperator;
  */
 public final class TableSourceStreamOp extends StreamOperator <TableSourceStreamOp> {
 
+	private static final long serialVersionUID = 6011949833466268149L;
+
 	public TableSourceStreamOp(DataStream <Row> rows, String[] colNames, TypeInformation <?>[] colTypes) {
 		//todo: sessionId
-		this(DataStreamConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, rows, colNames, colTypes));
+		this(
+			DataStreamConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, rows, colNames,
+				colTypes));
 	}
 
-	public TableSourceStreamOp(DataStream <Row> rows, String[] colNames, TypeInformation <?>[] colTypes, long sessionId) {
+	public TableSourceStreamOp(DataStream <Row> rows, String[] colNames, TypeInformation <?>[] colTypes,
+							   long sessionId) {
 		this(DataStreamConversionUtil.toTable(sessionId, rows, colNames, colTypes));
 		setMLEnvironmentId(sessionId);
 	}
@@ -32,7 +37,7 @@ public final class TableSourceStreamOp extends StreamOperator <TableSourceStream
 	}
 
 	@Override
-	public TableSourceStreamOp linkFrom(StreamOperator<?>... inputs) {
+	public TableSourceStreamOp linkFrom(StreamOperator <?>... inputs) {
 		throw new UnsupportedOperationException("Table source operator should not have any upstream to link from.");
 	}
 

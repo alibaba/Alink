@@ -8,7 +8,9 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 /**
  * Transform the Table to SourceBatchOp.
  */
-public final class TableSourceBatchOp extends BatchOperator<TableSourceBatchOp> {
+public final class TableSourceBatchOp extends BatchOperator <TableSourceBatchOp> {
+
+	private static final long serialVersionUID = -5220231513565199001L;
 
 	public TableSourceBatchOp(Table table) {
 		super(null);
@@ -17,7 +19,7 @@ public final class TableSourceBatchOp extends BatchOperator<TableSourceBatchOp> 
 	}
 
 	@Override
-	public TableSourceBatchOp linkFrom(BatchOperator<?>... inputs) {
+	public TableSourceBatchOp linkFrom(BatchOperator <?>... inputs) {
 		throw new UnsupportedOperationException("Table source operator should not have any upstream to link from.");
 	}
 

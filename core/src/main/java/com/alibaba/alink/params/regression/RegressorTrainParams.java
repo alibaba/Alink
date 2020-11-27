@@ -5,7 +5,6 @@ import com.alibaba.alink.params.shared.colname.HasLabelCol;
 
 /**
  * parameters of regression train process.
- *
  */
 public interface RegressorTrainParams<T> extends
 	HasFeatureCols <T>,

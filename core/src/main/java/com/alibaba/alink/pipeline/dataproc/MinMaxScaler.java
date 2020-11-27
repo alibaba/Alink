@@ -14,14 +14,16 @@ import com.alibaba.alink.pipeline.Trainer;
 public class MinMaxScaler extends Trainer <MinMaxScaler, MinMaxScalerModel> implements
 	MinMaxScalerTrainParams <MinMaxScaler>,
 	MinMaxScalerPredictParams <MinMaxScaler>,
-	HasLazyPrintModelInfo<MinMaxScaler> {
+	HasLazyPrintModelInfo <MinMaxScaler> {
+
+	private static final long serialVersionUID = 6773065743562180147L;
 
 	public MinMaxScaler() {
 		super();
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new MinMaxScalerTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

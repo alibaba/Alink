@@ -28,7 +28,7 @@ public class Report {
 		/**
 		 * Stage index, parameter's key of the tuning, parameter's value of the tuning
 		 */
-		private final List<Tuple3<Integer, ParamInfo, Object>> stageParamInfos;
+		private final List <Tuple3 <Integer, ParamInfo, Object>> stageParamInfos;
 
 		/**
 		 * The metric.
@@ -42,7 +42,7 @@ public class Report {
 
 		public ReportElement(
 			Pipeline pipeline,
-			List<Tuple3<Integer, ParamInfo, Object>> stageParamInfos,
+			List <Tuple3 <Integer, ParamInfo, Object>> stageParamInfos,
 			Double metric) {
 
 			this(pipeline, stageParamInfos, metric, null);
@@ -50,7 +50,7 @@ public class Report {
 
 		public ReportElement(
 			Pipeline pipeline,
-			List<Tuple3<Integer, ParamInfo, Object>> stageParamInfos,
+			List <Tuple3 <Integer, ParamInfo, Object>> stageParamInfos,
 			Double metric,
 			String reason) {
 			this.pipeline = pipeline;
@@ -63,7 +63,7 @@ public class Report {
 			return pipeline;
 		}
 
-		public List<Tuple3<Integer, ParamInfo, Object>> getStageParamInfos() {
+		public List <Tuple3 <Integer, ParamInfo, Object>> getStageParamInfos() {
 			return stageParamInfos;
 		}
 
@@ -76,15 +76,15 @@ public class Report {
 		}
 	}
 
-	private final TuningEvaluator<?> tuningEvaluator;
-	private final List<ReportElement> elements;
+	private final TuningEvaluator <?> tuningEvaluator;
+	private final List <ReportElement> elements;
 
 	public Report(
-		TuningEvaluator<?> tuningEvaluator,
-		List<ReportElement> elements) {
+		TuningEvaluator <?> tuningEvaluator,
+		List <ReportElement> elements) {
 
 		this.tuningEvaluator = tuningEvaluator;
-		this.elements = new ArrayList<>();
+		this.elements = new ArrayList <>();
 		this.elements.addAll(elements);
 
 		if (this.tuningEvaluator.isLargerBetter()) {
@@ -135,11 +135,11 @@ public class Report {
 	}
 
 	public String toPrettyJson() {
-		List<Map<String, Object>> jsonMap = new ArrayList<>();
+		List <Map <String, Object>> jsonMap = new ArrayList <>();
 		for (ReportElement element : elements) {
-			List<JsonParamInfo> jsonParamInfos = new ArrayList<>();
+			List <JsonParamInfo> jsonParamInfos = new ArrayList <>();
 
-			for (Tuple3<Integer, ParamInfo, Object> stageParamInfo : element.getStageParamInfos()) {
+			for (Tuple3 <Integer, ParamInfo, Object> stageParamInfo : element.getStageParamInfos()) {
 				jsonParamInfos.add(
 					new JsonParamInfo(
 						element
@@ -153,7 +153,7 @@ public class Report {
 				);
 			}
 
-			Map<String, Object> subModelMap = new HashMap<>();
+			Map <String, Object> subModelMap = new HashMap <>();
 			subModelMap.put("param", jsonParamInfos);
 			subModelMap.put(tuningEvaluator.getMetricParamInfo().getName(), element.getMetric());
 
@@ -189,12 +189,12 @@ public class Report {
 			.append(tuningEvaluator.isLargerBetter())
 			.append("\n");
 
-		ArrayList<String> title = new ArrayList<>();
+		ArrayList <String> title = new ArrayList <>();
 
 		title.add(tuningEvaluator.getMetricParamInfo().getName());
 
 		int index = 1;
-		for (Tuple3<Integer, ParamInfo, Object> stageParamInfo : elements.get(0).getStageParamInfos()) {
+		for (Tuple3 <Integer, ParamInfo, Object> stageParamInfo : elements.get(0).getStageParamInfos()) {
 			if (index > 1) {
 				title.add("stage " + index);
 				title.add("param " + index);
@@ -207,16 +207,16 @@ public class Report {
 			index++;
 		}
 
-		ArrayList<Object[]> itemsList = new ArrayList<>();
+		ArrayList <Object[]> itemsList = new ArrayList <>();
 
 		StringBuilder failedInformationBuilder = new StringBuilder();
 
 		for (ReportElement element : elements) {
-			ArrayList<Object> item = new ArrayList<>();
+			ArrayList <Object> item = new ArrayList <>();
 
 			item.add(element.getMetric());
 
-			for (Tuple3<Integer, ParamInfo, Object> stageParamInfo : element.getStageParamInfos()) {
+			for (Tuple3 <Integer, ParamInfo, Object> stageParamInfo : element.getStageParamInfos()) {
 				item.add(
 					element
 						.getPipeline()
@@ -238,7 +238,7 @@ public class Report {
 					.append(
 						PrettyDisplayUtils.indentLines(
 							PrettyDisplayUtils.displayTable(
-								new Object[][]{itemArray},
+								new Object[][] {itemArray},
 								1,
 								title.size(),
 								null,

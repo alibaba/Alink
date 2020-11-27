@@ -19,31 +19,33 @@
 
 package com.alibaba.alink.operator.common.io.serde;
 
-import com.alibaba.alink.common.utils.JsonConverter;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.common.utils.JsonConverter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-public class RowToJsonSerialization implements SerializationSchema<Row> {
-    private String[] columnNames;
+public class RowToJsonSerialization implements SerializationSchema <Row> {
+	private static final long serialVersionUID = 8218270371849924044L;
+	private String[] columnNames;
 
-    public RowToJsonSerialization(String[] columnNames) {
-        this.columnNames = columnNames;
-    }
+	public RowToJsonSerialization(String[] columnNames) {
+		this.columnNames = columnNames;
+	}
 
-    @Override
-    public byte[] serialize(Row element) {
-        HashMap<String, Object> map = new HashMap<>();
-        for (int i = 0; i < columnNames.length; i++) {
-            Object obj = element.getField(i);
-            if (obj != null) {
-                map.put(columnNames[i], obj);
-            }
-        }
-        String str = JsonConverter.toJson(map);
-        return str.getBytes(StandardCharsets.UTF_8);
-    }
+	@Override
+	public byte[] serialize(Row element) {
+		HashMap <String, Object> map = new HashMap <>();
+		for (int i = 0; i < columnNames.length; i++) {
+			Object obj = element.getField(i);
+			if (obj != null) {
+				map.put(columnNames[i], obj);
+			}
+		}
+		String str = JsonConverter.toJson(map);
+		return str.getBytes(StandardCharsets.UTF_8);
+	}
 
 }

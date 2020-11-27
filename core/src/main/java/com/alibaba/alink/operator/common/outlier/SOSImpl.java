@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.common.outlier;
 
-import com.alibaba.alink.common.linalg.MatVecOp;
 import org.apache.flink.api.common.functions.CrossFunction;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
@@ -9,10 +8,11 @@ import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.linalg.DenseVector;
-import org.apache.flink.ml.api.misc.param.Params;
+import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.params.outlier.SosParams;
 
 import java.util.ArrayList;
@@ -43,6 +43,8 @@ public class SOSImpl {
 			.with(
 				new CrossFunction <Tuple2 <Integer, DenseVector>, Tuple2 <Integer, DenseVector>, Tuple3 <Integer,
 					Integer, Double>>() {
+					private static final long serialVersionUID = 3508552267272047608L;
+
 					@Override
 					public Tuple3 <Integer, Integer, Double> cross(Tuple2 <Integer, DenseVector> val1,
 																   Tuple2 <Integer, DenseVector> val2)
@@ -53,8 +55,10 @@ public class SOSImpl {
 			.groupBy(0)
 			.sortGroup(1, Order.ASCENDING)
 			.reduceGroup(new GroupReduceFunction <Tuple3 <Integer, Integer, Double>, Tuple2 <Integer, DenseVector>>() {
+				private static final long serialVersionUID = 5191524422176539783L;
+
 				@Override
-				public void reduce(Iterable <Tuple3 <Integer, Integer, Double>> values,
+				public void reduce(Iterable <Tuple3 <Integer, Integer, Double>> values,//点i, 点j, 距离
 								   Collector <Tuple2 <Integer, DenseVector>> out) throws Exception {
 					int id = -1;
 					List <Double> d = new ArrayList <>();
@@ -135,6 +139,8 @@ public class SOSImpl {
 								final double perplexity, final int maxIter, final double tol) {
 		return dissimilarityVectors
 			.map(new MapFunction <Tuple2 <Integer, DenseVector>, Tuple2 <Integer, DenseVector>>() {
+				private static final long serialVersionUID = 8999369927201551000L;
+
 				@Override
 				public Tuple2 <Integer, DenseVector> map(Tuple2 <Integer, DenseVector> row) throws Exception {
 					int id = row.f0;
@@ -176,6 +182,8 @@ public class SOSImpl {
 		return bindingProbabilityVectors
 			. <Tuple2 <Integer, Double>>flatMap(
 				new FlatMapFunction <Tuple2 <Integer, DenseVector>, Tuple2 <Integer, Double>>() {
+					private static final long serialVersionUID = -8050094778377458373L;
+
 					@Override
 					public void flatMap(Tuple2 <Integer, DenseVector> in,
 										Collector <Tuple2 <Integer, Double>> collector) throws Exception {
@@ -188,6 +196,8 @@ public class SOSImpl {
 			.groupBy(0)
 			. <Tuple2 <Integer, Double>>reduceGroup(
 				new GroupReduceFunction <Tuple2 <Integer, Double>, Tuple2 <Integer, Double>>() {
+					private static final long serialVersionUID = -3769235835223439323L;
+
 					@Override
 					public void reduce(Iterable <Tuple2 <Integer, Double>> iterable,
 									   Collector <Tuple2 <Integer, Double>> collector) throws Exception {
@@ -203,11 +213,16 @@ public class SOSImpl {
 	}
 
 	/**
-	 * compute outlier probabilities for each sample
+	 * compute outlier probabilities for each sample.
+	 * input the id and and coordinate of each point
 	 */
+
 	public DataSet <Tuple2 <Integer, Double>> outlierSelection(DataSet <Tuple2 <Integer, DenseVector>> inputVectors) {
 
+		//return the distance of other point to this point in the dv.
 		DataSet <Tuple2 <Integer, DenseVector>> dissimilarityVectors = computeDissimilarityVectors(inputVectors);
+
+		//return the possibility that the current point goes to other points.
 		DataSet <Tuple2 <Integer, DenseVector>> bindingProbabilityVectors =
 			computeBindingProbabilities(dissimilarityVectors, perplexity, MAX_ITER, TOL);
 		return computeOutlierProbability(bindingProbabilityVectors);

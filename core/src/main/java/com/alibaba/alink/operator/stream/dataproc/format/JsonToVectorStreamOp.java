@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.operator.stream.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.JsonToVectorParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class JsonToVectorStreamOp extends BaseFormatTransStreamOp<JsonToVectorStreamOp>
-    implements JsonToVectorParams<JsonToVectorStreamOp> {
+/**
+ * Transform data type from Json to Vector.
+ */
+public class JsonToVectorStreamOp extends BaseFormatTransStreamOp <JsonToVectorStreamOp>
+	implements JsonToVectorParams <JsonToVectorStreamOp> {
 
-    public JsonToVectorStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 245366859720055901L;
 
-    public JsonToVectorStreamOp(Params params) {
-        super(FormatType.JSON, FormatType.VECTOR, params);
-    }
+	public JsonToVectorStreamOp() {
+		this(new Params());
+	}
+
+	public JsonToVectorStreamOp(Params params) {
+		super(FormatType.JSON, FormatType.VECTOR, params);
+	}
 }

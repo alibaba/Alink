@@ -13,6 +13,8 @@ import com.alibaba.alink.params.feature.FeatureHasherParams;
  */
 public class FeatureHasherStreamOp extends MapStreamOp <FeatureHasherStreamOp>
 	implements FeatureHasherParams <FeatureHasherStreamOp> {
+	private static final long serialVersionUID = -6769551866730160917L;
+
 	public FeatureHasherStreamOp() {
 		this(null);
 	}

@@ -12,6 +12,7 @@ import com.alibaba.alink.common.mapper.SISOMapper;
  */
 public class TokenizerMapper extends SISOMapper {
 	private static final String SPLIT_DELIMITER = "\\s+";
+	private static final long serialVersionUID = 5823473392580590781L;
 
 	public TokenizerMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
@@ -30,7 +31,7 @@ public class TokenizerMapper extends SISOMapper {
 		String content = ((String) input).toLowerCase();
 		StringBuilder builder = new StringBuilder();
 		String[] tokens = content.split(SPLIT_DELIMITER);
-		for(String token : tokens) {
+		for (String token : tokens) {
 			builder.append(token).append(NLPConstant.WORD_DELIMITER);
 		}
 		return builder.toString().trim();

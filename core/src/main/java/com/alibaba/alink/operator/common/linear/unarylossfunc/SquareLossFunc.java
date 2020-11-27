@@ -5,6 +5,8 @@ package com.alibaba.alink.operator.common.linear.unarylossfunc;
  * https://en.wikipedia.org/wiki/Loss_functions_for_classification#Square_loss
  */
 public class SquareLossFunc implements UnaryLossFunc {
+	private static final long serialVersionUID = 4979822510416701065L;
+
 	public SquareLossFunc() { }
 
 	@Override

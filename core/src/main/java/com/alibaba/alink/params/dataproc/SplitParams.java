@@ -2,13 +2,14 @@ package com.alibaba.alink.params.dataproc;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.params.shared.HasRandomSeed;
 import com.alibaba.alink.params.validators.RangeValidator;
 
 public interface SplitParams<T> extends
-	WithParams<T> {
+	WithParams <T>,
+	HasRandomSeed <T> {
 
 	ParamInfo <Double> FRACTION = ParamInfoFactory
 		.createParamInfo("fraction", Double.class)

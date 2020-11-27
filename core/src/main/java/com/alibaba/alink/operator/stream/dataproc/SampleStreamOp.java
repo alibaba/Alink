@@ -1,7 +1,5 @@
 package com.alibaba.alink.operator.stream.dataproc;
 
-import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.params.dataproc.SampleParams;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -10,50 +8,56 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.params.dataproc.SampleParams;
+
 import java.util.Random;
 
 /**
  * Sample with given ratio with or without replacement.
  */
 @SuppressWarnings("uncheck")
-public class SampleStreamOp extends StreamOperator<SampleStreamOp> implements SampleParams<SampleStreamOp> {
+public class SampleStreamOp extends StreamOperator <SampleStreamOp> implements SampleParams <SampleStreamOp> {
 
-    public SampleStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 2165833879105000066L;
 
-    public SampleStreamOp(double ratio) {
-        this(new Params().set(RATIO, ratio));
-    }
+	public SampleStreamOp() {
+		this(new Params());
+	}
 
-    public SampleStreamOp(Params params) {
-        super(params);
-    }
+	public SampleStreamOp(double ratio) {
+		this(new Params().set(RATIO, ratio));
+	}
 
-    @Override
-    public SampleStreamOp linkFrom(StreamOperator<?>... inputs) {
-        StreamOperator<?> in = checkAndGetFirst(inputs);
-        final double ratio = getRatio();
-        Preconditions.checkArgument(ratio >= 0. && ratio <= 1.);
+	public SampleStreamOp(Params params) {
+		super(params);
+	}
 
-        DataStream<Row> rows = in.getDataStream()
-            .flatMap(new RichFlatMapFunction<Row, Row>() {
-                transient Random random;
+	@Override
+	public SampleStreamOp linkFrom(StreamOperator <?>... inputs) {
+		StreamOperator <?> in = checkAndGetFirst(inputs);
+		final double ratio = getRatio();
+		Preconditions.checkArgument(ratio >= 0. && ratio <= 1.);
 
-                @Override
-                public void open(Configuration parameters) throws Exception {
-                    random = new Random();
-                }
+		DataStream <Row> rows = in.getDataStream()
+			.flatMap(new RichFlatMapFunction <Row, Row>() {
+				private static final long serialVersionUID = 2076455302934723779L;
+				transient Random random;
 
-                @Override
-                public void flatMap(Row value, Collector<Row> out) throws Exception {
-                    if (random.nextDouble() <= ratio) {
-                        out.collect(value);
-                    }
-                }
-            });
+				@Override
+				public void open(Configuration parameters) throws Exception {
+					random = new Random();
+				}
 
-        this.setOutput(rows, in.getSchema());
-        return this;
-    }
+				@Override
+				public void flatMap(Row value, Collector <Row> out) throws Exception {
+					if (random.nextDouble() <= ratio) {
+						out.collect(value);
+					}
+				}
+			});
+
+		this.setOutput(rows, in.getSchema());
+		return this;
+	}
 }

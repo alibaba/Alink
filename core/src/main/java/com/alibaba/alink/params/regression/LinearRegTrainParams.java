@@ -6,7 +6,6 @@ import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 /**
  * parameters of linear regression train process.
- *
  */
 public interface LinearRegTrainParams<T> extends
 	LinearTrainParams <T>,

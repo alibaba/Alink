@@ -7,14 +7,16 @@ import org.apache.flink.api.java.DataSet;
  */
 public abstract class CommunicateFunction implements ComQueueItem {
 
-    /**
-     * Perform communication work.
-     *
-     * @param input     output of previous queue item.
-     * @param sessionId session id for shared objects.
-     * @param <T>       Type of dataset.
-     * @return result dataset.
-     */
+	private static final long serialVersionUID = 1490761429919931093L;
+
+	/**
+	 * Perform communication work.
+	 *
+	 * @param input     output of previous queue item.
+	 * @param sessionId session id for shared objects.
+	 * @param <T>       Type of dataset.
+	 * @return result dataset.
+	 */
 	public abstract <T> DataSet <T> communicateWith(DataSet <T> input, int sessionId);
 
 }

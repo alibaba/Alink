@@ -1,7 +1,9 @@
 package com.alibaba.alink.params.evaluation;
 
+import org.apache.flink.ml.api.misc.param.ParamInfo;
+import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
-import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
 
 /**
@@ -9,6 +11,18 @@ import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
  */
 public interface EvalMultiClassParams<T> extends
 	HasLabelCol <T>,
-	HasPredictionCol <T>,
 	HasPredictionDetailCol <T> {
+	ParamInfo <String> PREDICTION_COL = ParamInfoFactory
+		.createParamInfo("predictionCol", String.class)
+		.setDescription("Column name of prediction.")
+		.setAlias(new String[] {"predResultColName", "predColName", "outputColName", "predResultCol"})
+		.build();
+
+	default String getPredictionCol() {
+		return get(PREDICTION_COL);
+	}
+
+	default T setPredictionCol(String colName) {
+		return set(PREDICTION_COL, colName);
+	}
 }

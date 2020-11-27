@@ -6,6 +6,8 @@ import com.alibaba.alink.operator.common.dataproc.vector.VectorSerializeMapper;
 
 public final class VectorSerializeStreamOp extends MapStreamOp <VectorSerializeStreamOp> {
 
+	private static final long serialVersionUID = -1331089574809127157L;
+
 	public VectorSerializeStreamOp() {
 		this(null);
 	}

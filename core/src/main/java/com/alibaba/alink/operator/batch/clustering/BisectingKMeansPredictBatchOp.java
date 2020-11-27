@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.clustering;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelMapper;
 import com.alibaba.alink.params.clustering.BisectingKMeansPredictParams;
 
 /**
@@ -11,6 +11,8 @@ import com.alibaba.alink.params.clustering.BisectingKMeansPredictParams;
  */
 public final class BisectingKMeansPredictBatchOp extends ModelMapBatchOp <BisectingKMeansPredictBatchOp>
 	implements BisectingKMeansPredictParams <BisectingKMeansPredictBatchOp> {
+
+	private static final long serialVersionUID = 835036024472438981L;
 
 	public BisectingKMeansPredictBatchOp() {
 		this(null);

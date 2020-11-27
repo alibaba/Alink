@@ -9,8 +9,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
 /**
  * Filter stop words in a document.
  */
-public class StopWordsRemover extends MapTransformer<StopWordsRemover>
-	implements StopWordsRemoverParams<StopWordsRemover> {
+public class StopWordsRemover extends MapTransformer <StopWordsRemover>
+	implements StopWordsRemoverParams <StopWordsRemover> {
+
+	private static final long serialVersionUID = -8173193256794432304L;
 
 	public StopWordsRemover() {
 		this(null);

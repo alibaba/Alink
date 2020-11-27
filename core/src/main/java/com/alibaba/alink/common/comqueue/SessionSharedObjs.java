@@ -22,8 +22,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 class SessionSharedObjs implements Serializable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SessionSharedObjs.class);
+	private static final long serialVersionUID = 897586056141399032L;
 
-	private static HashMap<Tuple2<String, Integer>, Long> key2Handle = new HashMap<>();
+	private static HashMap <Tuple2 <String, Integer>, Long> key2Handle = new HashMap <>();
 
 	private static int sessionId = 0;
 	private static ReadWriteLock rwlock = new ReentrantReadWriteLock();
@@ -100,7 +101,7 @@ class SessionSharedObjs implements Serializable {
 	 * @param objName object name
 	 * @param session session id
 	 * @param taskId  task id in flink.
-	 * @param <T> type of object
+	 * @param <T>     type of object
 	 * @return the object or on absence.
 	 */
 	static <T> T get(String objName, int session, int taskId) {
@@ -127,7 +128,7 @@ class SessionSharedObjs implements Serializable {
 	 * @param objName object name
 	 * @param session session id
 	 * @param taskId  task id in flink.
-	 * @param <T> type of object
+	 * @param <T>     type of object
 	 * @return the object or on absence.
 	 */
 	static <T> T remove(String objName, int session, int taskId) {
@@ -152,7 +153,7 @@ class SessionSharedObjs implements Serializable {
 	 *
 	 * @param objName object name
 	 * @param session session id
-	 * @param obj partial dataset in collection
+	 * @param obj     partial dataset in collection
 	 */
 	static void cachePartitionedData(String objName, int session, List obj) {
 		rwlock.writeLock().lock();
@@ -164,10 +165,10 @@ class SessionSharedObjs implements Serializable {
 				key2Handle.put(Tuple2.of(objName, session), handle);
 			}
 
-			Queue<List> cache = IterTaskObjKeeper.get(handle, CACHED_DATA_OBJ_KEY);
+			Queue <List> cache = IterTaskObjKeeper.get(handle, CACHED_DATA_OBJ_KEY);
 
 			if (cache == null) {
-				cache = new LinkedList<>();
+				cache = new LinkedList <>();
 				IterTaskObjKeeper.put(handle, CACHED_DATA_OBJ_KEY, cache);
 			}
 
@@ -184,7 +185,7 @@ class SessionSharedObjs implements Serializable {
 	 * @param session  session id
 	 * @param taskId   task id in flink.
 	 */
-	static void distributeCachedData(List<String> objNames, int session, int taskId) {
+	static void distributeCachedData(List <String> objNames, int session, int taskId) {
 		rwlock.writeLock().lock();
 		try {
 			for (String objName : objNames) {
@@ -197,19 +198,19 @@ class SessionSharedObjs implements Serializable {
 					IterTaskObjKeeper.put(
 						handle,
 						taskId,
-						new ArrayList<>()
+						new ArrayList <>()
 					);
 
 					continue;
 				}
 
-				Queue<List> cache = IterTaskObjKeeper.get(handle, CACHED_DATA_OBJ_KEY);
+				Queue <List> cache = IterTaskObjKeeper.get(handle, CACHED_DATA_OBJ_KEY);
 
 				if (cache == null) {
 					IterTaskObjKeeper.put(
 						handle,
 						taskId,
-						new ArrayList<>()
+						new ArrayList <>()
 					);
 
 					continue;
@@ -221,7 +222,7 @@ class SessionSharedObjs implements Serializable {
 					IterTaskObjKeeper.put(
 						handle,
 						taskId,
-						new ArrayList<>()
+						new ArrayList <>()
 					);
 				} else {
 					IterTaskObjKeeper.put(

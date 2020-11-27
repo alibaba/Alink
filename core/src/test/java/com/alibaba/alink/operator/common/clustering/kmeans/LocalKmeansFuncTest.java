@@ -1,12 +1,13 @@
 package com.alibaba.alink.operator.common.clustering.kmeans;
 
+import org.apache.flink.api.java.tuple.Tuple2;
+
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ public class LocalKmeansFuncTest {
 			sampleWeights[i] = i;
 			samples[i] = distance.prepareVectorData(Tuple2.of(DenseVector.ones(2).scale(i), null));
 		}
-		FastDistanceMatrixData initCentroid = kmeans(2, sampleWeights, samples, distance, 2);
+		FastDistanceMatrixData initCentroid = kmeans(2, sampleWeights, samples, distance, 2, 0);
 		DenseMatrix initCentroidData = initCentroid.getVectors();
 		Assert.assertEquals(initCentroidData.numCols(), 2);
 		Assert.assertEquals(new DenseVector(initCentroidData.getColumn(0)).normL2(), 10.842, 0.001);
@@ -42,9 +43,10 @@ public class LocalKmeansFuncTest {
 		FastDistanceVectorData[] samples = new FastDistanceVectorData[len];
 		for (int i = 0; i < 10; i++) {
 			sampleWeights[i] = i;
-			samples[i] = distance.prepareVectorData(Tuple2.of(new SparseVector(size, new int[]{i, i + 1}, new double[]{i, i}), null));
+			samples[i] = distance.prepareVectorData(
+				Tuple2.of(new SparseVector(size, new int[] {i, i + 1}, new double[] {i, i}), null));
 		}
-		FastDistanceMatrixData initCentroid = kmeans(k, sampleWeights, samples, distance, size);
+		FastDistanceMatrixData initCentroid = kmeans(k, sampleWeights, samples, distance, size, 0);
 		DenseMatrix initCentroidData = initCentroid.getVectors();
 		Assert.assertEquals(initCentroidData.numCols(), k);
 		Assert.assertEquals(new DenseVector(initCentroidData.getColumn(0)).normL2(), 8.615, 0.001);

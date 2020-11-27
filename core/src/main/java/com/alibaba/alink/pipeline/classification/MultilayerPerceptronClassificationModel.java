@@ -1,15 +1,18 @@
 package com.alibaba.alink.pipeline.classification;
 
-import com.alibaba.alink.operator.common.classification.ann.MlpcModelMapper;
 import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.operator.common.classification.ann.MlpcModelMapper;
 import com.alibaba.alink.params.classification.MultilayerPerceptronPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
 
 /**
  * Model fitted by MultilayerPerceptronClassifier.
  */
-public class MultilayerPerceptronClassificationModel extends MapModel<MultilayerPerceptronClassificationModel>
+public class MultilayerPerceptronClassificationModel extends MapModel <MultilayerPerceptronClassificationModel>
 	implements MultilayerPerceptronPredictParams <MultilayerPerceptronClassificationModel> {
+
+	private static final long serialVersionUID = -537528907364301587L;
 
 	public MultilayerPerceptronClassificationModel() {this(null);}
 

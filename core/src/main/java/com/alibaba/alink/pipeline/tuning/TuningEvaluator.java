@@ -6,8 +6,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 
-public abstract class TuningEvaluator<T extends TuningEvaluator<T>>
-	implements WithParams<T> {
+public abstract class TuningEvaluator<T extends TuningEvaluator <T>>
+	implements WithParams <T> {
 
 	protected Params params;
 
@@ -28,9 +28,9 @@ public abstract class TuningEvaluator<T extends TuningEvaluator<T>>
 		return params;
 	}
 
-	public abstract double evaluate(BatchOperator in);
+	public abstract double evaluate(BatchOperator <?> in);
 
 	public abstract boolean isLargerBetter();
 
-	abstract ParamInfo<Double> getMetricParamInfo();
+	abstract ParamInfo <Double> getMetricParamInfo();
 }

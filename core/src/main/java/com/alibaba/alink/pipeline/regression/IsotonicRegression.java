@@ -1,8 +1,9 @@
 package com.alibaba.alink.pipeline.regression;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.regression.IsotonicRegTrainBatchOp;
-import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.params.regression.IsotonicRegPredictParams;
 import com.alibaba.alink.params.regression.IsotonicRegTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -16,6 +17,8 @@ public class IsotonicRegression extends Trainer <IsotonicRegression, IsotonicReg
 	IsotonicRegTrainParams <IsotonicRegression>,
 	IsotonicRegPredictParams <IsotonicRegression> {
 
+	private static final long serialVersionUID = -5071323967387752934L;
+
 	public IsotonicRegression() {
 		this(null);
 	}
@@ -25,7 +28,7 @@ public class IsotonicRegression extends Trainer <IsotonicRegression, IsotonicReg
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new IsotonicRegTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

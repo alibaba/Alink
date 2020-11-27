@@ -30,7 +30,7 @@ import org.apache.flink.table.api.TableEnvironment;
  *            org.apache.flink.ml.api.misc.param.WithParams}
  */
 @PublicEvolving
-public interface Transformer<T extends Transformer<T>> extends PipelineStage<T> {
+public interface Transformer<T extends Transformer <T>> extends PipelineStage <T> {
 	/**
 	 * Applies the transformer on the input table, and returns the result table.
 	 *

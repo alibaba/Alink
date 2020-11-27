@@ -49,25 +49,6 @@
             <artifactId>flink-table-planner_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-clients_${alink.scala.major.version}</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
-
-        <!-- oss file system dependency -->
-        <dependency>
-            <groupId>com.alibaba.alink</groupId>
-            <artifactId>shaded_flink_oss_fs_hadoop</artifactId>
-            <version>1.10.0-0.2</version>
-        </dependency>
-
-        <!-- hadoop file system dependency -->
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-shaded-hadoop-2</artifactId>
-            <version>2.8.3-9.0</version>
-        </dependency>
 
         <!-- Add scope as `provided` ends here. -->
     </dependencies>

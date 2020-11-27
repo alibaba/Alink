@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.dataproc.vector.PolynomialExpansionMapper;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.common.dataproc.vector.PolynomialExpansionMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorPolynomialExpandParams;
 
 /**
@@ -13,6 +13,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorPolynomialExpandParams;
  */
 public final class VectorPolynomialExpandBatchOp extends MapBatchOp <VectorPolynomialExpandBatchOp>
 	implements VectorPolynomialExpandParams <VectorPolynomialExpandBatchOp> {
+
+	private static final long serialVersionUID = -4262039563742274130L;
 
 	public VectorPolynomialExpandBatchOp() {
 		this(null);

@@ -8,16 +8,16 @@ import com.alibaba.alink.operator.common.evaluation.TuningBinaryClassMetric;
 import com.alibaba.alink.params.evaluation.EvalBinaryClassParams;
 import com.alibaba.alink.params.evaluation.HasTuningBinaryClassMetric;
 
-public class BinaryClassificationTuningEvaluator extends TuningEvaluator<BinaryClassificationTuningEvaluator>
-	implements EvalBinaryClassParams<BinaryClassificationTuningEvaluator>,
-	HasTuningBinaryClassMetric<BinaryClassificationTuningEvaluator> {
+public class BinaryClassificationTuningEvaluator extends TuningEvaluator <BinaryClassificationTuningEvaluator>
+	implements EvalBinaryClassParams <BinaryClassificationTuningEvaluator>,
+	HasTuningBinaryClassMetric <BinaryClassificationTuningEvaluator> {
 
 	public BinaryClassificationTuningEvaluator() {
 		super(null);
 	}
 
 	@Override
-	public double evaluate(BatchOperator in) {
+	public double evaluate(BatchOperator <?> in) {
 		return new EvalBinaryClassBatchOp(getParams())
 			.linkFrom(in)
 			.collectMetrics()
@@ -31,7 +31,7 @@ public class BinaryClassificationTuningEvaluator extends TuningEvaluator<BinaryC
 	}
 
 	@Override
-	ParamInfo<Double> getMetricParamInfo() {
+	ParamInfo <Double> getMetricParamInfo() {
 		return getTuningBinaryClassMetric().getMetricKey();
 	}
 }

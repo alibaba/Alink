@@ -19,12 +19,14 @@ public class VectorImputer extends Trainer <VectorImputer, VectorImputerModel> i
 	VectorImputerTrainParams <VectorImputer>,
 	VectorImputerPredictParams <VectorImputer> {
 
+	private static final long serialVersionUID = 3245982875941711639L;
+
 	public VectorImputer() {
 		super();
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new VectorImputerTrainBatchOp(params).linkFrom(in);
 	}
 }

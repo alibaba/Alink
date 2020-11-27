@@ -1,57 +1,63 @@
 package com.alibaba.alink.operator.batch.sql;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
 import com.alibaba.alink.params.sql.JoinParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * Join two batch operators.
  */
-public final class JoinBatchOp extends BaseSqlApiBatchOp<JoinBatchOp>
-    implements JoinParams<JoinBatchOp> {
+public final class JoinBatchOp extends BaseSqlApiBatchOp <JoinBatchOp>
+	implements JoinParams <JoinBatchOp> {
 
-    public JoinBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -5284150849586086589L;
 
-    public JoinBatchOp(String joinPredicate) {
-        this(joinPredicate, "*");
-    }
+	public JoinBatchOp() {
+		this(new Params());
+	}
 
-    public JoinBatchOp(String joinPredicate, String selectClause) {
-        this(new Params()
-            .set(JOIN_PREDICATE, joinPredicate)
-            .set(SELECT_CLAUSE, selectClause));
-    }
+	public JoinBatchOp(String joinPredicate) {
+		this(joinPredicate, "*");
+	}
 
-    public JoinBatchOp(Params params) {
-        super(params);
-    }
+	public JoinBatchOp(String joinPredicate, String selectClause) {
+		this(new Params()
+			.set(JOIN_PREDICATE, joinPredicate)
+			.set(SELECT_CLAUSE, selectClause));
+	}
 
-    @Override
-    public JoinBatchOp linkFrom(BatchOperator<?>... inputs) {
-        String selectClause = this.getParams().get(JoinParams.SELECT_CLAUSE);
-        String joidPredicate = this.getParams().get(JoinParams.JOIN_PREDICATE);
+	public JoinBatchOp(Params params) {
+		super(params);
+	}
 
-        BatchOperator outputOp = null;
-        switch (getType()) {
-            case JOIN:
-                outputOp = BatchSqlOperators.join(inputs[0], inputs[1], joidPredicate, selectClause);
-                break;
-            case LEFTOUTERJOIN:
-                outputOp = BatchSqlOperators.leftOuterJoin(inputs[0], inputs[1], joidPredicate, selectClause);
-                break;
-            case RIGHTOUTERJOIN:
-                outputOp = BatchSqlOperators.rightOuterJoin(inputs[0], inputs[1], joidPredicate, selectClause);
-                break;
-            case FULLOUTERJOIN:
-                outputOp = BatchSqlOperators.fullOuterJoin(inputs[0], inputs[1], joidPredicate, selectClause);
-                break;
-            default:
-                throw new RuntimeException("Not supported join type: " + getType());
-        }
-        this.setOutputTable(outputOp.getOutputTable());
-        return this;
-    }
+	@Override
+	public JoinBatchOp linkFrom(BatchOperator <?>... inputs) {
+		String selectClause = "*";
+		if (this.getParams().contains(JoinParams.SELECT_CLAUSE)) {
+			selectClause = this.getParams().get(JoinParams.SELECT_CLAUSE);
+		}
+		String joidPredicate = this.getParams().get(JoinParams.JOIN_PREDICATE);
+
+		BatchOperator outputOp = null;
+		switch (getType()) {
+			case JOIN:
+				outputOp = BatchSqlOperators.join(inputs[0], inputs[1], joidPredicate, selectClause);
+				break;
+			case LEFTOUTERJOIN:
+				outputOp = BatchSqlOperators.leftOuterJoin(inputs[0], inputs[1], joidPredicate, selectClause);
+				break;
+			case RIGHTOUTERJOIN:
+				outputOp = BatchSqlOperators.rightOuterJoin(inputs[0], inputs[1], joidPredicate, selectClause);
+				break;
+			case FULLOUTERJOIN:
+				outputOp = BatchSqlOperators.fullOuterJoin(inputs[0], inputs[1], joidPredicate, selectClause);
+				break;
+			default:
+				throw new RuntimeException("Not supported binary op");
+		}
+		this.setOutputTable(outputOp.getOutputTable());
+		return this;
+	}
 }

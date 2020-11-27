@@ -1,11 +1,12 @@
 package com.alibaba.alink.pipeline.dataproc;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.IndexToStringModelMapper;
 import com.alibaba.alink.params.dataproc.IndexToStringPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
 import com.alibaba.alink.pipeline.Pipeline;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.Table;
 
 /**
  * Maps columns of indices to strings, based on the model fitted by {@link StringIndexer}.
@@ -52,23 +53,25 @@ import org.apache.flink.table.api.Table;
  * pipeline.fit(...);
  * </code>
  */
-public class IndexToString extends MapModel<IndexToString>
-    implements IndexToStringPredictParams<IndexToString> {
+public class IndexToString extends MapModel <IndexToString>
+	implements IndexToStringPredictParams <IndexToString> {
 
-    public IndexToString() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -6739114434549826746L;
 
-    public IndexToString(Params params) {
-        super(IndexToStringModelMapper::new, params);
-    }
+	public IndexToString() {
+		this(new Params());
+	}
 
-    @Override
-    public Table getModelData() {
-        if (this.modelData == null) {
-            this.setModelData(StringIndexerModel.getRegisteredModel(super.params.get(StringIndexer.MODEL_NAME))
-                .getModelData());
-        }
-        return this.modelData;
-    }
+	public IndexToString(Params params) {
+		super(IndexToStringModelMapper::new, params);
+	}
+
+	@Override
+	public BatchOperator <?> getModelData() {
+		if (this.modelData == null) {
+			this.setModelData(StringIndexerModel.getRegisteredModel(super.params.get(StringIndexer.MODEL_NAME))
+				.getModelData());
+		}
+		return this.modelData;
+	}
 }

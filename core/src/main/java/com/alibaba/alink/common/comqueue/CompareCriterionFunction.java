@@ -7,12 +7,14 @@ import java.io.Serializable;
  */
 public abstract class CompareCriterionFunction implements Serializable {
 
-    /**
-     * Check if it's ok to break iteration.
-     *
-     * @param context the ComContext
-     * @return true to break.
-     */
-    public abstract boolean calc(ComContext context);
+	private static final long serialVersionUID = 7237307146597967965L;
+
+	/**
+	 * Check if it's ok to break iteration.
+	 *
+	 * @param context the ComContext
+	 * @return true to break.
+	 */
+	public abstract boolean calc(ComContext context);
 
 }

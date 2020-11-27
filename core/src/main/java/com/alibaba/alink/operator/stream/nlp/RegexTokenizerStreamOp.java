@@ -14,6 +14,8 @@ import com.alibaba.alink.params.nlp.RegexTokenizerParams;
 public final class RegexTokenizerStreamOp extends MapStreamOp <RegexTokenizerStreamOp>
 	implements RegexTokenizerParams <RegexTokenizerStreamOp> {
 
+	private static final long serialVersionUID = -3926222156003405698L;
+
 	public RegexTokenizerStreamOp() {
 		this(null);
 	}

@@ -8,6 +8,8 @@ import java.util.Map;
 
 public abstract class FormatWriter implements Serializable {
 
+	private static final long serialVersionUID = 1957286420455596503L;
+
 	public abstract Tuple2 <Boolean, Row> write(Map <String, String> in);
 
 }

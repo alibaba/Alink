@@ -11,8 +11,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
  *
  * (https://en.wikipedia.org/wiki/Feature_hashing)
  */
-public class FeatureHasher extends MapTransformer<FeatureHasher>
+public class FeatureHasher extends MapTransformer <FeatureHasher>
 	implements FeatureHasherParams <FeatureHasher> {
+
+	private static final long serialVersionUID = -2116325139103333804L;
 
 	public FeatureHasher() {
 		this(new Params());

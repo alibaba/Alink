@@ -13,7 +13,7 @@ public class MultiClassMetricsTest {
 	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
-	public void reduceTest(){
+	public void reduceTest() {
 		MultiMetricsSummary metrics1 = new MultiMetricsSummary(
 			new long[][] {new long[] {0, 1, 2}, new long[] {3, 1, 0}, new long[] {1, 1, 4}},
 			new String[] {"0", "1", "2"}, 0.4, 13);
@@ -22,7 +22,7 @@ public class MultiClassMetricsTest {
 			new String[] {"0", "1", "2"}, 1.4, 17);
 		BaseMetricsSummary baseMetricsSummary = metrics1.merge(metrics2);
 		Assert.assertTrue(baseMetricsSummary instanceof MultiMetricsSummary);
-		MultiMetricsSummary metrics = (MultiMetricsSummary)baseMetricsSummary;
+		MultiMetricsSummary metrics = (MultiMetricsSummary) baseMetricsSummary;
 
 		Assert.assertEquals(30, metrics.total);
 		Assert.assertEquals(1.8, metrics.logLoss, 0.01);
@@ -86,5 +86,24 @@ public class MultiClassMetricsTest {
 		Assert.assertEquals(metrics.getMicroPrecision(), 0.38461538461538464, 0.01);
 		Assert.assertEquals(metrics.getMacroTrueNegativeRate(), 0.6973544973544974, 0.01);
 		Assert.assertEquals(metrics.getMicroKappa(), 0.0769230769230769, 0.01);
+
+		Assert.assertArrayEquals(metrics.getActualLabelFrequency(), new long[] {3, 4, 6});
+		Assert.assertEquals(metrics.getActualLabelProportion().length, 3);
+		Assert.assertArrayEquals(metrics.getPredictLabelFrequency(), new long[] {4, 3, 6});
+		Assert.assertEquals(metrics.getPredictLabelProportion().length, 3);
+		Assert.assertEquals(metrics.getTruePositiveRate("0"), 0.0, 0.01);
+		Assert.assertEquals(metrics.getTrueNegativeRate("0"), 0.6, 0.01);
+		Assert.assertEquals(metrics.getFalsePositiveRate("0"), 0.4, 0.01);
+		Assert.assertEquals(metrics.getFalseNegativeRate("0"), 1.0, 0.01);
+		Assert.assertEquals(metrics.getMacroFalsePositiveRate(), 0.30, 0.01);
+		Assert.assertEquals(metrics.getSpecificity("0"), 0.6, 0.01);
+		Assert.assertEquals(metrics.getSensitivity("0"), 0.0, 0.01);
+		Assert.assertEquals(metrics.getRecall("0"), 0.0, 0.01);
+		Assert.assertEquals(metrics.getPrecision("0"), 0.0, 0.01);
+		Assert.assertEquals(metrics.getAccuracy("0"), 0.46, 0.01);
+		Assert.assertEquals(metrics.getF1("0"), 0.0, 0.01);
+		Assert.assertEquals(metrics.getKappa("0"), -0.35, 0.01);
+
+		System.out.println(metrics.toString());
 	}
 }

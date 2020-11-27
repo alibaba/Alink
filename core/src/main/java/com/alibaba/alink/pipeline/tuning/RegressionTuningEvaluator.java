@@ -8,16 +8,16 @@ import com.alibaba.alink.operator.common.evaluation.TuningRegressionMetric;
 import com.alibaba.alink.params.evaluation.EvalRegressionParams;
 import com.alibaba.alink.params.evaluation.HasTuningRegressionMetric;
 
-public class RegressionTuningEvaluator extends TuningEvaluator<RegressionTuningEvaluator>
-	implements EvalRegressionParams<RegressionTuningEvaluator>,
-	HasTuningRegressionMetric<RegressionTuningEvaluator> {
+public class RegressionTuningEvaluator extends TuningEvaluator <RegressionTuningEvaluator>
+	implements EvalRegressionParams <RegressionTuningEvaluator>,
+	HasTuningRegressionMetric <RegressionTuningEvaluator> {
 
 	public RegressionTuningEvaluator() {
 		super(null);
 	}
 
 	@Override
-	public double evaluate(BatchOperator in) {
+	public double evaluate(BatchOperator <?> in) {
 		return new EvalRegressionBatchOp(getParams())
 			.linkFrom(in)
 			.collectMetrics()
@@ -37,7 +37,7 @@ public class RegressionTuningEvaluator extends TuningEvaluator<RegressionTuningE
 	}
 
 	@Override
-	ParamInfo<Double> getMetricParamInfo() {
+	ParamInfo <Double> getMetricParamInfo() {
 		return getTuningRegressionMetric().getMetricKey();
 	}
 }

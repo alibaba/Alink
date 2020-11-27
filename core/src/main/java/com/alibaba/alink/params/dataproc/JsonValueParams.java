@@ -1,28 +1,37 @@
 package com.alibaba.alink.params.dataproc;
 
-import com.alibaba.alink.params.shared.colname.HasOutputCols;
-import com.alibaba.alink.params.shared.colname.HasReservedCols;
-import com.alibaba.alink.params.shared.colname.HasSelectedCol;
-
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.params.shared.colname.HasOutputColTypesDefaultAsNull;
+import com.alibaba.alink.params.shared.colname.HasOutputCols;
+import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
+import com.alibaba.alink.params.shared.colname.HasSelectedCol;
+
 /**
  * Parameters for json value.
+ *
  * @param <T>
  */
-public interface JsonValueParams<T> extends WithParams<T>,
+public interface JsonValueParams<T> extends WithParams <T>,
 	HasSelectedCol <T>,
-	HasReservedCols <T>,
-	HasOutputCols <T> {
+	HasReservedColsDefaultAsNull <T>,
+	HasOutputCols <T>,
+	HasOutputColTypesDefaultAsNull <T> {
 
+	/**
+	 * Param "JsonPath"
+	 */
 	ParamInfo <String[]> JSON_PATHS = ParamInfoFactory
 		.createParamInfo("jsonPath", String[].class)
 		.setDescription(" json path")
 		.setRequired()
 		.setAlias(new String[] {"JsonPath"})
 		.build();
+	/**
+	 * Param "skipFailed"
+	 */
 	ParamInfo <Boolean> SKIP_FAILED = ParamInfoFactory
 		.createParamInfo("skipFailed", boolean.class)
 		.setDescription(" skip Failed")

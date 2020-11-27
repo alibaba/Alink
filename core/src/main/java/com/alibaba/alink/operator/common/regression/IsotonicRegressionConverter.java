@@ -1,14 +1,14 @@
 package com.alibaba.alink.operator.common.regression;
 
-import com.alibaba.alink.common.utils.JsonConverter;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
+import com.alibaba.alink.common.utils.JsonConverter;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 
 /**
  * Save the boundaries and values for Isotonic Regression.
@@ -23,7 +23,7 @@ public class IsotonicRegressionConverter
 	 * @return The serialization result.
 	 */
 	@Override
-	public Tuple2<Params, Iterable<String>> serializeModel(IsotonicRegressionModelData modelData) {
+	public Tuple2 <Params, Iterable <String>> serializeModel(IsotonicRegressionModelData modelData) {
 		Double[] boundaries = modelData.boundaries;
 		Double[] values = modelData.values;
 		Params meta = modelData.meta;
@@ -36,14 +36,14 @@ public class IsotonicRegressionConverter
 	/**
 	 * Deserialize the model data.
 	 *
-	 * @param meta         The model meta data.
-	 * @param data         The model concrete data.
+	 * @param meta The model meta data.
+	 * @param data The model concrete data.
 	 * @return The deserialized model data.
 	 */
 	@Override
-	public IsotonicRegressionModelData deserializeModel(Params meta, Iterable<String> data) {
+	public IsotonicRegressionModelData deserializeModel(Params meta, Iterable <String> data) {
 		IsotonicRegressionModelData modelData = new IsotonicRegressionModelData();
-		Iterator<String> dataIterator = data.iterator();
+		Iterator <String> dataIterator = data.iterator();
 		Double[] boundaries = JsonConverter.fromJson(dataIterator.next(), Double[].class);
 		Double[] values = JsonConverter.fromJson(dataIterator.next(), Double[].class);
 		modelData.boundaries = boundaries;

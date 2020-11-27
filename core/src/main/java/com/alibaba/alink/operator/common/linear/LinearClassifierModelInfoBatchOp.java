@@ -1,34 +1,36 @@
 package com.alibaba.alink.operator.common.linear;
 
-import java.util.List;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
 
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.types.Row;
+import java.util.List;
 
 /**
  * Linear classifier model info batch op.
  */
 public class LinearClassifierModelInfoBatchOp
-    extends ExtractModelInfoBatchOp<LinearClassifierModelInfo, LinearClassifierModelInfoBatchOp> {
+	extends ExtractModelInfoBatchOp <LinearClassifierModelInfo, LinearClassifierModelInfoBatchOp> {
 
-    public LinearClassifierModelInfoBatchOp() {
-        this(null);
-    }
+	private static final long serialVersionUID = -3598960496955727614L;
 
-    public LinearClassifierModelInfoBatchOp(Params params) {
-        super(params);
-    }
+	public LinearClassifierModelInfoBatchOp() {
+		this(null);
+	}
 
-    @Override
-    protected LinearClassifierModelInfo createModelInfo(List<Row> rows) {
-        return new LinearClassifierModelInfo(rows);
-    }
+	public LinearClassifierModelInfoBatchOp(Params params) {
+		super(params);
+	}
 
-    @Override
-    protected BatchOperator<?> processModel() {
-        return this;
-    }
+	@Override
+	protected LinearClassifierModelInfo createModelInfo(List <Row> rows) {
+		return new LinearClassifierModelInfo(rows);
+	}
+
+	@Override
+	protected BatchOperator <?> processModel() {
+		return this;
+	}
 }

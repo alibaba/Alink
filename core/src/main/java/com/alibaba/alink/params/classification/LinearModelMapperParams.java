@@ -5,8 +5,7 @@ import com.alibaba.alink.params.shared.colname.HasVectorColDefaultAsNull;
 
 /**
  * parameters of linear model mapper process.
- *
  */
 public interface LinearModelMapperParams<T> extends
-	RichModelMapperParams<T>,
+	RichModelMapperParams <T>,
 	HasVectorColDefaultAsNull <T> {}

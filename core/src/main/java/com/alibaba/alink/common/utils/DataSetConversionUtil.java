@@ -8,6 +8,7 @@ import org.apache.flink.api.java.operators.TwoInputUdfOperator;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironment;
@@ -21,7 +22,7 @@ public class DataSetConversionUtil {
 	 * Convert the given Table to {@link DataSet}<{@link Row}>.
 	 *
 	 * @param sessionId the sessionId of {@link MLEnvironmentFactory}
-	 * @param table the Table to convert.
+	 * @param table     the Table to convert.
 	 * @return the converted DataSet.
 	 */
 	public static DataSet <Row> fromTable(Long sessionId, Table table) {
@@ -35,8 +36,8 @@ public class DataSetConversionUtil {
 	 * Convert the given DataSet into a Table with specified TableSchema.
 	 *
 	 * @param sessionId the sessionId of {@link MLEnvironmentFactory}
-	 * @param data   the DataSet to convert.
-	 * @param schema the specified TableSchema.
+	 * @param data      the DataSet to convert.
+	 * @param schema    the specified TableSchema.
 	 * @return the converted Table.
 	 */
 	public static Table toTable(Long sessionId, DataSet <Row> data, TableSchema schema) {
@@ -47,14 +48,15 @@ public class DataSetConversionUtil {
 	 * Convert the given DataSet into a Table with specified colNames and colTypes.
 	 *
 	 * @param sessionId sessionId the sessionId of {@link MLEnvironmentFactory}.
-	 * @param data     the DataSet to convert.
-	 * @param colNames the specified colNames.
-	 * @param colTypes the specified colTypes. This variable is used only when the
-	 *                 DataSet is produced by a function and Flink cannot determine
-	 *                 automatically what the produced type is.
+	 * @param data      the DataSet to convert.
+	 * @param colNames  the specified colNames.
+	 * @param colTypes  the specified colTypes. This variable is used only when the
+	 *                  DataSet is produced by a function and Flink cannot determine
+	 *                  automatically what the produced type is.
 	 * @return the converted Table.
 	 */
-	public static Table toTable(Long sessionId, DataSet <Row> data, String[] colNames, TypeInformation <?>[] colTypes) {
+	public static Table toTable(Long sessionId, DataSet <Row> data, String[] colNames, TypeInformation <?>[]
+		colTypes) {
 		return toTable(MLEnvironmentFactory.get(sessionId), data, colNames, colTypes);
 	}
 
@@ -62,8 +64,8 @@ public class DataSetConversionUtil {
 	 * Convert the given DataSet into a Table with specified colNames.
 	 *
 	 * @param sessionId sessionId the sessionId of {@link MLEnvironmentFactory}.
-	 * @param data     the DataSet to convert.
-	 * @param colNames the specified colNames.
+	 * @param data      the DataSet to convert.
+	 * @param colNames  the specified colNames.
 	 * @return the converted Table.
 	 */
 	public static Table toTable(Long sessionId, DataSet <Row> data, String[] colNames) {
@@ -73,7 +75,7 @@ public class DataSetConversionUtil {
 	/**
 	 * Convert the given DataSet into a Table with specified colNames and colTypes.
 	 *
-	 * @param session the MLEnvironment using to convert DataSet to Table.
+	 * @param session  the MLEnvironment using to convert DataSet to Table.
 	 * @param data     the DataSet to convert.
 	 * @param colNames the specified colNames.
 	 * @param colTypes the specified colTypes. This variable is used only when the
@@ -81,18 +83,24 @@ public class DataSetConversionUtil {
 	 *                 automatically what the produced type is.
 	 * @return the converted Table.
 	 */
-	public static Table toTable(MLEnvironment session, DataSet <Row> data, String[] colNames, TypeInformation <?>[] colTypes) {
+	public static Table toTable(MLEnvironment session, DataSet <Row> data, String[] colNames, TypeInformation <?>[]
+		colTypes) {
 		try {
 			// Try to add row type information for the dataset to be converted.
 			// In most case, this keeps us from the rolling back logic in the catch block,
 			// which adds an unnecessary map function just in order to add row type information.
-			if (data instanceof SingleInputUdfOperator) {
-				((SingleInputUdfOperator) data).returns(new RowTypeInfo(colTypes, colNames));
-			} else if (data instanceof TwoInputUdfOperator) {
-				((TwoInputUdfOperator) data).returns(new RowTypeInfo(colTypes, colNames));
+			try {
+				if (data instanceof SingleInputUdfOperator) {
+					((SingleInputUdfOperator) data).returns(new RowTypeInfo(colTypes, colNames));
+				} else if (data instanceof TwoInputUdfOperator) {
+					((TwoInputUdfOperator) data).returns(new RowTypeInfo(colTypes, colNames));
+				}
+			} catch (IllegalStateException ex) {
+				//pass
 			}
+
 			return toTable(session, data, colNames);
-		} catch (Exception ex) {
+		} catch (ValidationException ex) {
 			if (null == colTypes) {
 				throw ex;
 			} else {
@@ -105,7 +113,7 @@ public class DataSetConversionUtil {
 	/**
 	 * Convert the given DataSet into a Table with specified colNames.
 	 *
-	 * @param session the MLEnvironment using to convert DataSet to Table.
+	 * @param session  the MLEnvironment using to convert DataSet to Table.
 	 * @param data     the DataSet to convert.
 	 * @param colNames the specified colNames.
 	 * @return the converted Table.
@@ -139,6 +147,8 @@ public class DataSetConversionUtil {
 		DataSet <Row> r = data
 			.map(
 				new MapFunction <Row, Row>() {
+					private static final long serialVersionUID = 4962235907261477641L;
+
 					@Override
 					public Row map(Row t) throws Exception {
 						return t;

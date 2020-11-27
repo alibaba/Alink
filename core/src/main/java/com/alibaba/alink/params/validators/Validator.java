@@ -10,12 +10,34 @@ import java.io.Serializable;
  * @param <T> the type of the parameter value
  */
 public class Validator<T> implements Serializable, ParamValidator <T> {
-	static <U extends Comparable <U>> RangeValidator <U> inRange(U minValue, U maxValue) {
-		return new RangeValidator <>(minValue, maxValue);
-	}
+	private static final long serialVersionUID = 663170659560352711L;
+	protected String paramName;
 
 	@Override
 	public boolean validate(T v) {
 		return true;
 	}
+
+	@Override
+	public void validateThrows(T value) {
+		StringBuilder sbd = new StringBuilder()
+			.append(value);
+
+		if (this.paramName != null && !this.paramName.isEmpty()) {
+			sbd.append(" of ")
+				.append(this.paramName);
+		}
+
+		sbd.append(" is not validate. ")
+			.append(toString());
+
+		if (!validate(value)) {
+			throw new RuntimeException(sbd.toString());
+		}
+	}
+
+	public void setParamName(String paraName) {
+		this.paramName = paraName;
+	}
+
 }

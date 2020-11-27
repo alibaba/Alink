@@ -1,20 +1,5 @@
 package com.alibaba.alink.operator.batch.clustering;
 
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.linalg.DenseMatrix;
-import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.clustering.GmmClusterSummary;
-import com.alibaba.alink.operator.common.clustering.GmmModelData;
-import com.alibaba.alink.operator.common.clustering.GmmModelDataConverter;
-import com.alibaba.alink.operator.common.clustering.GmmModelInfoBatchOp;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.MultivariateGaussian;
-import com.alibaba.alink.params.clustering.GmmTrainParams;
-import com.google.common.primitives.Doubles;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.Partitioner;
@@ -28,18 +13,31 @@ import org.apache.flink.api.java.operators.IterativeDataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple4;
-import org.apache.flink.api.java.utils.DataSetUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.linalg.DenseMatrix;
+import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.common.utils.Functional;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.clustering.GmmClusterSummary;
+import com.alibaba.alink.operator.common.clustering.GmmModelData;
+import com.alibaba.alink.operator.common.clustering.GmmModelDataConverter;
+import com.alibaba.alink.operator.common.clustering.kmeans.KMeansInitCentroids;
+import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
+import com.alibaba.alink.operator.common.statistics.basicstatistic.MultivariateGaussian;
+import com.alibaba.alink.params.clustering.GmmTrainParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -56,403 +54,431 @@ import java.util.List;
  * While this process is generally guaranteed to converge, it is not guaranteed
  * to find a global optimum.
  */
-public final class GmmTrainBatchOp extends BatchOperator<GmmTrainBatchOp>
-    implements GmmTrainParams<GmmTrainBatchOp>,
-    WithModelInfoBatchOp<GmmModelInfoBatchOp.GmmModelInfo, GmmTrainBatchOp, GmmModelInfoBatchOp> {
-    private static final Logger LOG = LoggerFactory.getLogger(GmmTrainBatchOp.class);
+public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
+	implements GmmTrainParams <GmmTrainBatchOp>,
+	WithModelInfoBatchOp <GmmModelInfoBatchOp.GmmModelInfo, GmmTrainBatchOp, GmmModelInfoBatchOp> {
 
-    public GmmTrainBatchOp() {
-        this(new Params());
-    }
+	private static final Logger LOG = LoggerFactory.getLogger(GmmTrainBatchOp.class);
+	private static final long serialVersionUID = 989850858114954550L;
 
-    public GmmTrainBatchOp(Params params) {
-        super(params);
-    }
+	public GmmTrainBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public GmmModelInfoBatchOp getModelInfoBatchOp() {
-        return new GmmModelInfoBatchOp(new Params()).linkFrom(this);
-    }
+	public GmmTrainBatchOp(Params params) {
+		super(params);
+	}
 
-    /**
-     * Initialize the clusters by sampling for each clusters several samples from which the mean and covariance
-     * are computed.
-     */
-    private static DataSet<Tuple3<Integer, GmmClusterSummary, IterationStatus>>
-    initRandom(DataSet<Vector> data, final int numClusters) {
-        final int numSamplesPerCluster = 5;
-        DataSet<Vector> samples = DataSetUtils.sampleWithSize(data, true,
-            numClusters * numSamplesPerCluster);
+	@Override
+	public GmmModelInfoBatchOp getModelInfoBatchOp() {
+		return new GmmModelInfoBatchOp(this.getParams()).linkFrom(this);
+	}
 
-        return DataSetUtils.zipWithIndex(samples)
-            .groupBy(new KeySelector<Tuple2<Long, Vector>, Integer>() {
+	/**
+	 * Initialize the clusters by sampling for each clusters several samples from which the mean and covariance
+	 * are computed.
+	 */
+	private static DataSet <Tuple3 <Integer, GmmClusterSummary, IterationStatus>>
+	initRandom(DataSet <Vector> data, final int numClusters, int seed) {
+		final int numSamplesPerCluster = 5;
+		DataSet <Tuple2 <Long, Vector>> samples = KMeansInitCentroids.selectTopK(numClusters * numSamplesPerCluster,
+			seed,
+			data,
+			new Functional.SerializableFunction <Vector, String>() {
+				private static final long serialVersionUID = -7473942125005406072L;
 
-                @Override
-                public Integer getKey(Tuple2<Long, Vector> value) throws Exception {
-                    return (int) (value.f0 % numClusters);
-                }
-            })
-            .reduceGroup(
-                new GroupReduceFunction<Tuple2<Long, Vector>, Tuple3<Integer, GmmClusterSummary, IterationStatus>>() {
-                    @Override
-                    public void reduce(Iterable<Tuple2<Long, Vector>> values,
-                                       Collector<Tuple3<Integer, GmmClusterSummary, IterationStatus>> out)
-                        throws Exception {
-                        List<Vector> data = new ArrayList<>(numSamplesPerCluster);
-                        int clusterId = -1;
-                        int featureSize = 0;
+				@Override
+				public String apply(Vector v) {
+					return v instanceof DenseVector ?
+						v.toString() : ((SparseVector) v).toDenseVector().toString();
+				}
+			});
 
-                        for (Tuple2<Long, Vector> sample : values) {
-                            clusterId = (int) (sample.f0 % numClusters);
-                            featureSize = sample.f1.size();
-                            data.add(sample.f1);
-                        }
-                        assert numSamplesPerCluster == data.size();
+		return samples
+			.groupBy(new KeySelector <Tuple2 <Long, Vector>, Integer>() {
+				private static final long serialVersionUID = -4882845811146695041L;
 
-                        // compute mean
-                        DenseVector mean = new DenseVector(featureSize);
-                        for (Vector sample : data) {
-                            mean.plusEqual(sample);
-                        }
-                        mean.scaleEqual(1.0 / numSamplesPerCluster);
+				@Override
+				public Integer getKey(Tuple2 <Long, Vector> value) throws Exception {
+					return (int) (value.f0 % numClusters);
+				}
+			})
+			.reduceGroup(
+				new GroupReduceFunction <Tuple2 <Long, Vector>, Tuple3 <Integer, GmmClusterSummary, IterationStatus>>
+					() {
+					private static final long serialVersionUID = -5884722625126145531L;
 
-                        // compute covariance matrix （only keep the diagonal part as initial estimates)
-                        DenseVector diagVec = new DenseVector(featureSize);
-                        for (Vector sample : data) {
-                            Vector shifted = sample.minus(mean);
-                            for (int i = 0; i < featureSize; i++) {
-                                diagVec.add(i, shifted.get(i) * shifted.get(i));
-                            }
-                        }
-                        diagVec.scaleEqual(1.0 / numSamplesPerCluster);
+					@Override
+					public void reduce(Iterable <Tuple2 <Long, Vector>> values,
+									   Collector <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> out)
+						throws Exception {
+						List <Vector> data = new ArrayList <>(numSamplesPerCluster);
+						int clusterId = -1;
+						int featureSize = 0;
 
-                        DenseVector covVec = new DenseVector(featureSize * (featureSize + 1) / 2);
-                        for (int i = 0; i < featureSize; i++) {
-                            int pos = GmmModelData.getElementPositionInCompactMatrix(i, i, featureSize);
-                            covVec.set(pos, diagVec.get(i));
-                        }
+						for (Tuple2 <Long, Vector> sample : values) {
+							clusterId = (int) (sample.f0 % numClusters);
+							featureSize = sample.f1.size();
+							data.add(sample.f1);
+						}
+						assert numSamplesPerCluster == data.size();
 
-                        GmmClusterSummary model = new GmmClusterSummary(clusterId, 1.0 / numClusters, mean, covVec);
-                        out.collect(Tuple3.of(clusterId, model, new IterationStatus()));
-                    }
-                })
-            .name("init_model");
-    }
+						// compute mean
+						DenseVector mean = new DenseVector(featureSize);
+						for (Vector sample : data) {
+							mean.plusEqual(sample);
+						}
+						mean.scaleEqual(1.0 / numSamplesPerCluster);
 
-    /**
-     * Train the Gaussian Mixture model with Expectation-Maximization algorithm.
-     */
-    @Override
-    public GmmTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator<?> in = checkAndGetFirst(inputs);
+						// compute covariance matrix （only keep the diagonal part as initial estimates)
+						DenseVector diagVec = new DenseVector(featureSize);
+						for (Vector sample : data) {
+							Vector shifted = sample.minus(mean);
+							for (int i = 0; i < featureSize; i++) {
+								diagVec.add(i, shifted.get(i) * shifted.get(i));
+							}
+						}
+						diagVec.scaleEqual(1.0 / numSamplesPerCluster);
 
-        final String vectorColName = getVectorCol();
-        final int numClusters = getK();
-        final int maxIter = getMaxIter();
-        final double tol = getEpsilon();
+						DenseVector covVec = new DenseVector(featureSize * (featureSize + 1) / 2);
+						for (int i = 0; i < featureSize; i++) {
+							int pos = GmmModelData.getElementPositionInCompactMatrix(i, i, featureSize);
+							covVec.set(pos, diagVec.get(i));
+						}
 
-        // Extract the vectors from the input operator.
-        Tuple2<DataSet<Vector>, DataSet<BaseVectorSummary>> vectorAndSummary =
-            StatisticsHelper.summaryHelper(in, null, vectorColName);
+						GmmClusterSummary model = new GmmClusterSummary(clusterId, 1.0 / numClusters, mean, covVec);
+						out.collect(Tuple3.of(clusterId, model, new IterationStatus()));
+					}
+				})
+			.name("init_model");
+	}
 
-        DataSet<Integer> featureSize = vectorAndSummary.f1
-            .map(new MapFunction<BaseVectorSummary, Integer>() {
-                @Override
-                public Integer map(BaseVectorSummary summary) throws Exception {
-                    return summary.vectorSize();
-                }
-            });
+	/**
+	 * Train the Gaussian Mixture model with Expectation-Maximization algorithm.
+	 */
+	@Override
+	public GmmTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
 
-        DataSet<Vector> data = vectorAndSummary.f0
-            .map(new RichMapFunction<Vector, Vector>() {
-                transient int featureSize;
+		final String vectorColName = getVectorCol();
+		final int numClusters = getK();
+		final int maxIter = getMaxIter();
+		final double tol = getEpsilon();
 
-                @Override
-                public void open(Configuration parameters) throws Exception {
-                    List<Integer> bc = getRuntimeContext().getBroadcastVariable("featureSize");
-                    this.featureSize = bc.get(0);
-                }
+		// Extract the vectors from the input operator.
+		Tuple2 <DataSet <Vector>, DataSet <BaseVectorSummary>> vectorAndSummary =
+			StatisticsHelper.summaryHelper(in, null, vectorColName);
 
-                @Override
-                public Vector map(Vector vec) throws Exception {
-                    if (vec instanceof SparseVector) {
-                        ((SparseVector) vec).setSize(featureSize);
-                    }
-                    return vec;
-                }
-            })
-            .withBroadcastSet(featureSize, "featureSize");
+		DataSet <Integer> featureSize = vectorAndSummary.f1
+			.map(new MapFunction <BaseVectorSummary, Integer>() {
+				private static final long serialVersionUID = 8456872852742625845L;
 
-        // Initialize the model.
-        DataSet<Tuple3<Integer, GmmClusterSummary, IterationStatus>> initialModel = initRandom(data, numClusters);
+				@Override
+				public Integer map(BaseVectorSummary summary) throws Exception {
+					return summary.vectorSize();
+				}
+			});
 
-        // Iteratively update the model with EM algorithm.
-        IterativeDataSet<Tuple3<Integer, GmmClusterSummary, IterationStatus>> loop = initialModel.iterate(maxIter);
+		DataSet <Vector> data = vectorAndSummary.f0
+			.map(new RichMapFunction <Vector, Vector>() {
+				private static final long serialVersionUID = -845795862675993897L;
+				transient int featureSize;
 
-        DataSet<Tuple4<Integer, GmmClusterSummary, IterationStatus, MultivariateGaussian>> md = loop
-            .mapPartition(
-                new RichMapPartitionFunction<Tuple3<Integer, GmmClusterSummary, IterationStatus>, Tuple4<Integer, GmmClusterSummary, IterationStatus, MultivariateGaussian>>() {
-                    @Override
-                    public void mapPartition(Iterable<Tuple3<Integer, GmmClusterSummary, IterationStatus>> values,
-                                             Collector<Tuple4<Integer, GmmClusterSummary, IterationStatus, MultivariateGaussian>> collector)
-                        throws Exception {
-                        int cnt = 0;
-                        for(Tuple3<Integer, GmmClusterSummary, IterationStatus> value : values) {
-                            DenseVector means = value.f1.mean;
-                            DenseMatrix cov = GmmModelData.expandCovarianceMatrix(value.f1.cov, means.size());
-                            MultivariateGaussian md = new MultivariateGaussian(means, cov);
-                            collector.collect(Tuple4.of(value.f0, value.f1, value.f2, md));
-                            cnt++;
-                        }
-                    }
-                }).withForwardedFields("f0;f1;f2");
+				@Override
+				public void open(Configuration parameters) throws Exception {
+					List <Integer> bc = getRuntimeContext().getBroadcastVariable("featureSize");
+					this.featureSize = bc.get(0);
+				}
 
-        DataSet<Tuple3<Integer, GmmClusterSummary, IterationStatus>> updatedModel = data
-            .<LocalAggregator>mapPartition(new RichMapPartitionFunction<Vector, LocalAggregator>() {
-                transient DenseVector oldWeights;
-                transient DenseVector[] oldMeans;
-                transient DenseVector[] oldCovs;
-                transient MultivariateGaussian[] mnd;
+				@Override
+				public Vector map(Vector vec) throws Exception {
+					if (vec instanceof SparseVector) {
+						((SparseVector) vec).setSize(featureSize);
+					}
+					return vec;
+				}
+			})
+			.withBroadcastSet(featureSize, "featureSize");
 
-                @Override
-                public void open(Configuration parameters) throws Exception {
-                    oldWeights = new DenseVector(numClusters);
-                    oldMeans = new DenseVector[numClusters];
-                    oldCovs = new DenseVector[numClusters];
-                    mnd = new MultivariateGaussian[numClusters];
-                }
+		// Initialize the model.
+		DataSet <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> initialModel = initRandom(data, numClusters,
+			getRandomSeed());
 
-                @Override
-                public void mapPartition(Iterable<Vector> values, Collector<LocalAggregator> out)
-                    throws Exception {
-                    List<Integer> bcNumFeatures = getRuntimeContext().getBroadcastVariable("featureSize");
-                    List<Tuple4<Integer, GmmClusterSummary, IterationStatus, MultivariateGaussian>> bcOldModel =
-                        getRuntimeContext().getBroadcastVariable("oldModel");
+		// Iteratively update the model with EM algorithm.
+		IterativeDataSet <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> loop = initialModel.iterate(maxIter);
 
-                    double prevLogLikelihood = 0.;
+		DataSet <Tuple4 <Integer, GmmClusterSummary, IterationStatus, MultivariateGaussian>> md = loop
+			.mapPartition(
+				new RichMapPartitionFunction <Tuple3 <Integer, GmmClusterSummary, IterationStatus>, Tuple4 <Integer,
+					GmmClusterSummary, IterationStatus, MultivariateGaussian>>() {
+					private static final long serialVersionUID = -1937088240477952410L;
 
-                    for (Tuple4<Integer, GmmClusterSummary, IterationStatus, MultivariateGaussian> t : bcOldModel) {
-                        int clusterId = t.f0;
-                        GmmClusterSummary clusterInfo = t.f1;
-                        prevLogLikelihood = t.f2.currLogLikelihood;
-                        oldWeights.set(clusterId, clusterInfo.weight);
-                        oldMeans[clusterId] = clusterInfo.mean;
-                        oldCovs[clusterId] = clusterInfo.cov;
-                        mnd[clusterId] = t.f3;
-                    }
+					@Override
+					public void mapPartition(Iterable <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> values,
+											 Collector <Tuple4 <Integer, GmmClusterSummary, IterationStatus,
+												 MultivariateGaussian>> collector)
+						throws Exception {
+						for (Tuple3 <Integer, GmmClusterSummary, IterationStatus> value : values) {
+							DenseVector means = value.f1.mean;
+							DenseMatrix cov = GmmModelData.expandCovarianceMatrix(value.f1.cov, means.size());
+							MultivariateGaussian md = new MultivariateGaussian(means, cov);
+							collector.collect(Tuple4.of(value.f0, value.f1, value.f2, md));
+						}
+					}
+				}).withForwardedFields("f0;f1;f2");
 
-                    LocalAggregator aggregator = new LocalAggregator(numClusters, bcNumFeatures.get(0),
-                        prevLogLikelihood, oldWeights, oldMeans, oldCovs, mnd);
+		DataSet <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> updatedModel = data
+			. <LocalAggregator>mapPartition(new RichMapPartitionFunction <Vector, LocalAggregator>() {
+				private static final long serialVersionUID = 8356493076036649604L;
+				transient DenseVector oldWeights;
+				transient DenseVector[] oldMeans;
+				transient DenseVector[] oldCovs;
+				transient MultivariateGaussian[] mnd;
 
-                    values.forEach(aggregator::add);
-                    out.collect(aggregator);
-                }
-            })
-            .withBroadcastSet(featureSize, "featureSize")
-            .withBroadcastSet(md, "oldModel")
-            .name("E-M_step")
-            .reduce(new ReduceFunction<LocalAggregator>() {
-                @Override
-                public LocalAggregator reduce(LocalAggregator value1, LocalAggregator value2) throws Exception {
-                    return value1.merge(value2);
-                }
-            })
-            .flatMap(
-                new RichFlatMapFunction<LocalAggregator, Tuple3<Integer, GmmClusterSummary, IterationStatus>>() {
-                    @Override
-                    public void flatMap(LocalAggregator aggregator,
-                                        Collector<Tuple3<Integer, GmmClusterSummary, IterationStatus>> out)
-                        throws Exception {
-                        for (int i = 0; i < numClusters; i++) {
-                            double w = aggregator.updatedWeightsSum.get(i);
-                            aggregator.updatedMeansSum[i].scaleEqual(1.0 / w);
-                            aggregator.updatedCovsSum[i].scaleEqual(1.0 / w);
+				@Override
+				public void open(Configuration parameters) throws Exception {
+					oldWeights = new DenseVector(numClusters);
+					oldMeans = new DenseVector[numClusters];
+					oldCovs = new DenseVector[numClusters];
+					mnd = new MultivariateGaussian[numClusters];
+				}
 
-                            GmmClusterSummary model = new GmmClusterSummary(i, w / aggregator.totalCount,
-                                aggregator.updatedMeansSum[i], aggregator.updatedCovsSum[i]);
+				@Override
+				public void mapPartition(Iterable <Vector> values, Collector <LocalAggregator> out)
+					throws Exception {
+					List <Integer> bcNumFeatures = getRuntimeContext().getBroadcastVariable("featureSize");
+					List <Tuple4 <Integer, GmmClusterSummary, IterationStatus, MultivariateGaussian>> bcOldModel =
+						getRuntimeContext().getBroadcastVariable("oldModel");
 
-                            // note that we use Cov(X,Y) = E[XY] - E[X]E[Y] to compute Cov(X,Y)
-                            int featureSize = model.mean.size();
-                            for (int m = 0; m < featureSize; m++) { // loop over columns
-                                for (int n = m; n < featureSize; n++) {
-                                    int pos = GmmModelData.getElementPositionInCompactMatrix(m, n, featureSize);
-                                    model.cov.add(pos, -1.0 * model.mean.get(m) * model.mean.get(n));
-                                }
-                            }
+					double prevLogLikelihood = 0.;
 
-                            IterationStatus stat = new IterationStatus();
-                            stat.prevLogLikelihood = aggregator.prevLogLikelihood;
-                            stat.currLogLikelihood = aggregator.newLogLikelihood;
-                            out.collect(Tuple3.of(i, model, stat));
-                        }
-                    }
-                }).partitionCustom(new Partitioner<Integer>() {
-                @Override
-                public int partition(Integer key, int numPartitions){
-                    return key % numPartitions;
-                }
-            }, 0);
+					for (Tuple4 <Integer, GmmClusterSummary, IterationStatus, MultivariateGaussian> t : bcOldModel) {
+						int clusterId = t.f0;
+						GmmClusterSummary clusterInfo = t.f1;
+						prevLogLikelihood = t.f2.currLogLikelihood;
+						oldWeights.set(clusterId, clusterInfo.weight);
+						oldMeans[clusterId] = clusterInfo.mean;
+						oldCovs[clusterId] = clusterInfo.cov;
+						mnd[clusterId] = new MultivariateGaussian(t.f3);
+						//mnd[clusterId] = t.f3;
+					}
 
-        // Check whether stop criterion is met.
-        DataSet<Boolean> criterion = updatedModel.first(1)
-            .flatMap(new RichFlatMapFunction<Tuple3<Integer, GmmClusterSummary, IterationStatus>, Boolean>() {
-                @Override
-                public void flatMap(Tuple3<Integer, GmmClusterSummary, IterationStatus> value,
-                                    Collector<Boolean> out) throws Exception {
-                    IterationStatus stat = value.f2;
-                    int stepNo = getIterationRuntimeContext().getSuperstepNumber();
-                    double diffLogLikelihood = Math.abs(stat.currLogLikelihood - stat.prevLogLikelihood);
-                    LOG.info("step {}, prevLogLikelihood {}, currLogLikelihood {}, diffLogLikelihood {}",
-                        stepNo, stat.prevLogLikelihood, stat.currLogLikelihood, diffLogLikelihood);
-                    if (stepNo <= 1 || diffLogLikelihood > tol) {
-                        out.collect(false);
-                    }
-                }
-            });
+					LocalAggregator aggregator = new LocalAggregator(numClusters, bcNumFeatures.get(0),
+						prevLogLikelihood, oldWeights, oldMeans, oldCovs, mnd);
 
-        DataSet<Tuple3<Integer, GmmClusterSummary, IterationStatus>> finalModel = loop.closeWith(updatedModel,
-            criterion);
+					values.forEach(aggregator::add);
+					out.collect(aggregator);
+				}
+			})
+			.withBroadcastSet(featureSize, "featureSize")
+			.withBroadcastSet(md, "oldModel")
+			.name("E-M_step")
+			.reduce(new ReduceFunction <LocalAggregator>() {
+				private static final long serialVersionUID = -6976429920344470952L;
 
-        // Output the model.
-        DataSet<Row> modelRows = finalModel
-            .mapPartition(
-                new RichMapPartitionFunction<Tuple3<Integer, GmmClusterSummary, IterationStatus>, Row>() {
-                    transient int featureSize;
+				@Override
+				public LocalAggregator reduce(LocalAggregator value1, LocalAggregator value2) throws Exception {
+					return value1.merge(value2);
+				}
+			})
+			.flatMap(
+				new RichFlatMapFunction <LocalAggregator, Tuple3 <Integer, GmmClusterSummary, IterationStatus>>() {
+					private static final long serialVersionUID = 6599047947335456972L;
 
-                    @Override
-                    public void open(Configuration parameters) throws Exception {
-                        this.featureSize = (int) (getRuntimeContext().getBroadcastVariable("featureSize").get(0));
-                    }
+					@Override
+					public void flatMap(LocalAggregator aggregator,
+										Collector <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> out)
+						throws Exception {
+						for (int i = 0; i < numClusters; i++) {
+							double w = aggregator.updatedWeightsSum.get(i);
+							aggregator.updatedMeansSum[i].scaleEqual(1.0 / w);
+							aggregator.updatedCovsSum[i].scaleEqual(1.0 / w);
 
-                    @Override
-                    public void mapPartition(Iterable<Tuple3<Integer, GmmClusterSummary, IterationStatus>> values,
-                                             Collector<Row> out) throws Exception {
-                        int numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
-                        if (numTasks > 1) {
-                            throw new RuntimeException("parallelism is not 1 when saving model.");
-                        }
-                        GmmModelData model = new GmmModelData();
-                        model.k = numClusters;
-                        model.dim = featureSize;
-                        model.vectorCol = vectorColName;
-                        model.data = new ArrayList<>(numClusters);
-                        for (Tuple3<Integer, GmmClusterSummary, IterationStatus> t : values) {
-                            t.f1.clusterId = t.f0;
-                            model.data.add(t.f1);
-                        }
-                        new GmmModelDataConverter().save(model, out);
-                    }
-                })
-            .setParallelism(1)
-            .withBroadcastSet(featureSize, "featureSize");
+							GmmClusterSummary model = new GmmClusterSummary(i, w / aggregator.totalCount,
+								aggregator.updatedMeansSum[i], aggregator.updatedCovsSum[i]);
 
-        this.setOutput(modelRows, new GmmModelDataConverter().getModelSchema());
-        return this;
-    }
+							// note that we use Cov(X,Y) = E[XY] - E[X]E[Y] to compute Cov(X,Y)
+							int featureSize = model.mean.size();
+							for (int m = 0; m < featureSize; m++) { // loop over columns
+								for (int n = m; n < featureSize; n++) {
+									int pos = GmmModelData.getElementPositionInCompactMatrix(m, n, featureSize);
+									model.cov.add(pos, -1.0 * model.mean.get(m) * model.mean.get(n));
+								}
+							}
 
-    private static class IterationStatus implements Serializable {
-        double prevLogLikelihood;
-        double currLogLikelihood;
+							IterationStatus stat = new IterationStatus();
+							stat.prevLogLikelihood = aggregator.prevLogLikelihood;
+							stat.currLogLikelihood = aggregator.newLogLikelihood;
+							out.collect(Tuple3.of(i, model, stat));
+						}
+					}
+				}).partitionCustom(new Partitioner <Integer>() {
+				private static final long serialVersionUID = 1006932050560340472L;
 
-        @Override
-        public String toString() {
-            return String.format("prev:%f,curr:%f", prevLogLikelihood, currLogLikelihood);
-        }
-    }
+				@Override
+				public int partition(Integer key, int numPartitions) {
+					return key % numPartitions;
+				}
+			}, 0);
 
-    /**
-     * The <code>LocalAggregator</code> computes statistics of each cluster with the local
-     * partition of sample data.
-     */
-    private static class LocalAggregator implements Serializable {
-        int k;
-        int featureSize;
-        long totalCount;
-        double prevLogLikelihood;
-        double newLogLikelihood;
-        transient DenseVector oldWeights; // p(z)
-        transient DenseVector[] oldMeans;
-        transient DenseVector[] oldCovs;
-        DenseVector updatedWeightsSum;
-        DenseVector[] updatedMeansSum;
-        DenseVector[] updatedCovsSum;
-        transient MultivariateGaussian[] mnd;
-        transient double[] prob; // p(z|x)
+		// Check whether stop criterion is met.
+		DataSet <Boolean> criterion = updatedModel.first(1)
+			.flatMap(new RichFlatMapFunction <Tuple3 <Integer, GmmClusterSummary, IterationStatus>, Boolean>() {
+				private static final long serialVersionUID = 6890280483282243057L;
 
-        LocalAggregator(int k, int featureSize, double prevLogLikelihood, DenseVector oldWeights,
-                        DenseVector[] oldMeans, DenseVector[] oldCovs, MultivariateGaussian[] mnd) {
-            this.k = k;
-            this.featureSize = featureSize;
-            this.oldWeights = oldWeights;
-            this.oldMeans = oldMeans;
-            this.oldCovs = oldCovs;
-            this.prevLogLikelihood = prevLogLikelihood;
+				@Override
+				public void flatMap(Tuple3 <Integer, GmmClusterSummary, IterationStatus> value,
+									Collector <Boolean> out) throws Exception {
+					IterationStatus stat = value.f2;
+					int stepNo = getIterationRuntimeContext().getSuperstepNumber();
+					double diffLogLikelihood = Math.abs(stat.currLogLikelihood - stat.prevLogLikelihood);
+					LOG.info("step {}, prevLogLikelihood {}, currLogLikelihood {}, diffLogLikelihood {}",
+						stepNo, stat.prevLogLikelihood, stat.currLogLikelihood, diffLogLikelihood);
+					if (stepNo <= 1 || diffLogLikelihood > tol) {
+						out.collect(false);
+					}
+				}
+			});
 
-            this.totalCount = 0L;
-            this.newLogLikelihood = 0.;
-            this.updatedWeightsSum = new DenseVector(k);
-            this.updatedMeansSum = new DenseVector[k];
-            this.updatedCovsSum = new DenseVector[k];
+		DataSet <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> finalModel = loop.closeWith(updatedModel,
+			criterion);
 
-            this.mnd = mnd;
+		// Output the model.
+		DataSet <Row> modelRows = finalModel
+			.mapPartition(
+				new RichMapPartitionFunction <Tuple3 <Integer, GmmClusterSummary, IterationStatus>, Row>() {
+					private static final long serialVersionUID = -8411238421923712023L;
+					transient int featureSize;
 
-            for (int i = 0; i < k; i++) {
-                this.updatedMeansSum[i] = new DenseVector(featureSize);
-                this.updatedCovsSum[i] = new DenseVector((featureSize + 1) * featureSize / 2);
-            }
+					@Override
+					public void open(Configuration parameters) throws Exception {
+						this.featureSize = (int) (getRuntimeContext().getBroadcastVariable("featureSize").get(0));
+					}
 
-            prob = new double[k];
-        }
+					@Override
+					public void mapPartition(Iterable <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> values,
+											 Collector <Row> out) throws Exception {
+						int numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
+						if (numTasks > 1) {
+							throw new RuntimeException("parallelism is not 1 when saving model.");
+						}
+						GmmModelData model = new GmmModelData();
+						model.k = numClusters;
+						model.dim = featureSize;
+						model.vectorCol = vectorColName;
+						model.data = new ArrayList <>(numClusters);
+						for (Tuple3 <Integer, GmmClusterSummary, IterationStatus> t : values) {
+							t.f1.clusterId = t.f0;
+							model.data.add(t.f1);
+						}
+						new GmmModelDataConverter().save(model, out);
+					}
+				})
+			.setParallelism(1)
+			.withBroadcastSet(featureSize, "featureSize");
 
-        public void add(Vector sample) {
-            // E-step: compute p(z|x) based on old p(z),mu,sigma, using Bayesian rule
-            double probSum = 0.;
-            for (int i = 0; i < k; i++) {
-                prob[i] = this.mnd[i].logpdf(sample);
-            }
+		this.setOutput(modelRows, new GmmModelDataConverter().getModelSchema());
+		return this;
+	}
 
-            double base = Doubles.max(prob);
-            for(int i = 0; i < k; i++){
-                prob[i] = this.oldWeights.get(i) * Math.exp(prob[i] - base);
-                probSum += prob[i];
-            }
+	private static class IterationStatus implements Serializable {
+		private static final long serialVersionUID = 6974710485320384520L;
+		double prevLogLikelihood;
+		double currLogLikelihood;
 
-            Preconditions.checkArgument(probSum > 0 && probSum != Double.NaN && probSum != Double.POSITIVE_INFINITY,
-                "Algorithm is not convergent! probArray is:" + Arrays.toString(prob));
+		@Override
+		public String toString() {
+			return String.format("prev:%f,curr:%f", prevLogLikelihood, currLogLikelihood);
+		}
+	}
 
-            for (int i = 0; i < k; i++) {
-                prob[i] /= probSum;
-            }
+	/**
+	 * The <code>LocalAggregator</code> computes statistics of each cluster with the local
+	 * partition of sample data.
+	 */
+	private static class LocalAggregator implements Serializable {
+		private static final long serialVersionUID = -2375847154917039731L;
+		int k;
+		int featureSize;
+		long totalCount;
+		double prevLogLikelihood;
+		double newLogLikelihood;
+		transient DenseVector oldWeights; // p(z)
+		transient DenseVector[] oldMeans;
+		transient DenseVector[] oldCovs;
+		DenseVector updatedWeightsSum;
+		DenseVector[] updatedMeansSum;
+		DenseVector[] updatedCovsSum;
+		transient MultivariateGaussian[] mnd;
+		transient double[] prob; // p(z|x)
 
-            this.newLogLikelihood += (Math.log(probSum) + base);
+		LocalAggregator(int k, int featureSize, double prevLogLikelihood, DenseVector oldWeights,
+						DenseVector[] oldMeans, DenseVector[] oldCovs, MultivariateGaussian[] mnd) {
+			this.k = k;
+			this.featureSize = featureSize;
+			this.oldWeights = oldWeights;
+			this.oldMeans = oldMeans;
+			this.oldCovs = oldCovs;
+			this.prevLogLikelihood = prevLogLikelihood;
 
-            // M-step
-            for (int i = 0; i < k; i++) {
-                this.updatedWeightsSum.add(i, prob[i]);
-                DenseVector localNewMeans = this.updatedMeansSum[i];
-                localNewMeans.plusScaleEqual(sample, prob[i]);
-                DenseVector localNewCovs = this.updatedCovsSum[i];
+			this.totalCount = 0L;
+			this.newLogLikelihood = 0.;
+			this.updatedWeightsSum = new DenseVector(k);
+			this.updatedMeansSum = new DenseVector[k];
+			this.updatedCovsSum = new DenseVector[k];
 
-                int r = 0;
-                for (int m = 0; m < featureSize; m++) {
-                    for (int n = 0; n <= m; n++) {
-                        localNewCovs.add(r, sample.get(m) * sample.get(n) * prob[i]);
-                        r++;
-                    }
-                }
-            }
+			this.mnd = mnd;
 
-            this.totalCount++;
-        }
+			for (int i = 0; i < k; i++) {
+				this.updatedMeansSum[i] = new DenseVector(featureSize);
+				this.updatedCovsSum[i] = new DenseVector((featureSize + 1) * featureSize / 2);
+			}
 
-        public LocalAggregator merge(LocalAggregator other) {
-            this.totalCount += other.totalCount;
-            this.updatedWeightsSum.plusEqual(other.updatedWeightsSum);
-            for (int i = 0; i < k; i++) {
-                this.updatedMeansSum[i].plusEqual(other.updatedMeansSum[i]);
-                this.updatedCovsSum[i].plusEqual(other.updatedCovsSum[i]);
-            }
-            return this;
-        }
-    }
+			prob = new double[k];
+		}
+
+		public void add(Vector sample) {
+			// E-step: compute p(z|x) based on old p(z),mu,sigma, using Bayesian rule
+			double probSum = 0.;
+			for (int i = 0; i < k; i++) {
+				double density = this.mnd[i].pdf(sample);
+				double p = this.oldWeights.get(i) * density;
+				prob[i] = p;
+				probSum += p;
+			}
+
+			for (int i = 0; i < k; i++) {
+				prob[i] /= probSum;
+			}
+			this.newLogLikelihood += Math.log(probSum);
+
+			// M-step
+			for (int i = 0; i < k; i++) {
+				this.updatedWeightsSum.add(i, prob[i]);
+				DenseVector localNewMeans = this.updatedMeansSum[i];
+				localNewMeans.plusScaleEqual(sample, prob[i]);
+				DenseVector localNewCovs = this.updatedCovsSum[i];
+
+				int r = 0;
+				for (int m = 0; m < featureSize; m++) {
+					for (int n = 0; n <= m; n++) {
+						localNewCovs.add(r, sample.get(m) * sample.get(n) * prob[i]);
+						r++;
+					}
+				}
+			}
+
+			this.totalCount++;
+		}
+
+		public LocalAggregator merge(LocalAggregator other) {
+			this.totalCount += other.totalCount;
+			this.updatedWeightsSum.plusEqual(other.updatedWeightsSum);
+			for (int i = 0; i < k; i++) {
+				this.updatedMeansSum[i].plusEqual(other.updatedMeansSum[i]);
+				this.updatedCovsSum[i].plusEqual(other.updatedCovsSum[i]);
+			}
+			return this;
+		}
+	}
 }

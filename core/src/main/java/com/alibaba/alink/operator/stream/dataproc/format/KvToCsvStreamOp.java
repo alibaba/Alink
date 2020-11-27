@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.operator.stream.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.KvToCsvParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class KvToCsvStreamOp extends BaseFormatTransStreamOp<KvToCsvStreamOp>
-    implements KvToCsvParams<KvToCsvStreamOp> {
+/**
+ * Transform data type from Kv to Csv.
+ */
+public class KvToCsvStreamOp extends BaseFormatTransStreamOp <KvToCsvStreamOp>
+	implements KvToCsvParams <KvToCsvStreamOp> {
 
-    public KvToCsvStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 1364131618084402185L;
 
-    public KvToCsvStreamOp(Params params) {
-        super(FormatType.KV, FormatType.CSV, params);
-    }
+	public KvToCsvStreamOp() {
+		this(new Params());
+	}
+
+	public KvToCsvStreamOp(Params params) {
+		super(FormatType.KV, FormatType.CSV, params);
+	}
 }

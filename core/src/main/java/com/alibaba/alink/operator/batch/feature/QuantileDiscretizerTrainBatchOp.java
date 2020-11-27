@@ -1,21 +1,9 @@
 package com.alibaba.alink.operator.batch.feature;
 
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.dataproc.SortUtils;
-import com.alibaba.alink.operator.common.dataproc.SortUtilsNext;
-import com.alibaba.alink.operator.common.feature.ContinuousRanges;
-import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
-import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelInfo;
-import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelInfoBatchOp;
-import com.alibaba.alink.operator.common.feature.quantile.PairComparable;
-import com.alibaba.alink.operator.common.tree.Preprocessing;
-import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
-import com.alibaba.alink.params.statistics.HasRoundMode;
 import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.functions.RichReduceFunction;
@@ -27,6 +15,22 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
+
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.SortUtils;
+import com.alibaba.alink.operator.common.dataproc.SortUtilsNext;
+import com.alibaba.alink.operator.common.feature.ContinuousRanges;
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelInfo;
+import com.alibaba.alink.operator.common.feature.binning.BinDivideType;
+import com.alibaba.alink.operator.common.feature.binning.FeatureBinsCalculator;
+import com.alibaba.alink.operator.common.feature.binning.FeatureBinsCalculatorTransformer;
+import com.alibaba.alink.operator.common.feature.quantile.PairComparable;
+import com.alibaba.alink.operator.common.tree.Preprocessing;
+import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
+import com.alibaba.alink.params.statistics.HasRoundMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,11 +48,13 @@ import java.util.stream.StreamSupport;
 /**
  * Fit a quantile discretizer model.
  */
-public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<QuantileDiscretizerTrainBatchOp>
-	implements QuantileDiscretizerTrainParams<QuantileDiscretizerTrainBatchOp>,
-	WithModelInfoBatchOp<QuantileDiscretizerModelInfo, QuantileDiscretizerTrainBatchOp, QuantileDiscretizerModelInfoBatchOp> {
+public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <QuantileDiscretizerTrainBatchOp>
+	implements QuantileDiscretizerTrainParams <QuantileDiscretizerTrainBatchOp>,
+	WithModelInfoBatchOp <QuantileDiscretizerModelInfo, QuantileDiscretizerTrainBatchOp,
+		QuantileDiscretizerModelInfoBatchOp> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(QuantileDiscretizerTrainBatchOp.class);
+	private static final long serialVersionUID = -3670323265976188058L;
 
 	public QuantileDiscretizerTrainBatchOp() {
 	}
@@ -57,26 +63,28 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 		super(params);
 	}
 
-	public static DataSet<Row> quantile(
-		DataSet<Row> input,
+	public static DataSet <Row> quantile(
+		DataSet <Row> input,
 		final int[] quantileNum,
 		final HasRoundMode.RoundMode roundMode,
 		final boolean zeroAsMissing) {
 		/* instance count of dataset */
-		DataSet<Long> cnt = DataSetUtils
+		DataSet <Long> cnt = DataSetUtils
 			.countElementsPerPartition(input)
 			.sum(1)
-			.map(new MapFunction<Tuple2<Integer, Long>, Long>() {
+			.map(new MapFunction <Tuple2 <Integer, Long>, Long>() {
+				private static final long serialVersionUID = 9186222895920287915L;
 
 				@Override
-				public Long map(Tuple2<Integer, Long> value) throws Exception {
+				public Long map(Tuple2 <Integer, Long> value) throws Exception {
 					return value.f1;
 				}
 			});
 
 		/* missing count of columns */
-		DataSet<Tuple2<Integer, Long>> missingCount = input
-			.mapPartition(new RichMapPartitionFunction<Row, Tuple2<Integer, Long>>() {
+		DataSet <Tuple2 <Integer, Long>> missingCount = input
+			.mapPartition(new RichMapPartitionFunction <Row, Tuple2 <Integer, Long>>() {
+				private static final long serialVersionUID = -5500000914692866092L;
 
 				@Override
 				public void open(Configuration parameters) throws Exception {
@@ -91,7 +99,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 				}
 
 				@Override
-				public void mapPartition(Iterable<Row> values, Collector<Tuple2<Integer, Long>> out)
+				public void mapPartition(Iterable <Row> values, Collector <Tuple2 <Integer, Long>> out)
 					throws Exception {
 					StreamSupport.stream(values.spliterator(), false)
 						.flatMap(x -> {
@@ -102,7 +110,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 							for (int i = 0; i < x.getArity(); ++i) {
 								if (x.getField(i) == null
 									|| (zeroAsMissing && ((Number) x.getField(i)).doubleValue() == 0.0)
-									|| Double.isNaN(((Number)x.getField(i)).doubleValue())) {
+									|| Double.isNaN(((Number) x.getField(i)).doubleValue())) {
 									counts[i]++;
 								}
 							}
@@ -122,7 +130,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 				}
 			})
 			.groupBy(0)
-			.reduce(new RichReduceFunction<Tuple2<Integer, Long>>() {
+			.reduce(new RichReduceFunction <Tuple2 <Integer, Long>>() {
+				private static final long serialVersionUID = -4641176463754046550L;
 
 				@Override
 				public void open(Configuration parameters) throws Exception {
@@ -137,16 +146,17 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 				}
 
 				@Override
-				public Tuple2<Integer, Long> reduce(Tuple2<Integer, Long> value1, Tuple2<Integer, Long> value2)
+				public Tuple2 <Integer, Long> reduce(Tuple2 <Integer, Long> value1, Tuple2 <Integer, Long> value2)
 					throws Exception {
 					return Tuple2.of(value1.f0, value1.f1 + value2.f1);
 				}
 			});
 
 		/* flatten dataset to 1d */
-		DataSet<PairComparable> flatten = input
-			.mapPartition(new RichMapPartitionFunction<Row, PairComparable>() {
+		DataSet <PairComparable> flatten = input
+			.mapPartition(new RichMapPartitionFunction <Row, PairComparable>() {
 
+				private static final long serialVersionUID = 4276686914588972879L;
 				PairComparable pairBuff;
 
 				@Override
@@ -163,13 +173,13 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 				}
 
 				@Override
-				public void mapPartition(Iterable<Row> values, Collector<PairComparable> out) {
+				public void mapPartition(Iterable <Row> values, Collector <PairComparable> out) {
 					for (Row value : values) {
 						for (int i = 0; i < value.getArity(); ++i) {
 							pairBuff.first = i;
 							if (value.getField(i) == null
 								|| (zeroAsMissing && ((Number) value.getField(i)).doubleValue() == 0.0)
-								|| Double.isNaN(((Number)value.getField(i)).doubleValue())) {
+								|| Double.isNaN(((Number) value.getField(i)).doubleValue())) {
 								pairBuff.second = null;
 							} else {
 								pairBuff.second = (Number) value.getField(i);
@@ -181,7 +191,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 			});
 
 		/* sort data */
-		Tuple2<DataSet<PairComparable>, DataSet<Tuple2<Integer, Long>>> sortedData
+		Tuple2 <DataSet <PairComparable>, DataSet <Tuple2 <Integer, Long>>> sortedData
 			= SortUtilsNext.pSort(flatten);
 
 		/* calculate quantile */
@@ -191,7 +201,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 			.withBroadcastSet(cnt, "totalCnt")
 			.withBroadcastSet(missingCount, "missingCounts")
 			.groupBy(0)
-			.reduceGroup(new RichGroupReduceFunction<Tuple2<Integer, Number>, Row>() {
+			.reduceGroup(new RichGroupReduceFunction <Tuple2 <Integer, Number>, Row>() {
+				private static final long serialVersionUID = 9176005213564219097L;
 
 				@Override
 				public void open(Configuration parameters) throws Exception {
@@ -206,8 +217,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 				}
 
 				@Override
-				public void reduce(Iterable<Tuple2<Integer, Number>> values, Collector<Row> out) throws Exception {
-					TreeSet<Number> set = new TreeSet<>(new Comparator<Number>() {
+				public void reduce(Iterable <Tuple2 <Integer, Number>> values, Collector <Row> out) throws Exception {
+					TreeSet <Number> set = new TreeSet <>(new Comparator <Number>() {
 						@Override
 						public int compare(Number o1, Number o2) {
 							return SortUtils.OBJECT_COMPARATOR.compare(o1, o2);
@@ -215,7 +226,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 					});
 
 					int id = -1;
-					for (Tuple2<Integer, Number> val : values) {
+					for (Tuple2 <Integer, Number> val : values) {
 						id = val.f0;
 						set.add(val.f1);
 					}
@@ -226,8 +237,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 	}
 
 	@Override
-	public QuantileDiscretizerTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
-		BatchOperator<?> in = checkAndGetFirst(inputs);
+	public QuantileDiscretizerTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
 		if (getParams().contains(QuantileDiscretizerTrainParams.NUM_BUCKETS) && getParams().contains(
 			QuantileDiscretizerTrainParams.NUM_BUCKETS_ARRAY)) {
 			throw new RuntimeException("It can not set num_buckets and num_buckets_array at the same time.");
@@ -246,9 +257,9 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 		}
 
 		/* filter the selected column from input */
-		DataSet<Row> input = Preprocessing.select(in, quantileColNames).getDataSet();
+		DataSet <Row> input = Preprocessing.select(in, quantileColNames).getDataSet();
 
-		DataSet<Row> quantile = quantile(
+		DataSet <Row> quantile = quantile(
 			input, quantileNum,
 			getParams().get(HasRoundMode.ROUND_MODE),
 			getParams().get(Preprocessing.ZERO_AS_MISSING)
@@ -269,9 +280,10 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 	}
 
 	public static class MultiQuantile
-		extends RichMapPartitionFunction<PairComparable, Tuple2<Integer, Number>> {
-		private List<Tuple2<Integer, Long>> counts;
-		private List<Tuple2<Integer, Long>> missingCounts;
+		extends RichMapPartitionFunction <PairComparable, Tuple2 <Integer, Number>> {
+		private static final long serialVersionUID = -467677491431226184L;
+		private List <Tuple2 <Integer, Long>> counts;
+		private List <Tuple2 <Integer, Long>> missingCounts;
 		private long totalCnt = 0;
 		private int[] quantileNum;
 		private HasRoundMode.RoundMode roundType;
@@ -286,12 +298,12 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 		public void open(Configuration parameters) throws Exception {
 			this.counts = getRuntimeContext().getBroadcastVariableWithInitializer(
 				"counts",
-				new BroadcastVariableInitializer<Tuple2<Integer, Long>, List<Tuple2<Integer, Long>>>() {
+				new BroadcastVariableInitializer <Tuple2 <Integer, Long>, List <Tuple2 <Integer, Long>>>() {
 					@Override
-					public List<Tuple2<Integer, Long>> initializeBroadcastVariable(
-						Iterable<Tuple2<Integer, Long>> data) {
-						ArrayList<Tuple2<Integer, Long>> sortedData = new ArrayList<>();
-						for (Tuple2<Integer, Long> datum : data) {
+					public List <Tuple2 <Integer, Long>> initializeBroadcastVariable(
+						Iterable <Tuple2 <Integer, Long>> data) {
+						ArrayList <Tuple2 <Integer, Long>> sortedData = new ArrayList <>();
+						for (Tuple2 <Integer, Long> datum : data) {
 							sortedData.add(datum);
 						}
 
@@ -302,19 +314,19 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 				});
 
 			this.totalCnt = getRuntimeContext().getBroadcastVariableWithInitializer("totalCnt",
-				new BroadcastVariableInitializer<Long, Long>() {
+				new BroadcastVariableInitializer <Long, Long>() {
 					@Override
-					public Long initializeBroadcastVariable(Iterable<Long> data) {
+					public Long initializeBroadcastVariable(Iterable <Long> data) {
 						return data.iterator().next();
 					}
 				});
 
 			this.missingCounts = getRuntimeContext().getBroadcastVariableWithInitializer(
 				"missingCounts",
-				new BroadcastVariableInitializer<Tuple2<Integer, Long>, List<Tuple2<Integer, Long>>>() {
+				new BroadcastVariableInitializer <Tuple2 <Integer, Long>, List <Tuple2 <Integer, Long>>>() {
 					@Override
-					public List<Tuple2<Integer, Long>> initializeBroadcastVariable(
-						Iterable<Tuple2<Integer, Long>> data) {
+					public List <Tuple2 <Integer, Long>> initializeBroadcastVariable(
+						Iterable <Tuple2 <Integer, Long>> data) {
 						return StreamSupport.stream(data.spliterator(), false)
 							.sorted(Comparator.comparing(o -> o.f0))
 							.collect(Collectors.toList());
@@ -333,7 +345,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 		}
 
 		@Override
-		public void mapPartition(Iterable<PairComparable> values, Collector<Tuple2<Integer, Number>> out) throws Exception {
+		public void mapPartition(Iterable <PairComparable> values, Collector <Tuple2 <Integer, Number>> out)
+			throws Exception {
 
 			long start = 0;
 			long end;
@@ -359,7 +372,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 
 			end = start + counts.get(curListIndex).f1;
 
-			ArrayList<PairComparable> allRows = new ArrayList<>((int) (end - start));
+			ArrayList <PairComparable> allRows = new ArrayList <>((int) (end - start));
 
 			for (PairComparable value : values) {
 				allRows.add(value);
@@ -420,20 +433,21 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 		}
 	}
 
-	public static class SerializeModel implements GroupReduceFunction<Row, Row> {
+	public static class SerializeModel implements GroupReduceFunction <Row, Row> {
+		private static final long serialVersionUID = 7835845627485620888L;
 		private Params meta;
 		private String[] colNames;
-		private TypeInformation<?>[] colTypes;
+		private TypeInformation <?>[] colTypes;
 
-		public SerializeModel(Params meta, String[] colNames, TypeInformation<?>[] colTypes) {
+		public SerializeModel(Params meta, String[] colNames, TypeInformation <?>[] colTypes) {
 			this.meta = meta;
 			this.colNames = colNames;
 			this.colTypes = colTypes;
 		}
 
 		@Override
-		public void reduce(Iterable<Row> values, Collector<Row> out) throws Exception {
-			Map<String, ContinuousRanges> m = new HashMap<>();
+		public void reduce(Iterable <Row> values, Collector <Row> out) throws Exception {
+			Map <String, ContinuousRanges> m = new HashMap <>();
 			for (Row val : values) {
 				int index = (int) val.getField(0);
 				Number[] splits = (Number[]) val.getField(1);
@@ -487,7 +501,55 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator<Quantil
 	}
 
 	@Override
-	public QuantileDiscretizerModelInfoBatchOp getModelInfoBatchOp(){
-		return new QuantileDiscretizerModelInfoBatchOp().linkFrom(this);
+	public QuantileDiscretizerModelInfoBatchOp getModelInfoBatchOp() {
+		return new QuantileDiscretizerModelInfoBatchOp(this.getParams()).linkFrom(this);
+	}
+
+	public static DataSet <FeatureBinsCalculator> transformModelToFeatureBins(DataSet <Row> modelDataSet,
+																			  BinDivideType binDivideType) {
+		return modelDataSet
+			.reduceGroup(
+				new GroupReduceFunction <Row, FeatureBinsCalculator>() {
+					private static final long serialVersionUID = -483197241292759310L;
+
+					@Override
+					public void reduce(Iterable <Row> values, Collector <FeatureBinsCalculator> out) {
+						List <Row> list = new ArrayList <>();
+						values.forEach(list::add);
+						QuantileDiscretizerModelDataConverter model
+							= new QuantileDiscretizerModelDataConverter().load(list);
+						for (ContinuousRanges featureInterval : model.data.values()) {
+							out.collect(FeatureBinsCalculatorTransformer
+								.fromContinuousFeatureInterval(featureInterval, binDivideType));
+						}
+					}
+				}
+			);
+	}
+
+	public static DataSet <Row> transformFeatureBinsToModel(DataSet <FeatureBinsCalculator> featureBorderDataSet) {
+		return featureBorderDataSet.mapPartition(new MapPartitionFunction <FeatureBinsCalculator, Row>() {
+			private static final long serialVersionUID = 5693661987734996860L;
+
+			@Override
+			public void mapPartition(Iterable <FeatureBinsCalculator> values, Collector <Row> out) throws Exception {
+				transformFeatureBinsToModel(values, out);
+			}
+		}).setParallelism(1);
+	}
+
+	public static void transformFeatureBinsToModel(Iterable <FeatureBinsCalculator> values, Collector <Row> out) {
+		List <String> selectedCols = new ArrayList <>();
+		Map <String, ContinuousRanges> m = new HashMap <>();
+		for (FeatureBinsCalculator featureBinsCalculator : values) {
+			m.put(featureBinsCalculator.getFeatureName(),
+				FeatureBinsCalculatorTransformer.toContinuousFeatureInterval(featureBinsCalculator));
+			selectedCols.add(featureBinsCalculator.getFeatureName());
+		}
+		Params meta = new Params().set(QuantileDiscretizerTrainParams.SELECTED_COLS,
+			selectedCols.toArray(new String[0]));
+		QuantileDiscretizerModelDataConverter model = new QuantileDiscretizerModelDataConverter(m, meta);
+
+		model.save(model, out);
 	}
 }

@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.operator.batch.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.CsvToJsonParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class CsvToJsonBatchOp extends BaseFormatTransBatchOp<CsvToJsonBatchOp>
-    implements CsvToJsonParams<CsvToJsonBatchOp> {
+/**
+ * Transform data type from Csv to Json.
+ */
+public class CsvToJsonBatchOp extends BaseFormatTransBatchOp <CsvToJsonBatchOp>
+	implements CsvToJsonParams <CsvToJsonBatchOp> {
 
-    public CsvToJsonBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 2213921418015136997L;
 
-    public CsvToJsonBatchOp(Params params) {
-        super(FormatType.CSV, FormatType.JSON, params);
-    }
+	public CsvToJsonBatchOp() {
+		this(new Params());
+	}
+
+	public CsvToJsonBatchOp(Params params) {
+		super(FormatType.CSV, FormatType.JSON, params);
+	}
 }

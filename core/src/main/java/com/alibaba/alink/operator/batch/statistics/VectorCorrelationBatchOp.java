@@ -1,5 +1,16 @@
 package com.alibaba.alink.operator.batch.statistics;
 
+import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.types.Row;
+import org.apache.flink.util.Collector;
+import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
@@ -7,19 +18,8 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSum
 import com.alibaba.alink.operator.common.statistics.basicstatistic.CorrelationDataConverter;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.CorrelationResult;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.SpearmanCorrelation;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.ml.api.misc.param.Params;
-
 import com.alibaba.alink.params.statistics.VectorCorrelationParams;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.types.Row;
-import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,96 +28,101 @@ import java.util.function.Consumer;
 /**
  * Calculating the correlation between two series of data is a common operation in Statistics.
  */
-public final class VectorCorrelationBatchOp extends BatchOperator<VectorCorrelationBatchOp>
-    implements VectorCorrelationParams<VectorCorrelationBatchOp> {
+public final class VectorCorrelationBatchOp extends BatchOperator <VectorCorrelationBatchOp>
+	implements VectorCorrelationParams <VectorCorrelationBatchOp> {
 
-    public VectorCorrelationBatchOp() {
-        super(null);
-    }
+	private static final long serialVersionUID = 3325022336197828106L;
 
-    public VectorCorrelationBatchOp(Params params) {
-        super(params);
-    }
+	public VectorCorrelationBatchOp() {
+		super(null);
+	}
 
-    @Override
-    public VectorCorrelationBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator<?> in = checkAndGetFirst(inputs);
-        String vectorColName = getSelectedCol();
+	public VectorCorrelationBatchOp(Params params) {
+		super(params);
+	}
 
-        Method corrType = getMethod();
+	@Override
+	public VectorCorrelationBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
+		String vectorColName = getSelectedCol();
 
-        if (Method.PEARSON == corrType) {
-            DataSet<Tuple2<BaseVectorSummary, CorrelationResult>> srt = StatisticsHelper.vectorPearsonCorrelation(in, vectorColName);
+		Method corrType = getMethod();
 
-            //block
-            DataSet<Row> result = srt
-                .flatMap(new FlatMapFunction<Tuple2<BaseVectorSummary, CorrelationResult>, Row>() {
-                    @Override
-                    public void flatMap(Tuple2<BaseVectorSummary, CorrelationResult> srt, Collector<Row> collector) throws Exception {
-                        new CorrelationDataConverter().save(srt.f1, collector);
-                    }
-                });
+		if (Method.PEARSON == corrType) {
+			DataSet <Tuple2 <BaseVectorSummary, CorrelationResult>> srt = StatisticsHelper.vectorPearsonCorrelation(in,
+				vectorColName);
 
-            this.setOutput(result, new CorrelationDataConverter().getModelSchema());
+			//block
+			DataSet <Row> result = srt
+				.flatMap(new FlatMapFunction <Tuple2 <BaseVectorSummary, CorrelationResult>, Row>() {
+					private static final long serialVersionUID = 2134644397476490118L;
 
-        } else {
+					@Override
+					public void flatMap(Tuple2 <BaseVectorSummary, CorrelationResult> srt, Collector <Row> collector)
+						throws Exception {
+						new CorrelationDataConverter().save(srt.f1, collector);
+					}
+				});
 
-            DataSet<Row> data = StatisticsHelper.transformToColumns(in, null, vectorColName, null);
+			this.setOutput(result, new CorrelationDataConverter().getModelSchema());
 
-            DataSet<Row> rank = SpearmanCorrelation.calcRank(data, true);
+		} else {
 
-            BatchOperator rankOp = new TableSourceBatchOp(DataSetConversionUtil.toTable(getMLEnvironmentId(), rank,
-                new String[]{"col"}, new TypeInformation[]{Types.STRING}))
-                .setMLEnvironmentId(getMLEnvironmentId());
+			DataSet <Row> data = StatisticsHelper.transformToColumns(in, null, vectorColName, null);
 
-            VectorCorrelationBatchOp corrBatchOp = new VectorCorrelationBatchOp()
-                .setMLEnvironmentId(getMLEnvironmentId())
-                .setSelectedCol("col");
+			DataSet <Row> rank = SpearmanCorrelation.calcRank(data, true);
 
-            rankOp.link(corrBatchOp);
+			BatchOperator rankOp = new TableSourceBatchOp(DataSetConversionUtil.toTable(getMLEnvironmentId(), rank,
+				new String[] {"col"}, new TypeInformation[] {Types.STRING}))
+				.setMLEnvironmentId(getMLEnvironmentId());
 
-            this.setOutput(corrBatchOp.getDataSet(), corrBatchOp.getSchema());
-        }
-        return this;
-    }
+			VectorCorrelationBatchOp corrBatchOp = new VectorCorrelationBatchOp()
+				.setMLEnvironmentId(getMLEnvironmentId())
+				.setSelectedCol("col");
 
-    public CorrelationResult collectCorrelation() {
-        Preconditions.checkArgument(null != this.getOutputTable(), "Please link from or link to.");
-        return new CorrelationDataConverter().load(this.collect());
-    }
+			rankOp.link(corrBatchOp);
 
-    @SafeVarargs
-    public final VectorCorrelationBatchOp lazyCollectCorrelation(Consumer<CorrelationResult>... callbacks) {
-        return lazyCollectCorrelation(Arrays.asList(callbacks));
-    }
+			this.setOutput(corrBatchOp.getDataSet(), corrBatchOp.getSchema());
+		}
+		return this;
+	}
 
-    public final VectorCorrelationBatchOp lazyCollectCorrelation(List<Consumer<CorrelationResult>> callbacks) {
-        this.lazyCollect(d -> {
-            CorrelationResult correlationResult = new CorrelationDataConverter().load(d);
-            for (Consumer<CorrelationResult> callback : callbacks) {
-                callback.accept(correlationResult);
-            }
-        });
-        return this;
-    }
+	public CorrelationResult collectCorrelation() {
+		Preconditions.checkArgument(null != this.getOutputTable(), "Please link from or link to.");
+		return new CorrelationDataConverter().load(this.collect());
+	}
 
-    public final VectorCorrelationBatchOp lazyPrintCorrelation() {
-        return lazyPrintCorrelation(null);
-    }
+	@SafeVarargs
+	public final VectorCorrelationBatchOp lazyCollectCorrelation(Consumer <CorrelationResult>... callbacks) {
+		return lazyCollectCorrelation(Arrays.asList(callbacks));
+	}
 
-    public final VectorCorrelationBatchOp lazyPrintCorrelation(String title) {
-        lazyCollectCorrelation(new Consumer<CorrelationResult>() {
-            @Override
-            public void accept(CorrelationResult summary) {
-                if (title != null) {
-                    System.out.println(title);
-                }
-                System.out.println(PrettyDisplayUtils.displayHeadline("Correlation", '-'));
-                System.out.println(summary.toString());
-            }
-        });
-        return this;
-    }
+	public final VectorCorrelationBatchOp lazyCollectCorrelation(List <Consumer <CorrelationResult>> callbacks) {
+		this.lazyCollect(d -> {
+			CorrelationResult correlationResult = new CorrelationDataConverter().load(d);
+			for (Consumer <CorrelationResult> callback : callbacks) {
+				callback.accept(correlationResult);
+			}
+		});
+		return this;
+	}
+
+	public final VectorCorrelationBatchOp lazyPrintCorrelation() {
+		return lazyPrintCorrelation(null);
+	}
+
+	public final VectorCorrelationBatchOp lazyPrintCorrelation(String title) {
+		lazyCollectCorrelation(new Consumer <CorrelationResult>() {
+			@Override
+			public void accept(CorrelationResult summary) {
+				if (title != null) {
+					System.out.println(title);
+				}
+				System.out.println(summary.toString());
+			}
+		});
+		return this;
+	}
 
 }
 

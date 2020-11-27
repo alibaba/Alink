@@ -11,9 +11,10 @@ public interface DataBridgeGenerator {
 
 	/**
 	 * Create an data bridge.
+	 *
 	 * @param batchOperator the output of this batch operator will be bridged to stream job.
-	 * @param params params.
+	 * @param params        params.
 	 * @return the create DataBridge object.
 	 */
-	DataBridge generate(BatchOperator batchOperator, Params params);
+	DataBridge generate(BatchOperator<?> batchOperator, Params params);
 }

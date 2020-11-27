@@ -20,12 +20,9 @@
 package com.alibaba.alink.common.utils;
 
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonInclude.Include;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.PropertyAccessor;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.SerializationFeature;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -82,7 +79,7 @@ public class JsonConverter {
 	 * @param <T>      the type of object
 	 * @return the deserialized object
 	 */
-	public static <T> T fromJson(String json, Class<T> classOfT) {
+	public static <T> T fromJson(String json, Class <T> classOfT) {
 		return fromJson(json, (Type) classOfT);
 	}
 
@@ -106,6 +103,8 @@ public class JsonConverter {
 	 * Exception to indict the json format error.
 	 */
 	public static class IllegalJsonFormatException extends IllegalArgumentException {
+		private static final long serialVersionUID = -6774908585137282894L;
+
 		IllegalJsonFormatException(String message, Throwable cause) {
 			super(message, cause);
 		}

@@ -2,9 +2,8 @@ package com.alibaba.alink.common;
 
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.api.EnvironmentSettings;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,13 +35,7 @@ public class MLEnvironmentTest {
 	@Test
 	public void testConstructWithStreamEnv() {
 		StreamExecutionEnvironment streamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
-		StreamTableEnvironment streamTableEnvironment = StreamTableEnvironment.create(
-			streamExecutionEnvironment,
-			EnvironmentSettings
-				.newInstance()
-				.useOldPlanner()
-				.build()
-		);
+		StreamTableEnvironment streamTableEnvironment = StreamTableEnvironment.create(streamExecutionEnvironment);
 
 		MLEnvironment mlEnvironment = new MLEnvironment(streamExecutionEnvironment, streamTableEnvironment);
 

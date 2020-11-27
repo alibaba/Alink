@@ -22,17 +22,18 @@ import java.util.List;
  * A data source that reads memory data.
  */
 @IoOpAnnotation(name = MemSourceBatchOp.NAME, ioType = IOType.SourceBatch)
-public final class MemSourceBatchOp extends BaseSourceBatchOp<MemSourceBatchOp> {
+public final class MemSourceBatchOp extends BaseSourceBatchOp <MemSourceBatchOp> {
 
 	static final String NAME = "memory";
+	private static final long serialVersionUID = 5004724502456338971L;
 
-	private List<Row> rows;
+	private List <Row> rows;
 	private String[] colNames;
-	private TypeInformation<?>[] colTypes;
+	private TypeInformation <?>[] colTypes;
 
 	public MemSourceBatchOp(Object[] vals, String colName) {
 		super(NAME, null);
-		List<Row> rows = new ArrayList<>();
+		List <Row> rows = new ArrayList <>();
 		for (Object val : vals) {
 			rows.add(Row.of(val));
 		}
@@ -80,23 +81,18 @@ public final class MemSourceBatchOp extends BaseSourceBatchOp<MemSourceBatchOp> 
 		init(rows, colNames, types);
 	}
 
-	private void init(List<Row> rows, String[] colNames, TypeInformation<?>[] colTypes) {
+	private void init(List <Row> rows, String[] colNames, TypeInformation <?>[] colTypes) {
 		this.rows = rows;
 		this.colNames = colNames;
 		this.colTypes = colTypes;
 	}
 
 	@Override
-	public MemSourceBatchOp linkFrom(BatchOperator<?>... inputs) {
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
 	protected Table initializeDataSource() {
-		DataSet <Row> dataSet = MLEnvironmentFactory.get(getMLEnvironmentId())
-				.getExecutionEnvironment()
-				.fromCollection(rows, new RowTypeInfo(colTypes));
-		return DataSetConversionUtil.toTable(getMLEnvironmentId(), dataSet, colNames, colTypes);
+		Long mlEnvironmentId = getMLEnvironmentId();
+		DataSet <Row> dataSet = MLEnvironmentFactory.get(mlEnvironmentId)
+			.getExecutionEnvironment()
+			.fromCollection(rows, new RowTypeInfo(colTypes));
+		return DataSetConversionUtil.toTable(mlEnvironmentId, dataSet, colNames, colTypes);
 	}
-
 }

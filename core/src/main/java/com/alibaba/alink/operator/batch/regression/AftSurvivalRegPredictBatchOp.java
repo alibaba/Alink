@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.regression.AFTModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.regression.AFTModelMapper;
 import com.alibaba.alink.params.regression.AftRegPredictParams;
 
 /**
@@ -14,6 +14,8 @@ import com.alibaba.alink.params.regression.AftRegPredictParams;
  */
 public class AftSurvivalRegPredictBatchOp extends ModelMapBatchOp <AftSurvivalRegPredictBatchOp>
 	implements AftRegPredictParams <AftSurvivalRegPredictBatchOp> {
+
+	private static final long serialVersionUID = 8298656899275333697L;
 
 	/**
 	 * Constructor.

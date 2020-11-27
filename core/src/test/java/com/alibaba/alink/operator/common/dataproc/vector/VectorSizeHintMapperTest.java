@@ -1,12 +1,12 @@
 package com.alibaba.alink.operator.common.dataproc.vector;
 
-import com.alibaba.alink.params.shared.HasHandleInvalid;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.api.common.typeinfo.Types;
 
 import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.dataproc.vector.VectorSizeHintParams;
 import org.junit.Test;
 
@@ -30,18 +30,19 @@ public class VectorSizeHintMapperTest {
 	}
 
 	@Test
-	public void testOptimistic() throws Exception {
+	public void testSkip() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {Types.STRING});
 
 		Params params = new Params()
 			.set(VectorSizeHintParams.SELECTED_COL, "vec")
 			.set(VectorSizeHintParams.OUTPUT_COL, "res")
-			.set(VectorSizeHintParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalidMethod.SKIP)
+			.set(VectorSizeHintParams.HANDLE_INVALID, ParamUtil.searchEnum(VectorSizeHintParams.HANDLE_INVALID,
+				"skip"))
 			.set(VectorSizeHintParams.SIZE, 2);
 
 		VectorSizeHintMapper mapper = new VectorSizeHintMapper(schema, params);
 		assertEquals(mapper.getOutputSchema(),
 			new TableSchema(new String[] {"vec", "res"},
-					new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR}));
+				new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR}));
 	}
 }

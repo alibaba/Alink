@@ -1,10 +1,5 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.dataproc.StringIndexerModelDataConverter;
-import com.alibaba.alink.operator.common.dataproc.StringIndexerUtil;
-import com.alibaba.alink.params.dataproc.StringIndexerTrainParams;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.java.DataSet;
@@ -13,6 +8,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.StringIndexerModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.StringIndexerUtil;
+import com.alibaba.alink.params.dataproc.HasStringOrderTypeDefaultAsRandom;
+import com.alibaba.alink.params.dataproc.StringIndexerTrainParams;
+
 /**
  * Encode one column of strings to bigint type indices.
  * The indices are consecutive bigint type that start from 0.
@@ -20,55 +22,63 @@ import org.apache.flink.util.Collector;
  * <p>
  * <p> Several string order type is supported, including:
  * <ol>
- *     <li>random</li>
- *     <li>frequency_asc</li>
- *     <li>frequency_desc</li>
- *     <li>alphabet_asc</li>
- *     <li>alphabet_desc</li>
+ * <li>random</li>
+ * <li>frequency_asc</li>
+ * <li>frequency_desc</li>
+ * <li>alphabet_asc</li>
+ * <li>alphabet_desc</li>
  * </ol>
  */
 public final class StringIndexerTrainBatchOp
-    extends BatchOperator<StringIndexerTrainBatchOp>
-    implements StringIndexerTrainParams<StringIndexerTrainBatchOp> {
+	extends BatchOperator <StringIndexerTrainBatchOp>
+	implements StringIndexerTrainParams <StringIndexerTrainBatchOp> {
 
-    public StringIndexerTrainBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -1198410962987804614L;
 
-    public StringIndexerTrainBatchOp(Params params) {
-        super(params);
-    }
+	public StringIndexerTrainBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public StringIndexerTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator<?> in = checkAndGetFirst(inputs);
+	public StringIndexerTrainBatchOp(Params params) {
+		super(params);
+	}
 
-        final String selectedCol = getSelectedCol();
-        final int selectedColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), selectedCol);
+	@Override
+	public StringIndexerTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
 
-        DataSet<Row> inputRows = ((DataSet<Row>) in.getDataSet()).map(
-            new MapFunction<Row, Row>() {
-                @Override
-                public Row map(Row value) throws Exception {
-                    return Row.of(value.getField(selectedColIdx));
-                }
-            }
-        );
+		final String selectedCol = getSelectedCol();
+		final HasStringOrderTypeDefaultAsRandom.StringOrderType orderType = getStringOrderType();
+		final int selectedColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), selectedCol);
 
-        DataSet<Tuple3<Integer, String, Long>> indexedToken =
-            StringIndexerUtil.indexTokens(inputRows, getStringOrderType(), 0L, true);
+		DataSet <Row> inputRows = ((DataSet <Row>) in.getDataSet()).map(
+			new MapFunction <Row, Row>() {
+				private static final long serialVersionUID = 584117860691580161L;
 
-        DataSet<Row> values = indexedToken
-            .mapPartition(new RichMapPartitionFunction<Tuple3<Integer, String, Long>, Row>() {
-                @Override
-                public void mapPartition(Iterable<Tuple3<Integer, String, Long>> values, Collector<Row> out) throws Exception {
-                    new StringIndexerModelDataConverter().save(values, out);
-                }
-            })
-            .name("build_model");
+				@Override
+				public Row map(Row value) throws Exception {
+					return Row.of(value.getField(selectedColIdx));
+				}
+			}
+		);
 
-        this.setOutput(values, new StringIndexerModelDataConverter().getModelSchema());
-        return this;
-    }
+		DataSet <Tuple3 <Integer, String, Long>> indexedToken =
+			StringIndexerUtil.indexTokens(inputRows, orderType, 0L, true);
+
+		DataSet <Row> values = indexedToken
+			.mapPartition(new RichMapPartitionFunction <Tuple3 <Integer, String, Long>, Row>() {
+				private static final long serialVersionUID = 176349483834372192L;
+
+				@Override
+				public void mapPartition(Iterable <Tuple3 <Integer, String, Long>> values, Collector <Row> out)
+					throws Exception {
+					new StringIndexerModelDataConverter().save(values, out);
+				}
+			})
+			.name("build_model");
+
+		this.setOutput(values, new StringIndexerModelDataConverter().getModelSchema());
+		return this;
+	}
 }
 

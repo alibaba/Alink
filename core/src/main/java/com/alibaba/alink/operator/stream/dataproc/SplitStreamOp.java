@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.stream.dataproc;
 
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.collector.selector.OutputSelector;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SplitStream;
@@ -7,8 +8,6 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import org.apache.flink.ml.api.misc.param.Params;
-
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.dataproc.SplitParams;
 
@@ -19,8 +18,10 @@ import java.util.Random;
 /**
  * Split a stream data into two parts.
  */
-public final class SplitStreamOp extends StreamOperator<SplitStreamOp>
+public final class SplitStreamOp extends StreamOperator <SplitStreamOp>
 	implements SplitParams <SplitStreamOp> {
+
+	private static final long serialVersionUID = 9032637631974546738L;
 
 	public SplitStreamOp() {
 		this(new Params());
@@ -35,9 +36,10 @@ public final class SplitStreamOp extends StreamOperator<SplitStreamOp>
 	}
 
 	@Override
-	public SplitStreamOp linkFrom(StreamOperator<?>... inputs) {
-		StreamOperator<?> in = checkAndGetFirst(inputs);
+	public SplitStreamOp linkFrom(StreamOperator <?>... inputs) {
+		StreamOperator <?> in = checkAndGetFirst(inputs);
 		class RandomSelectorOp implements OutputSelector <Row> {
+			private static final long serialVersionUID = 4734733374541426092L;
 			private double fraction;
 			private Random random = null;
 
@@ -61,8 +63,8 @@ public final class SplitStreamOp extends StreamOperator<SplitStreamOp>
 		DataStream <Row> partB = splited.select("b");
 
 		this.setOutput(partA, in.getSchema());
-		this.setSideOutputTables(new Table[]{
-		DataStreamConversionUtil.toTable(getMLEnvironmentId(), partB, in.getSchema())});
+		this.setSideOutputTables(new Table[] {
+			DataStreamConversionUtil.toTable(getMLEnvironmentId(), partB, in.getSchema())});
 
 		return this;
 	}

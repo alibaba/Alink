@@ -1,16 +1,6 @@
 package com.alibaba.alink.operator.batch.evaluation;
 
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.DataSetUtil;
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
-import com.alibaba.alink.operator.common.evaluation.EvaluationMetricsCollector;
-import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
-import com.alibaba.alink.operator.common.evaluation.RegressionMetrics;
-import com.alibaba.alink.params.evaluation.EvalRegressionParams;
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -22,6 +12,16 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.DataSetUtil;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
+import com.alibaba.alink.operator.common.evaluation.EvaluationMetricsCollector;
+import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
+import com.alibaba.alink.operator.common.evaluation.RegressionMetrics;
+import com.alibaba.alink.params.evaluation.EvalRegressionParams;
+
 import java.util.List;
 
 import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getRegressionStatistics;
@@ -32,66 +32,72 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getReg
  * Coeffient MSE: Mean Squared Error RMSE: Root Mean Squared Error SAE/SAD: Sum of Absolute Error/Difference MAE/MAD:
  * Mean Absolute Error/Difference MAPE: Mean Absolute Percentage Error
  */
-public final class EvalRegressionBatchOp extends BatchOperator<EvalRegressionBatchOp>
-    implements EvalRegressionParams<EvalRegressionBatchOp>, EvaluationMetricsCollector<RegressionMetrics, EvalRegressionBatchOp> {
+public final class EvalRegressionBatchOp extends BatchOperator <EvalRegressionBatchOp>
+	implements EvalRegressionParams <EvalRegressionBatchOp>,
+	EvaluationMetricsCollector <RegressionMetrics, EvalRegressionBatchOp> {
 
-    public EvalRegressionBatchOp() {
-        super(null);
-    }
+	private static final long serialVersionUID = -1780926771177908475L;
 
-    public EvalRegressionBatchOp(Params params) {
-        super(params);
-    }
+	public EvalRegressionBatchOp() {
+		super(null);
+	}
 
-    @Override
-    public EvalRegressionBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator in = checkAndGetFirst(inputs);
+	public EvalRegressionBatchOp(Params params) {
+		super(params);
+	}
 
-        TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getLabelCol());
-        TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getPredictionCol());
+	@Override
+	public EvalRegressionBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator in = checkAndGetFirst(inputs);
 
-        TableUtil.assertNumericalCols(in.getSchema(), this.getLabelCol(), this.getPredictionCol());
-        DataSet<Row> filter = in.select(new String[]{this.getLabelCol(), this.getPredictionCol()})
-            .getDataSet()
-            .filter(new FilterFunction<Row>() {
-                @Override
-                public boolean filter(Row value) throws Exception {
-                    return EvaluationUtil.checkRowFieldNotNull(value);
-                }
-            });
+		TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getLabelCol());
+		TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getPredictionCol());
 
-        DataSet<Row> out = filter
-            .mapPartition(new CalcLocal())
-            .withBroadcastSet(DataSetUtil.count(filter), "count")
-            .reduce(new EvaluationUtil.ReduceBaseMetrics())
-            .flatMap(new EvaluationUtil.SaveDataAsParams());
+		TableUtil.assertNumericalCols(in.getSchema(), this.getLabelCol(), this.getPredictionCol());
+		DataSet <Row> filter = in.select(new String[] {this.getLabelCol(), this.getPredictionCol()})
+			.getDataSet()
+			.filter(new FilterFunction <Row>() {
+				private static final long serialVersionUID = -3256594120752618106L;
 
-        this.setOutputTable(DataSetConversionUtil.toTable(getMLEnvironmentId(),
-            out, new TableSchema(new String[] {"regression_eval_result"}, new TypeInformation[] {Types.STRING})
-        ));
-        return this;
-    }
+				@Override
+				public boolean filter(Row value) throws Exception {
+					return EvaluationUtil.checkRowFieldNotNull(value);
+				}
+			});
 
-    /**
-     * Get the label sum, predResult sum, SSE, MAE, MAPE of one partition.
-     */
-    public static class CalcLocal extends RichMapPartitionFunction<Row, BaseMetricsSummary> {
+		DataSet <Row> out = filter
+			.mapPartition(new CalcLocal())
+			.withBroadcastSet(DataSetUtil.count(filter), "count")
+			.reduce(new EvaluationUtil.ReduceBaseMetrics())
+			.flatMap(new EvaluationUtil.SaveDataAsParams());
 
-        @Override
-        public void open(Configuration param){
-            long count = (long)getRuntimeContext().getBroadcastVariable("count").get(0);
-            Preconditions.checkArgument(count > 0, "Please check the evaluation input! there is no effective row!");
-        }
+		this.setOutputTable(DataSetConversionUtil.toTable(getMLEnvironmentId(),
+			out, new TableSchema(new String[] {"regression_eval_result"}, new TypeInformation[] {Types.STRING})
+		));
+		return this;
+	}
 
-        @Override
-        public void mapPartition(Iterable<Row> rows, Collector<BaseMetricsSummary> collector)
-            throws Exception {
-            collector.collect(getRegressionStatistics(rows));
-        }
-    }
+	/**
+	 * Get the label sum, predResult sum, SSE, MAE, MAPE of one partition.
+	 */
+	public static class CalcLocal extends RichMapPartitionFunction <Row, BaseMetricsSummary> {
+		private static final long serialVersionUID = -8330929147755146438L;
 
-    @Override
-    public RegressionMetrics createMetrics(List<Row> rows){
-        return new RegressionMetrics(rows.get(0));
-    }
+		@Override
+		public void open(Configuration param) {
+			long count = (long) getRuntimeContext().getBroadcastVariable("count").get(0);
+			Preconditions.checkArgument(count > 0, "Please check the evaluation input! there is no effective row!");
+		}
+
+		@Override
+		public void mapPartition(Iterable <Row> rows, Collector <BaseMetricsSummary> collector)
+			throws Exception {
+			collector.collect(getRegressionStatistics(rows));
+		}
+	}
+
+	@Override
+	public RegressionMetrics createMetrics(List <Row> rows) {
+		return new RegressionMetrics(rows.get(0));
+	}
 }

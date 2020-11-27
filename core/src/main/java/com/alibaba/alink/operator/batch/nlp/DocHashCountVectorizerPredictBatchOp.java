@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.nlp.DocHashCountVectorizerModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.nlp.DocHashCountVectorizerModelMapper;
 import com.alibaba.alink.params.nlp.DocHashCountVectorizerPredictParams;
 
 /**
@@ -11,7 +11,9 @@ import com.alibaba.alink.params.nlp.DocHashCountVectorizerPredictParams;
  * It uses MurmurHash 3 to get the hash value of a word as the index.
  */
 public class DocHashCountVectorizerPredictBatchOp extends ModelMapBatchOp <DocHashCountVectorizerPredictBatchOp>
-	implements DocHashCountVectorizerPredictParams<DocHashCountVectorizerPredictBatchOp> {
+	implements DocHashCountVectorizerPredictParams <DocHashCountVectorizerPredictBatchOp> {
+	private static final long serialVersionUID = -6029385456358959482L;
+
 	public DocHashCountVectorizerPredictBatchOp() {
 		this(new Params());
 	}

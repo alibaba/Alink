@@ -1,20 +1,21 @@
 package com.alibaba.alink.params.shared;
 
-import com.alibaba.alink.params.ParamUtil;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
+
+import com.alibaba.alink.params.ParamUtil;
 
 /**
  * method to deal with invalid situation.
  */
-public interface HasHandleInvalid<T> extends WithParams<T> {
+public interface HasHandleInvalid<T> extends WithParams <T> {
 	ParamInfo <HandleInvalidMethod> HANDLE_INVALID = ParamInfoFactory
-			.createParamInfo("handleInvalidMethod", HandleInvalidMethod.class)
-			.setDescription("the handle method of invalid value. include： error, skip")
-			.setHasDefaultValue(HandleInvalidMethod.ERROR)
-			.build();
+		.createParamInfo("handleInvalidMethod", HandleInvalidMethod.class)
+		.setDescription("the handle method of invalid value. include： error, skip")
+		.setAlias(new String[] {"handleInvalid"})
+		.setHasDefaultValue(HandleInvalidMethod.ERROR)
+		.build();
 
 	default HandleInvalidMethod getHandleInvalidMethod() {
 		return get(HANDLE_INVALID);
@@ -28,16 +29,14 @@ public interface HasHandleInvalid<T> extends WithParams<T> {
 		return set(HANDLE_INVALID, ParamUtil.searchEnum(HANDLE_INVALID, value));
 	}
 
-	/**
-	 * The method to deal with invalid situation.
-	 */
 	enum HandleInvalidMethod {
 		/**
-		 * Error method, throw exception.
+		 * Raise exception.
 		 */
 		ERROR,
 		/**
 		 * Filter out rows with invalid data.
 		 */
 		SKIP
-	}}
+	}
+}

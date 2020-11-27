@@ -17,6 +17,7 @@ import org.apache.commons.math3.complex.Complex;
  * with same length in the frequency domain.
  */
 public class DCTMapper extends SISOMapper {
+	private static final long serialVersionUID = 8484808584406709647L;
 	private boolean inverse;
 
 	public DCTMapper(TableSchema dataSchema, Params params) {

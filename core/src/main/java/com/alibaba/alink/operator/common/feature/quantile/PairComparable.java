@@ -8,7 +8,8 @@ import java.io.Serializable;
 
 @TypeInfo(PairComparableTypeInfoFactory.class)
 public final class PairComparable
-	implements Comparable<PairComparable>, Serializable {
+	implements Comparable <PairComparable>, Serializable {
+	private static final long serialVersionUID = 8536802166349903089L;
 	public Integer first;
 	public Number second;
 

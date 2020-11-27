@@ -1,12 +1,16 @@
 package com.alibaba.alink.pipeline.feature;
 
-import com.alibaba.alink.params.feature.BucketizerParams;
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import org.apache.flink.util.Preconditions;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.feature.BucketizerBatchOp;
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.feature.BucketizerStreamOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,49 +19,56 @@ import java.util.List;
 /**
  * Test for Bucketizer.
  */
-public class BucketizerTest {
+public class BucketizerTest extends AlinkTestBase {
 
-    private Row[] rows = new Row[] {
-        Row.of(-999.9, -999.9),
-        Row.of(-0.5, -0.2),
-        Row.of(-0.3, -0.1),
-        Row.of(0.0, 0.0),
-        Row.of(0.2, 0.4),
-        Row.of(999.9, 999.9)
-    };
-    private Table data = MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[]{"features1", "features2"});
-    private Table dataStream = MLEnvironmentFactory.getDefault().createStreamTable(rows, new String[]{"features1", "features2"});
-    private static double[][] cutsArray = new double[][]{{-0.5, 0.0, 0.5}, {-0.3, 0.0, 0.3, 0.4}};
+	private Row[] rows = new Row[] {
+		Row.of(-999.9, -999.9),
+		Row.of(-0.5, -0.2),
+		Row.of(-0.3, -0.1),
+		Row.of(0.0, 0.0),
+		Row.of(0.2, 0.4),
+		Row.of(999.9, 999.9)
+	};
+	private static double[][] cutsArray = new double[][] {{-0.5, 0.0, 0.5}, {-0.3, 0.0, 0.3, 0.4}};
 
-    @Test
-    public void testBucketizer() throws Exception{
-        Bucketizer op = new Bucketizer()
-            .setSelectedCols(new String[]{"features1", "features2"})
-            .setOutputCols(new String[]{"bucket1", "bucket2"})
-            .setCutsArray(cutsArray);
+	@Test
+	public void testBucketizer() throws Exception {
+		Table data = MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"features1", "features2"});
+		Table dataStream = MLEnvironmentFactory.getDefault().createStreamTable(rows,
+			new String[] {"features1", "features2"});
 
-        Table res = op.transform(data);
+		Bucketizer op = new Bucketizer()
+			.setSelectedCols(new String[] {"features1", "features2"})
+			.setOutputCols(new String[] {"bucket1", "bucket2"})
+			.setCutsArray(cutsArray);
 
-        List<Long> list = MLEnvironmentFactory.getDefault().getBatchTableEnvironment().toDataSet(res.select("bucket1"), Long.class).collect();
-        Assert.assertArrayEquals(list.toArray(new Long[0]), new Long[]{0L, 0L, 1L, 1L, 2L, 3L});
+		Table res = op.transform(data);
 
-        res = op.transform(dataStream);
+		List <Long> list = MLEnvironmentFactory.getDefault().getBatchTableEnvironment().toDataSet(res.select
+				("bucket1"),
+			Long.class).collect();
+		Assert.assertArrayEquals(list.toArray(new Long[0]), new Long[] {0L, 0L, 1L, 1L, 2L, 3L});
 
-        DataStreamConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID,res).print();
+		res = op.transform(dataStream);
 
-        MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute();
-    }
+		DataStreamConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, res).print();
 
-    @Test
-    public void testBucketizerParam(){
-        Bucketizer op = new Bucketizer().setCutsArray(new double[]{-0.5, 0.0, 0.5, -0.3, 0.0, 0.3, 0.4}, new int[]{3, 4});
-        double[][] newCutsArray = op.getParams().get(BucketizerParams.CUTS_ARRAY);
-        Assert.assertEquals(cutsArray.length, newCutsArray.length);
-        for(int i = 0; i < cutsArray.length; i++){
-            Assert.assertEquals(cutsArray[i].length, newCutsArray[i].length);
-            for(int j = 0; j < cutsArray[i].length; j++){
-                Assert.assertEquals(cutsArray[i][j], newCutsArray[i][j], 0.01);
-            }
-        }
-    }
+		MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute();
+	}
+
+	@Test
+	public void testInitializer() {
+		Bucketizer op = new Bucketizer(new Params());
+		Assert.assertEquals(op.getParams().size(), 0);
+
+		BatchOperator b = new BucketizerBatchOp();
+		Assert.assertEquals(b.getParams().size(), 0);
+		b = new BucketizerBatchOp(new Params());
+		Assert.assertEquals(b.getParams().size(), 0);
+
+		StreamOperator s = new BucketizerStreamOp();
+		Assert.assertEquals(s.getParams().size(), 0);
+		s = new BucketizerStreamOp(new Params());
+		Assert.assertEquals(s.getParams().size(), 0);
+	}
 }

@@ -2,8 +2,8 @@ package com.alibaba.alink.params.clustering;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
+
 import com.alibaba.alink.params.shared.clustering.HasKMeansDistanceType;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs10;
@@ -11,10 +11,11 @@ import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs10;
 /**
  * Params for BisectingKMeansTrain.
  */
-public interface BisectingKMeansTrainParams<T> extends WithParams<T>,
-	HasKMeansDistanceType<T>,
+public interface BisectingKMeansTrainParams<T> extends WithParams <T>,
+	HasKMeansDistanceType <T>,
 	HasVectorCol <T>,
-    HasMaxIterDefaultAs10<T> {
+	HasMaxIterDefaultAs10 <T>,
+	HasRandomSeed <T> {
 
 	ParamInfo <Integer> MIN_DIVISIBLE_CLUSTER_SIZE = ParamInfoFactory
 		.createParamInfo("minDivisibleClusterSize", Integer.class)

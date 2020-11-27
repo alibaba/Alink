@@ -1,41 +1,65 @@
 package com.alibaba.alink.params.dataproc;
 
-import com.alibaba.alink.params.shared.colname.HasGroupCol;
-import com.alibaba.alink.params.validators.RangeValidator;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface StrafiedSampleWithSizeParams<T> extends
-    HashWithReplacementParams<T>,
-    HasGroupCol<T> {
-    ParamInfo<Integer> SIZE = ParamInfoFactory
-        .createParamInfo("size", Integer.class)
-        .setDescription("sampling size")
-        .setHasDefaultValue(null)
-        .setValidator(new RangeValidator<>(0, Integer.MAX_VALUE))
-        .build();
+public interface StrafiedSampleWithSizeParams<T> extends WithParams <T> {
 
-    default Integer getSize() {
-        return getParams().get(SIZE);
-    }
+	ParamInfo <String> STRATA_COL = ParamInfoFactory
+		.createParamInfo("strataCol", String.class)
+		.setDescription("strata col name.")
+		.setAlias(new String[] {"strataColName"})
+		.setRequired()
+		.build();
 
-    default T setSize(Integer value) {
-        return set(SIZE, value);
-    }
+	ParamInfo <Integer> STRATA_SIZE = ParamInfoFactory
+		.createParamInfo("strataSize", Integer.class)
+		.setDescription("strata size.")
+		.setHasDefaultValue(-1)
+		.build();
 
-    ParamInfo<String> SIZES = ParamInfoFactory
-        .createParamInfo("sizes", String.class)
-        .setDescription(
-            "sampling size, it should be int value when as a number , defintion format as name1:number1,name2:number2"
-                + " when as a string")
-        .setHasDefaultValue(null)
-        .build();
+	ParamInfo <String> STRATA_SIZES = ParamInfoFactory
+		.createParamInfo("strataSizes", String.class)
+		.setDescription("strata sizes. a:10,b:30")
+		.setRequired()
+		.build();
 
-    default String getSizes() {
-        return getParams().get(SIZES);
-    }
+	ParamInfo <Boolean> WITH_REPLACEMENT = ParamInfoFactory
+		.createParamInfo("withReplacement", Boolean.class)
+		.setDescription("Indicates whether to enable sampling with replacement, default is without replcement")
+		.setHasDefaultValue(false)
+		.build();
 
-    default T setSizes(String value) {
-        return set(SIZES, value);
-    }
+	default String getStrataCol() {
+		return get(STRATA_COL);
+	}
+
+	default T setStrataCol(String value) {
+		return set(STRATA_COL, value);
+	}
+
+	default Integer getStrataSize() {
+		return get(STRATA_SIZE);
+	}
+
+	default T setStrataSize(Integer value) {
+		return set(STRATA_SIZE, value);
+	}
+
+	default String getStrataSizes() {
+		return get(STRATA_SIZES);
+	}
+
+	default T setStrataSizes(String value) {
+		return set(STRATA_SIZES, value);
+	}
+
+	default Boolean getWithReplacement() {
+		return get(WITH_REPLACEMENT);
+	}
+
+	default T setWithReplacement(Boolean value) {
+		return set(WITH_REPLACEMENT, value);
+	}
 }

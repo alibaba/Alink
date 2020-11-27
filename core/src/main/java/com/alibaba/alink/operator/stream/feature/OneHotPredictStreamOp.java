@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.stream.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.feature.OneHotModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.feature.OneHotModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
 
@@ -11,10 +11,11 @@ import com.alibaba.alink.params.feature.OneHotPredictParams;
  * *
  * A one-hot stream operator that maps a serial of columns of category indices to a column of
  * sparse binary vectors.
- *
  */
 public final class OneHotPredictStreamOp extends ModelMapStreamOp <OneHotPredictStreamOp>
 	implements OneHotPredictParams <OneHotPredictStreamOp> {
+
+	private static final long serialVersionUID = 3986423530880867993L;
 
 	/**
 	 * constructor.

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 public class TreeSplit extends ComputeFunction {
 	private static final Logger LOG = LoggerFactory.getLogger(TreeSplit.class);
+	private static final long serialVersionUID = 6416185350250531637L;
 
 	public TreeSplit() {}
 

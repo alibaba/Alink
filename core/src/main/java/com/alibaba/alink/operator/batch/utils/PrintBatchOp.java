@@ -6,7 +6,6 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.BaseSinkBatchOp;
@@ -14,10 +13,13 @@ import com.alibaba.alink.operator.batch.sink.BaseSinkBatchOp;
 import java.io.PrintStream;
 import java.util.List;
 
-
+/**
+ * Print batch op to std out.
+ */
 @IoOpAnnotation(name = "print", ioType = IOType.SinkBatch)
-public class PrintBatchOp extends BaseSinkBatchOp<PrintBatchOp> {
+public class PrintBatchOp extends BaseSinkBatchOp <PrintBatchOp> {
 
+	private static final long serialVersionUID = -8361687806231696283L;
 	private static PrintStream batchPrintStream = System.out;
 
 	public PrintBatchOp() {
@@ -33,12 +35,11 @@ public class PrintBatchOp extends BaseSinkBatchOp<PrintBatchOp> {
 	}
 
 	@Override
-	protected PrintBatchOp sinkFrom(BatchOperator in) {
-		this.setOutputTable(in.getOutputTable());
-		if (null != this.getOutputTable()) {
+	protected PrintBatchOp sinkFrom(BatchOperator<?> in) {
+		if (null != in.getOutputTable()) {
 			try {
-				List <Row> rows = DataSetConversionUtil.fromTable(getMLEnvironmentId(), this.getOutputTable()).collect();
-				batchPrintStream.println(TableUtil.formatTitle(this.getColNames()));
+				List <Row> rows = in.collect();
+				batchPrintStream.println(TableUtil.formatTitle(in.getColNames()));
 				for (Row row : rows) {
 					batchPrintStream.println(TableUtil.formatRows(row));
 				}

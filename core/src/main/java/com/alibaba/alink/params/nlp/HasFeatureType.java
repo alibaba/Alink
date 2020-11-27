@@ -10,22 +10,22 @@ import com.alibaba.alink.params.ParamUtil;
 /**
  * FeatureType.
  */
-public interface HasFeatureType<T> extends WithParams<T> {
-    ParamInfo<FeatureType> FEATURE_TYPE = ParamInfoFactory
-        .createParamInfo("featureType", FeatureType.class)
-        .setDescription("Feature type, support IDF/WORD_COUNT/TF_IDF/Binary/TF")
-        .setHasDefaultValue(FeatureType.WORD_COUNT)
-        .build();
+public interface HasFeatureType<T> extends WithParams <T> {
+	ParamInfo <FeatureType> FEATURE_TYPE = ParamInfoFactory
+		.createParamInfo("featureType", FeatureType.class)
+		.setDescription("Feature type, support IDF/WORD_COUNT/TF_IDF/Binary/TF")
+		.setHasDefaultValue(FeatureType.WORD_COUNT)
+		.build();
 
-    default FeatureType getFeatureType() {
-        return get(FEATURE_TYPE);
-    }
+	default FeatureType getFeatureType() {
+		return get(FEATURE_TYPE);
+	}
 
-    default T setFeatureType(FeatureType value){
-        return set(FEATURE_TYPE, value);
-    }
+	default T setFeatureType(FeatureType value) {
+		return set(FEATURE_TYPE, value);
+	}
 
-    default T setFeatureType(String value) {
-        return set(FEATURE_TYPE, ParamUtil.searchEnum(FEATURE_TYPE, value));
-    }
+	default T setFeatureType(String value) {
+		return set(FEATURE_TYPE, ParamUtil.searchEnum(FEATURE_TYPE, value));
+	}
 }

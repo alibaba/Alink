@@ -9,7 +9,7 @@ import org.junit.Test;
 public class RegressionMetricsTest {
 
 	@Test
-	public void reduceTest(){
+	public void reduceTest() {
 		RegressionMetricsSummary regressionSummary1 = new RegressionMetricsSummary();
 		regressionSummary1.total = 5;
 		regressionSummary1.ySumLocal = 1.6;
@@ -66,5 +66,11 @@ public class RegressionMetricsTest {
 		Assert.assertEquals(0.14, metrics.getSst(), 0.01);
 		Assert.assertEquals(1.2, metrics.getSae(), 0.01);
 		Assert.assertEquals(0.06, metrics.getExplainedVariance(), 0.01);
+		Assert.assertEquals(0.56, metrics.getPredictionMean(), 0.01);
+		Assert.assertEquals(5.0, metrics.getCount(), 0.1);
+		Assert.assertEquals(0.32, metrics.getYMean(), 0.01);
+		Assert.assertEquals(0.076, metrics.getMse(), 0.01);
+
+		System.out.println(metrics.toString());
 	}
 }

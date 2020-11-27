@@ -41,12 +41,12 @@ public final class ExtractParamInfosUtil {
 	 * @param s the WithParams to extract ParamInfos from
 	 * @return the list of all ParamInfos defined in s
 	 */
-	public static List<ParamInfo> extractParamInfos(WithParams s) {
+	public static List <ParamInfo> extractParamInfos(WithParams s) {
 		return extractParamInfos(s, s.getClass());
 	}
 
-	private static List<ParamInfo> extractParamInfos(WithParams s, Class clz) {
-		List<ParamInfo> result = new ArrayList<>();
+	private static List <ParamInfo> extractParamInfos(WithParams s, Class clz) {
+		List <ParamInfo> result = new ArrayList <>();
 		if (clz == null) {
 			return result;
 		}

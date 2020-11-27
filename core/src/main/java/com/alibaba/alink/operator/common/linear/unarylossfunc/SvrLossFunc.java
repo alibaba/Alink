@@ -5,6 +5,7 @@ package com.alibaba.alink.operator.common.linear.unarylossfunc;
  */
 public class SvrLossFunc implements UnaryLossFunc {
 
+	private static final long serialVersionUID = 2882192117339178786L;
 	private double epsilon;
 
 	public SvrLossFunc(double epsilon) {

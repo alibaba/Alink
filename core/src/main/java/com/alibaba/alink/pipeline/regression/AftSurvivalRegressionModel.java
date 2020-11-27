@@ -11,7 +11,9 @@ import com.alibaba.alink.pipeline.MapModel;
  * <p>
  * (https://en.wikipedia.org/wiki/Accelerated_failure_time_model)
  */
-public class AftSurvivalRegressionModel extends MapModel<AftSurvivalRegressionModel> {
+public class AftSurvivalRegressionModel extends MapModel <AftSurvivalRegressionModel> {
+
+	private static final long serialVersionUID = 8070360321519687291L;
 
 	public AftSurvivalRegressionModel() {this(null);}
 

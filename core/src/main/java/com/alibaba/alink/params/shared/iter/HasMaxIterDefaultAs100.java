@@ -2,17 +2,19 @@ package com.alibaba.alink.params.shared.iter;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
+
+import com.alibaba.alink.params.validators.MinValidator;
 
 /**
  * An interface for classes with a parameter specifying the maximum iterations.
  */
-public interface HasMaxIterDefaultAs100<T> extends WithParams<T> {
+public interface HasMaxIterDefaultAs100<T> extends WithParams <T> {
 	ParamInfo <Integer> MAX_ITER = ParamInfoFactory
 		.createParamInfo("maxIter", Integer.class)
 		.setDescription("Maximum iterations, The default value is 100")
 		.setHasDefaultValue(100)
+		.setValidator(new MinValidator <>(1))
 		.setAlias(new String[] {"maxIteration"})
 		.build();
 

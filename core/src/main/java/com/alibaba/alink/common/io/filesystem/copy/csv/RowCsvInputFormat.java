@@ -35,7 +35,7 @@ import java.util.Arrays;
  * Input format that reads csv into {@link Row}.
  */
 @PublicEvolving
-public class RowCsvInputFormat extends CsvInputFormat<Row> implements ResultTypeQueryable<Row> {
+public class RowCsvInputFormat extends CsvInputFormat <Row> implements ResultTypeQueryable <Row> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -44,10 +44,15 @@ public class RowCsvInputFormat extends CsvInputFormat<Row> implements ResultType
 	private int[] fieldPosMap;
 	private boolean emptyColumnAsNull;
 
-	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypeInfos, String lineDelimiter, String fieldDelimiter, int[] selectedFields, boolean emptyColumnAsNull, BaseFileSystem<?> fs) {
+	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypeInfos, String lineDelimiter,
+							 String fieldDelimiter, int[] selectedFields, boolean emptyColumnAsNull,
+							 BaseFileSystem <?> fs) {
 
 		super(filePath, fs);
 		this.arity = fieldTypeInfos.length;
+		if (arity == 0) {
+			throw new IllegalArgumentException("At least one field must be specified");
+		}
 		if (arity != selectedFields.length) {
 			throw new IllegalArgumentException("Number of field types and selected fields must be the same");
 		}
@@ -63,28 +68,33 @@ public class RowCsvInputFormat extends CsvInputFormat<Row> implements ResultType
 		setFieldsGeneric(fieldsMask, extractTypeClasses(fieldTypeInfos));
 	}
 
-	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, String lineDelimiter, String fieldDelimiter, int[] selectedFields, BaseFileSystem<?> fs) {
+	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, String lineDelimiter, String fieldDelimiter,
+							 int[] selectedFields, BaseFileSystem <?> fs) {
 		this(filePath, fieldTypes, lineDelimiter, fieldDelimiter, selectedFields, false, fs);
 	}
 
-	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, String lineDelimiter, String fieldDelimiter, BaseFileSystem<?> fs) {
+	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, String lineDelimiter, String fieldDelimiter,
+							 BaseFileSystem <?> fs) {
 		this(filePath, fieldTypes, lineDelimiter, fieldDelimiter, sequentialScanOrder(fieldTypes.length), fs);
 	}
 
-	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, int[] selectedFields, BaseFileSystem<?> fs) {
+	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, int[] selectedFields, BaseFileSystem <?>
+		fs) {
 		this(filePath, fieldTypes, DEFAULT_LINE_DELIMITER, DEFAULT_FIELD_DELIMITER, selectedFields, fs);
 	}
 
-	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, boolean emptyColumnAsNull, BaseFileSystem<?> fs) {
-		this(filePath, fieldTypes, DEFAULT_LINE_DELIMITER, DEFAULT_FIELD_DELIMITER, sequentialScanOrder(fieldTypes.length), emptyColumnAsNull, fs);
+	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, boolean emptyColumnAsNull,
+							 BaseFileSystem <?> fs) {
+		this(filePath, fieldTypes, DEFAULT_LINE_DELIMITER, DEFAULT_FIELD_DELIMITER,
+			sequentialScanOrder(fieldTypes.length), emptyColumnAsNull, fs);
 	}
 
-	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, BaseFileSystem<?> fs) {
+	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypes, BaseFileSystem <?> fs) {
 		this(filePath, fieldTypes, false, fs);
 	}
 
-	private static Class<?>[] extractTypeClasses(TypeInformation[] fieldTypes) {
-		Class<?>[] classes = new Class<?>[fieldTypes.length];
+	private static Class <?>[] extractTypeClasses(TypeInformation[] fieldTypes) {
+		Class <?>[] classes = new Class <?>[fieldTypes.length];
 		for (int i = 0; i < fieldTypes.length; i++) {
 			classes[i] = fieldTypes[i].getTypeClass();
 		}
@@ -163,7 +173,7 @@ public class RowCsvInputFormat extends CsvInputFormat<Row> implements ResultType
 
 			if (fieldIncluded[field]) {
 				// parse field
-				FieldParser<Object> parser = (FieldParser<Object>) this.getFieldParsers()[fieldPosMap[output]];
+				FieldParser <Object> parser = (FieldParser <Object>) this.getFieldParsers()[fieldPosMap[output]];
 				int latestValidPos = startPos;
 				startPos = parser.resetErrorStateAndParse(
 					bytes,
@@ -175,8 +185,10 @@ public class RowCsvInputFormat extends CsvInputFormat<Row> implements ResultType
 				if (!isLenient() && (parser.getErrorState() != FieldParser.ParseErrorState.NONE)) {
 					// the error state EMPTY_COLUMN is ignored
 					if (parser.getErrorState() != FieldParser.ParseErrorState.EMPTY_COLUMN) {
-						throw new ParseException(String.format("Parsing error for column %1$s of row '%2$s' originated by %3$s: %4$s.",
-							field + 1, new String(bytes, offset, numBytes), parser.getClass().getSimpleName(), parser.getErrorState()));
+						throw new ParseException(
+							String.format("Parsing error for column %1$s of row '%2$s' originated by %3$s: %4$s.",
+								field + 1, new String(bytes, offset, numBytes), parser.getClass().getSimpleName(),
+								parser.getErrorState()));
 					}
 				}
 				holders[fieldPosMap[output]] = parser.getLastResult();
@@ -199,10 +211,9 @@ public class RowCsvInputFormat extends CsvInputFormat<Row> implements ResultType
 			if (startPos < 0) {
 				throw new ParseException(String.format("Unexpected parser position for column %1$s of row '%2$s'",
 					field + 1, new String(bytes, offset, numBytes)));
-			}
-			else if (startPos == limit
-					&& field != fieldIncluded.length - 1
-					&& !FieldParser.endsWithDelimiter(bytes, startPos - 1, fieldDelimiter)) {
+			} else if (startPos == limit
+				&& field != fieldIncluded.length - 1
+				&& !FieldParser.endsWithDelimiter(bytes, startPos - 1, fieldDelimiter)) {
 				// We are at the end of the record, but not all fields have been read
 				// and the end is not a field delimiter indicating an empty last field.
 				if (isLenient()) {
@@ -218,7 +229,7 @@ public class RowCsvInputFormat extends CsvInputFormat<Row> implements ResultType
 	}
 
 	@Override
-	public TypeInformation<Row> getProducedType() {
+	public TypeInformation <Row> getProducedType() {
 		return new RowTypeInfo(this.fieldTypeInfos);
 	}
 }

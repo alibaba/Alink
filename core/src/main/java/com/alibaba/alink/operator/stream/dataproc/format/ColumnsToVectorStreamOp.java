@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.operator.stream.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.ColumnsToVectorParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class ColumnsToVectorStreamOp extends BaseFormatTransStreamOp<ColumnsToVectorStreamOp>
-    implements ColumnsToVectorParams<ColumnsToVectorStreamOp> {
+/**
+ * Transform data type from Columns to Vector.
+ */
+public class ColumnsToVectorStreamOp extends BaseFormatTransStreamOp <ColumnsToVectorStreamOp>
+	implements ColumnsToVectorParams <ColumnsToVectorStreamOp> {
 
-    public ColumnsToVectorStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -8365625871912296977L;
 
-    public ColumnsToVectorStreamOp(Params params) {
-        super(FormatType.COLUMNS, FormatType.VECTOR, params);
-    }
+	public ColumnsToVectorStreamOp() {
+		this(new Params());
+	}
+
+	public ColumnsToVectorStreamOp(Params params) {
+		super(FormatType.COLUMNS, FormatType.VECTOR, params);
+	}
 }

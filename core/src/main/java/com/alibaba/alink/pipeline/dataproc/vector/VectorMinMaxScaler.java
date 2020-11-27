@@ -15,14 +15,16 @@ import com.alibaba.alink.pipeline.Trainer;
 public class VectorMinMaxScaler extends Trainer <VectorMinMaxScaler, VectorMinMaxScalerModel> implements
 	VectorMinMaxScalerTrainParams <VectorMinMaxScaler>,
 	VectorMinMaxScalerPredictParams <VectorMinMaxScaler>,
-	HasLazyPrintModelInfo<VectorMinMaxScaler> {
+	HasLazyPrintModelInfo <VectorMinMaxScaler> {
+
+	private static final long serialVersionUID = -4425448502218692981L;
 
 	public VectorMinMaxScaler() {
 		super();
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new VectorMinMaxScalerTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

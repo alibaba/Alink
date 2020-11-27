@@ -29,15 +29,15 @@ public class DataSetConversionUtilTest {
 	public void testForceType() {
 		ExecutionEnvironment env = MLEnvironmentFactory.getDefault().getExecutionEnvironment();
 
-		DataSet<Row> input = env.fromElements(Row.of("s1")).map(new GenericTypeMap());
+		DataSet <Row> input = env.fromElements(Row.of("s1")).map(new GenericTypeMap());
 		Table table2 = DataSetConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID,
-				input,
-				new String[] {"word"},
-				new TypeInformation[] {TypeInformation.of(Integer.class)}
+			input,
+			new String[] {"word"},
+			new TypeInformation[] {TypeInformation.of(Integer.class)}
 		);
 		Assert.assertEquals(
-				new TableSchema(new String[] {"word"}, new TypeInformation[] {TypeInformation.of(Integer.class)}),
-				table2.getSchema()
+			new TableSchema(new String[] {"word"}, new TypeInformation[] {TypeInformation.of(Integer.class)}),
+			table2.getSchema()
 		);
 
 	}
@@ -46,12 +46,12 @@ public class DataSetConversionUtilTest {
 	public void testForceTypeWithTableSchema() {
 		ExecutionEnvironment env = MLEnvironmentFactory.getDefault().getExecutionEnvironment();
 
-		DataSet<Row> input = env.fromElements(Row.of("s1")).map(new GenericTypeMap());
+		DataSet <Row> input = env.fromElements(Row.of("s1")).map(new GenericTypeMap());
 		Table table2 = DataSetConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID,
 			input,
 			new TableSchema(
-				new String[]{"word"},
-				new TypeInformation[]{TypeInformation.of(Integer.class)}
+				new String[] {"word"},
+				new TypeInformation[] {TypeInformation.of(Integer.class)}
 			)
 		);
 		Assert.assertEquals(
@@ -65,7 +65,7 @@ public class DataSetConversionUtilTest {
 	public void testExceptionWithoutTypeSchema() {
 		thrown.expect(ValidationException.class);
 		ExecutionEnvironment env = MLEnvironmentFactory.getDefault().getExecutionEnvironment();
-		DataSet<Row>  input = env.fromElements(Row.of("s1")).map(new GenericTypeMap());
+		DataSet <Row> input = env.fromElements(Row.of("s1")).map(new GenericTypeMap());
 		DataSetConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, input, new String[] {"f0"});
 	}
 
@@ -75,16 +75,20 @@ public class DataSetConversionUtilTest {
 
 		DataSet <Row> input = env.fromElements(Row.of("a"));
 
-		Table table1 = DataSetConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, input, new String[] {"word"});
+		Table table1 = DataSetConversionUtil.toTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, input,
+			new String[] {"word"});
 		Assert.assertEquals(
 			new TableSchema(new String[] {"word"}, new TypeInformation[] {TypeInformation.of(String.class)}),
 			table1.getSchema()
 		);
-		List <Row> list = DataSetConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, table1).collect();
+		List <Row> list = DataSetConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, table1)
+			.collect();
 		Assert.assertEquals(Collections.singletonList(Row.of("a")), list);
 	}
 
 	private static class GenericTypeMap implements MapFunction <Row, Row> {
+
+		private static final long serialVersionUID = -1765797630022109339L;
 
 		@Override
 		public Row map(Row value) throws Exception {

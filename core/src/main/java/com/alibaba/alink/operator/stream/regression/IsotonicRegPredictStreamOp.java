@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.stream.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.regression.IsotonicRegressionModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.regression.IsotonicRegressionModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.regression.IsotonicRegPredictParams;
 
@@ -14,6 +14,8 @@ import com.alibaba.alink.params.regression.IsotonicRegPredictParams;
  */
 public class IsotonicRegPredictStreamOp extends ModelMapStreamOp <IsotonicRegPredictStreamOp>
 	implements IsotonicRegPredictParams <IsotonicRegPredictStreamOp> {
+	private static final long serialVersionUID = -6758622543294398134L;
+
 	public IsotonicRegPredictStreamOp(BatchOperator model) {
 		this(model, new Params());
 	}

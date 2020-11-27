@@ -6,7 +6,7 @@ import com.alibaba.alink.params.shared.delimiter.HasWordDelimiter;
 import com.alibaba.alink.params.shared.iter.HasNumIterDefaultAs1;
 
 public interface Word2VecTrainParams<T> extends
-    HasNumIterDefaultAs1<T>,
+	HasNumIterDefaultAs1 <T>,
 	HasSelectedCol <T>,
 	HasVectorSizeDv100 <T>,
 	HasAlpha <T>,

@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.linalg
 
 import breeze.linalg.{inv, DenseMatrix => BDM, DenseVector => BDV}
+import breeze.linalg.pinv
 
 object BreezeUtils {
 
@@ -33,6 +34,14 @@ object BreezeUtils {
       */
     def inverse(A: DenseMatrix): DenseMatrix = {
         val invA = inv(toBreezeMatrix(A))
+        fromBreezeMatrix(invA)
+    }
+
+    /**
+      * Calculate the Moore–Penrose inverse of matrix A.
+      */
+    def pseudoInverse(A: DenseMatrix): DenseMatrix = {
+        val invA = pinv(toBreezeMatrix(A))
         fromBreezeMatrix(invA)
     }
 

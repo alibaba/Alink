@@ -10,7 +10,8 @@ import com.alibaba.alink.operator.common.tree.Node;
 
 import java.util.Arrays;
 
-public class RegObj extends TreeObj<double[]> {
+public class RegObj extends TreeObj <double[]> {
+	private static final long serialVersionUID = 2055187633851169618L;
 	private double[] labels;
 
 	public RegObj(
@@ -74,7 +75,7 @@ public class RegObj extends TreeObj<double[]> {
 		labels = values;
 	}
 
-	public final Tuple2<int[], Double> bestSplitCategorical(
+	public final Tuple2 <int[], Double> bestSplitCategorical(
 		int featureStart,
 		double mse,
 		double totalSquareSum,
@@ -143,7 +144,7 @@ public class RegObj extends TreeObj<double[]> {
 		return Tuple2.of(bestSplit, bestGain);
 	}
 
-	public final Tuple2<Integer, Double> bestSplitNumerical(
+	public final Tuple2 <Integer, Double> bestSplitNumerical(
 		int fStart,
 		double mse,
 		double totalSquareSum,
@@ -214,7 +215,7 @@ public class RegObj extends TreeObj<double[]> {
 			weight += minusHist[zStart + 2];
 		}
 
-		node.setCounter(new LabelCounter(weight, 0, new double[]{sum, squareSum}));
+		node.setCounter(new LabelCounter(weight, 0, new double[] {sum, squareSum}));
 
 		if (maxDepth < pair.depth
 			|| minSamplesPerLeaf > weight) {
@@ -230,14 +231,14 @@ public class RegObj extends TreeObj<double[]> {
 			for (int j = 0; j < baggingFeatureCount; ++j) {
 				int fStart = start + j * nBin * 3;
 				if (featureMetas[pair.baggingFeatures[j]].getType().equals(FeatureMeta.FeatureType.CONTINUOUS)) {
-					Tuple2<Integer, Double> gain = bestSplitNumerical(fStart, mse, squareSum, sum, weight);
+					Tuple2 <Integer, Double> gain = bestSplitNumerical(fStart, mse, squareSum, sum, weight);
 					if (gain.f1 > gBestGain) {
 						gBestGain = gain.f1;
 						gBestSplit = gain.f0;
 						gBestFeature = pair.baggingFeatures[j];
 					}
 				} else {
-					Tuple2<int[], Double> gain = bestSplitCategorical(fStart, mse, squareSum, sum, weight,
+					Tuple2 <int[], Double> gain = bestSplitCategorical(fStart, mse, squareSum, sum, weight,
 						featureMetas[pair.baggingFeatures[j]].getNumCategorical());
 					if (gain.f1 > gBestGain) {
 						gBestGain = gain.f1;
@@ -250,14 +251,14 @@ public class RegObj extends TreeObj<double[]> {
 			for (int j = 0; j < nFeatureCol; ++j) {
 				int fStart = start + j * nBin * 3;
 				if (featureMetas[j].getType().equals(FeatureMeta.FeatureType.CONTINUOUS)) {
-					Tuple2<Integer, Double> gain = bestSplitNumerical(fStart, mse, squareSum, sum, weight);
+					Tuple2 <Integer, Double> gain = bestSplitNumerical(fStart, mse, squareSum, sum, weight);
 					if (gain.f1 > gBestGain) {
 						gBestGain = gain.f1;
 						gBestSplit = gain.f0;
 						gBestFeature = j;
 					}
 				} else {
-					Tuple2<int[], Double> gain = bestSplitCategorical(fStart, mse, squareSum, sum, weight,
+					Tuple2 <int[], Double> gain = bestSplitCategorical(fStart, mse, squareSum, sum, weight,
 						featureMetas[j].getNumCategorical());
 					if (gain.f1 > gBestGain) {
 						gBestGain = gain.f1;

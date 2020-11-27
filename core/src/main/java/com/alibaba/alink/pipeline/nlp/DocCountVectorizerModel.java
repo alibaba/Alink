@@ -10,8 +10,10 @@ import com.alibaba.alink.pipeline.MapModel;
  * DocCountVectorizerModel saves the document frequency, word count and inverse document
  * frequency of every word in the dataset.
  */
-public class DocCountVectorizerModel extends MapModel<DocCountVectorizerModel>
+public class DocCountVectorizerModel extends MapModel <DocCountVectorizerModel>
 	implements DocCountVectorizerPredictParams <DocCountVectorizerModel> {
+
+	private static final long serialVersionUID = 2528993726788807192L;
 
 	public DocCountVectorizerModel() {this(null);}
 

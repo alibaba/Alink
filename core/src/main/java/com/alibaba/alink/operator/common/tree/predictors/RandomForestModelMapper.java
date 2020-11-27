@@ -5,12 +5,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.tree.Criteria;
 import com.alibaba.alink.operator.common.tree.LabelCounter;
 import com.alibaba.alink.operator.common.tree.Node;
-import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.tree.TreeUtil;
-import com.alibaba.alink.params.shared.tree.HasTreeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,16 +19,17 @@ import java.util.Map;
 
 public class RandomForestModelMapper extends TreeModelMapper {
 	private static final Logger LOG = LoggerFactory.getLogger(RandomForestModelMapper.class);
+	private static final long serialVersionUID = 1392112308487523143L;
 
 	public RandomForestModelMapper(
-			TableSchema modelSchema,
-			TableSchema dataSchema,
-			Params params) {
+		TableSchema modelSchema,
+		TableSchema dataSchema,
+		Params params) {
 		super(modelSchema, dataSchema, params);
 	}
 
 	@Override
-	public void loadModel(List<Row> modelRows) {
+	public void loadModel(List <Row> modelRows) {
 		init(modelRows);
 	}
 
@@ -39,7 +39,7 @@ public class RandomForestModelMapper extends TreeModelMapper {
 	}
 
 	@Override
-	protected Tuple2<Object, String> predictResultDetail(Row row) throws Exception {
+	protected Tuple2 <Object, String> predictResultDetail(Row row) throws Exception {
 		Node[] root = treeModel.roots;
 
 		Row transRow = Row.copy(row);
@@ -49,22 +49,22 @@ public class RandomForestModelMapper extends TreeModelMapper {
 		int len = root.length;
 
 		Object result = null;
-		Map<String, Double> detail = null;
+		Map <String, Double> detail = null;
 
 		if (len > 0) {
 			LabelCounter labelCounter = new LabelCounter(
 				0, 0, new double[root[0].getCounter().getDistributions().length]);
 
-			Predict(transRow, root[0], labelCounter, 1.0);
+			predict(transRow, root[0], labelCounter, 1.0);
 
 			for (int i = 1; i < len; ++i) {
-				Predict(transRow, root[i], labelCounter, 1.0);
+				predict(transRow, root[i], labelCounter, 1.0);
 			}
 
 			labelCounter.normWithWeight();
 
 			if (!Criteria.isRegression(treeModel.meta.get(TreeUtil.TREE_TYPE))) {
-				detail = new HashMap<>();
+				detail = new HashMap <>();
 				double[] probability = labelCounter.getDistributions();
 				double max = 0.0;
 				int maxIndex = -1;
@@ -86,6 +86,6 @@ public class RandomForestModelMapper extends TreeModelMapper {
 			}
 		}
 
-		return new Tuple2<>(result, detail == null ? null : JsonConverter.toJson(detail));
+		return new Tuple2 <>(result, detail == null ? null : JsonConverter.toJson(detail));
 	}
 }

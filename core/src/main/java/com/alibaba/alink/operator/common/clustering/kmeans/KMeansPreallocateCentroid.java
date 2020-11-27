@@ -16,25 +16,26 @@ import java.util.List;
  * Allocate memory for pre-round centers and current centers.
  */
 public class KMeansPreallocateCentroid extends ComputeFunction {
-    private static final Logger LOG = LoggerFactory.getLogger(KMeansPreallocateCentroid.class);
+	private static final Logger LOG = LoggerFactory.getLogger(KMeansPreallocateCentroid.class);
+	private static final long serialVersionUID = -5020158301179658025L;
 
-    @Override
-    public void calc(ComContext context) {
-        if (context.getStepNo() == 1) {
+	@Override
+	public void calc(ComContext context) {
+		if (context.getStepNo() == 1) {
 
-            List<FastDistanceMatrixData> initCentroids = context.getObj(KMeansTrainBatchOp.INIT_CENTROID);
-            List<Integer> list = context.getObj(KMeansTrainBatchOp.KMEANS_STATISTICS);
-            Integer vectorSize = list.get(0);
-            context.putObj(KMeansTrainBatchOp.VECTOR_SIZE, vectorSize);
+			List <FastDistanceMatrixData> initCentroids = context.getObj(KMeansTrainBatchOp.INIT_CENTROID);
+			List <Integer> list = context.getObj(KMeansTrainBatchOp.KMEANS_STATISTICS);
+			Integer vectorSize = list.get(0);
+			context.putObj(KMeansTrainBatchOp.VECTOR_SIZE, vectorSize);
 
-            FastDistanceMatrixData centroid = initCentroids.get(0);
-            Preconditions.checkArgument(centroid.getVectors().numRows() == vectorSize,
-                "Init centroid error, size not equal!");
-            LOG.info("Init centroids, initial centroid size {}", centroid.getVectors().numCols());
-            context.putObj(KMeansTrainBatchOp.CENTROID1, Tuple2.of(context.getStepNo() - 1, centroid));
-            context.putObj(KMeansTrainBatchOp.CENTROID2,
-                Tuple2.of(context.getStepNo() - 1, new FastDistanceMatrixData(centroid)));
-            context.putObj(KMeansTrainBatchOp.K, centroid.getVectors().numCols());
-        }
-    }
+			FastDistanceMatrixData centroid = initCentroids.get(0);
+			Preconditions.checkArgument(centroid.getVectors().numRows() == vectorSize,
+				"Init centroid error, size not equal!");
+			LOG.info("Init centroids, initial centroid size {}", centroid.getVectors().numCols());
+			context.putObj(KMeansTrainBatchOp.CENTROID1, Tuple2.of(context.getStepNo() - 1, centroid));
+			context.putObj(KMeansTrainBatchOp.CENTROID2,
+				Tuple2.of(context.getStepNo() - 1, new FastDistanceMatrixData(centroid)));
+			context.putObj(KMeansTrainBatchOp.K, centroid.getVectors().numCols());
+		}
+	}
 }

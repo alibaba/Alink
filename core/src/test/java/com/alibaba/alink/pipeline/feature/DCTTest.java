@@ -2,16 +2,17 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Random;
 
-public class DCTTest {
+public class DCTTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {

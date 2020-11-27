@@ -15,6 +15,8 @@ import com.alibaba.alink.params.feature.BucketizerParams;
  */
 public class BucketizerStreamOp extends MapStreamOp <BucketizerStreamOp>
 	implements BucketizerParams <BucketizerStreamOp> {
+	private static final long serialVersionUID = -3837154543787425055L;
+
 	public BucketizerStreamOp() {
 		this(null);
 	}

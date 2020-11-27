@@ -2,7 +2,6 @@ package com.alibaba.alink.params.shared.colname;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 /**
@@ -12,7 +11,7 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * @see HasSelectedCols
  * @see HasSelectedColsDefaultAsNull
  */
-public interface HasSelectedColDefaultAsNull<T> extends WithParams<T> {
+public interface HasSelectedColDefaultAsNull<T> extends WithParams <T> {
 
 	ParamInfo <String> SELECTED_COL = ParamInfoFactory
 		.createParamInfo("selectedCol", String.class)

@@ -10,17 +10,18 @@ import java.util.List;
  */
 public class RowsModelSource implements ModelSource {
 
-    /**
-     * The rows that hosts the model.
-     */
-    private final List<Row> modelRows;
+	private static final long serialVersionUID = -5828728414934366284L;
+	/**
+	 * The rows that hosts the model.
+	 */
+	private final List <Row> modelRows;
 
-    public RowsModelSource(List<Row> modelRows) {
-        this.modelRows = modelRows;
-    }
+	public RowsModelSource(List <Row> modelRows) {
+		this.modelRows = modelRows;
+	}
 
-    @Override
-    public List<Row> getModelRows(RuntimeContext runtimeContext) {
-        return modelRows;
-    }
+	@Override
+	public List <Row> getModelRows(RuntimeContext runtimeContext) {
+		return modelRows;
+	}
 }

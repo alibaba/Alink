@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
  * A DataBridge which read data from memory.
  */
 public class MemoryDataBridge implements DataBridge {
+	private static final long serialVersionUID = -8542131659159147769L;
 	List <Row> rows;
 
 	public MemoryDataBridge(List <Row> rows) {

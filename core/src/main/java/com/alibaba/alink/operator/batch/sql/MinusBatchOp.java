@@ -7,20 +7,22 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 /**
  * Minus another <code>BatchOperator</code>.
  */
-public final class MinusBatchOp extends BatchOperator<MinusBatchOp> {
+public final class MinusBatchOp extends BatchOperator <MinusBatchOp> {
 
-    public MinusBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 5643333177043157438L;
 
-    public MinusBatchOp(Params params) {
-        super(params);
-    }
+	public MinusBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public MinusBatchOp linkFrom(BatchOperator<?>... inputs) {
-        checkOpSize(2, inputs);
-        this.setOutputTable(inputs[0].getOutputTable().minus(inputs[1].getOutputTable()));
-        return this;
-    }
+	public MinusBatchOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public MinusBatchOp linkFrom(BatchOperator <?>... inputs) {
+		checkOpSize(2, inputs);
+		this.setOutputTable(inputs[0].getOutputTable().minus(inputs[1].getOutputTable()));
+		return this;
+	}
 }

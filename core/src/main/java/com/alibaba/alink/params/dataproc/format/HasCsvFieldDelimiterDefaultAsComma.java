@@ -4,11 +4,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasCsvFieldDelimiterDefaultAsComma<T> extends WithParams<T> {
-	/**
-	 * @cn-name 字段分隔符
-	 * @cn 字段分隔符
-	 */
+public interface HasCsvFieldDelimiterDefaultAsComma<T> extends WithParams <T> {
 	ParamInfo <String> CSV_FIELD_DELIMITER = ParamInfoFactory
 		.createParamInfo("csvFieldDelimiter", String.class)
 		.setDescription("Field delimiter")

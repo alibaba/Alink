@@ -6,6 +6,6 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCols;
  * Trait for ChiSqSelector.
  */
 public interface ChiSqSelectorParams<T> extends
-	BasedChisqSelectorParams<T>,
+	BasedChisqSelectorParams <T>,
 	HasSelectedCols <T> {
 }

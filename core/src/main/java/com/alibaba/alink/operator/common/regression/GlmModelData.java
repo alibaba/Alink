@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.common.regression;
 
-
 import com.alibaba.alink.params.regression.GlmTrainParams;
 
 /**
@@ -8,81 +7,78 @@ import com.alibaba.alink.params.regression.GlmTrainParams;
  */
 public class GlmModelData {
 
-    /**
-     * feature names.
-     */
-    public String[] featureColNames;
+	/**
+	 * feature names.
+	 */
+	public String[] featureColNames;
 
-    /**
-     * offset col name.
-     */
-    public String offsetColName;
+	/**
+	 * offset col name.
+	 */
+	public String offsetColName;
 
-    /**
-     * weight col name.
-     */
-    public String weightColName;
+	/**
+	 * weight col name.
+	 */
+	public String weightColName;
 
-    /**
-     * label col name.
-     */
-    public String labelColName;
+	/**
+	 * label col name.
+	 */
+	public String labelColName;
 
+	/**
+	 * if fit intercept or not.
+	 */
+	public boolean fitIntercept;
 
-    /**
-     * if fit intercept or not.
-     */
-    public boolean fitIntercept;
+	/**
+	 * l2.
+	 */
+	public double regParam;
 
-    /**
-     * l2.
-     */
-    public double regParam;
+	/**
+	 * iter of num.
+	 */
+	public int numIter;
 
-    /**
-     * iter of num.
-     */
-    public int numIter;
+	/**
+	 * epsilon of loop.
+	 */
+	public double epsilon;
 
-    /**
-     * epsilon of loop.
-     */
-    public double epsilon;
+	/**
+	 * family name.
+	 */
+	public GlmTrainParams.Family familyName;
 
+	/**
+	 * variance power of family.
+	 */
+	public double variancePower;
 
-    /**
-     * family name.
-     */
-    public GlmTrainParams.Family familyName;
+	/**
+	 * link function name.
+	 */
+	public GlmTrainParams.Link linkName;
 
-    /**
-     * variance power of family.
-     */
-    public double variancePower;
+	/**
+	 * power of link function.
+	 */
+	public double linkPower;
 
-    /**
-     * link function name.
-     */
-    public GlmTrainParams.Link linkName;
+	/**
+	 * coefficients of each features.
+	 */
+	public double[] coefficients;
 
-    /**
-     * power of link function.
-     */
-    public double linkPower;
+	/**
+	 * intercept.
+	 */
+	public double intercept;
 
-
-    /**
-     * coefficients of each features.
-     */
-    public double[] coefficients;
-
-    /**
-     * intercept.
-     */
-    public double intercept;
-
-    /**
-     * diag{1/(AT * A)}
-     */
-    public double[] diagInvAtWA;
+	/**
+	 * diag{1/(AT * A)}
+	 */
+	public double[] diagInvAtWA;
 }

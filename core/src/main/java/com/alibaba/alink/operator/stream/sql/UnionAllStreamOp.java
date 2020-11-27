@@ -7,25 +7,27 @@ import com.alibaba.alink.operator.stream.StreamOperator;
 /**
  * Union two stream operators. The duplicated records are kept.
  */
-public final class UnionAllStreamOp extends StreamOperator<UnionAllStreamOp> {
+public final class UnionAllStreamOp extends StreamOperator <UnionAllStreamOp> {
 
-    public UnionAllStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 2720154954692107159L;
 
-    public UnionAllStreamOp(Params params) {
-        super(params);
-    }
+	public UnionAllStreamOp() {
+		this(new Params());
+	}
 
-    @Override
-    public UnionAllStreamOp linkFrom(StreamOperator<?>... inputs) {
-        checkMinOpSize(1, inputs);
+	public UnionAllStreamOp(Params params) {
+		super(params);
+	}
 
-        this.setOutputTable(inputs[0].getOutputTable());
-        for (int i = 1; i < inputs.length; i++) {
-            this.setOutputTable(this.getOutputTable().unionAll(inputs[i].getOutputTable()));
-        }
+	@Override
+	public UnionAllStreamOp linkFrom(StreamOperator <?>... inputs) {
+		checkMinOpSize(1, inputs);
 
-        return this;
-    }
+		this.setOutputTable(inputs[0].getOutputTable());
+		for (int i = 1; i < inputs.length; i++) {
+			this.setOutputTable(this.getOutputTable().unionAll(inputs[i].getOutputTable()));
+		}
+
+		return this;
+	}
 }

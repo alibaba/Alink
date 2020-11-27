@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class IterTaskObjKeeper implements Serializable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(IterTaskObjKeeper.class);
+	private static final long serialVersionUID = -6620523029596479309L;
 
 	private static Map <Tuple2 <Long, Integer>, Object> states;
 
@@ -111,31 +112,31 @@ public class IterTaskObjKeeper implements Serializable {
 		}
 	}
 
-//	public static <T> DataSet <T> clear(DataSet <T> model, final long handle) {
-//		return clear(model, new long[] {handle});
-//	}
-//
-//	public static <T> DataSet <T> clear(DataSet <T> model, final long handle[]) {
-//		return model.mapPartition(new RichMapPartitionFunction <T, T>() {
-//			@Override
-//			public void mapPartition(Iterable <T> values, Collector <T> out) throws Exception {
-//				for (T val : values) {
-//					out.collect(val);
-//				}
-//
-//				int taskId = getRuntimeContext().getIndexOfThisSubtask();
-//				for (int i = 0; i < handle.length; ++i) {
-//					if (LOG.isDebugEnabled()) {
-//						LOG.debug("taskId: {}, start to clear handle: {}", taskId, handle[i]);
-//					}
-//					clear(handle[i]);
-//					if (LOG.isDebugEnabled()) {
-//						LOG.debug("taskId: {}, end to clear handle: {}", taskId, handle[i]);
-//					}
-//				}
-//			}
-//		}).returns(model.getType());
-//	}
+	//	public static <T> DataSet <T> clear(DataSet <T> model, final long handle) {
+	//		return clear(model, new long[] {handle});
+	//	}
+	//
+	//	public static <T> DataSet <T> clear(DataSet <T> model, final long handle[]) {
+	//		return model.mapPartition(new RichMapPartitionFunction <T, T>() {
+	//			@Override
+	//			public void mapPartition(Iterable <T> values, Collector <T> out) throws Exception {
+	//				for (T val : values) {
+	//					out.collect(val);
+	//				}
+	//
+	//				int taskId = getRuntimeContext().getIndexOfThisSubtask();
+	//				for (int i = 0; i < handle.length; ++i) {
+	//					if (LOG.isDebugEnabled()) {
+	//						LOG.debug("taskId: {}, start to clear handle: {}", taskId, handle[i]);
+	//					}
+	//					clear(handle[i]);
+	//					if (LOG.isDebugEnabled()) {
+	//						LOG.debug("taskId: {}, end to clear handle: {}", taskId, handle[i]);
+	//					}
+	//				}
+	//			}
+	//		}).returns(model.getType());
+	//	}
 
 	public static boolean contains(long randId, int taskId) {
 		rwlock.readLock().lock();

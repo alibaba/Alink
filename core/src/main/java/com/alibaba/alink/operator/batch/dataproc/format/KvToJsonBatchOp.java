@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.operator.batch.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.KvToJsonParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class KvToJsonBatchOp extends BaseFormatTransBatchOp<KvToJsonBatchOp>
-    implements KvToJsonParams<KvToJsonBatchOp> {
+/**
+ * Transform data type from Kv to Json.
+ */
+public class KvToJsonBatchOp extends BaseFormatTransBatchOp <KvToJsonBatchOp>
+	implements KvToJsonParams <KvToJsonBatchOp> {
 
-    public KvToJsonBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 5504835541940677768L;
 
-    public KvToJsonBatchOp(Params params) {
-        super(FormatType.KV, FormatType.JSON, params);
-    }
+	public KvToJsonBatchOp() {
+		this(new Params());
+	}
+
+	public KvToJsonBatchOp(Params params) {
+		super(FormatType.KV, FormatType.JSON, params);
+	}
 }

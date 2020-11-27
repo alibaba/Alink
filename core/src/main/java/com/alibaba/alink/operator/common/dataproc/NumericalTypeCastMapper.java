@@ -10,7 +10,6 @@ import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
-import com.alibaba.alink.params.dataproc.HasTargetType;
 import com.alibaba.alink.params.dataproc.NumericalTypeCastParams;
 
 import java.util.Arrays;
@@ -20,6 +19,7 @@ import java.util.function.Function;
  *
  */
 public class NumericalTypeCastMapper extends Mapper {
+	private static final long serialVersionUID = 767160752523041431L;
 	private final OutputColsHelper outputColsHelper;
 	private final int[] colIndices;
 	private final TypeInformation targetType;
@@ -40,7 +40,7 @@ public class NumericalTypeCastMapper extends Mapper {
 			reservedColNames = dataSchema.getFieldNames();
 		}
 
-		targetType = FlinkTypeConverter.getFlinkType(params.get(HasTargetType.TARGET_TYPE).toString());
+		targetType = FlinkTypeConverter.getFlinkType(params.get(NumericalTypeCastParams.TARGET_TYPE).toString());
 
 		this.outputColsHelper = new OutputColsHelper(dataSchema, outputColNames,
 			Arrays.stream(outputColNames).map(x -> targetType).toArray(TypeInformation[]::new), reservedColNames);
@@ -65,9 +65,9 @@ public class NumericalTypeCastMapper extends Mapper {
 
 	@Override
 	public Row map(Row row) throws Exception {
-        // this initiate operation should be in open() method. But in somewhere else like TreeModelMapper, this mapper
-        // is used directly instead of in flink, so the open() in RichFunction doesn't work. May fix later.
-		if (castFunc ==  null) {
+		// this initiate operation should be in open() method. But in somewhere else like TreeModelMapper, this mapper
+		// is used directly instead of in flink, so the open() in RichFunction doesn't work. May fix later.
+		if (castFunc == null) {
 			initCastFunc();
 		}
 		return this.outputColsHelper.getResultRow(row,

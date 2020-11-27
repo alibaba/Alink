@@ -16,6 +16,8 @@ import com.alibaba.alink.params.nlp.NGramParams;
 public final class NGramStreamOp extends MapStreamOp <NGramStreamOp>
 	implements NGramParams <NGramStreamOp> {
 
+	private static final long serialVersionUID = -1986064720969918631L;
+
 	public NGramStreamOp() {
 		this(null);
 	}

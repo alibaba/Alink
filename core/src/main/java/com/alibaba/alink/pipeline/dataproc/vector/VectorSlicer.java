@@ -10,8 +10,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * VectorSlicer is a transformer that takes a feature vector and outputs a new feature vector with a sub-array of the
  * original features. It is useful for extracting features from a vector column.
  */
-public class VectorSlicer extends MapTransformer<VectorSlicer>
+public class VectorSlicer extends MapTransformer <VectorSlicer>
 	implements VectorSliceParams <VectorSlicer> {
+
+	private static final long serialVersionUID = 790328000908916758L;
 
 	public VectorSlicer() {
 		this(null);

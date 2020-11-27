@@ -7,7 +7,7 @@ import com.alibaba.alink.params.shared.colname.HasVectorCol;
  * Params for KMeansTrainer.
  */
 public interface KMeansTrainParams<T> extends
-	HasKMeansDistanceType<T>,
+	HasKMeansDistanceType <T>,
 	HasVectorCol <T>,
 	BaseKMeansTrainParams <T> {
 }

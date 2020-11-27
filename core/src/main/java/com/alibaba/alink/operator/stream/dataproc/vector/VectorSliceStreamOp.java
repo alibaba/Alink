@@ -9,10 +9,11 @@ import com.alibaba.alink.params.dataproc.vector.VectorSliceParams;
 /**
  * VectorSlicer is a transformer that takes a feature vector and outputs a new feature vector with a sub-array of the
  * original features. It is useful for extracting features from a vector column.
- *
  */
 public final class VectorSliceStreamOp extends MapStreamOp <VectorSliceStreamOp>
 	implements VectorSliceParams <VectorSliceStreamOp> {
+
+	private static final long serialVersionUID = -3032334863737484545L;
 
 	public VectorSliceStreamOp() {
 		this(null);

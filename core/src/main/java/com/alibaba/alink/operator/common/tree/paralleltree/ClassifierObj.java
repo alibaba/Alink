@@ -13,8 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
-public class ClassifierObj extends TreeObj<int[]> {
+public class ClassifierObj extends TreeObj <int[]> {
 	private static final Logger LOG = LoggerFactory.getLogger(ClassifierObj.class);
+	private static final long serialVersionUID = -913607375511779459L;
 
 	private Criteria.Gini total;
 	private int[] labels;
@@ -78,7 +79,7 @@ public class ClassifierObj extends TreeObj<int[]> {
 		}
 	}
 
-	public final Tuple2<int[], Double> bestSplitCategorical(
+	public final Tuple2 <int[], Double> bestSplitCategorical(
 		int featureStart, int categoricalSize) {
 		double bestGain = 0.;
 		int[] bestSplit = new int[categoricalSize];
@@ -96,13 +97,13 @@ public class ClassifierObj extends TreeObj<int[]> {
 					splitBuf[j] = 0;
 					int binStart = featureStart + j * nLabels;
 					for (int z = 0; z < nLabels; ++z) {
-						left.add(z, minusHist[binStart + z]);
+						left.add(z, minusHist[binStart + z], 1);
 					}
 				} else {
 					splitBuf[j] = 1;
 					int binStart = featureStart + j * nLabels;
 					for (int z = 0; z < nLabels; ++z) {
-						right.add(z, minusHist[binStart + z]);
+						right.add(z, minusHist[binStart + z], 1);
 					}
 				}
 			}
@@ -123,7 +124,7 @@ public class ClassifierObj extends TreeObj<int[]> {
 		return Tuple2.of(bestSplit, bestGain);
 	}
 
-	public final Tuple2<Integer, Double> bestSplitNumerical(int fStart) throws Exception {
+	public final Tuple2 <Integer, Double> bestSplitNumerical(int fStart) throws Exception {
 		double bestGain = 0.;
 		int bestSplit = 0;
 		Criteria.Gini left = new Criteria.Gini(0, 0, new double[nLabels]);
@@ -132,8 +133,8 @@ public class ClassifierObj extends TreeObj<int[]> {
 		for (int z = 0; z < nBin - 1; ++z) {
 			int binStart = fStart + z * nLabels;
 			for (int i = 0; i < nLabels; ++i) {
-				left.add(i, minusHist[binStart + i]);
-				right.subtract(i, minusHist[binStart + i]);
+				left.add(i, minusHist[binStart + i], 1);
+				right.subtract(i, minusHist[binStart + i], 1);
 			}
 
 			if (minSamplesPerLeaf > left.getNumInstances()
@@ -166,7 +167,7 @@ public class ClassifierObj extends TreeObj<int[]> {
 		for (int z = 0; z < nBin; ++z) {
 			int zStart = start + z * nLabels;
 			for (int i = 0; i < nLabels; ++i) {
-				total.add(i, minusHist[zStart + i]);
+				total.add(i, minusHist[zStart + i], 1);
 			}
 		}
 
@@ -187,14 +188,14 @@ public class ClassifierObj extends TreeObj<int[]> {
 			for (int j = 0; j < baggingFeatureCount; ++j) {
 				int fStart = start + j * nBin * nLabels;
 				if (featureMetas[pair.baggingFeatures[j]].getType().equals(FeatureMeta.FeatureType.CONTINUOUS)) {
-					Tuple2<Integer, Double> gain = bestSplitNumerical(fStart);
+					Tuple2 <Integer, Double> gain = bestSplitNumerical(fStart);
 					if (gain.f1 > gBestGain) {
 						gBestGain = gain.f1;
 						gBestSplit = gain.f0;
 						gBestFeature = pair.baggingFeatures[j];
 					}
 				} else {
-					Tuple2<int[], Double> gain = bestSplitCategorical(fStart,
+					Tuple2 <int[], Double> gain = bestSplitCategorical(fStart,
 						featureMetas[pair.baggingFeatures[j]].getNumCategorical());
 					if (gain.f1 > gBestGain) {
 						gBestGain = gain.f1;
@@ -207,14 +208,14 @@ public class ClassifierObj extends TreeObj<int[]> {
 			for (int j = 0; j < nFeatureCol; ++j) {
 				int fStart = start + j * nBin * nLabels;
 				if (featureMetas[j].getType().equals(FeatureMeta.FeatureType.CONTINUOUS)) {
-					Tuple2<Integer, Double> gain = bestSplitNumerical(fStart);
+					Tuple2 <Integer, Double> gain = bestSplitNumerical(fStart);
 					if (gain.f1 > gBestGain) {
 						gBestGain = gain.f1;
 						gBestSplit = gain.f0;
 						gBestFeature = j;
 					}
 				} else {
-					Tuple2<int[], Double> gain = bestSplitCategorical(fStart,
+					Tuple2 <int[], Double> gain = bestSplitCategorical(fStart,
 						featureMetas[j].getNumCategorical());
 					if (gain.f1 > gBestGain) {
 						gBestGain = gain.f1;

@@ -17,6 +17,8 @@ import com.alibaba.alink.params.io.TextSinkParams;
 public final class TextSinkStreamOp extends BaseSinkStreamOp <TextSinkStreamOp>
 	implements TextSinkParams <TextSinkStreamOp> {
 
+	private static final long serialVersionUID = 8805027283170198476L;
+
 	public TextSinkStreamOp() {
 		this(new Params());
 	}
@@ -26,7 +28,7 @@ public final class TextSinkStreamOp extends BaseSinkStreamOp <TextSinkStreamOp>
 	}
 
 	@Override
-	public TextSinkStreamOp sinkFrom(StreamOperator in) {
+	public TextSinkStreamOp sinkFrom(StreamOperator<?> in) {
 		TypeInformation <?>[] types = in.getSchema().getFieldTypes();
 		if (types.length != 1 || Types.STRING != types[0]) {
 			throw new IllegalArgumentException("The Input could only be a string type column.");

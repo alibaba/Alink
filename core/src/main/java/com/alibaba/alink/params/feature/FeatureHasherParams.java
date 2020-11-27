@@ -2,7 +2,7 @@ package com.alibaba.alink.params.feature;
 
 import com.alibaba.alink.params.shared.colname.HasCategoricalCols;
 import com.alibaba.alink.params.shared.colname.HasOutputCol;
-import com.alibaba.alink.params.shared.colname.HasReservedCols;
+import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 
 /**
@@ -11,6 +11,6 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 public interface FeatureHasherParams<T> extends
 	HasSelectedCols <T>,
 	HasOutputCol <T>,
-	HasReservedCols <T>,
+	HasReservedColsDefaultAsNull <T>,
 	HasNumFeatures <T>,
 	HasCategoricalCols <T> {}

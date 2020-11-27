@@ -4,10 +4,10 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.SISOMapper;
-import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.params.dataproc.vector.VectorSliceParams;
 
 /**
@@ -15,10 +15,12 @@ import com.alibaba.alink.params.dataproc.vector.VectorSliceParams;
  */
 public class VectorSliceMapper extends SISOMapper {
 
+	private static final long serialVersionUID = -569169857277398989L;
 	private int[] indices;
 
 	/**
 	 * Constructor.
+	 *
 	 * @param dataSchema the data schema.
 	 * @param params     the params.
 	 */

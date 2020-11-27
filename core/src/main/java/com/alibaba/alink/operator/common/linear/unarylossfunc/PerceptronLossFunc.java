@@ -4,6 +4,8 @@ package com.alibaba.alink.operator.common.linear.unarylossfunc;
  * Perceptron loss function.
  */
 public class PerceptronLossFunc implements UnaryLossFunc {
+	private static final long serialVersionUID = 700275016989709244L;
+
 	public PerceptronLossFunc() { }
 
 	@Override

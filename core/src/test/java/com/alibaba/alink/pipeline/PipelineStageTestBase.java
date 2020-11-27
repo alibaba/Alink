@@ -25,27 +25,29 @@ import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 /**
  * The base class for testing the base implementation of pipeline stages, i.e. Estimators and Transformers.
  * This class is package private because we do not expect extension outside of the package.
  */
-abstract class PipelineStageTestBase {
+abstract class PipelineStageTestBase extends AlinkTestBase {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testMismatchTableEnvironment() {
 		Long id = MLEnvironmentFactory.getNewMLEnvironmentId();
 		MLEnvironment env = MLEnvironmentFactory.get(id);
-		DataSet<Integer> input = env.getExecutionEnvironment().fromElements(1, 2, 3);
+		DataSet <Integer> input = env.getExecutionEnvironment().fromElements(1, 2, 3);
 		Table t = env.getBatchTableEnvironment().fromDataSet(input);
 
-		PipelineStageBase<?> pipelineStageBase = createPipelineStage();
+		PipelineStageBase <?> pipelineStageBase = createPipelineStage();
 		pipelineStageBase.setMLEnvironmentId(id);
 		if (pipelineStageBase instanceof EstimatorBase) {
 			((Estimator) pipelineStageBase).fit(MLEnvironmentFactory.getDefault().getBatchTableEnvironment(), t);
 		} else {
-			((Transformer) pipelineStageBase).transform(MLEnvironmentFactory.getDefault().getBatchTableEnvironment(), t);
+			((Transformer) pipelineStageBase).transform(MLEnvironmentFactory.getDefault().getBatchTableEnvironment(),
+				t);
 		}
 	}
 
@@ -54,7 +56,7 @@ abstract class PipelineStageTestBase {
 		Long id = MLEnvironmentFactory.getNewMLEnvironmentId();
 		MLEnvironment env = MLEnvironmentFactory.get(id);
 
-		PipelineStageBase<?> pipelineStageBase = createPipelineStage();
+		PipelineStageBase <?> pipelineStageBase = createPipelineStage();
 		pipelineStageBase.setMLEnvironmentId(id);
 		if (pipelineStageBase instanceof Estimator) {
 			((Estimator) pipelineStageBase).fit(env.getBatchTableEnvironment(), null);

@@ -34,7 +34,7 @@ import org.apache.flink.table.api.TableEnvironment;
  * @param <M> class type of the {@link Model} this Estimator produces.
  */
 @PublicEvolving
-public interface Estimator<E extends Estimator<E, M>, M extends Model<M>> extends PipelineStage<E> {
+public interface Estimator<E extends Estimator <E, M>, M extends Model <M>> extends PipelineStage <E> {
 
 	/**
 	 * Train and produce a {@link Model} which fits the records in the given {@link Table}.

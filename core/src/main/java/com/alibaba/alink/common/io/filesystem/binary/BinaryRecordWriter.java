@@ -19,32 +19,33 @@ import java.io.Serializable;
  */
 public class BinaryRecordWriter implements Serializable {
 
-    static final int MAGIC1 = 'A';
-    static final int MAGIC2 = 'L';
-    static final int MAGIC3 = 'K';
-    static final int MAX_RECORD_LENGTH = 8 * 1024 * 1024;
+	static final int MAGIC1 = 'A';
+	static final int MAGIC2 = 'L';
+	static final int MAGIC3 = 'K';
+	static final int MAX_RECORD_LENGTH = 8 * 1024 * 1024;
+	private static final long serialVersionUID = -2186048394178435538L;
 
-	private OutputStream stream;
-    private RowSerializer serializer;
+	private final OutputStream stream;
+	private final RowSerializer serializer;
 
-    public BinaryRecordWriter(OutputStream stream, String[] fieldNames, TypeInformation[] fieldTypes) {
-        this.stream = stream;
-        this.serializer = new RowSerializer(fieldNames, fieldTypes);
-    }
+	public BinaryRecordWriter(OutputStream stream, String[] fieldNames, TypeInformation<?>[] fieldTypes) {
+		this.stream = stream;
+		this.serializer = new RowSerializer(fieldNames, fieldTypes);
+	}
 
-    public void writeHeader() throws IOException {
-        stream.write(MAGIC1);
-        stream.write(MAGIC2);
-        stream.write(MAGIC3);
-    }
+	public void writeHeader() throws IOException {
+		stream.write(MAGIC1);
+		stream.write(MAGIC2);
+		stream.write(MAGIC3);
+	}
 
-    public void writeRecord(Row record) throws IOException {
-        byte[] bytes = serializer.serialize(record);
-        Preconditions.checkArgument(bytes.length <= MAX_RECORD_LENGTH);
-        int len = bytes.length;
-        stream.write(len >> 16);
-        stream.write(len >> 8);
-        stream.write(len);
-        stream.write(bytes);
-    }
+	public void writeRecord(Row record) throws IOException {
+		byte[] bytes = serializer.serialize(record);
+		Preconditions.checkArgument(bytes.length <= MAX_RECORD_LENGTH);
+		int len = bytes.length;
+		stream.write(len >> 16);
+		stream.write(len >> 8);
+		stream.write(len);
+		stream.write(bytes);
+	}
 }

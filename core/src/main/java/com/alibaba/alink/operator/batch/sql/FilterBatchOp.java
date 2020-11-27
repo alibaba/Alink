@@ -8,24 +8,26 @@ import com.alibaba.alink.params.sql.FilterParams;
 /**
  * Filter records in the batch operator.
  */
-public final class FilterBatchOp extends BaseSqlApiBatchOp<FilterBatchOp>
-    implements FilterParams<FilterBatchOp> {
+public final class FilterBatchOp extends BaseSqlApiBatchOp <FilterBatchOp>
+	implements FilterParams <FilterBatchOp> {
 
-    public FilterBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 1182682104232353734L;
 
-    public FilterBatchOp(String clause) {
-        this(new Params().set(CLAUSE, clause));
-    }
+	public FilterBatchOp() {
+		this(new Params());
+	}
 
-    public FilterBatchOp(Params params) {
-        super(params);
-    }
+	public FilterBatchOp(String clause) {
+		this(new Params().set(CLAUSE, clause));
+	}
 
-    @Override
-    public FilterBatchOp linkFrom(BatchOperator<?>... inputs) {
-        this.setOutputTable(inputs[0].filter(getClause()).getOutputTable());
-        return this;
-    }
+	public FilterBatchOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public FilterBatchOp linkFrom(BatchOperator <?>... inputs) {
+		this.setOutputTable(inputs[0].filter(getClause()).getOutputTable());
+		return this;
+	}
 }

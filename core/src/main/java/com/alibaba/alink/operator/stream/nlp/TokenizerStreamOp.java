@@ -12,6 +12,8 @@ import com.alibaba.alink.params.nlp.TokenizerParams;
 public final class TokenizerStreamOp extends MapStreamOp <TokenizerStreamOp>
 	implements TokenizerParams <TokenizerStreamOp> {
 
+	private static final long serialVersionUID = -5428492033431991388L;
+
 	public TokenizerStreamOp() {
 		this(null);
 	}

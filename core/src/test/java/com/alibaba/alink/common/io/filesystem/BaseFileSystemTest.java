@@ -72,7 +72,7 @@ public class BaseFileSystemTest {
 	public void mkdirs() throws IOException {
 		final String sign = "file_mkdir";
 
-		BaseFileSystem<?> fileSystem = new LocalFileSystem();
+		BaseFileSystem <?> fileSystem = new LocalFileSystem();
 		String path = folder.getRoot().toPath().toString() + "/" + sign;
 
 		fileSystem.mkdirs(path);
@@ -245,7 +245,8 @@ public class BaseFileSystemTest {
 		final String sign = "file_list";
 
 		FilePath folderWrite = new FilePath(new Path(folder.getRoot().toPath().toString(), sign));
-		FilePath fileWrite = new FilePath(new Path(folder.getRoot().toPath().toString(), "1"), folderWrite.getFileSystem());
+		FilePath fileWrite = new FilePath(new Path(folder.getRoot().toPath().toString(), "1"),
+			folderWrite.getFileSystem());
 		folderWrite.getFileSystem().mkdirs(folderWrite.getPathStr());
 		writeFile(fileWrite, sign);
 
@@ -257,11 +258,13 @@ public class BaseFileSystemTest {
 		final String sign = "file_dir";
 
 		FilePath folderWrite = new FilePath(new Path(folder.getRoot().toPath().toString(), sign));
-		FilePath fileWrite = new FilePath(new Path(folder.getRoot().toPath().toString(), "1"), folderWrite.getFileSystem());
+		FilePath fileWrite = new FilePath(new Path(folder.getRoot().toPath().toString(), "1"),
+			folderWrite.getFileSystem());
 		folderWrite.getFileSystem().mkdirs(folderWrite.getPathStr());
 		writeFile(fileWrite, sign);
 
-		Assert.assertEquals(1, folderWrite.getFileSystem().listDirectories(folder.getRoot().toPath().toString()).size());
+		Assert.assertEquals(1,
+			folderWrite.getFileSystem().listDirectories(folder.getRoot().toPath().toString()).size());
 	}
 
 	@Test
@@ -276,7 +279,6 @@ public class BaseFileSystemTest {
 			fileWrite.getFileSystem().getFileStatus(fileWrite.getPathStr()), 0, 1
 		).length);
 	}
-
 
 	private void writeFile(FilePath path, String content) throws IOException {
 		FSDataOutputStream outputStream = null;

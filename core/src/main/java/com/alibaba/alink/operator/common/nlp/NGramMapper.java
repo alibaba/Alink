@@ -14,40 +14,41 @@ import com.alibaba.alink.params.nlp.NGramParams;
  * "_" character. All the nGrams are joined together with outputDelimiter in the new document.
  */
 public class NGramMapper extends SISOMapper {
-    private static final String CONNECTOR_CHARACTER = "_";
+	private static final String CONNECTOR_CHARACTER = "_";
+	private static final long serialVersionUID = 7945864134141568652L;
 
-    private final int n;
+	private final int n;
 
-    public NGramMapper(TableSchema dataSchema, Params params) {
-        super(dataSchema, params);
-        this.n = this.params.get(NGramParams.N);
-        if (this.n <= 0) {
-            throw new IllegalArgumentException("N must be positive!");
-        }
-    }
+	public NGramMapper(TableSchema dataSchema, Params params) {
+		super(dataSchema, params);
+		this.n = this.params.get(NGramParams.N);
+		if (this.n <= 0) {
+			throw new IllegalArgumentException("N must be positive!");
+		}
+	}
 
-    @Override
-    public TypeInformation initOutputColType() {
-        return Types.STRING;
-    }
+	@Override
+	public TypeInformation initOutputColType() {
+		return Types.STRING;
+	}
 
-    @Override
-    public Object mapColumn(Object input) {
-        if (null == input) {
-            return null;
-        }
-        String content = (String)input;
-        String[] tokens = content.split(NLPConstant.WORD_DELIMITER);
-        StringBuilder sbd = new StringBuilder();
-        for (int i = 0; i < 1 + tokens.length - n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (j > 0) {
-                    sbd.append(CONNECTOR_CHARACTER);
-                }
-                sbd.append(tokens[i + j]);
-            }
-            sbd.append(NLPConstant.WORD_DELIMITER);
-        }
-        return sbd.toString().trim();
-    }
+	@Override
+	public Object mapColumn(Object input) {
+		if (null == input) {
+			return null;
+		}
+		String content = (String) input;
+		String[] tokens = content.split(NLPConstant.WORD_DELIMITER);
+		StringBuilder sbd = new StringBuilder();
+		for (int i = 0; i < 1 + tokens.length - n; i++) {
+			for (int j = 0; j < n; j++) {
+				if (j > 0) {
+					sbd.append(CONNECTOR_CHARACTER);
+				}
+				sbd.append(tokens[i + j]);
+			}
+			sbd.append(NLPConstant.WORD_DELIMITER);
+		}
+		return sbd.toString().trim();
+	}
 }

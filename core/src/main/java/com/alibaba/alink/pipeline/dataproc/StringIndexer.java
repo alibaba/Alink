@@ -1,11 +1,12 @@
 package com.alibaba.alink.pipeline.dataproc;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.StringIndexerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.StringIndexerPredictParams;
 import com.alibaba.alink.params.dataproc.StringIndexerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * Encode one column of strings to bigint type indices.
@@ -21,21 +22,22 @@ import org.apache.flink.ml.api.misc.param.Params;
  * <li>alphabet_desc</li>
  * </ol>
  */
-public class StringIndexer extends Trainer<StringIndexer, StringIndexerModel> implements
-    StringIndexerTrainParams<StringIndexer>,
-    StringIndexerPredictParams<StringIndexer> {
+public class StringIndexer extends Trainer <StringIndexer, StringIndexerModel> implements
+	StringIndexerTrainParams <StringIndexer>,
+	StringIndexerPredictParams <StringIndexer> {
 
+	private static final long serialVersionUID = -5088740733118669048L;
 
-    public StringIndexer() {
-        super();
-    }
+	public StringIndexer() {
+		super();
+	}
 
-    public StringIndexer(Params params) {
-        super(params);
-    }
+	public StringIndexer(Params params) {
+		super(params);
+	}
 
-    @Override
-    protected BatchOperator train(BatchOperator in) {
-        return new StringIndexerTrainBatchOp(this.getParams()).linkFrom(in);
-    }
+	@Override
+	protected BatchOperator <?> train(BatchOperator <?> in) {
+		return new StringIndexerTrainBatchOp(this.getParams()).linkFrom(in);
+	}
 }

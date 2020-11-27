@@ -7,7 +7,8 @@ import java.util.stream.Collectors;
 /**
  * Multiple computeFunction chained into one.
  */
-class ChainedComputation extends ComputeFunction {
+final class ChainedComputation extends ComputeFunction {
+	private static final long serialVersionUID = -6029144949543901128L;
 	List <ComputeFunction> computations = new ArrayList <>();
 
 	public ChainedComputation add(ComputeFunction computation) {

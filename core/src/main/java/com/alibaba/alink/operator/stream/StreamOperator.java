@@ -1,20 +1,5 @@
 package com.alibaba.alink.operator.stream;
 
-import java.util.List;
-import java.util.function.Function;
-
-import com.alibaba.alink.common.MLEnvironment;
-import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.AlgoOperator;
-import com.alibaba.alink.operator.common.sql.StreamSqlOperators;
-import com.alibaba.alink.operator.stream.dataproc.SampleStreamOp;
-import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
-import com.alibaba.alink.operator.stream.utils.PrintStreamOp;
-import com.alibaba.alink.operator.stream.utils.UDFStreamOp;
-import com.alibaba.alink.operator.stream.utils.UDTFStreamOp;
-
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -28,6 +13,20 @@ import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.MLEnvironment;
+import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.AlgoOperator;
+import com.alibaba.alink.operator.common.sql.StreamSqlOperators;
+import com.alibaba.alink.operator.stream.dataproc.SampleStreamOp;
+import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
+import com.alibaba.alink.operator.stream.utils.PrintStreamOp;
+import com.alibaba.alink.operator.stream.utils.UDFStreamOp;
+import com.alibaba.alink.operator.stream.utils.UDTFStreamOp;
+
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * Base class of stream algorithm operators.
@@ -36,8 +35,10 @@ import org.apache.flink.util.Preconditions;
  */
 public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoOperator <T> {
 
+	private static final long serialVersionUID = 6874050011609818642L;
+
 	public StreamOperator() {
-		super();
+		this(null);
 	}
 
 	/**
@@ -148,11 +149,11 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		return StreamSqlOperators.as(this, fields);
 	}
 
-    @Override
-    public StreamOperator<?> as(String[] fields) {
+	@Override
+	public StreamOperator <?> as(String[] fields) {
 		StringBuilder sbd = new StringBuilder();
 		for (int i = 0; i < fields.length; i++) {
-			if(i > 0) {
+			if (i > 0) {
 				sbd.append(",");
 			}
 			sbd.append(fields[i]);
@@ -170,7 +171,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		return StreamSqlOperators.filter(this, clause);
 	}
 
-    /* open ends here */
+	/* open ends here */
 
 	/**
 	 * Abbreviation of {@link #linkTo(StreamOperator)}
@@ -188,13 +189,13 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		return print(-1, 100);
 	}
 
-    public StreamOperator print(int refreshInterval, int maxLimit){
-	    return linkTo(new PrintStreamOp(
-	        new Params()
-                .set(PrintStreamOp.REFRSH_INTERVAL, refreshInterval)
-                .set(PrintStreamOp.MAX_LIMIT, maxLimit))
+	public StreamOperator print(int refreshInterval, int maxLimit) {
+		return linkTo(new PrintStreamOp(
+			new Params()
+				.set(PrintStreamOp.REFRESH_INTERVAL, refreshInterval)
+				.set(PrintStreamOp.MAX_LIMIT, maxLimit))
 			.setMLEnvironmentId(getMLEnvironmentId()));
-    }
+	}
 
 	public static String createUniqueTableName() {
 		return TableUtil.getTempTableName();
@@ -265,7 +266,8 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 	 * @return This operator.
 	 */
 	public StreamOperator registerTableName(String name) {
-		MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment().registerTable(name, getOutputTable());
+		MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment().registerTable(name, getOutputTable
+			());
 		return this;
 	}
 
@@ -273,7 +275,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		MLEnvironmentFactory.getDefault().getStreamTableEnvironment().registerFunction(name, function);
 	}
 
-	public static <T> void registerFunction(String name, TableFunction<T> function) {
+	public static <T> void registerFunction(String name, TableFunction <T> function) {
 		MLEnvironmentFactory.getDefault().getStreamTableEnvironment().registerFunction(name, function);
 	}
 

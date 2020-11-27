@@ -1,21 +1,24 @@
 package com.alibaba.alink.operator.batch.classification;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.classification.NaiveBayesModelMapper;
 import com.alibaba.alink.params.classification.NaiveBayesPredictParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * Naive Bayes Predictor.
  */
-public class NaiveBayesPredictBatchOp extends ModelMapBatchOp<NaiveBayesPredictBatchOp>
-    implements NaiveBayesPredictParams<NaiveBayesPredictBatchOp> {
+public class NaiveBayesPredictBatchOp extends ModelMapBatchOp <NaiveBayesPredictBatchOp>
+	implements NaiveBayesPredictParams <NaiveBayesPredictBatchOp> {
 
-    public NaiveBayesPredictBatchOp() {
-        this(null);
-    }
+	private static final long serialVersionUID = 4147658526507997767L;
 
-    public NaiveBayesPredictBatchOp(Params params) {
-        super(NaiveBayesModelMapper::new, params);
-    }
+	public NaiveBayesPredictBatchOp() {
+		this(null);
+	}
+
+	public NaiveBayesPredictBatchOp(Params params) {
+		super(NaiveBayesModelMapper::new, params);
+	}
 }

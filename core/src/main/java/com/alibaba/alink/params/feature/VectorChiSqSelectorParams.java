@@ -6,6 +6,6 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCol;
  * Trait for VectorChiSqSelector.
  */
 public interface VectorChiSqSelectorParams<T> extends
-    BasedChisqSelectorParams<T>,
+	BasedChisqSelectorParams <T>,
 	HasSelectedCol <T> {
 }

@@ -6,8 +6,14 @@ import com.alibaba.alink.operator.common.feature.DCTMapper;
 import com.alibaba.alink.params.feature.DCTParams;
 import com.alibaba.alink.pipeline.MapTransformer;
 
-public class DCT extends MapTransformer<DCT>
-	implements DCTParams<DCT> {
+/**
+ * Discrete Cosine Transform(DCT) transforms a real-valued sequence in the time domain into another real-valued sequence
+ * with same length in the frequency domain.
+ */
+public class DCT extends MapTransformer <DCT>
+	implements DCTParams <DCT> {
+
+	private static final long serialVersionUID = 8394824597551977174L;
 
 	public DCT() {
 		this(new Params());

@@ -1,5 +1,15 @@
 package com.alibaba.alink.operator.common.optim;
 
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.types.Row;
+
+import com.alibaba.alink.common.comqueue.ComContext;
+import com.alibaba.alink.common.comqueue.ComputeFunction;
+import com.alibaba.alink.common.comqueue.IterativeComQueue;
+import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
@@ -10,23 +20,12 @@ import com.alibaba.alink.operator.common.optim.subfunc.OptimVariable;
 import com.alibaba.alink.operator.common.optim.subfunc.OutputModel;
 import com.alibaba.alink.operator.common.optim.subfunc.ParseRowModel;
 import com.alibaba.alink.operator.common.optim.subfunc.PreallocateCoefficient;
-import com.alibaba.alink.operator.common.optim.subfunc.PreallocateLossCurve;
+import com.alibaba.alink.operator.common.optim.subfunc.PreallocateConvergenceInfo;
 import com.alibaba.alink.operator.common.optim.subfunc.PreallocateSkyk;
 import com.alibaba.alink.operator.common.optim.subfunc.PreallocateVector;
 import com.alibaba.alink.operator.common.optim.subfunc.UpdateModel;
-import com.alibaba.alink.common.comqueue.ComContext;
-import com.alibaba.alink.common.comqueue.ComputeFunction;
-import com.alibaba.alink.common.comqueue.IterativeComQueue;
-import com.alibaba.alink.common.comqueue.communication.AllReduce;
-import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs100;
-import com.alibaba.alink.params.shared.linear.LinearTrainParams.OptimMethod;
+import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 import com.alibaba.alink.params.shared.optim.HasNumSearchStepDv4;
-
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.types.Row;
 
 /**
  * The optimizer of lbfgs.
@@ -41,7 +40,7 @@ public class Lbfgs extends Optimizer {
 	 * @param coefDim   the dimension of features.
 	 * @param params    some parameters of optimization method.
 	 */
-	public Lbfgs(DataSet<OptimObjFunc> objFunc, DataSet <Tuple3 <Double, Double, Vector>> trainData,
+	public Lbfgs(DataSet <OptimObjFunc> objFunc, DataSet <Tuple3 <Double, Double, Vector>> trainData,
 				 DataSet <Integer> coefDim, Params params) {
 		super(objFunc, trainData, coefDim, params);
 	}
@@ -54,7 +53,7 @@ public class Lbfgs extends Optimizer {
 	@Override
 	public DataSet <Tuple2 <DenseVector, double[]>> optimize() {
 		//get parameters.
-		int maxIter = params.get(HasMaxIterDefaultAs100.MAX_ITER);
+		int maxIter = params.get(LinearTrainParams.MAX_ITER);
 		int numSearchStep = params.get(HasNumSearchStepDv4.NUM_SEARCH_STEP);
 		if (null == this.coefVec) {
 			initCoefZeros();
@@ -67,7 +66,7 @@ public class Lbfgs extends Optimizer {
 		 * objFuncSet is the object function in dataSet format
 		 * .add(new PreallocateCoefficient(OptimName.currentCoef)) allocate memory for current coefficient
 		 * .add(new PreallocateCoefficient(OptimName.minCoef))     allocate memory for min loss coefficient
-		 * .add(new PreallocateLossCurve(OptimVariable.lossCurve)) allocate memory for loss values
+		 * .add(new PreallocateLossCurve(OptimVariable.convergenceInfo)) allocate memory for loss values
 		 * .add(new PreallocateVector(OptimName.dir ...))          allocate memory for dir
 		 * .add(new PreallocateVector(OptimName.grad))             allocate memory for grad
 		 * .add(new PreallocateSkyk())                             allocate memory for sK yK
@@ -85,16 +84,16 @@ public class Lbfgs extends Optimizer {
 			.initWithBroadcastData(OptimVariable.objFunc, objFuncSet)
 			.add(new PreallocateCoefficient(OptimVariable.currentCoef))
 			.add(new PreallocateCoefficient(OptimVariable.minCoef))
-			.add(new PreallocateLossCurve(OptimVariable.lossCurve, maxIter))
+			.add(new PreallocateConvergenceInfo(OptimVariable.convergenceInfo, maxIter))
 			.add(new PreallocateVector(OptimVariable.dir, new double[] {0.0, OptimVariable.learningRate}))
 			.add(new PreallocateVector(OptimVariable.grad))
 			.add(new PreallocateSkyk(OptimVariable.numCorrections))
 			.add(new CalcGradient())
 			.add(new AllReduce(OptimVariable.gradAllReduce))
 			.add(new CalDirection(OptimVariable.numCorrections))
-			.add(new CalcLosses(OptimMethod.LBFGS, numSearchStep))
+			.add(new CalcLosses(LinearTrainParams.OptimMethod.LBFGS, numSearchStep))
 			.add(new AllReduce(OptimVariable.lossAllReduce))
-			.add(new UpdateModel(params, OptimVariable.grad, OptimMethod.LBFGS, numSearchStep))
+			.add(new UpdateModel(params, OptimVariable.grad, LinearTrainParams.OptimMethod.LBFGS, numSearchStep))
 			.setCompareCriterionOfNode0(new IterTermination())
 			.closeWith(new OutputModel())
 			.setMaxIter(maxIter)
@@ -108,6 +107,7 @@ public class Lbfgs extends Optimizer {
 	 */
 	public static class CalDirection
 		extends ComputeFunction {
+		private static final long serialVersionUID = -4061612963118027380L;
 		private transient DenseVector oldGradient;
 		private transient double[] alpha;
 		private int m;

@@ -9,8 +9,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
 /**
  * Check the size of a vector. if size is not match, then do as handleInvalid.
  */
-public class VectorSizeHint extends MapTransformer<VectorSizeHint>
+public class VectorSizeHint extends MapTransformer <VectorSizeHint>
 	implements VectorSizeHintParams <VectorSizeHint> {
+
+	private static final long serialVersionUID = 5211648405482627545L;
 
 	public VectorSizeHint() {
 		this(null);

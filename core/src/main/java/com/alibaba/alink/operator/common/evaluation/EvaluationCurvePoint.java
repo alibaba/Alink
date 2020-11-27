@@ -8,14 +8,15 @@ import java.io.Serializable;
  * x, y is the coordinate. p is the score threshold.
  */
 public class EvaluationCurvePoint implements Serializable {
+	private static final long serialVersionUID = 723032367087452730L;
 	private double x;
 	private double y;
 	private double p;
 
-	public EvaluationCurvePoint(double x, double y, double p){
+	public EvaluationCurvePoint(double x, double y, double p) {
 		this.x = x;
 		this.y = y;
-		this. p = p;
+		this.p = p;
 	}
 
 	public double getX() {

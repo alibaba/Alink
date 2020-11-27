@@ -29,7 +29,7 @@ public class MLEnvironmentFactory {
 	/**
 	 * Map that hold the MLEnvironment and use the MLEnvironmentId as its key.
 	 */
-	private static final HashMap<Long, MLEnvironment> map = new HashMap<>();
+	private static final HashMap <Long, MLEnvironment> map = new HashMap <>();
 
 	/**
 	 * Get the MLEnvironment using a MLEnvironmentId.

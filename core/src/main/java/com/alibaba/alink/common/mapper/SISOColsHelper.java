@@ -19,6 +19,7 @@ import java.io.Serializable;
  */
 class SISOColsHelper implements Serializable {
 
+	private static final long serialVersionUID = 4194684225961876694L;
 	/**
 	 * The OutputColsHelper which helps to arrange final output from input and predicted result.
 	 */
@@ -39,7 +40,7 @@ class SISOColsHelper implements Serializable {
 	 * @param outputType Type of the single output column.
 	 * @param params     Params to retrieve selected/output/reserved columns.
 	 */
-	SISOColsHelper(TableSchema dataSchema, TypeInformation<?> outputType, Params params) {
+	SISOColsHelper(TableSchema dataSchema, TypeInformation <?> outputType, Params params) {
 		String selectedColName = params.get(SISOMapperParams.SELECTED_COL);
 		String outputColName = params.get(SISOMapperParams.OUTPUT_COL);
 		String[] reservedColNames = params.get(SISOMapperParams.RESERVED_COLS);
@@ -69,7 +70,7 @@ class SISOColsHelper implements Serializable {
 	 * @return the result row with un-effected columns set properly.
 	 * @throws Exception
 	 */
-	Row handleMap(Row input, ExceptionFunction<Object, Object, Exception> func) throws Exception {
+	Row handleMap(Row input, ExceptionFunction <Object, Object, Exception> func) throws Exception {
 		Object output = func.apply(input.getField(this.colIndex));
 		return this.outputColsHelper.getResultRow(input, Row.of(output));
 	}
@@ -83,8 +84,8 @@ class SISOColsHelper implements Serializable {
 	 * @throws Exception
 	 */
 	void handleFlatMap(
-		Row input, Collector<Row> collector,
-		ExceptionBiConsumer<Object, Collector<Object>, Exception> func) throws Exception {
+		Row input, Collector <Row> collector,
+		ExceptionBiConsumer <Object, Collector <Object>, Exception> func) throws Exception {
 		CollectorWrapper collectorWrapper = new CollectorWrapper(collector, input);
 		func.accept(input.getField(this.colIndex), collectorWrapper);
 	}
@@ -94,12 +95,12 @@ class SISOColsHelper implements Serializable {
 	 * proxy {@link Collector} which accept {@link Row}. The row is create from the the accepted
 	 * column object, with other columns handled property by {@link OutputColsHelper}.
 	 */
-	private class CollectorWrapper implements Collector<Object> {
+	private class CollectorWrapper implements Collector <Object> {
 
-		private final Collector<Row> proxy;
+		private final Collector <Row> proxy;
 		private final Row row;
 
-		CollectorWrapper(Collector<Row> proxy, Row row) {
+		CollectorWrapper(Collector <Row> proxy, Row row) {
 			this.proxy = proxy;
 			this.row = row;
 		}

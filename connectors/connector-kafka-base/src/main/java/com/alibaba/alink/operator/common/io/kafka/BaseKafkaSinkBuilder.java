@@ -21,7 +21,7 @@ package com.alibaba.alink.operator.common.io.kafka;
 
 import com.alibaba.alink.operator.common.io.serde.RowToCsvSerialization;
 import com.alibaba.alink.operator.common.io.serde.RowToJsonSerialization;
-import com.alibaba.alink.params.io.shared_params.HasDataFormat;
+import com.alibaba.alink.params.io.shared.HasDataFormat;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;

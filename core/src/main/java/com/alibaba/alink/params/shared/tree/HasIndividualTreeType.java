@@ -6,8 +6,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.params.ParamUtil;
 
-public interface HasIndividualTreeType<T> extends WithParams<T> {
-	ParamInfo<TreeType> TREE_TYPE = ParamInfoFactory
+public interface HasIndividualTreeType<T> extends WithParams <T> {
+	ParamInfo <TreeType> TREE_TYPE = ParamInfoFactory
 		.createParamInfo("treeType", TreeType.class)
 		.setDescription("The criteria of the tree. " +
 			"There are three options: gini, infoGain, infoGainRatio"

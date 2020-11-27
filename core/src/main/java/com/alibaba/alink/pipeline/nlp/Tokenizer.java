@@ -9,8 +9,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
 /**
  * Transform all words into lower case, and remove extra space.
  */
-public class Tokenizer extends MapTransformer<Tokenizer>
+public class Tokenizer extends MapTransformer <Tokenizer>
 	implements TokenizerParams <Tokenizer> {
+
+	private static final long serialVersionUID = -2124576837338804694L;
 
 	public Tokenizer() {
 		this(null);

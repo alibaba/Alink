@@ -8,7 +8,6 @@ import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.params.io.TextSourceParams;
 
-
 /**
  * A data sources that reads from text lines.
  */
@@ -16,18 +15,14 @@ import com.alibaba.alink.params.io.TextSourceParams;
 public final class TextSourceBatchOp extends BaseSourceBatchOp <TextSourceBatchOp>
 	implements TextSourceParams <TextSourceBatchOp> {
 
+	private static final long serialVersionUID = -5172709076450910276L;
+
 	public TextSourceBatchOp() {
 		this(new Params());
 	}
 
 	public TextSourceBatchOp(Params params) {
 		super(AnnotationUtils.annotatedName(TextSourceBatchOp.class), params);
-	}
-
-	public TextSourceBatchOp(String filePath) {
-		this(new Params()
-			.set(FILE_PATH, filePath)
-		);
 	}
 
 	@Override

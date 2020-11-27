@@ -1,13 +1,13 @@
 package com.alibaba.alink.params.dataproc;
 
-import com.alibaba.alink.params.ParamUtil;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasStringOrderTypeDefaultAsRandom<T> extends WithParams<T> {
-	ParamInfo<StringOrderType> STRING_ORDER_TYPE = ParamInfoFactory
+import com.alibaba.alink.params.ParamUtil;
+
+public interface HasStringOrderTypeDefaultAsRandom<T> extends WithParams <T> {
+	ParamInfo <StringOrderType> STRING_ORDER_TYPE = ParamInfoFactory
 		.createParamInfo("stringOrderType", StringOrderType.class)
 		.setDescription(
 			"String order type, one of \"random\", \"frequency_asc\", \"frequency_desc\", \"alphabet_asc\", "
@@ -52,4 +52,5 @@ public interface HasStringOrderTypeDefaultAsRandom<T> extends WithParams<T> {
 		 */
 		ALPHABET_DESC
 	}
+
 }

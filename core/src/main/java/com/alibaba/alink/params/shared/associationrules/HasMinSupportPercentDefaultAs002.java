@@ -2,10 +2,9 @@ package com.alibaba.alink.params.shared.associationrules;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasMinSupportPercentDefaultAs002<T> extends WithParams<T> {
+public interface HasMinSupportPercentDefaultAs002<T> extends WithParams <T> {
 	ParamInfo <Double> MIN_SUPPORT_PERCENT = ParamInfoFactory
 		.createParamInfo("minSupportPercent", Double.class)
 		.setDescription("Minimum support percent")

@@ -1,9 +1,9 @@
 package com.alibaba.alink.params.io;
 
 import com.alibaba.alink.params.ParamUtil;
-import com.alibaba.alink.params.io.shared_params.HasStartTime_null;
-import com.alibaba.alink.params.io.shared_params.HasTopicPattern_null;
-import com.alibaba.alink.params.io.shared_params.HasTopic_null;
+import com.alibaba.alink.params.io.shared.HasStartTimeDefaultAsNull;
+import com.alibaba.alink.params.io.shared.HasTopicDefaultAsNull;
+import com.alibaba.alink.params.io.shared.HasTopicPatternDefaultAsNull;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
@@ -11,7 +11,7 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import java.io.Serializable;
 
 public interface KafkaSourceParams<T> extends WithParams<T>,
-    HasTopic_null<T>, HasTopicPattern_null<T>, HasStartTime_null<T>, HasProperties<T> {
+    HasTopicDefaultAsNull <T>, HasTopicPatternDefaultAsNull <T>, HasStartTimeDefaultAsNull<T>, HasProperties<T> {
 
     ParamInfo<String> BOOTSTRAP_SERVERS = ParamInfoFactory
         .createParamInfo("bootstrapServers", String.class)

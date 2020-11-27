@@ -1,7 +1,8 @@
 package com.alibaba.alink.operator.stream.evaluation;
 
-import com.alibaba.alink.operator.common.evaluation.BaseEvalClassStreamOp;
 import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.operator.common.evaluation.BaseEvalClassStreamOp;
 import com.alibaba.alink.params.evaluation.EvalMultiClassStreamParams;
 
 /**
@@ -10,8 +11,10 @@ import com.alibaba.alink.params.evaluation.EvalMultiClassStreamParams;
  * Once predDetail column is given, the predResult column is ignored.
  * The labels are sorted in descending order in the output label array and confusion matrix..
  */
-public class EvalMultiClassStreamOp extends BaseEvalClassStreamOp<EvalMultiClassStreamOp> implements
-	EvalMultiClassStreamParams<EvalMultiClassStreamOp> {
+public class EvalMultiClassStreamOp extends BaseEvalClassStreamOp <EvalMultiClassStreamOp> implements
+	EvalMultiClassStreamParams <EvalMultiClassStreamOp> {
+
+	private static final long serialVersionUID = 630790966242264629L;
 
 	public EvalMultiClassStreamOp() {
 		this(null);

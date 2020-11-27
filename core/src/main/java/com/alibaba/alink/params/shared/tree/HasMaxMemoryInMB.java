@@ -4,8 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasMaxMemoryInMB<T> extends WithParams<T> {
-	ParamInfo<Integer> MAX_MEMORY_IN_MB = ParamInfoFactory
+public interface HasMaxMemoryInMB<T> extends WithParams <T> {
+	ParamInfo <Integer> MAX_MEMORY_IN_MB = ParamInfoFactory
 		.createParamInfo("maxMemoryInMB", Integer.class)
 		.setDescription("max memory usage in tree histogram aggregate.")
 		.setHasDefaultValue(64)

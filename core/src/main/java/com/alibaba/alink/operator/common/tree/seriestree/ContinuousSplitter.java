@@ -4,12 +4,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.tree.Criteria;
 import com.alibaba.alink.operator.common.tree.FeatureMeta;
+import com.alibaba.alink.operator.common.tree.FeatureSplitter;
+import com.alibaba.alink.operator.common.tree.LabelAccessor;
 import com.alibaba.alink.operator.common.tree.Node;
 
 /**
  * ContinuousSplitter.
  */
-public class ContinuousSplitter extends FeatureSplitter {
+public class ContinuousSplitter extends SequentialFeatureSplitter {
 	private double splitPoint;
 	private Criteria bestLeft;
 	private Criteria bestRight;
@@ -98,7 +100,7 @@ public class ContinuousSplitter extends FeatureSplitter {
 	}
 
 	@Override
-	public FeatureSplitter[][] split(FeatureSplitter[] splitters) {
+	public SequentialFeatureSplitter[][] split(FeatureSplitter[] splitters) {
 		if (!canSplit) {
 			throw new IllegalStateException("The feature splitter should be calculated by `bestSplit`");
 		}

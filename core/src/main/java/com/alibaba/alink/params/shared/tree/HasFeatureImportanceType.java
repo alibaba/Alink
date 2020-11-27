@@ -6,9 +6,9 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.params.ParamUtil;
 
-public interface HasFeatureImportanceType<T> extends WithParams<T> {
+public interface HasFeatureImportanceType<T> extends WithParams <T> {
 
-	ParamInfo<FeatureImportanceType> FEATURE_IMPORTANCE_TYPE = ParamInfoFactory
+	ParamInfo <FeatureImportanceType> FEATURE_IMPORTANCE_TYPE = ParamInfoFactory
 		.createParamInfo("featureImportanceType", FeatureImportanceType.class)
 		.setHasDefaultValue(FeatureImportanceType.GAIN)
 		.build();
@@ -42,6 +42,7 @@ public interface HasFeatureImportanceType<T> extends WithParams<T> {
 	}
 
 	default T setFeatureImportanceType(String value) {
-		return set(HasFeatureImportanceType.FEATURE_IMPORTANCE_TYPE, ParamUtil.searchEnum(HasFeatureImportanceType.FEATURE_IMPORTANCE_TYPE, value));
+		return set(HasFeatureImportanceType.FEATURE_IMPORTANCE_TYPE,
+			ParamUtil.searchEnum(HasFeatureImportanceType.FEATURE_IMPORTANCE_TYPE, value));
 	}
 }

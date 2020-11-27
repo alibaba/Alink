@@ -22,56 +22,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class TreeModelInfoBatchOp<S, T extends TreeModelInfoBatchOp<S, T>> extends ExtractModelInfoBatchOp<S, T> {
+public abstract class TreeModelInfoBatchOp<S, T extends TreeModelInfoBatchOp <S, T>>
+	extends ExtractModelInfoBatchOp <S, T> {
 
 	private static final long serialVersionUID = 1735133462550836751L;
-
-	public static final class DecisionTreeModelInfoBatchOp
-		extends TreeModelInfoBatchOp<TreeModelInfo.DecisionTreeModelInfo, DecisionTreeModelInfoBatchOp> {
-
-		public DecisionTreeModelInfoBatchOp() {
-		}
-
-		public DecisionTreeModelInfoBatchOp(Params params) {
-			super(params);
-		}
-
-		@Override
-		protected TreeModelInfo.DecisionTreeModelInfo createModelInfo(List<Row> rows) {
-			return new TreeModelInfo.DecisionTreeModelInfo(rows);
-		}
-	}
-
-	public static class RandomForestModelInfoBatchOp
-		extends TreeModelInfoBatchOp<TreeModelInfo.RandomForestModelInfo, RandomForestModelInfoBatchOp> {
-
-		public RandomForestModelInfoBatchOp() {
-		}
-
-		public RandomForestModelInfoBatchOp(Params params) {
-			super(params);
-		}
-
-		@Override
-		protected TreeModelInfo.RandomForestModelInfo createModelInfo(List<Row> rows) {
-			return new TreeModelInfo.RandomForestModelInfo(rows);
-		}
-	}
-
-	public static class GbdtModelInfoBatchOp
-		extends TreeModelInfoBatchOp<TreeModelInfo.GbdtModelInfo, GbdtModelInfoBatchOp> {
-		public GbdtModelInfoBatchOp() {
-		}
-
-		public GbdtModelInfoBatchOp(Params params) {
-			super(params);
-		}
-
-		@Override
-		protected TreeModelInfo.GbdtModelInfo createModelInfo(List<Row> rows) {
-			return new TreeModelInfo.GbdtModelInfo(rows);
-		}
-	}
 
 	public TreeModelInfoBatchOp() {
 		this(null);
@@ -82,7 +36,7 @@ public abstract class TreeModelInfoBatchOp<S, T extends TreeModelInfoBatchOp<S, 
 	}
 
 	@Override
-	protected BatchOperator<?> processModel() {
+	protected BatchOperator <?> processModel() {
 		return combinedTreeModelFeatureImportance(
 			this,
 			new TableSourceBatchOp(
@@ -92,28 +46,28 @@ public abstract class TreeModelInfoBatchOp<S, T extends TreeModelInfoBatchOp<S, 
 						this.getDataSet().reduceGroup(
 							new TreeModelDataConverter.FeatureImportanceReducer()
 						),
-						new String[]{
+						new String[] {
 							getParams().get(TreeModelDataConverter.IMPORTANCE_FIRST_COL),
 							getParams().get(TreeModelDataConverter.IMPORTANCE_SECOND_COL)
 						},
-						new TypeInformation[]{Types.STRING, Types.DOUBLE}
+						new TypeInformation[] {Types.STRING, Types.DOUBLE}
 					)
 			).setMLEnvironmentId(getMLEnvironmentId())
 		);
 	}
 
-	private static BatchOperator<?> combinedTreeModelFeatureImportance(
-		BatchOperator<?> model, BatchOperator<?> featureImportance) {
+	private static BatchOperator <?> combinedTreeModelFeatureImportance(
+		BatchOperator <?> model, BatchOperator <?> featureImportance) {
 
-		DataSet<String> importanceJson =
+		DataSet <String> importanceJson =
 			featureImportance
 				.getDataSet()
-				.reduceGroup(new GroupReduceFunction<Row, String>() {
+				.reduceGroup(new GroupReduceFunction <Row, String>() {
 					private static final long serialVersionUID = -1576541700351312745L;
 
 					@Override
-					public void reduce(Iterable<Row> values, Collector<String> out) throws Exception {
-						Map<String, Double> importance = new HashMap<>();
+					public void reduce(Iterable <Row> values, Collector <String> out) throws Exception {
+						Map <String, Double> importance = new HashMap <>();
 
 						for (Row val : values) {
 							importance.put(
@@ -126,9 +80,9 @@ public abstract class TreeModelInfoBatchOp<S, T extends TreeModelInfoBatchOp<S, 
 					}
 				});
 
-		DataSet<Row> combined =
+		DataSet <Row> combined =
 			model.getDataSet()
-				.reduceGroup(new RichGroupReduceFunction<Row, Row>() {
+				.reduceGroup(new RichGroupReduceFunction <Row, Row>() {
 					private static final long serialVersionUID = -1576541700351312745L;
 					private transient String featureImportanceJson;
 
@@ -139,9 +93,9 @@ public abstract class TreeModelInfoBatchOp<S, T extends TreeModelInfoBatchOp<S, 
 						featureImportanceJson = getRuntimeContext()
 							.getBroadcastVariableWithInitializer(
 								"importanceJson",
-								new BroadcastVariableInitializer<String, String>() {
+								new BroadcastVariableInitializer <String, String>() {
 									@Override
-									public String initializeBroadcastVariable(Iterable<String> data) {
+									public String initializeBroadcastVariable(Iterable <String> data) {
 										return data.iterator().next();
 									}
 								}
@@ -149,8 +103,8 @@ public abstract class TreeModelInfoBatchOp<S, T extends TreeModelInfoBatchOp<S, 
 					}
 
 					@Override
-					public void reduce(Iterable<Row> values, Collector<Row> out) throws Exception {
-						List<Row> modelRows = new ArrayList<>();
+					public void reduce(Iterable <Row> values, Collector <Row> out) throws Exception {
+						List <Row> modelRows = new ArrayList <>();
 
 						for (Row val : values) {
 							modelRows.add(val);

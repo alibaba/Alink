@@ -8,6 +8,6 @@ import com.alibaba.alink.params.shared.HasSize;
  * parameters of vector size hint.
  */
 public interface VectorSizeHintParams<T> extends
-	SISOMapperParams<T>,
-	HasSize<T>,
-	HasHandleInvalid<T> {}
+	SISOMapperParams <T>,
+	HasSize <T>,
+	HasHandleInvalid <T> {}

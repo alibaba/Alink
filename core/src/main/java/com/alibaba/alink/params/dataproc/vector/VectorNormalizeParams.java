@@ -1,15 +1,15 @@
 package com.alibaba.alink.params.dataproc.vector;
 
-import com.alibaba.alink.params.mapper.SISOMapperParams;
-
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+
+import com.alibaba.alink.params.mapper.SISOMapperParams;
 
 /**
  * parameters of vector normalizer.
  */
 public interface VectorNormalizeParams<T> extends
-	SISOMapperParams<T> {
+	SISOMapperParams <T> {
 
 	ParamInfo <Double> P = ParamInfoFactory
 		.createParamInfo("p", Double.class)

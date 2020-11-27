@@ -1,12 +1,13 @@
 package com.alibaba.alink.pipeline.feature;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.EqualWidthDiscretizerTrainBatchOp;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * EqualWidth discretizer keeps every interval the same width, output the interval
@@ -14,19 +15,20 @@ import org.apache.flink.ml.api.misc.param.Params;
  * <p>The output is the index of the interval.
  */
 public class EqualWidthDiscretizer extends Trainer <EqualWidthDiscretizer, QuantileDiscretizerModel>
-    implements QuantileDiscretizerTrainParams <EqualWidthDiscretizer>,
-    QuantileDiscretizerPredictParams <EqualWidthDiscretizer>, HasLazyPrintModelInfo<EqualWidthDiscretizer> {
+	implements QuantileDiscretizerTrainParams <EqualWidthDiscretizer>,
+	QuantileDiscretizerPredictParams <EqualWidthDiscretizer>, HasLazyPrintModelInfo <EqualWidthDiscretizer> {
+	private static final long serialVersionUID = 5516757585031745048L;
 
-    public EqualWidthDiscretizer() {
-        super();
-    }
+	public EqualWidthDiscretizer() {
+		super();
+	}
 
-    public EqualWidthDiscretizer(Params params) {
-        super(params);
-    }
+	public EqualWidthDiscretizer(Params params) {
+		super(params);
+	}
 
-    @Override
-    protected BatchOperator train(BatchOperator in) {
-        return new EqualWidthDiscretizerTrainBatchOp(getParams()).linkFrom(in);
-    }
+	@Override
+	protected BatchOperator <?> train(BatchOperator <?> in) {
+		return new EqualWidthDiscretizerTrainBatchOp(getParams()).linkFrom(in);
+	}
 }

@@ -4,18 +4,19 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.SISOMapper;
-import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.params.dataproc.vector.VectorElementwiseProductParams;
 
 /**
  * This mapper maps a vector to a new vector with special scale.
  */
 public class VectorElementwiseProductMapper extends SISOMapper {
+	private static final long serialVersionUID = -8030477987774641696L;
 	private Vector scalingVector;
 
 	public VectorElementwiseProductMapper(TableSchema dataSchema, Params params) {

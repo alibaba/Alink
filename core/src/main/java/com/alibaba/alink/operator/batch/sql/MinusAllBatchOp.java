@@ -7,20 +7,22 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 /**
  * Minus another <code>BatchOperator</code>. The duplicated records are kept.
  */
-public final class MinusAllBatchOp extends BatchOperator<MinusAllBatchOp> {
+public final class MinusAllBatchOp extends BatchOperator <MinusAllBatchOp> {
 
-    public MinusAllBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -7582100858266866075L;
 
-    public MinusAllBatchOp(Params params) {
-        super(params);
-    }
+	public MinusAllBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public MinusAllBatchOp linkFrom(BatchOperator<?>... inputs) {
-        checkMinOpSize(2, inputs);
-        this.setOutputTable(inputs[0].getOutputTable().minusAll(inputs[1].getOutputTable()));
-        return this;
-    }
+	public MinusAllBatchOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public MinusAllBatchOp linkFrom(BatchOperator <?>... inputs) {
+		checkMinOpSize(2, inputs);
+		this.setOutputTable(inputs[0].getOutputTable().minusAll(inputs[1].getOutputTable()));
+		return this;
+	}
 }

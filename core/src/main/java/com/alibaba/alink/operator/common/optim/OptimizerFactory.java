@@ -1,19 +1,19 @@
 package com.alibaba.alink.operator.common.optim;
 
-import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
-import com.alibaba.alink.params.shared.linear.LinearTrainParams;
-
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
+import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 /**
  * The factory of optimizer.
  */
 public class OptimizerFactory {
 	public static Optimizer create(
-		DataSet<OptimObjFunc> objFunc,
+		DataSet <OptimObjFunc> objFunc,
 		DataSet <Tuple3 <Double, Double, Vector>> trainData,
 		DataSet <Integer> coefDim,
 		Params params,

@@ -1,24 +1,25 @@
 package com.alibaba.alink.operator.batch.evaluation;
 
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-
-import com.alibaba.alink.operator.common.evaluation.ClusterMetrics;
-import com.alibaba.alink.pipeline.clustering.KMeans;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.evaluation.ClusterMetrics;
+import com.alibaba.alink.pipeline.clustering.KMeans;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 
-public class EvalClusterBatchOpTest {
+public class EvalClusterBatchOpTest extends AlinkTestBase {
 	private static Row[] rows = new Row[] {
-		Row.of(0, "0,0,0"),
-		Row.of(0, "0.1,0.1,0.1"),
-		Row.of(0, "0.2,0.2,0.2"),
-		Row.of(1, "9,9,9"),
-		Row.of(1, "9.1,9.1,9.1"),
-		Row.of(1, "9.2,9.2,9.2")
+		Row.of("a", "0,0,0"),
+		Row.of("a", "0.1,0.1,0.1"),
+		Row.of("a", "0.2,0.2,0.2"),
+		Row.of("b", "9,9,9"),
+		Row.of("b", "9.1,9.1,9.1"),
+		Row.of("b", "9.2,9.2,9.2")
 	};
 
 	@Test
@@ -49,7 +50,8 @@ public class EvalClusterBatchOpTest {
 		Assert.assertEquals(metrics.getNmi(), 1.0, 0.01);
 		Assert.assertEquals(metrics.getAri(), 1.0, 0.01);
 		Assert.assertEquals(metrics.getRi(), 1.0, 0.01);
-		Assert.assertEquals(metrics.getSilhouetteCoefficient(), 0.99,0.01);
+		Assert.assertEquals(metrics.getSilhouetteCoefficient(), 0.99, 0.01);
+		System.out.println(metrics.toString());
 	}
 
 	@Test
@@ -67,6 +69,6 @@ public class EvalClusterBatchOpTest {
 			.collectMetrics();
 
 		Assert.assertEquals(metrics.getCount().intValue(), 6);
-		Assert.assertArrayEquals(metrics.getClusterArray(), new String[]{"0", "1"});
+		Assert.assertArrayEquals(metrics.getClusterArray(), new String[] {"0", "1"});
 	}
 }

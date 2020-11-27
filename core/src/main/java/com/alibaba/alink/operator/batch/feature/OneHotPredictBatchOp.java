@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.feature.OneHotModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.feature.OneHotModelMapper;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
 
 /**
@@ -12,6 +12,8 @@ import com.alibaba.alink.params.feature.OneHotPredictParams;
  */
 public final class OneHotPredictBatchOp extends ModelMapBatchOp <OneHotPredictBatchOp>
 	implements OneHotPredictParams <OneHotPredictBatchOp> {
+
+	private static final long serialVersionUID = -6881814793972704312L;
 
 	/**
 	 * constructor.

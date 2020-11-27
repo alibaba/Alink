@@ -5,6 +5,8 @@ package com.alibaba.alink.common.comqueue;
  */
 public class IterativeComQueue extends BaseComQueue <IterativeComQueue> {
 
+	private static final long serialVersionUID = 9183390606304249142L;
+
 	public IterativeComQueue() {
 		super();
 	}

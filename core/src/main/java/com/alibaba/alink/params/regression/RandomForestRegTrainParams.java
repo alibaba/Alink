@@ -7,9 +7,9 @@ import com.alibaba.alink.params.shared.tree.HasSeed;
 import com.alibaba.alink.params.shared.tree.HasSubsamplingRatio;
 
 public interface RandomForestRegTrainParams<T> extends
-	IndividualTreeParams<T>,
-	HasNumSubsetFeatures<T>,
-	HasNumTreesDefaltAs10<T>,
-	HasSubsamplingRatio<T>,
-	HasSeed<T> {
+	IndividualTreeParams <T>,
+	HasNumSubsetFeatures <T>,
+	HasNumTreesDefaltAs10 <T>,
+	HasSubsamplingRatio <T>,
+	HasSeed <T> {
 }

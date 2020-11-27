@@ -1,25 +1,26 @@
 package com.alibaba.alink.operator.common.fm;
 
-import java.util.List;
-
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.types.Row;
+
+import java.util.List;
 
 /**
  * Model info of FmClassifier.
  */
 public class FmClassifierModelInfo extends FmRegressorModelInfo {
 
-    public Object[] getLabelValues() {
-        return this.labelValues;
-    }
+	private static final long serialVersionUID = 1393682477554387382L;
 
-    public FmClassifierModelInfo(List<Row> rows, TypeInformation labelType) {
-        super(rows, labelType);
-    }
+	public Object[] getLabelValues() {
+		return this.labelValues;
+	}
 
-    @Override
-    protected void processLabelValues(FmModelData modelData) {
-        this.labelValues = modelData.labelValues;
-    }
+	public FmClassifierModelInfo(List <Row> rows) {
+		super(rows);
+	}
+
+	@Override
+	protected void processLabelValues(FmModelData modelData) {
+		this.labelValues = modelData.labelValues;
+	}
 }

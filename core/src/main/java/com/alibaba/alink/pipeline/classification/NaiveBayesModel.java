@@ -1,21 +1,24 @@
 package com.alibaba.alink.pipeline.classification;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.common.classification.NaiveBayesModelMapper;
 import com.alibaba.alink.params.classification.NaiveBayesPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * Naive bayes pipeline model.
  */
-public class NaiveBayesModel extends MapModel<NaiveBayesModel>
-    implements NaiveBayesPredictParams<NaiveBayesModel> {
+public class NaiveBayesModel extends MapModel <NaiveBayesModel>
+	implements NaiveBayesPredictParams <NaiveBayesModel> {
 
-    public NaiveBayesModel() {
-        this(null);
-    }
+	private static final long serialVersionUID = 7028563877378956650L;
 
-    public NaiveBayesModel(Params params) {
-        super(NaiveBayesModelMapper::new, params);
-    }
+	public NaiveBayesModel() {
+		this(null);
+	}
+
+	public NaiveBayesModel(Params params) {
+		super(NaiveBayesModelMapper::new, params);
+	}
 }

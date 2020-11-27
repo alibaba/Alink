@@ -1,24 +1,26 @@
 package com.alibaba.alink.operator.common.linear;
 
-import java.util.List;
-
 import org.apache.flink.types.Row;
+
+import java.util.List;
 
 /**
  * Linear classifier (lr, svm) model info.
  */
 public class LinearClassifierModelInfo extends LinearRegressorModelInfo {
 
-    public Object[] getLabelValues() {
-        return this.labelValues;
-    }
+	private static final long serialVersionUID = 7233099674515498636L;
 
-    public LinearClassifierModelInfo(List<Row> rows) {
-        super(rows);
-    }
+	public Object[] getLabelValues() {
+		return this.labelValues;
+	}
 
-    @Override
-    protected void processLabelValues(LinearModelData modelData) {
-        this.labelValues = modelData.labelValues;
-    }
+	public LinearClassifierModelInfo(List <Row> rows) {
+		super(rows);
+	}
+
+	@Override
+	protected void processLabelValues(LinearModelData modelData) {
+		this.labelValues = modelData.labelValues;
+	}
 }

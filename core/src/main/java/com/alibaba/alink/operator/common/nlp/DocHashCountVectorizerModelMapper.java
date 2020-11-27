@@ -1,13 +1,14 @@
 package com.alibaba.alink.operator.common.nlp;
 
-import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.mapper.SISOModelMapper;
-import com.alibaba.alink.common.VectorTypes;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.shaded.guava18.com.google.common.hash.HashFunction;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.common.mapper.SISOModelMapper;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import static org.apache.flink.shaded.guava18.com.google.common.hash.Hashing.mur
  * <p>It uses MurmurHash 3 to get the hash value of a word as the index, and the idf of the word as value.
  */
 public class DocHashCountVectorizerModelMapper extends SISOModelMapper {
+	private static final long serialVersionUID = -4218147866842462735L;
 	private DocHashCountVectorizerModelData model;
 	private FeatureType featureType;
 
@@ -48,7 +50,7 @@ public class DocHashCountVectorizerModelMapper extends SISOModelMapper {
 		if (null == input) {
 			return null;
 		}
-		HashMap<Integer, Integer> wordCount = new HashMap<>(0);
+		HashMap <Integer, Integer> wordCount = new HashMap <>(0);
 		String content = (String) input;
 		String[] tokens = content.split(NLPConstant.WORD_DELIMITER);
 		double minTermCount = model.minTF >= 1.0 ? model.minTF : model.minTF * tokens.length;
@@ -57,7 +59,7 @@ public class DocHashCountVectorizerModelMapper extends SISOModelMapper {
 		for (String token : tokens) {
 			int hashValue = Math.abs(HASH.hashUnencodedChars(token).asInt());
 			int index = Math.floorMod(hashValue, model.numFeatures);
-			if(model.idfMap.containsKey(index)) {
+			if (model.idfMap.containsKey(index)) {
 				wordCount.merge(index, 1, Integer::sum);
 			}
 		}
@@ -65,11 +67,12 @@ public class DocHashCountVectorizerModelMapper extends SISOModelMapper {
 		int[] indexes = new int[wordCount.size()];
 		double[] values = new double[indexes.length];
 		int pos = 0;
-		for (Map.Entry<Integer, Integer> entry : wordCount.entrySet()) {
+		for (Map.Entry <Integer, Integer> entry : wordCount.entrySet()) {
 			double count = entry.getValue();
 			if (count >= minTermCount) {
 				indexes[pos] = entry.getKey();
-				values[pos++] = featureType.featureValueFunc.apply(model.idfMap.get(entry.getKey()), count, tokenRatio);
+				values[pos++] = featureType.featureValueFunc.apply(model.idfMap.get(entry.getKey()), count,
+					tokenRatio);
 			}
 		}
 

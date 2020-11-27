@@ -13,34 +13,35 @@ import com.alibaba.alink.operator.stream.utils.MapStreamOp;
 import java.util.function.BiFunction;
 
 /**
- * Abstract class for a flat map {@link TransformerBase}.
+ * Abstract class for a map {@link TransformerBase}.
  * <p>
- * A FlatMapTransformer process the instance in single input with single-output or multiple-output.
+ * A MapTransformer process the instance in single input with single-output.
  *
  * @param <T> class type of the {@link MapTransformer} implementation itself.
  */
 public abstract class MapTransformer<T extends MapTransformer <T>>
-		extends TransformerBase<T> implements LocalPredictable {
+	extends TransformerBase <T> implements LocalPredictable {
 
-	private final BiFunction<TableSchema, Params, Mapper> mapperBuilder;
+	private static final long serialVersionUID = -2155940380618604038L;
+	final BiFunction <TableSchema, Params, Mapper> mapperBuilder;
 
-	protected MapTransformer(BiFunction<TableSchema, Params, Mapper> mapperBuilder, Params params) {
+	protected MapTransformer(BiFunction <TableSchema, Params, Mapper> mapperBuilder, Params params) {
 		super(params);
 		this.mapperBuilder = Preconditions.checkNotNull(mapperBuilder, "mapperBuilder can not be null");
 	}
 
 	@Override
-	public BatchOperator transform(BatchOperator input) {
-		return postProcessTransformResult(new MapBatchOp(this.mapperBuilder, this.params).linkFrom(input));
+	public BatchOperator <?> transform(BatchOperator <?> input) {
+		return postProcessTransformResult(new MapBatchOp <>(this.mapperBuilder, this.params).linkFrom(input));
 	}
 
 	@Override
-	public StreamOperator transform(StreamOperator input) {
-		return new MapStreamOp(this.mapperBuilder, this.params).linkFrom(input);
+	public StreamOperator <?> transform(StreamOperator <?> input) {
+		return new MapStreamOp <>(this.mapperBuilder, this.params).linkFrom(input);
 	}
 
 	@Override
-	public LocalPredictor getLocalPredictor(TableSchema inputSchema) {
+	public LocalPredictor collectLocalPredictor(TableSchema inputSchema) {
 		Mapper mapper = this.mapperBuilder.apply(inputSchema, this.getParams());
 		mapper.open();
 		return new LocalPredictor(mapper);

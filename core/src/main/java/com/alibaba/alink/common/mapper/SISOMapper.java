@@ -10,6 +10,7 @@ import org.apache.flink.types.Row;
  */
 public abstract class SISOMapper extends Mapper {
 
+	private static final long serialVersionUID = 6112286812006547059L;
 	/**
 	 * The OutputColsHelper which helps to arrange final output from input and predicted result.
 	 */

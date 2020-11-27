@@ -12,11 +12,11 @@ import java.util.List;
  */
 public interface DataBridge extends Serializable {
 
-    /**
-     * Read data with filter.
-     *
-     * @param filter return true retain a row. When filter is null all data is retained.
-     * @return result rows.
-     */
-    List<Row> read(FilterFunction<Row> filter);
+	/**
+	 * Read data with filter.
+	 *
+	 * @param filter return true retain a row. When filter is null all data is retained.
+	 * @return result rows.
+	 */
+	List <Row> read(FilterFunction <Row> filter);
 }

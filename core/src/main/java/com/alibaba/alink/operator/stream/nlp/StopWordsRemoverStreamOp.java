@@ -12,6 +12,8 @@ import com.alibaba.alink.params.nlp.StopWordsRemoverParams;
 public final class StopWordsRemoverStreamOp extends MapStreamOp <StopWordsRemoverStreamOp>
 	implements StopWordsRemoverParams <StopWordsRemoverStreamOp> {
 
+	private static final long serialVersionUID = 7115103812603873196L;
+
 	public StopWordsRemoverStreamOp() {
 		this(null);
 	}

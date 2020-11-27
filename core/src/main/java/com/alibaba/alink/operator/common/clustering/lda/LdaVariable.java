@@ -11,7 +11,7 @@ public class LdaVariable {
 	public final static String vocabularySize = "vocabularySize";
 	public final static String logLikelihood = "logLikelihood";
 	public final static String shape = "shape";
-	public final static String gamma = "gamma";
+	public final static String gamma = "Gamma";
 	public final static String lambda = "lambda";
 	public final static String alpha = "alpha";
 	public final static String initModel = "initModel";

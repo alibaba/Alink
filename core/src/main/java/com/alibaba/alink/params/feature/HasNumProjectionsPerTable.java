@@ -2,7 +2,6 @@ package com.alibaba.alink.params.feature;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 /**
@@ -10,12 +9,12 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  *
  * @param <T>
  */
-public interface HasNumProjectionsPerTable<T> extends WithParams<T> {
+public interface HasNumProjectionsPerTable<T> extends WithParams <T> {
 
 	ParamInfo <Integer> NUM_PROJECTIONS_PER_TABLE = ParamInfoFactory
 		.createParamInfo("numProjectionsPerTable", Integer.class)
 		.setDescription("The number of hash functions within every hash table")
-		.setAlias(new String[]{"numHashBits"})
+		.setAlias(new String[] {"numHashBits"})
 		.setHasDefaultValue(1)
 		.build();
 

@@ -1,22 +1,21 @@
 package com.alibaba.alink.params.clustering;
 
-import com.alibaba.alink.params.ParamUtil;
-import com.alibaba.alink.params.nlp.HasVocabSize;
-import com.alibaba.alink.params.shared.colname.HasSelectedCol;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
-import org.apache.flink.ml.api.misc.param.WithParams;
+import com.alibaba.alink.params.ParamUtil;
+import com.alibaba.alink.params.nlp.HasVocabSize;
+import com.alibaba.alink.params.shared.colname.HasSelectedCol;
 import com.alibaba.alink.params.shared.iter.HasNumIterDefaultAs10;
 
 /**
  * Parameter of LDA train.
  */
 public interface LdaTrainParams<T> extends
-	WithParams<T>,
-	HasNumIterDefaultAs10<T>,
-	HasVocabSize<T>,
-	HasSelectedCol<T>{
+	HasNumIterDefaultAs10 <T>,
+	HasVocabSize <T>,
+	HasSelectedCol <T>,
+	HasRandomSeed <T> {
 	ParamInfo <Integer> TOPIC_NUM = ParamInfoFactory
 		.createParamInfo("topicNum", Integer.class)
 		.setDescription("Number of topic.")
@@ -37,25 +36,17 @@ public interface LdaTrainParams<T> extends
 		.setHasDefaultValue(-1.0)
 		.build();
 	ParamInfo <Method> METHOD = ParamInfoFactory
-			.createParamInfo("method", Method.class)
-			.setDescription("optimizer: em, online")
-			.setHasDefaultValue(Method.EM)
-			.setAlias(new String[] {"optimizer"})
-			.build();
+		.createParamInfo("method", Method.class)
+		.setDescription("optimizer: em, online")
+		.setHasDefaultValue(Method.EM)
+		.setAlias(new String[] {"optimizer"})
+		.build();
 
-	/**
-	 * Enum class for Lda optimizer method.
-	 */
 	enum Method {
-		/**
-		 * Online optimizer method.
-		 */
 		Online,
-		/**
-		 * EM optimizer method.
-		 */
 		EM
 	}
+
 	ParamInfo <Double> ONLINE_LEARNING_OFFSET = ParamInfoFactory
 		.createParamInfo("onlineLearningOffset", Double.class)
 		.setDescription("(For online optimizer)" +
@@ -63,28 +54,26 @@ public interface LdaTrainParams<T> extends
 			" iterations count less.")
 		.setHasDefaultValue(1024.0)
 		.build();
-	ParamInfo <Double> ONLINE_LEARNING_DECAY = ParamInfoFactory
-		.createParamInfo("onlineLearningDecay", Double.class)
+	ParamInfo <Double> LEARNING_DECAY = ParamInfoFactory
+		.createParamInfo("learningDecay", Double.class)
 		.setDescription("(For online optimizer) " +
 			" Learning rate, set as an exponential decay rate. This should be between (0.5, 1.0] to" +
 			" guarantee asymptotic convergence.")
 		.setHasDefaultValue(0.51)
 		.build();
-	ParamInfo <Double> ONLINE_SUB_SAMPLING_RATE = ParamInfoFactory
-		.createParamInfo("onlineSubSamplingRate", Double.class)
+	ParamInfo <Double> SUBSAMPLING_RATE = ParamInfoFactory
+		.createParamInfo("subsamplingRate", Double.class)
 		.setDescription("For online optimizer " +
 			"Fraction of the corpus to be sampled and used in each iteration of mini-batch" +
 			"gradient descent, in range (0, 1].")
 		.setHasDefaultValue(0.05)
 		.build();
-	ParamInfo <Boolean> ONLINE_OPTIMIZE_ALPHA = ParamInfoFactory
+	ParamInfo <Boolean> OPTIMIZE_DOC_CONCENTRATION = ParamInfoFactory
 		.createParamInfo("optimizeDocConcentration", Boolean.class)
 		.setDescription("(For online optimizer only, currently) Indicates whether the docConcentration" +
 			"(Dirichlet parameter for document-topic distribution) will be optimized during training.")
 		.setHasDefaultValue(true)
 		.build();
-
-
 
 	default Integer getTopicNum() {
 		return get(TOPIC_NUM);
@@ -121,6 +110,7 @@ public interface LdaTrainParams<T> extends
 	default T setMethod(String value) {
 		return set(METHOD, ParamUtil.searchEnum(METHOD, value));
 	}
+
 	default Double getOnlineLearningOffset() {
 		return get(ONLINE_LEARNING_OFFSET);
 	}
@@ -129,28 +119,28 @@ public interface LdaTrainParams<T> extends
 		return set(ONLINE_LEARNING_OFFSET, value);
 	}
 
-	default Double getOnlineLearningDecay() {
-		return get(ONLINE_LEARNING_DECAY);
+	default Double getLearningDecay() {
+		return get(LEARNING_DECAY);
 	}
 
-	default T setOnlineLearningDecay(Double value) {
-		return set(ONLINE_LEARNING_DECAY, value);
+	default T setLearningDecay(Double value) {
+		return set(LEARNING_DECAY, value);
 	}
 
-	default Double getOnlineSubSamplingRate() {
-		return get(ONLINE_SUB_SAMPLING_RATE);
+	default Double getSubsamplingRate() {
+		return get(SUBSAMPLING_RATE);
 	}
 
-	default T setOnlineSubSamplingRate(Double value) {
-		return set(ONLINE_SUB_SAMPLING_RATE, value);
+	default T setSubsamplingRate(Double value) {
+		return set(SUBSAMPLING_RATE, value);
 	}
 
 	default Boolean getOptimizeDocConcentration() {
-		return get(ONLINE_OPTIMIZE_ALPHA);
+		return get(OPTIMIZE_DOC_CONCENTRATION);
 	}
 
 	default T setOptimizeDocConcentration(Boolean value) {
-		return set(ONLINE_OPTIMIZE_ALPHA, value);
+		return set(OPTIMIZE_DOC_CONCENTRATION, value);
 	}
 
 }

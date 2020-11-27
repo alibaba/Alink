@@ -1,10 +1,11 @@
 package com.alibaba.alink.operator.stream.classification;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.classification.NaiveBayesTextModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.classification.NaiveBayesTextPredictParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * Text Naive Bayes Predictor.
@@ -14,10 +15,11 @@ import org.apache.flink.ml.api.misc.param.Params;
  *
  * Details info of the algorithm:
  * https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-text-classification-1.html
- *
  */
-public final class NaiveBayesTextPredictStreamOp extends ModelMapStreamOp<NaiveBayesTextPredictStreamOp>
-	implements NaiveBayesTextPredictParams<NaiveBayesTextPredictStreamOp> {
+public final class NaiveBayesTextPredictStreamOp extends ModelMapStreamOp <NaiveBayesTextPredictStreamOp>
+	implements NaiveBayesTextPredictParams <NaiveBayesTextPredictStreamOp> {
+
+	private static final long serialVersionUID = -2382102179447174346L;
 
 	public NaiveBayesTextPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

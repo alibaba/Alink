@@ -7,8 +7,8 @@ import org.apache.flink.core.fs.FileStatus;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.FileSystemKind;
 import org.apache.flink.core.fs.Path;
+import org.apache.flink.core.fs.RecoverableWriter;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.params.io.HasIoName;
@@ -20,12 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class BaseFileSystem<T extends BaseFileSystem<T>> extends FileSystem
-	implements WithParams<T>, Serializable {
+public abstract class BaseFileSystem<T extends BaseFileSystem <T>> extends FileSystem
+	implements Serializable {
 
-	protected Params params;
+	private static final long serialVersionUID = 4039820181488337667L;
 
-	protected BaseFileSystem(Params params) {
+	private final Params params;
+
+	public BaseFileSystem(Params params) {
 		if (null == params) {
 			this.params = new Params();
 		} else {
@@ -34,7 +36,11 @@ public abstract class BaseFileSystem<T extends BaseFileSystem<T>> extends FileSy
 		this.params.set(HasIoName.IO_NAME, AnnotationUtils.annotatedName(this.getClass()));
 	}
 
-	public static BaseFileSystem of(Params params) {
+	Params getParams() {
+		return params;
+	}
+
+	public static BaseFileSystem <?> of(Params params) {
 		if (BaseFileSystem.isFileSystem(params)) {
 			try {
 				return AnnotationUtils.createFileSystem(params.get(HasIoName.IO_NAME), params);
@@ -52,11 +58,6 @@ public abstract class BaseFileSystem<T extends BaseFileSystem<T>> extends FileSy
 		} else {
 			return false;
 		}
-	}
-
-	@Override
-	public Params getParams() {
-		return params;
 	}
 
 	public FileStatus getFileStatus(String f) throws IOException {
@@ -111,7 +112,8 @@ public abstract class BaseFileSystem<T extends BaseFileSystem<T>> extends FileSy
 		return rename(new Path(src), new Path(dst));
 	}
 
-	public boolean initOutPathLocalFS(String outPath, WriteMode writeMode, boolean createDirectory) throws IOException {
+	public boolean initOutPathLocalFS(String outPath, WriteMode writeMode, boolean createDirectory) throws
+		IOException {
 		return initOutPathLocalFS(new Path(outPath), writeMode, createDirectory);
 	}
 
@@ -119,23 +121,23 @@ public abstract class BaseFileSystem<T extends BaseFileSystem<T>> extends FileSy
 		return initOutPathDistFS(new Path(outPath), writeMode, createDirectory);
 	}
 
-	public List<String> listFiles(String f) throws IOException {
+	public List <String> listFiles(String f) throws IOException {
 		return listFiles(new Path(f))
 			.stream()
 			.map(Path::toString)
 			.collect(Collectors.toList());
 	}
 
-	public List<String> listDirectories(String f) throws IOException {
+	public List <String> listDirectories(String f) throws IOException {
 		return listDirectories(new Path(f))
 			.stream()
 			.map(Path::toString)
 			.collect(Collectors.toList());
 	}
 
-	public List<Path> listFiles(Path f) throws IOException {
+	public List <Path> listFiles(Path f) throws IOException {
 		FileStatus[] fileStatuses = listStatus(f);
-		List<Path> files = new ArrayList<>();
+		List <Path> files = new ArrayList <>();
 		for (FileStatus fileStatus : fileStatuses) {
 			if (!fileStatus.isDir()) {
 				files.add(fileStatus.getPath());
@@ -144,9 +146,9 @@ public abstract class BaseFileSystem<T extends BaseFileSystem<T>> extends FileSy
 		return files;
 	}
 
-	public List<Path> listDirectories(Path f) throws IOException {
+	public List <Path> listDirectories(Path f) throws IOException {
 		FileStatus[] fileStatuses = listStatus(f);
-		List<Path> files = new ArrayList<>();
+		List <Path> files = new ArrayList <>();
 		for (FileStatus fileStatus : fileStatuses) {
 			if (fileStatus.isDir()) {
 				files.add(fileStatus.getPath());
@@ -225,6 +227,11 @@ public abstract class BaseFileSystem<T extends BaseFileSystem<T>> extends FileSy
 	@Override
 	public FileSystemKind getKind() {
 		return load().getKind();
+	}
+
+	@Override
+	public RecoverableWriter createRecoverableWriter() throws IOException {
+		return load().createRecoverableWriter();
 	}
 
 	protected FileSystem load() {

@@ -17,6 +17,8 @@ import com.alibaba.alink.params.io.TextSinkParams;
 public final class TextSinkBatchOp extends BaseSinkBatchOp <TextSinkBatchOp>
 	implements TextSinkParams <TextSinkBatchOp> {
 
+	private static final long serialVersionUID = -8765859539929096961L;
+
 	public TextSinkBatchOp() {
 		this(new Params());
 	}
@@ -26,7 +28,7 @@ public final class TextSinkBatchOp extends BaseSinkBatchOp <TextSinkBatchOp>
 	}
 
 	@Override
-	public TextSinkBatchOp sinkFrom(BatchOperator in) {
+	public TextSinkBatchOp sinkFrom(BatchOperator<?> in) {
 		TypeInformation <?>[] types = in.getSchema().getFieldTypes();
 		if (types.length != 1 || Types.STRING != types[0]) {
 			throw new IllegalArgumentException("The Input could only be a string type column.");
@@ -41,6 +43,7 @@ public final class TextSinkBatchOp extends BaseSinkBatchOp <TextSinkBatchOp>
 				.setQuoteChar(null)
 				.setNumFiles(getNumFiles())
 		);
+
 		return this;
 	}
 }

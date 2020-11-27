@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.pipeline.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.VectorToKvParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class VectorToKv extends BaseFormatTrans<VectorToKv> implements VectorToKvParams<VectorToKv> {
+/**
+ * Transform data type from Vector to Kv.
+ */
+public class VectorToKv extends BaseFormatTrans <VectorToKv> implements VectorToKvParams <VectorToKv> {
 
-    public VectorToKv() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 5671363153811928426L;
 
-    public VectorToKv(Params params) {
-        super(FormatType.VECTOR, FormatType.KV, params);
-    }
+	public VectorToKv() {
+		this(new Params());
+	}
+
+	public VectorToKv(Params params) {
+		super(FormatType.VECTOR, FormatType.KV, params);
+	}
 }
 

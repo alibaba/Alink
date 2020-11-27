@@ -1,14 +1,15 @@
 package com.alibaba.alink.params.nlp;
 
-import com.alibaba.alink.params.mapper.SISOMapperParams;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
+
+import com.alibaba.alink.params.mapper.SISOMapperParams;
 
 /**
  * Params for segment.
  */
 public interface SegmentParams<T> extends
-	SISOMapperParams<T> {
+	SISOMapperParams <T> {
 
 	ParamInfo <String[]> USER_DEFINED_DICT = ParamInfoFactory
 		.createParamInfo("userDefinedDict", String[].class)

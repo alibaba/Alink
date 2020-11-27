@@ -8,18 +8,20 @@ import java.io.Serializable;
  * Base class for neural network topology.
  */
 public abstract class Topology implements Serializable {
-    /**
-     * Create the TopologyModel for this topology.
-     *
-     * @param weights The weights to initialize the TopologyModel.
-     * @return A newly created TopologyModel.
-     */
-    public abstract TopologyModel getModel(DenseVector weights);
+	private static final long serialVersionUID = -1152089543502214305L;
 
-    /**
-     * Get the size of weights of this topology.
-     *
-     * @return Size of weight.
-     */
-    public abstract int getWeightSize();
+	/**
+	 * Create the TopologyModel for this topology.
+	 *
+	 * @param weights The weights to initialize the TopologyModel.
+	 * @return A newly created TopologyModel.
+	 */
+	public abstract TopologyModel getModel(DenseVector weights);
+
+	/**
+	 * Get the size of weights of this topology.
+	 *
+	 * @return Size of weight.
+	 */
+	public abstract int getWeightSize();
 }

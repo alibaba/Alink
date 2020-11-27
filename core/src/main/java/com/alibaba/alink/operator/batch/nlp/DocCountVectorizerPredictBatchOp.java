@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.nlp.DocCountVectorizerModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.nlp.DocCountVectorizerModelMapper;
 import com.alibaba.alink.params.nlp.DocCountVectorizerPredictParams;
 
 /**
@@ -12,6 +12,8 @@ import com.alibaba.alink.params.nlp.DocCountVectorizerPredictParams;
  */
 public final class DocCountVectorizerPredictBatchOp extends ModelMapBatchOp <DocCountVectorizerPredictBatchOp>
 	implements DocCountVectorizerPredictParams <DocCountVectorizerPredictBatchOp> {
+	private static final long serialVersionUID = 2584222216856311012L;
+
 	public DocCountVectorizerPredictBatchOp() {
 		this(null);
 	}

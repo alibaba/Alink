@@ -5,7 +5,6 @@ import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 /**
  * parameters of ridge regression train process.
- *
  */
 public interface RidgeRegTrainParams<T> extends
 	LinearTrainParams <T>,

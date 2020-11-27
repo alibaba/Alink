@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.pipeline.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.KvToJsonParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class KvToJson extends BaseFormatTrans<KvToJson> implements KvToJsonParams<KvToJson> {
+/**
+ * Transform data type from Kv to Json.
+ */
+public class KvToJson extends BaseFormatTrans <KvToJson> implements KvToJsonParams <KvToJson> {
 
-    public KvToJson() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -5797501086945092198L;
 
-    public KvToJson(Params params) {
-        super(FormatType.KV, FormatType.JSON, params);
-    }
+	public KvToJson() {
+		this(new Params());
+	}
+
+	public KvToJson(Params params) {
+		super(FormatType.KV, FormatType.JSON, params);
+	}
 }
 

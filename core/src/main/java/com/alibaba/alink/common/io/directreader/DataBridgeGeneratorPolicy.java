@@ -16,6 +16,7 @@ public @interface DataBridgeGeneratorPolicy {
 
 	/**
 	 * The policy of a {@link DataBridgeGenerator} should be unique from others.
+	 *
 	 * @return policy.
 	 */
 	String policy();

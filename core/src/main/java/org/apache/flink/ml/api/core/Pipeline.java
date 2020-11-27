@@ -56,10 +56,10 @@ import java.util.Map;
  * like an ordinary {@link Estimator} or {@link Transformer} as describe above.
  */
 @PublicEvolving
-public final class Pipeline implements Estimator<Pipeline, Pipeline>, Transformer<Pipeline>,
-	Model<Pipeline> {
+public final class Pipeline implements Estimator <Pipeline, Pipeline>, Transformer <Pipeline>,
+	Model <Pipeline> {
 	private static final long serialVersionUID = 1L;
-	private final List<PipelineStage> stages = new ArrayList<>();
+	private final List <PipelineStage> stages = new ArrayList <>();
 	private final Params params = new Params();
 
 	private int lastEstimatorIndex = -1;
@@ -71,7 +71,7 @@ public final class Pipeline implements Estimator<Pipeline, Pipeline>, Transforme
 		this.loadJson(pipelineJson);
 	}
 
-	public Pipeline(List<PipelineStage> stages) {
+	public Pipeline(List <PipelineStage> stages) {
 		for (PipelineStage s : stages) {
 			appendStage(s);
 		}
@@ -106,7 +106,7 @@ public final class Pipeline implements Estimator<Pipeline, Pipeline>, Transforme
 	 *
 	 * @return an immutable list of all stages in this pipeline in order.
 	 */
-	public List<PipelineStage> getStages() {
+	public List <PipelineStage> getStages() {
 		return Collections.unmodifiableList(stages);
 	}
 
@@ -166,7 +166,7 @@ public final class Pipeline implements Estimator<Pipeline, Pipeline>, Transforme
 	 */
 	@Override
 	public Pipeline fit(TableEnvironment tEnv, Table input) {
-		List<PipelineStage> transformStages = new ArrayList<>(stages.size());
+		List <PipelineStage> transformStages = new ArrayList <>(stages.size());
 		int lastEstimatorIdx = getIndexOfLastEstimator();
 		for (int i = 0; i < stages.size(); i++) {
 			PipelineStage s = stages.get(i);
@@ -211,9 +211,9 @@ public final class Pipeline implements Estimator<Pipeline, Pipeline>, Transforme
 	public String toJson() {
 		ObjectMapper mapper = new ObjectMapper();
 
-		List<Map<String, String>> stageJsons = new ArrayList<>();
+		List <Map <String, String>> stageJsons = new ArrayList <>();
 		for (PipelineStage s : getStages()) {
-			Map<String, String> stageMap = new HashMap<>();
+			Map <String, String> stageMap = new HashMap <>();
 			stageMap.put("stageClassName", s.getClass().getTypeName());
 			stageMap.put("stageJson", s.toJson());
 			stageJsons.add(stageMap);
@@ -230,20 +230,20 @@ public final class Pipeline implements Estimator<Pipeline, Pipeline>, Transforme
 	@SuppressWarnings("unchecked")
 	public void loadJson(String json) {
 		ObjectMapper mapper = new ObjectMapper();
-		List<Map<String, String>> stageJsons;
+		List <Map <String, String>> stageJsons;
 		try {
 			stageJsons = mapper.readValue(json, List.class);
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to parseDense pipeline json:" + json, e);
 		}
-		for (Map<String, String> stageMap : stageJsons) {
+		for (Map <String, String> stageMap : stageJsons) {
 			appendStage(restoreInnerStage(stageMap));
 		}
 	}
 
-	private PipelineStage<?> restoreInnerStage(Map<String, String> stageMap) {
+	private PipelineStage <?> restoreInnerStage(Map <String, String> stageMap) {
 		String className = stageMap.get("stageClassName");
-		Class<?> clz;
+		Class <?> clz;
 		try {
 			clz = Class.forName(className);
 		} catch (ClassNotFoundException e) {
@@ -251,9 +251,9 @@ public final class Pipeline implements Estimator<Pipeline, Pipeline>, Transforme
 		}
 		InstantiationUtil.checkForInstantiation(clz);
 
-		PipelineStage<?> s;
+		PipelineStage <?> s;
 		try {
-			s = (PipelineStage<?>) clz.newInstance();
+			s = (PipelineStage <?>) clz.newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException("Class is instantiable but failed to new an instance", e);
 		}

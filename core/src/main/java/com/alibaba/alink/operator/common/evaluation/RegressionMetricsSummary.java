@@ -27,82 +27,84 @@ import org.apache.flink.ml.api.misc.param.Params;
  *
  * <p>Explained Variance: SSR / N
  */
-public final class RegressionMetricsSummary implements BaseMetricsSummary<RegressionMetrics, RegressionMetricsSummary> {
-    /**
-     * Sum of label values.
-     */
-    double ySumLocal;
+public final class RegressionMetricsSummary
+	implements BaseMetricsSummary <RegressionMetrics, RegressionMetricsSummary> {
+	private static final long serialVersionUID = 6996794130857236861L;
+	/**
+	 * Sum of label values.
+	 */
+	double ySumLocal;
 
-    /**
-     * Sum of square of label values.
-     */
-    double ySum2Local;
+	/**
+	 * Sum of square of label values.
+	 */
+	double ySum2Local;
 
-    /**
-     * Sum of prediction values.
-     */
-    double predSumLocal;
+	/**
+	 * Sum of prediction values.
+	 */
+	double predSumLocal;
 
-    /**
-     * Sum of square of prediction values.
-     */
-    double predSum2Local;
+	/**
+	 * Sum of square of prediction values.
+	 */
+	double predSum2Local;
 
-    /**
-     * Sum of square of errors.
-     */
-    double sseLocal;
+	/**
+	 * Sum of square of errors.
+	 */
+	double sseLocal;
 
-    /**
-     * Sum of absolute errors.
-     */
-    double maeLocal;
+	/**
+	 * Sum of absolute errors.
+	 */
+	double maeLocal;
 
-    /**
-     * Sum of absolute percentage errors.
-     */
-    double mapeLocal;
+	/**
+	 * Sum of absolute percentage errors.
+	 */
+	double mapeLocal;
 
-    /**
-     * The count of samples.
-     */
-    long total = 0L;
+	/**
+	 * The count of samples.
+	 */
+	long total = 0L;
 
-    @Override
-    public RegressionMetricsSummary merge(RegressionMetricsSummary other) {
-        if (null == other) {
-            return this;
-        }
-        ySumLocal += other.ySumLocal;
-        ySum2Local += other.ySum2Local;
-        predSumLocal += other.predSumLocal;
-        predSum2Local += other.predSum2Local;
-        sseLocal += other.sseLocal;
-        maeLocal += other.maeLocal;
-        mapeLocal += other.mapeLocal;
-        total += other.total;
-        return this;
-    }
+	@Override
+	public RegressionMetricsSummary merge(RegressionMetricsSummary other) {
+		if (null == other) {
+			return this;
+		}
+		ySumLocal += other.ySumLocal;
+		ySum2Local += other.ySum2Local;
+		predSumLocal += other.predSumLocal;
+		predSum2Local += other.predSum2Local;
+		sseLocal += other.sseLocal;
+		maeLocal += other.maeLocal;
+		mapeLocal += other.mapeLocal;
+		total += other.total;
+		return this;
+	}
 
-    @Override
-    public RegressionMetrics toMetrics() {
-        Params params = new Params();
-        params.set(RegressionMetrics.SST, ySum2Local - ySumLocal * ySumLocal / total);
-        params.set(RegressionMetrics.SSE, sseLocal);
-        params.set(RegressionMetrics.SSR,
-            predSum2Local - 2 * ySumLocal * predSumLocal / total + ySumLocal * ySumLocal / total);
-        params.set(RegressionMetrics.R2, 1 - params.get(RegressionMetrics.SSE) / params.get(RegressionMetrics.SST));
-        params.set(RegressionMetrics.R, Math.sqrt(params.get(RegressionMetrics.R2)));
-        params.set(RegressionMetrics.MSE, params.get(RegressionMetrics.SSE) / total);
-        params.set(RegressionMetrics.RMSE, Math.sqrt(params.get(RegressionMetrics.MSE)));
-        params.set(RegressionMetrics.SAE, maeLocal);
-        params.set(RegressionMetrics.MAE, params.get(RegressionMetrics.SAE) / total);
-        params.set(RegressionMetrics.COUNT, (double)total);
-        params.set(RegressionMetrics.MAPE, mapeLocal * 100 / total);
-        params.set(RegressionMetrics.Y_MEAN, ySumLocal / total);
-        params.set(RegressionMetrics.PREDICTION_MEAN, predSumLocal / total);
-        params.set(RegressionMetrics.EXPLAINED_VARIANCE, params.get(RegressionMetrics.SSR) / total);
+	@Override
+	public RegressionMetrics toMetrics() {
+		Params params = new Params();
+		params.set(RegressionMetrics.SST, ySum2Local - ySumLocal * ySumLocal / total);
+		params.set(RegressionMetrics.SSE, sseLocal);
+		params.set(RegressionMetrics.SSR,
+			predSum2Local - 2 * ySumLocal * predSumLocal / total + ySumLocal * ySumLocal / total);
+		params.set(RegressionMetrics.R2, 1 - params.get(RegressionMetrics.SSE) / params.get(RegressionMetrics.SST));
+		params.set(RegressionMetrics.R, Math.sqrt(params.get(RegressionMetrics.R2)));
+		params.set(RegressionMetrics.MSE, params.get(RegressionMetrics.SSE) / total);
+		params.set(RegressionMetrics.RMSE, Math.sqrt(params.get(RegressionMetrics.MSE)));
+		params.set(RegressionMetrics.SAE, maeLocal);
+		params.set(RegressionMetrics.MAE, params.get(RegressionMetrics.SAE) / total);
+		params.set(RegressionMetrics.COUNT, (double) total);
+		params.set(RegressionMetrics.MAPE, mapeLocal * 100 / total);
+		params.set(RegressionMetrics.Y_MEAN, ySumLocal / total);
+		params.set(RegressionMetrics.PREDICTION_MEAN, predSumLocal / total);
+		params.set(RegressionMetrics.EXPLAINED_VARIANCE, params.get(RegressionMetrics.SSR) / total);
 
-        return new RegressionMetrics(params);
-    }
+		return new RegressionMetrics(params);
+	}
 }

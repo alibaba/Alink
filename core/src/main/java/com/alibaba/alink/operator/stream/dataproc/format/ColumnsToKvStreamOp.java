@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.operator.stream.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.ColumnsToKvParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class ColumnsToKvStreamOp extends BaseFormatTransStreamOp<ColumnsToKvStreamOp>
-    implements ColumnsToKvParams<ColumnsToKvStreamOp> {
+/**
+ * Transform data type from Columns to Kv.
+ */
+public class ColumnsToKvStreamOp extends BaseFormatTransStreamOp <ColumnsToKvStreamOp>
+	implements ColumnsToKvParams <ColumnsToKvStreamOp> {
 
-    public ColumnsToKvStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 4750193622558931114L;
 
-    public ColumnsToKvStreamOp(Params params) {
-        super(FormatType.COLUMNS, FormatType.KV, params);
-    }
+	public ColumnsToKvStreamOp() {
+		this(new Params());
+	}
+
+	public ColumnsToKvStreamOp(Params params) {
+		super(FormatType.COLUMNS, FormatType.KV, params);
+	}
 }

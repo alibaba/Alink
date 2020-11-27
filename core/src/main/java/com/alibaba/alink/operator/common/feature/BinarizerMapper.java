@@ -4,6 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -11,7 +12,6 @@ import com.alibaba.alink.common.linalg.VectorIterator;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.SISOMapper;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.params.feature.BinarizerParams;
 
 import java.lang.reflect.Constructor;
@@ -24,9 +24,9 @@ import java.util.Arrays;
  * <p>Support Vector input and Number input.
  */
 public class BinarizerMapper extends SISOMapper {
+	private static final long serialVersionUID = 3404239364851551683L;
 	private double threshold;
 	private TypeInformation selectedColType;
-	private static final double RATIO = 1.5;
 	private Object objectValue0, objectValue1;
 
 	public BinarizerMapper(TableSchema dataSchema, Params params) {
@@ -38,7 +38,7 @@ public class BinarizerMapper extends SISOMapper {
 			this.params.get(BinarizerParams.SELECTED_COL)
 		);
 
-		if (TableUtil.isNumber(selectedColType)) {
+		if (TableUtil.isSupportedNumericType(selectedColType)) {
 			try {
 				Constructor constructor = selectedColType.getTypeClass().getConstructor(String.class);
 				objectValue0 = constructor.newInstance("0");
@@ -51,12 +51,12 @@ public class BinarizerMapper extends SISOMapper {
 
 	@Override
 	protected TypeInformation initOutputColType() {
-		final TypeInformation<?> selectedColType = TableUtil.findColTypeWithAssertAndHint(
-				getDataSchema(),
+		final TypeInformation <?> selectedColType = TableUtil.findColTypeWithAssertAndHint(
+			getDataSchema(),
 			this.params.get(BinarizerParams.SELECTED_COL)
 		);
 
-		if (TableUtil.isNumber(selectedColType)) {
+		if (TableUtil.isSupportedNumericType(selectedColType)) {
 			return selectedColType;
 		}
 
@@ -77,13 +77,10 @@ public class BinarizerMapper extends SISOMapper {
 		if (null == input) {
 			return null;
 		}
-		if (TableUtil.isNumber(selectedColType)) {
+		if (TableUtil.isSupportedNumericType(selectedColType)) {
 			return ((Number) input).doubleValue() > threshold ? objectValue1 : objectValue0;
 		} else if (TableUtil.isVector(selectedColType)) {
 			Vector parseVector = VectorUtil.getVector(input);
-			if (null == parseVector) {
-				return null;
-			}
 			if (parseVector instanceof SparseVector) {
 				SparseVector vec = (SparseVector) parseVector;
 				VectorIterator vectorIterator = vec.iterator();
@@ -111,13 +108,7 @@ public class BinarizerMapper extends SISOMapper {
 						data[i] = 0.0;
 					}
 				}
-				if (pos * RATIO > vec.size()) {
-					return vec;
-				} else {
-					double[] newValues = new double[pos];
-					Arrays.fill(newValues, 1.0);
-					return new SparseVector(vec.size(), Arrays.copyOf(newIndices, pos), newValues);
-				}
+				return vec;
 			}
 		} else {
 			throw new IllegalArgumentException("Only support Number and vector!");

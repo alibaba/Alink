@@ -6,7 +6,6 @@ import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 /**
  * parameters of softmax training process.
- *
  */
 public interface SoftmaxTrainParams<T> extends
 	LinearTrainParams <T>,

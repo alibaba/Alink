@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.batch.sink;
 
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.core.fs.FileSystem;
@@ -21,45 +20,44 @@ import com.alibaba.alink.params.io.CsvSinkParams;
  */
 
 @IoOpAnnotation(name = "csv", ioType = IOType.SinkBatch)
-public final class CsvSinkBatchOp extends BaseSinkBatchOp<CsvSinkBatchOp>
-    implements CsvSinkParams<CsvSinkBatchOp> {
+public final class CsvSinkBatchOp extends BaseSinkBatchOp <CsvSinkBatchOp>
+	implements CsvSinkParams <CsvSinkBatchOp> {
 
-    public CsvSinkBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -4482188826277270154L;
 
-    public CsvSinkBatchOp(Params params) {
-        super(AnnotationUtils.annotatedName(CsvSinkBatchOp.class), params);
-    }
+	public CsvSinkBatchOp() {
+		this(new Params());
+	}
 
-    public CsvSinkBatchOp(String path) {
-        this(new Params().set(FILE_PATH, path).set(OVERWRITE_SINK, true));
-    }
+	public CsvSinkBatchOp(Params params) {
+		super(AnnotationUtils.annotatedName(CsvSinkBatchOp.class), params);
+	}
 
-    @Override
-    public CsvSinkBatchOp sinkFrom(BatchOperator in) {
-        final String filePath = getFilePath().getPathStr();
-        final String fieldDelim = getFieldDelimiter();
-        final int numFiles = getNumFiles();
-        final TypeInformation[] types = in.getColTypes();
-        final Character quoteChar = getQuoteChar();
+	@Override
+	public CsvSinkBatchOp sinkFrom(BatchOperator<?> in) {
+		final String filePath = getFilePath().getPathStr();
+		final String fieldDelim = getFieldDelimiter();
+		final int numFiles = getNumFiles();
+		final TypeInformation<?>[] types = in.getColTypes();
+		final Character quoteChar = getQuoteChar();
 
-        FileSystem.WriteMode mode = FileSystem.WriteMode.NO_OVERWRITE;
-        if (getOverwriteSink()) {
-            mode = FileSystem.WriteMode.OVERWRITE;
-        }
+		FileSystem.WriteMode mode = FileSystem.WriteMode.NO_OVERWRITE;
+		if (getOverwriteSink()) {
+			mode = FileSystem.WriteMode.OVERWRITE;
+		}
 
-        DataSet<String> textLines = ((DataSet<Row>) in.getDataSet())
-            .map(new CsvUtil.FormatCsvFunc(types, fieldDelim, quoteChar))
-            .map(new CsvUtil.FlattenCsvFromRow(getRowDelimiter()));
+		DataSet <String> textLines = in.getDataSet()
+			.map(new CsvUtil.FormatCsvFunc(types, fieldDelim, quoteChar))
+			.map(new CsvUtil.FlattenCsvFromRow(getRowDelimiter()));
 
-        TextOutputFormat<String> tof = new TextOutputFormat<>(
-            new Path(filePath), getFilePath().getFileSystem(), getRowDelimiter()
-        );
+		TextOutputFormat <String> tof = new TextOutputFormat <>(
+			new Path(filePath), getFilePath().getFileSystem(), getRowDelimiter()
+		);
 
-        tof.setWriteMode(mode);
+		tof.setWriteMode(mode);
 
-        textLines.output(tof).name("csv_sink").setParallelism(numFiles);
-        return this;
-    }
+		textLines.output(tof).name("csv_sink").setParallelism(numFiles);
+		return this;
+	}
+
 }

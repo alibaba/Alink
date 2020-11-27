@@ -54,7 +54,7 @@ public class Params implements Serializable {
 	@Override
 	public Params clone() {
 		Params cloneParams = new Params();
-		cloneParams.params = new HashMap<>(this.params);
+		cloneParams.params = new HashMap <>(this.params);
 		return cloneParams;
 	}
 
@@ -94,6 +94,10 @@ public class Params implements Serializable {
 	}
 
 	public <V> Params set(ParamInfo <V> paramInfo, V value) {
+		ParamValidator validator = paramInfo.getValidator();
+		if (validator != null) {
+			validator.validateThrows(value);
+		}
 		return set(paramInfo.getName(), value);
 	}
 
@@ -106,7 +110,7 @@ public class Params implements Serializable {
 		return paramNames;
 	}
 
-	public <V> V get(ParamInfo <V> paramInfo) {
+	public <V> V getValue(ParamInfo <V> paramInfo) {
 		Stream <V> paramValue = getParamNameAndAlias(paramInfo)
 			.filter(this::contains)
 			.map(x -> this.get(x, paramInfo.getValueClass()))
@@ -131,6 +135,15 @@ public class Params implements Serializable {
 				}
 				return a.get(0);
 			}));
+	}
+
+	public <V> V get(ParamInfo <V> paramInfo) {
+		V v = getValue(paramInfo);
+		ParamValidator validator = paramInfo.getValidator();
+		if (validator != null) {
+			validator.validateThrows(v);
+		}
+		return v;
 	}
 
 	public <V> boolean contains(ParamInfo <V> paramInfo) {
@@ -161,12 +174,13 @@ public class Params implements Serializable {
 		return params.keySet();
 	}
 
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public <T> T get(String paramName, Class <T> classOfT) {
 		if (classOfT.isEnum()) {
 			String value = get(paramName, String.class);
-			return (T)ParamUtil.searchEnum((Class)classOfT, value, paramName);
+			return (T) ParamUtil.searchEnum((Class) classOfT, value, paramName);
 		} else {
-			return get(paramName, (Type)classOfT);
+			return get(paramName, (Type) classOfT);
 		}
 	}
 

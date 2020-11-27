@@ -43,6 +43,7 @@ import com.alibaba.alink.operator.common.nlp.Word2VecModelDataConverter;
 import com.alibaba.alink.operator.common.nlp.Word2VecTrainInfo;
 import com.alibaba.alink.operator.common.nlp.WordCountUtil;
 import com.alibaba.alink.params.nlp.Word2VecTrainParams;
+import com.alibaba.alink.params.shared.tree.HasSeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,10 +69,11 @@ import java.util.stream.StreamSupport;
  * Distributed representations of words and phrases and their compositionality.
  * <p>https://code.google.com/archive/p/word2vec/
  */
-public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
-	implements Word2VecTrainParams<Word2VecTrainBatchOp>,
-	WithTrainInfo<Word2VecTrainInfo, Word2VecTrainBatchOp> {
+public class Word2VecTrainBatchOp extends BatchOperator <Word2VecTrainBatchOp>
+	implements Word2VecTrainParams <Word2VecTrainBatchOp>,
+	WithTrainInfo <Word2VecTrainInfo, Word2VecTrainBatchOp> {
 	private static final Logger LOG = LoggerFactory.getLogger(Word2VecTrainBatchOp.class);
+	private static final long serialVersionUID = -1901810620054339260L;
 
 	public static int MAX_CODE_LENGTH = 40;
 
@@ -160,12 +162,13 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 		}
 	}
 
-	private static DataSet<Row> sortedIndexVocab(DataSet<Row> vocab) {
+	private static DataSet <Row> sortedIndexVocab(DataSet <Row> vocab) {
 		final int sortIdx = 1;
-		Tuple2<DataSet<Tuple2<Integer, Row>>, DataSet<Tuple2<Integer, Long>>> sorted
+		Tuple2 <DataSet <Tuple2 <Integer, Row>>, DataSet <Tuple2 <Integer, Long>>> sorted
 			= SortUtils.pSort(vocab, sortIdx);
 
-		DataSet<Tuple2<Integer, Row>> partitioned = sorted.f0.partitionCustom(new Partitioner<Integer>() {
+		DataSet <Tuple2 <Integer, Row>> partitioned = sorted.f0.partitionCustom(new Partitioner <Integer>() {
+			private static final long serialVersionUID = 7033675545004935349L;
 
 			@Override
 			public int partition(Integer key, int numPartitions) {
@@ -173,22 +176,23 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 			}
 		}, 0);
 
-		DataSet<Tuple2<Integer, Long>> cnt = DataSetUtils.countElementsPerPartition(partitioned);
+		DataSet <Tuple2 <Integer, Long>> cnt = DataSetUtils.countElementsPerPartition(partitioned);
 
-		return partitioned.mapPartition(new RichMapPartitionFunction<Tuple2<Integer, Row>, Row>() {
+		return partitioned.mapPartition(new RichMapPartitionFunction <Tuple2 <Integer, Row>, Row>() {
+			private static final long serialVersionUID = -8439325113876456518L;
 			int start;
 			int curLen;
 			int total;
 
 			@Override
 			public void open(Configuration parameters) throws Exception {
-				List<Tuple2<Integer, Long>> cnts = getRuntimeContext().getBroadcastVariable("cnt");
+				List <Tuple2 <Integer, Long>> cnts = getRuntimeContext().getBroadcastVariable("cnt");
 				int taskId = getRuntimeContext().getIndexOfThisSubtask();
 				start = 0;
 				curLen = 0;
 				total = 0;
 
-				for (Tuple2<Integer, Long> val : cnts) {
+				for (Tuple2 <Integer, Long> val : cnts) {
 					if (val.f0 < taskId) {
 						start += val.f1;
 					}
@@ -202,7 +206,7 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 			}
 
 			@Override
-			public void mapPartition(Iterable<Tuple2<Integer, Row>> values, Collector<Row> out) throws Exception {
+			public void mapPartition(Iterable <Tuple2 <Integer, Row>> values, Collector <Row> out) throws Exception {
 				if (curLen <= 0) {
 					return;
 				}
@@ -210,7 +214,7 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 				Row[] all = new Row[curLen];
 
 				int i = 0;
-				for (Tuple2<Integer, Row> val : values) {
+				for (Tuple2 <Integer, Row> val : values) {
 					all[i++] = val.f1;
 				}
 
@@ -225,15 +229,16 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 		}).withBroadcastSet(cnt, "cnt");
 	}
 
-	private static DataSet<int[]> encodeContent(
-		DataSet<String[]> content,
-		DataSet<Tuple3<Integer, String, Word>> vocab) {
+	private static DataSet <int[]> encodeContent(
+		DataSet <String[]> content,
+		DataSet <Tuple3 <Integer, String, Word>> vocab) {
 		return content
-			.mapPartition(new RichMapPartitionFunction<String[], Tuple4<Integer, Long, Integer, String>>() {
+			.mapPartition(new RichMapPartitionFunction <String[], Tuple4 <Integer, Long, Integer, String>>() {
+				private static final long serialVersionUID = 2985519984072344725L;
 
 				@Override
-				public void mapPartition(Iterable<String[]> values,
-										 Collector<Tuple4<Integer, Long, Integer, String>> out)
+				public void mapPartition(Iterable <String[]> values,
+										 Collector <Tuple4 <Integer, Long, Integer, String>> out)
 					throws Exception {
 					int taskId = getRuntimeContext().getIndexOfThisSubtask();
 					long localCnt = 0L;
@@ -243,7 +248,7 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 						}
 
 						for (int i = 0; i < val.length; ++i) {
-							out.collect(new Tuple4<>(taskId, localCnt, i, val[i]));
+							out.collect(new Tuple4 <>(taskId, localCnt, i, val[i]));
 						}
 
 						++localCnt;
@@ -252,15 +257,16 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 			}).coGroup(vocab)
 			.where(3)
 			.equalTo(1)
-			.with(new CoGroupFunction<Tuple4<Integer, Long, Integer, String>, Tuple3<Integer, String, Word>,
-				Tuple4<Integer, Long, Integer, Integer>>() {
+			.with(new CoGroupFunction <Tuple4 <Integer, Long, Integer, String>, Tuple3 <Integer, String, Word>,
+				Tuple4 <Integer, Long, Integer, Integer>>() {
+				private static final long serialVersionUID = -4187624436127997613L;
 
 				@Override
-				public void coGroup(Iterable<Tuple4<Integer, Long, Integer, String>> first,
-									Iterable<Tuple3<Integer, String, Word>> second,
-									Collector<Tuple4<Integer, Long, Integer, Integer>> out) {
-					for (Tuple3<Integer, String, Word> row : second) {
-						for (Tuple4<Integer, Long, Integer, String> tuple : first) {
+				public void coGroup(Iterable <Tuple4 <Integer, Long, Integer, String>> first,
+									Iterable <Tuple3 <Integer, String, Word>> second,
+									Collector <Tuple4 <Integer, Long, Integer, Integer>> out) {
+					for (Tuple3 <Integer, String, Word> row : second) {
+						for (Tuple4 <Integer, Long, Integer, String> tuple : first) {
 							out.collect(
 								Tuple4.of(tuple.f0, tuple.f1, tuple.f2,
 									row.getField(0)));
@@ -268,19 +274,20 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 					}
 				}
 			}).groupBy(0, 1)
-			.reduceGroup(new GroupReduceFunction<Tuple4<Integer, Long, Integer, Integer>, int[]>() {
+			.reduceGroup(new GroupReduceFunction <Tuple4 <Integer, Long, Integer, Integer>, int[]>() {
+				private static final long serialVersionUID = 8323725437283683721L;
 
 				@Override
-				public void reduce(Iterable<Tuple4<Integer, Long, Integer, Integer>> values, Collector<int[]> out) {
-					ArrayList<Tuple2<Integer, Integer>> elements = new ArrayList<>();
+				public void reduce(Iterable <Tuple4 <Integer, Long, Integer, Integer>> values, Collector <int[]> out) {
+					ArrayList <Tuple2 <Integer, Integer>> elements = new ArrayList <>();
 
-					for (Tuple4<Integer, Long, Integer, Integer> val : values) {
+					for (Tuple4 <Integer, Long, Integer, Integer> val : values) {
 						elements.add(Tuple2.of(val.f2, val.f3));
 					}
 
-					Collections.sort(elements, new Comparator<Tuple2<Integer, Integer>>() {
+					Collections.sort(elements, new Comparator <Tuple2 <Integer, Integer>>() {
 						@Override
-						public int compare(Tuple2<Integer, Integer> o1, Tuple2<Integer, Integer> o2) {
+						public int compare(Tuple2 <Integer, Integer> o1, Tuple2 <Integer, Integer> o2) {
 							return o1.f0.compareTo(o2.f0);
 						}
 					});
@@ -297,58 +304,58 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 	}
 
 	@Override
-	public Word2VecTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
-		BatchOperator<?> in = checkAndGetFirst(inputs);
+	public Word2VecTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
 		final int vectorSize = getVectorSize();
 
-		DataSet<Row> wordCnt = WordCountUtil
+		DataSet <Row> wordCnt = WordCountUtil
 			.splitDocAndCount(in, getSelectedCol(), getWordDelimiter())
 			.filter("cnt >= " + String.valueOf(getMinCount()))
 			.getDataSet();
 
-		DataSet<Row> sorted = sortedIndexVocab(wordCnt);
+		DataSet <Row> sorted = sortedIndexVocab(wordCnt);
 
-		DataSet<Long> vocSize = DataSetUtils
+		DataSet <Long> vocSize = DataSetUtils
 			.countElementsPerPartition(sorted)
 			.sum(1)
-			.map(new MapFunction<Tuple2<Integer, Long>, Long>() {
+			.map(new MapFunction <Tuple2 <Integer, Long>, Long>() {
+				private static final long serialVersionUID = -4608562797891228404L;
 
 				@Override
-				public Long map(Tuple2<Integer, Long> value) throws Exception {
+				public Long map(Tuple2 <Integer, Long> value) throws Exception {
 					return value.f1;
 				}
 			});
 
-		DataSet<Tuple3<Integer, String, Word>> vocab = sorted
+		DataSet <Tuple3 <Integer, String, Word>> vocab = sorted
 			.reduceGroup(new CreateVocab())
 			.withBroadcastSet(vocSize, "vocSize")
 			.rebalance();
 
-		DataSet<String[]> split = in
+		DataSet <String[]> split = in
 			.select("`" + getSelectedCol() + "`")
 			.getDataSet()
 			.flatMap(new WordCountUtil.WordSpliter(getWordDelimiter()))
 			.rebalance();
 
-		DataSet<int[]> trainData = encodeContent(split, vocab)
+		DataSet <int[]> trainData = encodeContent(split, vocab)
 			.rebalance();
 
-		final long seed = System.currentTimeMillis();
-
-		DataSet<Tuple2<Integer, Word>> vocabWithoutWordStr = vocab
+		DataSet <Tuple2 <Integer, Word>> vocabWithoutWordStr = vocab
 			.map(new UseVocabWithoutWordString());
 
-		DataSet<Tuple2<Integer, double[]>> initialModel = vocabWithoutWordStr
-			.mapPartition(new initialModel(seed, vectorSize))
+		DataSet <Tuple2 <Integer, double[]>> initialModel = vocabWithoutWordStr
+			.mapPartition(new initialModel(getParams().get(HasSeed.SEED), vectorSize))
 			.rebalance();
 
-		DataSet<Integer> syncNum = DataSetUtils
+		DataSet <Integer> syncNum = DataSetUtils
 			.countElementsPerPartition(trainData)
 			.sum(1)
-			.map(new RichMapFunction<Tuple2<Integer, Long>, Integer>() {
+			.map(new RichMapFunction <Tuple2 <Integer, Long>, Integer>() {
+				private static final long serialVersionUID = 2989627778876891178L;
 
 				@Override
-				public Integer map(Tuple2<Integer, Long> value) throws Exception {
+				public Integer map(Tuple2 <Integer, Long> value) throws Exception {
 					return Math.max(
 						(int) (value.f1 / 100000L),
 						Math.min(
@@ -361,7 +368,7 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 				}
 			});
 
-		DataSet<Row> model = new IterativeComQueue()
+		DataSet <Row> model = new IterativeComQueue()
 			.initWithPartitionedData("trainData", trainData)
 			.initWithBroadcastData("vocSize", vocSize)
 			.initWithBroadcastData("initialModel", initialModel)
@@ -377,15 +384,17 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 			.closeWith(new SerializeModel(getParams()))
 			.exec();
 
-		DataSet<Row> iterInfo = model
-			.filter(new FilterFunction<Row>() {
+		DataSet <Row> iterInfo = model
+			.filter(new FilterFunction <Row>() {
+				private static final long serialVersionUID = -4087427554304465241L;
 
 				@Override
 				public boolean filter(Row value) throws Exception {
 					return (int) value.getField(0) == 0;
 				}
 			})
-			.map(new MapFunction<Row, Row>() {
+			.map(new MapFunction <Row, Row>() {
+				private static final long serialVersionUID = 2279565281381999504L;
 
 				@Override
 				public Row map(Row value) throws Exception {
@@ -403,42 +412,47 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 		});
 
 		model = model
-			.filter(new FilterFunction<Row>() {
+			.filter(new FilterFunction <Row>() {
+				private static final long serialVersionUID = -4087427554304465241L;
 
 				@Override
 				public boolean filter(Row value) throws Exception {
 					return (int) value.getField(0) == 1;
 				}
 			})
-			.map(new MapFunction<Row, Row>() {
+			.map(new MapFunction <Row, Row>() {
+				private static final long serialVersionUID = 2279565281381999504L;
 
 				@Override
 				public Row map(Row value) throws Exception {
 					return Row.of(value.getField(1), value.getField(2));
 				}
 			})
-			.map(new MapFunction<Row, Tuple2<Integer, DenseVector>>() {
+			.map(new MapFunction <Row, Tuple2 <Integer, DenseVector>>() {
+				private static final long serialVersionUID = 10165543447930471L;
 
 				@Override
-				public Tuple2<Integer, DenseVector> map(Row value) throws Exception {
+				public Tuple2 <Integer, DenseVector> map(Row value) throws Exception {
 					return Tuple2.of((Integer) value.getField(0), (DenseVector) value.getField(1));
 				}
 			})
 			.join(vocab)
 			.where(0)
 			.equalTo(0)
-			.with(new JoinFunction<Tuple2<Integer, DenseVector>, Tuple3<Integer, String, Word>, Row>() {
+			.with(new JoinFunction <Tuple2 <Integer, DenseVector>, Tuple3 <Integer, String, Word>, Row>() {
+				private static final long serialVersionUID = 5611294863047638770L;
 
 				@Override
-				public Row join(Tuple2<Integer, DenseVector> first, Tuple3<Integer, String, Word> second)
+				public Row join(Tuple2 <Integer, DenseVector> first, Tuple3 <Integer, String, Word> second)
 					throws Exception {
 					return Row.of(second.f1, first.f1);
 				}
 			})
-			.mapPartition(new MapPartitionFunction<Row, Row>() {
+			.mapPartition(new MapPartitionFunction <Row, Row>() {
+				private static final long serialVersionUID = -3274399290123772498L;
 
 				@Override
-				public void mapPartition(Iterable<Row> values, Collector<Row> out) throws Exception {
+				public void mapPartition(Iterable <Row> values, Collector <Row> out) throws Exception {
 					Word2VecModelDataConverter model = new Word2VecModelDataConverter();
 
 					model.modelRows = StreamSupport
@@ -455,22 +469,24 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 	}
 
 	@Override
-	public Word2VecTrainInfo createTrainInfo(List<Row> rows) {
+	public Word2VecTrainInfo createTrainInfo(List <Row> rows) {
 		return new Word2VecTrainInfo(rows);
 	}
 
 	@Override
-	public BatchOperator<?> getSideOutputTrainInfo() {
+	public BatchOperator <?> getSideOutputTrainInfo() {
 		return getSideOutput(0);
 	}
 
 	private static class Word implements Serializable {
+		private static final long serialVersionUID = 7064713372411549086L;
 		public long cnt;
 		public int[] point;
 		public int[] code;
 	}
 
 	private static class InitialVocabAndBuffer extends ComputeFunction {
+		private static final long serialVersionUID = -5099694286000869372L;
 		Params params;
 
 		public InitialVocabAndBuffer(Params params) {
@@ -481,9 +497,9 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 		public void calc(ComContext context) {
 			if (context.getStepNo() == 1) {
 				int vectorSize = params.get(Word2VecTrainParams.VECTOR_SIZE);
-				List<Long> vocSizeList = context.getObj("vocSize");
-				List<Tuple2<Integer, double[]>> initialModel = context.getObj("initialModel");
-				List<Tuple2<Integer, Word>> vocabWithoutWordStr = context.getObj("vocabWithoutWordStr");
+				List <Long> vocSizeList = context.getObj("vocSize");
+				List <Tuple2 <Integer, double[]>> initialModel = context.getObj("initialModel");
+				List <Tuple2 <Integer, Word>> vocabWithoutWordStr = context.getObj("vocabWithoutWordStr");
 
 				int vocSize = vocSizeList.get(0).intValue();
 
@@ -492,10 +508,10 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 				Word[] vocab = new Word[vocSize];
 
 				for (int i = 0; i < vocSize; ++i) {
-					Tuple2<Integer, double[]> item = initialModel.get(i);
+					Tuple2 <Integer, double[]> item = initialModel.get(i);
 					System.arraycopy(item.f1, 0, input,
 						item.f0 * vectorSize, vectorSize);
-					Tuple2<Integer, Word> vocabItem = vocabWithoutWordStr.get(i);
+					Tuple2 <Integer, Word> vocabItem = vocabWithoutWordStr.get(i);
 					vocab[vocabItem.f0] = vocabItem.f1;
 				}
 
@@ -535,7 +551,7 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 			random = new Random(seed);
 		}
 
-		public double update(List<int[]> values) {
+		public double update(List <int[]> values) {
 			LOG.info("taskId: {}, map partition start", taskId);
 
 			double[] neu1e = new double[vectorSize];
@@ -608,7 +624,8 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 	}
 
 	private static class initialModel
-		extends RichMapPartitionFunction<Tuple2<Integer, Word>, Tuple2<Integer, double[]>> {
+		extends RichMapPartitionFunction <Tuple2 <Integer, Word>, Tuple2 <Integer, double[]>> {
+		private static final long serialVersionUID = -5113354983404028347L;
 		private final long seed;
 		private final int vectorSize;
 		Random random;
@@ -625,9 +642,9 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 		}
 
 		@Override
-		public void mapPartition(Iterable<Tuple2<Integer, Word>> values,
-								 Collector<Tuple2<Integer, double[]>> out) throws Exception {
-			for (Tuple2<Integer, Word> val : values) {
+		public void mapPartition(Iterable <Tuple2 <Integer, Word>> values,
+								 Collector <Tuple2 <Integer, double[]>> out) throws Exception {
+			for (Tuple2 <Integer, Word> val : values) {
 				double[] inBuf = new double[vectorSize];
 
 				for (int i = 0; i < vectorSize; ++i) {
@@ -640,30 +657,32 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 	}
 
 	private static class UseVocabWithoutWordString
-		implements MapFunction<Tuple3<Integer, String, Word>, Tuple2<Integer, Word>> {
+		implements MapFunction <Tuple3 <Integer, String, Word>, Tuple2 <Integer, Word>> {
+		private static final long serialVersionUID = -9049426378553185090L;
 
 		@Override
-		public Tuple2<Integer, Word> map(Tuple3<Integer, String, Word> value) throws Exception {
+		public Tuple2 <Integer, Word> map(Tuple3 <Integer, String, Word> value) throws Exception {
 			return Tuple2.of(value.f0, value.f2);
 		}
 	}
 
-	private static class CreateVocab extends RichGroupReduceFunction<Row, Tuple3<Integer, String, Word>> {
+	private static class CreateVocab extends RichGroupReduceFunction <Row, Tuple3 <Integer, String, Word>> {
+		private static final long serialVersionUID = 5918268703417386926L;
 		int vocSize;
 
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			vocSize = getRuntimeContext().getBroadcastVariableWithInitializer("vocSize",
-				new BroadcastVariableInitializer<Long, Integer>() {
+				new BroadcastVariableInitializer <Long, Integer>() {
 					@Override
-					public Integer initializeBroadcastVariable(Iterable<Long> data) {
+					public Integer initializeBroadcastVariable(Iterable <Long> data) {
 						return data.iterator().next().intValue();
 					}
 				});
 		}
 
 		@Override
-		public void reduce(Iterable<Row> values, Collector<Tuple3<Integer, String, Word>> out) throws Exception {
+		public void reduce(Iterable <Row> values, Collector <Tuple3 <Integer, String, Word>> out) throws Exception {
 			String[] words = new String[vocSize];
 			Word[] vocab = new Word[vocSize];
 
@@ -683,6 +702,7 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 	}
 
 	private static class AvgInputOutput extends ComputeFunction {
+		private static final long serialVersionUID = -6272951344479535648L;
 
 		@Override
 		public void calc(ComContext context) {
@@ -698,18 +718,19 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 				output[i] /= context.getNumTask();
 			}
 
-			List<Double> lossIterInfo = context.getObj("lossIterInfo");
+			List <Double> lossIterInfo = context.getObj("lossIterInfo");
 
 			if (lossIterInfo == null) {
-				lossIterInfo = new ArrayList<>();
+				lossIterInfo = new ArrayList <>();
 				context.putObj("lossIterInfo", lossIterInfo);
 			}
 
-			lossIterInfo.add(context.<double[]>getObj("lossInfo")[0]);
+			lossIterInfo.add(context. <double[]>getObj("lossInfo")[0] / context.getNumTask());
 		}
 	}
 
 	private static class Criterion extends CompareCriterionFunction {
+		private static final long serialVersionUID = -5209402952030754112L;
 		Params params;
 
 		public Criterion(Params params) {
@@ -719,12 +740,13 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 		@Override
 		public boolean calc(ComContext context) {
 			return (context.getStepNo() - 1)
-				== ((List<Integer>) context.getObj("syncNum")).get(0)
+				== ((List <Integer>) context.getObj("syncNum")).get(0)
 				* params.get(Word2VecTrainParams.NUM_ITER);
 		}
 	}
 
 	private static class UpdateModel extends ComputeFunction {
+		private static final long serialVersionUID = -200466448350631442L;
 		Params params;
 
 		public UpdateModel(Params params) {
@@ -733,9 +755,9 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 
 		@Override
 		public void calc(ComContext context) {
-			List<int[]> trainData = context.getObj("trainData");
+			List <int[]> trainData = context.getObj("trainData");
 
-			int syncNum = ((List<Integer>) context.getObj("syncNum")).get(0);
+			int syncNum = ((List <Integer>) context.getObj("syncNum")).get(0);
 
 			if (context.getObj("lossInfo") == null) {
 				context.putObj("lossInfo", new double[] {0.0});
@@ -763,7 +785,7 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 
 			lossInfo[0] = new CalcModel(
 				params.get(Word2VecTrainParams.VECTOR_SIZE),
-				System.currentTimeMillis(),
+				params.get(HasSeed.SEED) + context.getTaskId(),
 				Boolean.parseBoolean(params.get(Word2VecTrainParams.RANDOM_WINDOW)),
 				params.get(Word2VecTrainParams.WINDOW),
 				params.get(Word2VecTrainParams.ALPHA),
@@ -776,6 +798,7 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 	}
 
 	private static class SerializeModel extends CompleteResultFunction {
+		private static final long serialVersionUID = -6244849890744256651L;
 		Params params;
 
 		public SerializeModel(Params params) {
@@ -783,17 +806,17 @@ public class Word2VecTrainBatchOp extends BatchOperator<Word2VecTrainBatchOp>
 		}
 
 		@Override
-		public List<Row> calc(ComContext context) {
+		public List <Row> calc(ComContext context) {
 			if (context.getTaskId() != 0) {
 				return null;
 			}
 
-			List<Double> lossIterInfo = context.getObj("lossIterInfo");
+			List <Double> lossIterInfo = context.getObj("lossIterInfo");
 
-			int vocSize = ((List<Long>) context.getObj("vocSize")).get(0).intValue();
+			int vocSize = ((List <Long>) context.getObj("vocSize")).get(0).intValue();
 			int vectorSize = params.get(Word2VecTrainParams.VECTOR_SIZE);
 
-			List<Row> ret = new ArrayList<>(vocSize);
+			List <Row> ret = new ArrayList <>(vocSize);
 
 			ret.add(Row.of(
 				0, 0, null,

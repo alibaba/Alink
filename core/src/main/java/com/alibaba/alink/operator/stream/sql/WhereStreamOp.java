@@ -8,24 +8,26 @@ import com.alibaba.alink.params.sql.WhereParams;
 /**
  * Filter records in the stream operator.
  */
-public final class WhereStreamOp extends BaseSqlApiStreamOp<WhereStreamOp>
-    implements WhereParams<WhereStreamOp> {
+public final class WhereStreamOp extends BaseSqlApiStreamOp <WhereStreamOp>
+	implements WhereParams <WhereStreamOp> {
 
-    public WhereStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -353238089567068370L;
 
-    public WhereStreamOp(String clause) {
-        this(new Params().set(CLAUSE, clause));
-    }
+	public WhereStreamOp() {
+		this(new Params());
+	}
 
-    public WhereStreamOp(Params params) {
-        super(params);
-    }
+	public WhereStreamOp(String clause) {
+		this(new Params().set(CLAUSE, clause));
+	}
 
-    @Override
-    public WhereStreamOp linkFrom(StreamOperator<?>... inputs) {
-        this.setOutputTable(inputs[0].where(getClause()).getOutputTable());
-        return this;
-    }
+	public WhereStreamOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public WhereStreamOp linkFrom(StreamOperator <?>... inputs) {
+		this.setOutputTable(inputs[0].where(getClause()).getOutputTable());
+		return this;
+	}
 }

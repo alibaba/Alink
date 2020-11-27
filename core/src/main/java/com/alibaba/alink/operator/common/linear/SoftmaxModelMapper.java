@@ -1,8 +1,9 @@
 package com.alibaba.alink.operator.common.linear;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -10,16 +11,14 @@ import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.classification.SoftmaxPredictParams;
 
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.alibaba.alink.common.utils.JsonConverter.gson;
 
 /**
  * Softmax mapper maps one sample to a sample with a predicted class label.
- *
  */
 public class SoftmaxModelMapper extends RichModelMapper {
 

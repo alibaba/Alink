@@ -1,8 +1,6 @@
 package com.alibaba.alink.pipeline.classification;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
+import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.AlgoOperator;
@@ -12,15 +10,15 @@ import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
-
-import org.apache.flink.types.Row;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Test cases for svm pipeline.
- */
-public class SvmTest {
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+
+public class SvmTest extends AlinkTestBase {
 
 	AlgoOperator getData(boolean isBatch) {
 		Row[] array = new Row[] {
@@ -66,23 +64,21 @@ public class SvmTest {
 		LinearSvm sparseVectorSvm = new LinearSvm()
 			.setLabelCol(yVar)
 			.setVectorCol(svectorName)
-			.setOptimMethod("lbfgs")
+			.setOptimMethod("sgd")
 			.setMaxIter(10)
 			.setPredictionCol("svsvmpred")
 			.setPredictionDetailCol("detail");
-
 
 		Pipeline plSvm = new Pipeline().add(svm).add(vectorSvm).add(sparseVectorSvm);
 		BatchOperator trainData = (BatchOperator) getData(true);
 		PipelineModel model = plSvm.fit(trainData);
 
-
 		BatchOperator result = model.transform(trainData).select(
 			new String[] {"labels", "svmpred", "vsvmpred", "svsvmpred"});
 
-		result.lazyCollect(new Consumer<List<Row>>() {
+		result.lazyCollect(new Consumer <List <Row>>() {
 			@Override
-			public void accept(List<Row> d) {
+			public void accept(List <Row> d) {
 				for (Row row : d) {
 					for (int i = 1; i < 3; ++i) {
 						Assert.assertEquals(row.getField(0), row.getField(i));
@@ -92,11 +88,10 @@ public class SvmTest {
 		});
 
 		// below is stream test code.
-		model.transform((StreamOperator)getData(false)).select(
+		model.transform((StreamOperator) getData(false)).select(
 			new String[] {"labels", "svmpred", "vsvmpred", "svsvmpred"}).print();
 
 		StreamOperator.execute();
-
 
 	}
 }

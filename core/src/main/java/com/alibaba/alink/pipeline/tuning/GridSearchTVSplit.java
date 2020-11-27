@@ -15,12 +15,14 @@ import com.alibaba.alink.pipeline.Pipeline;
 public class GridSearchTVSplit extends BaseGridSearch <GridSearchTVSplit, GridSearchTVSplitModel>
 	implements HasTrainRatio <GridSearchTVSplit> {
 
+	private static final long serialVersionUID = -1128160766782268679L;
+
 	public GridSearchTVSplit() {
 		super();
 	}
 
 	@Override
-	protected Tuple2<Pipeline, Report> findBest(BatchOperator in, PipelineCandidatesGrid candidates) {
+	protected Tuple2 <Pipeline, Report> findBest(BatchOperator <?> in, PipelineCandidatesGrid candidates) {
 		return findBestTVSplit(in, getTrainRatio(), candidates);
 	}
 }

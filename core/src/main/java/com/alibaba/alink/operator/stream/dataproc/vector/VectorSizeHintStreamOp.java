@@ -8,10 +8,11 @@ import com.alibaba.alink.params.dataproc.vector.VectorSizeHintParams;
 
 /**
  * Check the size of a vector. if size is not match, then do as handleInvalid
- *
  */
 public final class VectorSizeHintStreamOp extends MapStreamOp <VectorSizeHintStreamOp>
 	implements VectorSizeHintParams <VectorSizeHintStreamOp> {
+
+	private static final long serialVersionUID = -1028181022845803834L;
 
 	/**
 	 * handleInvalidMethod can be "error", "skip", "optimistic"

@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.tree;
 import java.io.Serializable;
 
 public class LabelCounter implements Serializable {
+	private static final long serialVersionUID = 5749266833722532209L;
 	private double weightSum;
 	private int numInst;
 	private double[] distributions;

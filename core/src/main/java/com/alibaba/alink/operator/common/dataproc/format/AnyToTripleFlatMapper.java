@@ -1,10 +1,5 @@
 package com.alibaba.alink.operator.common.dataproc.format;
 
-import com.alibaba.alink.common.utils.JsonConverter;
-
-import com.alibaba.alink.params.dataproc.format.HasHandleInvalidDefaultAsError;
-import com.alibaba.alink.params.dataproc.format.HasHandleInvalidDefaultAsError.*;
-import com.alibaba.alink.params.dataproc.format.ToTripleParams;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -13,11 +8,15 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.Collector;
+import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.mapper.FlatMapper;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
-import org.apache.flink.util.StringUtils;
+import com.alibaba.alink.params.dataproc.format.HasHandleInvalidDefaultAsError;
+import com.alibaba.alink.params.dataproc.format.HasHandleInvalidDefaultAsError.HandleInvalid;
+import com.alibaba.alink.params.dataproc.format.ToTripleParams;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -49,7 +48,7 @@ public class AnyToTripleFlatMapper extends FlatMapper implements Serializable {
 	public AnyToTripleFlatMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
 
-		TableSchema schema = CsvUtil.schemaStr2Schema(params.get(ToTripleParams.TRIPLE_COL_VAL_SCHEMA_STR));
+		TableSchema schema = CsvUtil.schemaStr2Schema(params.get(ToTripleParams.TRIPLE_COLUMN_VALUE_SCHEMA_STR));
 
 		fieldTypes = schema.getFieldTypes();
 		String[] reversedCols = this.params.get(ToTripleParams.RESERVED_COLS);
@@ -84,7 +83,8 @@ public class AnyToTripleFlatMapper extends FlatMapper implements Serializable {
 		if (success) {
 			for (Map.Entry <String, String> entry : bufMap.entrySet()) {
 				Tuple2 <Boolean, Object> parsedKey = ColumnsWriter.parseField(parsers[0], entry.getKey(), isString[0]);
-				Tuple2 <Boolean, Object> parsedValue = ColumnsWriter.parseField(parsers[1], entry.getValue(), isString[1]);
+				Tuple2 <Boolean, Object> parsedValue = ColumnsWriter.parseField(parsers[1], entry.getValue(),
+					isString[1]);
 				if (!StringUtils.isNullOrWhitespaceOnly(entry.getValue())) {
 					if (parsedKey.f0 && parsedValue.f0) {
 						output.collect(outputColsHelper

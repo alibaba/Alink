@@ -9,17 +9,17 @@ import java.util.List;
 /**
  * Collector of Row type data.
  */
-public class RowCollector implements Collector<Row> {
-	private List<Row> rows;
+public class RowCollector implements Collector <Row> {
+	private List <Row> rows;
 
 	public RowCollector() {
 		this(null);
 	}
 
-	public RowCollector(List<Row> rows) {
+	public RowCollector(List <Row> rows) {
 		this.rows = rows;
 		if (null == this.rows) {
-			this.rows = new ArrayList<>();
+			this.rows = new ArrayList <>();
 		}
 	}
 
@@ -28,7 +28,7 @@ public class RowCollector implements Collector<Row> {
 	 *
 	 * @return list of the collected rows
 	 */
-	public List<Row> getRows() {
+	public List <Row> getRows() {
 		return rows;
 	}
 

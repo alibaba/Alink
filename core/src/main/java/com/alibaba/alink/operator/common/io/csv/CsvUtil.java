@@ -22,192 +22,315 @@ import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_P
  */
 public class CsvUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CsvUtil.class);
+	private static final Logger LOG = LoggerFactory.getLogger(CsvUtil.class);
 
-    /**
-     * Extract the TableSchema from a string. The format of the string is comma
-     * separated colName-colType pairs, such as "f0 int,f1 bigint,f2 string".
-     *
-     * @param schemaStr The formatted schema string.
-     * @return TableSchema.
-     */
-    public static TableSchema schemaStr2Schema(String schemaStr) {
-        String[] fields = schemaStr.split(",");
-        String[] colNames = new String[fields.length];
-        TypeInformation[] colTypes = new TypeInformation[fields.length];
-        for (int i = 0; i < colNames.length; i++) {
-            String[] kv = fields[i].trim().split("\\s+");
-            colNames[i] = kv[0];
+	/**
+	 * Extract the TableSchema from a string. The format of the string is comma
+	 * separated colName-colType pairs, such as "f0 int,f1 bigint,f2 string".
+	 *
+	 * @param schemaStr The formatted schema string.
+	 * @return TableSchema.
+	 */
+	public static TableSchema schemaStr2Schema(String schemaStr) {
+		String[] fields = schemaStr.split(",");
+		String[] colNames = new String[fields.length];
+		TypeInformation[] colTypes = new TypeInformation[fields.length];
+		for (int i = 0; i < colNames.length; i++) {
+			String[] kv = fields[i].trim().split("\\s+");
+			colNames[i] = kv[0];
 
-            if (kv[1].equalsIgnoreCase("VARBINARY")) {
-                colTypes[i] = BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
-            } else if (kv[1].equalsIgnoreCase("VEC_TYPES_VECTOR")) {
-                colTypes[i] = VectorTypes.VECTOR;
-            } else if (kv[1].equalsIgnoreCase("VEC_TYPES_DENSE_VECTOR")) {
-                colTypes[i] = VectorTypes.DENSE_VECTOR;
-            } else if (kv[1].equalsIgnoreCase("VEC_TYPES_SPARSE_VECTOR")) {
-                colTypes[i] = VectorTypes.SPARSE_VECTOR;
-            } else {
-                if(kv[1].contains("<") && kv[1].contains(">")) {
-                    colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1]);
-                } else {
-                    colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1].toUpperCase());
-                }
-            }
-        }
-        return new TableSchema(colNames, colTypes);
-    }
+			if (kv[1].equalsIgnoreCase("VARBINARY")) {
+				colTypes[i] = BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
+			} else if (kv[1].equalsIgnoreCase("VEC_TYPES_VECTOR")) {
+				colTypes[i] = VectorTypes.VECTOR;
+			} else if (kv[1].equalsIgnoreCase("VEC_TYPES_DENSE_VECTOR")) {
+				colTypes[i] = VectorTypes.DENSE_VECTOR;
+			} else if (kv[1].equalsIgnoreCase("VEC_TYPES_SPARSE_VECTOR")) {
+				colTypes[i] = VectorTypes.SPARSE_VECTOR;
+			} else {
+				if (kv[1].contains("<") && kv[1].contains(">")) {
+					colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1]);
+				} else {
+					colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1].toUpperCase());
+				}
+			}
+		}
+		return new TableSchema(colNames, colTypes);
+	}
 
-    /**
-     * Transform the TableSchema to a string. The format of the string is comma separated colName-colType pairs,
-     * such as "f0 int,f1 bigint,f2 string".
-     *
-     * @param schema the TableSchema to transform.
-     * @return a string.
-     */
-    public static String schema2SchemaStr(TableSchema schema) {
-        String[] colNames = schema.getFieldNames();
-        TypeInformation[] colTypes = schema.getFieldTypes();
+	/**
+	 * Transform the TableSchema to a string. The format of the string is comma separated colName-colType pairs,
+	 * such as "f0 int,f1 bigint,f2 string".
+	 *
+	 * @param schema the TableSchema to transform.
+	 * @return a string.
+	 */
+	public static String schema2SchemaStr(TableSchema schema) {
+		String[] colNames = schema.getFieldNames();
+		TypeInformation[] colTypes = schema.getFieldTypes();
 
-        StringBuilder sbd = new StringBuilder();
-        for (int i = 0; i < colNames.length; i++) {
-            if (i > 0) {
-                sbd.append(",");
-            }
-            String typeName;
-            if (colTypes[i].equals(BYTE_PRIMITIVE_ARRAY_TYPE_INFO)) {
-                typeName = "VARBINARY";
-            } else if (colTypes[i].equals(VectorTypes.VECTOR)) {
-                typeName = "VEC_TYPES_VECTOR";
-            } else if (colTypes[i].equals(VectorTypes.DENSE_VECTOR)) {
-                typeName = "VEC_TYPES_DENSE_VECTOR";
-            } else if (colTypes[i].equals(VectorTypes.SPARSE_VECTOR)) {
-                typeName = "VEC_TYPES_SPARSE_VECTOR";
-            } else {
-                typeName = FlinkTypeConverter.getTypeString(colTypes[i]);
-            }
-            sbd.append(colNames[i]).append(" ").append(typeName);
-        }
-        return sbd.toString();
-    }
+		StringBuilder sbd = new StringBuilder();
+		for (int i = 0; i < colNames.length; i++) {
+			if (i > 0) {
+				sbd.append(",");
+			}
+			String typeName;
+			if (colTypes[i].equals(BYTE_PRIMITIVE_ARRAY_TYPE_INFO)) {
+				typeName = "VARBINARY";
+			} else if (colTypes[i].equals(VectorTypes.VECTOR)) {
+				typeName = "VEC_TYPES_VECTOR";
+			} else if (colTypes[i].equals(VectorTypes.DENSE_VECTOR)) {
+				typeName = "VEC_TYPES_DENSE_VECTOR";
+			} else if (colTypes[i].equals(VectorTypes.SPARSE_VECTOR)) {
+				typeName = "VEC_TYPES_SPARSE_VECTOR";
+			} else {
+				typeName = FlinkTypeConverter.getTypeString(colTypes[i]);
+			}
+			sbd.append(colNames[i]).append(" ").append(typeName);
+		}
+		return sbd.toString();
+	}
 
-    /**
-     * Parse a text line to a {@link Row}.
-     */
-    public static class ParseCsvFunc extends RichFlatMapFunction<Row, Row> {
-        private static final long serialVersionUID = -6692520343934146759L;
-        private TypeInformation[] colTypes;
-        private String fieldDelim;
-        private Character quoteChar;
-        private boolean skipBlankLine;
-        private boolean lenient;
-        private transient CsvParser parser;
-        private Row emptyRow;
+	/**
+	 * Parse a text line to a {@link Row}.
+	 */
+	public static class ParseCsvFunc extends RichFlatMapFunction <Row, Row> {
+		private static final long serialVersionUID = -6692520343934146759L;
+		private TypeInformation[] colTypes;
+		private String fieldDelim;
+		private Character quoteChar;
+		private boolean skipBlankLine;
+		private boolean lenient;
+		private transient CsvParser parser;
+		private Row emptyRow;
 
-        public ParseCsvFunc(TypeInformation[] colTypes, String fieldDelim, Character quoteChar,
-                            boolean skipBlankLine, boolean lenient) {
-            this.colTypes = colTypes;
-            this.fieldDelim = fieldDelim;
-            this.quoteChar = quoteChar;
-            this.skipBlankLine = skipBlankLine;
-            this.lenient = lenient;
-        }
+		public ParseCsvFunc(TypeInformation[] colTypes, String fieldDelim, Character quoteChar,
+							boolean skipBlankLine, boolean lenient) {
+			this.colTypes = colTypes;
+			this.fieldDelim = fieldDelim;
+			this.quoteChar = quoteChar;
+			this.skipBlankLine = skipBlankLine;
+			this.lenient = lenient;
+		}
 
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            parser = new CsvParser(colTypes, fieldDelim, quoteChar);
-            emptyRow = new Row(colTypes.length);
-        }
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			parser = new CsvParser(colTypes, fieldDelim, quoteChar);
+			emptyRow = new Row(colTypes.length);
+		}
 
-        @Override
-        public void flatMap(Row value, Collector<Row> out) throws Exception {
-            String line = (String) value.getField(0);
-            if (line == null || line.isEmpty()) {
-                if (!skipBlankLine) {
-                    out.collect(emptyRow);
-                }
-            } else {
-                Tuple2<Boolean, Row> parsed = parser.parse(line);
-                if (parsed.f0) {
-                    out.collect(parsed.f1);
-                } else {
-                    if (!lenient) {
-                        throw new RuntimeException("Fail to parse line: \"" + line + "\"");
-                    } else {
-                        LOG.warn("Fail to parse line: \"" + line + "\"");
-                    }
-                }
-            }
-        }
-    }
+		@Override
+		public void flatMap(Row value, Collector <Row> out) throws Exception {
+			String line = (String) value.getField(0);
+			if (line == null || line.isEmpty()) {
+				if (!skipBlankLine) {
+					out.collect(emptyRow);
+				}
+			} else {
+				Tuple2 <Boolean, Row> parsed = parser.parse(line);
+				if (parsed.f0) {
+					out.collect(parsed.f1);
+				} else {
+					if (!lenient) {
+						throw new RuntimeException("Fail to parse line: \"" + line + "\"");
+					} else {
+						LOG.warn("Fail to parse line: \"" + line + "\"");
+					}
+				}
+			}
+		}
+	}
 
-    /**
-     * Format a {@link Row} to a text line.
-     */
-    public static class FormatCsvFunc extends RichMapFunction<Row, Row> {
-        private transient CsvFormatter formater;
-        private TypeInformation[] colTypes;
-        private String fieldDelim;
-        private Character quoteChar;
+	/**
+	 * Format a {@link Row} to a text line.
+	 */
+	public static class FormatCsvFunc extends RichMapFunction <Row, Row> {
+		private static final long serialVersionUID = 3828700401508155398L;
+		private transient CsvFormatter formater;
+		private TypeInformation[] colTypes;
+		private String fieldDelim;
+		private Character quoteChar;
 
-        public FormatCsvFunc(TypeInformation[] colTypes, String fieldDelim, Character quoteChar) {
-            this.colTypes = colTypes;
-            this.fieldDelim = fieldDelim;
-            this.quoteChar = quoteChar;
-        }
+		public FormatCsvFunc(TypeInformation[] colTypes, String fieldDelim, Character quoteChar) {
+			this.colTypes = colTypes;
+			this.fieldDelim = fieldDelim;
+			this.quoteChar = quoteChar;
+		}
 
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            this.formater = new CsvFormatter(colTypes, fieldDelim, quoteChar);
-        }
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			this.formater = new CsvFormatter(colTypes, fieldDelim, quoteChar);
+		}
 
-        @Override
-        public Row map(Row row) throws Exception {
-            return Row.of(formater.format(row));
-        }
-    }
+		@Override
+		public Row map(Row row) throws Exception {
+			return Row.of(formater.format(row));
+		}
+	}
 
-    /**
-     * Get column names from a schema string.
-     *
-     * @param schemaStr The formatted schema string.
-     * @return An array of column names.
-     */
-    public static String[] getColNames(String schemaStr) {
-        return schemaStr2Schema(schemaStr).getFieldNames();
-    }
+	/**
+	 * Get column names from a schema string.
+	 *
+	 * @param schemaStr The formatted schema string.
+	 * @return An array of column names.
+	 */
+	public static String[] getColNames(String schemaStr) {
+		return schemaStr2Schema(schemaStr).getFieldNames();
+	}
 
-    /**
-     * Get column types from a schema string.
-     *
-     * @param schemaStr The formatted schema string.
-     * @return An array of column types.
-     */
-    public static TypeInformation[] getColTypes(String schemaStr) {
-        return schemaStr2Schema(schemaStr).getFieldTypes();
-    }
+	/**
+	 * Get column types from a schema string.
+	 *
+	 * @param schemaStr The formatted schema string.
+	 * @return An array of column types.
+	 */
+	public static TypeInformation<?>[] getColTypes(String schemaStr) {
+		return schemaStr2Schema(schemaStr).getFieldTypes();
+	}
 
-    public static class FlattenCsvFromRow implements MapFunction<Row, String> {
-        private final String rowDelimiter;
+	/**
+	 * Parse the escape chars and unicode chars from a string, replace them with the chars they represents.
+	 * <p>
+	 * For example:
+	 * <ul>
+	 * <li> "\\t" -> '\t'
+	 * <li> "\\001" -> '\001'
+	 * <li> "\\u0001" -> '\u0001'
+	 * </ul>
+	 * <p>
+	 * The escaped char list: \b, \f, \n, \r, \t, \\, \', \".
+	 */
+	public static String unEscape(String s) {
+		if (s == null) {
+			return null;
+		}
 
-        public FlattenCsvFromRow(String rowDelimiter) {
-            this.rowDelimiter = rowDelimiter;
-        }
+		if (s.length() == 0) {
+			return s;
+		}
 
-        @Override
-        public String map(Row value) throws Exception {
-            StringBuilder builder = new StringBuilder();
-            Object o;
-            for (int i = 0; i < value.getArity(); i++) {
-                if (builder.length() != 0) {
-                    builder.append(rowDelimiter == null ? "\n" : rowDelimiter);
-                }
-                if ((o = value.getField(i)) != null) {
-                    builder.append(o);
-                }
-            }
-            return builder.toString();
-        }
-    }
+		StringBuilder sbd = new StringBuilder();
 
+		for (int i = 0; i < s.length(); ) {
+			int flag = extractEscape(s, i, sbd);
+			if (flag <= 0) {
+				sbd.append(s.charAt(i));
+				i++;
+			} else {
+				i += flag;
+			}
+		}
+
+		return sbd.toString();
+	}
+
+	/**
+	 * Parse one escape char.
+	 *
+	 * @param s   The string to parse.
+	 * @param pos Starting position of the string.
+	 * @param sbd String builder to accept the parsed result.
+	 * @return The length of the part of the string that is parsed.
+	 */
+	private static int extractEscape(String s, int pos, StringBuilder sbd) {
+		if (s.charAt(pos) != '\\') {
+			return 0;
+		}
+		pos++;
+		if (pos >= s.length()) {
+			return 0;
+		}
+		char c = s.charAt(pos);
+
+		if (c >= '0' && c <= '7') {
+			int digit = 1;
+			int i;
+			for (i = 0; i < 2; i++) {
+				if (pos + 1 + i >= s.length()) {
+					break;
+				}
+				if (s.charAt(pos + 1 + i) >= '0' && s.charAt(pos + 1 + i) <= '7') {
+					digit++;
+				} else {
+					break;
+				}
+			}
+			int n = Integer.valueOf(s.substring(pos, pos + digit), 8);
+			sbd.append(Character.toChars(n));
+			return digit + 1;
+		} else if (c == 'u') { // unicode
+			pos++;
+			int digit = 0;
+			for (int i = 0; i < 4; i++) {
+				if (pos + i >= s.length()) {
+					break;
+				}
+				char ch = s.charAt(pos + i);
+				if ((ch >= '0' && ch <= '9') || ((ch >= 'a' && ch <= 'f')) || ((ch >= 'A' && ch <= 'F'))) {
+					digit++;
+				} else {
+					break;
+				}
+			}
+			if (digit == 0) {
+				return 0;
+			}
+			int n = Integer.valueOf(s.substring(pos, pos + digit), 16);
+			sbd.append(Character.toChars(n));
+			return digit + 2;
+		} else {
+			switch (c) {
+				case '\\':
+					sbd.append('\\');
+					return 2;
+				case '\'':
+					sbd.append('\'');
+					return 2;
+				case '\"':
+					sbd.append('"');
+					return 2;
+				case 'r':
+					sbd.append('\r');
+					return 2;
+				case 'f':
+					sbd.append('\f');
+					return 2;
+				case 't':
+					sbd.append('\t');
+					return 2;
+				case 'n':
+					sbd.append('\n');
+					return 2;
+				case 'b':
+					sbd.append('\b');
+					return 2;
+				default:
+					return 0;
+			}
+		}
+	}
+
+	public static class FlattenCsvFromRow implements MapFunction <Row, String> {
+		private static final long serialVersionUID = 4247327927405636850L;
+		private final String rowDelimiter;
+
+		public FlattenCsvFromRow(String rowDelimiter) {
+			this.rowDelimiter = rowDelimiter;
+		}
+
+		@Override
+		public String map(Row value) throws Exception {
+			StringBuilder builder = new StringBuilder();
+			Object o;
+			for (int i = 0; i < value.getArity(); i++) {
+				if (builder.length() != 0) {
+					builder.append(rowDelimiter == null ? "\n" : rowDelimiter);
+				}
+				if ((o = value.getField(i)) != null) {
+					builder.append(o);
+				}
+			}
+			return builder.toString();
+		}
+	}
 }

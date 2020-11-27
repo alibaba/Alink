@@ -15,36 +15,38 @@ import java.util.List;
  * This adapter class hold the target {@link ModelMapper} and it's {@link ModelSource}. Upon open(),
  * it will load model rows from {@link ModelSource} into {@link ModelMapper}.
  */
-public class ModelMapperAdapter extends RichMapFunction<Row, Row> implements Serializable {
+public class ModelMapperAdapter extends RichMapFunction <Row, Row> implements Serializable {
 
-    /**
-     * The ModelMapper to adapt.
-     */
-    private final ModelMapper mapper;
+	private static final long serialVersionUID = -2288549358571532418L;
+	/**
+	 * The ModelMapper to adapt.
+	 */
+	private final ModelMapper mapper;
 
-    /**
-     * Load model data from ModelSource when open().
-     */
-    private final ModelSource modelSource;
+	/**
+	 * Load model data from ModelSource when open().
+	 */
+	private final ModelSource modelSource;
 
-    public ModelMapperAdapter(ModelMapper mapper, ModelSource modelSource) {
-        this.mapper = mapper;
-        this.modelSource = modelSource;
-    }
+	public ModelMapperAdapter(ModelMapper mapper, ModelSource modelSource) {
+		this.mapper = mapper;
+		this.modelSource = modelSource;
+	}
 
-    @Override
-    public void open(Configuration parameters) throws Exception {
-        List<Row> modelRows = this.modelSource.getModelRows(getRuntimeContext());
-        this.mapper.loadModel(modelRows);
-    }
+	@Override
+	public void open(Configuration parameters) throws Exception {
+		List <Row> modelRows = this.modelSource.getModelRows(getRuntimeContext());
+		this.mapper.loadModel(modelRows);
+		this.mapper.open();
+	}
 
-    @Override
-    public Row map(Row row) throws Exception {
-        return this.mapper.map(row);
-    }
+	@Override
+	public Row map(Row row) throws Exception {
+		return this.mapper.map(row);
+	}
 
-    @Override
-    public void close() throws Exception {
-        this.mapper.close();
-    }
+	@Override
+	public void close() throws Exception {
+		this.mapper.close();
+	}
 }

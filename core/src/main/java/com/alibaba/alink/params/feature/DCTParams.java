@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import com.alibaba.alink.params.mapper.SISOMapperParams;
 
 public interface DCTParams<T>
-	extends SISOMapperParams<T> {
+	extends SISOMapperParams <T> {
 
 	ParamInfo <Boolean> INVERSE = ParamInfoFactory
 		.createParamInfo("inverse", Boolean.class)

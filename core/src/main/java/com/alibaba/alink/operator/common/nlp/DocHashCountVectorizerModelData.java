@@ -8,8 +8,8 @@ import java.util.HashMap;
  * Save a HashMap: index(MurMurHash3 value of the word), value(Inverse document frequency of the word).
  */
 public class DocHashCountVectorizerModelData {
-    public HashMap<Integer, Double> idfMap;
-    public int numFeatures;
-    public String featureType;
-    public double minTF;
+	public HashMap <Integer, Double> idfMap;
+	public int numFeatures;
+	public String featureType;
+	public double minTF;
 }

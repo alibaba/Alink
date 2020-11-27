@@ -1,23 +1,20 @@
 package com.alibaba.alink.operator.batch.classification;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
+import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
-
-import org.apache.flink.types.Row;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Test cases for svm.
- */
-public class SvmTest {
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+
+public class SvmTest extends AlinkTestBase {
 
 	AlgoOperator getData(boolean isBatch) {
 		Row[] array = new Row[] {
@@ -73,12 +70,12 @@ public class SvmTest {
 		BatchOperator result2 = new LinearSvmPredictBatchOp()
 			.setPredictionCol("svsvmpred").linkFrom(vectorSvm, result1);
 		BatchOperator result3 = new LinearSvmPredictBatchOp()
-			.setReservedCols(new String[]{yVar,"svmpred", "svsvmpred"})
+			.setReservedCols(new String[] {yVar, "svmpred", "svsvmpred"})
 			.setPredictionCol("dvsvmpred").linkFrom(sparseVectorSvm, result2);
 
-		result3.lazyCollect(new Consumer<List<Row>>() {
+		result3.lazyCollect(new Consumer <List <Row>>() {
 			@Override
-			public void accept(List<Row> d) {
+			public void accept(List <Row> d) {
 				for (Row row : d) {
 					for (int i = 1; i < 4; ++i) {
 						Assert.assertEquals(row.getField(0), row.getField(i));

@@ -20,41 +20,41 @@ import com.alibaba.alink.params.io.LibSvmSourceParams;
  * Stream source that read data in libsvm format.
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SourceStream)
-public final class LibSvmSourceStreamOp extends BaseSourceStreamOp<LibSvmSourceStreamOp>
-    implements LibSvmSourceParams<LibSvmSourceStreamOp> {
+public final class LibSvmSourceStreamOp extends BaseSourceStreamOp <LibSvmSourceStreamOp>
+	implements LibSvmSourceParams <LibSvmSourceStreamOp> {
 
-    public LibSvmSourceStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 6768811360080378733L;
 
-    public LibSvmSourceStreamOp(Params params) {
-        super(AnnotationUtils.annotatedName(LibSvmSourceStreamOp.class), params);
-    }
+	public LibSvmSourceStreamOp() {
+		this(new Params());
+	}
 
-    public LibSvmSourceStreamOp(String filePath) {
-        this(new Params()
-            .set(FILE_PATH, filePath)
-        );
-    }
+	public LibSvmSourceStreamOp(Params params) {
+		super(AnnotationUtils.annotatedName(LibSvmSourceStreamOp.class), params);
+	}
 
-    @Override
-    public Table initializeDataSource() {
+	@Override
+	public Table initializeDataSource() {
 
-        StreamOperator source = new CsvSourceStreamOp()
-            .setMLEnvironmentId(getMLEnvironmentId())
-            .setFilePath(getFilePath())
-            .setFieldDelimiter("\n")
-            .setSchemaStr("content string");
+		StreamOperator<?> source = new CsvSourceStreamOp()
+			.setMLEnvironmentId(getMLEnvironmentId())
+			.setFilePath(getFilePath())
+			.setFieldDelimiter("\n")
+			.setSchemaStr("content string");
 
-        DataStream<Row> data = ((DataStream<Row>) source.getDataStream())
-            .map(new MapFunction<Row, Row>() {
-                @Override
-                public Row map(Row value) throws Exception {
-                    String line = (String) value.getField(0);
-                    Tuple2<Double, Vector> labelAndFeatures = LibSvmSourceBatchOp.parseLibSvmFormat(line);
-                    return Row.of(labelAndFeatures.f0, labelAndFeatures.f1);
-                }
-            });
-        return DataStreamConversionUtil.toTable(getMLEnvironmentId(), data, LibSvmSourceBatchOp.LIB_SVM_TABLE_SCHEMA);
-    }
+		final int startIndex = getParams().get(LibSvmSourceParams.START_INDEX);
+
+		DataStream <Row> data = source.getDataStream()
+			.map(new MapFunction <Row, Row>() {
+				private static final long serialVersionUID = 6210881111821966549L;
+
+				@Override
+				public Row map(Row value) throws Exception {
+					String line = (String) value.getField(0);
+					Tuple2 <Double, Vector> labelAndFeatures = LibSvmSourceBatchOp.parseLibSvmFormat(line, startIndex);
+					return Row.of(labelAndFeatures.f0, labelAndFeatures.f1);
+				}
+			});
+		return DataStreamConversionUtil.toTable(getMLEnvironmentId(), data, LibSvmSourceBatchOp.LIB_SVM_TABLE_SCHEMA);
+	}
 }

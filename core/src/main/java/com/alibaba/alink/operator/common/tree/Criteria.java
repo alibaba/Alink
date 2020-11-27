@@ -12,6 +12,7 @@ import java.util.Arrays;
 public abstract class Criteria implements Cloneable, Serializable {
 	public static final double INVALID_GAIN = 0.0;
 	public static final double EPS = 1e-15;
+	private static final long serialVersionUID = -4855396890380900139L;
 
 	protected double weightSum;
 	protected int numInstances;
@@ -51,6 +52,7 @@ public abstract class Criteria implements Cloneable, Serializable {
 	}
 
 	public static abstract class ClassificationCriteria extends Criteria {
+		private static final long serialVersionUID = -631328604371947566L;
 		double[] distributions;
 
 		ClassificationCriteria(double weightSum, int numInstances, double[] distributions) {
@@ -58,16 +60,16 @@ public abstract class Criteria implements Cloneable, Serializable {
 			this.distributions = distributions;
 		}
 
-		public void add(int labelValue, double weight) {
-			distributions[labelValue] += weight;
-			weightSum += weight;
-			numInstances += 1;
+		public void add(int labelValue, double weight, int numInstances) {
+			this.distributions[labelValue] += weight;
+			this.weightSum += weight;
+			this.numInstances += numInstances;
 		}
 
-		public void subtract(int labelValue, double weight) {
-			distributions[labelValue] -= weight;
-			weightSum -= weight;
-			numInstances -= 1;
+		public void subtract(int labelValue, double weight, int numInstance) {
+			this.distributions[labelValue] -= weight;
+			this.weightSum -= weight;
+			this.numInstances -= numInstance;
 		}
 
 		@Override
@@ -119,15 +121,20 @@ public abstract class Criteria implements Cloneable, Serializable {
 	}
 
 	public static abstract class RegressionCriteria extends Criteria {
-		RegressionCriteria(double weightSum, int numInstances) {
+		private static final long serialVersionUID = -2896832363044118789L;
+
+		public RegressionCriteria(double weightSum, int numInstances) {
 			super(weightSum, numInstances);
 		}
 
-		public abstract void add(double labelValue, double weight);
-		public abstract void subtract(double labelValue, double weight);
+		public abstract void add(double labelValue, double weight, int numInstance);
+
+		public abstract void subtract(double labelValue, double weight, int numInstance);
 	}
 
 	public static class Gini extends ClassificationCriteria {
+		private static final long serialVersionUID = 8996209222867178997L;
+
 		public Gini(double weightSum, int numInstances, double[] distributions) {
 			super(weightSum, numInstances, distributions);
 		}
@@ -166,6 +173,7 @@ public abstract class Criteria implements Cloneable, Serializable {
 
 	public abstract static class Entropy extends ClassificationCriteria {
 		private final static double LOG2 = Math.log(2);
+		private static final long serialVersionUID = 7602253844112062279L;
 
 		Entropy(double weightSum, int numInstances, double[] distributions) {
 			super(weightSum, numInstances, distributions);
@@ -198,6 +206,8 @@ public abstract class Criteria implements Cloneable, Serializable {
 	}
 
 	public static class InfoGain extends Entropy {
+		private static final long serialVersionUID = 5185893562589077621L;
+
 		public InfoGain(double weightSum, int numInstances, double[] distributions) {
 			super(weightSum, numInstances, distributions);
 		}
@@ -219,6 +229,8 @@ public abstract class Criteria implements Cloneable, Serializable {
 	}
 
 	public static class InfoGainRatio extends Entropy {
+		private static final long serialVersionUID = 2010844081408314373L;
+
 		public InfoGainRatio(double weightSum, int numInstances, double[] distributions) {
 			super(weightSum, numInstances, distributions);
 		}
@@ -247,6 +259,7 @@ public abstract class Criteria implements Cloneable, Serializable {
 	}
 
 	public static class MSE extends RegressionCriteria {
+		private static final long serialVersionUID = 8895470577519000835L;
 		double sum;
 		double squareSum;
 
@@ -272,28 +285,20 @@ public abstract class Criteria implements Cloneable, Serializable {
 			this.squareSum = squareSum;
 		}
 
-		public void add(double labelValue, double weight) {
+		public void add(double labelValue, double weight, int numInstances) {
 			double lw = labelValue * weight;
 			this.sum += lw;
 			this.squareSum += lw * lw;
 			this.weightSum += weight;
-			this.numInstances += 1;
+			this.numInstances += numInstances;
 		}
 
-		public void subtract(double labelValue, double weight) {
+		public void subtract(double labelValue, double weight, int numInstances) {
 			double lw = labelValue * weight;
 			this.sum -= lw;
 			this.squareSum -= lw * lw;
 			this.weightSum -= weight;
-			this.numInstances -= 1;
-		}
-
-		public MSE subtract(MSE other) {
-			this.sum -= other.sum;
-			this.squareSum -= other.squareSum;
-			this.weightSum -= other.weightSum;
-			this.numInstances -= other.numInstances;
-			return this;
+			this.numInstances -= numInstances;
 		}
 
 		@Override
@@ -377,7 +382,7 @@ public abstract class Criteria implements Cloneable, Serializable {
 		INFOGAINRATIO,
 		MSE;
 
-		public static final ParamInfo<Gain> GAIN = ParamInfoFactory
+		public static final ParamInfo <Gain> GAIN = ParamInfoFactory
 			.createParamInfo("gain", Gain.class)
 			.build();
 	}

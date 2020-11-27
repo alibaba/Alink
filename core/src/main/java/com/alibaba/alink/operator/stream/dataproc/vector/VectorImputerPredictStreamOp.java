@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.stream.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.dataproc.vector.VectorImputerModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorImputerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.dataproc.vector.VectorImputerPredictParams;
 
@@ -18,6 +18,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorImputerPredictParams;
  */
 public class VectorImputerPredictStreamOp extends ModelMapStreamOp <VectorImputerPredictStreamOp>
 	implements VectorImputerPredictParams <VectorImputerPredictStreamOp> {
+
+	private static final long serialVersionUID = 6941917975118911308L;
 
 	public VectorImputerPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

@@ -2,16 +2,18 @@ package com.alibaba.alink.operator.stream.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
-import com.alibaba.alink.params.dataproc.vector.VectorStandardTrainParams;
+import com.alibaba.alink.params.dataproc.vector.VectorStandardPredictParams;
 
 /**
  * StandardScaler transforms a dataset, normalizing each feature to have unit standard deviation and/or zero mean.
  */
 public class VectorStandardScalerPredictStreamOp extends ModelMapStreamOp <VectorStandardScalerPredictStreamOp>
-	implements VectorStandardTrainParams <VectorStandardScalerPredictStreamOp> {
+	implements VectorStandardPredictParams <VectorStandardScalerPredictStreamOp> {
+
+	private static final long serialVersionUID = -8439975525324629930L;
 
 	public VectorStandardScalerPredictStreamOp(BatchOperator srt) {
 		this(srt, new Params());

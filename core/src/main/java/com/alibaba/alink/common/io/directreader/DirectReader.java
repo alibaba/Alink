@@ -25,14 +25,14 @@ import java.util.ServiceLoader;
  * created is depending on configuration. Configurations comes from the following three sources with DESCENDING
  * priority:
  * <ul>
- *     <li>1. User specified via {@link DirectReaderPropertiesStore#setProperties(Properties)}.</li>
- *     <li>2. System properties, saying: <code>-Ddirect.reader.policy=db</code>. </li>
- *     <li>3. Content of a file named direct_reader.properties on class path.</li>
+ * <li>1. User specified via {@link DirectReaderPropertiesStore#setProperties(Properties)}.</li>
+ * <li>2. System properties, saying: <code>-Ddirect.reader.policy=db</code>. </li>
+ * <li>3. Content of a file named direct_reader.properties on class path.</li>
  * </ul>
- *
+ * <p>
  * The default policy is memory.
  * <p>
- *
+ * <p>
  * An configuration example:
  * <pre>
  * direct.reader.policy = db
@@ -50,19 +50,21 @@ public class DirectReader implements Serializable {
 		.setRequired()
 		.build();
 
+	private static final long serialVersionUID = 8810531309886342278L;
+
 	/**
-	 * Create data bridge from batch operator.
-	 * The type of result DataBridge is the one with matching policy in global configuration.
-	 *
+	 * Create data bridge from batch operator. The type of result DataBridge is the one with matching policy in global
+	 * configuration.
 	 *
 	 * @param model the operator to collect data.
 	 * @return the created DataBridge.
 	 */
-	public static DataBridge collect(BatchOperator<?> model) {
+	public static DataBridge collect(BatchOperator <?> model) {
 		final Params globalParams = DirectReader.readProperties();
 		final String policy = globalParams.get(POLICY_KEY);
 
-		for (DataBridgeGenerator generator : ServiceLoader.load(DataBridgeGenerator.class, DirectReader.class.getClassLoader())) {
+		for (DataBridgeGenerator generator : ServiceLoader.load(DataBridgeGenerator.class,
+			DirectReader.class.getClassLoader())) {
 			if (policy.equals(generator
 				.getClass()
 				.getAnnotation(DataBridgeGeneratorPolicy.class)
@@ -81,7 +83,7 @@ public class DirectReader implements Serializable {
 	 * @param batchOperator data source
 	 * @return Row list.
 	 */
-	public static List <Row> directRead(BatchOperator batchOperator) {
+	public static List <Row> directRead(BatchOperator <?> batchOperator) {
 		return directRead(collect(batchOperator));
 	}
 
@@ -91,7 +93,7 @@ public class DirectReader implements Serializable {
 	 * @param dataBridge reading source.
 	 * @return Row list.
 	 */
-	public static List<Row> directRead(DataBridge dataBridge) {
+	public static List <Row> directRead(DataBridge dataBridge) {
 		return dataBridge.read(null);
 	}
 

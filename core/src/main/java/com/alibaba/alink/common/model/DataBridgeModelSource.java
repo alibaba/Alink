@@ -13,17 +13,18 @@ import java.util.List;
  */
 public class DataBridgeModelSource implements ModelSource {
 
-    /**
-     * The DataBridge object to read model from.
-     */
-    private final DataBridge modelDataBridge;
+	private static final long serialVersionUID = 3859074603903174913L;
+	/**
+	 * The DataBridge object to read model from.
+	 */
+	private final DataBridge modelDataBridge;
 
-    public DataBridgeModelSource(DataBridge modelDataBridge) {
-        this.modelDataBridge = modelDataBridge;
-    }
+	public DataBridgeModelSource(DataBridge modelDataBridge) {
+		this.modelDataBridge = modelDataBridge;
+	}
 
-    @Override
-    public List<Row> getModelRows(RuntimeContext runtimeContext) {
-        return DirectReader.directRead(this.modelDataBridge);
-    }
+	@Override
+	public List <Row> getModelRows(RuntimeContext runtimeContext) {
+		return DirectReader.directRead(this.modelDataBridge);
+	}
 }

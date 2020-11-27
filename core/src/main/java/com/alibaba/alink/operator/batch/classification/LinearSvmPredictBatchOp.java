@@ -2,16 +2,17 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.linear.LinearModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.linear.LinearModelMapper;
 import com.alibaba.alink.params.classification.LinearSvmPredictParams;
 
 /**
  * Linear svm predict batch operator. this operator predict data's label with linear model.
- *
  */
 public final class LinearSvmPredictBatchOp extends ModelMapBatchOp <LinearSvmPredictBatchOp>
 	implements LinearSvmPredictParams <LinearSvmPredictBatchOp> {
+
+	private static final long serialVersionUID = 238159630290445407L;
 
 	public LinearSvmPredictBatchOp() {
 		this(new Params());

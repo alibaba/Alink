@@ -15,9 +15,11 @@ import java.util.List;
  * ParamGrid.
  */
 public class ParamGrid implements Serializable {
-	private List<Tuple3<PipelineStageBase, ParamInfo, Object[]>> items = new ArrayList<>();
 
-	public <V> ParamGrid addGrid(PipelineStageBase stage, ParamInfo<V> info, V[] params) {
+	private static final long serialVersionUID = 5681488864448356257L;
+	private List <Tuple3 <PipelineStageBase, ParamInfo, Object[]>> items = new ArrayList <>();
+
+	public <V> ParamGrid addGrid(PipelineStageBase stage, ParamInfo <V> info, V[] params) {
 		Preconditions.checkNotNull(params, "Parameter should not be null.");
 		Preconditions.checkArgument(params.length > 0, "The length of parameter should not be empty.");
 
@@ -26,6 +28,7 @@ public class ParamGrid implements Serializable {
 		return this;
 	}
 
+	@Deprecated
 	public <V> ParamGrid addGrid(PipelineStageBase stage, String info, V[] params) throws Exception {
 		Preconditions.checkNotNull(params, "Parameter should not be null.");
 		Preconditions.checkArgument(params.length > 0, "The length of parameter should not be empty.");
@@ -35,7 +38,7 @@ public class ParamGrid implements Serializable {
 		return this;
 	}
 
-	public List<Tuple3<PipelineStageBase, ParamInfo, Object[]>> getItems() {
+	public List <Tuple3 <PipelineStageBase, ParamInfo, Object[]>> getItems() {
 		return items;
 	}
 

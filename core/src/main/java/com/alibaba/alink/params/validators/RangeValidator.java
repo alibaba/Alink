@@ -1,38 +1,38 @@
 package com.alibaba.alink.params.validators;
 
-import org.apache.flink.ml.api.misc.param.ParamValidator;
-
-public class RangeValidator<T extends Comparable <T>> implements ParamValidator <T> {
+public class RangeValidator<T extends Comparable <T>> extends Validator <T> {
+	private static final long serialVersionUID = -383763066683649679L;
 	T minVal;
 	T maxVal;
 	boolean leftInclusive = true;
 	boolean rightInclusive = true;
+	boolean isNullValid = false;
 
 	public RangeValidator(T minVal, T maxVal) {
 		this.minVal = minVal;
 		this.maxVal = maxVal;
 	}
 
-	public RangeValidator <T> withLeftInclusive(boolean tag) {
+	public RangeValidator <T> setLeftInclusive(boolean tag) {
 		this.leftInclusive = tag;
 		return this;
 	}
 
-	public RangeValidator <T> withRightInclusive(boolean tag) {
+	public RangeValidator <T> setRightInclusive(boolean tag) {
 		this.rightInclusive = tag;
 		return this;
 	}
 
-	public void setLeftInclusive(boolean leftInclusive) {
-		this.leftInclusive = leftInclusive;
-	}
-
-	public void setRightInclusive(boolean rightInclusive) {
-		this.rightInclusive = rightInclusive;
+	public RangeValidator <T> setNullValid(boolean nullValid) {
+		isNullValid = nullValid;
+		return this;
 	}
 
 	@Override
 	public boolean validate(T v) {
+		if (v == null) {
+			return isNullValid;
+		}
 		if (leftInclusive) {
 			if (!(minVal.compareTo(v) <= 0)) {
 				return false;
@@ -43,24 +43,20 @@ public class RangeValidator<T extends Comparable <T>> implements ParamValidator 
 			}
 		}
 		if (rightInclusive) {
-			if (!(maxVal.compareTo(v) >= 0)) {
-				return false;
-			}
+			return maxVal.compareTo(v) >= 0;
 		} else {
-			if (!(maxVal.compareTo(v) > 0)) {
-				return false;
-			}
+			return maxVal.compareTo(v) > 0;
 		}
-		return true;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("in ");
+		sb.append("value in ");
 		sb.append(leftInclusive ? "[" : "(");
 		sb.append(minVal);
 		sb.append(", ");
+		sb.append(maxVal);
 		sb.append(rightInclusive ? "]" : ")");
 		return sb.toString();
 	}

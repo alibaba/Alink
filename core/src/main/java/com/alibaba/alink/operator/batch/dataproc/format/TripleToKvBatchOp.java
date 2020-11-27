@@ -1,17 +1,23 @@
 package com.alibaba.alink.operator.batch.dataproc.format;
 
-import com.alibaba.alink.operator.common.dataproc.format.FormatType;
-import com.alibaba.alink.params.dataproc.format.TripleToKvParams;
 import org.apache.flink.ml.api.misc.param.Params;
 
-public class TripleToKvBatchOp extends TripleToAnyBatchOp<TripleToKvBatchOp>
-    implements TripleToKvParams<TripleToKvBatchOp> {
+import com.alibaba.alink.operator.common.dataproc.format.FormatType;
+import com.alibaba.alink.params.dataproc.format.TripleToKvParams;
 
-    public TripleToKvBatchOp() {
-        this(null);
-    }
+/**
+ * Transform data type from Triple to Kv.
+ */
+public class TripleToKvBatchOp extends TripleToAnyBatchOp <TripleToKvBatchOp>
+	implements TripleToKvParams <TripleToKvBatchOp> {
 
-    public TripleToKvBatchOp(Params params) {
-        super(FormatType.KV, params);
-    }
+	private static final long serialVersionUID = -8209013025023139624L;
+
+	public TripleToKvBatchOp() {
+		this(new Params());
+	}
+
+	public TripleToKvBatchOp(Params params) {
+		super(FormatType.KV, params);
+	}
 }

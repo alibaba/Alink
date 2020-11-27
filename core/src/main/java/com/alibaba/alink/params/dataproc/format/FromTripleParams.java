@@ -6,41 +6,33 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 public interface FromTripleParams<T> extends
 	HasTripleRowCol <T> {
 
-	/**
-	 * @cn-name 三元组结构中列信息的列名
-	 * @cn 三元组结构中列信息的列名
-	 */
-	ParamInfo <String> TRIPLE_COL_COL = ParamInfoFactory
-		.createParamInfo("tripleColCol", String.class)
-		.setDescription("Name of the triple row column")
-		.setAlias(new String[]{"tripleCol"})
+	ParamInfo <String> TRIPLE_COLUMN_COL = ParamInfoFactory
+		.createParamInfo("tripleColumnCol", String.class)
+		.setDescription("Name of the triple column col")
+		.setAlias(new String[] {"tripleCol", "tripleColCol"})
 		.setRequired()
 		.build();
 
-	default String getTripleColCol() {
-		return get(TRIPLE_COL_COL);
+	default String getTripleColumnCol() {
+		return get(TRIPLE_COLUMN_COL);
 	}
 
-	default T setTripleColCol(String colName) {
-		return set(TRIPLE_COL_COL, colName);
+	default T setTripleColumnCol(String colName) {
+		return set(TRIPLE_COLUMN_COL, colName);
 	}
 
-	/**
-	 * @cn-name 三元组结构中数据信息的列名
-	 * @cn 三元组结构中数据信息的列名
-	 */
-	ParamInfo <String> TRIPLE_VAL_COL = ParamInfoFactory
-		.createParamInfo("tripleValCol", String.class)
-		.setDescription("Name of the triple row column")
-		.setAlias(new String[]{"tripleVal"})
+	ParamInfo <String> TRIPLE_VALUE_COL = ParamInfoFactory
+		.createParamInfo("tripleValueCol", String.class)
+		.setDescription("Name of the triple value column")
+		.setAlias(new String[] {"tripleVal", "tripleValCol"})
 		.setRequired()
 		.build();
 
-	default String getTripleValCol() {
-		return get(TRIPLE_VAL_COL);
+	default String getTripleValueCol() {
+		return get(TRIPLE_VALUE_COL);
 	}
 
-	default T setTripleValCol(String colName) {
-		return set(TRIPLE_VAL_COL, colName);
+	default T setTripleValueCol(String colName) {
+		return set(TRIPLE_VALUE_COL, colName);
 	}
 }

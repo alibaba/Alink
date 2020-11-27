@@ -2,19 +2,19 @@ package com.alibaba.alink.params.shared.colname;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 /**
  * Trait for parameter vectorColName.
  */
-public interface HasVectorCol<T> extends WithParams<T> {
+public interface HasVectorCol<T> extends WithParams <T> {
 
 	ParamInfo <String> VECTOR_COL = ParamInfoFactory
 		.createParamInfo("vectorCol", String.class)
 		.setDescription("Name of a vector column")
 		.setRequired()
-		.setAlias(new String[] {"vectorColName", "tensorColName", "vecColName"})
+		.setAlias(new String[] {"vectorColName", "tensorColName", "vecColName", "selectedCol", "selectedColName",
+			"outputCol", "outputColName"})
 		.build();
 
 	default String getVectorCol() {

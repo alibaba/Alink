@@ -11,9 +11,9 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCol;
 public interface DocCountVectorizerTrainParams<T> extends
 	HasSelectedCol <T>,
 	HasMinDF <T>,
-	HasFeatureType<T>,
-	HasVocabSize<T>,
-	HasMinTF<T>{
+	HasFeatureType <T>,
+	HasVocabSize <T>,
+	HasMinTF <T> {
 	ParamInfo <Double> MAX_DF = ParamInfoFactory
 		.createParamInfo("maxDF", Double.class)
 		.setDescription(

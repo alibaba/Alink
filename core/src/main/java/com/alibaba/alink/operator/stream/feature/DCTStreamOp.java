@@ -13,6 +13,8 @@ import com.alibaba.alink.params.feature.DCTParams;
 public class DCTStreamOp extends MapStreamOp <DCTStreamOp>
 	implements DCTParams <DCTStreamOp> {
 
+	private static final long serialVersionUID = -3314453498652632314L;
+
 	public DCTStreamOp() {
 		this(null);
 	}

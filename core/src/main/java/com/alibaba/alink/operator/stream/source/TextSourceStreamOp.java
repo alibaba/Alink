@@ -15,18 +15,14 @@ import com.alibaba.alink.params.io.TextSourceParams;
 public final class TextSourceStreamOp extends BaseSourceStreamOp <TextSourceStreamOp>
 	implements TextSourceParams <TextSourceStreamOp> {
 
+	private static final long serialVersionUID = 6460980977698094090L;
+
 	public TextSourceStreamOp() {
 		this(new Params());
 	}
 
 	public TextSourceStreamOp(Params params) {
 		super(AnnotationUtils.annotatedName(TextSourceStreamOp.class), params);
-	}
-
-	public TextSourceStreamOp(String filePath) {
-		this(new Params()
-			.set(FILE_PATH, filePath)
-		);
 	}
 
 	@Override

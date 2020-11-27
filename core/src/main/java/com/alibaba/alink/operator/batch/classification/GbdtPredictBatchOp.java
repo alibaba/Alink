@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.tree.predictors.GbdtModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.tree.predictors.GbdtModelMapper;
 import com.alibaba.alink.params.classification.GbdtPredictParams;
 
 /**
@@ -11,6 +11,8 @@ import com.alibaba.alink.params.classification.GbdtPredictParams;
  */
 public final class GbdtPredictBatchOp extends ModelMapBatchOp <GbdtPredictBatchOp>
 	implements GbdtPredictParams <GbdtPredictBatchOp> {
+	private static final long serialVersionUID = 2801048935862838531L;
+
 	public GbdtPredictBatchOp() {
 		this(null);
 	}

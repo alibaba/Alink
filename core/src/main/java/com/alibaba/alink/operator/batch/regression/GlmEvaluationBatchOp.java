@@ -13,89 +13,94 @@ import com.alibaba.alink.operator.common.regression.glm.FamilyLink;
 import com.alibaba.alink.operator.common.regression.glm.GlmUtil;
 import com.alibaba.alink.params.regression.GlmTrainParams;
 
-public class GlmEvaluationBatchOp extends BatchOperator<GlmEvaluationBatchOp>
-    implements GlmTrainParams<GlmEvaluationBatchOp> {
+/**
+ * Generalized Linear Model. https://en.wikipedia.org/wiki/Generalized_linear_model.
+ */
+public class GlmEvaluationBatchOp extends BatchOperator <GlmEvaluationBatchOp>
+	implements GlmTrainParams <GlmEvaluationBatchOp> {
 
-    public GlmEvaluationBatchOp() {
+	private static final long serialVersionUID = 591674929382964676L;
 
-    }
+	public GlmEvaluationBatchOp() {
 
-    public GlmEvaluationBatchOp(Params params) {
-        super(params);
-    }
+	}
 
-    @Override
-    public GlmEvaluationBatchOp linkFrom(BatchOperator<?>... inputs) {
-        checkOpSize(2, inputs);
+	public GlmEvaluationBatchOp(Params params) {
+		super(params);
+	}
 
-        BatchOperator<?> model = inputs[0];
-        BatchOperator<?> in = inputs[1];
+	@Override
+	public GlmEvaluationBatchOp linkFrom(BatchOperator <?>... inputs) {
+		checkOpSize(2, inputs);
 
-        String[] featureColNames = getFeatureCols();
-        String labelColName = getLabelCol();
-        String weightColName = getWeightCol();
-        String offsetColName = getOffsetCol();
+		BatchOperator <?> model = inputs[0];
+		BatchOperator <?> in = inputs[1];
 
-        Family familyName = getFamily();
-        Link linkName = getLink();
-        double variancePower = getVariancePower();
-        double linkPower = getLinkPower();
+		String[] featureColNames = getFeatureCols();
+		String labelColName = getLabelCol();
+		String weightColName = getWeightCol();
+		String offsetColName = getOffsetCol();
 
-        int numIter = getMaxIter();
-        double epsilon = getEpsilon();
+		Family familyName = getFamily();
+		Link linkName = getLink();
+		double variancePower = getVariancePower();
+		double linkPower = getLinkPower();
 
-        boolean fitIntercept = getFitIntercept();
-        double regParam = getRegParam();
+		int numIter = getMaxIter();
+		double epsilon = getEpsilon();
 
-        FamilyLink familyLink = new FamilyLink(familyName, variancePower, linkName, linkPower);
+		boolean fitIntercept = getFitIntercept();
+		double regParam = getRegParam();
 
-        int numFeature = featureColNames.length;
+		FamilyLink familyLink = new FamilyLink(familyName, variancePower, linkName, linkPower);
 
-        DataSet<Row> data = GlmUtil.preProc(in, featureColNames, offsetColName, weightColName, labelColName);
+		int numFeature = featureColNames.length;
 
-        DataSet<GlmUtil.WeightedLeastSquaresModel> wlsModel = model.getDataSet().mapPartition(
-            new GlmUtil.GlmModelToWlsModel());
-        DataSet<Row> residual = GlmUtil.residual(wlsModel, data, numFeature, familyLink);
-        DataSet<Row> aggSummay = GlmUtil.aggSummary(residual, wlsModel,
-            numFeature, familyLink, regParam, numIter, epsilon, fitIntercept);
+		DataSet <Row> data = GlmUtil.preProc(in, featureColNames, offsetColName, weightColName, labelColName);
 
-        //residual
-        String[] residualColNames = new String[numFeature + 4 + 4];
-        TypeInformation[] residualColTypes = new TypeInformation[numFeature + 4 + 4];
-        for (int i = 0; i < numFeature; i++) {
-            residualColNames[i] = featureColNames[i];
-            residualColTypes[i] = Types.DOUBLE;
-        }
-        residualColNames[numFeature] = "label";
-        residualColTypes[numFeature] = Types.DOUBLE;
-        residualColNames[numFeature + 1] = "weight";
-        residualColTypes[numFeature + 1] = Types.DOUBLE;
-        residualColNames[numFeature + 2] = "offset";
-        residualColTypes[numFeature + 2] = Types.DOUBLE;
-        residualColNames[numFeature + 3] = "pred";
-        residualColTypes[numFeature + 3] = Types.DOUBLE;
-        residualColNames[numFeature + 4] = "residualdevianceResiduals";
-        residualColTypes[numFeature + 4] = Types.DOUBLE;
-        residualColNames[numFeature + 5] = "pearsonResiduals";
-        residualColTypes[numFeature + 5] = Types.DOUBLE;
-        residualColNames[numFeature + 6] = "workingResiduals";
-        residualColTypes[numFeature + 6] = Types.DOUBLE;
-        residualColNames[numFeature + 7] = "responseResiduals";
-        residualColTypes[numFeature + 7] = Types.DOUBLE;
+		DataSet <GlmUtil.WeightedLeastSquaresModel> wlsModel = model.getDataSet().mapPartition(
+			new GlmUtil.GlmModelToWlsModel());
+		DataSet <Row> residual = GlmUtil.residual(wlsModel, data, numFeature, familyLink);
+		DataSet <Row> aggSummay = GlmUtil.aggSummary(residual, wlsModel,
+			numFeature, familyLink, regParam, numIter, epsilon, fitIntercept);
 
-        this.setSideOutputTables(new Table[]{
-            DataSetConversionUtil.toTable(getMLEnvironmentId(),
-                residual, residualColNames, residualColTypes)
-        });
+		//residual
+		String[] residualColNames = new String[numFeature + 4 + 4];
+		TypeInformation[] residualColTypes = new TypeInformation[numFeature + 4 + 4];
+		for (int i = 0; i < numFeature; i++) {
+			residualColNames[i] = featureColNames[i];
+			residualColTypes[i] = Types.DOUBLE;
+		}
+		residualColNames[numFeature] = "label";
+		residualColTypes[numFeature] = Types.DOUBLE;
+		residualColNames[numFeature + 1] = "weight";
+		residualColTypes[numFeature + 1] = Types.DOUBLE;
+		residualColNames[numFeature + 2] = "offset";
+		residualColTypes[numFeature + 2] = Types.DOUBLE;
+		residualColNames[numFeature + 3] = "pred";
+		residualColTypes[numFeature + 3] = Types.DOUBLE;
+		residualColNames[numFeature + 4] = "residualdevianceResiduals";
+		residualColTypes[numFeature + 4] = Types.DOUBLE;
+		residualColNames[numFeature + 5] = "pearsonResiduals";
+		residualColTypes[numFeature + 5] = Types.DOUBLE;
+		residualColNames[numFeature + 6] = "workingResiduals";
+		residualColTypes[numFeature + 6] = Types.DOUBLE;
+		residualColNames[numFeature + 7] = "responseResiduals";
+		residualColTypes[numFeature + 7] = Types.DOUBLE;
 
-        //summary
-        String[] summaryColNames = new String[1];
-        TypeInformation[] summaryColTypes = new TypeInformation[1];
-        summaryColNames[0] = "summary";
-        summaryColTypes[0] = Types.STRING;
+		this.setSideOutputTables(new Table[] {
+			DataSetConversionUtil.toTable(getMLEnvironmentId(),
+				residual, residualColNames, residualColTypes)
+		});
 
-        this.setOutput(aggSummay, summaryColNames, summaryColTypes);
+		//summary
+		String[] summaryColNames = new String[1];
+		TypeInformation[] summaryColTypes = new TypeInformation[1];
+		summaryColNames[0] = "summary";
+		summaryColTypes[0] = Types.STRING;
 
-        return this;
-    }
+		this.setOutput(aggSummay, summaryColNames, summaryColTypes);
+
+		return this;
+	}
 }

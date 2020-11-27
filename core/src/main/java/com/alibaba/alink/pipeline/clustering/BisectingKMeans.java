@@ -1,12 +1,13 @@
 package com.alibaba.alink.pipeline.clustering;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.BisectingKMeansTrainBatchOp;
 import com.alibaba.alink.params.clustering.BisectingKMeansPredictParams;
 import com.alibaba.alink.params.clustering.BisectingKMeansTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
  * Bisecting k-means is a kind of hierarchical clustering algorithm.
@@ -22,7 +23,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 public class BisectingKMeans extends Trainer <BisectingKMeans, BisectingKMeansModel> implements
 	BisectingKMeansTrainParams <BisectingKMeans>,
 	BisectingKMeansPredictParams <BisectingKMeans>,
-	HasLazyPrintModelInfo<BisectingKMeans> {
+	HasLazyPrintModelInfo <BisectingKMeans> {
+
+	private static final long serialVersionUID = -6873946218553613224L;
 
 	public BisectingKMeans() {
 		super();
@@ -33,7 +36,7 @@ public class BisectingKMeans extends Trainer <BisectingKMeans, BisectingKMeansMo
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new BisectingKMeansTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

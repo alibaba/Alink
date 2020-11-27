@@ -1,25 +1,5 @@
 package com.alibaba.alink.operator.common.fm;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
-import com.alibaba.alink.common.MLEnvironment;
-import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.linalg.VectorUtil;
-import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.recommendation.FmTrainParams;
-
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
@@ -39,6 +19,26 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.MLEnvironment;
+import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.common.model.ModelParamName;
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.params.recommendation.FmTrainParams;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Base FM model training.
@@ -72,15 +72,34 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      * @param vecSize   vector size.
      * @param params    parameters.
      * @param dim       dimension.
-     * @param session   environment.
      * @return model coefficient.
      */
     protected abstract DataSet<Tuple2<FmDataFormat, double[]>>
     optimize(DataSet<Tuple3<Double, Double, Vector>> trainData,
              DataSet<Integer> vecSize,
              final Params params,
-             final int[] dim,
-             MLEnvironment session);
+             final int[] dim);
+
+    /**
+     * The api for transforming model format.
+     *
+     * @param model       model with fm data format.
+     * @param labelValues label values.
+     * @param vecSize     vector size.
+     * @param params      parameters.
+     * @param dim         dimension.
+     * @param isRegProc   is regression process.
+     * @param labelType   label type.
+     * @return model rows.
+     */
+    protected abstract DataSet<Row> transformModel(
+            DataSet<Tuple2<FmDataFormat, double[]>> model,
+            DataSet<Object[]> labelValues,
+            DataSet<Integer> vecSize,
+            final Params params,
+            final int[] dim,
+            boolean isRegProc,
+            TypeInformation labelType);
 
     /**
      * do the operation of this op.
@@ -101,7 +120,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
 
         boolean isRegProc = Task.valueOf(params.get(ModelParamName.TASK).toUpperCase()).equals(Task.REGRESSION);
         this.labelType = isRegProc ? Types.DOUBLE : in.getColTypes()[TableUtil
-            .findColIndex(in.getColNames(), params.get(FmTrainParams.LABEL_COL))];
+                .findColIndex(in.getColNames(), params.get(FmTrainParams.LABEL_COL))];
 
         // Transform data to Tuple3 format <weight, label, feature vector>.
         DataSet<Tuple3<Double, Object, Vector>> initData = transform(in, params, isRegProc);
@@ -109,40 +128,37 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         // Get some util info, such as featureSize and labelValues.
         DataSet<Tuple2<Object[], Integer>> utilInfo = getUtilInfo(initData, isRegProc);
         DataSet<Integer> featSize = utilInfo.map(
-            new MapFunction<Tuple2<Object[], Integer>, Integer>() {
-                private static final long serialVersionUID = 1099531852518545431L;
+                new MapFunction<Tuple2<Object[], Integer>, Integer>() {
+                    private static final long serialVersionUID = 1099531852518545431L;
 
-                @Override
-                public Integer map(Tuple2<Object[], Integer> value)
-                    throws Exception {
-                    return value.f1;
-                }
-            });
+                    @Override
+                    public Integer map(Tuple2<Object[], Integer> value)
+                            throws Exception {
+                        return value.f1;
+                    }
+                });
         DataSet<Object[]> labelValues = utilInfo.flatMap(
-            new FlatMapFunction<Tuple2<Object[], Integer>, Object[]>() {
-                private static final long serialVersionUID = -4407775357759305675L;
+                new FlatMapFunction<Tuple2<Object[], Integer>, Object[]>() {
+                    private static final long serialVersionUID = -4407775357759305675L;
 
-                @Override
-                public void flatMap(Tuple2<Object[], Integer> value,
-                                    Collector<Object[]> out)
-                    throws Exception {
-                    out.collect(value.f0);
-                }
-            });
+                    @Override
+                    public void flatMap(Tuple2<Object[], Integer> value,
+                                        Collector<Object[]> out)
+                            throws Exception {
+                        out.collect(value.f0);
+                    }
+                });
 
         DataSet<Tuple3<Double, Double, Vector>>
-            trainData = transferLabel(initData, isRegProc, labelValues);
+                trainData = transferLabel(initData, isRegProc, labelValues);
 
-        DataSet<Tuple2<FmDataFormat, double[]>> model
-            = optimize(trainData, featSize, params, dim, MLEnvironmentFactory.get(getMLEnvironmentId()));
+        DataSet<Tuple2<FmDataFormat, double[]>> model = optimize(trainData, featSize, params, dim);
 
-        DataSet<Row> modelRows = model.flatMap(new GenerateModelRows(params, dim, labelType, isRegProc))
-            .withBroadcastSet(labelValues, LABEL_VALUES)
-            .withBroadcastSet(featSize, VEC_SIZE);
+        DataSet<Row> modelRows = transformModel(model, labelValues, featSize, params, dim, isRegProc, labelType);
 
         this.setOutput(modelRows, new FmModelDataConverter(labelType).getModelSchema());
         this.setSideOutputTables(getSideTablesOfCoefficient(modelRows, labelType));
-        return (T)this;
+        return (T) this;
     }
 
     /**
@@ -154,35 +170,34 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      * @return data for fm training.
      */
     private static DataSet<Tuple3<Double, Double, Vector>> transferLabel(
-        DataSet<Tuple3<Double, Object, Vector>> initData,
-        final boolean isRegProc,
-        DataSet<Object[]> labelValues) {
+            DataSet<Tuple3<Double, Object, Vector>> initData,
+            final boolean isRegProc,
+            DataSet<Object[]> labelValues) {
         return initData.mapPartition(
-            new RichMapPartitionFunction<Tuple3<Double, Object, Vector>, Tuple3<Double, Double, Vector>>() {
-                private static final long serialVersionUID = 1609901151679856341L;
-                private Object[] labelValues = null;
+                new RichMapPartitionFunction<Tuple3<Double, Object, Vector>, Tuple3<Double, Double, Vector>>() {
+                    private static final long serialVersionUID = 1609901151679856341L;
+                    private Object[] labelValues = null;
 
-                @Override
-                public void open(Configuration parameters) throws Exception {
+                    @Override
+                    public void open(Configuration parameters) throws Exception {
+                        this.labelValues = (Object[]) getRuntimeContext()
+                                .getBroadcastVariable(LABEL_VALUES).get(0);
+                    }
 
-                    this.labelValues = (Object[])getRuntimeContext()
-                        .getBroadcastVariable(LABEL_VALUES).get(0);
-                }
+                    @Override
+                    public void mapPartition(Iterable<Tuple3<Double, Object, Vector>> values,
+                                             Collector<Tuple3<Double, Double, Vector>> out) throws Exception {
+                        for (Tuple3<Double, Object, Vector> value : values) {
 
-                @Override
-                public void mapPartition(Iterable<Tuple3<Double, Object, Vector>> values,
-                                         Collector<Tuple3<Double, Double, Vector>> out) throws Exception {
-                    for (Tuple3<Double, Object, Vector> value : values) {
-
-                        if (value.f0 > 0) {
-                            Double label = isRegProc ? Double.valueOf(value.f1.toString())
-                                : (value.f1.equals(labelValues[0]) ? 1.0 : 0.0);
-                            out.collect(Tuple3.of(value.f0, label, value.f2));
+                            if (value.f0 > 0) {
+                                Double label = isRegProc ? Double.valueOf(value.f1.toString())
+                                        : (value.f1.equals(labelValues[0]) ? 1.0 : 0.0);
+                                out.collect(Tuple3.of(value.f0, label, value.f2));
+                            }
                         }
                     }
-                }
-            })
-            .withBroadcastSet(labelValues, LABEL_VALUES);
+                })
+                .withBroadcastSet(labelValues, LABEL_VALUES);
     }
 
     /**
@@ -191,100 +206,48 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      * @return useful data, including label values and vector size.
      */
     private static DataSet<Tuple2<Object[], Integer>> getUtilInfo(
-        DataSet<Tuple3<Double, Object, Vector>> initData,
-        boolean isRegProc) {
+            DataSet<Tuple3<Double, Object, Vector>> initData,
+            boolean isRegProc) {
         return initData.filter(
-            new FilterFunction<Tuple3<Double, Object, Vector>>() {
-                private static final long serialVersionUID = 4954837288144406855L;
+                new FilterFunction<Tuple3<Double, Object, Vector>>() {
+                    private static final long serialVersionUID = 4954837288144406855L;
 
-                @Override
-                public boolean filter(Tuple3<Double, Object, Vector> value) throws Exception {
-                    if (value.f0 < 0.0) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            }).reduceGroup(
-            new GroupReduceFunction<Tuple3<Double, Object, Vector>, Tuple2<Object[],
-                Integer>>() {
-                private static final long serialVersionUID = 3520762756658301627L;
-
-                @Override
-                public void reduce(Iterable<Tuple3<Double, Object, Vector>> values,
-                                   Collector<Tuple2<Object[], Integer>> out)
-                    throws Exception {
-                    int size = -1;
-                    Set<Object> labelValues = new HashSet<>();
-                    for (Tuple3<Double, Object, Vector> value : values) {
-                        Tuple2<Integer, Object[]>
-                            labelVals = (Tuple2<Integer, Object[]>)value.f1;
-                        for (int i = 0; i < labelVals.f1.length; ++i) {
-                            labelValues.add(labelVals.f1[i]);
+                    @Override
+                    public boolean filter(Tuple3<Double, Object, Vector> value) throws Exception {
+                        if (value.f0 < 0.0) {
+                            return true;
+                        } else {
+                            return false;
                         }
-                        size = Math.max(size, labelVals.f0);
-
                     }
-                    Object[] labelssort = isRegProc ? labelValues.toArray() : orderLabels(labelValues);
-                    out.collect(Tuple2.of(labelssort, size));
-                }
-            });
+                }).reduceGroup(
+                new GroupReduceFunction<Tuple3<Double, Object, Vector>, Tuple2<Object[],
+                        Integer>>() {
+                    private static final long serialVersionUID = 3520762756658301627L;
+
+                    @Override
+                    public void reduce(Iterable<Tuple3<Double, Object, Vector>> values,
+                                       Collector<Tuple2<Object[], Integer>> out)
+                            throws Exception {
+                        int size = -1;
+                        Set<Object> labelValues = new HashSet<>();
+                        for (Tuple3<Double, Object, Vector> value : values) {
+                            Tuple2<Integer, Object[]>
+                                    labelVals = (Tuple2<Integer, Object[]>) value.f1;
+                            for (int i = 0; i < labelVals.f1.length; ++i) {
+                                labelValues.add(labelVals.f1[i]);
+                            }
+                            size = Math.max(size, labelVals.f0);
+
+                        }
+                        Object[] labelssort = isRegProc ? labelValues.toArray() : orderLabels(labelValues);
+                        out.collect(Tuple2.of(labelssort, size));
+                    }
+                });
     }
 
     /**
-     * generate model in row format.
-     */
-    public static class GenerateModelRows extends RichFlatMapFunction<Tuple2<FmDataFormat, double[]>, Row> {
-        private static final long serialVersionUID = -380930181466110905L;
-        private Params params;
-        private int[] dim;
-        private TypeInformation labelType;
-        private Object[] labelValues;
-        private boolean isRegProc;
-        private int[] fieldPos;
-        private int vecSize;
-
-        public GenerateModelRows(Params params, int[] dim, TypeInformation labelType, boolean isRegProc) {
-            this.params = params;
-            this.labelType = labelType;
-            this.dim = dim;
-            this.isRegProc = isRegProc;
-        }
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            super.open(parameters);
-            this.labelValues = (Object[])getRuntimeContext().getBroadcastVariable(LABEL_VALUES).get(0);
-            this.vecSize = (int)getRuntimeContext().getBroadcastVariable(VEC_SIZE).get(0);
-        }
-
-        @Override
-        public void flatMap(Tuple2<FmDataFormat, double[]> value, Collector<Row> out) throws Exception {
-            FmModelData modelData = new FmModelData();
-            modelData.fmModel = value.f0;
-            modelData.vectorColName = params.get(FmTrainParams.VECTOR_COL);
-            modelData.featureColNames = params.get(FmTrainParams.FEATURE_COLS);
-            modelData.dim = dim;
-            modelData.labelColName = params.get(FmTrainParams.LABEL_COL);
-            modelData.task = Task.valueOf(params.get(ModelParamName.TASK).toUpperCase());
-            modelData.convergenceInfo = value.f1;
-            if (fieldPos != null) {
-                modelData.fieldPos = fieldPos;
-            }
-            if (!isRegProc) {
-                modelData.labelValues = this.labelValues;
-            } else {
-                modelData.labelValues = new Object[] {0.0};
-            }
-
-            modelData.vectorSize = vecSize;
-            new FmModelDataConverter(labelType).save(modelData, out);
-        }
-    }
-
-    /**
-     * order by the dictionary order,
-     * only classification problem need do this process.
+     * order by the dictionary order, only classification problem need do this process.
      *
      * @param unorderedLabelRows unordered label rows
      * @return
@@ -295,15 +258,26 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
             tmpArr.add(row);
         }
         Object[] labels = tmpArr.toArray(new Object[0]);
-        Preconditions.checkState((labels.length == 2), "labels count should be 2 in 2 classification algo.");
-        String str0 = labels[0].toString();
-        String str1 = labels[1].toString();
-        String positiveLabelValueString = (str1.compareTo(str0) > 0) ? str1 : str0;
 
-        if (labels[1].toString().equals(positiveLabelValueString)) {
-            Object t = labels[0];
-            labels[0] = labels[1];
-            labels[1] = t;
+        if (labels[0] instanceof Number) {
+            if (((Number) labels[0]).doubleValue() + ((Number) labels[1]).doubleValue() == 1.0) {
+                if (((Number) labels[0]).doubleValue() == 0.0) {
+                    Object t = labels[0];
+                    labels[0] = labels[1];
+                    labels[1] = t;
+                }
+            }
+        } else {
+            Preconditions.checkState((labels.length == 2), "labels count should be 2 in 2 classification algo.");
+            String str0 = labels[0].toString();
+            String str1 = labels[1].toString();
+            String positiveLabelValueString = (str1.compareTo(str0) > 0) ? str1 : str0;
+
+            if (labels[1].toString().equals(positiveLabelValueString)) {
+                Object t = labels[0];
+                labels[0] = labels[1];
+                labels[1] = t;
+            }
         }
         return labels;
     }
@@ -324,7 +298,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         String vectorColName = params.get(FmTrainParams.VECTOR_COL);
         TableSchema dataSchema = in.getSchema();
         if (null == featureColNames && null == vectorColName) {
-            featureColNames = TableUtil.getNumericCols(dataSchema, new String[] {labelName});
+            featureColNames = TableUtil.getNumericCols(dataSchema, new String[]{labelName});
             params.set(FmTrainParams.FEATURE_COLS, featureColNames);
         }
         int[] featureIndices = null;
@@ -336,13 +310,14 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                 featureIndices[i] = idx;
             }
         }
-        int weightIdx = weightColName != null ? TableUtil.findColIndexWithAssertAndHint(in.getColNames(), weightColName)
-            : -1;
+        int weightIdx = weightColName != null ? TableUtil.findColIndexWithAssertAndHint(in.getColNames(),
+                weightColName)
+                : -1;
         int vecIdx = vectorColName != null ? TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorColName)
-            : -1;
+                : -1;
 
         return in.getDataSet().mapPartition(new Transform(isRegProc, weightIdx,
-            vecIdx, featureIndices, labelIdx));
+                vecIdx, featureIndices, labelIdx));
     }
 
     /**
@@ -365,14 +340,15 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         }
 
         @Override
-        public void mapPartition(Iterable<Row> values, Collector<Tuple3<Double, Object, Vector>> out) throws Exception {
+        public void mapPartition(Iterable<Row> values, Collector<Tuple3<Double, Object, Vector>> out)
+                throws Exception {
             Set<Object> labelValues = new HashSet<>();
             int size = -1;
             if (featureIndices != null) {
                 size = featureIndices.length;
             }
             for (Row row : values) {
-                Double weight = weightIdx == -1 ? 1.0 : ((Number)row.getField(weightIdx)).doubleValue();
+                Double weight = weightIdx == -1 ? 1.0 : ((Number) row.getField(weightIdx)).doubleValue();
                 Object label = row.getField(labelIdx);
 
                 if (!this.isRegProc) {
@@ -385,25 +361,25 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                 if (featureIndices != null) {
                     vec = new DenseVector(featureIndices.length);
                     for (int i = 0; i < featureIndices.length; ++i) {
-                        vec.set(i, ((Number)row.getField(featureIndices[i])).doubleValue());
+                        vec.set(i, ((Number) row.getField(featureIndices[i])).doubleValue());
                     }
                 } else {
                     vec = VectorUtil.getVector(row.getField(vecIdx));
                     if (vec instanceof SparseVector) {
-                        int[] indices = ((SparseVector)vec).getIndices();
+                        int[] indices = ((SparseVector) vec).getIndices();
                         for (int i = 0; i < indices.length; ++i) {
                             size = (vec.size() > 0) ? vec.size() : Math.max(size, indices[i] + 1);
                         }
                     } else {
-                        size = ((DenseVector)vec).getData().length;
+                        size = ((DenseVector) vec).getData().length;
                     }
                     Preconditions.checkState((vec != null),
-                        "vector for fm model train is null, please check your input data.");
+                            "vector for fm model train is null, please check your input data.");
                 }
                 out.collect(Tuple3.of(weight, label, vec));
             }
             out.collect(
-                Tuple3.of(-1.0, Tuple2.of(size, labelValues.toArray()), new DenseVector(0)));
+                    Tuple3.of(-1.0, Tuple2.of(size, labelValues.toArray()), new DenseVector(0)));
         }
 
     }
@@ -423,31 +399,31 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         }).setParallelism(1);
 
         DataSet<Row> summary = model
-            .mapPartition(
-                new RichMapPartitionFunction<FmModelData, Row>() {
-                    private static final long serialVersionUID = 8785824618242390100L;
+                .mapPartition(
+                        new RichMapPartitionFunction<FmModelData, Row>() {
+                            private static final long serialVersionUID = 8785824618242390100L;
 
-                    @Override
-                    public void mapPartition(Iterable<FmModelData> values, Collector<Row> out) throws Exception {
+                            @Override
+                            public void mapPartition(Iterable<FmModelData> values, Collector<Row> out) throws Exception {
 
-                        FmModelData model = values.iterator().next();
-                        double[] cinfo = model.convergenceInfo;
-                        Params meta = new Params();
-                        meta.set(ModelParamName.VECTOR_SIZE, model.vectorSize);
-                        meta.set(ModelParamName.LABEL_VALUES, model.labelValues);
-                        meta.set(FmTrainParams.WITH_LINEAR_ITEM, model.dim[1] == 1);
-                        meta.set(FmTrainParams.WITH_INTERCEPT, model.dim[0] == 1);
-                        meta.set(FmTrainParams.NUM_FACTOR, model.dim[2]);
-                        out.collect(Row.of(0, JsonConverter.toJson(meta)));
-                        out.collect(Row.of(1, JsonConverter.toJson(cinfo)));
+                                FmModelData model = values.iterator().next();
+                                double[] cinfo = model.convergenceInfo;
+                                Params meta = new Params();
+                                meta.set(ModelParamName.VECTOR_SIZE, model.vectorSize);
+                                meta.set(ModelParamName.LABEL_VALUES, model.labelValues);
+                                meta.set(FmTrainParams.WITH_LINEAR_ITEM, model.dim[1] == 1);
+                                meta.set(FmTrainParams.WITH_INTERCEPT, model.dim[0] == 1);
+                                meta.set(FmTrainParams.NUM_FACTOR, model.dim[2]);
+                                out.collect(Row.of(0, JsonConverter.toJson(meta)));
+                                out.collect(Row.of(1, JsonConverter.toJson(cinfo)));
 
-                    }
-                }).setParallelism(1).withBroadcastSet(model, "model");
+                            }
+                        }).setParallelism(1).withBroadcastSet(model, "model");
 
         Table summaryTable = DataSetConversionUtil.toTable(getMLEnvironmentId(), summary, new TableSchema(
-            new String[] {"title", "info"}, new TypeInformation[] {Types.INT, Types.STRING}));
+                new String[]{"title", "info"}, new TypeInformation[]{Types.INT, Types.STRING}));
 
-        return new Table[] {summaryTable};
+        return new Table[]{summaryTable};
     }
 
     public enum Task {
@@ -544,6 +520,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      * the data structure of FM model data.
      */
     public static class FmDataFormat implements Serializable {
+        private static final long serialVersionUID = 192926704450234984L;
         public double[] linearItems;
         public double[][] factors;
         public double bias;

@@ -36,4 +36,9 @@ public interface ParamValidator<V> extends Serializable {
 	 * @return {@code true} if the value is valid, {@code false} otherwise
 	 */
 	boolean validate(V value);
+
+	void validateThrows(V value);
+
+	void setParamName(String paraName);
+
 }

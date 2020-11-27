@@ -15,14 +15,16 @@ import com.alibaba.alink.pipeline.Trainer;
 public class VectorMaxAbsScaler extends Trainer <VectorMaxAbsScaler, VectorMaxAbsScalerModel> implements
 	VectorMaxAbsScalerTrainParams <VectorMaxAbsScaler>,
 	VectorMaxAbsScalerPredictParams <VectorMaxAbsScaler>,
-	HasLazyPrintModelInfo<VectorMaxAbsScaler> {
+	HasLazyPrintModelInfo <VectorMaxAbsScaler> {
+
+	private static final long serialVersionUID = 6824636058441367182L;
 
 	public VectorMaxAbsScaler() {
 		super();
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new VectorMaxAbsScalerTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

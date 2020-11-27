@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.nlp.StopWordsRemoverMapper;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.common.nlp.StopWordsRemoverMapper;
 import com.alibaba.alink.params.nlp.StopWordsRemoverParams;
 
 /**
@@ -11,6 +11,8 @@ import com.alibaba.alink.params.nlp.StopWordsRemoverParams;
  */
 public final class StopWordsRemoverBatchOp extends MapBatchOp <StopWordsRemoverBatchOp>
 	implements StopWordsRemoverParams <StopWordsRemoverBatchOp> {
+
+	private static final long serialVersionUID = -1707975519454792211L;
 
 	public StopWordsRemoverBatchOp() {
 		this(new Params());

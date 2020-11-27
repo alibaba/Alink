@@ -1,12 +1,12 @@
 package com.alibaba.alink.common.mapper;
 
-import java.io.Serializable;
-
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
+
+import java.io.Serializable;
 
 /**
  * Abstract class for flatMappers.
@@ -14,22 +14,29 @@ import org.apache.flink.util.Collector;
  */
 public abstract class FlatMapper implements Serializable {
 
-    /**
-     * schema of the input.
-     */
+	private static final long serialVersionUID = 1195341081802669684L;
+	/**
+	 * schema of the input.
+	 */
 	private final String[] dataFieldNames;
 	private final DataType[] dataFieldTypes;
 
-    /**
-     * params used for FlatMapper.
-     * User can set the params before that the FlatMapper is executed.
-     */
+	/**
+	 * params used for FlatMapper.
+	 * User can set the params before that the FlatMapper is executed.
+	 */
 	protected Params params;
 
 	public FlatMapper(TableSchema dataSchema, Params params) {
 		this.dataFieldNames = dataSchema.getFieldNames();
 		this.dataFieldTypes = dataSchema.getFieldDataTypes();
 		this.params = (null == params) ? new Params() : params.clone();
+	}
+
+	public void open() {
+	}
+
+	public void close() {
 	}
 
 	protected TableSchema getDataSchema() {
@@ -54,9 +61,4 @@ public abstract class FlatMapper implements Serializable {
 	 */
 	public abstract TableSchema getOutputSchema();
 
-	public void open() {
-	}
-
-	public void close() {
-	}
 }

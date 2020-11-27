@@ -1,14 +1,14 @@
 package com.alibaba.alink.operator.common.dataproc.vector;
 
-import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.SparseVector;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.dataproc.vector.VectorElementwiseProductParams;
 import org.junit.Test;
 
@@ -29,8 +29,8 @@ public class VectorElementwiseProductMapperTest {
 
 		VectorElementwiseProductMapper mapper = new VectorElementwiseProductMapper(schema, params);
 
-		assertEquals(mapper.map(Row.of(new DenseVector(new double[]{3.0, 4.0}))).getField(0),
-				new DenseVector(new double[]{9.0, 18.0}));
+		assertEquals(mapper.map(Row.of(new DenseVector(new double[] {3.0, 4.0}))).getField(0),
+			new DenseVector(new double[] {9.0, 18.0}));
 		assertEquals(mapper.getOutputSchema(),
 			new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {VectorTypes.VECTOR}));
 	}
@@ -46,12 +46,12 @@ public class VectorElementwiseProductMapperTest {
 
 		VectorElementwiseProductMapper mapper = new VectorElementwiseProductMapper(schema, params);
 
-		assertEquals(mapper.map(Row.of(new DenseVector(new double[]{3.0, 4.0}))).getField(1),
-				new DenseVector(new double[]{9.0, 18.0}));
+		assertEquals(mapper.map(Row.of(new DenseVector(new double[] {3.0, 4.0}))).getField(1),
+			new DenseVector(new double[] {9.0, 18.0}));
 		assertEquals(
 			mapper.getOutputSchema(),
 			new TableSchema(new String[] {"vec", "res"},
-					new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR})
+				new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR})
 		);
 	}
 
@@ -67,8 +67,8 @@ public class VectorElementwiseProductMapperTest {
 
 		VectorElementwiseProductMapper mapper = new VectorElementwiseProductMapper(schema, params);
 
-		assertEquals(mapper.map(Row.of(new DenseVector(new double[]{3.0, 4.0}))).getField(0),
-				new DenseVector(new double[]{9.0, 18.0}));
+		assertEquals(mapper.map(Row.of(new DenseVector(new double[] {3.0, 4.0}))).getField(0),
+			new DenseVector(new double[] {9.0, 18.0}));
 		assertEquals(
 			mapper.getOutputSchema(),
 			new TableSchema(new String[] {"res"}, new TypeInformation <?>[] {VectorTypes.VECTOR})
@@ -86,12 +86,12 @@ public class VectorElementwiseProductMapperTest {
 
 		VectorElementwiseProductMapper mapper = new VectorElementwiseProductMapper(schema, params);
 
-		assertEquals(mapper.map(Row.of(new SparseVector(10, new int[]{1, 5, 9}, new double[]{2.0, 4.0, 3.0})))
-				.getField(1), new SparseVector(10, new int[]{1, 5, 9}, new double[]{6.0, 0.0, 13.5}));
+		assertEquals(mapper.map(Row.of(new SparseVector(10, new int[] {1, 5, 9}, new double[] {2.0, 4.0, 3.0})))
+			.getField(1), new SparseVector(10, new int[] {1, 5, 9}, new double[] {6.0, 0.0, 13.5}));
 		assertEquals(
 			mapper.getOutputSchema(),
 			new TableSchema(new String[] {"vec", "res"},
-					new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR})
+				new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR})
 		);
 	}
 

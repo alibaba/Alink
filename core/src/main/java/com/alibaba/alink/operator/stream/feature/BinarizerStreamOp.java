@@ -11,6 +11,8 @@ import com.alibaba.alink.params.feature.BinarizerParams;
  */
 public class BinarizerStreamOp extends MapStreamOp <BinarizerStreamOp>
 	implements BinarizerParams <BinarizerStreamOp> {
+	private static final long serialVersionUID = -504377217621358550L;
+
 	public BinarizerStreamOp() {
 		this(null);
 	}

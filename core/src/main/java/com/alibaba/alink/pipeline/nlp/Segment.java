@@ -9,8 +9,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
 /**
  * Segment Chinese document into words.
  */
-public class Segment extends MapTransformer<Segment>
+public class Segment extends MapTransformer <Segment>
 	implements SegmentParams <Segment> {
+
+	private static final long serialVersionUID = -35848324162627340L;
 
 	public Segment() {
 		this(null);

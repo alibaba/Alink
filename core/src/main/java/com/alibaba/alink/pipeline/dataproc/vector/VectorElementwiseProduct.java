@@ -11,8 +11,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * In other words, it scales each column of the data set by a scalar multiplier. This represents the Hadamard product
  * between the input vector, v and transforming vector, w, to yield a result vector.
  */
-public class VectorElementwiseProduct extends MapTransformer<VectorElementwiseProduct>
+public class VectorElementwiseProduct extends MapTransformer <VectorElementwiseProduct>
 	implements VectorElementwiseProductParams <VectorElementwiseProduct> {
+
+	private static final long serialVersionUID = -278858475661623918L;
 
 	public VectorElementwiseProduct() {
 		this(null);

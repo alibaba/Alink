@@ -1,9 +1,11 @@
 package com.alibaba.alink.common.io.directreader;
 
+import java.io.Serializable;
+
 /**
- *  An util class to compute data partition.
+ * An util class to compute data partition.
  */
-public interface DistributedInfo {
+public interface DistributedInfo extends Serializable {
 
 	/**
 	 * Get the start position.
@@ -15,7 +17,6 @@ public interface DistributedInfo {
 	 */
 	long startPos(long taskId, long parallelism, long globalRowCnt);
 
-
 	/**
 	 * Get the row count for this task.
 	 *
@@ -25,4 +26,6 @@ public interface DistributedInfo {
 	 * @return start position of this task.
 	 */
 	long localRowCnt(long taskId, long parallelism, long globalRowCnt);
+
+	long where(long pos, long parallelism, long globalRowCnt);
 }

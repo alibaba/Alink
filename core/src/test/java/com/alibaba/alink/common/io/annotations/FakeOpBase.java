@@ -8,36 +8,37 @@ import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;
 
 /**
  * An simple helper class to simplify creation of fake Operator.
- *
  */
-public class FakeOpBase extends BaseSourceBatchOp<FakeOpBase> {
+public class FakeOpBase extends BaseSourceBatchOp <FakeOpBase> {
 
-    FakeOpBase(Params params) {
-        super("", new Params());
-    }
+	private static final long serialVersionUID = -1111600420333788431L;
 
-    @Override
-    protected Table initializeDataSource() {
-        return null;
-    }
+	FakeOpBase(Params params) {
+		super("", new Params());
+	}
 
-    @Override
-    public Long getMLEnvironmentId() {
-        return null;
-    }
+	@Override
+	protected Table initializeDataSource() {
+		return null;
+	}
 
-    @Override
-    public FakeOpBase setMLEnvironmentId(Long value) {
-        return null;
-    }
+	@Override
+	public Long getMLEnvironmentId() {
+		return null;
+	}
 
-    @Override
-    public <V> FakeOpBase set(ParamInfo<V> info, V value) {
-        return null;
-    }
+	@Override
+	public FakeOpBase setMLEnvironmentId(Long value) {
+		return null;
+	}
 
-    @Override
-    public <V> V get(ParamInfo<V> info) {
-        return null;
-    }
+	@Override
+	public <V> FakeOpBase set(ParamInfo <V> info, V value) {
+		return null;
+	}
+
+	@Override
+	public <V> V get(ParamInfo <V> info) {
+		return null;
+	}
 }

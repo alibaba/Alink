@@ -1,24 +1,23 @@
 package com.alibaba.alink.operator.common.linear;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.classification.LinearModelMapperParams;
-
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This mapper maps one sample to a sample with a predicted class label.
- *
  */
 public class LinearModelMapper extends RichModelMapper {
 
@@ -30,6 +29,7 @@ public class LinearModelMapper extends RichModelMapper {
 
 	/**
 	 * Constructor function.
+	 *
 	 * @param modelSchema the model schema.
 	 * @param dataSchema  the data schema.
 	 * @param params      the params.
@@ -46,6 +46,7 @@ public class LinearModelMapper extends RichModelMapper {
 
 	/**
 	 * Load model from the list of Row type data.
+	 *
 	 * @param modelRows the list of Row type data.
 	 */
 	@Override

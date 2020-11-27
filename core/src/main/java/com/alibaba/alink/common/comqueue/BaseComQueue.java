@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.comqueue;
 
+import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
@@ -13,7 +14,6 @@ import org.apache.flink.api.java.operators.IterativeDataSet;
 import org.apache.flink.api.java.operators.MapPartitionOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.TupleTypeInfo;
-import org.apache.flink.api.java.utils.DataSetUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
@@ -36,12 +36,13 @@ import java.util.stream.Collectors;
  *
  * @param <Q> the implement of BaseComQueue
  */
-public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
+public class BaseComQueue<Q extends BaseComQueue <Q>> implements Serializable {
 
+	private static final long serialVersionUID = -4727279909132083484L;
 	/**
 	 * All computation or communication functions.
 	 */
-	private final List<ComQueueItem> queue = new ArrayList<>();
+	private final List <ComQueueItem> queue = new ArrayList <>();
 
 	/**
 	 * sessionId for shared objects within this BaseComQueue.
@@ -63,8 +64,8 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 	 */
 	private int maxIter = Integer.MAX_VALUE;
 
-	private transient List<String> cacheDataObjNames = new ArrayList<>();
-	private transient DataSet<byte[]> cacheDataRel;
+	private transient List <String> cacheDataObjNames = new ArrayList <>();
+	private transient DataSet <byte[]> cacheDataRel;
 	private transient ExecutionEnvironment executionEnvironment;
 
 	@SuppressWarnings("unchecked")
@@ -75,6 +76,21 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 	public Q add(ComQueueItem com) {
 		queue.add(com);
 		return thisAsQ();
+	}
+
+	@VisibleForTesting
+	int getMaxIter() {
+		return maxIter;
+	}
+
+	@VisibleForTesting
+	List <ComQueueItem> getQueue() {
+		return queue;
+	}
+
+	@VisibleForTesting
+	CompareCriterionFunction getCompareCriterion() {
+		return compareCriterion;
 	}
 
 	/**
@@ -116,10 +132,10 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 	 * {@link ComContext#getObj}.
 	 *
 	 * @param objName object name.
-	 * @param data input dataset
+	 * @param data    input dataset
 	 * @return this BaseComQueue itself.
 	 */
-	public <T> Q initWithPartitionedData(String objName, DataSet<T> data) {
+	public <T> Q initWithPartitionedData(String objName, DataSet <T> data) {
 		createRelationshipAndCachedData(data, objName);
 		return thisAsQ();
 	}
@@ -129,15 +145,16 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 	 * {@link ComContext#getObj}.
 	 *
 	 * @param objName object name.
-	 * @param data input dataset
+	 * @param data    input dataset
 	 * @return this BaseComQueue itself.
 	 */
-	public <T> Q initWithBroadcastData(String objName, DataSet<T> data) {
+	public <T> Q initWithBroadcastData(String objName, DataSet <T> data) {
 		return initWithPartitionedData(objName, broadcastDataSet(data));
 	}
 
 	/**
 	 * Set sessionId to run this BaseComQueue.
+	 *
 	 * @param sessionId the session id.
 	 * @return this BaseComQueue itself.
 	 */
@@ -151,7 +168,8 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 	 *
 	 * @return result dataset.
 	 */
-	public DataSet<Row> exec() {
+	public DataSet <Row> exec() {
+		queue.add(0, new DistributeData(cacheDataObjNames, sessionId));
 		optimize();
 
 		if (executionEnvironment == null) {
@@ -162,14 +180,15 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 			}
 		}
 
-		IterativeDataSet<byte[]> loop
+		IterativeDataSet <byte[]> loop
 			= loopStartDataSet(executionEnvironment)
 			.iterate(maxIter);
 
-		DataSet<byte[]> input = loop
-			.mapPartition(new DistributeData(cacheDataObjNames, sessionId))
-			.withBroadcastSet(loop, "barrier")
-			.name("distribute data");
+		//		DataSet<byte[]> input = loop
+		//			.mapPartition(new DistributeData(cacheDataObjNames, sessionId))
+		//			.withBroadcastSet(loop, "barrier")
+		//			.name("distribute data");
+		DataSet <byte[]> input = loop;
 
 		for (ComQueueItem com : queue) {
 			if ((com instanceof CommunicateFunction)) {
@@ -179,10 +198,12 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 				final ComputeFunction computation = (ComputeFunction) com;
 
 				input = input
-						.mapPartition(new RichMapPartitionFunction<byte[], byte[]>() {
+					.mapPartition(new RichMapPartitionFunction <byte[], byte[]>() {
+
+						private static final long serialVersionUID = -6617692288474518056L;
 
 						@Override
-						public void mapPartition(Iterable<byte[]> values, Collector<byte[]> out) {
+						public void mapPartition(Iterable <byte[]> values, Collector <byte[]> out) {
 							ComContext context = new ComContext(
 								sessionId, getIterationRuntimeContext()
 							);
@@ -198,18 +219,20 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 			}
 		}
 
-		DataSet<byte[]> loopEnd;
+		DataSet <byte[]> loopEnd;
 		if (null == compareCriterion) {
 			loopEnd = loop.closeWith(
 				//completeResult
 				input
-					.mapPartition(new RichMapPartitionFunction<byte[], byte[]>() {
+					.mapPartition(new RichMapPartitionFunction <byte[], byte[]>() {
+
+						private static final long serialVersionUID = -5391702186659779224L;
 
 						@Override
-						public void mapPartition(Iterable<byte[]> values, Collector<byte[]> out) throws Exception {
+						public void mapPartition(Iterable <byte[]> values, Collector <byte[]> out) throws Exception {
 							if (getIterationRuntimeContext().getSuperstepNumber() == maxIter) {
 								ComContext context = new ComContext(sessionId, getIterationRuntimeContext());
-								List<Row> model = completeResult.calc(context);
+								List <Row> model = completeResult.calc(context);
 
 								if (null == model) {
 									return;
@@ -239,10 +262,12 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 			//    broadcast the reduced criterion to all node and calculate completeResult in all node.
 			//
 			// we use 2 to implement this function.
-			DataSet<Boolean> criterion = input
-				.mapPartition(new RichMapPartitionFunction<byte[], Boolean>() {
+			DataSet <Boolean> criterion = input
+				.mapPartition(new RichMapPartitionFunction <byte[], Boolean>() {
+					private static final long serialVersionUID = 6625968106516906392L;
+
 					@Override
-					public void mapPartition(Iterable<byte[]> values, Collector<Boolean> out) throws Exception {
+					public void mapPartition(Iterable <byte[]> values, Collector <Boolean> out) throws Exception {
 						if (getRuntimeContext().getIndexOfThisSubtask() == 0) {
 							ComContext context = new ComContext(sessionId, getIterationRuntimeContext());
 							if (!compareCriterion.calc(context)) {
@@ -257,7 +282,8 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 			loopEnd = loop.closeWith(
 				//completeResult
 				input
-					.mapPartition(new RichMapPartitionFunction<byte[], byte[]>() {
+					.mapPartition(new RichMapPartitionFunction <byte[], byte[]>() {
+						private static final long serialVersionUID = -2243669394358656436L;
 						boolean criterion;
 
 						@Override
@@ -265,10 +291,10 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 							criterion = getRuntimeContext()
 								.getBroadcastVariableWithInitializer(
 									"criterion",
-									new BroadcastVariableInitializer<Boolean, Boolean>() {
+									new BroadcastVariableInitializer <Boolean, Boolean>() {
 										@Override
-										public Boolean initializeBroadcastVariable(Iterable<Boolean> data) {
-											Iterator<Boolean> iterOfData = data.iterator();
+										public Boolean initializeBroadcastVariable(Iterable <Boolean> data) {
+											Iterator <Boolean> iterOfData = data.iterator();
 											if (iterOfData.hasNext()) {
 												return data.iterator().next();
 											} else {
@@ -280,11 +306,11 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 						}
 
 						@Override
-						public void mapPartition(Iterable<byte[]> values, Collector<byte[]> out) {
+						public void mapPartition(Iterable <byte[]> values, Collector <byte[]> out) {
 							ComContext context = new ComContext(sessionId, getIterationRuntimeContext());
 							if (getIterationRuntimeContext().getSuperstepNumber() == maxIter
 								|| criterion) {
-								List<Row> model = completeResult.calc(context);
+								List <Row> model = completeResult.calc(context);
 
 								if (null == model) {
 									return;
@@ -309,7 +335,7 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 
 	@Override
 	public String toString() {
-		Map<String, Object> val = new HashMap<>();
+		Map <String, Object> val = new HashMap <>();
 		val.put("queue", queue
 			.stream()
 			.map(x -> x.getClass().getSimpleName())
@@ -323,9 +349,11 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 		return JsonConverter.toJson(val);
 	}
 
-	private static DataSet<Row> serializeModel(DataSet<byte[]> model) {
+	private static DataSet <Row> serializeModel(DataSet <byte[]> model) {
 		return model
-			.map(new MapFunction<byte[], Row>() {
+			.map(new MapFunction <byte[], Row>() {
+				private static final long serialVersionUID = 7383520679708122544L;
+
 				@Override
 				public Row map(byte[] value) {
 					return (Row) SerializationUtils.deserialize(value);
@@ -334,11 +362,13 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 			.name("serializeModel");
 	}
 
-	private static <T> DataSet<T> broadcastDataSet(DataSet<T> data) {
+	private static <T> DataSet <T> broadcastDataSet(DataSet <T> data) {
 		return expandDataSet2MaxParallelism(data)
-			.mapPartition(new RichMapPartitionFunction<T, Tuple2<Integer, T>>() {
+			.mapPartition(new RichMapPartitionFunction <T, Tuple2 <Integer, T>>() {
+				private static final long serialVersionUID = -4649163203694740662L;
+
 				@Override
-				public void mapPartition(Iterable<T> values, Collector<Tuple2<Integer, T>> out) throws Exception {
+				public void mapPartition(Iterable <T> values, Collector <Tuple2 <Integer, T>> out) throws Exception {
 					int numTask = getRuntimeContext().getNumberOfParallelSubtasks();
 					for (T val : values) {
 						for (int i = 0; i < numTask; ++i) {
@@ -347,19 +377,23 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 					}
 				}
 			})
-			.returns(new TupleTypeInfo<>(Types.INT, data.getType()))
+			.returns(new TupleTypeInfo <>(Types.INT, data.getType()))
 			.name("sharedDataBroadcast")
-			.partitionCustom(new Partitioner<Integer>() {
+			.partitionCustom(new Partitioner <Integer>() {
+				private static final long serialVersionUID = -6692961321999695162L;
+
 				@Override
 				public int partition(Integer key, int numPartitions) {
 					return key % numPartitions;
 				}
 			}, 0)
 			.name("sharedDataPartition")
-			.mapPartition(new RichMapPartitionFunction<Tuple2<Integer, T>, T>() {
+			.mapPartition(new RichMapPartitionFunction <Tuple2 <Integer, T>, T>() {
+				private static final long serialVersionUID = -4348660942756396179L;
+
 				@Override
-				public void mapPartition(Iterable<Tuple2<Integer, T>> values, Collector<T> out) {
-					for (Tuple2<Integer, T> val : values) {
+				public void mapPartition(Iterable <Tuple2 <Integer, T>> values, Collector <T> out) {
+					for (Tuple2 <Integer, T> val : values) {
 						out.collect(val.f1);
 					}
 				}
@@ -368,30 +402,36 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 			.name("sharedDataFly");
 	}
 
-	private static <T> DataSet<T> expandDataSet2MaxParallelism(DataSet<T> data) {
+	private static <T> DataSet <T> expandDataSet2MaxParallelism(DataSet <T> data) {
 		return data
-			.map(new RichMapFunction<T, Tuple2<Integer, T>>() {
+			.map(new RichMapFunction <T, Tuple2 <Integer, T>>() {
+				private static final long serialVersionUID = -3563752831074380126L;
+
 				@Override
-				public Tuple2<Integer, T> map(T value) throws Exception {
+				public Tuple2 <Integer, T> map(T value) throws Exception {
 					return Tuple2.of(
 						getRuntimeContext().getIndexOfThisSubtask(),
 						value
 					);
 				}
 			})
-			.returns(new TupleTypeInfo<>(Types.INT, data.getType()))
+			.returns(new TupleTypeInfo <>(Types.INT, data.getType()))
 			.name("appendTaskId2Data")
 			// use partitionCustom to expand dataset to max parallelism.
-			.partitionCustom(new Partitioner<Integer>() {
+			.partitionCustom(new Partitioner <Integer>() {
+				private static final long serialVersionUID = -8823979305373109564L;
+
 				@Override
 				public int partition(Integer key, int numPartitions) {
 					return key % numPartitions;
 				}
 			}, 0)
 			.name("partitionData2Task")
-			.map(new MapFunction<Tuple2<Integer, T>, T>() {
+			.map(new MapFunction <Tuple2 <Integer, T>, T>() {
+				private static final long serialVersionUID = 7735842319931188500L;
+
 				@Override
-				public T map(Tuple2<Integer, T> value) {
+				public T map(Tuple2 <Integer, T> value) {
 					return value.f1;
 				}
 			})
@@ -399,13 +439,15 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 			.name("projectData2Raw");
 	}
 
-	private DataSet<byte[]> loopStartDataSet(ExecutionEnvironment env) {
-		MapPartitionOperator<Integer, byte[]> initial = env
+	private DataSet <byte[]> loopStartDataSet(ExecutionEnvironment env) {
+		MapPartitionOperator <Integer, byte[]> initial = env
 			.fromElements(1)
 			.rebalance()
-			.mapPartition(new MapPartitionFunction<Integer, byte[]>() {
+			.mapPartition(new MapPartitionFunction <Integer, byte[]>() {
+				private static final long serialVersionUID = 1605194585509760448L;
+
 				@Override
-				public void mapPartition(Iterable<Integer> values, Collector<byte[]> out) {
+				public void mapPartition(Iterable <Integer> values, Collector <byte[]> out) {
 					//pass
 				}
 			}).name("iterInitialize");
@@ -417,20 +459,35 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 		return initial;
 	}
 
-	private DataSet<byte[]> clearObjs(DataSet<byte[]> raw) {
+	private DataSet <byte[]> clearObjs(DataSet <byte[]> raw) {
 		final int localSessionId = sessionId;
-		DataSet<byte[]> clear = expandDataSet2MaxParallelism(
+		DataSet <byte[]> clear = expandDataSet2MaxParallelism(
 			BatchOperator
 				.getExecutionEnvironmentFromDataSets(raw)
 				.fromElements(0))
-			.mapPartition(new MapPartitionFunction<Integer, byte[]>() {
+			.mapPartition(new RichMapPartitionFunction <Integer, byte[]>() {
+				private static final long serialVersionUID = -7819774126101954367L;
+
 				@Override
-				public void mapPartition(Iterable<Integer> values, Collector<byte[]> out) {
+				public void mapPartition(Iterable <Integer> values, Collector <byte[]> out) {
 					SessionSharedObjs.clear(localSessionId);
 				}
-			});
+			})
+			.withBroadcastSet(
+				raw.mapPartition(new MapPartitionFunction <byte[], byte[]>() {
+					private static final long serialVersionUID = 570124206050744389L;
+
+					@Override
+					public void mapPartition(Iterable <byte[]> values, Collector <byte[]> out) throws Exception {
+						//pass
+					}
+				}),
+				"barrier"
+			);
 		return raw
-			.map(new MapFunction<byte[], byte[]>() {
+			.map(new MapFunction <byte[], byte[]>() {
+				private static final long serialVersionUID = 6060666608672449498L;
+
 				@Override
 				public byte[] map(byte[] value) {
 					return value;
@@ -441,27 +498,27 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 
 	}
 
-	private <T> void createRelationshipAndCachedData(DataSet<T> data, final String key) {
+	private <T> void createRelationshipAndCachedData(DataSet <T> data, final String key) {
 		final int localSessionId = sessionId;
 		if (cacheDataRel == null) {
 			cacheDataRel = clearObjs(
-				BatchOperator
-					.getExecutionEnvironmentFromDataSets(data)
-					.fromElements(new byte[0])
-					.mapPartition(new MapPartitionFunction<byte[], byte[]>() {
+				data
+					.mapPartition(new MapPartitionFunction <T, byte[]>() {
+						private static final long serialVersionUID = 5119252579498807853L;
+
 						@Override
-						public void mapPartition(Iterable<byte[]> values, Collector<byte[]> out) throws Exception {
+						public void mapPartition(Iterable <T> values, Collector <byte[]> out) throws Exception {
 							//pass
 						}
 					})
 			);
 		}
 
-		DataSet<Tuple2<Integer, Long>> rowCount = DataSetUtils.countElementsPerPartition(data);
+		//		DataSet<Tuple2<Integer, Long>> rowCount = DataSetUtils.countElementsPerPartition(data);
 
-		cacheDataRel = data.mapPartition(new PutCachedData<T>(key, localSessionId))
+		cacheDataRel = data.mapPartition(new PutCachedData <T>(key, localSessionId))
 			.withBroadcastSet(cacheDataRel, "rel")
-			.withBroadcastSet(rowCount, "rowCount")
+			//			.withBroadcastSet(rowCount, "rowCount")
 			.name("cachedDataRel@" + key);
 
 		cacheDataObjNames.add(key);
@@ -494,10 +551,11 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 		queue.subList(current + 1, queue.size()).clear();
 	}
 
-	private static class PutCachedData<T> extends RichMapPartitionFunction<T, byte[]> {
+	private static class PutCachedData<T> extends RichMapPartitionFunction <T, byte[]> {
+		private static final long serialVersionUID = -6356063476350424243L;
 		private final String key;
 		private final int sessionId;
-		private int localRowCount;
+		//		private int localRowCount;
 
 		PutCachedData(String key, int sessionId) {
 			this.key = key;
@@ -508,42 +566,68 @@ public class BaseComQueue<Q extends BaseComQueue<Q>> implements Serializable {
 		public void open(Configuration parameters) throws Exception {
 			super.open(parameters);
 
-			List<Tuple2<Integer, Long>> rowCount = getRuntimeContext().getBroadcastVariable("rowCount");
-
-			int taskId = getRuntimeContext().getIndexOfThisSubtask();
-			for (Tuple2<Integer, Long> r : rowCount) {
-				if (r.f0.equals(taskId)) {
-					localRowCount = r.f1.intValue();
-				}
-			}
+			//			List<Tuple2<Integer, Long>> rowCount = getRuntimeContext().getBroadcastVariable("rowCount");
+			//
+			//			int taskId = getRuntimeContext().getIndexOfThisSubtask();
+			//			for (Tuple2<Integer, Long> r : rowCount) {
+			//				if (r.f0.equals(taskId)) {
+			//					localRowCount = r.f1.intValue();
+			//				}
+			//			}
 		}
 
 		@Override
-		public void mapPartition(Iterable<T> values, Collector<byte[]> out) throws Exception {
-			List<T> data = new ArrayList<>(localRowCount);
+		public void mapPartition(Iterable <T> values, Collector <byte[]> out) throws Exception {
+			//			List<T> data = new ArrayList<>(localRowCount);
+			List <T> data = new ArrayList <>();
 			values.forEach(data::add);
 			SessionSharedObjs.cachePartitionedData(key, sessionId, data);
 		}
 	}
 
-	private static class DistributeData extends RichMapPartitionFunction<byte[], byte[]> {
-		private final List<String> cacheDataObjNames;
+	//	private static class DistributeData extends RichMapPartitionFunction<byte[], byte[]> {
+	//		private final List<String> cacheDataObjNames;
+	//		private final int sessionId;
+	//
+	//		DistributeData(List<String> cacheDataObjNames, int sessionId) {
+	//			this.cacheDataObjNames = cacheDataObjNames;
+	//			this.sessionId = sessionId;
+	//		}
+	//
+	//		@Override
+	//		public void mapPartition(Iterable<byte[]> values, Collector<byte[]> out) throws Exception {
+	//			if (getIterationRuntimeContext().getSuperstepNumber() == 1) {
+	//				SessionSharedObjs.distributeCachedData(
+	//					cacheDataObjNames,
+	//					sessionId,
+	//					getRuntimeContext().getIndexOfThisSubtask()
+	//				);
+	//			}
+	//		}
+	//	}
+
+	@VisibleForTesting
+	static class DistributeData extends ComputeFunction {
+		private static final long serialVersionUID = -1105584217517972610L;
+		private final List <String> cacheDataObjNames;
 		private final int sessionId;
 
-		DistributeData(List<String> cacheDataObjNames, int sessionId) {
+		DistributeData(List <String> cacheDataObjNames, int sessionId) {
 			this.cacheDataObjNames = cacheDataObjNames;
 			this.sessionId = sessionId;
 		}
 
 		@Override
-		public void mapPartition(Iterable<byte[]> values, Collector<byte[]> out) throws Exception {
-			if (getIterationRuntimeContext().getSuperstepNumber() == 1) {
-				SessionSharedObjs.distributeCachedData(
-					cacheDataObjNames,
-					sessionId,
-					getRuntimeContext().getIndexOfThisSubtask()
-				);
+		public void calc(ComContext context) {
+			if (context.getStepNo() != 1) {
+				return;
 			}
+
+			SessionSharedObjs.distributeCachedData(
+				cacheDataObjNames,
+				sessionId,
+				context.getTaskId()
+			);
 		}
 	}
 }

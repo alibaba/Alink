@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class CsvWriter extends FormatWriter {
 
+	private static final long serialVersionUID = 5113547201752931086L;
 	private final String fieldDelim;
 	private final String quoteString;
 	private final String escapedQuote;

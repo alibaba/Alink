@@ -17,8 +17,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * Split array must be strictly increasing and have at least three points. It's a string input with split points
  * segments with delimiter ",".
  */
-public class Bucketizer extends MapTransformer<Bucketizer>
+public class Bucketizer extends MapTransformer <Bucketizer>
 	implements BucketizerParams <Bucketizer> {
+
+	private static final long serialVersionUID = 2843021271951345982L;
 
 	public Bucketizer() {
 		this(null);

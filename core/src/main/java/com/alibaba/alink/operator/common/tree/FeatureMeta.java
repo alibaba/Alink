@@ -6,6 +6,8 @@ import java.io.Serializable;
  * FeatureMeta.
  */
 public class FeatureMeta implements Serializable {
+	private static final long serialVersionUID = 645879023264618004L;
+
 	public enum FeatureType implements Serializable {
 
 		/**
@@ -22,7 +24,10 @@ public class FeatureMeta implements Serializable {
 	private String name;
 	private FeatureType type;
 	private int index;
+
 	private int numCategorical;
+	private int sparseZeroIndex;
+	private int missingIndex;
 
 	public FeatureMeta() {
 	}
@@ -40,6 +45,23 @@ public class FeatureMeta implements Serializable {
 		this.numCategorical = numCategorical;
 	}
 
+	public FeatureMeta(
+		String name,
+		int index,
+		FeatureType featureType,
+		int numCategorical,
+		int sparseZeroIndex,
+		int missingIndex) {
+
+		this.name = name;
+		this.type = featureType;
+		this.index = index;
+
+		this.numCategorical = numCategorical;
+		this.sparseZeroIndex = sparseZeroIndex;
+		this.missingIndex = missingIndex;
+	}
+
 	public FeatureType getType() {
 		return type;
 	}
@@ -54,5 +76,27 @@ public class FeatureMeta implements Serializable {
 
 	public int getNumCategorical() {
 		return numCategorical;
+	}
+
+	public int getSparseZeroIndex() {
+		return sparseZeroIndex;
+	}
+
+	public int getMissingIndex() {
+		return missingIndex;
+	}
+
+	public void rewrite(int numCategorical, int sparseZeroIndex, int missingIndex) {
+		this.numCategorical = numCategorical;
+		this.sparseZeroIndex = sparseZeroIndex;
+		this.missingIndex = missingIndex;
+	}
+
+	@Override
+	public String toString() {
+		return "name:" + this.name + "; index:" + this.index + "; featureType:" + this.type.toString()
+			+ "; numCategorical:"
+			+ this.numCategorical + "; sparseZeroIndex:" + this.sparseZeroIndex + "; missingIndex:" + this
+			.missingIndex;
 	}
 }

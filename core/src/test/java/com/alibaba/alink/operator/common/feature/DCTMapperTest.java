@@ -1,13 +1,12 @@
 package com.alibaba.alink.operator.common.feature;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
-import org.apache.flink.ml.api.misc.param.Params;
-
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.params.feature.DCTParams;
 import org.junit.Test;

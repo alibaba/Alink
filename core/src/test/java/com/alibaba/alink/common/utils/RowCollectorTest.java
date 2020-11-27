@@ -15,7 +15,7 @@ public class RowCollectorTest {
 
 	@Test
 	public void testRowCollector() {
-		List<Row> rows = new ArrayList<>(1);
+		List <Row> rows = new ArrayList <>(1);
 
 		RowCollector collector = new RowCollector(rows);
 

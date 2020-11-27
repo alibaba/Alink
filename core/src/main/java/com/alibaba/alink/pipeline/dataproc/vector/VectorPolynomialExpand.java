@@ -11,8 +11,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * n-degree combination of original dimensions. Take a 2-variable feature vector as an example: (x, y), if we want to
  * expand it with degree 2, then we get (x, x * x, y, x * y, y * y).
  */
-public class VectorPolynomialExpand extends MapTransformer<VectorPolynomialExpand>
+public class VectorPolynomialExpand extends MapTransformer <VectorPolynomialExpand>
 	implements VectorPolynomialExpandParams <VectorPolynomialExpand> {
+
+	private static final long serialVersionUID = -3476571016200240727L;
 
 	public VectorPolynomialExpand() {
 		this(null);

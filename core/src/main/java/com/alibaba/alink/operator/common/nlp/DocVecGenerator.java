@@ -23,7 +23,8 @@ public class DocVecGenerator {
 		this.wordDelimiter = wordDelimiter;
 		this.inferMethod = inferMethod;
 		for (Row row : dict) {
-			embed.put((String) row.getField(0), (DenseVector)VectorUtil.getVector(VectorUtil.getVector(row.getField(1))));
+			embed.put((String) row.getField(0),
+				(DenseVector) VectorUtil.getVector(VectorUtil.getVector(row.getField(1))));
 		}
 	}
 

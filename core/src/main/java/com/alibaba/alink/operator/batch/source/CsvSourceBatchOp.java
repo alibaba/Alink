@@ -38,85 +38,89 @@ import java.net.URL;
  */
 
 @IoOpAnnotation(name = "csv", ioType = IOType.SourceBatch)
-public final class CsvSourceBatchOp extends BaseSourceBatchOp<CsvSourceBatchOp>
-    implements CsvSourceParams<CsvSourceBatchOp> {
+public final class CsvSourceBatchOp extends BaseSourceBatchOp <CsvSourceBatchOp>
+	implements CsvSourceParams <CsvSourceBatchOp> {
 
-    public CsvSourceBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -3105428980027751387L;
 
-    public CsvSourceBatchOp(Params params) {
-        super(AnnotationUtils.annotatedName(CsvSourceBatchOp.class), params);
-    }
+	public CsvSourceBatchOp() {
+		this(new Params());
+	}
 
-    public CsvSourceBatchOp(String filePath, String schemaStr) {
-        this(new Params()
-            .set(FILE_PATH, new FilePath(filePath).serialize())
-            .set(SCHEMA_STR, schemaStr)
-        );
-    }
+	public CsvSourceBatchOp(Params params) {
+		super(AnnotationUtils.annotatedName(CsvSourceBatchOp.class), params);
+	}
 
-    public CsvSourceBatchOp(String filePath, TableSchema schema) {
-        this(new Params()
-            .set(FILE_PATH, new FilePath(filePath).serialize())
-            .set(SCHEMA_STR, CsvUtil.schema2SchemaStr(schema))
-        );
-    }
+	public CsvSourceBatchOp(String filePath, String schemaStr) {
+		this(new Params()
+			.set(FILE_PATH, new FilePath(filePath).serialize())
+			.set(SCHEMA_STR, schemaStr)
+		);
+	}
 
-    public CsvSourceBatchOp(String filePath, String[] colNames, TypeInformation<?>[] colTypes,
-                            String fieldDelim, String rowDelim) {
-        this(new Params()
-            .set(FILE_PATH, new FilePath(filePath).serialize())
-            .set(SCHEMA_STR, CsvUtil.schema2SchemaStr(new TableSchema(colNames, colTypes)))
-            .set(FIELD_DELIMITER, fieldDelim)
-            .set(ROW_DELIMITER, rowDelim)
-        );
-    }
+	public CsvSourceBatchOp(String filePath, TableSchema schema) {
+		this(new Params()
+			.set(FILE_PATH, new FilePath(filePath).serialize())
+			.set(SCHEMA_STR, CsvUtil.schema2SchemaStr(schema))
+		);
+	}
 
-    @Override
-    public Table initializeDataSource() {
-        final String filePath = getFilePath().getPathStr();
-        final String schemaStr = getSchemaStr();
-        final String fieldDelim = getFieldDelimiter();
-        final String rowDelim = getRowDelimiter();
-        final Character quoteChar = getQuoteChar();
-        final boolean skipBlankLine = getSkipBlankLine();
-        final boolean lenient = getLenient();
+	public CsvSourceBatchOp(String filePath, String[] colNames, TypeInformation <?>[] colTypes,
+							String fieldDelim, String rowDelim) {
+		this(new Params()
+			.set(FILE_PATH, new FilePath(filePath).serialize())
+			.set(SCHEMA_STR, CsvUtil.schema2SchemaStr(new TableSchema(colNames, colTypes)))
+			.set(FIELD_DELIMITER, fieldDelim)
+			.set(ROW_DELIMITER, rowDelim)
+		);
+	}
 
-        final String[] colNames = CsvUtil.getColNames(schemaStr);
-        final TypeInformation[] colTypes = CsvUtil.getColTypes(schemaStr);
+	@Override
+	public Table initializeDataSource() {
+		final String filePath = getFilePath().getPathStr();
+		final String schemaStr = getSchemaStr();
+		final String fieldDelim = getFieldDelimiter();
+		final String rowDelim = getRowDelimiter();
+		final Character quoteChar = getQuoteChar();
+		final boolean skipBlankLine = getSkipBlankLine();
+		final boolean lenient = getLenient();
 
-        boolean ignoreFirstLine = getIgnoreFirstLine();
-        String protocol = "";
+		final String[] colNames = CsvUtil.getColNames(schemaStr);
+		final TypeInformation<?>[] colTypes = CsvUtil.getColTypes(schemaStr);
 
-        try {
-            URL url = new URL(filePath);
-            protocol = url.getProtocol();
-        } catch (MalformedURLException ignored) {
-        }
+		boolean ignoreFirstLine = getIgnoreFirstLine();
+		String protocol = "";
 
-        DataSet<Row> rows;
-        ExecutionEnvironment execEnv = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment();
-        TableSchema dummySchema = new TableSchema(new String[]{"f1"}, new TypeInformation[]{Types.STRING});
+		try {
+			URL url = new URL(filePath);
+			protocol = url.getProtocol();
+		} catch (MalformedURLException ignored) {
+		}
 
-        if (protocol.equalsIgnoreCase("http") || protocol.equalsIgnoreCase("https")) {
-            HttpFileSplitReader reader = new HttpFileSplitReader(filePath);
-            rows = execEnv
-                .createInput(new GenericCsvInputFormat(reader, dummySchema.getFieldTypes(), rowDelim, rowDelim, ignoreFirstLine),
-                    new RowTypeInfo(dummySchema.getFieldTypes(), dummySchema.getFieldNames()))
-                .name("http_csv_source");
-        } else {
-            RowCsvInputFormat inputFormat = new RowCsvInputFormat(
-                new Path(filePath), dummySchema.getFieldTypes(),
-                rowDelim, rowDelim, new int[]{0}, true,
-                getFilePath().getFileSystem()
-            );
-            inputFormat.setSkipFirstLineAsHeader(ignoreFirstLine);
-            rows = execEnv.createInput(inputFormat).name("csv_source");
-        }
+		DataSet <Row> rows;
+		ExecutionEnvironment execEnv = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment();
+		TableSchema dummySchema = new TableSchema(new String[] {"f1"}, new TypeInformation[] {Types.STRING});
 
-        rows = rows.flatMap(new CsvUtil.ParseCsvFunc(colTypes, fieldDelim, quoteChar, skipBlankLine, lenient));
+		if (protocol.equalsIgnoreCase("http") || protocol.equalsIgnoreCase("https")) {
+			HttpFileSplitReader reader = new HttpFileSplitReader(filePath);
+			rows = execEnv
+				.createInput(
+					new GenericCsvInputFormat(reader, dummySchema.getFieldTypes(), rowDelim, rowDelim,
+						ignoreFirstLine),
+					new RowTypeInfo(dummySchema.getFieldTypes(), dummySchema.getFieldNames()))
+				.name("http_csv_source");
+		} else {
+			RowCsvInputFormat inputFormat = new RowCsvInputFormat(
+				new Path(filePath), dummySchema.getFieldTypes(),
+				rowDelim, rowDelim, new int[] {0}, true,
+				getFilePath().getFileSystem()
+			);
+			inputFormat.setSkipFirstLineAsHeader(ignoreFirstLine);
+			rows = execEnv.createInput(inputFormat).name("csv_source");
+		}
 
-        return DataSetConversionUtil.toTable(getMLEnvironmentId(), rows, colNames, colTypes);
-    }
+		rows = rows.flatMap(new CsvUtil.ParseCsvFunc(colTypes, fieldDelim, quoteChar, skipBlankLine, lenient));
+
+		return DataSetConversionUtil.toTable(getMLEnvironmentId(), rows, colNames, colTypes);
+	}
 }

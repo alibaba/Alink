@@ -4,6 +4,8 @@ import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.ComputeFunction;
 
 public class TreeStat extends ComputeFunction {
+	private static final long serialVersionUID = -2292189423183159159L;
+
 	public TreeStat() {
 	}
 

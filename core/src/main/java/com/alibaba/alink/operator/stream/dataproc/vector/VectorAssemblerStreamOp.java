@@ -14,10 +14,11 @@ import com.alibaba.alink.params.dataproc.vector.VectorAssemblerParams;
  * of the input columns will be concatenated into a vector in the specified order.
  *
  * this operator cam transform stream data.
- *
  */
 public final class VectorAssemblerStreamOp extends MapStreamOp <VectorAssemblerStreamOp>
 	implements VectorAssemblerParams <VectorAssemblerStreamOp> {
+
+	private static final long serialVersionUID = -5155135801401252657L;
 
 	public VectorAssemblerStreamOp(Params params) {
 		super(VectorAssemblerMapper::new, params);

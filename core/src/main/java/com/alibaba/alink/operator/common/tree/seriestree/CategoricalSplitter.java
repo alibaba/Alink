@@ -5,6 +5,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.tree.Criteria;
 import com.alibaba.alink.operator.common.tree.FeatureMeta;
+import com.alibaba.alink.operator.common.tree.FeatureSplitter;
+import com.alibaba.alink.operator.common.tree.LabelAccessor;
 import com.alibaba.alink.operator.common.tree.Node;
 import com.alibaba.alink.params.shared.tree.HasMaxDepth;
 import com.alibaba.alink.params.shared.tree.HasMinSamplesPerLeaf;
@@ -16,7 +18,7 @@ import java.util.List;
 /**
  * CategoricalSplitter.
  */
-public class CategoricalSplitter extends FeatureSplitter {
+public class CategoricalSplitter extends SequentialFeatureSplitter {
 	private int[] splitPoint;
 	private Criteria[] best;
 	private Criteria[] categoricalCriteria;
@@ -45,7 +47,7 @@ public class CategoricalSplitter extends FeatureSplitter {
 	}
 
 	@Override
-	public FeatureSplitter[][] split(FeatureSplitter[] splitters) {
+	public SequentialFeatureSplitter[][] split(FeatureSplitter[] splitters) {
 		if (!canSplit) {
 			throw new IllegalStateException("The feature splitter should be calculated by `bestSplit`");
 		}
@@ -115,7 +117,7 @@ public class CategoricalSplitter extends FeatureSplitter {
 	private double bestSplitCartIncrement() {
 		int categoricalSize = featureMeta.getNumCategorical();
 
-		List<Tuple2<Integer, Double>> probability0 = new ArrayList<>(categoricalSize);
+		List <Tuple2 <Integer, Double>> probability0 = new ArrayList <>(categoricalSize);
 		int[] categoricalSplitPoint = new int[categoricalSize];
 		for (int i = 0; i < categoricalSize; ++i) {
 			probability0.add(
@@ -161,7 +163,7 @@ public class CategoricalSplitter extends FeatureSplitter {
 				|| minSamplesPerLeaf > rightNumInstances
 				|| minSampleRatioPerChild > ((double) leftNumInstances / (double) totalNumInstances)
 				|| minSampleRatioPerChild > ((double) rightNumInstances / (double) totalNumInstances)
-			) {
+				) {
 				continue;
 			}
 
@@ -221,7 +223,7 @@ public class CategoricalSplitter extends FeatureSplitter {
 				|| minSamplesPerLeaf > rightNumInstances
 				|| minSampleRatioPerChild > ((double) leftNumInstances / (double) totalNumInstances)
 				|| minSampleRatioPerChild > ((double) rightNumInstances / (double) totalNumInstances)
-			) {
+				) {
 				continue;
 			}
 
@@ -253,7 +255,7 @@ public class CategoricalSplitter extends FeatureSplitter {
 
 		if (params.get(Criteria.Gain.GAIN) == Criteria.Gain.GINI
 			&& data.labelMeta.getNumCategorical() == 2) {
-             return bestSplitCartIncrement();
+			return bestSplitCartIncrement();
 		} else {
 			return bestSplitCart();
 		}

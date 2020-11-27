@@ -1,12 +1,18 @@
 package com.alibaba.alink.pipeline.regression;
 
-import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.params.regression.DecisionTreeRegPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
 
-public class DecisionTreeRegressionModel extends MapModel<DecisionTreeRegressionModel>
+/**
+ * The model of decision tree regression.
+ */
+public class DecisionTreeRegressionModel extends MapModel <DecisionTreeRegressionModel>
 	implements DecisionTreeRegPredictParams <DecisionTreeRegressionModel> {
+
+	private static final long serialVersionUID = 2247135234053984326L;
 
 	public DecisionTreeRegressionModel() {this(null);}
 

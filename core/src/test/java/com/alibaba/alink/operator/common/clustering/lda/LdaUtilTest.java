@@ -7,7 +7,6 @@ import com.alibaba.alink.common.linalg.SparseVector;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class LdaUtilTest {
 
 	@Test

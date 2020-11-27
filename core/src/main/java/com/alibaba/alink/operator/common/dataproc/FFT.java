@@ -34,10 +34,10 @@ public class FFT {
 	 * <p>See reference for more details
 	 *
 	 * <p><ul>
-	 *   <li>"An algorithm for the machine calculation of complex Fourier series", JW Cooley, JW Tukey, 1965
-	 *   for a rough reference.
-	 *   <li>Detail of radix-2 in-place Cooley-Tukey algorithm can be found in many places, e.g. CLRS textbook.
-	 *   </ul>
+	 * <li>"An algorithm for the machine calculation of complex Fourier series", JW Cooley, JW Tukey, 1965
+	 * for a rough reference.
+	 * <li>Detail of radix-2 in-place Cooley-Tukey algorithm can be found in many places, e.g. CLRS textbook.
+	 * </ul>
 	 * </p>
 	 */
 	public static Complex[] fftRadix2CooleyTukey(Complex[] input, boolean inverse, Complex[] omega) {
@@ -124,8 +124,8 @@ public class FFT {
 	 * <p>See reference for more details
 	 *
 	 * <p><ul>
-	 *   <li>"The chirp z-transform algorithm", L Rabiner, RW Schafer, C Rader, 1969
-	 *   </ul>
+	 * <li>"The chirp z-transform algorithm", L Rabiner, RW Schafer, C Rader, 1969
+	 * </ul>
 	 * </p>
 	 **/
 	public static Complex[] fftChirpZ(Complex[] input, boolean inverse, Complex[] omega, Complex[] omega2) {

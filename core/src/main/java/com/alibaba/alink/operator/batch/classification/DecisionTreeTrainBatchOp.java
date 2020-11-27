@@ -5,7 +5,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.BaseRandomForestTrainBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
-import com.alibaba.alink.operator.common.tree.TreeModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeUtil;
 import com.alibaba.alink.params.classification.DecisionTreeTrainParams;
 import com.alibaba.alink.params.classification.RandomForestTrainParams;
@@ -13,13 +12,30 @@ import com.alibaba.alink.params.shared.tree.HasFeatureSubsamplingRatio;
 import com.alibaba.alink.params.shared.tree.HasSubsamplingRatio;
 
 /**
- * Fit a single decision tree.
+ * The random forest use the bagging to prevent the overfitting.
  *
- * @see BaseRandomForestTrainBatchOp
+ * <p>In the operator, we implement three type of decision tree to
+ * increase diversity of the forest.
+ * <ul>
+ * <tr>id3</tr>
+ * <tr>cart</tr>
+ * <tr>c4.5</tr>
+ * </ul>
+ * and the criteria is
+ * <ul>
+ * <tr>information</tr>
+ * <tr>gini</tr>
+ * <tr>information ratio</tr>
+ * <tr>mse</tr>
+ * </ul>
+ *
+ * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
-public final class DecisionTreeTrainBatchOp extends BaseRandomForestTrainBatchOp<DecisionTreeTrainBatchOp>
-	implements DecisionTreeTrainParams<DecisionTreeTrainBatchOp>,
-	WithModelInfoBatchOp<TreeModelInfo.DecisionTreeModelInfo, DecisionTreeTrainBatchOp, TreeModelInfoBatchOp.DecisionTreeModelInfoBatchOp> {
+public final class DecisionTreeTrainBatchOp extends BaseRandomForestTrainBatchOp <DecisionTreeTrainBatchOp>
+	implements DecisionTreeTrainParams <DecisionTreeTrainBatchOp>,
+	WithModelInfoBatchOp <TreeModelInfo.DecisionTreeModelInfo, DecisionTreeTrainBatchOp, DecisionTreeModelInfoBatchOp> {
+
+	private static final long serialVersionUID = 3469143629174787731L;
 
 	public DecisionTreeTrainBatchOp() {
 		this(null);
@@ -37,7 +53,7 @@ public final class DecisionTreeTrainBatchOp extends BaseRandomForestTrainBatchOp
 	}
 
 	@Override
-	public TreeModelInfoBatchOp.DecisionTreeModelInfoBatchOp getModelInfoBatchOp() {
-		return new TreeModelInfoBatchOp.DecisionTreeModelInfoBatchOp(getParams()).linkFrom(this);
+	public DecisionTreeModelInfoBatchOp getModelInfoBatchOp() {
+		return new DecisionTreeModelInfoBatchOp(getParams()).linkFrom(this);
 	}
 }

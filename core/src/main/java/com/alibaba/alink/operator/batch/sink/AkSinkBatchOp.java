@@ -12,9 +12,15 @@ import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.io.AkSinkParams;
 
+/**
+ * Sink batch op data to a file system with ak format.
+ * Ak is a file format define by alink.
+ */
 @IoOpAnnotation(name = "ak", ioType = IOType.SinkBatch)
-public final class AkSinkBatchOp extends BaseSinkBatchOp<AkSinkBatchOp>
-	implements AkSinkParams<AkSinkBatchOp> {
+public final class AkSinkBatchOp extends BaseSinkBatchOp <AkSinkBatchOp>
+	implements AkSinkParams <AkSinkBatchOp> {
+
+	private static final long serialVersionUID = -6701780409272076102L;
 
 	public AkSinkBatchOp() {
 		this(new Params());
@@ -25,7 +31,7 @@ public final class AkSinkBatchOp extends BaseSinkBatchOp<AkSinkBatchOp>
 	}
 
 	@Override
-	public AkSinkBatchOp sinkFrom(BatchOperator in) {
+	public AkSinkBatchOp sinkFrom(BatchOperator<?> in) {
 		in.getDataSet()
 			.output(
 				new AkUtils.AkOutputFormat(

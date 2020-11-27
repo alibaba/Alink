@@ -5,6 +5,7 @@ import com.alibaba.alink.operator.common.tree.Node;
 import java.io.Serializable;
 
 public class NodeInfoPair implements Serializable {
+	private static final long serialVersionUID = -4959969083779016947L;
 	public Partition small;
 	public Partition big;
 	// -1 indict that pair is root

@@ -4,6 +4,7 @@ package com.alibaba.alink.operator.common.classification.ann;
  * Layer properties of affine transformations, that is y=A*x+b
  */
 public class AffineLayer extends Layer {
+	private static final long serialVersionUID = 6359644792194356158L;
 	public int numIn;
 	public int numOut;
 

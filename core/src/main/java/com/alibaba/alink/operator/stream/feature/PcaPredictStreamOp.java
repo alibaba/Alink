@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.stream.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.feature.pca.PcaModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.feature.pca.PcaModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.feature.PcaPredictParams;
 
@@ -12,6 +12,8 @@ import com.alibaba.alink.params.feature.PcaPredictParams;
  */
 public final class PcaPredictStreamOp extends ModelMapStreamOp <PcaPredictStreamOp>
 	implements PcaPredictParams <PcaPredictStreamOp> {
+
+	private static final long serialVersionUID = 3407264784386721759L;
 
 	/**
 	 * default constructor

@@ -2,12 +2,15 @@ package com.alibaba.alink.common.comqueue;
 
 import org.apache.flink.api.java.DataSet;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.Serializable;
 
-public class BaseComQueueTest implements Serializable {
+public class BaseComQueueTest extends AlinkTestBase implements Serializable {
+
+	private static final long serialVersionUID = -1733941319857716986L;
 
 	@Test
 	public void optimize() {
@@ -22,11 +25,14 @@ public class BaseComQueueTest implements Serializable {
 
 		queue.exec();
 
-		Assert.assertTrue(
-			queue.toString().matches(
-				"\\{\"completeResult\":null,\"maxIter\":2147483647,\"sessionId\":[0-9]*" +
-					",\"queue\":\"ChainedComputation,MyCommunicateFunction,MyCommunicateFunction," +
-					"ChainedComputation,MyCommunicateFunction\",\"compareCriterion\":null\\}"));
+		Assert.assertEquals(Integer.MAX_VALUE, queue.getMaxIter());
+		Assert.assertEquals(5, queue.getQueue().size());
+		Assert.assertTrue(queue.getQueue().get(0) instanceof ChainedComputation);
+		Assert.assertTrue(queue.getQueue().get(1) instanceof MyCommunicateFunction);
+		Assert.assertTrue(queue.getQueue().get(2) instanceof MyCommunicateFunction);
+		Assert.assertTrue(queue.getQueue().get(3) instanceof ChainedComputation);
+		Assert.assertTrue(queue.getQueue().get(4) instanceof MyCommunicateFunction);
+		Assert.assertNull(queue.getCompareCriterion());
 	}
 
 	@Test
@@ -35,9 +41,10 @@ public class BaseComQueueTest implements Serializable {
 
 		queue.exec();
 
-		Assert.assertTrue(queue.toString().matches(
-			"\\{\"completeResult\":null,\"maxIter\":2147483647,\"sessionId\":[0-9]*,\"queue\":\"\"" +
-				",\"compareCriterion\":null\\}"));
+		Assert.assertEquals(Integer.MAX_VALUE, queue.getMaxIter());
+		Assert.assertEquals(1, queue.getQueue().size());
+		Assert.assertTrue(queue.getQueue().get(0) instanceof BaseComQueue.DistributeData);
+		Assert.assertNull(queue.getCompareCriterion());
 	}
 
 	@Test
@@ -47,9 +54,10 @@ public class BaseComQueueTest implements Serializable {
 
 		queue.exec();
 
-		Assert.assertTrue(queue.toString().matches(
-			"\\{\"completeResult\":null,\"maxIter\":2147483647,\"sessionId\":[0-9]*,\"queue\":\"MyComputeFunction\"" +
-				",\"compareCriterion\":null\\}"));
+		Assert.assertEquals(Integer.MAX_VALUE, queue.getMaxIter());
+		Assert.assertEquals(1, queue.getQueue().size());
+		Assert.assertTrue(queue.getQueue().get(0) instanceof ChainedComputation);
+		Assert.assertNull(queue.getCompareCriterion());
 	}
 
 	@Test
@@ -59,12 +67,16 @@ public class BaseComQueueTest implements Serializable {
 
 		queue.exec();
 
-		Assert.assertTrue(queue.toString().matches(
-			"\\{\"completeResult\":null,\"maxIter\":2147483647,\"sessionId\":[0-9]*,\"queue\":\"MyCommunicateFunction\"" +
-				",\"compareCriterion\":null\\}"));
+		Assert.assertEquals(Integer.MAX_VALUE, queue.getMaxIter());
+		Assert.assertEquals(2, queue.getQueue().size());
+		Assert.assertTrue(queue.getQueue().get(0) instanceof BaseComQueue.DistributeData);
+		Assert.assertTrue(queue.getQueue().get(1) instanceof MyCommunicateFunction);
+		Assert.assertNull(queue.getCompareCriterion());
 	}
 
 	private static class MyComputeFunction extends ComputeFunction {
+		private static final long serialVersionUID = -1829139615947353616L;
+
 		@Override
 		public void calc(ComContext context) {
 			return;
@@ -72,6 +84,8 @@ public class BaseComQueueTest implements Serializable {
 	}
 
 	private static class MyCommunicateFunction extends CommunicateFunction {
+		private static final long serialVersionUID = -8042022207911178708L;
+
 		@Override
 		public <T> DataSet <T> communicateWith(DataSet <T> input, int sessionId) {
 			return input;

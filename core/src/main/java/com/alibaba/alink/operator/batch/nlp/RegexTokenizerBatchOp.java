@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.nlp.RegexTokenizerMapper;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.common.nlp.RegexTokenizerMapper;
 import com.alibaba.alink.params.nlp.RegexTokenizerParams;
 
 /**
@@ -12,6 +12,8 @@ import com.alibaba.alink.params.nlp.RegexTokenizerParams;
  */
 public final class RegexTokenizerBatchOp extends MapBatchOp <RegexTokenizerBatchOp>
 	implements RegexTokenizerParams <RegexTokenizerBatchOp> {
+
+	private static final long serialVersionUID = -7249487587825597293L;
 
 	public RegexTokenizerBatchOp() {
 		this(null);

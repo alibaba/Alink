@@ -1,29 +1,34 @@
 package com.alibaba.alink.operator.stream.dataproc.format;
 
+import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.common.dataproc.format.FormatTransMapper;
 import com.alibaba.alink.operator.common.dataproc.format.FormatTransParams;
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
-import org.apache.flink.ml.api.misc.param.Params;
 
 /**
- * Transform vector to table columns. This transformer will map vector column to columns as designed.
+ * The base class of transformation between csv, json, kv, vector and table types.
  */
-public class BaseFormatTransStreamOp<T extends BaseFormatTransStreamOp<T>> extends MapStreamOp<T> {
+public class BaseFormatTransStreamOp<T extends BaseFormatTransStreamOp <T>>
+	extends MapStreamOp <T> implements HasReservedColsDefaultAsNull<T> {
 
-    private BaseFormatTransStreamOp() {
-        this(null);
-    }
+	private static final long serialVersionUID = 1812617669373659300L;
 
-    public BaseFormatTransStreamOp(FormatType fromFormat, FormatType toFormat, Params params) {
-        this(
-            (null == params ? new Params() : params)
-                .set(FormatTransParams.FROM_FORMAT, fromFormat)
-                .set(FormatTransParams.TO_FORMAT, toFormat)
-        );
-    }
+	private BaseFormatTransStreamOp() {
+		this(null);
+	}
 
-    private BaseFormatTransStreamOp(Params params) {
-        super(FormatTransMapper::new, params);
-    }
+	public BaseFormatTransStreamOp(FormatType fromFormat, FormatType toFormat, Params params) {
+		this(
+			(null == params ? new Params() : params)
+				.set(FormatTransParams.FROM_FORMAT, fromFormat)
+				.set(FormatTransParams.TO_FORMAT, toFormat)
+		);
+	}
+
+	private BaseFormatTransStreamOp(Params params) {
+		super(FormatTransMapper::new, params);
+	}
 }

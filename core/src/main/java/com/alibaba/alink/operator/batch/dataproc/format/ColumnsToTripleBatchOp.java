@@ -1,20 +1,23 @@
 package com.alibaba.alink.operator.batch.dataproc.format;
 
-import com.alibaba.alink.operator.common.dataproc.format.FormatType;
-import com.alibaba.alink.params.dataproc.format.ColumnsToTripleParams;
 import org.apache.flink.ml.api.misc.param.Params;
 
-public class ColumnsToTripleBatchOp extends AnyToTripleBatchOp<ColumnsToTripleBatchOp>
-    implements ColumnsToTripleParams<ColumnsToTripleBatchOp> {
+import com.alibaba.alink.operator.common.dataproc.format.FormatType;
+import com.alibaba.alink.params.dataproc.format.ColumnsToTripleParams;
 
-    private static final long serialVersionUID = 7543648266815893977L;
+/**
+ * Transform data type from Columns to Triple.
+ */
+public class ColumnsToTripleBatchOp extends AnyToTripleBatchOp <ColumnsToTripleBatchOp>
+	implements ColumnsToTripleParams <ColumnsToTripleBatchOp> {
 
-    public ColumnsToTripleBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 7588256483554816392L;
 
-    public ColumnsToTripleBatchOp(Params params) {
-        super(FormatType.COLUMNS, params);
-    }
+	public ColumnsToTripleBatchOp() {
+		this(new Params());
+	}
 
+	public ColumnsToTripleBatchOp(Params params) {
+		super(FormatType.COLUMNS, params);
+	}
 }

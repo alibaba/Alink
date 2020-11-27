@@ -9,20 +9,22 @@ import org.apache.flink.util.Preconditions;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import com.alibaba.alink.params.nlp.Word2VecTrainParams;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Word2VecTrainInfo {
-	public static final ParamInfo<Double[]> LOSS = ParamInfoFactory
+public class Word2VecTrainInfo implements Serializable {
+	public static final ParamInfo <Double[]> LOSS = ParamInfoFactory
 		.createParamInfo("loss", Double[].class)
 		.build();
 
-	public static final ParamInfo<Long> NUM_VOCAB = ParamInfoFactory
+	public static final ParamInfo <Long> NUM_VOCAB = ParamInfoFactory
 		.createParamInfo("numVocab", Long.class)
 		.build();
+	private static final long serialVersionUID = 2064346735501693643L;
 
 	private Params params;
 
-	public Word2VecTrainInfo(List<Row> rows) {
+	public Word2VecTrainInfo(List <Row> rows) {
 		Preconditions.checkArgument(
 			rows != null && rows.size() == 1 && rows.get(0) != null && rows.get(0).getArity() == 1,
 			"Invalid word2vec model summary."
@@ -55,11 +57,11 @@ public class Word2VecTrainInfo {
 		Object[][] lossTable = new Object[loss.length][];
 
 		for (int i = 0; i < loss.length; ++i) {
-			lossTable[i] = new Object[]{i, loss[i]};
+			lossTable[i] = new Object[] {i, loss[i]};
 		}
 
 		stringBuilder.append(
-			PrettyDisplayUtils.displayTable(lossTable, loss.length, 2, null, new String[]{"Batch", "Loss"}, null)
+			PrettyDisplayUtils.displayTable(lossTable, loss.length, 2, null, new String[] {"Batch", "Loss"}, null)
 		);
 
 		return stringBuilder.toString();

@@ -1,8 +1,11 @@
 package com.alibaba.alink.pipeline.regression;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
+import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.regression.AftSurvivalRegTrainBatchOp;
-import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.params.regression.AftRegPredictParams;
 import com.alibaba.alink.params.regression.AftRegTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -15,7 +18,10 @@ import com.alibaba.alink.pipeline.Trainer;
  */
 public class AftSurvivalRegression extends Trainer <AftSurvivalRegression, AftSurvivalRegressionModel> implements
 	AftRegTrainParams <AftSurvivalRegression>,
-	AftRegPredictParams <AftSurvivalRegression> {
+	AftRegPredictParams <AftSurvivalRegression>,
+	HasLazyPrintTrainInfo <AftSurvivalRegression>, HasLazyPrintModelInfo <AftSurvivalRegression> {
+
+	private static final long serialVersionUID = 3693171215775584261L;
 
 	public AftSurvivalRegression() {
 		super(new Params());
@@ -26,7 +32,7 @@ public class AftSurvivalRegression extends Trainer <AftSurvivalRegression, AftSu
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new AftSurvivalRegTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 

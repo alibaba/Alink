@@ -4,6 +4,7 @@ import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
+import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
@@ -16,14 +17,15 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.ExceptionUtils;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.MLEnvironment;
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
+import com.alibaba.alink.common.lazy.LazyEvaluation;
+import com.alibaba.alink.common.lazy.LazyObjectsManager;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.SplitBatchOp;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.pipeline.EstimatorBase;
@@ -35,62 +37,56 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Consumer;
 
 /**
  * BaseTuning.
  */
-public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTuningModel<M>>
-	extends EstimatorBase<T, M> implements HasLazyPrintTrainInfo<T> {
+public abstract class BaseTuning<T extends BaseTuning <T, M>, M extends BaseTuningModel <M>>
+	extends EstimatorBase <T, M> implements HasLazyPrintTrainInfo <T> {
 
-	private EstimatorBase<?, ?> estimator;
-	private TuningEvaluator<?> tuningEvaluator;
+	private static final long serialVersionUID = 7100530176503587968L;
+	private EstimatorBase <?, ?> estimator;
+	private TuningEvaluator <?> tuningEvaluator;
 
 	public BaseTuning() {
 		super();
 	}
 
-	public EstimatorBase<?, ?> getEstimator() {
+	public EstimatorBase <?, ?> getEstimator() {
 		return estimator;
 	}
 
-	public T setEstimator(EstimatorBase<?, ?> value) {
+	public T setEstimator(EstimatorBase <?, ?> value) {
 		this.estimator = value;
 		return (T) this;
 	}
 
-	public T setTuningEvaluator(TuningEvaluator<?> tuningEvaluator) {
+	public T setTuningEvaluator(TuningEvaluator <?> tuningEvaluator) {
 		this.tuningEvaluator = tuningEvaluator;
 		return (T) this;
 	}
 
 	@Override
-	public M fit(BatchOperator input) {
-		Tuple2<TransformerBase, Report> result = tuning(input);
+	public M fit(BatchOperator <?> input) {
+		Tuple2 <TransformerBase, Report> result = tuning(input);
 
 		if (getParams().get(LAZY_PRINT_TRAIN_INFO_ENABLED)) {
 			final String title = getParams().get(LAZY_PRINT_TRAIN_INFO_TITLE);
-			final Report localReport = result.f1;
-
-			new MemSourceBatchOp(new Integer[] {0}, "col0")
-				.setMLEnvironmentId(getMLEnvironmentId())
-				.lazyCollect(new Consumer<List<Row>>() {
-					@Override
-					public void accept(List<Row> rows) {
-						if (title != null) {
-							System.out.println(title);
-						}
-
-						System.out.println(localReport.toString());
-					}
-				});
+			LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(this);
+			LazyEvaluation <Report> lazyReport = lazyObjectsManager.genLazyReport(this);
+			lazyReport.addCallback(report -> {
+				if (title != null) {
+					System.out.println(title);
+				}
+				System.out.println(report.toString());
+			});
+			lazyReport.addValue(result.f1);
 		}
-
 		return createModel(result.f0);
 	}
 
 	@Override
-	public M fit(StreamOperator input) {
+	public M fit(StreamOperator <?> input) {
 		throw new UnsupportedOperationException("Tuning on stream not supported.");
 	}
 
@@ -99,7 +95,7 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 			ParameterizedType pt =
 				(ParameterizedType) this.getClass().getGenericSuperclass();
 
-			Class<M> classM = (Class<M>) pt.getActualTypeArguments()[1];
+			Class <M> classM = (Class <M>) pt.getActualTypeArguments()[1];
 
 			return classM.getConstructor(TransformerBase.class)
 				.newInstance(transformer);
@@ -110,14 +106,15 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 
 	}
 
-	protected abstract Tuple2<TransformerBase, Report> tuning(BatchOperator in);
+	protected abstract Tuple2 <TransformerBase, Report> tuning(BatchOperator <?> in);
 
-	protected Tuple2<Pipeline, Report> findBestTVSplit(
-		BatchOperator<?> in, double ratio, PipelineCandidatesBase candidates) {
+	protected Tuple2 <Pipeline, Report> findBestTVSplit(
+		BatchOperator <?> in, double ratio, PipelineCandidatesBase candidates) {
 		int nIter = candidates.size();
 
 		SplitBatchOp sbo = new SplitBatchOp()
 			.setFraction(ratio)
+			.setMLEnvironmentId(getMLEnvironmentId())
 			.linkFrom(
 				new TableSourceBatchOp(
 					DataSetConversionUtil.toTable(
@@ -126,15 +123,16 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 						in.getSchema()
 					)
 				)
+				.setMLEnvironmentId(getMLEnvironmentId())
 			);
 
 		int bestIdx = -1;
 		double bestMetric = 0.;
-		ArrayList<Double> experienceScores = new ArrayList<>(nIter);
-		List<Report.ReportElement> reportElements = new ArrayList<>();
+		ArrayList <Double> experienceScores = new ArrayList <>(nIter);
+		List <Report.ReportElement> reportElements = new ArrayList <>();
 
 		for (int i = 0; i < nIter; i++) {
-			Tuple2<Pipeline, List<Tuple3<Integer, ParamInfo, Object>>> cur;
+			Tuple2 <Pipeline, List <Tuple3 <Integer, ParamInfo, Object>>> cur;
 			try {
 				cur = candidates.get(i, experienceScores);
 			} catch (CloneNotSupportedException e) {
@@ -148,8 +146,10 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 					.transform(sbo.getSideOutput(0))
 				);
 			} catch (Exception ex) {
-				System.out.println(String.format("BestTVSplit, i: %d, best: %f, metric: %f, exception: %s",
-					i, bestMetric, metric, ExceptionUtils.stringifyException(ex)));
+				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+					System.out.println(String.format("BestTVSplit, i: %d, best: %f, metric: %f, exception: %s",
+						i, bestMetric, metric, ExceptionUtils.stringifyException(ex)));
+				}
 
 				experienceScores.add(i, metric);
 
@@ -199,8 +199,10 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 				}
 			}
 
-			System.out.println(String.format("BestTVSplit, i: %d, best: %f, metric: %f",
-				i, bestMetric, metric));
+			if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+				System.out.println(String.format("BestTVSplit, i: %d, best: %f, metric: %f",
+					i, bestMetric, metric));
+			}
 		}
 
 		if (bestIdx < 0) {
@@ -220,31 +222,33 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 		}
 	}
 
-	protected Tuple2<Pipeline, Report> findBestCV(BatchOperator<?> in, int k, PipelineCandidatesBase candidates) {
+	protected Tuple2 <Pipeline, Report> findBestCV(BatchOperator <?> in, int k, PipelineCandidatesBase candidates) {
 		Preconditions.checkArgument(k > 1, "numFolds could be greater than 1.");
-		DataSet<Tuple2<Integer, Row>> splitData = split(in, k);
+		DataSet <Tuple2 <Integer, Row>> splitData = split(in, k);
 
 		int nIter = candidates.size();
 		Double bestAvg = null;
 		Integer bestIdx = null;
 
-		ArrayList<Double> experienceScores = new ArrayList<>(nIter);
-		List<Report.ReportElement> reportElements = new ArrayList<>();
+		ArrayList <Double> experienceScores = new ArrayList <>(nIter);
+		List <Report.ReportElement> reportElements = new ArrayList <>();
 		for (int i = 0; i < nIter; i++) {
-			Tuple2<Pipeline, List<Tuple3<Integer, ParamInfo, Object>>> cur;
+			Tuple2 <Pipeline, List <Tuple3 <Integer, ParamInfo, Object>>> cur;
 			try {
 				cur = candidates.get(i, experienceScores);
 			} catch (CloneNotSupportedException e) {
 				throw new RuntimeException(e);
 			}
 
-			Tuple2<Double, String> avg = kFoldCv(splitData, cur.f0, in.getSchema(), k);
+			Tuple2 <Double, String> avg = kFoldCv(splitData, cur.f0, in.getSchema(), k);
 
 			experienceScores.add(i, avg.f0);
 
 			if (Double.isNaN(avg.f0)) {
-				System.out.println(String.format("BestCV, i: %d, best: %f, avg: %f",
-					i, bestAvg, avg.f0));
+				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+					System.out.println(String.format("BestCV, i: %d, best: %f, avg: %f",
+						i, bestAvg, avg.f0));
+				}
 				reportElements.add(
 					new Report.ReportElement(
 						cur.f0,
@@ -274,12 +278,14 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 				bestIdx = i;
 			}
 
-			System.out.println(
-				String.format(
-					"BestCV, i: %d, best: %f, avg: %f",
-					i, bestAvg, avg.f0
-				)
-			);
+			if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+				System.out.println(
+					String.format(
+						"BestCV, i: %d, best: %f, avg: %f",
+						i, bestAvg, avg.f0
+					)
+				);
+			}
 		}
 
 		if (bestIdx == null) {
@@ -290,14 +296,15 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 		}
 
 		try {
-			return Tuple2.of(candidates.get(bestIdx, experienceScores).f0, new Report(tuningEvaluator, reportElements));
+			return Tuple2.of(candidates.get(bestIdx, experienceScores).f0, new Report(tuningEvaluator,
+				reportElements));
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private Tuple2<Double, String> kFoldCv(
-		DataSet<Tuple2<Integer, Row>> splitData,
+	private Tuple2 <Double, String> kFoldCv(
+		DataSet <Tuple2 <Integer, Row>> splitData,
 		Pipeline pipeline,
 		TableSchema schema,
 		int k) {
@@ -308,53 +315,68 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 
 		for (int i = 0; i < k; ++i) {
 			final int loop = i;
-			DataSet<Row> trainInput = splitData
-				.filter(new FilterFunction<Tuple2<Integer, Row>>() {
+			DataSet <Row> trainInput = splitData
+				.filter(new FilterFunction <Tuple2 <Integer, Row>>() {
+					private static final long serialVersionUID = 2249884521437544236L;
+
 					@Override
-					public boolean filter(Tuple2<Integer, Row> value) {
+					public boolean filter(Tuple2 <Integer, Row> value) {
 						return value.f0 != loop;
 					}
 				})
-				.map(new MapFunction<Tuple2<Integer, Row>, Row>() {
+				.map(new MapFunction <Tuple2 <Integer, Row>, Row>() {
+					private static final long serialVersionUID = 2618229645786221757L;
+
 					@Override
-					public Row map(Tuple2<Integer, Row> value) {
+					public Row map(Tuple2 <Integer, Row> value) {
 						return value.f1;
 					}
 				});
 
-			DataSet<Row> testInput = splitData
-				.filter(new FilterFunction<Tuple2<Integer, Row>>() {
+			DataSet <Row> testInput = splitData
+				.filter(new FilterFunction <Tuple2 <Integer, Row>>() {
+					private static final long serialVersionUID = 5811166054549336470L;
+
 					@Override
-					public boolean filter(Tuple2<Integer, Row> value) {
+					public boolean filter(Tuple2 <Integer, Row> value) {
 						return value.f0 == loop;
 					}
 				})
-				.map(new MapFunction<Tuple2<Integer, Row>, Row>() {
+				.map(new MapFunction <Tuple2 <Integer, Row>, Row>() {
+					private static final long serialVersionUID = -1760709990316111721L;
+
 					@Override
-					public Row map(Tuple2<Integer, Row> value) {
+					public Row map(Tuple2 <Integer, Row> value) {
 						return value.f1;
 					}
 				});
 
 			PipelineModel model = pipeline
-				.fit(new TableSourceBatchOp(
+				.fit(
+					new TableSourceBatchOp(
 						DataSetConversionUtil
 							.toTable(getMLEnvironmentId(), trainInput, schema)
 					)
+					.setMLEnvironmentId(getMLEnvironmentId())
 				);
 
 			double localMetric = Double.NaN;
 			try {
 				localMetric = tuningEvaluator
 					.evaluate(
-						model.transform(new TableSourceBatchOp(DataSetConversionUtil.toTable(getMLEnvironmentId(), testInput, schema)))
+						model.transform(new TableSourceBatchOp(
+							DataSetConversionUtil.toTable(getMLEnvironmentId(), testInput, schema)))
 					);
-				System.out.println(String.format("kFoldCv, k: %d, i: %d, metric: %f",
-					k, i, localMetric));
+				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+					System.out.println(String.format("kFoldCv, k: %d, i: %d, metric: %f",
+						k, i, localMetric));
+				}
 			} catch (Exception ex) {
-				System.out.println(
-					String.format("kFoldCv err, k: %d, i: %d, metric: %f, exception: %s",
-						k, i, localMetric, ExceptionUtils.stringifyException(ex)));
+				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+					System.out.println(
+						String.format("kFoldCv err, k: %d, i: %d, metric: %f, exception: %s",
+							k, i, localMetric, ExceptionUtils.stringifyException(ex)));
+				}
 
 				reason.append(ExceptionUtils.stringifyException(ex)).append("\n");
 
@@ -382,48 +404,55 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 		}
 	}
 
-	private DataSet<Row> shuffle(DataSet<Row> input) {
+	private DataSet <Row> shuffle(DataSet <Row> input) {
 		return input
-			.map(new MapFunction<Row, Tuple2<Integer, Row>>() {
+			.map(new MapFunction <Row, Tuple2 <Long, Row>>() {
+				private static final long serialVersionUID = 2565906511879493627L;
+
 				@Override
-				public Tuple2<Integer, Row> map(Row value) {
+				public Tuple2 <Long, Row> map(Row value) {
 					return Tuple2.of(
-						ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE),
-						value
+						ThreadLocalRandom.current().nextLong(Long.MAX_VALUE), value
 					);
 				}
 			})
-			.partitionCustom(new Partitioner<Integer>() {
+			.partitionCustom(new Partitioner <Long>() {
+				private static final long serialVersionUID = 8626504946902766931L;
+
 				@Override
-				public int partition(Integer key, int numPartitions) {
-					return key % numPartitions;
+				public int partition(Long key, int numPartitions) {
+					return (int) (key % numPartitions);
 				}
 			}, 0)
-			.map(new MapFunction<Tuple2<Integer, Row>, Row>() {
+			.sortPartition(0, Order.ASCENDING)
+			.map(new MapFunction <Tuple2 <Long, Row>, Row>() {
+				private static final long serialVersionUID = 2667225910228407097L;
+
 				@Override
-				public Row map(Tuple2<Integer, Row> value) {
+				public Row map(Tuple2 <Long, Row> value) {
 					return value.f1;
 				}
 			});
 	}
 
-	private DataSet<Tuple2<Integer, Row>> split(BatchOperator<?> data, int k) {
+	private DataSet <Tuple2 <Integer, Row>> split(BatchOperator <?> data, int k) {
 
-		DataSet<Row> input = shuffle(data.getDataSet());
+		DataSet <Row> input = shuffle(data.getDataSet());
 
-		DataSet<Tuple2<Integer, Long>> counts = DataSetUtils.countElementsPerPartition(input);
+		DataSet <Tuple2 <Integer, Long>> counts = DataSetUtils.countElementsPerPartition(input);
 
 		return input
-			.mapPartition(new RichMapPartitionFunction<Row, Tuple2<Integer, Row>>() {
+			.mapPartition(new RichMapPartitionFunction <Row, Tuple2 <Integer, Row>>() {
+				private static final long serialVersionUID = -902599228310615694L;
 				long taskStart = 0L;
 				long totalNumInstance = 0L;
 
 				@Override
-				public void open(Configuration parameters) throws Exception {
-					List<Tuple2<Integer, Long>> counts1 = getRuntimeContext().getBroadcastVariable("counts");
+				public void open(Configuration parameters) {
+					List <Tuple2 <Integer, Long>> counts1 = getRuntimeContext().getBroadcastVariable("counts");
 
 					int taskId = getRuntimeContext().getIndexOfThisSubtask();
-					for (Tuple2<Integer, Long> cnt : counts1) {
+					for (Tuple2 <Integer, Long> cnt : counts1) {
 
 						if (taskId < cnt.f0) {
 							taskStart += cnt.f1;
@@ -434,9 +463,9 @@ public abstract class BaseTuning<T extends BaseTuning<T, M>, M extends BaseTunin
 				}
 
 				@Override
-				public void mapPartition(Iterable<Row> values, Collector<Tuple2<Integer, Row>> out) throws Exception {
+				public void mapPartition(Iterable <Row> values, Collector <Tuple2 <Integer, Row>> out) {
 					DistributedInfo distributedInfo = new DefaultDistributedInfo();
-					Tuple2<Integer, Long> split1 = new Tuple2<>(-1, -1L);
+					Tuple2 <Integer, Long> split1 = new Tuple2 <>(-1, -1L);
 					long lcnt = taskStart;
 
 					for (int i = 0; i <= k; ++i) {

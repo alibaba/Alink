@@ -2,7 +2,7 @@ package com.alibaba.alink;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.SplitBatchOp;
-import com.alibaba.alink.operator.batch.recommendation.AlsPredictBatchOp;
+import com.alibaba.alink.operator.batch.recommendation.AlsRateRecommBatchOp;
 import com.alibaba.alink.operator.batch.recommendation.AlsTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 
@@ -30,10 +30,8 @@ public class ALSExample {
             .setNumIter(10).setRank(10).setLambda(0.1);
 
         BatchOperator model = als.linkFrom(trainData);
-
-        AlsPredictBatchOp predictor = new AlsPredictBatchOp()
-            .setUserCol("userid").setItemCol("movieid").setPredictionCol("prediction_result");
-
+        AlsRateRecommBatchOp predictor = new AlsRateRecommBatchOp()
+            .setUserCol("userid").setItemCol("movieid").setRecommCol("prediction_result");
         BatchOperator preditionResult = predictor.linkFrom(model, testData).select("rating, prediction_result");
         preditionResult.print();
     }

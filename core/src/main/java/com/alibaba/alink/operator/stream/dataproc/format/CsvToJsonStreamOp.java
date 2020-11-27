@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.operator.stream.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.CsvToJsonParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class CsvToJsonStreamOp extends BaseFormatTransStreamOp<CsvToJsonStreamOp>
-    implements CsvToJsonParams<CsvToJsonStreamOp> {
+/**
+ * Transform data type from Csv to Json.
+ */
+public class CsvToJsonStreamOp extends BaseFormatTransStreamOp <CsvToJsonStreamOp>
+	implements CsvToJsonParams <CsvToJsonStreamOp> {
 
-    public CsvToJsonStreamOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 3903812781681430586L;
 
-    public CsvToJsonStreamOp(Params params) {
-        super(FormatType.CSV, FormatType.JSON, params);
-    }
+	public CsvToJsonStreamOp() {
+		this(new Params());
+	}
+
+	public CsvToJsonStreamOp(Params params) {
+		super(FormatType.CSV, FormatType.JSON, params);
+	}
 }

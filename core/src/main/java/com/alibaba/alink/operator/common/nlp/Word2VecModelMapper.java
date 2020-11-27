@@ -1,19 +1,18 @@
 package com.alibaba.alink.operator.common.nlp;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.mapper.SISOModelMapper;
-
-import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.ml.api.misc.param.Params;
-import com.alibaba.alink.params.nlp.HasPredMethod;
-import com.alibaba.alink.params.shared.delimiter.HasWordDelimiter;
+import com.alibaba.alink.params.nlp.Word2VecPredictParams;
 
 import java.util.List;
 
 public class Word2VecModelMapper extends SISOModelMapper {
+	private static final long serialVersionUID = -8885570542417759579L;
 	DocVecGenerator generator;
 
 	public Word2VecModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
@@ -37,8 +36,8 @@ public class Word2VecModelMapper extends SISOModelMapper {
 
 		generator = new DocVecGenerator(
 			word2VecModel.modelRows,
-			params.get(HasWordDelimiter.WORD_DELIMITER),
-			params.get(HasPredMethod.PRED_METHOD)
+			params.get(Word2VecPredictParams.WORD_DELIMITER),
+			params.get(Word2VecPredictParams.PRED_METHOD)
 		);
 	}
 }

@@ -1,82 +1,82 @@
 package com.alibaba.alink.operator.batch.dataproc.vector;
 
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelDataConverter;
-import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelInfo;
-import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelInfoBatchOp;
-import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.types.Row;
-
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import org.apache.flink.ml.api.misc.param.Params;
-
-import com.alibaba.alink.params.dataproc.vector.VectorStandardTrainParams;
+import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
+
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelInfo;
+import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
+import com.alibaba.alink.params.dataproc.vector.VectorStandardTrainParams;
 
 /**
  * StandardScaler transforms a dataSet, normalizing each feature to have unit standard deviation and/or zero mean.
  * If withMean is false, set mean as 0; if withStd is false, set std as 1.
  */
-public final class VectorStandardScalerTrainBatchOp extends BatchOperator<VectorStandardScalerTrainBatchOp>
-    implements VectorStandardTrainParams<VectorStandardScalerTrainBatchOp>,
-    WithModelInfoBatchOp<VectorStandardScalerModelInfo, VectorStandardScalerTrainBatchOp, VectorStandardScalerModelInfoBatchOp> {
+public final class VectorStandardScalerTrainBatchOp extends BatchOperator <VectorStandardScalerTrainBatchOp>
+	implements VectorStandardTrainParams <VectorStandardScalerTrainBatchOp>,
+	WithModelInfoBatchOp <VectorStandardScalerModelInfo, VectorStandardScalerTrainBatchOp,
+		VectorStandardScalerModelInfoBatchOp> {
 
-    public VectorStandardScalerTrainBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 6287488179034845512L;
 
-    public VectorStandardScalerTrainBatchOp(Params params) {
-        super(params);
-    }
+	public VectorStandardScalerTrainBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public VectorStandardScalerTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator<?> in = checkAndGetFirst(inputs);
-        String vectorColName = getSelectedCol();
+	public VectorStandardScalerTrainBatchOp(Params params) {
+		super(params);
+	}
 
-        VectorStandardScalerModelDataConverter converter = new VectorStandardScalerModelDataConverter();
-        converter.vectorColName = vectorColName;
+	@Override
+	public VectorStandardScalerTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
+		String vectorColName = getSelectedCol();
 
-        DataSet<Row> rows = StatisticsHelper.vectorSummary(in, vectorColName)
-            .flatMap(new BuildVectorStandardModel(vectorColName, getWithMean(), getWithStd()));
+		VectorStandardScalerModelDataConverter converter = new VectorStandardScalerModelDataConverter();
+		converter.vectorColName = vectorColName;
 
-        setOutput(rows, converter.getModelSchema());
+		DataSet <Row> rows = StatisticsHelper.vectorSummary(in, vectorColName)
+			.flatMap(new BuildVectorStandardModel(vectorColName, getWithMean(), getWithStd()));
 
-        return this;
-    }
+		setOutput(rows, converter.getModelSchema());
 
-    @Override
-    public VectorStandardScalerModelInfoBatchOp getModelInfoBatchOp() {
-        return new VectorStandardScalerModelInfoBatchOp().linkFrom(this);
-    }
+		return this;
+	}
 
-    /**
-     * table summary build model.
-     */
-    public static class BuildVectorStandardModel implements FlatMapFunction<BaseVectorSummary, Row> {
-        private String selectedColName;
-        private boolean withMean;
-        private boolean withStd;
+	@Override
+	public VectorStandardScalerModelInfoBatchOp getModelInfoBatchOp() {
+		return new VectorStandardScalerModelInfoBatchOp(this.getParams()).linkFrom(this);
+	}
 
-        public BuildVectorStandardModel(String selectedColName, boolean withMean, boolean withStd) {
-            this.selectedColName = selectedColName;
-            this.withMean = withMean;
-            this.withStd = withStd;
-        }
+	/**
+	 * table summary build model.
+	 */
+	public static class BuildVectorStandardModel implements FlatMapFunction <BaseVectorSummary, Row> {
+		private static final long serialVersionUID = 4685384519703499258L;
+		private String selectedColName;
+		private boolean withMean;
+		private boolean withStd;
 
-        @Override
-        public void flatMap(BaseVectorSummary srt, Collector<Row> collector) throws Exception {
-            if (null != srt) {
-                VectorStandardScalerModelDataConverter converter = new VectorStandardScalerModelDataConverter();
-                converter.vectorColName = selectedColName;
+		public BuildVectorStandardModel(String selectedColName, boolean withMean, boolean withStd) {
+			this.selectedColName = selectedColName;
+			this.withMean = withMean;
+			this.withStd = withStd;
+		}
 
-                converter.save(Tuple3.of(withMean, withStd, srt), collector);
-            }
-        }
-    }
-
+		@Override
+		public void flatMap(BaseVectorSummary srt, Collector <Row> collector) throws Exception {
+			if (null != srt) {
+				VectorStandardScalerModelDataConverter converter = new VectorStandardScalerModelDataConverter();
+				converter.vectorColName = selectedColName;
+				converter.save(Tuple3.of(withMean, withStd, srt), collector);
+			}
+		}
+	}
 }

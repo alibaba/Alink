@@ -10,8 +10,10 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * VectorInteraction is a Transformer which takes vector or double-valued columns, and generates a single vector column
  * that contains the product of all combinations of one value from each input column.
  */
-public class VectorInteraction extends MapTransformer<VectorInteraction>
+public class VectorInteraction extends MapTransformer <VectorInteraction>
 	implements VectorInteractionParams <VectorInteraction> {
+
+	private static final long serialVersionUID = -8658161063477052189L;
 
 	public VectorInteraction() {
 		this(null);

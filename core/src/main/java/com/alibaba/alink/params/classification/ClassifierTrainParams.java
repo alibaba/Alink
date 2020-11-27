@@ -5,7 +5,6 @@ import com.alibaba.alink.params.shared.colname.HasLabelCol;
 
 /**
  * parameters of linear classifier.
- *
  */
 public interface ClassifierTrainParams<T> extends
 	HasFeatureCols <T>,

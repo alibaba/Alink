@@ -1,17 +1,17 @@
 package com.alibaba.alink.operator.batch.recommendation;
 
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.recommendation.AlsModelDataConverter;
-import com.alibaba.alink.operator.common.recommendation.AlsTrain;
-import com.alibaba.alink.params.recommendation.AlsTrainParams;
-import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.types.Row;
-import org.apache.flink.util.Collector;
+import org.apache.flink.table.api.Table;
+
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.utils.DataSetUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.recommendation.AlsModelInfo;
+import com.alibaba.alink.operator.common.recommendation.HugeMfAlsImpl;
+import com.alibaba.alink.operator.common.utils.PackBatchOperatorUtil;
+import com.alibaba.alink.params.recommendation.AlsTrainParams;
 
 import java.util.List;
 
@@ -29,70 +29,56 @@ import java.util.List;
  * "Collaborative Filtering for Implicit Feedback Datasets, 2008"
  */
 public final class AlsTrainBatchOp
-    extends BatchOperator<AlsTrainBatchOp>
-    implements AlsTrainParams<AlsTrainBatchOp> {
+	extends BatchOperator <AlsTrainBatchOp>
+	implements AlsTrainParams <AlsTrainBatchOp>,
+	WithModelInfoBatchOp <AlsModelInfo, AlsTrainBatchOp, AlsModelInfoBatchOp> {
 
-    public AlsTrainBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 135071766504939341L;
+	private BatchOperator userFactors;
+	private BatchOperator itemFactors;
+	private DataSet <Long> sampleCount;
 
-    public AlsTrainBatchOp(Params params) {
-        super(params);
-    }
+	public AlsTrainBatchOp() {
+		this(new Params());
+	}
 
-    @Override
-    public AlsTrainBatchOp linkFrom(List<BatchOperator<?>> ins) {
-        return linkFrom(ins.get(0));
-    }
+	public AlsTrainBatchOp(Params params) {
+		super(params);
+	}
 
-    /**
-     * Matrix decomposition using ALS algorithm.
-     *
-     * @param inputs a dataset of user-item-rating tuples
-     * @return user factors and item factors.
-     */
-    @Override
-    public AlsTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator<?> in = checkAndGetFirst(inputs);
+	@Override
+	public AlsTrainBatchOp linkFrom(List <BatchOperator <?>> ins) {
+		return linkFrom(ins.get(0));
+	}
 
-        final String userColName = getUserCol();
-        final String itemColName = getItemCol();
-        final String rateColName = getRateCol();
+	@Override
+	public AlsModelInfoBatchOp getModelInfoBatchOp() {
+		return new AlsModelInfoBatchOp(new Params()).linkFrom(this);
+	}
 
-        final double lambda = getLambda();
-        final int rank = getRank();
-        final int numIter = getNumIter();
-        final boolean nonNegative = getNonnegative();
-        final boolean implicitPrefs = getImplicitPrefs();
-        final double alpha = getAlpha();
-        final int numMiniBatches = getNumBlocks();
+	/**
+	 * Matrix decomposition using ALS algorithm.
+	 *
+	 * @param inputs a dataset of user-item-rating tuples
+	 * @return user factors and item factors.
+	 */
+	@Override
+	public AlsTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
+		BatchOperator <?> in = checkAndGetFirst(inputs);
 
-        final int userColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), userColName);
-        final int itemColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), itemColName);
-        final int rateColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), rateColName);
+		final String userColName = getUserCol();
+		final String itemColName = getItemCol();
 
-        // tuple3: userId, itemId, rating
-        DataSet<Tuple3<Long, Long, Float>> alsInput = in.getDataSet()
-            .map(new MapFunction<Row, Tuple3<Long, Long, Float>>() {
-                @Override
-                public Tuple3<Long, Long, Float> map(Row value) {
-                    return new Tuple3<>(((Number) value.getField(userColIdx)).longValue(),
-                        ((Number) value.getField(itemColIdx)).longValue(),
-                        ((Number) value.getField(rateColIdx)).floatValue());
-                }
-            });
+		Tuple2 <BatchOperator, BatchOperator> factors = HugeMfAlsImpl.factorize(in, getParams(), false);
+		userFactors = factors.f0;
+		itemFactors = factors.f1;
 
-        AlsTrain als = new AlsTrain(rank, numIter, lambda, implicitPrefs, alpha, numMiniBatches, nonNegative);
-        DataSet<Tuple3<Byte, Long, float[]>> factors = als.fit(alsInput);
-
-        DataSet<Row> output = factors.mapPartition(new RichMapPartitionFunction<Tuple3<Byte, Long, float[]>, Row>() {
-            @Override
-            public void mapPartition(Iterable<Tuple3<Byte, Long, float[]>> values, Collector<Row> out) {
-                new AlsModelDataConverter(userColName, itemColName).save(values, out);
-            }
-        });
-
-        this.setOutput(output, new AlsModelDataConverter(userColName, itemColName).getModelSchema());
-        return this;
-    }
+		BatchOperator[] outputs = new BatchOperator[] {factors.f0, factors.f1,
+			in.select(new String[] {userColName, itemColName})};
+		BatchOperator model = PackBatchOperatorUtil.packBatchOps(outputs);
+		this.setOutputTable(model.getOutputTable());
+		this.setSideOutputTables(new Table[] {userFactors.getOutputTable(), itemFactors.getOutputTable()});
+		this.sampleCount = DataSetUtil.count(in.getDataSet());
+		return this;
+	}
 }

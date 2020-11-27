@@ -8,24 +8,26 @@ import com.alibaba.alink.params.sql.AsParams;
 /**
  * Rename the fields of a batch operator.
  */
-public final class AsBatchOp extends BaseSqlApiBatchOp<AsBatchOp>
-    implements AsParams<AsBatchOp> {
+public final class AsBatchOp extends BaseSqlApiBatchOp <AsBatchOp>
+	implements AsParams <AsBatchOp> {
 
-    public AsBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -6266483708473673388L;
 
-    public AsBatchOp(String clause) {
-        this(new Params().set(CLAUSE, clause));
-    }
+	public AsBatchOp() {
+		this(new Params());
+	}
 
-    public AsBatchOp(Params params) {
-        super(params);
-    }
+	public AsBatchOp(String clause) {
+		this(new Params().set(CLAUSE, clause));
+	}
 
-    @Override
-    public AsBatchOp linkFrom(BatchOperator<?>... inputs) {
-        this.setOutputTable(inputs[0].as(getClause()).getOutputTable());
-        return this;
-    }
+	public AsBatchOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public AsBatchOp linkFrom(BatchOperator <?>... inputs) {
+		this.setOutputTable(inputs[0].as(getClause()).getOutputTable());
+		return this;
+	}
 }

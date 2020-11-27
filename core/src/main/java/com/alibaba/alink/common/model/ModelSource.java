@@ -11,10 +11,10 @@ import java.util.List;
  */
 public interface ModelSource extends Serializable {
 
-    /**
-     * Get the rows that containing the model.
-     *
-     * @return the rows that containing the model.
-     */
-    List<Row> getModelRows(RuntimeContext runtimeContext);
+	/**
+	 * Get the rows that containing the model.
+	 *
+	 * @return the rows that containing the model.
+	 */
+	List <Row> getModelRows(RuntimeContext runtimeContext);
 }

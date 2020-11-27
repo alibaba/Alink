@@ -8,8 +8,8 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCol;
  */
 public interface DocHashCountVectorizerTrainParams<T> extends
 	HasSelectedCol <T>,
-	HasNumFeatures<T>,
+	HasNumFeatures <T>,
 	HasMinDF <T>,
-	HasFeatureType<T>,
-	HasMinTF<T>{
+	HasFeatureType <T>,
+	HasMinTF <T> {
 }

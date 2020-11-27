@@ -1,5 +1,7 @@
 package com.alibaba.alink.pipeline.feature;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.OneHotTrainBatchOp;
@@ -9,15 +11,24 @@ import com.alibaba.alink.pipeline.Trainer;
 
 /**
  * One hot pipeline op.
- *
  */
 public class OneHotEncoder extends Trainer <OneHotEncoder, OneHotEncoderModel> implements
 	OneHotTrainParams <OneHotEncoder>,
 	OneHotPredictParams <OneHotEncoder>,
 	HasLazyPrintModelInfo <OneHotEncoder> {
 
+	private static final long serialVersionUID = -987476648422234074L;
+
+	public OneHotEncoder() {
+		super();
+	}
+
+	public OneHotEncoder(Params params) {
+		super(params);
+	}
+
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new OneHotTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

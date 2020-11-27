@@ -8,25 +8,27 @@ import com.alibaba.alink.params.sql.GroupByParams;
 /**
  * Apply the "group by" operation on the input batch operator.
  */
-public final class GroupByBatchOp extends BaseSqlApiBatchOp<GroupByBatchOp>
-    implements GroupByParams<GroupByBatchOp> {
+public final class GroupByBatchOp extends BaseSqlApiBatchOp <GroupByBatchOp>
+	implements GroupByParams <GroupByBatchOp> {
 
-    public GroupByBatchOp() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = 8865503254860094092L;
 
-    public GroupByBatchOp(String groupByClause, String selectClause) {
-        this(new Params().set(GroupByParams.SELECT_CLAUSE, selectClause)
-            .set(GroupByParams.GROUP_BY_PREDICATE, groupByClause));
-    }
+	public GroupByBatchOp() {
+		this(new Params());
+	}
 
-    public GroupByBatchOp(Params params) {
-        super(params);
-    }
+	public GroupByBatchOp(String groupByClause, String selectClause) {
+		this(new Params().set(GroupByParams.SELECT_CLAUSE, selectClause)
+			.set(GroupByParams.GROUP_BY_PREDICATE, groupByClause));
+	}
 
-    @Override
-    public GroupByBatchOp linkFrom(BatchOperator<?>... inputs) {
-        this.setOutputTable(inputs[0].groupBy(getGroupByPredicate(), getSelectClause()).getOutputTable());
-        return this;
-    }
+	public GroupByBatchOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public GroupByBatchOp linkFrom(BatchOperator <?>... inputs) {
+		this.setOutputTable(inputs[0].groupBy(getGroupByPredicate(), getSelectClause()).getOutputTable());
+		return this;
+	}
 }

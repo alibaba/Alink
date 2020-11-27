@@ -6,6 +6,7 @@ import java.io.Serializable;
  * Tree node in the decision tree that will be serialized to json and deserialized from json.
  */
 public class Node implements Serializable {
+	private static final long serialVersionUID = 1788232094688921790L;
 	/**
 	 * featureIndex == -1 using for leaf
 	 */
@@ -33,6 +34,12 @@ public class Node implements Serializable {
 	private double continuousSplit;
 
 	/**
+	 * indicate the branchId of missing value.
+	 * weight confidence by default(== null).
+	 */
+	private int[] missingSplit;
+
+	/**
 	 * for mem read&write
 	 */
 	private transient Node[] nextNodes;
@@ -47,6 +54,7 @@ public class Node implements Serializable {
 		counter = node.counter;
 		categoricalSplit = node.categoricalSplit;
 		continuousSplit = node.continuousSplit;
+		missingSplit = node.missingSplit;
 		nextNodes = node.nextNodes;
 
 		return this;
@@ -76,6 +84,10 @@ public class Node implements Serializable {
 
 	public Node makeLeaf() {
 		featureIndex = -1;
+		gain = 0.0;
+		categoricalSplit = null;
+		continuousSplit = 0.0;
+		nextNodes = null;
 		return this;
 	}
 
@@ -117,6 +129,15 @@ public class Node implements Serializable {
 
 	public Node setContinuousSplit(double continuousSplit) {
 		this.continuousSplit = continuousSplit;
+		return this;
+	}
+
+	public int[] getMissingSplit() {
+		return missingSplit;
+	}
+
+	public Node setMissingSplit(int[] missingSplit) {
+		this.missingSplit = missingSplit;
 		return this;
 	}
 }

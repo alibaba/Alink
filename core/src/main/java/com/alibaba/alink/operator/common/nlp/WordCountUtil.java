@@ -1,14 +1,13 @@
 package com.alibaba.alink.operator.common.nlp;
 
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
-import com.alibaba.alink.operator.common.dataproc.SortUtils;
-import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
-import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.RowUtil;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.flink.api.common.functions.*;
+import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.Partitioner;
+import org.apache.flink.api.common.functions.RichGroupReduceFunction;
+import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
@@ -21,10 +20,23 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
+
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.RowUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class WordCountUtil {
 	public static final String WORD_COL_NAME = "word";
@@ -33,11 +45,12 @@ public class WordCountUtil {
 	public final static int BOUND_SIZE = 10000;
 	private final static Logger LOG = LoggerFactory.getLogger(WordCountUtil.class);
 
-	public static BatchOperator<?> splitDocAndCount(BatchOperator<?> input, String docColName, String wordDelimiter) {
+	public static BatchOperator <?> splitDocAndCount(BatchOperator <?> input, String docColName, String
+		wordDelimiter) {
 		return count(splitDoc(input, docColName, wordDelimiter), WORD_COL_NAME, COUNT_COL_NAME);
 	}
 
-	public static BatchOperator splitDoc(BatchOperator<?> input, String docColName, String wordDelimiter) {
+	public static BatchOperator splitDoc(BatchOperator <?> input, String docColName, String wordDelimiter) {
 		return input.udtf(
 			docColName,
 			new String[] {WORD_COL_NAME, COUNT_COL_NAME},
@@ -96,6 +109,8 @@ public class WordCountUtil {
 			groupType = weightedVocab
 				.groupBy(3)
 				.reduceGroup(new GroupReduceFunction <Row, Object>() {
+					private static final long serialVersionUID = -4853809045012459178L;
+
 					@Override
 					public void reduce(Iterable <Row> values, Collector <Object> out) throws Exception {
 						Object curKey = null;
@@ -107,6 +122,8 @@ public class WordCountUtil {
 					}
 				})
 				.reduceGroup(new GroupReduceFunction <Object, Tuple2 <Object, Integer>>() {
+					private static final long serialVersionUID = -58559875101303985L;
+
 					@Override
 					public void reduce(Iterable <Object> values, Collector <Tuple2 <Object, Integer>> out)
 						throws Exception {
@@ -125,6 +142,8 @@ public class WordCountUtil {
 		DataSet <Tuple2 <Integer, Row>> partitioned = sorted
 			.f0
 			.partitionCustom(new Partitioner <Integer>() {
+				private static final long serialVersionUID = -533045561688945931L;
+
 				@Override
 				public int partition(Integer key, int numPartitions) {
 					return key;
@@ -134,6 +153,7 @@ public class WordCountUtil {
 		MapPartitionOperator <Tuple2 <Integer, Row>, Tuple2 <Integer, long[]>> instSum = partitioned
 			.mapPartition(
 				new RichMapPartitionFunction <Tuple2 <Integer, Row>, Tuple2 <Integer, long[]>>() {
+					private static final long serialVersionUID = -7621048604300571469L;
 					int instId;
 					Map <Object, Integer> typeMap = new HashMap <>();
 
@@ -182,6 +202,7 @@ public class WordCountUtil {
 
 		MapPartitionOperator <Tuple2 <Integer, Row>, Tuple2 <Integer, double[]>> weightInstSum = partitioned
 			.mapPartition(new RichMapPartitionFunction <Tuple2 <Integer, Row>, Tuple2 <Integer, double[]>>() {
+				private static final long serialVersionUID = 3802056745076337899L;
 				int instId;
 				Map <Object, Integer> typeMap = new HashMap <>();
 
@@ -233,6 +254,7 @@ public class WordCountUtil {
 		 */
 		MapPartitionOperator <Tuple2 <Integer, Row>, Row> vocabWithIdAndBound = partitioned
 			.mapPartition(new RichMapPartitionFunction <Tuple2 <Integer, Row>, Row>() {
+				private static final long serialVersionUID = 1426278870328664711L;
 				int size;
 				long[] startIdx;
 				long[] totalCountIdx;
@@ -398,11 +420,15 @@ public class WordCountUtil {
 		}
 
 		DataSet <Row> vocabWithId = vocabWithIdAndBound.filter(new FilterFunction <Row>() {
+			private static final long serialVersionUID = 4919758390927280039L;
+
 			@Override
 			public boolean filter(Row value) throws Exception {
 				return (long) value.getField(3) > 0;
 			}
 		}).map(new MapFunction <Row, Row>() {
+			private static final long serialVersionUID = 7822668729101902036L;
+
 			@Override
 			public Row map(Row value) throws Exception {
 				return Row.of(value.getField(0), value.getField(1), value.getField(3));
@@ -411,6 +437,8 @@ public class WordCountUtil {
 
 		GroupReduceOperator <Tuple2 <Long, Long>, Long[]> bound = vocabWithIdAndBound
 			.filter(new FilterFunction <Row>() {
+				private static final long serialVersionUID = -521522185349475218L;
+
 				@Override
 				public boolean filter(Row value) throws Exception {
 					//System.out.println("filter: " + value.toString());
@@ -418,12 +446,15 @@ public class WordCountUtil {
 				}
 			})
 			.map(new MapFunction <Row, Tuple2 <Long, Long>>() {
+				private static final long serialVersionUID = 5866505010266569566L;
+
 				@Override
 				public Tuple2 <Long, Long> map(Row value) throws Exception {
 					return new Tuple2 <Long, Long>(-(Long) value.getField(3) - 1L, (Long) value.getField(1));
 				}
 			})
 			.reduceGroup(new RichGroupReduceFunction <Tuple2 <Long, Long>, Long[]>() {
+				private static final long serialVersionUID = -3606835686371262547L;
 				int size;
 
 				@Override
@@ -466,6 +497,7 @@ public class WordCountUtil {
 		if (hasGroupType) {
 			typeStart = groupType
 				.reduceGroup(new RichGroupReduceFunction <Tuple2 <Object, Integer>, long[]>() {
+					private static final long serialVersionUID = -3498925783458257192L;
 					long[] startIdx;
 					int size;
 
@@ -579,7 +611,8 @@ public class WordCountUtil {
 			types[i] = coltypes[appendIdxs[i - transColSize]];
 		}
 
-		return new TableSourceBatchOp(DataSetConversionUtil.toTable(in.getMLEnvironmentId(), contentMapping, names, types))
+		return new TableSourceBatchOp(
+			DataSetConversionUtil.toTable(in.getMLEnvironmentId(), contentMapping, names, types))
 			.setMLEnvironmentId(in.getMLEnvironmentId());
 	}
 
@@ -652,12 +685,15 @@ public class WordCountUtil {
 														 final int field) {
 		return partitioned
 			.partitionCustom(new Partitioner <Integer>() {
+				private static final long serialVersionUID = -6835474886524807584L;
+
 				@Override
 				public int partition(Integer key, int numPartitions) {
 					return key % numPartitions;
 				}
 			}, 0)
 			.mapPartition(new RichMapPartitionFunction <Tuple2 <Integer, Row>, Tuple2 <Long, Row>>() {
+				private static final long serialVersionUID = 9152306255552921122L;
 				transient long startIdx;
 
 				@Override
@@ -696,6 +732,7 @@ public class WordCountUtil {
 
 	private static class RandomIndexMapper implements MapFunction <Tuple2 <Long, Row>, Row> {
 
+		private static final long serialVersionUID = -7478698242309473099L;
 		private final long startIndex;
 
 		public RandomIndexMapper(long startIndex) {
@@ -711,6 +748,7 @@ public class WordCountUtil {
 
 	public static final class GenContentMapping extends RichMapFunction <Row, Row> {
 
+		private static final long serialVersionUID = -2148000211178502657L;
 		private final boolean isWord;
 		private final String wordDelimiter;
 		private final int transColSize;
@@ -776,6 +814,7 @@ public class WordCountUtil {
 	}
 
 	public static class WordSpliter implements FlatMapFunction <Row, String[]> {
+		private static final long serialVersionUID = -699577713738103461L;
 		private String wordDelimiter;
 
 		public WordSpliter(String wordDelimiter) {

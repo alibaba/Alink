@@ -1,18 +1,23 @@
-
 package com.alibaba.alink.pipeline.dataproc.format;
+
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.CsvToJsonParams;
-import org.apache.flink.ml.api.misc.param.Params;
 
-public class CsvToJson extends BaseFormatTrans<CsvToJson> implements CsvToJsonParams<CsvToJson> {
+/**
+ * Transform data type from Csv to Json.
+ */
+public class CsvToJson extends BaseFormatTrans <CsvToJson> implements CsvToJsonParams <CsvToJson> {
 
-    public CsvToJson() {
-        this(new Params());
-    }
+	private static final long serialVersionUID = -2643594277411636335L;
 
-    public CsvToJson(Params params) {
-        super(FormatType.CSV, FormatType.JSON, params);
-    }
+	public CsvToJson() {
+		this(new Params());
+	}
+
+	public CsvToJson(Params params) {
+		super(FormatType.CSV, FormatType.JSON, params);
+	}
 }
 

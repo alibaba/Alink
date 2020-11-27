@@ -7,5 +7,7 @@ import java.util.Map;
 
 abstract class FormatReader implements Serializable {
 
-    abstract boolean read(Row row, Map<String, String> out);
+	private static final long serialVersionUID = -4343216325093436420L;
+
+	abstract boolean read(Row row, Map <String, String> out);
 }

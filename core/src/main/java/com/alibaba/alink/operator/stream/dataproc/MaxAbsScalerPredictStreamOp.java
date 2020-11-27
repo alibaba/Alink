@@ -2,10 +2,10 @@ package com.alibaba.alink.operator.stream.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.dataproc.MaxAbsScalerModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.MaxAbsScalerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
-import com.alibaba.alink.params.dataproc.MaxAbsScalerTrainParams;
+import com.alibaba.alink.params.dataproc.MaxAbsScalerPredictParams;
 
 /**
  * MaxAbsScaler transforms a dataset of Vector rows,rescaling each feature to range
@@ -13,7 +13,9 @@ import com.alibaba.alink.params.dataproc.MaxAbsScalerTrainParams;
  * MaxAbsPredict will scale the dataset with model which trained from MaxAbsTrain.
  */
 public class MaxAbsScalerPredictStreamOp extends ModelMapStreamOp <MaxAbsScalerPredictStreamOp>
-	implements MaxAbsScalerTrainParams <MaxAbsScalerPredictStreamOp> {
+	implements MaxAbsScalerPredictParams <MaxAbsScalerPredictStreamOp> {
+
+	private static final long serialVersionUID = -766923466534304512L;
 
 	public MaxAbsScalerPredictStreamOp(BatchOperator srt) {
 		this(srt, new Params());

@@ -20,6 +20,7 @@ public class ComContext {
 
 	/**
 	 * Get task Id, the same as {@link IterationRuntimeContext#getIndexOfThisSubtask()}.
+	 *
 	 * @return task id
 	 */
 	public int getTaskId() {
@@ -37,6 +38,7 @@ public class ComContext {
 
 	/**
 	 * Get current iteration step number, the same as {@link IterationRuntimeContext#getSuperstepNumber()}.
+	 *
 	 * @return iteration step number.
 	 */
 	public int getStepNo() {

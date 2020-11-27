@@ -1,8 +1,9 @@
 package com.alibaba.alink.pipeline.nlp;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.nlp.DocCountVectorizerTrainBatchOp;
-import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.params.nlp.DocCountVectorizerPredictParams;
 import com.alibaba.alink.params.nlp.DocCountVectorizerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -16,6 +17,8 @@ public class DocCountVectorizer extends Trainer <DocCountVectorizer, DocCountVec
 	implements DocCountVectorizerPredictParams <DocCountVectorizer>,
 	DocCountVectorizerTrainParams <DocCountVectorizer> {
 
+	private static final long serialVersionUID = 5303002668526060793L;
+
 	public DocCountVectorizer() {
 		super();
 	}
@@ -25,7 +28,7 @@ public class DocCountVectorizer extends Trainer <DocCountVectorizer, DocCountVec
 	}
 
 	@Override
-	protected BatchOperator train(BatchOperator in) {
+	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new DocCountVectorizerTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 }

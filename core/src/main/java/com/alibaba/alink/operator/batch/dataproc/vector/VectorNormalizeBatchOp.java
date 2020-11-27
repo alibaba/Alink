@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.operator.common.dataproc.vector.VectorNormalizeMapper;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorNormalizeMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorNormalizeParams;
 
 /**
@@ -13,6 +13,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorNormalizeParams;
  */
 public final class VectorNormalizeBatchOp extends MapBatchOp <VectorNormalizeBatchOp>
 	implements VectorNormalizeParams <VectorNormalizeBatchOp> {
+
+	private static final long serialVersionUID = 3450553790138432523L;
 
 	public VectorNormalizeBatchOp() {
 		this(null);

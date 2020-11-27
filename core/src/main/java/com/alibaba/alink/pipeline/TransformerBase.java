@@ -1,5 +1,12 @@
 package com.alibaba.alink.pipeline;
 
+import org.apache.flink.ml.api.core.Transformer;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
+import org.apache.flink.util.Preconditions;
+
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo;
 import com.alibaba.alink.common.lazy.LazyObjectsManager;
@@ -7,12 +14,6 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
-import org.apache.flink.ml.api.core.Transformer;
-import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.Table;
-import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.apache.flink.util.Preconditions;
 
 /**
  * The base class for transformer implementations.
@@ -20,16 +21,18 @@ import org.apache.flink.util.Preconditions;
  * @param <T> The class type of the {@link TransformerBase} implementation itself, used by {@link
  *            org.apache.flink.ml.api.misc.param.WithParams}
  */
-public abstract class TransformerBase<T extends TransformerBase<T>>
-	extends PipelineStageBase<T> implements Transformer<T>, HasLazyPrintTransformInfo<T> {
+public abstract class TransformerBase<T extends TransformerBase <T>>
+	extends PipelineStageBase <T> implements Transformer <T>, HasLazyPrintTransformInfo <T> {
 
-    public TransformerBase() {
-        super();
-    }
+	private static final long serialVersionUID = 4778337757277469411L;
 
-    public TransformerBase(Params params) {
-        super(params);
-    }
+	public TransformerBase() {
+		super();
+	}
+
+	public TransformerBase(Params params) {
+		super(params);
+	}
 
 	@Override
 	public Table transform(TableEnvironment tEnv, Table input) {
@@ -50,47 +53,50 @@ public abstract class TransformerBase<T extends TransformerBase<T>>
 		Preconditions.checkArgument(input != null, "Input CAN NOT BE null!");
 		if (tableEnvOf(input) instanceof StreamTableEnvironment) {
 			TableSourceStreamOp source = new TableSourceStreamOp(input);
-			if(this.params.contains(ML_ENVIRONMENT_ID)){
+			if (this.params.contains(ML_ENVIRONMENT_ID)) {
 				source.setMLEnvironmentId(this.params.get(ML_ENVIRONMENT_ID));
 			}
 			return transform(source).getOutputTable();
 		} else {
 			TableSourceBatchOp source = new TableSourceBatchOp(input);
-			if(this.params.contains(ML_ENVIRONMENT_ID)){
+			if (this.params.contains(ML_ENVIRONMENT_ID)) {
 				source.setMLEnvironmentId(this.params.get(ML_ENVIRONMENT_ID));
 			}
 			return transform(source).getOutputTable();
 		}
 	}
 
-	protected BatchOperator postProcessTransformResult(BatchOperator output) {
-		LazyObjectsManager lazyObjectsManager = MLEnvironmentFactory.get(output.getMLEnvironmentId()).getLazyObjectsManager();
-		lazyObjectsManager.genLazyTransformResult(this).addValue(output);
-		if (get(LAZY_PRINT_TRANSFORM_DATA_ENABLED)) {
-			output.lazyPrint(get(LAZY_PRINT_TRANSFORM_DATA_NUM), get(LAZY_PRINT_TRANSFORM_DATA_TITLE));
-		}
-		if (get(LAZY_PRINT_TRANSFORM_STAT_ENABLED)) {
-			output.lazyPrintStatistics(get(LAZY_PRINT_TRANSFORM_STAT_TITLE));
+	protected BatchOperator <?> postProcessTransformResult(BatchOperator <?> output) {
+		LazyObjectsManager lazyObjectsManager = MLEnvironmentFactory.get(output.getMLEnvironmentId())
+			.getLazyObjectsManager();
+		if (get(LAZY_PRINT_TRANSFORM_DATA_ENABLED) || get(LAZY_PRINT_TRANSFORM_STAT_ENABLED)) {
+			lazyObjectsManager.genLazyTransformResult(this).addValue(output);
+			if (get(LAZY_PRINT_TRANSFORM_DATA_ENABLED)) {
+				output.lazyPrint(get(LAZY_PRINT_TRANSFORM_DATA_NUM), get(LAZY_PRINT_TRANSFORM_DATA_TITLE));
+			}
+			if (get(LAZY_PRINT_TRANSFORM_STAT_ENABLED)) {
+				output.lazyPrintStatistics(get(LAZY_PRINT_TRANSFORM_STAT_TITLE));
+			}
 		}
 		return output;
 	}
 
-    /**
-     * Applies the transformer on the input batch data from BatchOperator, and returns the batch result data with
-     * BatchOperator.
-     *
-     * @param input the input batch data from BatchOperator
-     * @return the transformed batch result data
-     */
-    public abstract BatchOperator transform(BatchOperator input);
+	/**
+	 * Applies the transformer on the input batch data from BatchOperator, and returns the batch result data with
+	 * BatchOperator.
+	 *
+	 * @param input the input batch data from BatchOperator
+	 * @return the transformed batch result data
+	 */
+	public abstract BatchOperator <?> transform(BatchOperator <?> input);
 
-    /**
-     * Applies the transformer on the input streaming data from StreamOperator, and returns the streaming result data
-     * with StreamOperator.
-     *
-     * @param input the input streaming data from StreamOperator
-     * @return the transformed streaming result data
-     */
-    public abstract StreamOperator transform(StreamOperator input);
+	/**
+	 * Applies the transformer on the input streaming data from StreamOperator, and returns the streaming result data
+	 * with StreamOperator.
+	 *
+	 * @param input the input streaming data from StreamOperator
+	 * @return the transformed streaming result data
+	 */
+	public abstract StreamOperator <?> transform(StreamOperator <?> input);
 
 }

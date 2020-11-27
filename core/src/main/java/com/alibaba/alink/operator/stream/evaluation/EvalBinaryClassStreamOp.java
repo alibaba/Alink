@@ -1,7 +1,8 @@
 package com.alibaba.alink.operator.stream.evaluation;
 
-import com.alibaba.alink.operator.common.evaluation.BaseEvalClassStreamOp;
 import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.operator.common.evaluation.BaseEvalClassStreamOp;
 import com.alibaba.alink.params.evaluation.EvalBinaryClassStreamParams;
 
 /**
@@ -11,8 +12,10 @@ import com.alibaba.alink.params.evaluation.EvalBinaryClassStreamParams;
  * PositiveValue is optional, if given, it will placed at the first position in the output label Array.
  * If not given, the labels are sorted in descending order.
  */
-public class EvalBinaryClassStreamOp extends BaseEvalClassStreamOp<EvalBinaryClassStreamOp> implements
-	EvalBinaryClassStreamParams<EvalBinaryClassStreamOp> {
+public class EvalBinaryClassStreamOp extends BaseEvalClassStreamOp <EvalBinaryClassStreamOp> implements
+	EvalBinaryClassStreamParams <EvalBinaryClassStreamOp> {
+
+	private static final long serialVersionUID = 3233575135152494606L;
 
 	public EvalBinaryClassStreamOp() {
 		this(null);

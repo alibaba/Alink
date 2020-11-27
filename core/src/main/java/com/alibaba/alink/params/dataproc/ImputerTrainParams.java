@@ -6,7 +6,7 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCols;
  * Parameter of imputer train.
  */
 public interface ImputerTrainParams<T>
-		extends HasStrategy<T>,
-		HasSelectedCols<T>,
-		HasImputerFillValue<T> {
+	extends HasStrategy <T>,
+	HasSelectedCols <T>,
+	HasImputerFillValue <T> {
 }

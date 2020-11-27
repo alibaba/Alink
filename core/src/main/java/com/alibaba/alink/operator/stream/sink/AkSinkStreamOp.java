@@ -12,9 +12,14 @@ import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.AkSinkParams;
 
+/**
+ * Sink stream op data to a file system with ak format.
+ */
 @IoOpAnnotation(name = "alink_file", ioType = IOType.SinkStream)
-public final class AkSinkStreamOp extends BaseSinkStreamOp<AkSinkStreamOp>
-	implements AkSinkParams<AkSinkStreamOp> {
+public final class AkSinkStreamOp extends BaseSinkStreamOp <AkSinkStreamOp>
+	implements AkSinkParams <AkSinkStreamOp> {
+
+	private static final long serialVersionUID = -8082608225204145645L;
 
 	public AkSinkStreamOp() {
 		this(new Params());
@@ -25,10 +30,10 @@ public final class AkSinkStreamOp extends BaseSinkStreamOp<AkSinkStreamOp>
 	}
 
 	@Override
-	public AkSinkStreamOp sinkFrom(StreamOperator in) {
+	public AkSinkStreamOp sinkFrom(StreamOperator<?> in) {
 		in.getDataStream()
 			.addSink(
-				new OutputFormatSinkFunction<>(
+				new OutputFormatSinkFunction <>(
 					new AkUtils.AkOutputFormat(
 						getFilePath(),
 						new AkUtils.AkMeta(CsvUtil.schema2SchemaStr(in.getSchema())),
