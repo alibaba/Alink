@@ -34,7 +34,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-jdbc_${alink.scala.major.version}</artifactId>
+            <artifactId>flink-connector-jdbc_${alink.scala.major.version}</artifactId>
             <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>

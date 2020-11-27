@@ -50,6 +50,12 @@
             <version>${flink.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-clients_${alink.scala.major.version}</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
         <!-- Add scope as `provided` ends here. -->
     </dependencies>
 

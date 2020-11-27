@@ -18,8 +18,8 @@
 
 package com.alibaba.alink.common.io.plugin;
 
-import org.apache.flink.core.plugin.TemporaryClassLoaderContext;
 import org.apache.flink.util.ChildFirstClassLoader;
+import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -79,7 +79,7 @@ public class PluginLoader {
 	 * @return An iterator of all implementations of the given service interface that could be loaded from the plugin.
 	 */
 	public <P> Iterator<P> load(Class<P> service) {
-		try (TemporaryClassLoaderContext classLoaderContext = new TemporaryClassLoaderContext(pluginClassLoader)) {
+		try (TemporaryClassLoaderContext classLoaderContext = TemporaryClassLoaderContext.of(pluginClassLoader)) {
 			return new ContextClassLoaderSettingIterator<>(
 				ServiceLoader.load(service, pluginClassLoader).iterator(),
 				pluginClassLoader);
@@ -109,7 +109,7 @@ public class PluginLoader {
 
 		@Override
 		public P next() {
-			try (TemporaryClassLoaderContext classLoaderContext = new TemporaryClassLoaderContext(pluginClassLoader)) {
+			try (TemporaryClassLoaderContext classLoaderContext = TemporaryClassLoaderContext.of(pluginClassLoader)) {
 				return delegate.next();
 			}
 		}

@@ -33,7 +33,7 @@ public class SqlQueryBatchTest extends AlinkTestBase {
 		public void eval(Object... values) {
 			long counter = 0;
 			for (Object value : values) {
-				collector.collect(Row.of(counter, value));
+				collect(Row.of(counter, value));
 				counter += 1;
 			}
 		}

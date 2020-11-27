@@ -4,9 +4,9 @@ import org.apache.flink.api.common.io.OutputFormat;
 import org.apache.flink.api.common.io.RichInputFormat;
 import org.apache.flink.api.java.io.jdbc.JDBCInputFormat;
 import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat;
-import org.apache.flink.api.java.io.jdbc.dialect.JDBCDialect;
-import org.apache.flink.api.java.io.jdbc.dialect.JDBCDialects;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
+import org.apache.flink.connector.jdbc.dialect.JdbcDialect;
+import org.apache.flink.connector.jdbc.dialect.JdbcDialects;
 import org.apache.flink.core.io.InputSplit;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.DataTypes;
@@ -61,7 +61,7 @@ import java.util.List;
 
 public class MySqlCatalog extends JdbcCatalog {
 
-	private static final JDBCDialect MYSQL_DIALECT = JDBCDialects
+	private static final JdbcDialect MYSQL_DIALECT = JdbcDialects
 		.get("jdbc:mysql:")
 		.orElseThrow(
 			() -> new IllegalArgumentException("Could not find the mysql dialect.")

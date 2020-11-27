@@ -2,7 +2,7 @@ package com.alibaba.alink.operator.common.nlp;
 
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.table.api.Table;
-import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;

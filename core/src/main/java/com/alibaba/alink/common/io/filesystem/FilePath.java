@@ -24,7 +24,7 @@ public final class FilePath implements Serializable {
 
 	private static final long serialVersionUID = -4190125972918364361L;
 
-	private final Path path;
+	private Path path;
 	private BaseFileSystem <?> fileSystem;
 
 	public FilePath(String path) {
@@ -51,6 +51,11 @@ public final class FilePath implements Serializable {
 	}
 
 	public String getPathStr() {
+		if (null != fileSystem && !fileSystem.isDistributedFS()) {
+			if (!path.isAbsolute()) {
+				path = new Path(fileSystem.getWorkingDirectory(), path);
+			}
+		}
 		return path.toString();
 	}
 

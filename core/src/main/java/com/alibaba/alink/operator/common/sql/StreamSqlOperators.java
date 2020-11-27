@@ -1,6 +1,6 @@
 package com.alibaba.alink.operator.common.sql;
 
-import org.apache.flink.table.api.java.StreamTableEnvironment;
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;

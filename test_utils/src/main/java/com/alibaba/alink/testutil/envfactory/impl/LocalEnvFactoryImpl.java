@@ -11,8 +11,9 @@ import org.apache.flink.runtime.testutils.MiniClusterResource;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.util.TestStreamEnvironment;
-import org.apache.flink.table.api.java.BatchTableEnvironment;
-import org.apache.flink.table.api.java.StreamTableEnvironment;
+import org.apache.flink.table.api.EnvironmentSettings;
+import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.test.util.TestEnvironment;
 
 @EnvTypeAnnotation(name = "local")
@@ -43,7 +44,13 @@ public class LocalEnvFactoryImpl implements BaseEnvFactory {
         ExecutionEnvironment benv = ExecutionEnvironment.getExecutionEnvironment();
         StreamExecutionEnvironment senv = StreamExecutionEnvironment.getExecutionEnvironment();
         BatchTableEnvironment btenv = BatchTableEnvironment.create(benv);
-        StreamTableEnvironment stenv = StreamTableEnvironment.create(senv);
+        StreamTableEnvironment stenv = StreamTableEnvironment.create(
+            senv,
+            EnvironmentSettings
+                .newInstance()
+                .useOldPlanner()
+                .build()
+        );;
         return makeMlEnv(benv, btenv, senv, stenv);
     }
 

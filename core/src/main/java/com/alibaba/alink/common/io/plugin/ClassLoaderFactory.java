@@ -1,6 +1,6 @@
 package com.alibaba.alink.common.io.plugin;
 
-import org.apache.flink.core.plugin.TemporaryClassLoaderContext;
+import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import java.io.Serializable;
 import java.security.PrivilegedExceptionAction;
@@ -49,7 +49,7 @@ public abstract class ClassLoaderFactory implements Serializable {
 
 		ClassLoader classLoader = create();
 
-		try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(classLoader)) {
+		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
 			return action.run();
 		}
 	}

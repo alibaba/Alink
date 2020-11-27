@@ -215,7 +215,7 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 				new ListStateDescriptor("StreamingKMeansModelState",
 					TypeInformation.of(new TypeHint <Tuple2 <String, List <String>>>() {}));
 
-			modelState = context.getOperatorStateStore().getOperatorState(descriptor);
+			modelState = context.getOperatorStateStore().getListState(descriptor);
 
 			if (context.isRestored()) {
 				for (Tuple2 <String, List <String>> state : modelState.get()) {

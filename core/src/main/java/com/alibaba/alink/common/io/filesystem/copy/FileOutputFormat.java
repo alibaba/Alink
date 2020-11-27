@@ -29,7 +29,7 @@ import org.apache.flink.core.fs.FSDataOutputStream;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
-import org.apache.flink.core.plugin.TemporaryClassLoaderContext;
+import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FileSystemUtils;
@@ -267,7 +267,7 @@ public abstract class FileOutputFormat<IT> extends RichOutputFormat <IT>
 			"/" + getDirectoryFileName(taskNumber)) : p;
 
 		// create output file
-		try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(fs.getClass().getClassLoader())) {
+		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(fs.getClass().getClassLoader())) {
 			this.stream = fs.create(this.actualFilePath, writeMode);
 		}
 

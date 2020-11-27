@@ -5,9 +5,9 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.FileSystemFactory;
 import org.apache.flink.core.fs.Path;
-import org.apache.flink.core.plugin.TemporaryClassLoaderContext;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.FileUtils;
+import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
@@ -103,13 +103,13 @@ public final class HadoopFileSystem extends BaseFileSystem <HadoopFileSystem> {
 			factory.configure(configuration);
 
 			if (getParams().get(HadoopFileSystemParams.FS_URI) != null) {
-				try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(factory.getClassLoader())) {
+				try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(factory.getClassLoader())) {
 					loaded = factory.create(new Path(getParams().get(HadoopFileSystemParams.FS_URI)).toUri());
 				}
 
 				return loaded;
 			} else if (path != null) {
-				try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(factory.getClassLoader())) {
+				try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(factory.getClassLoader())) {
 					loaded = factory.create(path.toUri());
 				}
 				return loaded;

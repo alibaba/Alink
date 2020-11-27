@@ -496,7 +496,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 					TypeInformation.of(new TypeHint <Tuple2 <double[], Object[]>>() {
 					}));
 
-			modelState = context.getOperatorStateStore().getOperatorState(descriptor);
+			modelState = context.getOperatorStateStore().getListState(descriptor);
 
 			int numWorkers = getRuntimeContext().getNumberOfParallelSubtasks();
 			int workerId = getRuntimeContext().getIndexOfThisSubtask();
