@@ -4,15 +4,14 @@ A data sources that reads from text lines.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| filePath | File path | String | ✓ |  |
+| filePath | File path with file system. | String | ✓ |  |
 | ignoreFirstLine | Whether to ignore first line of csv file. | Boolean |  | false |
 | textCol | Text Column Name | String |  | "text" |
-
 
 ## Script Example
 #### Code
 ```python
-URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv"
+URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv"
 data = TextSourceBatchOp().setFilePath(URL).setTextCol("text")
 data.print()
 ```

@@ -8,18 +8,21 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |<!-- This is the end of auto-generated parameter info -->
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+
 
 
 ## 脚本示例
-#### 运行脚本
-```python
+### 脚本代码
+``` python
+import numpy as np
+import pandas as pd
+from pyalink.alink import *
 data = np.array([
     [2, 1, 1],
     [3, 2, 1],
@@ -41,7 +44,7 @@ model = batchData.link(ridge)
 predictor = RidgeRegPredictBatchOp().setPredictionCol("pred")
 predictor.linkFrom(model, batchData).print()
 ```
-#### 运行结果
+### 运行结果
 f0 | f1 | label | pred
 ---|----|-------|-----
  2 |  1     | 1 | 0.830304

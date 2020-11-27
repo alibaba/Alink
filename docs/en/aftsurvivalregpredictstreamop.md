@@ -12,7 +12,7 @@ Accelerated Failure Time Survival Regression.
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | vectorCol | Name of a vector column | String |  | null |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 #### Code
@@ -24,7 +24,7 @@ data = np.array([[1.218, 1.0, "1.560,-0.605"],\
 [4.199, 0.0, "0.795,-0.226"]])
 df = pd.DataFrame({"label":data[:,0], "censor":data[:,1],"features":data[:,2]})
 data = dataframeToOperator(df, schemaStr="label double, censor double, features string",op_type="batch")
-dataStream = dataframeToOperator(df, schemaStr="label double, feature double",op_type="stream")
+dataStream = dataframeToOperator(df, schemaStr="label double, censor double, features string",op_type="stream")
 trainOp = AftSurvivalRegTrainBatchOp()\
 				.setVectorCol("features")\
 					.setLabelCol("label")\

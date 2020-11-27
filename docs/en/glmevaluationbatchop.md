@@ -4,9 +4,9 @@ Generalized Linear Model. https://en.wikipedia.org/wiki/Generalized_linear_model
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| family | the name of family which is a description of the error distribution. Supported options: gaussian, binomial, poisson, gamma and tweedie | String |  | "gaussian" |
+| family | the name of family which is a description of the error distribution. Supported options: Gaussian, Binomial, Poisson, Gamma and Tweedie | String |  | "Gaussian" |
 | variancePower | The power in the variance function of the Tweedie distribution. It describe the relationship between the variance and mean of the distribution | Double |  | 0.0 |
-| link | The name of link functionSupported options: cloglog, identity, inverse, log, logit, power, probit and sqrt | String |  | null |
+| link | The name of link functionSupported options: CLogLog, Identity, Inverse, log, logit, power, probit and sqrt | String |  | null |
 | linkPower | Param for the index in the power link function.  | Double |  | 1.0 |
 | offsetCol | The col name of offset | String |  | null |
 | fitIntercept | Sets if we should fit the intercept | Boolean |  | true |
@@ -16,7 +16,6 @@ Generalized Linear Model. https://en.wikipedia.org/wiki/Generalized_linear_model
 | maxIter | Maximum iterations, The default value is 10 | Integer |  | 10 |
 | featureCols | Names of the feature columns used for training in the input table | String[] | ✓ |  |
 | labelCol | Name of the label column in the input table | String | ✓ |  |
-
 
 ## Script Example
 #### Code
@@ -89,7 +88,6 @@ eval.print()
 6 | 4.0943 |  21.0 | 13.0 |    1.0 |     2.0|  1.367991
 7 | 4.3820 |  19.0 | 12.0 |    1.0 |     2.0 | 1.383571
 8 | 4.6052 |  18.0 | 12.0 |    1.0  |    2.0 | 1.375774
-
 
 
 

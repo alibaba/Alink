@@ -4,14 +4,14 @@ Map string to index.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "keep" |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
+| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "KEEP" |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array([
     ["football"],
@@ -38,7 +38,7 @@ model = stringindexer.linkFrom(data)
 predictor.linkFrom(model, data).print()
 ```
 
-#### Results
+### Results
 
 ```
            f0  f0_indexed
@@ -49,4 +49,3 @@ predictor.linkFrom(model, data).print()
 4  basketball           1
 5      tennis           0
 ```
-

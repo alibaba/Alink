@@ -1,5 +1,5 @@
 ## Description
-Extract all words from the dataset.Record the document frequency(DF), word count(WC) and inverse document
+Extract all words from the dataset.Record the document frequency(DF), word count(WC) and Inverse document
  frequency(IDF) of every word as a model.
 
 ## Parameters
@@ -12,10 +12,8 @@ Extract all words from the dataset.Record the document frequency(DF), word count
 | vocabSize | The maximum word number of the dictionary. If the total numbers of words are above this value,the words with lower document frequency will be filtered | Integer |  | 262144 |
 | minTF | When the number word in this document in is below minTF, the word will be ignored. It could be an exact count or a fraction of the document token count. When minTF is within [0, 1), it's used as a fraction. | Double |  | 1.0 |
 
-
 ## Script Example
 #### Code
-
 ```
 import numpy as np
 import pandas as pd
@@ -32,7 +30,7 @@ inOp2 = StreamOperator.fromDataframe(df, schemaStr='id int, text string')
 segment = SegmentBatchOp().setSelectedCol("text").linkFrom(inOp1)
 train = DocCountVectorizerTrainBatchOp().setSelectedCol("text").linkFrom(segment)
 predictBatch = DocCountVectorizerPredictBatchOp().setSelectedCol("text").linkFrom(train, segment)
-[model,predict] = collectToDataframes(kmeans, predictBatch)
+[model,predict] = collectToDataframes(train, predictBatch)
 print(model)
 print(predict)
 
@@ -96,3 +94,8 @@ rowID   id                                               text
 3   3               $37$0:1.0 8:1.0 22:1.0 29:1.0 30:1.0
 4   4  $37$0:1.0 3:1.0 4:1.0 10:1.0 12:1.0 14:1.0 17:...
 ```
+
+
+
+
+

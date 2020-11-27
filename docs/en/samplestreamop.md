@@ -7,10 +7,9 @@ Sample with given ratio with or without replacement.
 | ratio | sampling ratio, it should be in range of [0, 1] | Double | ✓ |  |
 | withReplacement | Indicates whether to enable sampling with replacement, default is without replcement | Boolean |  | false |
 
-
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([
@@ -44,13 +43,12 @@ data.link(sampleOp).print()
 StreamOperator.execute()
 ```
 
-#### Result
+### Results
 
 |features|
 |---|
 |10.9189774 10.7821363|
-|10.0745650 8.0106483"|
-
+|10.0745650 8.0106483|
 
 
 

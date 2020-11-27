@@ -3,15 +3,14 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | numFeatures | 向量维度 | 生成向量长度 | Integer |  | 262144 |
 | minDF | 最小文档词频 | 如果一个词出现的文档次数小于minDF, 这个词不会被包含在字典中。minTF可以是具体的词频也可以是整体词频的比例，如果minDF在[0,1)区间，会被认为是比例。 | Double |  | 1.0 |
 | featureType | 特征类型 | 生成特征向量的类型，支持IDF/WORD_COUNT/TF_IDF/Binary/TF | String |  | "WORD_COUNT" |
-| minTF | 最低词频 | 最低词频，如果词频小于minTF,这个词会被忽略掉。minTF可以是具体的词频也可以是整体词频的比例，如果minTF在[0,1)区间，会被认为是比例。 | Double |  | 1.0 |<!-- This is the end of auto-generated parameter info -->
+| minTF | 最低词频 | 最低词频，如果词频小于minTF,这个词会被忽略掉。minTF可以是具体的词频也可以是整体词频的比例，如果minTF在[0,1)区间，会被认为是比例。 | Double |  | 1.0 |
+
 
 ## 脚本示例
 #### 脚本代码

@@ -4,18 +4,17 @@ StringIndexer训练组件的作用是训练一个模型用于将单列字符串�
 
 ## 参数说明
 
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | modelName | 模型名字 | 模型名字 | String |  |  |
-| handleInvalid | 未知token处理策略 | 未知token处理策略。"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常 | String |  | "keep" |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| stringOrderType | Token排序方法 | Token排序方法 | String |  | "random" |
+| stringOrderType | Token排序方法 | Token排序方法 | String |  | "RANDOM" |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |<!-- This is the end of auto-generated parameter info -->
+| handleInvalid | 未知token处理策略 | 未知token处理策略。"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常 | String |  | "KEEP" |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+
 
 
 ## 脚本示例

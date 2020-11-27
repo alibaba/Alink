@@ -7,11 +7,10 @@ Transform data type from Triple to Kv.
 | handleInvalid | Strategy to handle unseen token | String |  | "ERROR" |
 | tripleColumnCol | Name of the triple column col | String | ✓ |  |
 | tripleValueCol | Name of the triple value column | String | ✓ |  |
-| reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | kvCol | Name of the KV column | String | ✓ |  |
 | kvColDelimiter | Delimiter used between key-value pairs when data in the input table is in sparse format | String |  | "," |
 | kvValDelimiter | Delimiter used between keys and values when data in the input table is in sparse format | String |  | ":" |
-| tripleRowCol | Name of the triple row column | String |  |  |
+| tripleRowCol | Name of the triple row column | String |  | null |
 
 ## Script Example
 ### Code
@@ -26,8 +25,8 @@ data = dataframeToOperator(df, schemaStr="row double, col string, val double",op
 
 
 op = TripleToKvBatchOp()\
-    .setTripleRowCol("row").setTripleColCol("col").setTripleValCol("val")\
-    .setReservedCols(["row"]).setKvCol("kv")\
+    .setTripleRowCol("row").setTripleColumnCol("col").setTripleValueCol("val")\
+    .setKvCol("kv")\
     .linkFrom(data)
 op.print()
 ```

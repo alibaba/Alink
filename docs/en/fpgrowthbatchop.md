@@ -14,10 +14,15 @@ FpGrowth computes frequent itemsets given a set of transactions.
 | maxConsequentLength | Maximum consequent length | Integer |  | 1 |
 | minLift | Minimum lift | Double |  | 1.0 |
 
-
 ## Script Example
-#### Code
+### Code
 ```python
+from pyalink.alink import *
+import pandas as pd
+import numpy as np
+
+useLocalEnv(1, config=None)
+
 data = np.array([
     ["A,B,C,D"],
     ["B,C,E"],
@@ -41,9 +46,11 @@ fpGrowth.linkFrom(data)
 
 fpGrowth.print()
 fpGrowth.getSideOutput(0).print()
+resetEnv()
+
 ```
 
-#### Results
+### Results
 
 Output
 
@@ -102,7 +109,6 @@ Output
 25      E=>B          2  1.000000              0.6            1.000000                  3
 26    C,E=>B          3  1.000000              0.4            1.000000                  2
 ```
-
 
 
 

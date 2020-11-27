@@ -4,10 +4,10 @@ Bisecting KMeans prediction based on the model fitted by BisectingKMeansTrainBat
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
 
 ## Script Example
 #### Code
@@ -60,7 +60,6 @@ rowId   id          vec  pred
 4   4  9.1 9.1 9.1     1
 5   5  9.2 9.2 9.2     1
 ```
-
 
 
 

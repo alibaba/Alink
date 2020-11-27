@@ -21,10 +21,10 @@ Gradient Boosting(often abbreviated to GBDT or GBM) is a popular supervised lear
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| vectorCol | Name of a vector column | String |  | null |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | predictionCol | Column name of prediction. | String | ✓ |  |
-| predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
 
 ## Script Example
 #### Script
@@ -89,6 +89,7 @@ trainOp = (
     .setMinSamplesPerLeaf(1)
     .setLabelCol('label')
     .setFeatureCols(['f0', 'f1', 'f2', 'f3'])
+    .linkFrom(batchSource())
 )
 
 predictBatchOp = (
@@ -99,7 +100,7 @@ predictBatchOp = (
 (
     predictBatchOp
     .linkFrom(
-        batchSource().link(trainOp),
+        trainOp,
         batchSource()
     )
     .print()
@@ -107,7 +108,7 @@ predictBatchOp = (
 
 predictStreamOp = (
     GbdtRegPredictStreamOp(
-        batchSource().link(trainOp)
+        trainOp
     )
     .setPredictionCol('pred')
 )
@@ -131,4 +132,3 @@ Batch prediction
 2  3.0  C   2   2      1   1.0
 3  4.0  D   3   3      1   1.0
 ```
-

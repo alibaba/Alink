@@ -5,15 +5,22 @@ MinMaxScaler transforms a dataset of Vector rows, rescaling each feature
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | min | Lower bound after transformation. | Double |  | 0.0 |
 | max | Upper bound after transformation. | Double |  | 1.0 |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | outputCols | Names of the output columns | String[] |  | null |
-
 
 ## Script Example
 
-#### Script
+### Code
 
 
 ```
@@ -48,7 +55,7 @@ model.transform(sinOp).print()
 StreamOperator.execute()
 ```
 
-#### Results
+### Results
 
 ```
   col1      col2      col3

@@ -9,7 +9,6 @@ Segment Chinese document into words.
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 #### Code
 ```python
@@ -42,7 +41,6 @@ BatchOperator.collectToDataframe(segment.linkFrom(inOp))
 4	4	二手郁达夫文集（ 国内版 ）全十二册馆藏书	二手 郁达夫 文集 （ 国内 版 ） 全 十二册 馆藏 书
 
 ```
-
 
 
 

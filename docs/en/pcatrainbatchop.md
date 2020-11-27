@@ -6,17 +6,14 @@ PCA is dimension reduction of discrete feature, projects vectors to a low-dimens
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| k | the value of K. | Integer | ✓ |  |
-| calculationType | compute type, be CORR, COV_SAMPLE, COVAR_POP. | String |  | "CORR" |
 | selectedCols | Names of the columns used for processing | String[] |  | null |
 | vectorCol | Name of a vector column | String |  | null |
-| withMean | Centers the data with mean before scaling. | Boolean |  | true |
-| withStd | Scales the data to unit standard deviation. true by default | Boolean |  | true |
-
+| k | the value of K. | Integer | ✓ |  |
+| calculationType | compute type, be CORR, COV. | String |  | "CORR" |
 
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([
@@ -60,7 +57,7 @@ predictStreamOp.print()
 
 StreamOperator.execute()
 ```
-#### Result
+### Results
 
 x1|x2|x3|pred
 ---|---|---|----
@@ -70,7 +67,6 @@ x1|x2|x3|pred
 9.1|9.1|9.6|3.182618319978973,0.027469531992220464
 0.1|0.2|0.1|0.045855205015063565,-0.012182917696915518
 0.0|0.0|0.0|0.0,0.0
-
 
 
 

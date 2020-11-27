@@ -4,26 +4,25 @@ The random forest use the bagging to prevent the overfitting.
  In the operator, we implement three type of decision tree to
  increase diversity of the forest.
  <ul>
-     <tr>id3</tr>
-     <tr>cart</tr>
-     <tr>c4.5</tr>
+ <tr>id3</tr>
+ <tr>cart</tr>
+ <tr>c4.5</tr>
  </ul>
  and the criteria is
  <ul>
-     <tr>information</tr>
-     <tr>gini</tr>
-     <tr>information ratio</tr>
-     <tr>mse</tr>
+ <tr>information</tr>
+ <tr>gini</tr>
+ <tr>information ratio</tr>
+ <tr>mse</tr>
  </ul>
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| featureSubsamplingRatio | Ratio of the features used in each tree, in range (0, 1]. | Double |  | 0.2 |
 | numSubsetFeatures | The number of features to consider for splits at each tree node. | Integer |  | 2147483647 |
 | numTrees | Number of decision trees. | Integer |  | 10 |
 | subsamplingRatio | Ratio of the training samples used for learning each decision tree. | Double |  | 100000.0 |
-| treeType | treeType | String |  | "avg" |
+| seed | seed | Long |  | 0 |
 | maxDepth | depth of the tree | Integer |  | 2147483647 |
 | minSamplesPerLeaf | Minimal number of sample in one leaf. | Integer |  | 2 |
 | createTreeMode | series or parallel | String |  | "series" |
@@ -36,7 +35,6 @@ The random forest use the bagging to prevent the overfitting.
 | maxLeaves | max leaves of tree | Integer |  | 2147483647 |
 | minSampleRatioPerChild | Minimal value of: (num of samples in child)/(num of samples in its parent). | Double |  | 0.0 |
 | minInfoGain | minimum info gain when performing split | Double |  | 0.0 |
-
 
 ## Script Example
 
@@ -116,6 +114,12 @@ predictBatchOp = (
     .print()
 )
 
+trainOp = (
+    RandomForestRegTrainBatchOp()
+    .setLabelCol('label')
+    .setFeatureCols(['f0', 'f1', 'f2', 'f3'])
+)
+
 predictStreamOp = (
     RandomForestRegPredictStreamOp(
         batchSource().link(trainOp)
@@ -153,3 +157,6 @@ f0	f1	f2	f3	label	pred
 ```
 
 
+## 备注
+
+- 该组件支持在可视化大屏直接查看模型信息

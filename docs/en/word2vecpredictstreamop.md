@@ -17,8 +17,8 @@ Word2vec is a group of related models that are used to produce word embeddings.
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | outputCol | Name of the output column | String |  | null |
 | wordDelimiter | Delimiter of words | String |  | " " |
-| predMethod | Method to predict doc vector, support 3 method: avg, min and max, default value is avg. | String |  | "avg" |
-
+| predMethod | Method to predict doc vector, support 3 method: avg, min and max, default value is avg. | String |  | "AVG" |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 #### Code
@@ -59,4 +59,3 @@ rowID word                                                vec
 rowID    tokens
 0  0.7346309627024759 0.5270851926937304 0.201858...
 ```
-

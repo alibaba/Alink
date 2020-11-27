@@ -5,36 +5,63 @@ Make stream prediction based on the multilayer perceptron model fitted by Multil
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | vectorCol | Name of a vector column | String |  | null |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
-#### Code
+### Code
 ```python
-URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-data = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
+from pyalink.alink import *
+import pandas as pd
+import numpy as np
 
-classifier = MultilayerPerceptronClassifier()\
-            .setFeatureCols(Iris.getFeatureColNames())\
-            .setLabelCol(Iris.getLabelColName())\
-            .setLayers([4, 5, 3])\
-            .setMaxIter(100)\
-            .setPredictionCol("pred_label")\
-            .setPredictionDetailCol("pred_detail")
+useLocalEnv(1, config=None)
 
-classifier.fit(data).transform(Iris.getStreamData()).print();
+data = {
+  'f1': np.random.rand(12),
+  'f2': np.random.rand(12),
+  'label': np.random.randint(low=0, high=3, size=12)
+}
+
+df_data = pd.DataFrame(data)
+schema = 'f1 double, f2 double, label bigint'
+train_data = dataframeToOperator(df_data, schemaStr=schema, op_type='batch')
+test_data = dataframeToOperator(df_data, schemaStr=schema, op_type='stream')
+
+mlpc = MultilayerPerceptronTrainBatchOp() \
+  .setFeatureCols(["f1", "f2"]) \
+  .setLabelCol("label") \
+  .setLayers([2, 8, 3]) \
+  .setMaxIter(10)
+
+model = mlpc.linkFrom(train_data)
+
+predictor = MultilayerPerceptronPredictStreamOp(model)\
+  .setPredictionCol('p')
+
+predictor.linkFrom(test_data).print()
+StreamOperator.execute()
+
+resetEnv()
+
 ```
 
-#### Results
+### Results
 
 ```
-6.3000|3.3000|6.0000|2.5000|Iris-virginica|Iris-virginica|{"Iris-virginica":0.9433614954932688,"Iris-versicolor":0.056638504506731226,"Iris-setosa":3.008568854761749E-175}
-5.6000|2.8000|4.9000|2.0000|Iris-virginica|Iris-virginica|{"Iris-virginica":0.9433614954932688,"Iris-versicolor":0.056638504506731226,"Iris-setosa":3.008568854761749E-175}
-5.0000|3.3000|1.4000|0.2000|Iris-setosa|Iris-setosa|{"Iris-virginica":8.4E-323,"Iris-versicolor":4.0138401486628416E-173,"Iris-setosa":1.0}
-5.8000|2.7000|5.1000|1.9000|Iris-virginica|Iris-virginica|{"Iris-virginica":0.9433614954932688,"Iris-versicolor":0.056638504506731226,"Iris-setosa":3.008568854761749E-175}
-7.0000|3.2000|4.7000|1.4000|Iris-versicolor|Iris-versicolor|{"Iris-virginica":5.31328185381337E-80,"Iris-versicolor":1.0,"Iris-setosa":6.407249280059006E-44}
+['f1', 'f2', 'label', 'p']
+[0.32157748818958753, 0.49787124043277453, 0, 1]
+[0.9988915548832964, 0.8030743157012032, 2, 0]
+[0.33727230130595953, 0.81275648997722, 2, 1]
+[0.7680458610932143, 0.9917353120756056, 1, 1]
+[0.47095782127772334, 0.39421675200119843, 0, 0]
+[0.8019966973978703, 0.13171211349239198, 2, 2]
+[0.43242357294095524, 0.5696606829395613, 1, 1]
+[0.7475103692009955, 0.7353101866795212, 0, 1]
+[0.24565789099075186, 0.4938085074750497, 1, 1]
+[0.08361045521633703, 0.5737040509691121, 1, 1]
+[0.22910529416272918, 0.5867291811070908, 0, 1]
+[0.16013950289548107, 0.8000181963308167, 1, 1]
 ```
-

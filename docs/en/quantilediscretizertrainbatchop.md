@@ -7,8 +7,7 @@ Fit a quantile discretizer model.
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | numBuckets | number of buckets | Integer |  | 2 |
 | numBucketsArray | Array of num bucket | Integer[] |  | null |
-| leftOpen | left open | Boolean | | true |
-
+| leftOpen | indicating if the intervals should be opened on the left. | Boolean |  | true |
 
 ## Script Example
 
@@ -72,6 +71,7 @@ trainOp = (
     QuantileDiscretizerTrainBatchOp()
     .setSelectedCols(['f_double'])
     .setNumBuckets(8)
+    .linkFrom(batchSource())
 )
 
 predictBatchOp = (
@@ -82,7 +82,7 @@ predictBatchOp = (
 (
     predictBatchOp
     .linkFrom(
-        batchSource().link(trainOp),
+        trainOp,
         batchSource()
     )
     .print()
@@ -90,7 +90,7 @@ predictBatchOp = (
 
 predictStreamOp = (
     QuantileDiscretizerPredictStreamOp(
-        batchSource().link(trainOp)
+        trainOp
     )
     .setSelectedCols(['f_double'])
 )
@@ -123,4 +123,3 @@ f_string	f_long	f_int	f_double	f_boolean
 2	c	1	2	0	True
 3	c	0	0	1	False
 ```
-

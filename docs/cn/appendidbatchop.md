@@ -6,12 +6,11 @@
 ## 参数说明
 
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | appendType | append类型 | append类型，"UNIQUE"和"DENSE"，分别为稀疏和稠密，稀疏的为非连续唯一id，稠密的为连续唯一id | String |  | "DENSE" |
-| idCol | ID列名 | ID列名 | String |  | "append_id" |<!-- This is the end of auto-generated parameter info -->
+| idCol | ID列名 | ID列名 | String |  | "append_id" |
+
 
 
 ## 脚本示例

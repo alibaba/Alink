@@ -2,10 +2,6 @@
 写CSV文件。支持写到本地、hdfs。
 
 ## 参数说明
-
-
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | filePath | 文件路径 | 文件路径 | String | ✓ |  |
@@ -13,15 +9,14 @@
 | rowDelimiter | 行分隔符 | 行分隔符 | String |  | "\n" |
 | quoteChar | 引号字符 | 引号字符 | Character |  | "\"" |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  | false |
-| numFiles | 文件数目 | 文件数目 | Integer |  | 1 |<!-- This is the end of auto-generated parameter info -->
-
+| numFiles | 文件数目 | 文件数目 | Integer |  | 1 |
 
 ## 脚本示例
 
 #### batch sink
 
 ```python
-filePath = 'https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv'
+filePath = 'http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv'
 schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
 csvSource = CsvSourceBatchOp()\
     .setFilePath(filePath)\
@@ -39,7 +34,7 @@ BatchOperator.execute()
 #### stream sink
 
 ```python
-filePath = 'https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv'
+filePath = 'http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv'
 schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
 csvSource = CsvSourceStreamOp()\
     .setFilePath(filePath)\

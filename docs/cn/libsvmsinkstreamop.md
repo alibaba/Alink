@@ -1,30 +1,42 @@
 ## 功能介绍
 
-按libsvm格式写出到文件
+写出LibSvm格式文件，支持写出到本地文件和HDFS文件。
 
 ## 参数说明
 
 
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | filePath | 文件路径 | 文件路径 | String | ✓ |  |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  | false |
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |<!-- This is the end of auto-generated parameter info -->
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
+| startIndex | 起始索引 | 起始索引 | Integer |  | 1 |
+
 
 
 ## 脚本示例
-#### 运行脚本
-```
-URL = "http://alink-testdata.cn-hangzhou.oss.aliyun-inc.com/csv/iris_vec.csv";
-SCHEMA_STR = "features string, label double"
-data = CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 
-LibSvmSinkStreamOp().setFilePath('/tmp/libsvm.csv') \
-    .setLabelCol("label").setVectorCol("features").setOverwriteSink(True).linkFrom(data)
+### 脚本代码
+
+```python
+from pyalink.alink import *
+import pandas as pd
+
+useLocalEnv(1, config=None)
+
+data = {
+  'f1': ['1:2.0 2:1.0 4:0.5','1:2.0 2:1.0 4:0.5','1:2.0 2:1.0 4:0.5'],
+  'f2': [1.5, 1.7, 3.6]
+}
+df_data = pd.DataFrame(data)
+schema = 'f1 string, f2  double'
+stream_data = dataframeToOperator(df_data, schemaStr=schema, op_type='stream')
+
+sink = LibSvmSinkStreamOp().setFilePath('/tmp/abc.svm').setLabelCol("f2").setVectorCol("f1").setOverwriteSink(True)
+stream_data = stream_data.link(sink)
+
 StreamOperator.execute()
+resetEnv()
 
 ```

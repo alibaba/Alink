@@ -1,14 +1,15 @@
 ## Description
-Grid search is an approach to parameter tuning that will methodically build and evaluate a model for each combination
+Grid search implemented by Train-Validation.
+
+ Grid search is an approach to parameter tuning that will methodically build and evaluate a model for each combination
  of algorithm parameters specified in a grid.
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | trainRatio | Ratio for training set and the validation set, range in (0, 1]. | Double |  | 0.8 |
-| ParamGrid       | grid of the parameters                               | ParamGrid       |    ✓        | ---    |
-| Estimator       | the estimator to be tuned                      | Estimator       |        ✓    | ---    |
-| TuningEvaluator | the evaluator to be used as metric                   | TuningEvaluator |     ✓       | ---    |
+| lazyPrintTrainInfoEnabled | Enable lazyPrint of TrainInfo | Boolean |  | false |
+| lazyPrintTrainInfoTitle | Title of TrainInfo in lazyPrint | String |  | null |
 
 ## Script Example
 
@@ -359,4 +360,3 @@ com.alibaba.alink.pipeline.tuning.GridSearchTVSplit
   "metric" : 0.9129786771786127
 } ]
 ```
-

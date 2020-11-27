@@ -8,9 +8,8 @@ Stochastic Outlier Selection algorithm.
 | vectorCol | Name of a vector column | String | ✓ |  |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 
-
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array([
   ["0.0,0.0"],
@@ -31,7 +30,7 @@ output = sos.linkFrom(data)
 output.print()
 ```
 
-#### Results
+### Results
 
 features|outlier_score
 --------|-------------
@@ -40,5 +39,4 @@ features|outlier_score
 0.0,1.0|0.24136320497783578
 1.0,0.0|0.24136320497783578
 5.0,5.0|0.9998106220648153
-
 

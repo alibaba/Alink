@@ -25,7 +25,7 @@ data = dataframeToOperator(df, schemaStr="row string, json string, vec string, k
 
 op = JsonToTripleStreamOp()\
     .setJsonCol("json")\
-    .setReservedCols(["row"]).setTripleColValSchemaStr("col string, val double")\
+    .setReservedCols(["row"]).setTripleColumnValueSchemaStr("col string, val double")\
     .linkFrom(data)
 op.print()
 StreamOperator.execute()

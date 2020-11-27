@@ -9,7 +9,6 @@ Binarize a continuous variable using a threshold.
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 #### Code
 ```python
@@ -45,4 +44,3 @@ rowID   double   bool  number str
 2     0.0   True       1   B
 3     1.0   True       1   A
 ```
-

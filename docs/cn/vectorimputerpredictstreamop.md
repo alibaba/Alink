@@ -5,16 +5,15 @@
 
 
 ## 参数说明
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |<!-- This is the end of auto-generated parameter info -->
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 
 
 ## 脚本示例
 
-#### 运行脚本
+### 运行脚本
 ``` python
 data = np.array([["1:3,2:4,4:7", 1],\
     ["1:3,2:NaN", 3],\
@@ -28,7 +27,7 @@ model = data.link(vecFill)
 VectorImputerPredictStreamOp(model).setOutputCol("vec1").linkFrom(dataStream).print()
 StreamOperator.execute()
 ```
-#### 运行结果
+### 运行结果
 
 
 | vec         | id   | vec1              |

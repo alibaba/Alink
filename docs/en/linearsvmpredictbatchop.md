@@ -4,15 +4,19 @@ Linear svm predict batch operator. this operator predict data's label with linea
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | vectorCol | Name of a vector column | String |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
-#### Script
+### Code
 ```python
+import numpy as np
+import pandas as pd
+from pyalink.alink import *
+
 import numpy as np
 import pandas as pd
 data = np.array([
@@ -37,7 +41,7 @@ model = input.link(svm)
 predictor = LinearSvmPredictBatchOp().setPredictionCol("pred")
 predictor.linkFrom(model, dataTest).print()
 ```
-#### Result
+### Result
 f0 | f1 | label | pred 
 ---|----|-------|-----
 2|1|1|1
@@ -48,7 +52,6 @@ f0 | f1 | label | pred
 4|3|2|2
 1|2|1|1
 5|3|2|2
-
 
 
 

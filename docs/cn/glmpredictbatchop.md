@@ -6,12 +6,12 @@
 ## 参数说明
 
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | linkPredResultCol | 连接函数结果的列名 | 连接函数结果的列名 | String |  | null |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |<!-- This is the end of auto-generated parameter info -->
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+
 
 
 ## 脚本示例

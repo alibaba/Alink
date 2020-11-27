@@ -9,10 +9,9 @@ StandardScaler transforms a dataSet, normalizing each feature to have unit stand
 | withMean | Centers the data with mean before scaling. | Boolean |  | true |
 | withStd | Scales the data to unit standard deviation. true by default | Boolean |  | true |
 
-
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([["a", "10.0, 100"],\
@@ -28,7 +27,7 @@ trainOp = VectorStandardScalerTrainBatchOp().setSelectedCol("vector")
 model = trainOp.linkFrom(data)
 VectorStandardScalerPredictBatchOp().linkFrom(model, data).collectToDataframe()
 ```
-#### Result
+### Results
 
 col1|vec
 ----|---
@@ -39,6 +38,5 @@ a|-0.20280511721213143,-0.6520885789229323
 c|1.237090541689495,-0.6520885789229323
 b|-0.25924323851581327,-0.4814485769617911
 d|-1.6687491397923802,1.4595814453461897
-
 
 

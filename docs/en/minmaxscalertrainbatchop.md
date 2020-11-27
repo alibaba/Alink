@@ -10,10 +10,9 @@ MinMaxScaler transforms a dataSet of rows, rescaling each feature
 | min | Lower bound after transformation. | Double |  | 0.0 |
 | max | Upper bound after transformation. | Double |  | 1.0 |
 
-
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([
@@ -53,7 +52,7 @@ predictStreamOp.linkFrom(sinOp).print()
 StreamOperator.execute()
 ```
 
-#### Results
+### Results
 
 ```
   col1      col2      col3
@@ -65,7 +64,6 @@ StreamOperator.execute()
 5    b  0.486554  0.080808
 6    c  1.000000  0.000000
 ```
-
 
 
 

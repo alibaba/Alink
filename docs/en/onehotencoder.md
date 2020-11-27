@@ -4,57 +4,63 @@ One hot pipeline op.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| discreteThresholdsArray | discrete thresholds array | Integer[] |  | |
-| discreteThresholds | discrete thresholds array | Integer |  | Integer.MIN_VALUE |
-| selectedCols | Names of the columns used for processing | String[] |  |  |
-| handleInvalid |  Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String | | "keep" |
-| encode | Encode method，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   |INDEX |
-| dropLast | drop last | Boolean |  | true |
-| selectedCols | Names of the columns used for processing | String[] |  |  |
-| outputCols | Names of the output columns | String[] |  | null |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| selectedCols | Names of the columns used for processing | String[] | ✓ |  |
+| discreteThresholds | discreteThreshold | Integer |  | -2147483648 |
+| discreteThresholdsArray | discreteThreshold | Integer[] |  | null |
+| selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
+| outputCols | Names of the output columns | String[] |  | null |
+| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "KEEP" |
+| encode | encode type: INDEX, VECTOR, ASSEMBLED_VECTOR. | String |  | "ASSEMBLED_VECTOR" |
+| dropLast | drop last | Boolean |  | true |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
-#### Script
+#### Code
 ```python
-import numpy as np
-import pandas as pd
 data = np.array([
-    [1.1, True, "2", "A"],
-    [1.1, False, "2", "B"],
-    [1.1, True, "1", "B"],
-    [2.2, True, "1", "A"]
+    ["a", 1],
+    ["b", 1],
+    ["c", 1],
+    ["e", 2],
+    ["a", 2],
+    ["b", 1],
+    ["c", 2],
+    ["d", 2],
+    [None, 1]
 ])
-df = pd.DataFrame({"double": data[:, 0], "bool": data[:, 1], "number": data[:, 2], "str": data[:, 3]})
 
-inOp1 = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
-inOp2 = StreamOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
+# load data
+df = pd.DataFrame({"query": data[:, 0], "label": data[:, 1]})
 
-onehot = OneHotTrainBatchOp().setSelectedCols(["double", "bool", "number", "str"]).setDiscreteThresholds(2)
-predictBatch = OneHotPredictBatchOp().setSelectedCols(["double", "bool"]).setEncode("ASSEMBLED_VECTOR").setOutputCols(["pred"]).setDropLast(False)
-onehot.linkFrom(inOp1)
-predictBatch.linkFrom(onehot, inOp1)
-[model,predict] = collectToDataframes(onehot, predictBatch)
-print(model)
-print(predict)
+inOp = dataframeToOperator(df, schemaStr='query string, weight long', op_type='batch')
 
-predictStream = OneHotPredictStreamOp(onehot).setSelectedCols(["double", "bool"]).setEncode("ASSEMBLED_VECTOR").setOutputCols(["vec"])
-predictStream.linkFrom(inOp2)
-predictStream.print(refreshInterval=-1)
-StreamOperator.execute()
+# one hot train
+one_hot = OneHotEncoder().setSelectedCols(["query"]).setOutputCols(["output"])
+one_hot.fit(inOp).transform(inOp).print()
 ```
 
-#### Result
-
+#### Results
 ```python
-   double   bool  number str            pred
-0     1.1   True       2   A  $6$0:1.0 3:1.0
-1     1.1  False       2   B  $6$0:1.0 5:1.0
-2     1.1   True       1   B  $6$0:1.0 3:1.0
-3     2.2   True       1   A  $6$2:1.0 3:1.0
-
+  query  weight    output
+0     a       1       $5$
+1     b       1  $5$0:1.0
+2     c       1  $5$1:1.0
+3     e       2  $5$3:1.0
+4     a       2       $5$
+5     b       1  $5$0:1.0
+6     c       2  $5$1:1.0
+7     d       2  $5$2:1.0
+8   NaN       1  $5$4:1.0
 ```
+
 
 
 

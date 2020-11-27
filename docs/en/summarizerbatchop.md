@@ -6,7 +6,6 @@ It is summary of table, support count, mean, variance, min, max, sum.
 | --- | --- | --- | --- | --- |
 | selectedCols | Names of the columns used for processing | String[] |  | null |
 
-
 ## Script Example
 
 #### Script

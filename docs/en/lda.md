@@ -7,22 +7,29 @@ Latent Dirichlet Allocation (LDA), a topic model designed for text documents.
 | topicNum | Number of topic. | Integer | ✓ |  |
 | alpha | alpha.Concentration parameter (commonly named "alpha") for the prior placed on documents' distributions over topics ("beta"). | Double |  | -1.0 |
 | beta | Concentration parameter (commonly named "beta" or "eta") for the prior placed on topics' distributions over terms. | Double |  | -1.0 |
-| method | optimizer: em, online | String |  | "em" |
+| method | optimizer: em, online | String |  | "EM" |
 | onlineLearningOffset | (For online optimizer) A (positive) learning parameter that downweights early iterations. Larger values make early iterations count less. | Double |  | 1024.0 |
 | learningDecay | (For online optimizer)  Learning rate, set as an exponential decay rate. This should be between (0.5, 1.0] to guarantee asymptotic convergence. | Double |  | 0.51 |
 | subsamplingRate | For online optimizer Fraction of the corpus to be sampled and used in each iteration of mini-batchgradient descent, in range (0, 1]. | Double |  | 0.05 |
 | optimizeDocConcentration | (For online optimizer only, currently) Indicates whether the docConcentration(Dirichlet parameter for document-topic distribution) will be optimized during training. | Boolean |  | true |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | numIter | Number of iterations, The default value is 10 | Integer |  | 10 |
 | vocabSize | The maximum word number of the dictionary. If the total numbers of words are above this value,the words with lower document frequency will be filtered | Integer |  | 262144 |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
+| randomSeed | Random seed, it should be positive integer | Integer |  | 0 |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array(["a b b c c c c c c e e f f f g h k k k", \
 "a b b b d e e e h h k", \
@@ -50,8 +57,8 @@ model = pipeline.fit(data)
 model.transform(data).collectToDataframe()
 ```
 
-#### Results
-##### Model
+## Results
+### Model
 
 | model_id   | model_info |
 | --- | --- |
@@ -70,7 +77,7 @@ model.transform(data).collectToDataframe()
 | 12582912   | {"f0":"i","f1":0.7731898882334817,"f2":10} |
 
 
-##### Prediction
+### Prediction
 
 | doc        | pred       |
 | --- | --- |
@@ -86,4 +93,3 @@ model.transform(data).collectToDataframe()
 | a b c d d d d d d d d d e e f g g j k k k | 3          |
 | a a b b b b b b b b c c e e e g g i i j j j j j j j k k | 3          |
 | a a a a b e e e e f f f f f g h h h j | 0          |
-

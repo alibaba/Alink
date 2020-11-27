@@ -1,11 +1,14 @@
 ## 功能介绍
 二分类评估是对二分类算法的预测结果进行效果评估。
 
-支持Roc曲线，LiftChart曲线，Recall-Precision曲线绘制。
+支持Roc曲线，LiftChart曲线，K-S曲线，Recall-Precision曲线绘制。
 
-流式的实验支持累计统计和窗口统计。
+流式的实验支持累计统计和窗口统计，除却上述四条曲线外，还给出Auc/Kappa/Accuracy/Logloss随时间的变化曲线。
 
 给出整体的评估指标包括：AUC、K-S、PRC, 不同阈值下的Precision、Recall、F-Measure、Sensitivity、Accuracy、Specificity和Kappa。
+
+#### 混淆矩阵
+<div align=center><img src="https://img.alicdn.com/tfs/TB1lCMOaW67gK0jSZFHXXa9jVXa-1582-688.jpg" height="50%" width="50%"></div>
 
 #### Roc曲线
 
@@ -16,6 +19,16 @@
 #### AUC
 
 Roc曲线下面的面积
+
+#### K-S
+
+横坐标：阈值
+
+纵坐标：TPR和FPR
+
+#### KS
+
+K-S曲线两条纵轴的最大差值
 
 #### Recall-Precision曲线
 
@@ -60,15 +73,14 @@ Recall-Precision曲线下面的面积
 <div align=center><img src="http://latex.codecogs.com/gif.latex?logloss=- \dfrac{1}{N}\sum_{i=1}^N \sum_{j=1}^My_{i,j}log(p_{i,j})" ></div>
 
 ## 参数说明
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| positiveLabelValueString | 正样本 | 正样本对应的字符串格式。 | String |  | null |
-| timeInterval | 时间间隔 | 流式数据统计的时间间隔 | Integer |  | 3 |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |<!-- This is the end of auto-generated parameter info -->
+| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String | ✓ |  |
+| timeInterval | 时间间隔 | 流式数据统计的时间间隔 | Double |  | 3.0 |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
+| positiveLabelValueString | 正样本 | 正样本对应的字符串格式。 | String |  | null |
+
 
 
 ## 脚本示例
@@ -100,7 +112,16 @@ EvalBinaryClassStreamOp().setLabelCol("label").setPredictionDetailCol("detailInp
 StreamOperator.execute()
 ```
 
-
+### 脚本运行结果
+```
+AUC: 0.8333333333333333
+KS: 0.6666666666666666
+PRC: 0.9027777777777777
+Accuracy: 0.6
+Macro Precision: 0.3
+Micro Recall: 0.6
+Weighted Sensitivity: 0.6
+```
 
 
 

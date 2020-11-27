@@ -1,22 +1,20 @@
 ## Description
-Calculate the evaluation data for multi classifiction.
-
- You can either give label column and predResult column or give label column and predDetail column.
- Once predDetail column is given, the predResult column is ignored.
-
- The labels are sorted in descending order in the output label array and confusion matrix..
+Multi classification evaluation.
+ 
+ Calculate the evaluation metrics for multi classification.
+ 
+ You can either give label column and predResult column or give label column and predDetail column. Once predDetail
+ column is given, the predResult column is ignored.
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| predictionCol | Column name of prediction. | String |  |  |
 | labelCol | Name of the label column in the input table | String | ✓ |  |
-| predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
-
 
 ## Script Example
 #### Code
-
 ```
 import numpy as np
 import pandas as pd
@@ -51,7 +49,6 @@ Macro Precision: 0.3
 Micro Recall: 0.6
 Weighted Sensitivity: 0.6
 ```
-
 
 
 

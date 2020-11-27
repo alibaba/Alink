@@ -6,15 +6,22 @@ The transformer normalizes the value of the vector to [0,1] using the following 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | min | Lower bound after transformation. | Double |  | 0.0 |
 | max | Upper bound after transformation. | Double |  | 1.0 |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([["a", "10.0, 100"],\
@@ -30,7 +37,7 @@ res = VectorMinMaxScaler()\
            .setSelectedCol("vec")
 res.fit(data).transform(data).collectToDataframe()
 ```
-#### Result
+### Results
 
 col1|vec
 ----|---

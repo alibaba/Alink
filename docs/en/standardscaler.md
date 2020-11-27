@@ -4,15 +4,22 @@ StandardScaler transforms a dataset, normalizing each feature to have unit stand
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | withMean | Centers the data with mean before scaling. | Boolean |  | true |
 | withStd | Scales the data to unit standard deviation. true by default | Boolean |  | true |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | outputCols | Names of the output columns | String[] |  | null |
-
 
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([
@@ -47,7 +54,7 @@ StreamOperator.execute()
 
 ```
 
-#### Result
+### Results
 
 ```
   col1      col2      col3
@@ -59,4 +66,3 @@ StreamOperator.execute()
 5    b -0.254902 -0.481449
 6    c  1.237091 -0.652089
 ```
-

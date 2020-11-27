@@ -4,20 +4,18 @@
 
 ## 参数说明
 
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
 | withMean | 是否使用均值 | 是否使用均值，默认使用 | Boolean |  | true |
 | withStd | 是否使用标准差 | 是否使用标准差，默认使用 | Boolean |  | true |
-| outputCols | 输出结果列列名数组 | 输出结果列列名数组，可选，默认null | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| outputCols | 输出结果列列名数组 | 输出结果列列名数组，可选，默认null | String[] |  | null |
 
 
 ## 脚本示例
 
-#### 脚本
+### 脚本代码
 
 ```python
 data = np.array([
@@ -52,7 +50,7 @@ StreamOperator.execute()
 
 ```
 
-#### 结果
+### 脚本运行结果
 
 ```
   col1      col2      col3

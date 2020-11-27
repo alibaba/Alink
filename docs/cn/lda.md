@@ -1,17 +1,16 @@
+# LDA算法
+
 ## 功能介绍
 
 LDA是一种文档主题生成模型。LDA是一种非监督机器学习技术，可以用来识别大规模文档集（document collection）或语料库（corpus）中潜藏的主题信息。它采用了词袋（bag of words）的方法，这种方法将每一篇文档视为一个词频向量，从而将文本信息转化为了易于建模的数字信息。但是词袋方法没有考虑词与词之间的顺序，这简化了问题的复杂性，同时也为模型的改进提供了契机。每一篇文档代表了一些主题所构成的一个概率分布，而每一个主题又代表了很多单词所构成的一个概率分布。
 
 ## 参数说明
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | topicNum | 主题个数 | 主题个数 | Integer | ✓ |  |
 | alpha | 文章的超参 | 文章的超参 | Double |  | -1.0 |
 | beta | 词的超参 | 词的超参 | Double |  | -1.0 |
-| method | 优化方法 | 优化方法, 包含"em"和"online"两种。 | String |  | "em" |
+| method | 优化方法 | 优化方法, 包含"em"和"online"两种。 | String |  | "EM" |
 | onlineLearningOffset | 偏移量 | 偏移量 | Double |  | 1024.0 |
 | learningDecay | 衰减率 | 衰减率 | Double |  | 0.51 |
 | subsamplingRate | 采样率 | 采样率 | Double |  | 0.05 |
@@ -19,13 +18,15 @@ LDA是一种文档主题生成模型。LDA是一种非监督机器学习技术�
 | numIter | 迭代次数 | 迭代次数，默认为10 | Integer |  | 10 |
 | vocabSize | 字典库大小 | 字典库大小，如果总词数目大于这个值，那个文档频率低的词会被过滤掉。 | Integer |  | 262144 |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  | 0 |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+
 
 ## 脚本示例
-#### 脚本代码
+### 脚本代码
 ```python
 data = np.array(["a b b c c c c c c e e f f f g h k k k", \
 "a b b b d e e e h h k", \
@@ -45,17 +46,16 @@ data = dataframeToOperator(df, schemaStr="doc string",op_type="batch")
 
 op = Lda()\
     .setSelectedCol("doc")\
-    .setTopicNum(5)\
+    .setTopicNum(6)\
     .setMethod("online")\
-    .setSubsamplingRate(1.0)
     .setPredictionCol("pred")
 pipeline = Pipeline().add(op)
 model = pipeline.fit(data)
 model.transform(data).collectToDataframe()
 ```
 
-#### 脚本运行结果
-##### 模型结果
+## 脚本运行结果
+### 模型结果
 
 | model_id   | model_info |
 | --- | --- |
@@ -74,7 +74,7 @@ model.transform(data).collectToDataframe()
 | 12582912   | {"f0":"i","f1":0.7731898882334817,"f2":10} |
 
 
-##### 预测结果
+### 预测结果
 
 | doc        | pred       |
 | --- | --- |

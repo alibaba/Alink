@@ -5,8 +5,9 @@ Linear svm train batch operator. it uses hinge loss func by setting LinearModelT
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| C | the penalty item parameter. | Double |  | 1.0 |
 | optimMethod | optimization method | String |  | null |
+| l1 | the L1-regularized parameter. | Double |  | 0.0 |
+| l2 | the L2-regularized parameter. | Double |  | 0.0 |
 | withIntercept | Whether has intercept or not, default is true | Boolean |  | true |
 | maxIter | Maximum iterations, The default value is 100 | Integer |  | 100 |
 | epsilon | Convergence tolerance for iterative algorithms (>= 0), The default value is 1.0e-06 | Double |  | 1.0E-6 |
@@ -16,12 +17,12 @@ Linear svm train batch operator. it uses hinge loss func by setting LinearModelT
 | vectorCol | Name of a vector column | String |  | null |
 | standardization | Whether standardize training data or not, default is true | Boolean |  | true |
 
-
 ## Script Example
-#### Script
+### Code
 ```python
 import numpy as np
 import pandas as pd
+from pyalink.alink import *
 data = np.array([
     [2, 1, 1],
     [3, 2, 1],
@@ -55,6 +56,14 @@ f0 | f1 | label | pred
 4|3|2|2
 1|2|1|1
 5|3|2|2
+
+
+
+## 备注
+
+1. 该组件的输入为训练数据，输出为SVM模型。
+2. 参数数据库的使用方式可以覆盖多个参数的使用方式。
+3. 该组件支持在可视化大屏直接查看模型信息。
 
 
 

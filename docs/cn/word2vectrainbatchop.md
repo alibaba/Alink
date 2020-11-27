@@ -7,8 +7,6 @@ Word2Vec的工具包相关链接：[https://code.google.com/p/word2vec/](https:/
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  | 1 |
@@ -18,7 +16,8 @@ Word2Vec的工具包相关链接：[https://code.google.com/p/word2vec/](https:/
 | wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  | " " |
 | minCount | 最小词频 | 最小词频 | Integer |  | 5 |
 | randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  | "true" |
-| window | 窗口大小 | 窗口大小 | Integer |  | 5 |<!-- This is the end of auto-generated parameter info -->
+| window | 窗口大小 | 窗口大小 | Integer |  | 5 |
+
 
 
 ## 脚本示例

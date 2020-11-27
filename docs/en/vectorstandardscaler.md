@@ -6,15 +6,22 @@ The transformer standard the value of the vector using the following formula:
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | withMean | Centers the data with mean before scaling. | Boolean |  | true |
 | withStd | Scales the data to unit standard deviation. true by default | Boolean |  | true |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([["a", "10.0, 100"],\
@@ -28,7 +35,7 @@ df = pd.DataFrame({"col" : data[:,0], "vector" : data[:,1]})
 data = dataframeToOperator(df, schemaStr="col string, vector string",op_type="batch")
 VectorStandardScaler().setSelectedCol("vector").fit(data).transform(data).collectToDataframe()
 ```
-#### Result
+### Results
 
 col1|vec
 ----|---

@@ -8,18 +8,26 @@ k-mean clustering is a method of vector quantization, originally from signal pro
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| predictionDistanceCol | Column name of prediction. | String |  |  |
-| distanceType | Distance type for clustering, support EUCLIDEAN and COSINE. | String |  | "EUCLIDEAN" |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| distanceType | Distance type for clustering | String |  | "EUCLIDEAN" |
 | vectorCol | Name of a vector column | String | ✓ |  |
-| maxIter | Maximum iterations, the default value is 20 | Integer |  | 20 |
-| initMode | Methods to get initial centers, support K_MEANS_PARALLEL and RANDOM! | String |  | "K_MEANS_PARALLEL" |
+| maxIter | Maximum iterations, the default value is 20 | Integer |  | 50 |
+| initMode | Methods to get initial centers, support K_MEANS_PARALLEL and RANDOM! | String |  | "RANDOM" |
 | initSteps | When initMode is K_MEANS_PARALLEL, it defines the steps of iteration. The default value is 2. | Integer |  | 2 |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| predictionDistanceCol | Column name of prediction. | String |  |  |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | k | Number of clusters. | Integer |  | 2 |
 | epsilon | When the distance between two rounds of centers is lower than epsilon, we consider the algorithm converges! | Double |  | 1.0E-4 |
+| randomSeed | Random seed, it should be positive integer | Integer |  | 0 |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
 
 ## Script Example
 #### Code

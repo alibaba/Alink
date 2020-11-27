@@ -5,10 +5,11 @@ Transform a document to a sparse vector based on the inverse document frequency(
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
 
 ## Script Example
 #### Code

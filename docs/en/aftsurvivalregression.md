@@ -9,6 +9,10 @@ Accelerated Failure Time Survival Regression.
 | --- | --- | --- | --- | --- |
 | censorCol | The value of this column could only be 0 or 1. If the value is 1, it means the event has occurred. | String | ✓ |  |
 | quantileProbabilities | Array of quantile probabilities. | double[] |  | [0.01,0.05,0.1,0.25,0.5,0.75,0.9,0.95,0.99] |
+| lazyPrintTrainInfoEnabled | Enable lazyPrint of TrainInfo | Boolean |  | false |
+| lazyPrintTrainInfoTitle | Title of TrainInfo in lazyPrint | String |  | null |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | maxIter | Maximum iterations, The default value is 100 | Integer |  | 100 |
 | epsilon | Convergence tolerance for iterative algorithms (>= 0), The default value is 1.0e-06 | Double |  | 1.0E-6 |
 | withIntercept | Whether has intercept or not, default is true | Boolean |  | true |
@@ -21,10 +25,15 @@ Accelerated Failure Time Survival Regression.
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | vectorCol | Name of a vector column | String |  | null |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array([[1.218, 1.0, "1.560,-0.605"],\
 [2.949, 0.0, "0.346,2.158"],\
@@ -45,15 +54,15 @@ model.save().collectToDataframe()
 model.transform(data).collectToDataframe()
 ```
 
-#### Results
-##### Model
+## Results
+#### Model
 
 | model_id   | model_info | label_value |
 | --- | --- | --- |
 | 0          | {"hasInterceptItem":"true","vectorCol":"\"features\"","modelName":"\"AFTSurvivalRegTrainBatchOp\"","labelCol":null,"linearModelType":"\"AFT\"","vectorSize":"3"} | NULL        |
 | 1048576    | {"featureColNames":null,"featureColTypes":null,"coefVector":{"data":[2.6373721387804276,-0.49591581739360013,0.19847648151323818,1.5469720551612485]},"coefVectors":null} | NULL        |
 
-##### Prediction
+#### Prediction
 | label      | censor     | features   | pred       |
 | --- | --- | --- | --- |
 | 0.273      | 1.0        | 0.520,1.151 | 13.571097451777327 |

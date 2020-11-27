@@ -5,23 +5,27 @@ Encode several columns of strings to bigint type indices. The indices are consec
  
  Several string order type is supported, including:
  <ol>
-     <li>random</li>
-     <li>frequency_asc</li>
-     <li>frequency_desc</li>
-     <li>alphabet_asc</li>
-     <li>alphabet_desc</li>
+ <li>random</li>
+ <li>frequency_asc</li>
+ <li>frequency_desc</li>
+ <li>alphabet_asc</li>
+ <li>alphabet_desc</li>
  </ol>
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "keep" |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
-| stringOrderType | String order type, one of "random", "frequency_asc", "frequency_desc", "alphabet_asc", "alphabet_desc". | String |  | "random" |
+| stringOrderType | String order type, one of "random", "frequency_asc", "frequency_desc", "alphabet_asc", "alphabet_desc". | String |  | "RANDOM" |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | outputCols | Names of the output columns | String[] |  | null |
-
+| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "KEEP" |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 #### Code
@@ -61,4 +65,3 @@ Model：
 4  basketball           1
 5      tennis           0
 ```
-

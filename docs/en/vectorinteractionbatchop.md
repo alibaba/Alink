@@ -9,7 +9,6 @@ VectorInteraction is a Transformer which takes vector or double-valued columns, 
 | outputCol | Name of the output column | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 
 #### Script
@@ -22,7 +21,7 @@ data = dataframeToOperator(df, schemaStr="vec1 string, vec2 string",op_type="bat
 vecInter = VectorInteractionBatchOp().setSelectedCols(["vec1","vec2"]).setOutputCol("vec_product")
 vecInter.linkFrom(data).collectToDataframe()
 ```
-#### Result
+### Result
 
 
 | vec1           | vec2           | vec_product                              |

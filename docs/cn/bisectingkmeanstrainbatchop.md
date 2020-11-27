@@ -5,15 +5,15 @@ Alink上算法括[二分K均值聚类训练]，[二分K均值聚类预测], [二
 
 ## 参数说明
 #### 训练
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | minDivisibleClusterSize | 最小可分裂的聚类大小 | 最小可分裂的聚类大小 | Integer |  | 1 |
 | k | 聚类中心点数目 | 聚类中心点数目 | Integer |  | 4 |
-| distanceType | 距离度量方式 | 聚类使用的距离类型，支持EUCLIDEAN（欧式距离）和 COSINE（余弦距离） | String |  | "EUCLIDEAN" |
+| distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN" |
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  | 10 |<!-- This is the end of auto-generated parameter info -->
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  | 10 |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  | 0 |
+
 
 ## 脚本示例
 #### 脚本代码

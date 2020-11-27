@@ -7,12 +7,11 @@ Intersect two batch  operators. It returns records that exist in both batch
 | --- | --- | --- | --- | --- |
 
 
-
 ## Script Example
 #### Code
 
 ```python
-URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv"
+URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv"
 SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 data1 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 data2 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
@@ -20,5 +19,3 @@ data2 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 intersectAllOp = IntersectAllBatchOp()
 output = intersectAllOp.linkFrom(data1, data2)
 ```
-
-

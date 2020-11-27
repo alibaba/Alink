@@ -4,19 +4,18 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| transformType | 转移矩阵类型 | 转移矩阵类型，包含两种方式'SIMPLE'和'SUBMEAN'，'SIMPLE'是数据*模型，'SUBMEAN'是(数据 - 均值) * 模型。 | String |  | "SIMPLE" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |<!-- This is the end of auto-generated parameter info -->
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+
 
 
 ## 脚本示例
 
-#### 脚本
+### 脚本代码
 
 ```python
 data = np.array([
@@ -60,7 +59,7 @@ predictStreamOp.print()
 
 StreamOperator.execute()
 ```
-#### 结果
+### 脚本运行结果
 
 x1|x2|x3|pred
 ---|---|---|----

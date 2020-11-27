@@ -5,17 +5,16 @@
 
 ## 算法参数
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| strategy | 缺失值填充规则 | 缺失值填充的规则，支持mean，max，min或者value。选择value时，需要读取fillValue的值 | String |  | "mean" |
-| fillValue | 填充缺失值 | 自定义的填充值。当strategy为value时，读取fillValue的值 | String |  | null |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |<!-- This is the end of auto-generated parameter info -->
+| strategy | 缺失值填充规则 | 缺失值填充的规则，支持mean，max，min或者value。选择value时，需要读取fillValue的值 | String |  | "MEAN" |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
+| fillValue | 填充缺失值 | 自定义的填充值。当strategy为value时，读取fillValue的值 | Double |  | null |
+
 
 ## 脚本示例
 
-#### 运行脚本
+### 运行脚本
 ``` python
 data = np.array([["1:3,2:4,4:7", 1],\
     ["1:3,2:NaN", 3],\
@@ -26,7 +25,7 @@ vecFill = VectorImputerTrainBatchOp().setSelectedCol("vec")
 model = data.link(vecFill)
 VectorImputerPredictBatchOp().setOutputCol("vec1").linkFrom(model, data).collectToDataframe()
 ```
-#### 运行结果
+### 运行结果
 
 
 | vec         | id   | vec1              |

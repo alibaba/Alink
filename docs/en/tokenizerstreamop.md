@@ -8,7 +8,6 @@ Transform all words into lower case, and remove extra space.
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 #### Code
 ```python
@@ -39,5 +38,4 @@ StreamOperator.execute()
 2	2	have a good day!
 
 ```
-
 

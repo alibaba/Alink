@@ -4,17 +4,16 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |<!-- This is the end of auto-generated parameter info -->
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
+
 
 
 ## 脚本示例
 
-#### 脚本
+### 脚本代码
 
 ```python
 data = np.array([
@@ -34,7 +33,7 @@ chisqTest = ChiSquareTestBatchOp()\
 
 source.link(chisqTest).print()
 ```
-#### 结果
+### 脚本运行结果
 
 col|chi2_result
 -----|-----------

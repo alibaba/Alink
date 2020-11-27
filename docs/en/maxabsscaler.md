@@ -5,13 +5,20 @@ MaxAbsScaler transforms a dataset of Vector rows,rescaling each feature to range
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | outputCols | Names of the output columns | String[] |  | null |
-
 
 ## Script Example
 
-#### Script
+## Code
 
 
 ```python
@@ -47,7 +54,7 @@ StreamOperator.execute()
 
 ```
 
-#### Results
+## Results
 
 ```
   col1      col2  col3
@@ -60,7 +67,6 @@ StreamOperator.execute()
 6    c  1.000000  0.01
 
 ```
-
 
 
 

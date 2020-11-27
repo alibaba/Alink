@@ -3,19 +3,22 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| tol | "收敛容差" | "收敛容差" | Double |  | 0.01 |
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
 | k | 聚类中心点数量 | 聚类中心点数量 | Integer |  | 2 |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | 100 |<!-- This is the end of auto-generated parameter info -->
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | 100 |
+| epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  | 1.0E-4 |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  | 0 |
 
 ## 脚本示例
-#### 脚本代码
+### 脚本代码
 ```python
- data = np.array([
+from pyalink.alink import *
+import pandas as pd
+import numpy as np
+
+data = np.array([
     ["-0.6264538 0.1836433"],
     ["-0.8356286 1.5952808"],
     ["0.3295078 -0.8204684"],
@@ -41,13 +44,13 @@ data = dataframeToOperator(df_data, schemaStr='features string', op_type='batch'
 
 gmm = GmmTrainBatchOp() \
     .setVectorCol("features") \
-    .setTol(0.)
+    .setEpsilon(0.)
 
 model = gmm.linkFrom(data)
 model.print()
 ```
 
-#### 脚本运行结果
+### 脚本运行结果
 
 ```
    model_id                                         model_info

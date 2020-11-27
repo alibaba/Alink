@@ -7,8 +7,6 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | optimMethod | 优化方法 | 优化问题求解时选择的优化方法 | String |  | null |
@@ -20,12 +18,17 @@
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| standardization | 是否正则化 | 是否对训练数据做正则化，默认true | Boolean |  | true |<!-- This is the end of auto-generated parameter info -->
+| standardization | 是否正则化 | 是否对训练数据做正则化，默认true | Boolean |  | true |
+
 
 
 ## 脚本示例
-#### 运行脚本
+### 脚本代码
+
 ```python
+import numpy as np
+import pandas as pd
+from pyalink.alink import *
 data = np.array([
     [2, 1, 1],
     [3, 2, 1],
@@ -47,7 +50,7 @@ model = batchData.link(lasso)
 predictor = LassoRegPredictBatchOp().setPredictionCol("pred")
 predictor.linkFrom(model, batchData).print()
 ```
-#### 运行结果
+### 运行结果
 f0 | f1 | label | pred
 ---|----|-------|-----
  2 |  1     | 1 | 0.830304

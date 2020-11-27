@@ -7,12 +7,11 @@ Transform data type from Triple to Csv.
 | handleInvalid | Strategy to handle unseen token | String |  | "ERROR" |
 | tripleColumnCol | Name of the triple column col | String | ✓ |  |
 | tripleValueCol | Name of the triple value column | String | ✓ |  |
-| reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | csvCol | Name of the CSV column | String | ✓ |  |
 | schemaStr | Formatted schema | String | ✓ |  |
 | csvFieldDelimiter | Field delimiter | String |  | "," |
 | quoteChar | quote char | Character |  | "\"" |
-| tripleRowCol | Name of the triple row column | String |  |  |
+| tripleRowCol | Name of the triple row column | String |  | null |
 
 ## Script Example
 ### Code
@@ -27,8 +26,8 @@ data = dataframeToOperator(df, schemaStr="row double, col string, val double",op
 
 
 op = TripleToCsvBatchOp()\
-    .setTripleRowCol("row").setTripleColCol("col").setTripleValCol("val")\
-    .setReservedCols(["row"]).setCsvCol("csv").setSchemaStr("f1 string, f2 string")\
+    .setTripleRowCol("row").setTripleColumnCol("col").setTripleValueCol("val")\
+    .setCsvCol("csv").setSchemaStr("f1 string, f2 string")\
     .linkFrom(data)
 op.print()
 ```

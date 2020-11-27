@@ -3,14 +3,9 @@
 全表统计用来计算整表的统计量，包含count, sum, variance等 
 
 ## 参数说明
-
-
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
-
+| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
 
 ## 脚本示例
 

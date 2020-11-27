@@ -5,22 +5,21 @@ Encode several columns of strings to bigint type indices. The indices are consec
  
  Several string order type is supported, including:
  <ol>
-     <li>random</li>
-     <li>frequency_asc</li>
-     <li>frequency_desc</li>
-     <li>alphabet_asc</li>
-     <li>alphabet_desc</li>
+ <li>random</li>
+ <li>frequency_asc</li>
+ <li>frequency_desc</li>
+ <li>alphabet_asc</li>
+ <li>alphabet_desc</li>
  </ol>
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
-| stringOrderType | String order type, one of "random", "frequency_asc", "frequency_desc", "alphabet_asc", "alphabet_desc". | String |  | "random" |
-
+| stringOrderType | String order type, one of "random", "frequency_asc", "frequency_desc", "alphabet_asc", "alphabet_desc". | String |  | "RANDOM" |
 
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array([
     ["football"],
@@ -45,7 +44,7 @@ model = stringindexer.linkFrom(data)
 model.print()
 ```
 
-#### Results
+### Results
 
 Model：
 ```
@@ -55,4 +54,3 @@ Model：
 2             0                                         basketball          1.0
 3             0                                           football          2.0
 ```
-

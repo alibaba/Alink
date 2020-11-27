@@ -4,17 +4,16 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | ratio | 采样比例 | 采样率，范围为[0, 1] | Double | ✓ |  |
-| withReplacement | 是否放回 | 是否有放回的采样，默认不放回 | Boolean |  | false |<!-- This is the end of auto-generated parameter info -->
+| withReplacement | 是否放回 | 是否有放回的采样，默认不放回 | Boolean |  | false |
+
 
 
 ## 脚本示例
 
-#### 脚本
+### 脚本代码
 
 ```python
 data = np.array([
@@ -48,12 +47,12 @@ data.link(sampleOp).print()
 StreamOperator.execute()
 ```
 
-#### 结果
+### 脚本运行结果
 
 |features|
 |---|
 |10.9189774 10.7821363|
-|10.0745650 8.0106483"|
+|10.0745650 8.0106483|
 
 
 

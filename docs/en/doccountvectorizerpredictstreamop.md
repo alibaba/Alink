@@ -6,14 +6,13 @@ Transform a document to a sparse vector based on the statistics provided by DocC
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 #### Code
-
 ```
 import numpy as np
 import pandas as pd
@@ -30,7 +29,7 @@ inOp2 = StreamOperator.fromDataframe(df, schemaStr='id int, text string')
 segment = SegmentBatchOp().setSelectedCol("text").linkFrom(inOp1)
 train = DocCountVectorizerTrainBatchOp().setSelectedCol("text").linkFrom(segment)
 predictBatch = DocCountVectorizerPredictBatchOp().setSelectedCol("text").linkFrom(train, segment)
-[model,predict] = collectToDataframes(kmeans, predictBatch)
+[model,predict] = collectToDataframes(train, predictBatch)
 print(model)
 print(predict)
 
@@ -94,3 +93,4 @@ rowID   id                                               text
 3   3               $37$0:1.0 8:1.0 22:1.0 29:1.0 30:1.0
 4   4  $37$0:1.0 3:1.0 4:1.0 10:1.0 12:1.0 14:1.0 17:...
 ```
+

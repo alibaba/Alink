@@ -6,14 +6,12 @@ MinMaxScaler transforms a dataset of Vector rows, rescaling each feature
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| selectedCols | Names of the columns used for processing | String[] | ✓ |  |
-| min | Lower bound after transformation. | Double |  | 0.0 |
-| max | Upper bound after transformation. | Double |  | 1.0 |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| outputCols | Names of the output columns | String[] |  | null |
 
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([
@@ -53,7 +51,7 @@ predictStreamOp.linkFrom(sinOp).print()
 StreamOperator.execute()
 ```
 
-#### Results
+### Results
 
 ```
   col1      col2      col3
@@ -65,7 +63,6 @@ StreamOperator.execute()
 5    b  0.486554  0.080808
 6    c  1.000000  0.000000
 ```
-
 
 
 

@@ -12,10 +12,10 @@ Accelerated Failure Time Survival Regression.
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | vectorCol | Name of a vector column | String |  | null |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array([[1.218, 1.0, "1.560,-0.605"],\
 [2.949, 0.0, "0.346,2.158"],\
@@ -34,15 +34,16 @@ predictOp = AftSurvivalRegPredictBatchOp().setPredictionCol("pred")
 predictOp.linkFrom(model, data).collectToDataframe()
 ```
 
-#### Results
-##### Model
+### Results
+
+#### Model
 
 | model_id   | model_info | label_value |
 | --- | --- | --- |
 | 0          | {"hasInterceptItem":"true","vectorCol":"\"features\"","modelName":"\"AFTSurvivalRegTrainBatchOp\"","labelCol":null,"linearModelType":"\"AFT\"","vectorSize":"3"} | NULL        |
 | 1048576    | {"featureColNames":null,"featureColTypes":null,"coefVector":{"data":[2.6373721387804276,-0.49591581739360013,0.19847648151323818,1.5469720551612485]},"coefVectors":null} | NULL        |
 
-##### Prediction
+#### Prediction
 | label      | censor     | features   | pred       |
 | --- | --- | --- | --- |
 | 0.273      | 1.0        | 0.520,1.151 | 13.571097451777327 |
@@ -50,5 +51,4 @@ predictOp.linkFrom(model, data).collectToDataframe()
 | 3.627      | 0.0        | 1.380,0.231 | 7.380610641992667 |
 | 4.199      | 0.0        | 0.795,-0.226 | 9.009354073821902 |
 | 2.949      | 0.0        | 0.346,2.158 | 18.067188679653064 |
-
 

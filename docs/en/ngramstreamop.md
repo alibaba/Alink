@@ -13,7 +13,6 @@ Transfrom a document into a new document composed of all its ngrams. The documen
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 #### Code
 ```python
@@ -44,4 +43,3 @@ StreamOperator.execute()
 2	0	That_is is_an an_English English_Book!
 
 ```
-

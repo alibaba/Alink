@@ -5,18 +5,18 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| handleInvalid | 未知token处理策略 | 未知token处理策略。"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常 | String |  | "keep" |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |<!-- This is the end of auto-generated parameter info -->
+| handleInvalid | 未知token处理策略 | 未知token处理策略。"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常 | String |  | "KEEP" |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+
 
 
 ## 脚本示例
-#### 脚本代码
+### 脚本代码
 ```python
 data = np.array([
     ["football"],
@@ -43,7 +43,7 @@ model = stringindexer.linkFrom(data)
 predictor.linkFrom(model, data).print()
 ```
 
-#### 脚本运行结果
+### 脚本运行结果
 
 ```
            f0  f0_indexed

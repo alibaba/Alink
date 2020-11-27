@@ -1,12 +1,9 @@
 # 读CSV文件
 
 ## 功能介绍
-读CSV文件
+读CSV文件数据
 
 ## 参数说明
-
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | filePath | 文件路径 | 文件路径 | String | ✓ |  |
@@ -15,10 +12,10 @@
 | quoteChar | 引号字符 | 引号字符 | Character |  | "\"" |
 | skipBlankLine | 是否忽略空行 | 是否忽略空行 | Boolean |  | true |
 | rowDelimiter | 行分隔符 | 行分隔符 | String |  | "\n" |
-| ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  | false |<!-- This is the end of auto-generated parameter info -->
+| ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  | false |
+| lenient | 是否容错 | 若为true，当解析失败时丢弃该数据；若为false，解析失败是抛异常 | Boolean |  | false |
 
-
-#### 支持的字段类型包括：
+### 支持的字段类型包括：
 
 | 字段类型 | 描述 | 值域 | Flink类型 | Java类型 |
 | --- | --- | --- | --- | --- |
@@ -35,7 +32,7 @@
 | TIME | 时间 | 示例：'20:17:40' | Types.SQL_TIME | java.sql.Time |
 | TIMESTAMP | 时间戳，日期和时间 | 示例：'1969-07-20 20:17:40' | Types.SQL_TIMESTAMP | java.sql.Timestamp |
 
-#### 关于分隔符的说明：
+### 关于分隔符的说明：
 
 Web前端支持用户输入如下转义字符和unicode字符作为分隔符：
 
@@ -55,33 +52,13 @@ Web前端支持用户输入如下转义字符和unicode字符作为分隔符：
 
 ## 脚本示例
 
-#### Csv Batch Source
+### 脚本代码
+
+### 脚本代码
+
 
 ```python
-filePath = 'https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv'
-schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
-csvSource = CsvSourceBatchOp()\
-    .setFilePath(filePath)\
-    .setSchemaStr(schema)\
-    .setFieldDelimiter(",")
-BatchOperator.collectToDataframe(csvSource)
-```
-
-#### 脚本运行结果
-
-```python
-sepal_length	sepal_width	petal_length	petal_width	category
-0	6.3	3.3	6.0	2.5	Iris-virginica
-1	5.6	2.8	4.9	2.0	Iris-virginica
-2	5.0	3.3	1.4	0.2	Iris-setosa
-3	5.8	2.7	5.1	1.9	Iris-virginica
-4	7.0	3.2	4.7	1.4	Iris-setosa
-```
-
-#### Csv Stream Source
-
-```python
-filePath = 'https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv'
+filePath = 'http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv'
 schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
 csvSource = CsvSourceStreamOp()\
     .setFilePath(filePath)\
@@ -91,7 +68,7 @@ csvSource.print()
 StreamOperator.execute()
 ```
 
-#### 脚本运行结果
+### 脚本运行结果
 
 ```python
 sepal_length	sepal_width	petal_length	petal_width	category

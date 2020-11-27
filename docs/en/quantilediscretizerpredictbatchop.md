@@ -7,10 +7,10 @@ The batch operator that predict the data using the quantile discretizer model.
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | outputCols | Names of the output columns | String[] |  | null |
-| handleInvalid |  Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String | | "keep" |
-| encode | Encode method，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   |INDEX |
+| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "KEEP" |
+| encode | encode type: INDEX, VECTOR, ASSEMBLED_VECTOR. | String |  | "INDEX" |
 | dropLast | drop last | Boolean |  | true |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 
@@ -74,6 +74,7 @@ trainOp = (
     QuantileDiscretizerTrainBatchOp()
     .setSelectedCols(['f_double'])
     .setNumBuckets(8)
+    .linkFrom(batchSource())
 )
 
 predictBatchOp = (
@@ -84,7 +85,7 @@ predictBatchOp = (
 (
     predictBatchOp
     .linkFrom(
-        batchSource().link(trainOp),
+        trainOp,
         batchSource()
     )
     .print()
@@ -92,7 +93,7 @@ predictBatchOp = (
 
 predictStreamOp = (
     QuantileDiscretizerPredictStreamOp(
-        batchSource().link(trainOp)
+        trainOp
     )
     .setSelectedCols(['f_double'])
 )
@@ -109,6 +110,7 @@ StreamOperator.execute()
 ```
 
 ### Result
+Batch prediction
 ```
 f_string  f_long  f_int  f_double  f_boolean
 0        a       1      1         2       True
@@ -116,4 +118,11 @@ f_string  f_long  f_int  f_double  f_boolean
 2        a       2      2         2      False
 3        c       0      0         1      False
 ```
-
+Stream Prediction
+```
+f_string    f_long  f_int   f_double    f_boolean
+0   a   1   1   2   True
+1   a   2   2   2   False
+2   c   1   2   0   True
+3   c   0   0   1   False
+```

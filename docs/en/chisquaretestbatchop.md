@@ -10,10 +10,9 @@ Chi-square test is chi-square independence test.
 | labelCol | Name of the label column in the input table | String | ✓ |  |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 
-
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([
@@ -33,13 +32,12 @@ chisqTest = ChiSquareTestBatchOp()\
 
 source.link(chisqTest).print()
 ```
-#### Result
+### Results
 
 col|chi2_result
 -----|-----------
 x1|{"comment":"pearson test","df":1.0,"p":1.0,"value":0.0}
 x2|{"comment":"pearson test","df":1.0,"p":0.5402913746074196,"value":0.37500000000000006}
-
 
 
 

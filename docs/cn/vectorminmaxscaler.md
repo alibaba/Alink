@@ -1,21 +1,22 @@
+# Vector归一化
+
 ## 功能介绍
 
  vector归一化是对vector数据进行归一的组件, 将数据归一到min和max之间。
 
 ## 参数说明
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | min | 归一化的下界 | 归一化的下界 | Double |  | 0.0 |
 | max | 归一化的上界 | 归一化的上界 | Double |  | 1.0 |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |<!-- This is the end of auto-generated parameter info -->
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+
 
 ## 脚本示例
 
-#### 脚本
+### 脚本代码
 
 ```python
 data = np.array([["a", "10.0, 100"],\
@@ -31,7 +32,7 @@ res = VectorMinMaxScaler()\
            .setSelectedCol("vec")
 res.fit(data).transform(data).collectToDataframe()
 ```
-#### 结果
+### 脚本运行结果
 
 col1|vec
 ----|---

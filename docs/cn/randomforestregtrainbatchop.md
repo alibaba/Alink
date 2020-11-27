@@ -8,16 +8,12 @@
 - 支持带样本权重的训练
 
 ## 参数说明
-
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| featureSubsamplingRatio | 每棵树特征采样的比例 | 每棵树特征采样的比例，范围为(0, 1]。 | Double |  | 0.2 |
 | numSubsetFeatures | 每棵树的特征采样数目 | 每棵树的特征采样数目 | Integer |  | 2147483647 |
 | numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | 10 |
 | subsamplingRatio | 每棵树的样本采样比例或采样行数 | 每棵树的样本采样比例或采样行数，行数上限100w行 | Double |  | 100000.0 |
-| treeType | 模型中树的类型 | 模型中树的类型，平均（gini，entropy均分），gini或者entropy | String |  | "avg" |
+| seed | 采样种子 | 采样种子 | Long |  | 0 |
 | maxDepth | 树的深度限制 | 树的深度限制 | Integer |  | 2147483647 |
 | minSamplesPerLeaf | 叶节点的最小样本个数 | 叶节点的最小样本个数 | Integer |  | 2 |
 | createTreeMode | 创建树的模式。 | series表示每个单机创建单颗树，parallel表示并行创建单颗树。 | String |  | "series" |
@@ -25,11 +21,11 @@
 | maxMemoryInMB | 树模型中用来加和统计量的最大内存使用数 | 树模型中用来加和统计量的最大内存使用数 | Integer |  | 64 |
 | featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ |  |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| categoricalCols | 离散特征列名 | 可选，默认选择String类型和Boolean类型作为离散特征，如果没有则为空 | String[] |  |  |
+| categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  |  |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | maxLeaves | 叶节点的最多个数 | 叶节点的最多个数 | Integer |  | 2147483647 |
 | minSampleRatioPerChild | 子节点占父节点的最小样本比例 | 子节点占父节点的最小样本比例 | Double |  | 0.0 |
-| minInfoGain | 分裂的最小增益 | 分裂的最小增益 | Double |  | 0.0 |<!-- This is the end of auto-generated parameter info -->
+| minInfoGain | 分裂的最小增益 | 分裂的最小增益 | Double |  | 0.0 |
 
 ## 脚本示例
 
@@ -109,6 +105,12 @@ predictBatchOp = (
     .print()
 )
 
+trainOp = (
+    RandomForestRegTrainBatchOp()
+    .setLabelCol('label')
+    .setFeatureCols(['f0', 'f1', 'f2', 'f3'])
+)
+
 predictStreamOp = (
     RandomForestRegPredictStreamOp(
         batchSource().link(trainOp)
@@ -146,4 +148,6 @@ f0	f1	f2	f3	label	pred
 ```
 
 
+## 备注
 
+- 该组件支持在可视化大屏直接查看模型信息

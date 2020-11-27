@@ -3,15 +3,14 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | numFeatures | 向量维度 | 生成向量长度 | Integer |  | 262144 |
-| categoricalCols | 离散特征列名 | 可选，默认选择String类型和Boolean类型作为离散特征，如果没有则为空 | String[] |  |  |<!-- This is the end of auto-generated parameter info -->
+| categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  |  |
+
 
 ## 脚本示例
 #### 脚本代码

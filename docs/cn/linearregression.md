@@ -6,9 +6,6 @@
 ## 参数说明
 
 
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | optimMethod | 优化方法 | 优化问题求解时选择的优化方法 | String |  | null |
@@ -17,6 +14,7 @@
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 | withIntercept | 是否有常数项 | 是否有常数项，默认true | Boolean |  | true |
 | maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | 100 |
 | epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | 1.0E-6 |
@@ -24,7 +22,8 @@
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| standardization | 是否正则化 | 是否对训练数据做正则化，默认true | Boolean |  | true |<!-- This is the end of auto-generated parameter info -->
+| standardization | 是否正则化 | 是否对训练数据做正则化，默认true | Boolean |  | true |
+
 
 
 
@@ -32,7 +31,7 @@
 ## 脚本示例
 
 #### 运行脚本
-``` python
+```python
 data = np.array([
     [2, 1, 1],
     [3, 2, 1],

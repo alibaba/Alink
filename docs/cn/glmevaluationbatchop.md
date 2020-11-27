@@ -6,13 +6,11 @@
 ## 参数说明
 
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| family | 分布族 | 分布族，包含gaussian, binomial, poisson, gamma and tweedie，默认值gaussian。 | String |  | "gaussian" |
+| family | 分布族 | 分布族，包含gaussian, Binomial, Poisson, Gamma and Tweedie，默认值gaussian。 | String |  | "Gaussian" |
 | variancePower | 分布族的超参 | 分布族的超参，默认值是0.0 | Double |  | 0.0 |
-| link | 连接函数 | 连接函数，包含cloglog, identity, inverse, log, logit, power, probit和sqrt，默认值是指数分布族对应的连接函数。 | String |  | null |
+| link | 连接函数 | 连接函数，包含cloglog, Identity, Inverse, log, logit, power, probit和sqrt，默认值是指数分布族对应的连接函数。 | String |  | null |
 | linkPower | 连接函数的超参 | 连接函数的超参 | Double |  | 1.0 |
 | offsetCol | 偏移列 | 偏移列 | String |  | null |
 | fitIntercept | 是否拟合常数项 | 是否拟合常数项，默认是拟合 | Boolean |  | true |
@@ -21,7 +19,8 @@
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  | 10 |
 | featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ |  |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |<!-- This is the end of auto-generated parameter info -->
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
+
 
 
 ## 脚本示例

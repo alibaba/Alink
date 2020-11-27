@@ -12,9 +12,8 @@
 | handleInvalid | 解析异常处理策略 | 解析异常处理策略 | String |  | "ERROR" |
 | tripleColumnCol | 三元组结构中列信息的列名 | 三元组结构中列信息的列名 | String | ✓ |  |
 | tripleValueCol | 三元组结构中数据信息的列名 | 三元组结构中数据信息的列名 | String | ✓ |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |
-| tripleRowCol | 三元组结构中行信息的列名 | 三元组结构中行信息的列名 | String |  |  |
+| tripleRowCol | 三元组结构中行信息的列名 | 三元组结构中行信息的列名 | String |  | null |
 
 ## 脚本示例
 ### 脚本代码
@@ -29,8 +28,8 @@ data = dataframeToOperator(df, schemaStr="row double, col string, val double",op
 
 
 op = TripleToColumnsBatchOp()\
-    .setTripleRowCol("row").setTripleColCol("col").setTripleValCol("val")\
-    .setReservedCols(["row"]).setSchemaStr("f1 string, f2 double")\
+    .setTripleRowCol("row").setTripleColumnCol("col").setTripleValueCol("val")\
+    .setSchemaStr("f1 string, f2 double")\
     .linkFrom(data)
 op.print()
 ```

@@ -4,9 +4,6 @@ Word2Vec是Google在2013年开源的一个将词表转为向量的算法，其�
 
 Word2Vec的工具包相关链接：[https://code.google.com/p/word2vec/](https://code.google.com/p/word2vec/)
 ## 参数说明
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  | 1 |
@@ -21,7 +18,9 @@ Word2Vec的工具包相关链接：[https://code.google.com/p/word2vec/](https:/
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
 | wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  | " " |
-| predMethod | 向量组合方法 | 预测文档向量时，需要用到的方法。支持三种方法：平均（avg），最小（min）和最大（max），默认值为平均 | String |  | "avg" |<!-- This is the end of auto-generated parameter info -->
+| predMethod | 向量组合方法 | 预测文档向量时，需要用到的方法。支持三种方法：平均（avg），最小（min）和最大（max），默认值为平均 | String |  | "AVG" |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+
 
 
 ## 脚本示例

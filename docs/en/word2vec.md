@@ -13,6 +13,8 @@ Word2vec is a group of related models that are used to produce word embeddings.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| lazyPrintTrainInfoEnabled | Enable lazyPrint of TrainInfo | Boolean |  | false |
+| lazyPrintTrainInfoTitle | Title of TrainInfo in lazyPrint | String |  | null |
 | numIter | Number of iterations, The default value is 1 | Integer |  | 1 |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | vectorSize | vector size of embedding | Integer |  | 100 |
@@ -25,8 +27,13 @@ Word2vec is a group of related models that are used to produce word embeddings.
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | outputCol | Name of the output column | String |  | null |
 | wordDelimiter | Delimiter of words | String |  | " " |
-| predMethod | Method to predict doc vector, support 3 method: avg, min and max, default value is avg. | String |  | "avg" |
-
+| predMethod | Method to predict doc vector, support 3 method: avg, min and max, default value is avg. | String |  | "AVG" |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 #### Code

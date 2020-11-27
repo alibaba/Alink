@@ -8,7 +8,7 @@ Map index to string.
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 #### Code
@@ -56,4 +56,3 @@ basketball|1|basketball
 basketball|1|basketball
 tennis|0|tennis
 ```
-

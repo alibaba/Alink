@@ -4,9 +4,6 @@ RegexTokenizer支持对文本的切分和匹配操作。
 
 ## 参数说明
 
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | pattern | 分隔符/正则匹配符 | 如果gaps为True，pattern用于切分文档；如果gaps为False，会提取出匹配pattern的词。 | String |  | "\\s+" |
@@ -15,7 +12,7 @@ RegexTokenizer支持对文本的切分和匹配操作。
 | toLowerCase | 是否转换为小写 | 转换为小写 | Boolean |  | true |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 
 
 
@@ -50,5 +47,3 @@ id	text	token
 2	1	Do you like math?	do you like math
 
 ```
-
-

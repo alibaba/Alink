@@ -13,11 +13,10 @@ Reduction of Multiclass Classification to Binary Classification.
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 #### Code
 ```python
-URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv";
+URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
 SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 data = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 
@@ -31,4 +30,3 @@ model = oneVsRest.fit(data)
 model.setPredictionCol("pred_result").setPredictionDetailCol("pred_detail")
 model.transform(data).print()
 ```
-

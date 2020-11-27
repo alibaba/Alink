@@ -5,16 +5,14 @@
 
 ## 算法参数
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+
 
 #### 备注：选择列的数目必须为两列
-
 
 ## 脚本示例
 
@@ -28,7 +26,7 @@ data = dataframeToOperator(df, schemaStr="vec1 string, vec2 string",op_type="bat
 vecInter = VectorInteractionBatchOp().setSelectedCols(["vec1","vec2"]).setOutputCol("vec_product")
 vecInter.linkFrom(data).collectToDataframe()
 ```
-#### 运行结果
+### 运行结果
 
 
 | vec1           | vec2           | vec_product                              |

@@ -11,10 +11,9 @@ Polynomial expansion is the process of expanding your features into a polynomial
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 
-#### Script
+### Script
 ``` python
 data = np.array([["$8$1:3,2:4,4:7"],
     ["$8$2:4,4:5"]])
@@ -24,10 +23,9 @@ VectorPolynomialExpandStreamOp().setSelectedCol("vec").setOutputCol("vec_out").l
 StreamOperator.execute()
 
 ```
-#### Result
+### Result
 | vec            | vec_out                                 |
 | -------------- | ---------------------------------------- |
 | $8$1:3,2:4,4:7 | $44$2:3.0 4:9.0 5:4.0 7:12.0 8:16.0 14:7.0 16:21.0 17:28.0 19:49.0 |
 | $8$2:4,4:5     | $44$5:4.0 8:16.0 14:5.0 17:20.0 19:25.0  |
-
 

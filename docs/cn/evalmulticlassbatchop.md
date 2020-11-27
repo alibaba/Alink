@@ -1,9 +1,14 @@
 ## 功能介绍
 多分类评估是对多分类算法的预测结果进行效果评估。
 
-流式的实验支持累计统计和窗口统计。
+支持Roc曲线，LiftChart曲线，K-S曲线，Recall-Precision曲线绘制。
 
-给出Precision、Recall、F-Measure、Sensitivity、Accuracy、Specificity和Kappa。
+流式的实验支持累计统计和窗口统计，除却上述四条曲线外，还给出Auc/Kappa/Accuracy/Logloss随时间的变化曲线。
+
+给出整体的评估指标包括：AUC、K-S、PRC, 不同阈值下的Precision、Recall、F-Measure、Sensitivity、Accuracy、Specificity和Kappa。
+
+#### 混淆矩阵
+<div align=center><img src="https://img.alicdn.com/tfs/TB1lCMOaW67gK0jSZFHXXa9jVXa-1582-688.jpg" height="50%" width="50%"></div>
 
 #### Precision
 <div align=center><img src="http://latex.codecogs.com/gif.latex?Precision = \dfrac{TP}{TP + FP}" ></div>
@@ -32,18 +37,16 @@
 <div align=center><img src="http://latex.codecogs.com/gif.latex?logloss=- \dfrac{1}{N}\sum_{i=1}^N \sum_{j=1}^My_{i,j}log(p_{i,j})" ></div>
 
 ## 参数说明
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
+| predictionCol | 预测结果列名 | 预测结果列名 | String |  |  |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |<!-- This is the end of auto-generated parameter info -->
+| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
+
 
 
 ## 脚本示例
 #### 脚本代码
-
 ```
 import numpy as np
 import pandas as pd

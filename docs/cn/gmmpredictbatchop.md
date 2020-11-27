@@ -5,19 +5,21 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
-
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 
 ## 脚本示例
-#### 脚本代码
+### 脚本代码
 ```python
+from pyalink.alink import *
+import pandas as pd
+import numpy as np
+
 data = np.array([
     ["-0.6264538 0.1836433"],
     ["-0.8356286 1.5952808"],
@@ -44,7 +46,7 @@ data = dataframeToOperator(df_data, schemaStr='features string', op_type='batch'
 
 gmm = GmmTrainBatchOp() \
     .setVectorCol("features") \
-    .setTol(0.)
+    .setEpsilon(0.)
 
 model = gmm.linkFrom(data)
 
@@ -56,7 +58,7 @@ predictor = GmmPredictBatchOp() \
 predictor.linkFrom(model, data).print()
 ```
 
-#### 脚本运行结果
+### 脚本运行结果
 
 ```
                  features  cluster_id              cluster_detail

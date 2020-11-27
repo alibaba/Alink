@@ -4,21 +4,17 @@
 
 ## 参数说明
 
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| k | 降维后的维度 | 降维后的维度 | Integer | ✓ |  |
-| calculationType | 计算类型 | 计算类型，包含"CORR", "COV_SAMPLE", "COVAR_POP"三种。 | String |  | "CORR" |
-| transformType | 转移矩阵类型 | 转移矩阵类型，包含两种方式'SIMPLE'和'SUBMEAN'，'SIMPLE'是数据*模型，'SUBMEAN'是(数据 - 均值) * 模型。 | String |  | "SIMPLE" |
 | selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| withMean | 是否使用均值 | 是否使用均值，默认使用 | Boolean |  | true |
-| withStd | 是否使用标准差 | 是否使用标准差，默认使用 | Boolean |  | true |
+| k | 降维后的维度 | 降维后的维度 | Integer | ✓ |  |
+| calculationType | 计算类型 | 计算类型，包含"CORR", "COV"两种。 | String |  | "CORR" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |<!-- This is the end of auto-generated parameter info -->
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+
 
 
 ## 脚本示例

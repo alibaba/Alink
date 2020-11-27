@@ -5,19 +5,48 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| fraction | 拆分到左端的数据比例 | 拆分到左端的数据比例 | Double | ✓ |  |<!-- This is the end of auto-generated parameter info -->
+| fraction | 拆分到左端的数据比例 | 拆分到左端的数据比例 | Double | ✓ |  |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  | null |
+
 
 
 ## 脚本示例
+
+### 脚本代码
+
 ```python
-URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-data = CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
-spliter = SplitStreamOp().setFraction(0.4).linkFrom(data)
-train_data = spliter
-test_data = spliter.getSideOutput(0)
+from pyalink.alink import *
+import pandas as pd
+
+useLocalEnv(1, config=None)
+
+data = {
+  'f1': ['Ohio', 'Ohio', 'Ohio', 'Nevada', 'Nevada', 'Nevada'],
+  'f2': [2000, 2001, 2002, 2001, 2002, 2003],
+  'f3': [1.5, 1.7, 3.6, 2.4, 2.9, 3.2]
+}
+
+df_data = pd.DataFrame(data)
+schema = 'f1 string, f2 bigint, f3 double'
+
+stream_data = dataframeToOperator(df_data, schemaStr=schema, op_type='stream')
+
+spliter = SplitStreamOp().setFraction(0.5)
+spliter.linkFrom(stream_data)
+
+spliter.print()
+StreamOperator.execute()
+resetEnv()
+```
+
+### 脚本运行结果
+```
+['f1', 'f2', 'f3']
+['Ohio', 2000, 1.5]
+['Ohio', 2001, 1.7]
+['Ohio', 2002, 3.6]
+['Nevada', 2001, 2.4]
+['Nevada', 2003, 3.2]
 ```

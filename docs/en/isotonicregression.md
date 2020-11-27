@@ -13,7 +13,12 @@ Isotonic Regression.
 | weightCol | Name of the column indicating weight | String |  | null |
 | vectorCol | Name of a vector column | String |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 #### Code
@@ -43,15 +48,15 @@ res = IsotonicRegression()\
 res.fit(data).transform(data).collectToDataframe()
 ```
 
-#### Results
-##### Model
+## Results
+### Model
 
 | model_id   | model_info |
 | --- | --- |
 | 0          | {"vectorCol":"\"col2\"","featureIndex":"0","featureCol":null} |
 | 1048576    | [0.02,0.3,0.35,0.45,0.5,0.7] |
 | 2097152    | [0.5,0.5,0.6666666865348816,0.6666666865348816,0.75,0.75] |
-##### Prediction
+### Prediction
 | col1       | col2       | col3       | pred       |
 | --- | --- | --- | --- |
 | 1.0        | 0.9        | 1.0        | 0.75       |

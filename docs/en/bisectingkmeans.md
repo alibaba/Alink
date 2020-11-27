@@ -10,13 +10,21 @@ Bisecting k-means is a kind of hierarchical clustering algorithm.
 | --- | --- | --- | --- | --- |
 | minDivisibleClusterSize | Minimum divisible cluster size | Integer |  | 1 |
 | k | Number of clusters. | Integer |  | 4 |
-| distanceType | Distance type for clustering, support EUCLIDEAN and COSINE. | String |  | "EUCLIDEAN" |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| distanceType | Distance type for clustering | String |  | "EUCLIDEAN" |
 | vectorCol | Name of a vector column | String | ✓ |  |
 | maxIter | Maximum iterations, The default value is 10 | Integer |  | 10 |
+| randomSeed | Random seed, it should be positive integer | Integer |  | 0 |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
 
 ## Script Example
 #### Code

@@ -1,32 +1,39 @@
 ## Description
-Support SQL select statements which can be used in Pipeline.
+Select execute select statement for each row.
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | clause | Operation clause. | String | ✓ |  |
-
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
-#### Code
+### Code
 
 ```python
-import pandas as pd
-import numpy as np
-
-schema = "age int, name string"
-
-data = np.array([
-    [14, "Tony"],
-    [35, "Tommy"],
-    [72, "Tongli"],
-])
-
-df = pd.DataFrame.from_records(data)
-source = BatchOperator.fromDataframe(df, "age int, name string")
-
-select = Select().setClause("CASE WHEN age < 18 THEN 0 WHEN age >= 18 AND age < 60 THEN 1 ELSE 2 END AS class, name")
-
-select.transform(source).print()
+URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv"
+SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
+data = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
+select = Select().setClause("category as label")
+select.transform(data).print()
 ```
 
+#### Results
+```
+           label
+ Iris-versicolor
+  Iris-virginica
+  Iris-virginica
+ Iris-versicolor
+  Iris-virginica
+             ...
+  Iris-virginica
+ Iris-versicolor
+     Iris-setosa
+  Iris-virginica
+ Iris-versicolor
+```

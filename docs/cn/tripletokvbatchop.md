@@ -12,11 +12,10 @@
 | handleInvalid | 解析异常处理策略 | 解析异常处理策略 | String |  | "ERROR" |
 | tripleColumnCol | 三元组结构中列信息的列名 | 三元组结构中列信息的列名 | String | ✓ |  |
 | tripleValueCol | 三元组结构中数据信息的列名 | 三元组结构中数据信息的列名 | String | ✓ |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | kvCol | KV列名 | KV列的列名 | String | ✓ |  |
 | kvColDelimiter | 分隔符 | 当输入数据为稀疏格式时，key-value对之间的分隔符 | String |  | "," |
 | kvValDelimiter | 分隔符 | 当输入数据为稀疏格式时，key和value的分割符 | String |  | ":" |
-| tripleRowCol | 三元组结构中行信息的列名 | 三元组结构中行信息的列名 | String |  |  |
+| tripleRowCol | 三元组结构中行信息的列名 | 三元组结构中行信息的列名 | String |  | null |
 
 ## 脚本示例
 ### 脚本代码
@@ -31,8 +30,8 @@ data = dataframeToOperator(df, schemaStr="row double, col string, val double",op
 
 
 op = TripleToKvBatchOp()\
-    .setTripleRowCol("row").setTripleColCol("col").setTripleValCol("val")\
-    .setReservedCols(["row"]).setKvCol("kv")\
+    .setTripleRowCol("row").setTripleColumnCol("col").setTripleValueCol("val")\
+    .setKvCol("kv")\
     .linkFrom(data)
 op.print()
 ```

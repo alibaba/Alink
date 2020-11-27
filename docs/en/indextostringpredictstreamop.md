@@ -8,7 +8,7 @@ Map index to string.
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 #### Code
@@ -26,22 +26,25 @@ df_data = pd.DataFrame({
     "f0": data[:, 0],
 })
 
+train_data = dataframeToOperator(df_data, schemaStr='f0 string', op_type="batch")
 data = dataframeToOperator(df_data, schemaStr='f0 string', op_type="stream")
 
 stringIndexer = StringIndexer() \
     .setModelName("string_indexer_model") \
     .setSelectedCol("f0") \
     .setOutputCol("f0_indexed") \
-    .setStringOrderType("frequency_asc")
+    .setStringOrderType("frequency_asc").fit(train_data)
 
-indexed = stringIndexer.fit(data).transform(data)
+batch_model = stringIndexer.transform(train_data)
+indexed = stringIndexer.transform(data)
 
-indexToString = IndexToString() \
-    .setModelName("string_indexer_model") \
+indexToStrings = IndexToStringPredictStreamOp(batch_model) \
     .setSelectedCol("f0_indexed") \
     .setOutputCol("f0_indxed_unindexed")
 
-indexToString.transform(indexed).print()
+indexToStrings.linkFrom(indexed).print()
+StreamOperator.execute()
+
 ```
 
 #### Results
@@ -56,4 +59,3 @@ basketball|1|basketball
 basketball|1|basketball
 tennis|0|tennis
 ```
-

@@ -7,9 +7,8 @@ Transform data type from Triple to Json.
 | handleInvalid | Strategy to handle unseen token | String |  | "ERROR" |
 | tripleColumnCol | Name of the triple column col | String | ✓ |  |
 | tripleValueCol | Name of the triple value column | String | ✓ |  |
-| reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | jsonCol | Name of the CSV column | String | ✓ |  |
-| tripleRowCol | Name of the triple row column | String |  |  |
+| tripleRowCol | Name of the triple row column | String |  | null |
 
 ## Script Example
 ### Code
@@ -24,8 +23,8 @@ data = dataframeToOperator(df, schemaStr="row double, col string, val double",op
 
 
 op = TripleToJsonBatchOp()\
-    .setTripleRowCol("row").setTripleColCol("col").setTripleValCol("val")\
-    .setReservedCols(["row"]).setJsonCol("json")\
+    .setTripleRowCol("row").setTripleColumnCol("col").setTripleValueCol("val")\
+    .setJsonCol("json")\
     .linkFrom(data)
 op.print()
 ```

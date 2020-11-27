@@ -6,12 +6,12 @@ MaxAbsScaler transforms a dataset of Vector rows,rescaling each feature to range
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| selectedCols | Names of the columns used for processing | String[] | ✓ |  |
-
+| outputCol | Name of the output column | String |  | null |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([["a", "10.0, 100"],\
@@ -36,7 +36,7 @@ streamPredictOp.linkFrom(dataStream).print()
 
 StreamOperator.execute()
 ```
-#### Result
+### Results
 
 col1|vec
 ----|---

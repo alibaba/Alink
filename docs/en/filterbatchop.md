@@ -6,14 +6,38 @@ Filter records in the batch operator.
 | --- | --- | --- | --- | --- |
 | clause | Operation clause. | String | ✓ |  |
 
-
 ## Script Example
-#### Code
+### Code
 
 ```python
-URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-data = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
-data = data.link(FilterBatchOp().setClause("category='Iris-setosa'"))
+from pyalink.alink import *
+import pandas as pd
+
+useLocalEnv(1, config=None)
+
+data = {
+  'f1': ['Ohio', 'Ohio', 'Ohio', 'Nevada', 'Nevada', 'Nevada'],
+  'f2': [2000, 2001, 2002, 2001, 2002, 2003],
+  'f3': [1.5, 1.7, 3.6, 2.4, 2.9, 3.2]
+}
+
+df_data = pd.DataFrame(data)
+schema = 'f1 string, f2 bigint, f3 double'
+
+batch_data = dataframeToOperator(df_data, schemaStr=schema, op_type='batch')
+op = FilterBatchOp().setClause("f1='Ohio'")
+batch_data = batch_data.link(op)
+batch_data.print()
+
+resetEnv()
+
 ```
 
+### Result
+
+```
+     f1    f2   f3
+0  Ohio  2000  1.5
+1  Ohio  2001  1.7
+2  Ohio  2002  3.6
+```

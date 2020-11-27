@@ -10,10 +10,9 @@ VectorSlicer is a transformer that takes a feature vector and outputs a new feat
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 
-#### Script
+### Script
 ```
 data = np.array([["1:3,2:4,4:7", 1],
     ["0:3,5:5", 3],
@@ -24,11 +23,10 @@ vecSlice = VectorSliceStreamOp().setSelectedCol("vec").setOutputCol("vec_slice")
 vecSlice.linkFrom(data).print()
 StreamOperator.execute()
 ```
-#### Result
+### Result
 
 | vec         | id   | vec_slice      |
 | ----------- | ---- | -------------- |
 | 1:3,2:4,4:7 | 1    | $3$0:3.0 1:4.0 |
 | 0:3,5:5     | 3    | $3$            |
 | 2:4,4:5     | 4    | $3$1:4.0       |
-

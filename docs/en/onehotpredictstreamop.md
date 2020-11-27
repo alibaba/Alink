@@ -6,55 +6,76 @@
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| handleInvalid |  Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String | | "keep" |
-| encode | Encode method，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   |INDEX |
-| dropLast | drop last | Boolean |  | true |
-| selectedCols | Names of the columns used for processing | String[] |  |  |
-| outputCols | Names of the output columns | String[] |  | null |
+| selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
+| outputCols | Names of the output columns | String[] |  | null |
+| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "KEEP" |
+| encode | encode type: INDEX, VECTOR, ASSEMBLED_VECTOR. | String |  | "ASSEMBLED_VECTOR" |
+| dropLast | drop last | Boolean |  | true |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
-#### Script
+#### Code
 ```python
 import numpy as np
 import pandas as pd
 data = np.array([
-    [1.1, True, "2", "A"],
-    [1.1, False, "2", "B"],
-    [1.1, True, "1", "B"],
-    [2.2, True, "1", "A"]
+    ["a", 1],
+    ["b", 1],
+    ["c", 1],
+    ["e", 2],
+    ["a", 2],
+    ["b", 1],
+    ["c", 2],
+    ["d", 2],
+    [None, 1]
 ])
-df = pd.DataFrame({"double": data[:, 0], "bool": data[:, 1], "number": data[:, 2], "str": data[:, 3]})
 
-inOp1 = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
-inOp2 = StreamOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
+# load data
+df = pd.DataFrame({"query": data[:, 0], "label": data[:, 1]})
 
-onehot = OneHotTrainBatchOp().setSelectedCols(["double", "bool", "number", "str"]).setDiscreteThresholds(2)
-predictBatch = OneHotPredictBatchOp().setSelectedCols(["double", "bool"]).setEncode("ASSEMBLED_VECTOR").setOutputCols(["pred"]).setDropLast(False)
-onehot.linkFrom(inOp1)
-predictBatch.linkFrom(onehot, inOp1)
-[model,predict] = collectToDataframes(onehot, predictBatch)
-print(model)
-print(predict)
+inOp = dataframeToOperator(df, schemaStr='query string, weight long', op_type='batch')
 
-predictStream = OneHotPredictStreamOp(onehot).setSelectedCols(["double", "bool"]).setEncode("ASSEMBLED_VECTOR").setOutputCols(["vec"])
-predictStream.linkFrom(inOp2)
-predictStream.print(refreshInterval=-1)
-StreamOperator.execute()
+# one hot train
+one_hot = OneHotTrainBatchOp().setSelectedCols(["query"])
+model = inOp.link(one_hot)
+model.print()
+
+# batch predict
+predictor = OneHotPredictBatchOp().setOutputCols(["output"])
+print(BatchOperator.collectToDataframe(predictor.linkFrom(model, inOp)))
 ```
-#### Result
 
+#### Results
+##### 模型
 ```python
-   double   bool  number str            pred
-0     1.1   True       2   A  $6$0:1.0 3:1.0
-1     1.1  False       2   B  $6$0:1.0 5:1.0
-2     1.1   True       1   B  $6$0:1.0 3:1.0
-3     2.2   True       1   A  $6$2:1.0 3:1.0
+   column_index                                              token  \
+0            -1  {"selectedCols":"[\"query\"]","selectedColType...   
+1             0                                                  b   
+2             0                                                  c   
+3             0                                                  d   
+4             0                                                  e   
+5             0                                                  a   
 
+   token_index  
+0          NaN  
+1            0  
+2            1  
+3            2  
+4            3  
+5            4
 ```
 
-
-
-
-
-
+##### 预测
+```python
+  query  weight    output
+0     a       1       $5$
+1     b       1  $5$0:1.0
+2     c       1  $5$1:1.0
+3     e       2  $5$3:1.0
+4     a       2       $5$
+5     b       1  $5$0:1.0
+6     c       2  $5$1:1.0
+7     d       2  $5$2:1.0
+8   NaN       1  $5$4:1.0
+```

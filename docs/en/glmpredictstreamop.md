@@ -6,7 +6,7 @@ Generalized Linear Model stream predict. https://en.wikipedia.org/wiki/Generaliz
 | --- | --- | --- | --- | --- |
 | linkPredResultCol | link predict col name of output | String |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 #### Code
@@ -88,7 +88,6 @@ predict_stream.print()
 6 | 4.0943 |  21.0 | 13.0 |    1.0 |     2.0|  1.367991
 7 | 4.3820 |  19.0 | 12.0 |    1.0 |     2.0 | 1.383571
 8 | 4.6052 |  18.0 | 12.0 |    1.0  |    2.0 | 1.375774
-
 
 
 

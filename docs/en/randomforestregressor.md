@@ -4,34 +4,40 @@ The random forest use the bagging to prevent the overfitting.
  In the operator, we implement three type of decision tree to
  increase diversity of the forest.
  <ul>
-     <tr>id3</tr>
-     <tr>cart</tr>
-     <tr>c4.5</tr>
+ <tr>id3</tr>
+ <tr>cart</tr>
+ <tr>c4.5</tr>
  </ul>
  and the criteria is
  <ul>
-     <tr>information</tr>
-     <tr>gini</tr>
-     <tr>information ratio</tr>
-     <tr>mse</tr>
+ <tr>information</tr>
+ <tr>gini</tr>
+ <tr>information ratio</tr>
+ <tr>mse</tr>
  </ul>
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| featureSubsamplingRatio | Ratio of the features used in each tree, in range (0, 1]. | Double |  | 0.2 |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | numSubsetFeatures | The number of features to consider for splits at each tree node. | Integer |  | 2147483647 |
 | numTrees | Number of decision trees. | Integer |  | 10 |
 | subsamplingRatio | Ratio of the training samples used for learning each decision tree. | Double |  | 100000.0 |
-| predictionCol | Column name of prediction. | String | ✓ |  |
-| predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
-| reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-| treeType | treeType | String |  | "avg" |
+| seed | seed | Long |  | 0 |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | maxDepth | depth of the tree | Integer |  | 2147483647 |
 | minSamplesPerLeaf | Minimal number of sample in one leaf. | Integer |  | 2 |
 | createTreeMode | series or parallel | String |  | "series" |
 | maxBins | MAX number of bins for continuous feature | Integer |  | 128 |
 | maxMemoryInMB | max memory usage in tree histogram aggregate. | Integer |  | 64 |
+| predictionCol | Column name of prediction. | String | ✓ |  |
+| reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | featureCols | Names of the feature columns used for training in the input table | String[] | ✓ |  |
 | labelCol | Name of the label column in the input table | String | ✓ |  |
 | categoricalCols | Names of the categorical columns used for training in the input table | String[] |  |  |
@@ -39,7 +45,6 @@ The random forest use the bagging to prevent the overfitting.
 | maxLeaves | max leaves of tree | Integer |  | 2147483647 |
 | minSampleRatioPerChild | Minimal value of: (num of samples in child)/(num of samples in its parent). | Double |  | 0.0 |
 | minInfoGain | minimum info gain when performing split | Double |  | 0.0 |
-
 
 ## Script Example
 
@@ -140,3 +145,6 @@ f0	f1	f2	f3	label	pred
 3	3.0	C	2	2	1	1.0
 ```
 
+## 备注
+
+- 该组件支持在可视化大屏直接查看模型信息

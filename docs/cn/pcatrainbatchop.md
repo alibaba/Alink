@@ -4,21 +4,18 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| k | 降维后的维度 | 降维后的维度 | Integer | ✓ |  |
-| calculationType | 计算类型 | 计算类型，包含"CORR", "COV_SAMPLE", "COVAR_POP"三种。 | String |  | "CORR" |
 | selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| withMean | 是否使用均值 | 是否使用均值，默认使用 | Boolean |  | true |
-| withStd | 是否使用标准差 | 是否使用标准差，默认使用 | Boolean |  | true |<!-- This is the end of auto-generated parameter info -->
+| k | 降维后的维度 | 降维后的维度 | Integer | ✓ |  |
+| calculationType | 计算类型 | 计算类型，包含"CORR", "COV"两种。 | String |  | "CORR" |
+
 
 
 ## 脚本示例
 
-#### 脚本
+### 脚本代码
 
 ```python
 data = np.array([
@@ -62,7 +59,7 @@ predictStreamOp.print()
 
 StreamOperator.execute()
 ```
-#### 结果
+### 脚本运行结果
 
 x1|x2|x3|pred
 ---|---|---|----

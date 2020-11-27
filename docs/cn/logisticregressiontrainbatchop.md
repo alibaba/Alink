@@ -9,8 +9,6 @@
 ## 参数说明
 
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | optimMethod | 优化方法 | 优化问题求解时选择的优化方法 | String |  | null |
@@ -23,12 +21,13 @@
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| standardization | 是否正则化 | 是否对训练数据做正则化，默认true | Boolean |  | true |<!-- This is the end of auto-generated parameter info -->
+| standardization | 是否正则化 | 是否对训练数据做正则化，默认true | Boolean |  | true |
+
 
 
 ## 脚本示例
 #### 运行脚本
-```
+```python
 import numpy as np
 import pandas as pd
 data = np.array([
@@ -73,6 +72,7 @@ f0 | f1 | label | pred
 
 1. 该组件的输入为训练数据，输出为逻辑回归模型。
 2. 参数数据库的使用方式可以覆盖多个参数的使用方式。
+3. 该组件支持在可视化大屏直接查看模型信息，参见 [模型类组件可视化](https://yuque.antfin-inc.com/pai-user/manual/mqb0xh)。
 
 
 

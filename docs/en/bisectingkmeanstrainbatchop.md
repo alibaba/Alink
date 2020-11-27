@@ -10,10 +10,10 @@ Bisecting k-means is a kind of hierarchical clustering algorithm.
 | --- | --- | --- | --- | --- |
 | minDivisibleClusterSize | Minimum divisible cluster size | Integer |  | 1 |
 | k | Number of clusters. | Integer |  | 4 |
-| distanceType | Distance type for clustering, support EUCLIDEAN and COSINE. | String |  | "EUCLIDEAN" |
+| distanceType | Distance type for clustering | String |  | "EUCLIDEAN" |
 | vectorCol | Name of a vector column | String | ✓ |  |
 | maxIter | Maximum iterations, The default value is 10 | Integer |  | 10 |
-
+| randomSeed | Random seed, it should be positive integer | Integer |  | 0 |
 
 ## Script Example
 #### Code
@@ -65,7 +65,6 @@ rowId   id          vec  pred
 4   4  9.1 9.1 9.1     1
 5   5  9.2 9.2 9.2     1
 ```
-
 
 
 

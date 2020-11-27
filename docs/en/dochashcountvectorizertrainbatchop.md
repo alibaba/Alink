@@ -1,5 +1,5 @@
 ## Description
-Hash every word as a number, and save the inverse document frequency(IDF) of every word in the document.
+Hash every word as a number, and save the Inverse document frequency(IDF) of every word in the document.
  
  It's used together with DocHashCountVectorizerPredictBatchOp.
 
@@ -11,7 +11,6 @@ Hash every word as a number, and save the inverse document frequency(IDF) of eve
 | minDF | When the number of documents a word appears in is below minDF, the word will not be included in the dictionary. It could be an exact countor a fraction of the document number count. When minDF is within [0, 1), it's used as a fraction. | Double |  | 1.0 |
 | featureType | Feature type, support IDF/WORD_COUNT/TF_IDF/Binary/TF | String |  | "WORD_COUNT" |
 | minTF | When the number word in this document in is below minTF, the word will be ignored. It could be an exact count or a fraction of the document token count. When minTF is within [0, 1), it's used as a fraction. | Double |  | 1.0 |
-
 
 ## Script Example
 #### Code

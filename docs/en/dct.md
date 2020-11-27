@@ -9,7 +9,11 @@ Discrete Cosine Transform(DCT) transforms a real-valued sequence in the time dom
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 #### Code
@@ -64,4 +68,3 @@ dct.transform(data).print()
 13    9.8442045 8.5292476     12.991992573716212 0.9298149409580412
 14   9.5218499 10.4179416    14.099561785095878 -0.6336325176349823
 ```
-

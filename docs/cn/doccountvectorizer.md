@@ -2,12 +2,10 @@
 根据分词后的文本统计词的TF/IDF信息，将文本转化为稀疏的向量。
 
 ## 参数说明
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | maxDF | 最大词频 | 如果一个词出现的文档次数大于maxDF, 这个词不会被包含在字典中。maxDF可以是具体的词频也可以是整体词频的比例，如果minDF在[0,1)区间，会被认为是比例。 | Double |  | 1.7976931348623157E308 |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | minDF | 最小文档词频 | 如果一个词出现的文档次数小于minDF, 这个词不会被包含在字典中。minTF可以是具体的词频也可以是整体词频的比例，如果minDF在[0,1)区间，会被认为是比例。 | Double |  | 1.0 |
 | featureType | 特征类型 | 生成特征向量的类型，支持IDF/WORD_COUNT/TF_IDF/Binary/TF | String |  | "WORD_COUNT" |
@@ -15,7 +13,8 @@
 | minTF | 最低词频 | 最低词频，如果词频小于minTF,这个词会被忽略掉。minTF可以是具体的词频也可以是整体词频的比例，如果minTF在[0,1)区间，会被认为是比例。 | Double |  | 1.0 |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+
 
 
 ## 脚本示例

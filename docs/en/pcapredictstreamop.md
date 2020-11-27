@@ -4,15 +4,14 @@ pca predict for stream data, it need a pca model which is train from PcaTrainBat
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| transformType | 'SIMPLE' or 'SUBMEAN', SIMPLE is data * model, SUBMEAN is (data - mean) * model | String |  | "SIMPLE" |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | vectorCol | Name of a vector column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([
@@ -56,7 +55,7 @@ predictStreamOp.print()
 
 StreamOperator.execute()
 ```
-#### Result
+### Results
 
 x1|x2|x3|pred
 ---|---|---|----
@@ -66,4 +65,3 @@ x1|x2|x3|pred
 9.1|9.1|9.6|3.182618319978973,0.027469531992220464
 0.1|0.2|0.1|0.045855205015063565,-0.012182917696915518
 0.0|0.0|0.0|0.0,0.0
-

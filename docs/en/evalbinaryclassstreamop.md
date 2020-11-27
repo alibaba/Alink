@@ -8,12 +8,11 @@ Calculate the evaluation data within time windows for binary classifiction.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| positiveLabelValueString | positive label value with string format. | String |  | null |
-| timeInterval | Time interval of streaming windows, unit s. | Integer |  | 3 |
-| labelCol | Name of the label column in the input table | String | ✓ |  |
 | predictionCol | Column name of prediction. | String | ✓ |  |
-| predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
-
+| predictionDetailCol | Column name of prediction result, it will include detailed info. | String | ✓ |  |
+| timeInterval | Time interval of streaming windows, unit s. | Double |  | 3.0 |
+| labelCol | Name of the label column in the input table | String | ✓ |  |
+| positiveLabelValueString | positive label value with string format. | String |  | null |
 
 ## Script Example
 #### Code
@@ -44,8 +43,16 @@ EvalBinaryClassStreamOp().setLabelCol("label").setPredictionDetailCol("detailInp
 StreamOperator.execute()
 ```
 
-
-
+### Results
+```
+AUC: 0.8333333333333333
+KS: 0.6666666666666666
+PRC: 0.9027777777777777
+Accuracy: 0.6
+Macro Precision: 0.3
+Micro Recall: 0.6
+Weighted Sensitivity: 0.6
+```
 
 
 

@@ -1,5 +1,5 @@
 ## Description
-Sample with given ratio with or without replacement.
+Sample the input data with given ratio with or without replacement.
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
@@ -7,10 +7,9 @@ Sample with given ratio with or without replacement.
 | ratio | sampling ratio, it should be in range of [0, 1] | Double | ✓ |  |
 | withReplacement | Indicates whether to enable sampling with replacement, default is without replcement | Boolean |  | false |
 
-
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = data = np.array([
@@ -33,13 +32,12 @@ sampleOp = SampleBatchOp()\
 
 inOp.link(sampleOp).print()
 ```
-#### Result
+### Results
 
 |Y|
 |---|
 |0,0,0|
 |0.2,0.2,0.2|
-
 
 
 

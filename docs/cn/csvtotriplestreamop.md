@@ -33,7 +33,7 @@ data = dataframeToOperator(df, schemaStr="row string, json string, vec string, k
 
 op = CsvToTripleStreamOp()\
     .setCsvCol("csv").setSchemaStr("f0 double, f1 double")\
-    .setReservedCols(["row"]).setTripleColValSchemaStr("col string, val double")\
+    .setReservedCols(["row"]).setTripleColumnValueSchemaStr("col string, val double")\
     .linkFrom(data)
 op.print()
 StreamOperator.execute()

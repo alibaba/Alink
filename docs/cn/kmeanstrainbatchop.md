@@ -1,20 +1,29 @@
 ## 功能介绍
+
 KMeans 是一个经典的聚类算法。
 
 基本思想是：以空间中k个点为中心进行聚类，对最靠近他们的对象归类。通过迭代的方法，逐次更新各聚类中心的值，直至得到最好的聚类结果。
 
+Alink上KMeans算法括[KMeans]，[KMeans批量预测], [KMeans流式预测]
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
+### 距离度量方式
+| 参数名称 | 参数描述 | 说明 |
+| --- | --- | --- |
+| EUCLIDEAN | <img src="https://img.alicdn.com/tfs/TB1sSQoa.z1gK0jSZLeXXb9kVXa-211-39.png"> | 欧式距离 |
+| COSINE | <img src="https://img.alicdn.com/tfs/TB1P9Iqa7H0gK0jSZPiXXavapXa-263-61.png"> | 夹角余弦距离 |
+
+## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| distanceType | 距离度量方式 | 聚类使用的距离类型，支持EUCLIDEAN（欧式距离）和 COSINE（余弦距离） | String |  | "EUCLIDEAN" |
+| distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN" |
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 20。 | Integer |  | 20 |
-| initMode | 中心点初始化方法 | 初始化中心点的方法，支持"K_MEANS_PARALLEL"和"RANDOM" | String |  | "K_MEANS_PARALLEL" |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 50。 | Integer |  | 50 |
+| initMode | 中心点初始化方法 | 初始化中心点的方法，支持"K_MEANS_PARALLEL"和"RANDOM" | String |  | "RANDOM" |
 | initSteps | k-means++初始化迭代步数 | k-means初始化中心点时迭代的步数 | Integer |  | 2 |
 | k | 聚类中心点数量 | 聚类中心点数量 | Integer |  | 2 |
-| epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  | 1.0E-4 |<!-- This is the end of auto-generated parameter info -->
+| epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  | 1.0E-4 |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  | 0 |
+
 
 ## 脚本示例
 #### 脚本代码
@@ -65,3 +74,8 @@ rowID   id          vec  pred
 4   4  9.1 9.1 9.1     0
 5   5  9.2 9.2 9.2     0
 ```
+
+
+
+
+

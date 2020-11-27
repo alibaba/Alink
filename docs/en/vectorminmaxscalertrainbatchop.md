@@ -10,10 +10,9 @@ MinMaxScaler transforms a dataSet of rows, rescaling each feature
 | min | Lower bound after transformation. | Double |  | 0.0 |
 | max | Upper bound after transformation. | Double |  | 1.0 |
 
-
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([["a", "10.0, 100"],\
@@ -32,7 +31,7 @@ model = trainOp.linkFrom(data)
 batchPredictOp = VectorMinMaxScalerPredictBatchOp()
 batchPredictOp.linkFrom(model, data).collectToDataframe()
 ```
-#### Result
+### Results
 
 col1|vec
 ----|---
@@ -43,7 +42,6 @@ d|0.0,1.0
 a|0.5044820717131474,0.0
 b|0.4865537848605578,0.08080808080808081
 c|1.0,0.0
-
 
 
 

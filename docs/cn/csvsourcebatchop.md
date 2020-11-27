@@ -5,8 +5,6 @@
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | filePath | 文件路径 | 文件路径 | String | ✓ |  |
@@ -15,8 +13,8 @@
 | quoteChar | 引号字符 | 引号字符 | Character |  | "\"" |
 | skipBlankLine | 是否忽略空行 | 是否忽略空行 | Boolean |  | true |
 | rowDelimiter | 行分隔符 | 行分隔符 | String |  | "\n" |
-| ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  | false |<!-- This is the end of auto-generated parameter info -->
-
+| ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  | false |
+| lenient | 是否容错 | 若为true，当解析失败时丢弃该数据；若为false，解析失败是抛异常 | Boolean |  | false |
 
 #### 支持的字段类型包括：
 
@@ -58,7 +56,7 @@ Web前端支持用户输入如下转义字符和unicode字符作为分隔符：
 #### Csv Batch Source
 
 ```python
-filePath = 'https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv'
+filePath = 'http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv'
 schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
 csvSource = CsvSourceBatchOp()\
     .setFilePath(filePath)\
@@ -81,12 +79,14 @@ sepal_length	sepal_width	petal_length	petal_width	category
 #### Csv Stream Source
 
 ```python
-filePath = 'https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv'
+filePath = 'http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv'
 schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
-csvSource = CsvSourceStreamOp()\
-    .setFilePath(filePath)\
-    .setSchemaStr(schema)\
-    .setFieldDelimiter(",")
+csvSource = CsvSourceStreamOp(
+    Params()
+        .set("filePath", filePath)
+        .set("schema", schema)
+        .set("fieldDelimiter", ",")
+)
 csvSource.print()
 StreamOperator.execute()
 ```
@@ -104,3 +104,62 @@ sepal_length	sepal_width	petal_length	petal_width	category
 
 
 
+## 公共数据源列表
+
+- iris数据集
+
+filePath： [http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv)
+
+schema： sepal_length double, sepal_width double, petal_length double, petal_width double, category string
+
+- adult数据集
+
+训练数据filePath：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_train.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_train.csv)
+
+训练数据schema：age bigint, workclass string, fnlwgt bigint, education string, education_num bigint, marital_status string, occupation string, relationship string, race string, sex string, capital_gain bigint, capital_loss bigint, hours_per_week bigint, native_country string, label string
+
+预测数据filePath：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_test.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_test.csv)
+
+预测数据schema：age bigint, workclass string, fnlwgt bigint, education string, education_num bigint, marital_status string, occupation string, relationship string, race string, sex string, capital_gain bigint, capital_loss bigint, hours_per_week bigint, native_country string, label string
+
+- mnist数据集
+
+filePath：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/mnist.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/mnist.csv)
+
+schema：label string, content string
+
+- movielens数据集
+
+评分数据filePath：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/movielens_ratings.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/movielens_ratings.csv)
+
+评分数据schema：userid string, movieid string, rating double, timestamp string
+
+电影数据filePath：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/movielens_movies.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/movielens_movies.csv)
+
+电影数据schema：movieid string, title string, genres string
+
+电影数据fieldDelimiter：\t
+
+- 亚马逊product review数据集
+
+filePath：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/review_rating_train.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/review_rating_train.csv)
+
+schema：review_id int, rating5 int, rating3 int, review_context string
+
+fieldDelimiter：_alink_
+
+- 域名检测数据集
+
+数据集1：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tdl_alexa_domain.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tdl_alexa_domain.csv)
+
+数据集2：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tdl_sample_dga.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tdl_sample_dga.csv)
+
+数据集3：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tdl_train_domain_data.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tdl_train_domain_data.csv)
+
+数据集4：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tdl_domain_test_data.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tdl_domain_test_data.csv)
+
+- 支付宝公开交易数据集（来自Tianchi Data Lab: tianchi.aliyun.com/datalab）
+
+filePath：[http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tradeRecords_1kw.csv](http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/tradeRecords_1kw.csv)
+
+schema：user_id &nbsp;string, province &nbsp;string, datetime &nbsp;string, average_pay bigint, score double, comment_cnt bigint, shop_level_int bigint, catalog &nbsp;string, cate_2_name string, cate_3_name string, shop_level string

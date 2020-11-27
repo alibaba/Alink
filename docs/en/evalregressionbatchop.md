@@ -10,7 +10,6 @@ Calculate the evaluation data for regression. The evaluation metrics are: SST: S
 | labelCol | Name of the label column in the input table | String | ✓ |  |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 
-
 ## Script Example
 #### Code
 
@@ -45,6 +44,5 @@ SAE: 7.0
 RMSE: 1.5811388300841898
 R2: 0.8282442748091603
 ```
-
 
 

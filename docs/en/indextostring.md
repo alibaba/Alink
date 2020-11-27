@@ -50,11 +50,18 @@ Maps columns of indices to strings, based on the model fitted by {@link StringIn
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 #### Code
 ```python
+import numpy as np
+import pandas as pd
 data = np.array([
     ["football"],
     ["football"],
@@ -68,20 +75,25 @@ df_data = pd.DataFrame({
     "f0": data[:, 0],
 })
 
-data = dataframeToOperator(df_data, schemaStr='f0 string', op_type="batch")
+data = dataframeToOperator(df_data, schemaStr='f0 string', op_type="stream")
+data_batch = dataframeToOperator(df_data, schemaStr='f0 string', op_type="batch")
 
-stringIndexer = StringIndexerTrainBatchOp() \
+stringIndexer = StringIndexer() \
     .setModelName("string_indexer_model") \
     .setSelectedCol("f0") \
+    .setOutputCol("f0_indexed") \
     .setStringOrderType("frequency_asc")
 
-model = stringIndexer.linkFrom(data)
-string2int = StringIndexerPredictBatchOp() \
-    .setSelectedCol("f0").setOutputCol("f0_indexed")
-indexed = string2int.linkFrom(model, data)
+indexed = stringIndexer.fit(data_batch).transform(data)
 
-predictor = IndexToStringPredictBatchOp().setSelectedCol("f0_indexed").setOutputCol("f0_indxed_unindexed");
-predictor.linkFrom(model, indexed).print()
+indexToString = IndexToString() \
+    .setModelName("string_indexer_model") \
+    .setSelectedCol("f0_indexed") \
+    .setOutputCol("f0_indxed_unindexed")
+
+indexToString.transform(indexed).print()
+
+StreamOperator.execute()
 ```
 
 #### Results
@@ -96,4 +108,3 @@ basketball|1|basketball
 basketball|1|basketball
 tennis|0|tennis
 ```
-

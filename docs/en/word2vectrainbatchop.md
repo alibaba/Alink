@@ -22,7 +22,6 @@ Word2vec is a group of related models that are used to produce word embeddings.
 | randomWindow | Is random window or not | String |  | "true" |
 | window | the length of window in w2v | Integer |  | 5 |
 
-
 ## Script Example
 #### Code
 ```
@@ -62,4 +61,3 @@ rowID word                                                vec
 rowID    tokens
 0  0.7346309627024759 0.5270851926937304 0.201858...
 ```
-

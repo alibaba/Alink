@@ -7,11 +7,10 @@ Calculate the evaluation data within time windows for multi classifiction.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| timeInterval | Time interval of streaming windows, unit s. | Integer |  | 3 |
+| predictionCol | Column name of prediction. | String |  |  |
+| timeInterval | Time interval of streaming windows, unit s. | Double |  | 3.0 |
 | labelCol | Name of the label column in the input table | String | ✓ |  |
-| predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
-
 
 ## Script Example
 #### Code
@@ -40,7 +39,6 @@ inOp = StreamOperator.fromDataframe(df, schemaStr='label string, detailInput str
 EvalMultiClassStreamOp().setLabelCol("label").setPredictionDetailCol("detailInput").setTimeInterval(1).linkFrom(inOp).print()
 StreamOperator.execute()
 ```
-
 
 
 

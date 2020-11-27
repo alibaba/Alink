@@ -2,16 +2,14 @@
 停用词过滤，是文本分析中一个预处理方法。它的功能是过滤分词结果中的噪声（例如：的、是、啊等）。
 
 ## 参数说明
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | caseSensitive | 是否大小写敏感 | 大小写敏感 | Boolean |  | false |
 | stopWords | 用户自定义停用词表 | 用户自定义停用词表 | String[] |  | null |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+
 
 
 ## 脚本示例

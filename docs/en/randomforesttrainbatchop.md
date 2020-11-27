@@ -7,8 +7,10 @@ Fit a random forest classification model.
 | featureSubsamplingRatio | Ratio of the features used in each tree, in range (0, 1]. | Double |  | 0.2 |
 | numSubsetFeatures | The number of features to consider for splits at each tree node. | Integer |  | 2147483647 |
 | numTrees | Number of decision trees. | Integer |  | 10 |
+| numTreesOfGini | Number of cart trees. | Integer |  | null |
+| numTreesOfInfoGain | Number of id3 trees. | Integer |  | null |
+| numTreesOfInfoGainRatio | Number of c4.5 trees. | Integer |  | null |
 | subsamplingRatio | Ratio of the training samples used for learning each decision tree. | Double |  | 100000.0 |
-| treeType | treeType | String |  | "avg" |
 | maxDepth | depth of the tree | Integer |  | 2147483647 |
 | minSamplesPerLeaf | Minimal number of sample in one leaf. | Integer |  | 2 |
 | createTreeMode | series or parallel | String |  | "series" |
@@ -21,7 +23,6 @@ Fit a random forest classification model.
 | maxLeaves | max leaves of tree | Integer |  | 2147483647 |
 | minSampleRatioPerChild | Minimal value of: (num of samples in child)/(num of samples in its parent). | Double |  | 0.0 |
 | minInfoGain | minimum info gain when performing split | Double |  | 0.0 |
-
 
 ## Script Example
 
@@ -80,11 +81,11 @@ def streamSource():
         op_type='stream'
     )
 
-
 trainOp = (
     RandomForestTrainBatchOp()
     .setLabelCol('label')
     .setFeatureCols(['f0', 'f1', 'f2', 'f3'])
+    .linkFrom(batchSource())
 )
 
 predictBatchOp = (
@@ -96,7 +97,7 @@ predictBatchOp = (
 (
     predictBatchOp
     .linkFrom(
-        batchSource().link(trainOp),
+        trainOp,
         batchSource()
     )
     .print()
@@ -104,7 +105,7 @@ predictBatchOp = (
 
 predictStreamOp = (
     RandomForestPredictStreamOp(
-        batchSource().link(trainOp)
+        trainOp
     )
     .setPredictionDetailCol('pred_detail')
     .setPredictionCol('pred')
@@ -140,3 +141,6 @@ f0	f1	f2	f3	label	pred	pred_detail
 ```
 
 
+## 备注
+
+- 该组件支持在可视化大屏直接查看模型信息

@@ -10,11 +10,12 @@ Imputer completes missing values in a dataset, but only same type of columns can
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | outputCols | Names of the output columns | String[] |  | null |
-
 
 ## Script Example
 
+### Code
 ```python
 data = np.array([
             ["a", 10.0, 100],
@@ -31,47 +32,41 @@ colnames = ["col1", "col2", "col3"]
 selectedColNames = ["col2", "col3"]
 
 df = pd.DataFrame({"col1": data[:, 0], "col2": data[:, 1], "col3": data[:, 2]})
-inOp = dataframeToOperator(df, schemaStr='col1 string, col2 double, col3 long', op_type='batch')
+
+inOp = dataframeToOperator(df, schemaStr='col1 string, col2 double, col3 bigint', op_type='batch')
          
 
 # train
 trainOp = ImputerTrainBatchOp()\
            .setSelectedCols(selectedColNames)
 
-trainOp.linkFrom(inOp)
+model = trainOp.linkFrom(inOp)
 
 # batch predict
 predictOp =  ImputerPredictBatchOp()
-predictOp.linkFrom(trainOp, inOp).print()
+predictOp.linkFrom(model, inOp).print()
 
 # stream predict
-sinOp = dataframeToOperator(df, schemaStr='col1 string, col2 double, col3 long', op_type='stream')
+sinOp = dataframeToOperator(df, schemaStr='col1 string, col2 double, col3 bigint', op_type='stream')
 
-predictStreamOp = MaxAbsScalerPredictStreamOp(trainOp)
+predictStreamOp = ImputerPredictStreamOp(model)
 predictStreamOp.linkFrom(sinOp).print()
 
 
 StreamOperator.execute()
 ```
 
-#### Results
-
-```
- col1        col2  col3
-0     a   10.000000   100
-1     b   -2.500000     9
-2     c  100.200000     1
-3     d  -99.900000   100
-4     a    1.400000     1
-5     b   -2.200000     9
-6     c  100.900000     1
-7  None   15.414286    31
-```
+### Results
 
 
-
-
-
-
-
+| col1  |       col2  | col3  |
+|-------|-------------|-------|
+|     a |   10.000000 |   100 |
+|     b |   -2.500000 |     9 |
+|     c |  100.200000 |     1 |
+|     d |  -99.900000 |   100 |
+|     a |    1.400000 |     1 |
+|     b |   -2.200000 |     9 |
+|     c |  100.900000 |     1 |
+|  null |   15.414286 |    31 |
 

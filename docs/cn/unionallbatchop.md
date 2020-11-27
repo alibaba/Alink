@@ -5,21 +5,23 @@
 
 
 ## 参数说明
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-<!-- This is the end of auto-generated parameter info -->
+
 
 ## 脚本示例
 #### 脚本代码
 
 ```python
-URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-data1 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
-data2 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
+data = {
+  'f1': ['changjiang', 'huanghe', 'zhujiang', 'changjiang', 'huanghe', 'zhujiang'],
+  'f2': [2000, 2001, 2002, 2001, 2002, 2003],
+  'f3': [1.5, 1.7, 3.6, 2.4, 2.9, 3.2]
+}
+df_data = pd.DataFrame(data)
+schema = 'f1 string, f2 bigint, f3 double'
+data1 = BatchOperator.fromDataframe(df_data, schemaStr=schema)
+data2 = BatchOperator.fromDataframe(df_data, schemaStr=schema)
 
 unionAllOp = UnionAllBatchOp()
 output = unionAllOp.linkFrom(data1, data2)

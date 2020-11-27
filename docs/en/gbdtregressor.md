@@ -21,17 +21,30 @@ Gradient Boosting(often abbreviated to GBDT or GBM) is a popular supervised lear
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | learningRate | learning rate for gbdt training(default 0.3) | Double |  | 0.3 |
 | minSumHessianPerLeaf | minimum sum hessian for each leaf | Double |  | 0.0 |
+| lambda | l1 reg in xgboost gain. | Double |  | 0.0 |
+| gamma | l2 reg in xgboost gain. | Double |  | 0.0 |
+| criteriaType | null | String |  | "PAI" |
+| vectorCol | Name of a vector column | String |  | null |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| vectorCol | Name of a vector column | String |  | null |
 | numTrees | Number of decision trees. | Integer |  | 100 |
 | minSamplesPerLeaf | Minimal number of sample in one leaf. | Integer |  | 100 |
 | maxDepth | depth of the tree | Integer |  | 6 |
 | subsamplingRatio | Ratio of the training samples used for learning each decision tree. | Double |  | 1.0 |
 | featureSubsamplingRatio | Ratio of the features used in each tree, in range (0, 1]. | Double |  | 1.0 |
-| groupCol | Name of a grouping column | String |  | null |
 | maxBins | MAX number of bins for continuous feature | Integer |  | 128 |
+| newtonStep | If open the newton step in gbdt. | Boolean |  | true |
+| featureImportanceType | null | String |  | "GAIN" |
 | predictionCol | Column name of prediction. | String | ✓ |  |
-| predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | featureCols | Names of the feature columns used for training in the input table | String[] | ✓ |  |
 | labelCol | Name of the label column in the input table | String | ✓ |  |
@@ -40,7 +53,6 @@ Gradient Boosting(often abbreviated to GBDT or GBM) is a popular supervised lear
 | maxLeaves | max leaves of tree | Integer |  | 2147483647 |
 | minSampleRatioPerChild | Minimal value of: (num of samples in child)/(num of samples in its parent). | Double |  | 0.0 |
 | minInfoGain | minimum info gain when performing split | Double |  | 0.0 |
-
 
 ## Script Example
 
@@ -144,7 +156,6 @@ f0	f1	f2	f3	label	pred
 2	2.0	B	1	1	0	0.0
 3	4.0	D	3	3	1	1.0
 ```
-
 
 
 

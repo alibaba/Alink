@@ -1,35 +1,39 @@
 # ALS训练
 
 ## 功能介绍
-ALS模型训练，得到user和item两个因子矩阵。
+ALS (Alternating Lease Square）交替最小二乘法是一种model based的协同过滤算法，
+用于对评分矩阵进行因子分解，然后预测user对item的评分。
 
 参考文献：
 1. explicit feedback: Large-scale Parallel Collaborative Filtering for the Netflix Prize, 2007
-2. implicit feedback: Collaborative Filtering for Implicit Feedback Datasets, 2008
+
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | rank | 因子数 | 因子数 | Integer |  | 10 |
 | lambda | 正则化系数 | 正则化系数 | Double |  | 0.1 |
 | nonnegative | 是否约束因子非负 | 是否约束因子非负 | Boolean |  | false |
-| implicitPrefs | 是否采用隐式偏好模型 | 是否采用隐式偏好模型 | Boolean |  | false |
-| alpha | 隐式偏好模型系数alpha | 隐式偏好模型系数alpha | Double |  | 40.0 |
 | numBlocks | 分块数目 | 分块数目 | Integer |  | 1 |
 | userCol | User列列名 | User列列名 | String | ✓ |  |
 | itemCol | Item列列名 | Item列列名 | String | ✓ |  |
 | rateCol | 打分列列名 | 打分列列名 | String | ✓ |  |
-| numIter | 迭代次数 | 迭代次数，默认为10 | Integer |  | 10 |<!-- This is the end of auto-generated parameter info -->
+| numIter | 迭代次数 | 迭代次数，默认为10 | Integer |  | 10 |
+
 
 
 
 ## 脚本示例
-#### 脚本代码
+### 脚本代码
 
 ```python
+from pyalink.alink import *
+import pandas as pd
+import numpy as np
+
+useLocalEnv(1, config=None)
+
 data = np.array([
     [1, 1, 0.6],
     [2, 2, 0.8],
@@ -47,24 +51,36 @@ df_data = pd.DataFrame({
 df_data["user"] = df_data["user"].astype('int')
 df_data["item"] = df_data["item"].astype('int')
 
-data = dataframeToOperator(df_data, schemaStr='user bigint, item bigint, rating double', op_type='batch')
+schema = 'user bigint, item bigint, rating double'
+data = dataframeToOperator(df_data, schemaStr=schema, op_type='batch')
 
 als = AlsTrainBatchOp().setUserCol("user").setItemCol("item").setRateCol("rating") \
     .setNumIter(10).setRank(10).setLambda(0.01)
 
 model = als.linkFrom(data)
 model.print()
+
+resetEnv()
+
 ```
 
-#### 脚本运行结果
+### 脚本运行结果
 
 ```
-   user  item                                            factors
-0   1.0   NaN  -0.06586061 -0.034223076 0.069877796 0.0920446...
-1   2.0   NaN  0.30718762 0.16972417 0.008185322 0.0386066 0....
-2   4.0   NaN  -0.06712866 -0.034935225 0.069463015 0.0913517...
-3   NaN   1.0  -0.15275586 -0.07944428 0.15982738 0.21034132 ...
-4   NaN   2.0  0.5041202 0.27869284 0.01877524 0.07083873 0.3...
-5   NaN   3.0  0.23072533 0.12939966 0.06971352 0.118020855 0...
+f1|f2
+--|--
+-1|["uid BIGINT,factors VARCHAR","iid BIGINT,factors VARCHAR","uid BIGINT,iid BIGINT"]
+2|1^1
+2|2^2
+1|3^0.2492007315158844 0.15098488330841064 0.012884462252259254 0.23749813437461853 0.18824179470539093 0.2330566942691803 0.14502321183681488 0.21603597700595856 0.15502716600894928 0.17380373179912567
+2|2^3
+2|4^1
+2|4^2
+2|4^3
+1|1^0.3039683699607849 0.06367748230695724 0.018810953944921494 0.2667402923107147 0.20158863067626953 0.40229329466819763 0.18074487149715424 0.3677302896976471 0.17684338986873627 0.16401298344135284
+1|2^0.29378432035446167 0.27262595295906067 0.012758990749716759 0.2980150878429413 0.24392834305763245 0.1820652037858963 0.16794554889202118 0.17283867299556732 0.19238688051700592 0.24258670210838318
+0|1^0.26144763827323914 0.05291144549846649 0.01622731238603592 0.2290731519460678 0.17295707762241364 0.3478386700153351 0.15552067756652832 0.3178976774215698 0.15191656351089478 0.1403297632932663
+0|2^0.3697585463523865 0.31101226806640625 0.016883453354239464 0.36896517872810364 0.2995398938655853 0.2606053352355957 0.21240323781967163 0.24531401693820953 0.2388727366924286 0.292529821395874
+0|4^0.21535639464855194 0.04601389169692993 0.013304134830832481 0.1891522854566574 0.1430312991142273 0.28413689136505127 0.12802591919898987 0.25975263118743896 0.12538200616836548 0.11655863374471664
 ```
 

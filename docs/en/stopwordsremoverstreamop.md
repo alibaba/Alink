@@ -10,31 +10,28 @@ Filter stop words in a document.
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 #### Code
 ```python
-# -*- coding=UTF-8 -*-
-
+import numpy as np
+import pandas as pd
 data = np.array([
     [0, u'二手旧书:医学电磁成像'],
     [1, u'二手美国文学选读（ 下册 ）李宜燮南开大学出版社 9787310003969'],
     [2, u'二手正版图解象棋入门/谢恩思主编/华龄出版社'],
     [3, u'二手中国糖尿病文献索引'],
-    [4, u'二手郁达夫文集（ 国内版 ）全十二册馆藏书']
-])
-
+    [4, u'二手郁达夫文集（ 国内版 ）全十二册馆藏书']])
 df = pd.DataFrame({"id": data[:, 0], "text": data[:, 1]})
-inOp = dataframeToOperator(df, schemaStr='id long, text string', op_type='stream')
+inOp1 = BatchOperator.fromDataframe(df, schemaStr='id int, text string')
+inOp2 = StreamOperator.fromDataframe(df, schemaStr='id int, text string')
 
-segment = SegmentStreamOp().setSelectedCol("text").setOutputCol("segment")
+segment = SegmentBatchOp().setSelectedCol("text").setOutputCol("segment").linkFrom(inOp1)
+remover = StopWordsRemoverBatchOp().setSelectedCol("segment").setOutputCol("remover").linkFrom(segment)
+remover.print()
 
-segment.linkFrom(inOp)
-
-remover = StopWordsRemoverStreamOp().setSelectedCol("segment").setOutputCol("remover")
-
-remover.linkFrom(segment).print()
-
+segment = SegmentStreamOp().setSelectedCol("text").setOutputCol("segment").linkFrom(inOp2)
+remover = StopWordsRemoverStreamOp().setSelectedCol("segment").setOutputCol("remover").linkFrom(segment)
+remover.print()
 StreamOperator.execute()
 ```
 
@@ -48,7 +45,6 @@ StreamOperator.execute()
 3	3	二手中国糖尿病文献索引	二手 中国 糖尿病 文献 索引	二手 中国 糖尿病 文献 索引
 4	1	二手美国文学选读（ 下册 ）李宜燮南开大学出版社 9787310003969	二手 美国 文学 选读 （ 下册 ） 李宜燮 南开大学 出版社 97873100...	二手 美国 文学 选读 下册 李宜燮 南开大学 出版社 9787310003969
 ```
-
 
 
 

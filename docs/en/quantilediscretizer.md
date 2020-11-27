@@ -6,16 +6,24 @@ Quantile discretizer calculate the q-quantile as the interval, output the interv
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | numBuckets | number of buckets | Integer |  | 2 |
 | numBucketsArray | Array of num bucket | Integer[] |  | null |
-| leftOpen | left open | Boolean | | true |
+| leftOpen | indicating if the intervals should be opened on the left. | Boolean |  | true |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | outputCols | Names of the output columns | String[] |  | null |
-| handleInvalid |  Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String | | "keep" |
-| encode | Encode method，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   |INDEX |
+| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "KEEP" |
+| encode | encode type: INDEX, VECTOR, ASSEMBLED_VECTOR. | String |  | "INDEX" |
 | dropLast | drop last | Boolean |  | true |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 
@@ -111,4 +119,3 @@ Stream Prediction
 2	a	1	1	2	True
 3	a	2	2	2	False
 ```
-

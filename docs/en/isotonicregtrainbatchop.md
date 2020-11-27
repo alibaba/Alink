@@ -12,9 +12,8 @@ Isotonic regression.
 | weightCol | Name of the column indicating weight | String |  | null |
 | vectorCol | Name of a vector column | String |  | null |
 
-
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array([[0.35, 1],\
 [0.6, 1],\
@@ -43,14 +42,14 @@ predictOp = IsotonicRegPredictBatchOp().setPredictionCol("result")
 predictOp.linkFrom(model, data).collectToDataframe()
 ```
 
-#### Results
-##### Model
+## Results
+### Model
 | model_id   | model_info |
 | --- | --- |
 | 0          | {"vectorCol":"\"col2\"","featureIndex":"0","featureCol":null} |
 | 1048576    | [0.02,0.3,0.35,0.45,0.5,0.7] |
 | 2097152    | [0.5,0.5,0.6666666865348816,0.6666666865348816,0.75,0.75] |
-##### Prediction
+### Prediction
 | col1       | col2       | col3       | pred       |
 | --- | --- | --- | --- |
 | 1.0        | 0.9        | 1.0        | 0.75       |
@@ -68,4 +67,3 @@ predictOp.linkFrom(model, data).collectToDataframe()
 | 1.0        | 0.55       | 1.0        | 0.75       |
 | 0.0        | 0.2        | 1.0        | 0.5        |
 | 1.0        | 0.1        | 1.0        | 0.5        |
-

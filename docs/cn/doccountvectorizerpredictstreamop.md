@@ -1,20 +1,25 @@
 ## 功能介绍
-根据分词后的文本统计词的TF/IDF信息，将文本转化为稀疏的向量。
+* 根据文本特征生成组件产出的文本模型，将一段文本转化成tensor特征。
 
 ## 参数说明
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
+
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 
+
+
+## 文本特征生成训练
+<div align=center><img src="https://img.alicdn.com/tfs/TB1lQ2_bbH1gK0jSZFwXXc7aXXa-278-205.png" height="50%" width="20%"></div>
+
+## 文本特征生成预测
+<div align=center><img src="https://img.alicdn.com/tfs/TB13Vn.ba61gK0jSZFlXXXDKFXa-268-311.png" height="50%" width="20%"></div>
 
 ## 脚本示例
 #### 脚本代码
-
 ```
 import numpy as np
 import pandas as pd
@@ -31,7 +36,7 @@ inOp2 = StreamOperator.fromDataframe(df, schemaStr='id int, text string')
 segment = SegmentBatchOp().setSelectedCol("text").linkFrom(inOp1)
 train = DocCountVectorizerTrainBatchOp().setSelectedCol("text").linkFrom(segment)
 predictBatch = DocCountVectorizerPredictBatchOp().setSelectedCol("text").linkFrom(train, segment)
-[model,predict] = collectToDataframes(kmeans, predictBatch)
+[model,predict] = collectToDataframes(train, predictBatch)
 print(model)
 print(predict)
 
@@ -95,3 +100,4 @@ rowID   id                                               text
 3   3               $37$0:1.0 8:1.0 22:1.0 29:1.0 30:1.0
 4   4  $37$0:1.0 3:1.0 4:1.0 10:1.0 12:1.0 14:1.0 17:...
 ```
+

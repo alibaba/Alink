@@ -1,20 +1,21 @@
+# Vector标准化训练
+
 ## 功能介绍
 
  标准化是对数据进行按正态化处理的组件
  
 ## 参数说明 
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | withMean | 是否使用均值 | 是否使用均值，默认使用 | Boolean |  | true |
-| withStd | 是否使用标准差 | 是否使用标准差，默认使用 | Boolean |  | true |<!-- This is the end of auto-generated parameter info -->
+| withStd | 是否使用标准差 | 是否使用标准差，默认使用 | Boolean |  | true |
+
 
 ## 脚本示例
 
-#### 脚本
+### 脚本代码
 
 ```python
 data = np.array([["a", "10.0, 100"],\
@@ -30,7 +31,7 @@ trainOp = VectorStandardScalerTrainBatchOp().setSelectedCol("vector")
 model = trainOp.linkFrom(data)
 VectorStandardScalerPredictBatchOp().linkFrom(model, data).collectToDataframe()
 ```
-#### 结果
+### 脚本运行结果
 
 col1|vec
 ----|---

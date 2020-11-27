@@ -10,14 +10,12 @@ Calculate the evaluation metrics for binary classifiction.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| predictionDetailCol | Column name of prediction result, it will include detailed info. | String | ✓ |  |
 | labelCol | Name of the label column in the input table | String | ✓ |  |
-| predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | positiveLabelValueString | positive label value with string format. | String |  | null |
-
 
 ## Script Example
 #### Code
-
 ```
 import numpy as np
 import pandas as pd
@@ -51,5 +49,4 @@ Macro Precision: 0.3
 Micro Recall: 0.6
 Weighted Sensitivity: 0.6
 ```
-
 

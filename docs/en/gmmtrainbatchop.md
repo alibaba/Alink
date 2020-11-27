@@ -15,16 +15,20 @@ Gaussian Mixture is a kind of clustering algorithm.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| tol | Iteration tolerance. | Double |  | 0.01 |
 | vectorCol | Name of a vector column | String | ✓ |  |
 | k | Number of clusters. | Integer |  | 2 |
 | maxIter | Maximum iterations, The default value is 100 | Integer |  | 100 |
-
+| epsilon | When the distance between two rounds of centers is lower than epsilon, we consider the algorithm converges! | Double |  | 1.0E-4 |
+| randomSeed | Random seed, it should be positive integer | Integer |  | 0 |
 
 ## Script Example
-#### Code
+### Code
 ```python
- data = np.array([
+from pyalink.alink import *
+import pandas as pd
+import numpy as np
+
+data = np.array([
     ["-0.6264538 0.1836433"],
     ["-0.8356286 1.5952808"],
     ["0.3295078 -0.8204684"],
@@ -50,13 +54,13 @@ data = dataframeToOperator(df_data, schemaStr='features string', op_type='batch'
 
 gmm = GmmTrainBatchOp() \
     .setVectorCol("features") \
-    .setTol(0.)
+    .setEpsilon(0.)
 
 model = gmm.linkFrom(data)
 model.print()
 ```
 
-#### Results
+### Results
 
 ```
    model_id                                         model_info
@@ -64,4 +68,3 @@ model.print()
 1   1048576  {"clusterId":0,"weight":0.7354489748549162,"me...
 2   2097152  {"clusterId":1,"weight":0.26455102514508383,"m...
 ```
-

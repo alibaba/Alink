@@ -11,14 +11,13 @@ Imputer completes missing values in a dataSet, but only same type of columns can
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| strategy | the startegy to fill missing value, support mean, max, min or value | String |  | "mean" |
-| fillValue | fill all missing values with fillValue | String |  | null |
+| strategy | the startegy to fill missing value, support mean, max, min or value | String |  | "MEAN" |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
-
+| fillValue | fill all missing values with fillValue | Double |  | null |
 
 ## Script Example
 
-#### Script
+### Script
 ``` python
 data = np.array([["1:3,2:4,4:7", 1],\
     ["1:3,2:NaN", 3],\
@@ -29,7 +28,7 @@ vecFill = VectorImputerTrainBatchOp().setSelectedCol("vec")
 model = data.link(vecFill)
 VectorImputerPredictBatchOp().setOutputCol("vec1").linkFrom(model, data).collectToDataframe()
 ```
-#### Result
+### Result
 
 
 | vec         | id   | vec1              |

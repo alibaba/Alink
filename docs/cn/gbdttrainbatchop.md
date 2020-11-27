@@ -17,16 +17,20 @@
 | --- | --- | --- | --- | --- | --- |
 | learningRate | 学习率 | 学习率（默认为0.3） | Double |  | 0.3 |
 | minSumHessianPerLeaf | 叶子节点最小Hessian值 | 叶子节点最小Hessian值（默认为0） | Double |  | 0.0 |
+| lambda | xgboost中的l1正则项 | xgboost中的l1正则项 | Double |  | 0.0 |
+| gamma | xgboost中的l2正则项 | xgboost中的l2正则项 | Double |  | 0.0 |
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
 | numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | 100 |
 | minSamplesPerLeaf | 叶节点的最小样本个数 | 叶节点的最小样本个数 | Integer |  | 100 |
 | maxDepth | 树的深度限制 | 树的深度限制 | Integer |  | 6 |
 | subsamplingRatio | 每棵树的样本采样比例或采样行数 | 每棵树的样本采样比例或采样行数，行数上限100w行 | Double |  | 1.0 |
 | featureSubsamplingRatio | 每棵树特征采样的比例 | 每棵树特征采样的比例，范围为(0, 1]。 | Double |  | 1.0 |
-| groupCol | 分组单列名 | 分组单列名，可选 | String |  | null |
 | maxBins | 连续特征进行分箱的最大个数 | 连续特征进行分箱的最大个数。 | Integer |  | 128 |
+| newtonStep | 是否使用二阶梯度 | 是否使用二阶梯度 | Boolean |  | true |
+| featureImportanceType | 特征重要性类型 | 特征重要性类型（默认为GAIN） | String |  | "GAIN" |
 | featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ |  |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| categoricalCols | 离散特征列名 | 可选，默认选择String类型和Boolean类型作为离散特征，如果没有则为空 | String[] |  |  |
+| categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  |  |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | maxLeaves | 叶节点的最多个数 | 叶节点的最多个数 | Integer |  | 2147483647 |
 | minSampleRatioPerChild | 子节点占父节点的最小样本比例 | 子节点占父节点的最小样本比例 | Double |  | 0.0 |
@@ -34,13 +38,12 @@
 
 
 
-
 ### 参数建议
 对于训练效果来说，比较重要的参数是 树的棵树+学习率、叶子节点最小样本数、单颗树最大深度、特征采样比例。
 
-单个离散特征的取值种类数不能超过256，否则会出错。
-
 ## 脚本示例
+
+#### 脚本代码
 
 ```python
 import numpy as np
@@ -103,6 +106,7 @@ trainOp = (
     .setMinSamplesPerLeaf(1)
     .setLabelCol('label')
     .setFeatureCols(['f0', 'f1', 'f2', 'f3'])
+    .linkFrom(batchSource())
 )
 
 predictBatchOp = (
@@ -114,7 +118,7 @@ predictBatchOp = (
 (
     predictBatchOp
     .linkFrom(
-        batchSource().link(trainOp),
+        trainOp,
         batchSource()
     )
     .print()
@@ -122,7 +126,7 @@ predictBatchOp = (
 
 predictStreamOp = (
     GbdtPredictStreamOp(
-        batchSource().link(trainOp)
+        trainOp
     )
     .setPredictionDetailCol('pred_detail')
     .setPredictionCol('pred')
@@ -155,5 +159,3 @@ StreamOperator.execute()
 2	2.0	B	1	1	0	0	{"0":0.9849144951094335,"1":0.015085504890566462}
 3	4.0	D	3	3	1	1	{"0":0.01508550489056637,"1":0.9849144951094336}
 ```
-
-

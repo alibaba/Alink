@@ -10,15 +10,20 @@ Imputer completes missing values in a data set, but only same type of columns ca
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| strategy | the startegy to fill missing value, support mean, max, min or value | String |  | "mean" |
-| fillValue | fill all missing values with fillValue | String |  | null |
+| strategy | the startegy to fill missing value, support mean, max, min or value | String |  | "MEAN" |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
+| fillValue | fill all missing values with fillValue | Double |  | null |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 
-#### Script
+### Script
 ``` python
 data = np.array([["1:3,2:4,4:7", 1],\
     ["1:3,2:NaN", 3],\
@@ -28,7 +33,7 @@ data = dataframeToOperator(df, schemaStr="vec string, id bigint",op_type="batch"
 vecFill = VectorImputer().setSelectedCol("vec").setOutputCol("vec1")
 vecFill.fit(data).transform(data).collectToDataframe()
 ```
-#### Result
+### Result
 
 
 | vec         | id   | vec1              |

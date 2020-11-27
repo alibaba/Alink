@@ -12,9 +12,8 @@ PrefixSpan algorithm is used to mine frequent sequential patterns.
 | minConfidence | Minimum confidence | Double |  | 0.05 |
 | maxPatternLength | Maximum frequent pattern length | Integer |  | 10 |
 
-
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array([
     ["a;a,b,c;a,c;d;c,f"],
@@ -41,7 +40,7 @@ prefixSpan.getSideOutput(0).print()
 
 输入说明：一个sequence由多个element组成，element之间用分号分隔；一个element由多个item组成，item间用逗号分隔。
 
-#### Results
+### Results
 
 Output
 ```
@@ -75,5 +74,4 @@ Output
 6    c=>b             2     0.75        0.75                  3
 7    d=>c             2     0.75        1.00                  3
 ```
-
 

@@ -7,15 +7,20 @@ DocCountVectorizer converts a document to a sparse vector based on the document 
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | maxDF | When the number of documents a word appears in is above maxDF, the word will not be included in the dictionary. It could be an exact countor a fraction of the document number count. When maxDF is within [0, 1), it's used as a fraction. | Double |  | 1.7976931348623157E308 |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | minDF | When the number of documents a word appears in is below minDF, the word will not be included in the dictionary. It could be an exact countor a fraction of the document number count. When minDF is within [0, 1), it's used as a fraction. | Double |  | 1.0 |
 | featureType | Feature type, support IDF/WORD_COUNT/TF_IDF/Binary/TF | String |  | "WORD_COUNT" |
 | vocabSize | The maximum word number of the dictionary. If the total numbers of words are above this value,the words with lower document frequency will be filtered | Integer |  | 262144 |
 | minTF | When the number word in this document in is below minTF, the word will be ignored. It could be an exact count or a fraction of the document token count. When minTF is within [0, 1), it's used as a fraction. | Double |  | 1.0 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
 
 ## Script Example
 #### Code

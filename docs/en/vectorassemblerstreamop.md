@@ -10,28 +10,45 @@ VectorAssembler is a transformer that combines a given list of columns(vector or
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| handleInvalid | parameter for how to handle invalid data (NULL values) | String |  | "error" |
+| handleInvalidMethod | the handle method of invalid value. include： error, skip | String |  | "ERROR" |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | outputCol | Name of the output column | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
-#### Code
-```python
-data = np.array([["0", "$6$1:2.0 2:3.0 5:4.3", "3.0 2.0 3.0"],\
-["1", "$8$1:2.0 2:3.0 7:4.3", "3.0 2.0 3.0"],\
-["2", "$8$1:2.0 2:3.0 7:4.3", "2.0 3.0"]])
-df = pd.DataFrame({"id" : data[:,0], "c0" : data[:,1], "c1" : data[:,2]})
-data = dataframeToOperator(df, schemaStr="id string, c0 string, c1 string",op_type="stream")
-
-res = VectorAssemblerStreamOp()\
-			.setSelectedCols(["c0", "c1"])\
-			.setOutputCol("table2vec")
-res.linkFrom(data).print()
+### Script
+``` python
+data = np.array([\
+[2, 1, 1],\
+[3, 2, 1],\
+[4, 3, 2],\
+[2, 4, 1],\
+[2, 2, 1],\
+[4, 3, 2],\
+[1, 2, 1],\
+[5, 3, 3]])
+df = pd.DataFrame({"f0":data[:,0], "f1":data[:,1], "f2":data[:,2]})
+data = dataframeToOperator(df, schemaStr="f0 int, f1 int, f2 int",op_type="stream")
+colnames = ["f0","f1","f2"]
+VectorAssemblerStreamOp().setSelectedCols(colnames)\
+.setOutputCol("out").linkFrom(data).print()
 StreamOperator.execute()
 ```
 
-#### Results
+### Result
+f0 | f1 | f2 | out
+---|----|----|----
+2|1|1|2.0,1.0,1.0
+3|2|1|3.0,2.0,1.0
+4|3|2|4.0,3.0,2.0
+2|4|1|2.0,4.0,1.0
+2|2|1|2.0,2.0,1.0
+4|3|2|4.0,3.0,2.0
+1|2|1|1.0,2.0,1.0
+5|3|3|5.0,3.0,3.0
 
-<img src="https://img.alicdn.com/tfs/TB1_YGWokT2gK0jSZPcXXcKkpXa-448-114.jpg">
+
+
+
+
+

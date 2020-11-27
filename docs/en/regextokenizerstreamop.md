@@ -14,7 +14,6 @@ If gaps is true, it splits the document with the given pattern. If gaps is false
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 #### Code
 ```python
@@ -46,5 +45,3 @@ id	text	token
 2	1	Do you like math?	do you like math
 
 ```
-
-

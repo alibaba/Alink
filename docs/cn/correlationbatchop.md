@@ -5,20 +5,22 @@
 ## 参数说明
 
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
-| method | 方法 | 方法：包含"pearson"和"spearman"两种，默认值是pearson。 | String |  | "pearson" |<!-- This is the end of auto-generated parameter info -->
+| method | 方法 | 方法：包含"PEARSON"和"SPEARMAN"两种，PEARSON。 | String |  | "PEARSON" |
+
 
 
 
 ## 脚本示例
 
-#### 脚本
+### 脚本代码
 
 ```python
+import numpy as np
+import pandas as pd
+
 data = np.array([
          [0.0,0.0,0.0],
          [0.1,0.2,0.1],
@@ -34,14 +36,18 @@ source = dataframeToOperator(df, schemaStr='x1 double, x2 double, x3 double', op
 corr = CorrelationBatchOp()\
             .setSelectedCols(["x1","x2","x3"])
 
-correlation = source.link(corr).collectCorrelationResult()
-print(correlation.getCorrelation())
+corr = source.link(corr).collectCorrelation()
+print(corr)
 
 ```
-#### 结果
+### 脚本运行结果
 
 ```
-[[1.0, 0.9994126290576466, 0.9990251498141454], [0.9994126290576466, 1.0, 0.9985989260453877], [0.9990251498141454, 0.9985989260453877, 1.0]]
+colName|x1|x2|x3
+-------|--|--|--
+x1|1.0000|0.9994|0.9990
+x2|0.9994|1.0000|0.9986
+x3|0.9990|0.9986|1.0000
 ```
 
 

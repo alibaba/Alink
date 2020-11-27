@@ -6,14 +6,14 @@
 ## 算法参数
 
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+
 
 
 

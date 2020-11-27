@@ -5,8 +5,6 @@ FP Growth(Frequent Pattern growth)算法是一种非时序的关联分析算法.
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | itemsCol | 项集列名 | 项集列名 | String | ✓ |  |
@@ -15,12 +13,19 @@ FP Growth(Frequent Pattern growth)算法是一种非时序的关联分析算法.
 | minConfidence | 最小置信度 | 最小置信度 | Double |  | 0.05 |
 | maxPatternLength | 最大频繁项集长度 | 最大频繁项集长度 | Integer |  | 10 |
 | maxConsequentLength | 最大关联规则后继长度 | 最大关联规则后继(consequent)长度 | Integer |  | 1 |
-| minLift | 最小提升度 | 最小提升度 | Double |  | 1.0 |<!-- This is the end of auto-generated parameter info -->
+| minLift | 最小提升度 | 最小提升度 | Double |  | 1.0 |
+
 
 
 ## 脚本示例
-#### 脚本代码
+### 脚本代码
 ```python
+from pyalink.alink import *
+import pandas as pd
+import numpy as np
+
+useLocalEnv(1, config=None)
+
 data = np.array([
     ["A,B,C,D"],
     ["B,C,E"],
@@ -44,9 +49,11 @@ fpGrowth.linkFrom(data)
 
 fpGrowth.print()
 fpGrowth.getSideOutput(0).print()
+resetEnv()
+
 ```
 
-#### 脚本运行结果
+### 脚本运行结果
 
 频繁项集输出：
 

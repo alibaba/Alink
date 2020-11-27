@@ -10,11 +10,18 @@ Imputer completes missing values in a dataset, but only same type of columns can
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| strategy | the startegy to fill missing value, support mean, max, min or value | String |  | "mean" |
-| fillValue | fill all missing values with fillValue | String |  | null |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| strategy | the startegy to fill missing value, support mean, max, min or value | String |  | "MEAN" |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
+| fillValue | fill all missing values with fillValue | String |  | null |
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | outputCols | Names of the output columns | String[] |  | null |
-
 
 ## Script Example
 
@@ -51,16 +58,15 @@ StreamOperator.execute()
 ```
 
 
-#### Results
+### Results
 
-```
-	col1	col2	col3
-0	a	10.000000	100
-1	a	1.400000	1
-2	b	-2.500000	9
-3	b	-2.200000	9
-4	c	100.200000	1
-5	c	100.900000	1
-6	d	-99.900000	100
-7	None	15.414286	31
-```
+| col1  |       col2  | col3  |
+|-------|-------------|-------|
+|     a |   10.000000 |   100 |
+|     b |   -2.500000 |     9 |
+|     c |  100.200000 |     1 |
+|     d |  -99.900000 |   100 |
+|     a |    1.400000 |     1 |
+|     b |   -2.200000 |     9 |
+|     c |  100.900000 |     1 |
+|  null |   15.414286 |    31 |

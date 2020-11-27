@@ -7,11 +7,14 @@ Linear regression predict stream operator. this operator predict data's regressi
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | vectorCol | Name of a vector column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
-#### Script
+### Code
 ``` python
+import numpy as np
+import pandas as pd
+from pyalink.alink import *
 data = np.array([
     [2, 1, 1],
     [3, 2, 1],
@@ -36,7 +39,7 @@ predictor.linkFrom(streamData).print()
 StreamOperator.execute()
 ```
 
-#### Result
+### Result
 f0 | f1 | label | pred
 ---|----|-------|-----
    2 |  1   |   1  | 1.000014

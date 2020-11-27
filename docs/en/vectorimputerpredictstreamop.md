@@ -11,11 +11,11 @@ Imputer completes missing values in a dataset, but only same type of columns can
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 
-#### Script
+### Script
 ``` python
 data = np.array([["1:3,2:4,4:7", 1],\
     ["1:3,2:NaN", 3],\
@@ -29,7 +29,7 @@ model = data.link(vecFill)
 VectorImputerPredictStreamOp(model).setOutputCol("vec1").linkFrom(dataStream).print()
 StreamOperator.execute()
 ```
-#### Result
+### Result
 
 
 | vec         | id   | vec1              |

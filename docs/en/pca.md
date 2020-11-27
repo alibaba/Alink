@@ -6,17 +6,21 @@ PCA is dimension reduction of discrete feature, projects vectors to a low-dimens
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| k | the value of K. | Integer | ✓ |  |
-| calculationType | compute type, be CORR, COV_SAMPLE, COVAR_POP. | String |  | "CORR" |
-| transformType | 'SIMPLE' or 'SUBMEAN', SIMPLE is data * model, SUBMEAN is (data - mean) * model | String |  | "SIMPLE" |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | selectedCols | Names of the columns used for processing | String[] |  | null |
 | vectorCol | Name of a vector column | String |  | null |
-| withMean | Centers the data with mean before scaling. | Boolean |  | true |
-| withStd | Scales the data to unit standard deviation. true by default | Boolean |  | true |
+| k | the value of K. | Integer | ✓ |  |
+| calculationType | compute type, be CORR, COV. | String |  | "CORR" |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | vectorCol | Name of a vector column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 
@@ -65,7 +69,6 @@ x1|x2|x3|pred
 9.1|9.1|9.6|3.182618319978973,0.027469531992220464
 0.1|0.2|0.1|0.045855205015063565,-0.012182917696915518
 0.0|0.0|0.0|0.0,0.0
-
 
 
 

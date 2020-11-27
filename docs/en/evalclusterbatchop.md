@@ -2,8 +2,8 @@
 Calculate the cluster evaluation metrics for clustering.
  
  PredictionCol is required for evaluation. LabelCol is optional, if given, NMI/Purity/RI/ARI will be calcuated.
- VectorCol is also optional, if given, SilhouetteCoefficient/SSB/SSW/Compactness/SEPERATION/DAVIES_BOULDIN
- /CALINSKI_HARABAZ will be calculated. If only predictionCol is given, only K/ClusterArray/CountArray will be
+ VectorCol is also optional, if given, SilhouetteCoefficient/SSB/SSW/Compactness/SP/DB
+ /VRC will be calculated. If only predictionCol is given, only K/ClusterArray/CountArray will be
  calculated.
 
 ## Parameters
@@ -12,8 +12,7 @@ Calculate the cluster evaluation metrics for clustering.
 | labelCol | Name of the label column in the input table | String |  | null |
 | vectorCol | Name of a vector column | String |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
-| distanceType | Distance type for clustering, support EUCLIDEAN and COSINE. | String |  | "EUCLIDEAN" |
-
+| distanceType | Distance type for clustering | String |  | "EUCLIDEAN" |
 
 ## Script Example
 #### Code
@@ -38,12 +37,12 @@ print("Total Samples Number:", metrics.getCount())
 print("Cluster Number:", metrics.getK())
 print("Cluster Array:", metrics.getClusterArray())
 print("Cluster Count Array:", metrics.getCountArray())
-print("CP:", metrics.getCompactness())
-print("DB:", metrics.getDaviesBouldin())
-print("SP:", metrics.getSeperation())
+print("CP:", metrics.getCp())
+print("DB:", metrics.getDb())
+print("SP:", metrics.getSp())
 print("SSB:", metrics.getSsb())
 print("SSW:", metrics.getSsw())
-print("CH:", metrics.getCalinskiHarabaz())
+print("CH:", metrics.getVrc())
 ```
 
 #### Results

@@ -7,7 +7,6 @@ Append an id column to BatchOperator. the id can be DENSE or UNIQUE
 | appendType | append type. DENSE or UNIQUE | String |  | "DENSE" |
 | idCol | Id column name | String |  | "append_id" |
 
-
 ## Script Example
 
 #### Code
@@ -69,5 +68,4 @@ def batchSource():
 2  3.0  C   2   2      1          2
 3  4.0  D   3   3      1          3
 ```
-
 

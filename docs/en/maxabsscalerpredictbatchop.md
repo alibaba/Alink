@@ -6,12 +6,12 @@ MaxAbsScaler transforms a dataSet of rows,rescaling each feature to range
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | outputCols | Names of the output columns | String[] |  | null |
-
 
 ## Script Example
 
-#### Script
+### Code
 
 
 ```python
@@ -53,7 +53,7 @@ StreamOperator.execute()
 
 ```
 
-#### Results
+### Results
 
 ```
   col1      col2  col3
@@ -66,7 +66,6 @@ StreamOperator.execute()
 6    c  1.000000  0.01
 
 ```
-
 
 
 

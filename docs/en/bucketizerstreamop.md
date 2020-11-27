@@ -8,16 +8,16 @@ Map a continuous variable into several buckets.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| handleInvalid |  Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String | | "keep" |
-| encode | Encode method，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   |INDEX |
-| dropLast | drop last | Boolean |  | true |
-| leftOpen | left open | Boolean | | true |
-| cutsArray | Split points array, each of them is used for the corresponding selected column. | double[][] | ✓ |  |
+| cutsArray | Cut points array, each of them is used for the corresponding selected column. | double[][] |  |  |
+| cutsArrayStr | Cut points array, each of them is used for the corresponding selected column. | String[] |  |  |
+| leftOpen | indicating if the intervals should be opened on the left. | Boolean |  | true |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
-| outputCols | Names of the output columns | String[] |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
-
+| outputCols | Names of the output columns | String[] |  | null |
+| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "KEEP" |
+| encode | encode type: INDEX, VECTOR, ASSEMBLED_VECTOR. | String |  | "INDEX" |
+| dropLast | drop last | Boolean |  | true |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 #### Code
@@ -35,10 +35,10 @@ df = pd.DataFrame({"double": data[:, 0], "bool": data[:, 1], "number": data[:, 2
 inOp1 = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
 inOp2 = StreamOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
 
-bucketizer = BucketizerBatchOp().setSelectedCols(["double"]).setSplitsArray(["-Infinity:2:Infinity"])
+bucketizer = BucketizerBatchOp().setSelectedCols(["double"]).setCutsArray([[2.0]])
 bucketizer.linkFrom(inOp1).print()
 
-bucketizer = BucketizerStreamOp().setSelectedCols(["double"]).setSplitsArray(["-Infinity:2:Infinity"])
+bucketizer = BucketizerStreamOp().setSelectedCols(["double"]).setCutsArray([[2.0]])
 bucketizer.linkFrom(inOp2).print()
 
 StreamOperator.execute()

@@ -9,10 +9,9 @@ VectorInteraction is a Transformer which takes vector or double-valued columns, 
 | outputCol | Name of the output column | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 
-#### Script
+### Script
 ``` python
 data = np.array([["$8$1:3,2:4,4:7", "$8$1:3,2:4,4:7"],\
     ["$8$0:3,5:5", "$8$1:2,2:4,4:7"],\
@@ -23,7 +22,7 @@ vecInter = VectorInteractionStreamOp().setSelectedCols(["vec1","vec2"]).setOutpu
 data.link(vecInter).print()
 StreamOperator.execute()
 ```
-#### Result
+### Result
 
 
 | vec1           | vec2           | vec_product                              |

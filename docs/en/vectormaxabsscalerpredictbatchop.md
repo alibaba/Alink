@@ -7,11 +7,11 @@ MaxAbsScaler transforms a dataSet of rows,rescaling each feature to range
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([["a", "10.0, 100"],\
@@ -30,7 +30,7 @@ model = trainOp.linkFrom(data)
 batchPredictOp = VectorMaxAbsScalerPredictBatchOp()
 batchPredictOp.linkFrom(model, data).collectToDataframe()
 ```
-#### Result
+### Results
 
 col1|vec
 ----|---
@@ -41,7 +41,6 @@ a|0.09910802775024777,1.0
 b|-0.02180376610505451,0.09
 c|0.9930624380574826,0.01
 a|0.013875123885034686,0.01
-
 
 
 

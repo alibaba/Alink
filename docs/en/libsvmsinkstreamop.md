@@ -4,22 +4,34 @@ StreamOperator to sink data in libsvm format.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| filePath | File path | String | ✓ |  |
+| filePath | File path with file system. | String | ✓ |  |
 | overwriteSink | Whether to overwrite existing data. | Boolean |  | false |
 | vectorCol | Name of a vector column | String | ✓ |  |
 | labelCol | Name of the label column in the input table | String | ✓ |  |
-
+| startIndex | start index | Integer |  | 1 |
 
 ## Script Example
-#### Script
-```
-URL = "http://alink-testdata.cn-hangzhou.oss.aliyun-inc.com/csv/iris_vec.csv";
-SCHEMA_STR = "features string, label double"
-data = CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 
-LibSvmSinkStreamOp().setFilePath('/tmp/libsvm.csv') \
-    .setLabelCol("label").setVectorCol("features").setOverwriteSink(True).linkFrom(data)
+### Code
+
+```python
+from pyalink.alink import *
+import pandas as pd
+
+useLocalEnv(1, config=None)
+
+data = {
+  'f1': ['1:2.0 2:1.0 4:0.5','1:2.0 2:1.0 4:0.5','1:2.0 2:1.0 4:0.5'],
+  'f2': [1.5, 1.7, 3.6]
+}
+df_data = pd.DataFrame(data)
+schema = 'f1 string, f2  double'
+stream_data = dataframeToOperator(df_data, schemaStr=schema, op_type='stream')
+
+sink = LibSvmSinkStreamOp().setFilePath('/tmp/abc.svm').setLabelCol("f2").setVectorCol("f1").setOverwriteSink(True)
+stream_data = stream_data.link(sink)
+
 StreamOperator.execute()
+resetEnv()
 
 ```
-

@@ -1,57 +1,114 @@
-# one-hot编码
+
+
+# one-hot编码组件
 
 ## 算法介绍
 
 one-hot编码，也称独热编码，对于每一个特征，如果它有m个可能值，那么经过 独热编码后，就变成了m个二元特征。并且，这些特征互斥，每次只有一个激活。 因此，数据会变成稀疏的，输出结果也是kv的稀疏结构。
 
+### 编码结果
+##### Encode ——> INDEX
+预测结果为单个token的index
+
+##### Encode ——> VECTOR
+预测结果为稀疏向量:
+
+    1. dropLast为true,向量中非零元个数为0或者1
+    2. dropLast为false,向量中非零元个数必定为1
+
+##### Encode ——> ASSEMBLED_VECTOR
+预测结果为稀疏向量,是预测选择列中,各列预测为VECTOR时,按照选择顺序ASSEMBLE的结果。
+
+#### 向量维度
+##### Encode ——> Vector
+<div align=center><img src="http://latex.codecogs.com/gif.latex?vectorSize = distinct token Number - dropLast(true: 1, false: 0) + enableElse(true: 1, false:0) + (handleInvalid: keep(1), skip(0), error(0))" ></div>
+
+    distinct token Number: 训练集中指定列的去重后的token数目
+
+    dropLast: 预测参数
+
+    enableElse: 训练时若填写discreteThresholds或discreteThresholdsArray则为true，默认为false
+
+    handleInvalid: 预测参数
+
+#### Token index
+##### Encode ——> Vector
+
+    1. 训练集中出现过的token: 唯一的非零元为模型中token对应的token_index,若 dropLast为true, token_index最大的值会被丢掉，预测结果为全零元
+
+    2. null: 
+        2.1 handleInvalid为keep: 唯一的非零元为:distinct token Number - dropLast(true: 1, false: 0)
+        2.2 handleInvalid为skip: null
+        2.3 handleInvalid为error: 报错
+
+    3. 训练集中未出现过的token: 
+        3.1 enableElse为true
+            3.1.1 handleInvalid为keep: 唯一的非零元为:distinct token Number - dropLast(true: 1, false: 0) + 1
+            3.1.2 handleInvalid为skip: 唯一的非零元为:distinct token Number - dropLast(true: 1, false: 0)
+            3.1.3 handleInvalid为error: 唯一的非零元为:distinct token Number - dropLast(true: 1, false: 0)
+
+        3.2 enableElse为false
+            3.2.1 handleInvalid为keep: 唯一的非零元为:distinct token Number - dropLast(true: 1, false: 0)
+            3.2.2 handleInvalid为skip: null
+            3.2.3 handleInvalid为error: 报错
+
+
 ## 参数说明
 
-<!-- OLD_TABLE -->
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
- 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| discreteThresholdsArray | 离散个数阈值 | 离散个数阈值，每一列对应数组中一个元素 | Integer[] |  | |
-| discreteThresholds | 离散个数阈值 | 离散个数阈值，低于该阈值的离散样本将不会单独成一个组别 | Integer |  | Integer.MIN_VALUE |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
- selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
+| discreteThresholds | 离散个数阈值 | 离散个数阈值，低于该阈值的离散样本将不会单独成一个组别。 | Integer |  | -2147483648 |
+| discreteThresholdsArray | 离散个数阈值 | 离散个数阈值，每一列对应数组中一个元素。 | Integer[] |  | null |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | outputCols | 输出结果列列名数组 | 输出结果列列名数组，可选，默认null | String[] |  | null |
-| handleInvalid | 未知Token处理策略 | 未知Token处理策略，"keep", "skip", "error" | String | | "keep" |
-| encode | 编码方式 | 编码方式，"INDEX", "VECTOR", "ASSEMBLED_VECTOR" | String |   | "ASSEMBLED_VECTOR" |
-| dropLast | 是否删除最后一个元素 | 是否删除最后一个元素 | Boolean |  | true |
-
-<!-- This is the end of auto-generated parameter info -->
+| handleInvalid | 未知token处理策略 | 未知token处理策略。"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常 | String |  | "KEEP" |
+| encode | 编码方法 | 编码方法 | String |  | "ASSEMBLED_VECTOR" |
+| dropLast | 是否删除最后一个元素 | 删除最后一个元素是为了保证线性无关性。默认true | Boolean |  | true |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 
 
 ## 脚本示例
-#### 运行脚本
+#### 脚本代码
 ```python
-import numpy as np
-import pandas as pd
 data = np.array([
-    [1.1, True, "2", "A"],
-    [1.1, False, "2", "B"],
-    [1.1, True, "1", "B"],
-    [2.2, True, "1", "A"]
+    ["a", 1],
+    ["b", 1],
+    ["c", 1],
+    ["e", 2],
+    ["a", 2],
+    ["b", 1],
+    ["c", 2],
+    ["d", 2],
+    [None, 1]
 ])
-df = pd.DataFrame({"double": data[:, 0], "bool": data[:, 1], "number": data[:, 2], "str": data[:, 3]})
 
-inOp1 = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
+# load data
+df = pd.DataFrame({"query": data[:, 0], "label": data[:, 1]})
 
-onehot = OneHotEncoder().setSelectedCols(["double", "bool"]).setDiscreteThresholds(2).setEncode("ASSEMBLED_VECTOR").setOutputCols(["pred"]).setDropLast(False)
-onehot.fit(inOp).transform(inOp).collectToDataframe()
+inOp = dataframeToOperator(df, schemaStr='query string, weight long', op_type='batch')
+
+# one hot train
+one_hot = OneHotEncoder().setSelectedCols(["query"]).setOutputCols(["output"])
+one_hot.fit(inOp).transform(inOp).print()
 ```
 
-#### 运行结果
-
+#### 脚本运行结果
 ```python
-   double   bool  number str            pred
-0     1.1   True       2   A  $6$0:1.0 3:1.0
-1     1.1  False       2   B  $6$0:1.0 5:1.0
-2     1.1   True       1   B  $6$0:1.0 3:1.0
-3     2.2   True       1   A  $6$2:1.0 3:1.0
+  query  weight    output
+0     a       1       $5$
+1     b       1  $5$0:1.0
+2     c       1  $5$1:1.0
+3     e       2  $5$3:1.0
+4     a       2       $5$
+5     b       1  $5$0:1.0
+6     c       2  $5$1:1.0
+7     d       2  $5$2:1.0
+8   NaN       1  $5$4:1.0
 ```
+
+
 
 
 

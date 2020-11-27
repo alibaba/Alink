@@ -1,14 +1,14 @@
 ## Description
-Find  the closest cluster center for every point.
+KMeans prediction based on the model fitted by KMeansTrainBatchOp.
 
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | predictionDistanceCol | Column name of prediction. | String |  |  |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
 
 ## Script Example
 #### Code
@@ -60,7 +60,6 @@ rowID   id          vec  pred
 4   4  9.1 9.1 9.1     0
 5   5  9.2 9.2 9.2     0
 ```
-
 
 
 

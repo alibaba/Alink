@@ -5,14 +5,18 @@ Gaussian Mixture prediction based on the model fitted by GmmTrainBatchOp.
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | vectorCol | Name of a vector column | String | ✓ |  |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
-#### Code
+### Code
 ```python
+from pyalink.alink import *
+import pandas as pd
+import numpy as np
+
 data = np.array([
     ["-0.6264538 0.1836433"],
     ["-0.8356286 1.5952808"],
@@ -39,7 +43,7 @@ data = dataframeToOperator(df_data, schemaStr='features string', op_type='batch'
 
 gmm = GmmTrainBatchOp() \
     .setVectorCol("features") \
-    .setTol(0.)
+    .setEpsilon(0.)
 
 model = gmm.linkFrom(data)
 
@@ -51,7 +55,7 @@ predictor = GmmPredictBatchOp() \
 predictor.linkFrom(model, data).print()
 ```
 
-#### Results
+### Results
 
 ```
                  features  cluster_id              cluster_detail
@@ -71,4 +75,3 @@ predictor.linkFrom(model, data).print()
 13    9.8442045 8.5292476           1  2.5273123050926845E-43 1.0
 14   9.5218499 10.4179416           1  1.7314580596765865E-46 1.0
 ```
-

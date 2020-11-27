@@ -21,12 +21,14 @@ Gradient Boosting(often abbreviated to GBDT or GBM) is a popular supervised lear
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
+| vectorCol | Name of a vector column | String |  | null |
+| numThreads | Thread number of operator. | Integer |  | 1 |
 | predictionCol | Column name of prediction. | String | ✓ |  |
-| predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
+
+#### Code
 
 ```python
 import numpy as np
@@ -89,6 +91,7 @@ trainOp = (
     .setMinSamplesPerLeaf(1)
     .setLabelCol('label')
     .setFeatureCols(['f0', 'f1', 'f2', 'f3'])
+    .linkFrom(batchSource())
 )
 
 predictBatchOp = (
@@ -99,7 +102,7 @@ predictBatchOp = (
 (
     predictBatchOp
     .linkFrom(
-        batchSource().link(trainOp),
+        trainOp,
         batchSource()
     )
     .print()
@@ -107,7 +110,7 @@ predictBatchOp = (
 
 predictStreamOp = (
     GbdtRegPredictStreamOp(
-        batchSource().link(trainOp)
+        trainOp
     )
     .setPredictionCol('pred')
 )
@@ -131,4 +134,13 @@ Stream Prediction
 2	2.0	B	1	1	0	0.0
 3	4.0	D	3	3	1	1.0
 ```
+
+
+
+- 备注：
+
+1. 该组件支持在可视化大屏直接查看模型信息，参见 [模型类组件可视化](https://yuque.antfin-inc.com/pai-user/manual/mqb0xh)。
+
+
+
 

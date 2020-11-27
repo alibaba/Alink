@@ -7,16 +7,15 @@ MultiStringIndexer训练组件的作用是训练一个模型用于将多列字�
 ## 参数说明
 
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| stringOrderType | Token排序方法 | Token排序方法 | String |  | "random" |<!-- This is the end of auto-generated parameter info -->
+| stringOrderType | Token排序方法 | Token排序方法 | String |  | "RANDOM" |
+
 
 
 ## 脚本示例
-#### 脚本代码
+### 脚本代码
 ```python
 data = np.array([
     ["football"],
@@ -41,7 +40,7 @@ model = stringindexer.linkFrom(data)
 model.print()
 ```
 
-#### 脚本运行结果
+### 脚本运行结果
 
 模型表：
 ```

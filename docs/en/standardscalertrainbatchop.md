@@ -8,10 +8,9 @@ StandardScaler transforms a dataset, normalizing each feature to have unit stand
 | withMean | Centers the data with mean before scaling. | Boolean |  | true |
 | withStd | Scales the data to unit standard deviation. true by default | Boolean |  | true |
 
-
 ## Script Example
 
-#### Script
+### Code
 
 ```python
 data = np.array([
@@ -50,7 +49,7 @@ predictStreamOp.linkFrom(sinOp).print()
 
 StreamOperator.execute()
 ```
-#### Result
+### Results
 
 ```
   col1      col2      col3
@@ -62,7 +61,6 @@ StreamOperator.execute()
 5    b -0.254902 -0.481449
 6    c  1.237091 -0.652089
 ```
-
 
 
 

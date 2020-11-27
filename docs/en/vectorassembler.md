@@ -9,14 +9,18 @@ VectorAssembler is a transformer that combines a given list of columns(vector or
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| handleInvalid | parameter for how to handle invalid data (NULL values) | String |  | "error" |
+| handleInvalidMethod | the handle method of invalid value. include： error, skip | String |  | "ERROR" |
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | outputCol | Name of the output column | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array([["0", "$6$1:2.0 2:3.0 5:4.3", "3.0 2.0 3.0"],\
 ["1", "$8$1:2.0 2:3.0 7:4.3", "3.0 2.0 3.0"],\
@@ -30,7 +34,6 @@ res = VectorAssembler()\
 res.transform(data).collectToDataframe()
 ```
 
-#### Results
+### Results
 
 <img src="https://img.alicdn.com/tfs/TB1_YGWokT2gK0jSZPcXXcKkpXa-448-114.jpg">
-

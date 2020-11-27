@@ -10,9 +10,8 @@ Discrete Cosine Transform(DCT) transforms a real-valued sequence in the time dom
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
-#### Code
+### Code
 ```python
 data = np.array([
     ["-0.6264538 0.1836433"],
@@ -38,14 +37,14 @@ df_data = pd.DataFrame({
 
 data = dataframeToOperator(df_data, schemaStr='features string', op_type='batch')
 
-dct = DctBatchOp() \
+dct = DCTBatchOp() \
     .setSelectedCol("features") \
     .setOutputCol("result")
 
 dct.linkFrom(data).print()
 ```
 
-#### Results
+### Results
 ```
                  features                                    result
 0    -0.6264538 0.1836433  -0.31311430733060563 -0.5728251528295567
@@ -64,4 +63,3 @@ dct.linkFrom(data).print()
 13    9.8442045 8.5292476     12.991992573716212 0.9298149409580412
 14   9.5218499 10.4179416    14.099561785095878 -0.6336325176349823
 ```
-

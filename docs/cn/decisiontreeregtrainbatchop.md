@@ -1,15 +1,13 @@
-# 决策树回归训练
-
+# 决策树回归
 ## 功能介绍
 
-- 本函数支持cart回归
+- 决策树回归组件支持稠密数据格式
 
 - 支持带样本权重的训练
 
 ## 参数说明
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
+
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | maxDepth | 树的深度限制 | 树的深度限制 | Integer |  | 2147483647 |
@@ -19,11 +17,13 @@
 | maxMemoryInMB | 树模型中用来加和统计量的最大内存使用数 | 树模型中用来加和统计量的最大内存使用数 | Integer |  | 64 |
 | featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ |  |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| categoricalCols | 离散特征列名 | 可选，默认选择String类型和Boolean类型作为离散特征，如果没有则为空 | String[] |  |  |
+| categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  |  |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | maxLeaves | 叶节点的最多个数 | 叶节点的最多个数 | Integer |  | 2147483647 |
 | minSampleRatioPerChild | 子节点占父节点的最小样本比例 | 子节点占父节点的最小样本比例 | Double |  | 0.0 |
-| minInfoGain | 分裂的最小增益 | 分裂的最小增益 | Double |  | 0.0 |<!-- This is the end of auto-generated parameter info -->
+| minInfoGain | 分裂的最小增益 | 分裂的最小增益 | Double |  | 0.0 |
+
+
 
 ## 脚本示例
 
@@ -82,30 +82,30 @@ def streamSource():
         op_type='stream'
     )
 
-
 trainOp = (
     DecisionTreeRegTrainBatchOp()
     .setLabelCol('label')
     .setFeatureCols(['f0', 'f1', 'f2', 'f3'])
+    .linkFrom(batchSource())
 )
 
 predictBatchOp = (
-    DecisionTreeRegPredictBatchOp()
+    DecisionTreePredictBatchOp()
     .setPredictionCol('pred')
 )
 
 (
     predictBatchOp
     .linkFrom(
-        batchSource().link(trainOp),
+        trainOp,
         batchSource()
     )
     .print()
 )
 
 predictStreamOp = (
-    DecisionTreeRegPredictStreamOp(
-        batchSource().link(trainOp)
+    DecisionTreePredictStreamOp(
+        trainOp
     )
     .setPredictionCol('pred')
 )
@@ -132,12 +132,16 @@ StreamOperator.execute()
 ```
 流预测结果
 ```
-	f0	f1	f2	f3	label	pred
+f0	f1	f2	f3	label	pred
 0	1.0	A	0	0	0	0.0
-1	3.0	C	2	2	1	1.0
-2	2.0	B	1	1	0	0.0
+1	2.0	B	1	1	0	0.0
+2	3.0	C	2	2	1	1.0
 3	4.0	D	3	3	1	1.0
 ```
 
+
+## 备注
+
+- 该组件支持在可视化大屏直接查看模型信息
 
 

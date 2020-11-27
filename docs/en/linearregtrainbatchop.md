@@ -16,11 +16,14 @@ Train a regression model.
 | vectorCol | Name of a vector column | String |  | null |
 | standardization | Whether standardize training data or not, default is true | Boolean |  | true |
 
-
 ## Script Example
 
-#### Script
-``` python
+### Code
+```python
+import numpy as np
+import pandas as pd
+from pyalink.alink import *
+
 data = np.array([
     [2, 1, 1],
     [3, 2, 1],
@@ -43,7 +46,7 @@ predictor = LinearRegPredictBatchOp().setPredictionCol("pred")
 predictor.linkFrom(model, batchData).print()
 ```
 
-#### Result
+### Result
 f0 | f1 | label | pred
 ---|----|-------|-----
    2 |  1   |   1  | 1.000014
@@ -54,6 +57,5 @@ f0 | f1 | label | pred
    4 |  3   |   2  | 2.076934
    1 |  2   |   1  | 0.553842
    5 |  3   |   3  | 2.569250
-
 
 

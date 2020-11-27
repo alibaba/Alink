@@ -7,11 +7,14 @@ Ridge regression predict batch operator.
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | vectorCol | Name of a vector column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
 
 ## Script Example
-#### Script
-```python
+### Code
+``` python
+import numpy as np
+import pandas as pd
+from pyalink.alink import *
 data = np.array([
     [2, 1, 1],
     [3, 2, 1],
@@ -33,7 +36,7 @@ model = batchData.link(ridge)
 predictor = RidgeRegPredictBatchOp().setPredictionCol("pred")
 predictor.linkFrom(model, batchData).print()
 ```
-#### Result
+### Result
 f0 | f1 | label | pred
 ---|----|-------|-----
  2 |  1     | 1 | 0.830304
@@ -44,7 +47,6 @@ f0 | f1 | label | pred
    4 |  3    |  2 | 1.924320
    1 |  2    |  1 | 0.502506
    5 |  3    |  3 | 2.361724
-
 
 
 

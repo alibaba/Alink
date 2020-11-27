@@ -5,19 +5,17 @@
 
 ## 算法参数
 
-<!-- This is the start of auto-generated parameter info -->
-<!-- DO NOT EDIT THIS PART!!! -->
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | scalingVector | 尺度变化向量。 | 尺度的变化向量。 | String | ✓ |  |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |<!-- This is the end of auto-generated parameter info -->
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 
 
 ## 脚本示例
 
-#### 运行脚本
+### 运行脚本
 ```
 data = np.array([["1:3,2:4,4:7", 1],\
     ["0:3,5:5", 3],\
@@ -30,7 +28,7 @@ vecEP = VectorElementwiseProductStreamOp().setSelectedCol("vec") \
 data.link(vecEP).print()
 StreamOperator.execute()
 ```
-#### 运行结果
+### 运行结果
 | vec         | id   | vec1              |
 | ----------- | ---- | ----------------- |
 | 1:3,2:4,4:7 | 1    | 1:9.0 2:0.0 4:0.0 |

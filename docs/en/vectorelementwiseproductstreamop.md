@@ -11,10 +11,9 @@ VectorEleWiseProduct multiplies each input vector by a provided “scaling” ve
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 
-
 ## Script Example
 
-#### Script
+### Script
 ```
 data = np.array([["1:3,2:4,4:7", 1],\
     ["0:3,5:5", 3],\
@@ -27,10 +26,9 @@ vecEP = VectorElementwiseProductStreamOp().setSelectedCol("vec") \
 data.link(vecEP).print()
 StreamOperator.execute()
 ```
-#### Result
+### Result
 | vec         | id   | vec1              |
 | ----------- | ---- | ----------------- |
 | 1:3,2:4,4:7 | 1    | 1:9.0 2:0.0 4:0.0 |
 | 0:3,5:5     | 3    | 0:0.0 5:23.0      |
 | 2:4,4:5     | 4    | 2:0.0 4:0.0       |
-

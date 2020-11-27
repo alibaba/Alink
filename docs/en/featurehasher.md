@@ -11,7 +11,11 @@ Projects a number of categorical or numerical features into a feature vector of 
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
 | numFeatures | The number of features. It will be the length of the output vector. | Integer |  | 262144 |
 | categoricalCols | Names of the categorical columns used for training in the input table | String[] |  |  |
-
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 #### Code
@@ -28,8 +32,7 @@ df = pd.DataFrame({"double": data[:, 0], "bool": data[:, 1], "number": data[:, 2
 
 inOp = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
 binarizer = FeatureHasher().setSelectedCols(["double", "bool", "number", "str"]).setOutputCol("output").setNumFeatures(200)
-binarizer.transform(inOp).print().2, True, "1", "A"]
-])
+binarizer.transform(inOp).print()
 df = pd.DataFrame({"double": data[:, 0], "bool": data[:, 1], "number": data[:, 2], "str": data[:, 3]})
 
 inOp1 = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
@@ -54,4 +57,3 @@ StreamOperator.execute()
 2     1.1   True       1   B  $200$13:1.0 38:1.1 76:1.0 195:1.0
 3     2.2   True       1   A  $200$13:1.0 38:2.2 45:1.0 195:1.0
 ```
-

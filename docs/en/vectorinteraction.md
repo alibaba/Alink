@@ -8,7 +8,11 @@ VectorInteraction is a Transformer which takes vector or double-valued columns, 
 | selectedCols | Names of the columns used for processing | String[] | ✓ |  |
 | outputCol | Name of the output column | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 

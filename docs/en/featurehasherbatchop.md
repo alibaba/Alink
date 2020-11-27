@@ -12,7 +12,6 @@ Projects a number of categorical or numerical features into a feature vector of 
 | numFeatures | The number of features. It will be the length of the output vector. | Integer |  | 262144 |
 | categoricalCols | Names of the categorical columns used for training in the input table | String[] |  |  |
 
-
 ## Script Example
 #### Code
 ```
@@ -48,4 +47,3 @@ StreamOperator.execute()
 2     1.1   True       1   B  $200$13:1.0 38:1.1 76:1.0 195:1.0
 3     2.2   True       1   A  $200$13:1.0 38:2.2 45:1.0 195:1.0
 ```
-

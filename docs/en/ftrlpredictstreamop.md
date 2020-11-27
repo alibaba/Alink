@@ -10,50 +10,49 @@ Ftrl predictor receive two stream : model stream and data stream. It using updat
 | predictionCol | Column name of prediction. | String | ✓ |  |
 | predictionDetailCol | Column name of prediction result, it will include detailed info. | String |  |  |
 
-
 ## Script Example
-#### Script
+### Code
 ```python
- data = np.array([
-    [2, 1, 1],
-    [3, 2, 1],
-    [4, 3, 2],
-    [2, 4, 1],
-    [2, 2, 1],
-    [4, 3, 2],
-    [1, 2, 1],
-    [5, 3, 2]])
-df = pd.DataFrame({"f0": data[:, 0], 
-                   "f1": data[:, 1],
-                   "label": data[:, 2]})
+from pyalink.alink import *
 
-batchData = dataframeToOperator(df, schemaStr='f0 int, f1 int, label int', op_type='batch')
-streamData = dataframeToOperator(df, schemaStr='f0 int, f1 int, label int', op_type='stream')
+trainData0 = RandomTableSourceBatchOp() \
+            .setNumCols(5) \
+            .setNumRows(100) \
+            .setOutputCols(["f0", "f1", "f2", "f3", "label"]) \
+            .setOutputColConfs("label:weight_set(1.0,1.0,2.0,5.0)")
 
 model = LogisticRegressionTrainBatchOp() \
-			.setFeatureCols(["f0", "f1"]) \
-			.setLabelCol("label") \
-			.setMaxIter(5).linkFrom(batchData);
+            .setFeatureCols(["f0", "f1", "f2", "f3"]) \
+            .setLabelCol("label") \
+            .setMaxIter(10).linkFrom(trainData0)
 
+trainData1 = RandomTableSourceStreamOp() \
+            .setNumCols(5) \
+            .setMaxRows(10000) \
+            .setOutputCols(["f0", "f1", "f2", "f3", "label"]) \
+            .setOutputColConfs("label:weight_set(1.0,1.0,2.0,5.0)") \
+            .setTimePerSample(0.1)
 
-models = FtrlTrainStreamOp(model) \
-			.setFeatureCols(["f0", "f1"]) \
-			.setLabelCol("label") \
-			.setTimeInterval(1) \
-			.setAlpha(0.1) \
-			.setBeta(0.1) \
-			.setL1(0.1) \
-			.setL2(0.1).setVectorSize(2).setWithIntercept(True) \
-		    .linkFrom(streamData);
+models = FtrlTrainStreamOp(model, None) \
+            .setFeatureCols(["f0", "f1", "f2", "f3"]) \
+            .setLabelCol("label") \
+            .setTimeInterval(10) \
+            .setAlpha(0.1) \
+            .setBeta(0.1) \
+            .setL1(0.1) \
+            .setL2(0.1)\
+            .setVectorSize(4)\
+            .setWithIntercept(True) \
+            .linkFrom(trainData1)
 
 FtrlPredictStreamOp(model) \
         .setPredictionCol("pred") \
         .setReservedCols(["label"]) \
         .setPredictionDetailCol("details") \
-        .linkFrom(models, streamData).print()
+        .linkFrom(models, trainData1).print()
 StreamOperator.execute()
 ```
-#### Result
+### Result
 ```
 label	pred	details
 1	1	{"1":"0.9999917437501057","2":"8.2562498943117...
@@ -68,4 +67,3 @@ label	pred	details
 
 
 ```
-

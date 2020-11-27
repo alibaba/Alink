@@ -9,11 +9,15 @@ VectorSlicer is a transformer that takes a feature vector and outputs a new feat
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | outputCol | Name of the output column | String |  | null |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
-
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 
-#### Script
+### Script
 ``` python
 data = np.array([["1:3,2:4,4:7", 1],
     ["0:3,5:5", 3],
@@ -23,7 +27,7 @@ data = dataframeToOperator(df, schemaStr="vec string, id bigint",op_type="batch"
 vecSlice = VectorSlicer().setSelectedCol("vec").setOutputCol("vec_slice").setIndices([1,2,3])
 vecSlice.transform(data).collectToDataframe()
 ```
-#### Result
+### Result
 
 | vec         | id   | vec_slice      |
 | ----------- | ---- | -------------- |

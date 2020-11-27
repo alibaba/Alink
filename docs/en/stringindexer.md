@@ -16,13 +16,18 @@ Encode one column of strings to bigint type indices.
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
 | modelName | Name of the model | String |  |  |
-| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "keep" |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
-| stringOrderType | String order type, one of "random", "frequency_asc", "frequency_desc", "alphabet_asc", "alphabet_desc". | String |  | "random" |
+| stringOrderType | String order type, one of "random", "frequency_asc", "frequency_desc", "alphabet_asc", "alphabet_desc". | String |  | "RANDOM" |
 | selectedCol | Name of the selected column used for processing | String | ✓ |  |
 | reservedCols | Names of the columns to be retained in the output table | String[] |  | null |
+| handleInvalid | Strategy to handle unseen token when doing prediction, one of "keep", "skip" or "error" | String |  | "KEEP" |
 | outputCol | Name of the output column | String |  | null |
-
+| numThreads | Thread number of operator. | Integer |  | 1 |
+| lazyPrintTransformDataEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformDataTitle | Title of ModelInfo in lazyPrint | String |  | null |
+| lazyPrintTransformDataNum | Title of ModelInfo in lazyPrint | Integer |  | -1 |
+| lazyPrintTransformStatEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintTransformStatTitle | Title of ModelInfo in lazyPrint | String |  | null |
 
 ## Script Example
 #### Code
@@ -61,4 +66,3 @@ stringindexer.fit(data).transform(data).print()
 4  basketball           1
 5      tennis           0
 ```
-

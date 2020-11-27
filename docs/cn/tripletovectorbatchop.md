@@ -12,10 +12,9 @@
 | handleInvalid | 解析异常处理策略 | 解析异常处理策略 | String |  | "ERROR" |
 | tripleColumnCol | 三元组结构中列信息的列名 | 三元组结构中列信息的列名 | String | ✓ |  |
 | tripleValueCol | 三元组结构中数据信息的列名 | 三元组结构中数据信息的列名 | String | ✓ |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
 | vectorSize | 向量长度 | 向量长度 | Long |  | -1 |
-| tripleRowCol | 三元组结构中行信息的列名 | 三元组结构中行信息的列名 | String |  |  |
+| tripleRowCol | 三元组结构中行信息的列名 | 三元组结构中行信息的列名 | String |  | null |
 
 ## 脚本示例
 ### 脚本代码
@@ -30,8 +29,8 @@ data = dataframeToOperator(df, schemaStr="row double, col string, val double",op
 
 
 op = TripleToVectorBatchOp()\
-    .setTripleRowCol("row").setTripleColCol("col").setTripleValCol("val")\
-    .setReservedCols(["row"]).setVectorCol("vec").setVectorSize(5)\
+    .setTripleRowCol("row").setTripleColumnCol("col").setTripleValueCol("val")\
+    .setVectorCol("vec").setVectorSize(5)\
     .linkFrom(data)
 op.print()
 ```
