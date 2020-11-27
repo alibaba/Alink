@@ -110,13 +110,21 @@ public class MLEnvironment {
 	public ExecutionEnvironment getExecutionEnvironment() {
 		if (null == env) {
 			if (ExecutionEnvironment.areExplicitEnvironmentsAllowed()) {
+				final int managedMemPerCoreInMB = 64;
+				final int networkMemPerCoreInMB = 64;
+				final int core = Runtime.getRuntime().availableProcessors();
+
 				Configuration conf = new Configuration();
-				conf.setBoolean("taskmanager.memory.preallocate", true);
-				conf.setBoolean("taskmanager.memory.off-heap", true);
-				conf.setFloat("taskmanager.memory.fraction", 0.3f);
-				conf.setString("taskmanager.memory.network.max", "128m");
+				conf.setString(
+					"taskmanager.memory.managed.size",
+					String.format("%dm", managedMemPerCoreInMB * core)
+				);
+				conf.setString(
+					"taskmanager.memory.network.min",
+					String.format("%dm", networkMemPerCoreInMB * core)
+				);
 				env = ExecutionEnvironment.createLocalEnvironment(conf);
-				env.setParallelism(Runtime.getRuntime().availableProcessors());
+				env.setParallelism(core);
 			} else {
 				env = ExecutionEnvironment.getExecutionEnvironment();
 			}

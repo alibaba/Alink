@@ -467,7 +467,7 @@ public class DerbyCatalog extends JdbcCatalog {
 	 * Could not support now.
 	 * <p>
 	 * Note: org.apache.derby.impl.jdbc.EmbedBlob could not be deserialized by flink type system. Need to develop the
-	 * {@link org.apache.flink.api.java.io.jdbc.JDBCInputFormat} afresh.
+	 * {@link JDBCInputFormat} afresh.
 	 */
 	public static final String DERBY_BLOB = "BLOB";
 	public static final TypeInformation <Blob> BLOB = TypeInformation.of(Blob.class);
@@ -476,7 +476,7 @@ public class DerbyCatalog extends JdbcCatalog {
 	 * Could not support now.
 	 * <p>
 	 * Note: org.apache.derby.impl.jdbc.EmbedClob could not be deserialized by flink type system. Need to develop the
-	 * {@link org.apache.flink.api.java.io.jdbc.JDBCInputFormat} afresh.
+	 * {@link JDBCInputFormat} afresh.
 	 */
 	public static final String DERBY_CLOB = "CLOB";
 	public static final TypeInformation <Clob> CLOB = TypeInformation.of(Clob.class);

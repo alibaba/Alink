@@ -11,6 +11,7 @@ import org.apache.flink.table.catalog.CatalogFunctionImpl;
 import org.apache.flink.table.catalog.CatalogPartitionImpl;
 import org.apache.flink.table.catalog.CatalogPartitionSpec;
 import org.apache.flink.table.catalog.CatalogTableImpl;
+import org.apache.flink.table.catalog.FunctionLanguage;
 import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.exceptions.DatabaseAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotEmptyException;
@@ -287,7 +288,7 @@ public class DerbyCatalogTest extends AlinkTestBase {
 	public void createFunction() throws FunctionAlreadyExistException, DatabaseNotExistException {
 		derby.createFunction(
 			new ObjectPath(DERBY_DB, DERBY_DB_FUNCTION),
-			new CatalogFunctionImpl("test", Collections.emptyMap()),
+			new CatalogFunctionImpl("test", FunctionLanguage.JAVA),
 			true
 		);
 	}
@@ -296,7 +297,7 @@ public class DerbyCatalogTest extends AlinkTestBase {
 	public void alterFunction() throws FunctionNotExistException {
 		derby.alterFunction(
 			new ObjectPath(DERBY_DB, DERBY_DB_FUNCTION),
-			new CatalogFunctionImpl("test", Collections.emptyMap()),
+			new CatalogFunctionImpl("test", FunctionLanguage.JAVA),
 			true
 		);
 	}

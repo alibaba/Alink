@@ -30,6 +30,7 @@ import org.apache.flink.table.catalog.exceptions.TableNotPartitionedException;
 import org.apache.flink.table.catalog.exceptions.TablePartitionedException;
 import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
+import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.utils.TypeConversions;
 import org.apache.flink.types.Row;
@@ -95,6 +96,13 @@ public abstract class JdbcCatalog extends BaseCatalog {
 
 	@Override
 	public void dropDatabase(String name, boolean ignoreIfNotExists)
+		throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
 		throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
 
 		throw new UnsupportedOperationException();
@@ -299,6 +307,13 @@ public abstract class JdbcCatalog extends BaseCatalog {
 	public void alterPartitionColumnStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec,
 											   CatalogColumnStatistics columnStatistics, boolean ignoreIfNotExists)
 		throws PartitionNotExistException, CatalogException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List <CatalogPartitionSpec> listPartitionsByFilter(ObjectPath objectPath, List <Expression> list)
+		throws TableNotExistException, TableNotPartitionedException, CatalogException {
 
 		throw new UnsupportedOperationException();
 	}
