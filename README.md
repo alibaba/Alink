@@ -28,48 +28,45 @@
 ### 使用前准备：
 ---------
 
-包名和版本说明：
+#### 包名和版本说明：
 
   - PyAlink 根据 Alink 所支持的 Flink 版本提供不同的 Python 包：
 其中，`pyalink` 包对应为 Alink 所支持的最新 Flink 版本，当前为 1.11，而 `pyalink-flink-***` 为旧版本的 Flink 版本，当前提供 `pyalink-flink-1.10` 和 `pyalink-flink-1.9`。
-  - Python 包的版本号与 Alink 的版本号一致，例如`1.2.0`。
+  - Python 包的版本号与 Alink 的版本号一致，例如`1.3.0`。
 
-安装步骤：
+####安装步骤：
 1. 确保使用环境中有Python3，版本限于 3.6 和 3.7。
 2. 确保使用环境中安装有 Java 8。
 3. 使用 pip 命令进行安装：
   `pip install pyalink`、`pip install pyalink-flink-1.10` 或者 `pip install pyalink-flink-1.9`。
   
-安装注意事项：
+#### 安装注意事项：
 
 1. `pyalink` 和 `pyalink-flink-***` 不能同时安装，也不能与旧版本同时安装。
 如果之前安装过 `pyalink` 或者 `pyalink-flink-***`，请使用`pip uninstall pyalink` 或者 `pip uninstall pyalink-flink-***` 卸载之前的版本。
 2. 出现`pip`安装缓慢或不成功的情况，可以参考[这篇文章](https://segmentfault.com/a/1190000006111096)修改pip源，或者直接使用下面的链接下载 whl 包，然后使用 `pip` 安装：
-   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.2.0/pyalink-1.2.0-py3-none-any.whl) (MD5: 8a38e8009712afcbf5ecdb297db3c8ac)
-   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.2.0/pyalink_flink_1.10-1.2.0-py3-none-any.whl) (MD5: 8a38e8009712afcbf5ecdb297db3c8ac)  
-   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.2.0/pyalink_flink_1.9-1.2.0-py3-none-any.whl) (MD5: 2f25eec02a692661c0f0f3a89e5c2f0c)  
+   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.0/pyalink-1.3.0-py3-none-any.whl) (MD5: 1e5fb63c798a4aafe4461505521ac79a)
+   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.0/pyalink_flink_1.10-1.3.0-py3-none-any.whl) (MD5: f0d35a4c3500db0e52c390ed1ab830c5)
+   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.0/pyalink_flink_1.9-1.3.0-py3-none-any.whl) (MD5: 3bfbef09e5d5147d2db2aeba785f3ba6)
 3. 如果有多个版本的 Python，可能需要使用特定版本的 `pip`，比如 `pip3`；如果使用 Anaconda，则需要在 Anaconda 命令行中进行安装。
 
-安装文件系统和 Hive 依赖 jar 包:
+#### 下载安装文件系统或 Catalog 依赖 jar 包：
 
 安装 PyAlink 之后，可以直接运行 ```download_pyalink_dep_jars``` 命令，下载支持文件系统功能所需要的 jar 包。
-
-如果提示找不到这个命令，可以尝试直接运行脚本： ```python3 -c 'from pyalink.alink.download_pyalink_dep_jars import main;main()'```。
+（如果提示找不到这个命令，可以尝试直接运行脚本： ```python3 -c 'from pyalink.alink.download_pyalink_dep_jars import main;main()'```。）
 
 运行这个命令后，将提问是否安装某种文件系统对应的 jar 包，并选择合适的版本。 当前支持的文件系统包括：
  
-- OSS：1.10.0
-- Hadoop：2.4.1, 2.6.5, 2.7.5, 2.8.3
-- Hive：2-0-v0.1, 2-1-v0.1, 2-2-v0.1, 2-3-v0.1, 3-1-v0.1
-
-这些 jar 包将被下载到 PyAlink 安装路径的 ```lib``` 目录下。
-注意，这里要求运行命令时有 PyAlink 安装目录的权限。
-
-运行命令时，也可以增加参数：```download_pyalink_dep_jars -d```，将下载默认的 jar 包：
-
-- OSS：1.10.0
+- OSS：3.4.1
 - Hadoop：2.8.3
-- Hive：2-3-v0.1
+- Hive：2.3.4
+- MySQL: 5.1.27
+- Derby: 10.6.1.0
+- SQLite: 3.19.3
+
+这些 jar 包将被下载到 PyAlink 安装路径的 ```lib/plugins``` 目录下，所以要求运行命令时有 PyAlink 安装目录的权限。
+
+运行命令时，也可以增加参数：```download_pyalink_dep_jars -d```，将自动下载所有的 jar 包。
 
 ### 开始使用：
 -------
@@ -142,7 +139,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.11_2.11</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -161,7 +158,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.10_2.11</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -181,7 +178,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.9_2.11</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
