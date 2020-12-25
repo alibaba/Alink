@@ -42,6 +42,7 @@ import org.apache.flink.table.catalog.exceptions.TableNotPartitionedException;
 import org.apache.flink.table.catalog.exceptions.TablePartitionedException;
 import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
+import org.apache.flink.table.data.DecimalData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.binary.BinaryStringData;
 import org.apache.flink.table.expressions.Expression;
@@ -613,6 +614,8 @@ public class HiveCatalog extends BaseCatalog {
 
 					if (o instanceof BinaryStringData) {
 						o = o.toString();
+					} else if (o instanceof DecimalData) {
+						o = ((DecimalData) o).toBigDecimal();
 					}
 
 					row.setField(i, o);
