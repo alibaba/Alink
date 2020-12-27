@@ -17,7 +17,7 @@ public class Probit extends LinkFunction implements Serializable, AlinkSerializa
 	 */
 	@Override
 	public String name() {
-		return "probit";
+		return "Probit";
 	}
 
 	/**

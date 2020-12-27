@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.operator.common.regression.glm.GlmUtil.GlmModelSummary;
 import com.alibaba.alink.params.regression.GlmTrainParams;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class GlmModelDataConverter extends SimpleModelDataConverter <GlmModelDat
 		modelData.add(JsonConverter.toJson(data.coefficients));
 		modelData.add(JsonConverter.toJson(data.intercept));
 		modelData.add(JsonConverter.toJson(data.diagInvAtWA));
+		modelData.add(JsonConverter.toJson(data.modelSummary));
 		return Tuple2.of(BuildMeta(data), modelData);
 	}
 
@@ -62,6 +64,9 @@ public class GlmModelDataConverter extends SimpleModelDataConverter <GlmModelDat
 		modelData.coefficients = JsonConverter.fromJson(dataIterator.next(), double[].class);
 		modelData.intercept = JsonConverter.fromJson(dataIterator.next(), double.class);
 		modelData.diagInvAtWA = JsonConverter.fromJson(dataIterator.next(), double[].class);
+		if(dataIterator.hasNext()) {
+			modelData.modelSummary = JsonConverter.fromJson(dataIterator.next(), GlmModelSummary.class);
+		}
 		return modelData;
 	}
 
