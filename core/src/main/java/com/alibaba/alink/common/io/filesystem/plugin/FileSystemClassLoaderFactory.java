@@ -7,11 +7,7 @@ import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.PluginDescriptor;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -33,7 +29,7 @@ public class FileSystemClassLoaderFactory extends ClassLoaderFactory {
 		);
 	}
 
-	private static class FileSystemServiceFilter implements Predicate<FileSystemFactory> {
+	private static class FileSystemServiceFilter implements Predicate <FileSystemFactory> {
 		private final RegisterKey registerKey;
 
 		public FileSystemServiceFilter(RegisterKey registerKey) {
@@ -46,9 +42,10 @@ public class FileSystemClassLoaderFactory extends ClassLoaderFactory {
 		}
 	}
 
-	private static class FileSystemVersionGetter implements Function<Tuple2<FileSystemFactory, PluginDescriptor>, String> {
+	private static class FileSystemVersionGetter
+		implements Function <Tuple2 <FileSystemFactory, PluginDescriptor>, String> {
 		@Override
-		public String apply(Tuple2<FileSystemFactory, PluginDescriptor> factory) {
+		public String apply(Tuple2 <FileSystemFactory, PluginDescriptor> factory) {
 			return factory.f1.getVersion();
 		}
 	}
@@ -73,13 +70,45 @@ public class FileSystemClassLoaderFactory extends ClassLoaderFactory {
 		}
 	}
 
-	private static class HadoopFileSystemServiceFilter implements Predicate<FileSystemFactory> {
+	private static class HadoopFileSystemServiceFilter implements Predicate <FileSystemFactory> {
 		public HadoopFileSystemServiceFilter() {
 		}
 
 		@Override
 		public boolean test(FileSystemFactory factory) {
 			return factory.getScheme().equals("*");
+		}
+	}
+
+	public static class S3FileSystemClassLoaderFactory extends FileSystemClassLoaderFactory {
+
+		private static final long serialVersionUID = -3820737055851955229L;
+
+		public S3FileSystemClassLoaderFactory(String name, String version) {
+			super(name, version);
+		}
+
+		@Override
+		public ClassLoader create() {
+			return ClassLoaderContainer.getInstance().create(
+				registerKey,
+				registerContext,
+				FileSystemFactory.class,
+				new S3FileSystemServiceFilter(),
+				new FileSystemVersionGetter()
+			);
+		}
+	}
+
+	private static class S3FileSystemServiceFilter implements Predicate <FileSystemFactory> {
+		public S3FileSystemServiceFilter() {
+		}
+
+		@Override
+		public boolean test(FileSystemFactory factory) {
+			String schema = factory.getScheme();
+
+			return schema.equals("s3") || schema.equals("s3a") || schema.equals("s3p");
 		}
 	}
 }
