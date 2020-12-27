@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.batch.regression;
 
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
@@ -8,9 +9,11 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.regression.glm.FamilyLink;
 import com.alibaba.alink.operator.common.regression.glm.GlmUtil;
+import com.alibaba.alink.operator.common.regression.glm.GlmUtil.GlmModelSummary;
 import com.alibaba.alink.params.regression.GlmTrainParams;
 
 /**
@@ -61,7 +64,7 @@ public class GlmEvaluationBatchOp extends BatchOperator <GlmEvaluationBatchOp>
 		DataSet <GlmUtil.WeightedLeastSquaresModel> wlsModel = model.getDataSet().mapPartition(
 			new GlmUtil.GlmModelToWlsModel());
 		DataSet <Row> residual = GlmUtil.residual(wlsModel, data, numFeature, familyLink);
-		DataSet <Row> aggSummay = GlmUtil.aggSummary(residual, wlsModel,
+		DataSet <GlmModelSummary> aggSummay = GlmUtil.aggSummary(residual, wlsModel,
 			numFeature, familyLink, regParam, numIter, epsilon, fitIntercept);
 
 		//residual
@@ -99,7 +102,13 @@ public class GlmEvaluationBatchOp extends BatchOperator <GlmEvaluationBatchOp>
 		summaryColNames[0] = "summary";
 		summaryColTypes[0] = Types.STRING;
 
-		this.setOutput(aggSummay, summaryColNames, summaryColTypes);
+		this.setOutput(aggSummay.map(
+			new MapFunction <GlmModelSummary, Row>() {
+				@Override
+				public Row map(GlmModelSummary value) throws Exception {
+					return Row.of(JsonConverter.toJson(value));
+				}
+			}), summaryColNames, summaryColTypes);
 
 		return this;
 	}

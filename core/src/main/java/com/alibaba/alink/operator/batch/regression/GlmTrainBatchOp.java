@@ -1,27 +1,35 @@
 package com.alibaba.alink.operator.batch.regression;
 
-import org.apache.flink.api.common.functions.MapPartitionFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.regression.GlmModelData;
 import com.alibaba.alink.operator.common.regression.GlmModelDataConverter;
 import com.alibaba.alink.operator.common.regression.glm.FamilyLink;
+import com.alibaba.alink.operator.common.regression.glm.GlmModelInfo;
 import com.alibaba.alink.operator.common.regression.glm.GlmUtil;
+import com.alibaba.alink.operator.common.regression.glm.GlmUtil.GlmModelSummary;
+import com.alibaba.alink.operator.common.regression.glm.GlmUtil.WeightedLeastSquaresModel;
 import com.alibaba.alink.params.regression.GlmTrainParams;
 
 /**
  * Generalized Linear Model. https://en.wikipedia.org/wiki/Generalized_linear_model.
  */
 public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
-	implements GlmTrainParams <GlmTrainBatchOp> {
+	implements GlmTrainParams <GlmTrainBatchOp>,
+	WithModelInfoBatchOp <GlmModelInfo, GlmTrainBatchOp, GlmModelInfoBatchOp> {
 
 	private static final long serialVersionUID = -4589724139230288132L;
 
@@ -67,12 +75,19 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 
 		DataSet <Row> data = GlmUtil.preProc(in, featureColNames, offsetColName, weightColName, labelColName);
 
-		DataSet <GlmUtil.WeightedLeastSquaresModel> finalModel =
+		DataSet <WeightedLeastSquaresModel> finalModel =
 			GlmUtil.train(data, numFeature, familyLink, regParam, fitIntercept, numIter, epsilon);
+
+		DataSet <Row> residual = GlmUtil.residual(finalModel, data, numFeature, familyLink);
+
+		DataSet <GlmModelSummary> modelSummary = GlmUtil.aggSummary(residual, finalModel,
+			numFeature, familyLink, regParam, numIter, epsilon, fitIntercept);
 
 		this.setOutput(finalModel.mapPartition(
 			new BuildModel(featureColNames, offsetColName, weightColName, labelColName,
-				familyName, variancePower, linkName, linkPower, fitIntercept, numIter, epsilon)).setParallelism(1),
+				familyName, variancePower, linkName, linkPower, fitIntercept, numIter, epsilon))
+				.setParallelism(1)
+				.withBroadcastSet(modelSummary, "summary"),
 			new GlmModelDataConverter().getModelSchema());
 
 		//residual
@@ -99,8 +114,6 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 		residualColNames[numFeature + 7] = "responseResiduals";
 		residualColTypes[numFeature + 7] = Types.DOUBLE;
 
-		DataSet <Row> residual = GlmUtil.residual(finalModel, data, numFeature, familyLink);
-
 		//summary
 		String[] summaryColNames = new String[1];
 		TypeInformation[] summaryColTypes = new TypeInformation[1];
@@ -110,8 +123,13 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 		this.setSideOutputTables(new Table[] {
 			DataSetConversionUtil.toTable(getMLEnvironmentId(),
 				residual, residualColNames, residualColTypes),
-			DataSetConversionUtil.toTable(getMLEnvironmentId(), GlmUtil.aggSummary(residual, finalModel,
-				numFeature, familyLink, regParam, numIter, epsilon, fitIntercept),
+			DataSetConversionUtil.toTable(getMLEnvironmentId(), modelSummary.map(
+				new MapFunction <GlmModelSummary, Row>() {
+					@Override
+					public Row map(GlmModelSummary value) throws Exception {
+						return Row.of(JsonConverter.toJson(value));
+					}
+				}),
 				summaryColNames, summaryColTypes)
 		});
 
@@ -121,7 +139,7 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 	/**
 	 * build glm model.
 	 */
-	private static class BuildModel implements MapPartitionFunction <GlmUtil.WeightedLeastSquaresModel, Row> {
+	private static class BuildModel extends RichMapPartitionFunction <WeightedLeastSquaresModel, Row> {
 		private static final long serialVersionUID = -1832850372942112225L;
 		private String[] featureColNames;
 		private String offsetColName;
@@ -136,6 +154,8 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 		private boolean fitIntercept;
 		private int numIter;
 		private double epsilon;
+
+		private GlmModelSummary summary;
 
 		public BuildModel(String[] featureColNames, String offsetColName,
 						  String weightColName, String labelColName,
@@ -158,9 +178,14 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 		}
 
 		@Override
-		public void mapPartition(Iterable <GlmUtil.WeightedLeastSquaresModel> iterable, Collector <Row> result)
+		public void open(Configuration parameters) throws Exception {
+			this.summary = (GlmModelSummary) this.getRuntimeContext().getBroadcastVariable("summary").get(0);
+		}
+
+		@Override
+		public void mapPartition(Iterable <WeightedLeastSquaresModel> iterable, Collector <Row> result)
 			throws Exception {
-			GlmUtil.WeightedLeastSquaresModel model = iterable.iterator().next();
+			WeightedLeastSquaresModel model = iterable.iterator().next();
 			GlmModelDataConverter outModel = new GlmModelDataConverter();
 			GlmModelData modelData = new GlmModelData();
 			modelData.featureColNames = featureColNames;
@@ -180,10 +205,15 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 			modelData.fitIntercept = fitIntercept;
 			modelData.numIter = numIter;
 			modelData.epsilon = epsilon;
+			modelData.modelSummary = summary;
 
 			outModel.save(modelData, result);
 		}
 
 	}
 
+	@Override
+	public GlmModelInfoBatchOp getModelInfoBatchOp() {
+		return new GlmModelInfoBatchOp(this.getParams()).linkFrom(this);
+	}
 }

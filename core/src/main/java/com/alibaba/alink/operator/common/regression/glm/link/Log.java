@@ -16,7 +16,7 @@ public class Log extends LinkFunction implements Serializable, AlinkSerializable
 	 */
 	@Override
 	public String name() {
-		return "log";
+		return "Log";
 	}
 
 	/**

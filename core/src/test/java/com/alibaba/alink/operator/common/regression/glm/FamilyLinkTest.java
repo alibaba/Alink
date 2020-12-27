@@ -253,7 +253,7 @@ public class FamilyLinkTest {
 	@Test
 	public void testLog() {
 		Log log = new Log();
-		assertEquals("log", log.name());
+		assertEquals("Log", log.name());
 
 		double mu = 0.1;
 		double eta = 0.2;
@@ -265,7 +265,7 @@ public class FamilyLinkTest {
 	@Test
 	public void testLogit() {
 		Logit logit = new Logit();
-		assertEquals("logit", logit.name());
+		assertEquals("Logit", logit.name());
 
 		double mu = 0.1;
 		double eta = 0.2;
@@ -278,7 +278,7 @@ public class FamilyLinkTest {
 	public void testPower() {
 		double linkPower = 2.0;
 		Power power = new Power(linkPower);
-		assertEquals("power", power.name());
+		assertEquals("Power", power.name());
 
 		double mu = 0.1;
 		double eta = 0.2;
@@ -297,7 +297,7 @@ public class FamilyLinkTest {
 	@Test
 	public void testProbit() {
 		Probit probit = new Probit();
-		assertEquals("probit", probit.name());
+		assertEquals("Probit", probit.name());
 
 		double mu = 0.1;
 		double eta = 0.2;
@@ -309,7 +309,7 @@ public class FamilyLinkTest {
 	@Test
 	public void testSqrt() {
 		Sqrt sqrt = new Sqrt();
-		assertEquals("sqrt", sqrt.name());
+		assertEquals("Sqrt", sqrt.name());
 
 		double mu = 0.1;
 		double eta = 0.2;
