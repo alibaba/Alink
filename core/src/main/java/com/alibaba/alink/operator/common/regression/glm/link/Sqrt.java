@@ -16,7 +16,7 @@ public class Sqrt extends LinkFunction implements Serializable, AlinkSerializabl
 	 */
 	@Override
 	public String name() {
-		return "sqrt";
+		return "Sqrt";
 	}
 
 	/**
