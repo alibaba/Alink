@@ -31,7 +31,7 @@ public class Power extends LinkFunction implements Serializable, AlinkSerializab
 	 */
 	@Override
 	public String name() {
-		return "power";
+		return "Power";
 	}
 
 	/**

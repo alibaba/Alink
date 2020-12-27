@@ -17,7 +17,6 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.LinearSolver;
 import com.alibaba.alink.common.utils.AlinkSerializable;
-import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.regression.GlmModelData;
@@ -196,6 +195,7 @@ public class GlmUtil {
 			.withBroadcastSet(model, "model");
 	}
 
+
 	/**
 	 * @param residual:     result of residual function.
 	 * @param model:        WeightedLeastSquaresModel.
@@ -207,7 +207,7 @@ public class GlmUtil {
 	 * @param fitIntercept: If true, fit intercept. If false, not fit intercept.
 	 * @return GlmModelSummay
 	 */
-	public static DataSet <Row> aggSummary(DataSet <Row> residual, DataSet <WeightedLeastSquaresModel> model,
+	public static DataSet <GlmModelSummary> aggSummary(DataSet <Row> residual, DataSet <WeightedLeastSquaresModel> model,
 										   int numFeature, FamilyLink familyLink, double regParam,
 										   int numIter, double epsion, boolean fitIntercept) {
 
@@ -460,7 +460,7 @@ public class GlmUtil {
 	/**
 	 * Glm model summary.
 	 */
-	private static class GlmModelSummay implements Serializable, AlinkSerializable {
+	public static class GlmModelSummary implements Serializable, AlinkSerializable {
 		private static final long serialVersionUID = -809281767159062744L;
 		public int rank;
 		public long degreeOfFreedom;
@@ -505,7 +505,7 @@ public class GlmUtil {
 	/**
 	 * agg summary.
 	 */
-	private static class AggSummary extends RichMapFunction <Double, Row> {
+	private static class AggSummary extends RichMapFunction <Double, GlmModelSummary> {
 		private static final long serialVersionUID = 1993165824137115835L;
 		private boolean fitIntercept;
 		private int numFeature;
@@ -545,8 +545,8 @@ public class GlmUtil {
 		}
 
 		@Override
-		public Row map(Double aDouble) throws Exception {
-			GlmModelSummay summay = new GlmModelSummay();
+		public GlmModelSummary map(Double aDouble) throws Exception {
+			GlmModelSummary summay = new GlmModelSummary();
 			summay.rank = rank();
 			summay.degreeOfFreedom = degreeOfFreedom();
 			summay.residualDegreeOfFreeDom = residualDegreeOfFreeDom();
@@ -561,10 +561,7 @@ public class GlmUtil {
 			summay.tValues = tValues();
 			summay.pValues = pValues();
 
-			Row row = new Row(1);
-			row.setField(0, JsonConverter.gson.toJson(summay));
-
-			return row;
+			return summay;
 		}
 
 		/**
@@ -1372,7 +1369,7 @@ public class GlmUtil {
 			intW info = new intW(0);
 			lapack.dpptri("U", k, a, info);
 
-			if (info.val == 0) {
+			if (info.val != 0) {
 				DenseMatrix dm = toMatrix(a, k);
 				DenseMatrix one = DenseMatrix.eye(k, k);
 				LinearSolver.underDeterminedSolve(dm, one);

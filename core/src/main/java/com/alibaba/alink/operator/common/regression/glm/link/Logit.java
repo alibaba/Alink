@@ -16,7 +16,7 @@ public class Logit extends LinkFunction implements Serializable, AlinkSerializab
 	 */
 	@Override
 	public String name() {
-		return "logit";
+		return "Logit";
 	}
 
 	/**
