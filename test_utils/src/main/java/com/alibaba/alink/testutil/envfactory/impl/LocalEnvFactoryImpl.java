@@ -50,7 +50,7 @@ public class LocalEnvFactoryImpl implements BaseEnvFactory {
                 .newInstance()
                 .useOldPlanner()
                 .build()
-        );;
+        );
         return makeMlEnv(benv, btenv, senv, stenv);
     }
 

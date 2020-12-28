@@ -17,19 +17,22 @@ public class VectorTypes {
 	/**
 	 * <code>DenseVector</code> type information.
 	 */
-	public static final TypeInformation <DenseVector> DENSE_VECTOR = TypeInformation.of(DenseVector.class);
+	//public static final TypeInformation <DenseVector> DENSE_VECTOR = TypeInformation.of(DenseVector.class);
+	public static final TypeInformation <DenseVector> DENSE_VECTOR = new com.alibaba.alink.common.types.VectorTypes.DenseVectorTypeInternal();
 
 	/**
 	 * <code>SparseVector</code> type information.
 	 */
-	public static final TypeInformation <SparseVector> SPARSE_VECTOR = TypeInformation.of(SparseVector.class);
+	//public static final TypeInformation <SparseVector> SPARSE_VECTOR = TypeInformation.of(SparseVector.class);
+	public static final TypeInformation <SparseVector> SPARSE_VECTOR = new com.alibaba.alink.common.types.VectorTypes.SparseVectorTypeInternal();
 
 	/**
 	 * <code>Vector</code> type information.
 	 * For efficiency, use type information of sub-class <code>DenseVector</code> and <code>SparseVector</code>
 	 * as much as possible. When an operator output both sub-class type of vectors, use this one.
 	 */
-	public static final TypeInformation <Vector> VECTOR = TypeInformation.of(Vector.class);
+	//public static final TypeInformation <Vector> VECTOR = TypeInformation.of(Vector.class);
+	public static final TypeInformation <Vector> VECTOR = new com.alibaba.alink.common.types.VectorTypes.VectorTypeInternal();
 
 	static {
 		TYPES.put("VEC_TYPES_DENSE_VECTOR", DENSE_VECTOR);

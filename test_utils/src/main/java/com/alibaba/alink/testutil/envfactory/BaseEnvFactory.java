@@ -27,10 +27,21 @@ public interface BaseEnvFactory {
 
     default Configuration createConfiguration(Properties properties) {
         final Configuration configuration = new Configuration();
-        configuration.setBoolean("taskmanager.memory.preallocate", true);
-        configuration.setBoolean("taskmanager.memory.off-heap", true);
-        configuration.setDouble("taskmanager.memory.fraction", 0.3);
-        configuration.setString("taskmanager.memory.network.max", "128m");
+
+        final int managedMemPerCoreInMB = 64;
+        final int networkMemPerCoreInMB = 64;
+        final int core = Runtime.getRuntime().availableProcessors();
+
+        Configuration conf = new Configuration();
+        conf.setString(
+            "taskmanager.memory.managed.size",
+            String.format("%dm", managedMemPerCoreInMB * core)
+        );
+        conf.setString(
+            "taskmanager.memory.network.min",
+            String.format("%dm", networkMemPerCoreInMB * core)
+        );
+
         final Set<String> propertyNames = properties.stringPropertyNames();
         for (String propertyName : propertyNames) {
             configuration.setString(propertyName, properties.getProperty(propertyName));

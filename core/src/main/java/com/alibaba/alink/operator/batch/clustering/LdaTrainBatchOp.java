@@ -17,6 +17,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
@@ -109,7 +110,7 @@ public class LdaTrainBatchOp extends BatchOperator <LdaTrainBatchOp>
 		DataSet <Row> resRow = in.getDataSet()
 			.flatMap(new Document2Vector(index)).withBroadcastSet(resDocCountModel, "DocCountModel");
 		TypeInformation <?>[] types = in.getColTypes().clone();
-		types[index] = TypeInformation.of(SparseVector.class);
+		types[index] = VectorTypes.SPARSE_VECTOR;
 		BatchOperator trainData = new TableSourceBatchOp(DataSetConversionUtil
 			.toTable(mlEnvId, resRow, in.getColNames(), types))
 			.setMLEnvironmentId(mlEnvId);
