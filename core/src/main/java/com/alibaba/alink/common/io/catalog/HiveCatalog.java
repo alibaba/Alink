@@ -609,7 +609,9 @@ public class HiveCatalog extends BaseCatalog {
 				if (baseRow.isNullAt(i)) {
 					row.setField(i, null);
 				} else {
-					Object o = RowData.get(baseRow, i, dataTypes[i].getLogicalType());
+					Object o = RowData
+						.createFieldGetter(dataTypes[i].getLogicalType(), i)
+						.getFieldOrNull(baseRow);
 
 					if (o instanceof BinaryStringData) {
 						o = o.toString();
@@ -887,7 +889,8 @@ public class HiveCatalog extends BaseCatalog {
 				objectPath.getObjectName()
 			),
 			getCatalogTable(objectPath, catalog, factory),
-			config
+			config,
+			false
 		);
 
 		return factory.doAsThrowRuntime(() -> {
@@ -925,7 +928,7 @@ public class HiveCatalog extends BaseCatalog {
 				objectPath.getObjectName()
 			),
 			getCatalogTable(objectPath, catalog, factory),
-			config, !isStream
+			config, !isStream, false
 		);
 
 		return factory.doAsThrowRuntime(() -> {

@@ -40,8 +40,6 @@ public class LogisticRegressionTest extends AlinkTestBase {
 
 	@Test
 	public void batchTest() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
-
 		String[] xVars = new String[] {"f0", "f1", "f2", "f3"};
 		String yVar = "labels";
 		String vectorName = "vec";

@@ -14,8 +14,6 @@ import java.util.List;
 public class NaiveBayesTextTrainBatchOpTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
-
 		Row[] array = new Row[] {
 			Row.of("1.0 1.0 1.0 1.0", "pos"),
 			Row.of("1.0 1.0 0.0 1.0", "pos"),

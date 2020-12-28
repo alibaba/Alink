@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.batch.classification;
 
+import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
@@ -563,7 +564,6 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 		BatchOperator<?> evalResult = evalClassificationBatchOp.linkFrom(c45Pred);
 
 		evalResult.collect();
-
 		c45PredictStreamOp.linkFrom(inputStream);
 
 		EvalMultiClassStreamOp evalClassStreamOp = new EvalMultiClassStreamOp()

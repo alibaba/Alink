@@ -43,8 +43,6 @@ public class NaiveBayesTextTest extends AlinkTestBase {
 
 	@Test
 	public void testPipelineBatch() throws Exception {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
-
 		String labelName = "labels";
 
 		NaiveBayesTextClassifier vnb
