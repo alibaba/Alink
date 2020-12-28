@@ -9,6 +9,7 @@ import org.apache.flink.table.catalog.Catalog;
 import org.apache.flink.table.catalog.CatalogTable;
 import org.apache.flink.table.catalog.hive.HiveCatalog;
 import org.apache.flink.table.data.RowData;
+import org.apache.flink.table.factories.DynamicTableFactory;
 import org.apache.flink.table.factories.TableSinkFactory;
 import org.apache.flink.table.factories.TableSourceFactory.Context;
 import org.apache.flink.table.runtime.types.TypeInfoDataTypeConverter;
@@ -41,7 +42,7 @@ public class InputOutputFormat {
 			table);
 
 		if (remainingPartitions != null) {
-			hiveTableSource.applyPartitionPruning(remainingPartitions);
+			hiveTableSource.applyPartitions(remainingPartitions);
 		}
 
 		return Tuple3.of(
@@ -53,25 +54,22 @@ public class InputOutputFormat {
 	}
 
 	public static OutputFormat <Row> createOutputFormat(
-		Catalog catalog, TableSinkFactory.Context context, Map <String, String> partitions) {
+		Catalog catalog, DynamicTableFactory.Context context, Map <String, String> partitions) {
 
 		if (!(catalog instanceof HiveCatalog)) {
 			throw new RuntimeException("Catalog should be hive catalog.");
 		}
 
 		HiveCatalog hiveCatalog = (HiveCatalog) catalog;
-		CatalogTable table = checkNotNull(context.getTable());
 
 		HiveBatchAndStreamTableSink hiveTableSink = new HiveBatchAndStreamTableSink(
-			context.getConfiguration().get(
-				HiveOptions.TABLE_EXEC_HIVE_FALLBACK_MAPRED_WRITER),
-			context.isBounded(),
+			context.getConfiguration(),
 			new JobConf(hiveCatalog.getHiveConf()),
 			context.getObjectIdentifier(),
-			table);
+			context.getCatalogTable());
 
 		if (partitions != null) {
-			hiveTableSink.setStaticPartition(partitions);
+			hiveTableSink.applyStaticPartition(partitions);
 		}
 
 		return hiveTableSink.getOutputFormat();

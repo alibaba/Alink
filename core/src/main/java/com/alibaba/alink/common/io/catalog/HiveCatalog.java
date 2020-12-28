@@ -46,6 +46,8 @@ import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.binary.BinaryStringData;
 import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.CatalogFactory;
+import org.apache.flink.table.factories.DynamicTableFactory;
+import org.apache.flink.table.factories.FactoryUtil.DefaultDynamicTableContext;
 import org.apache.flink.table.factories.TableSinkFactory;
 import org.apache.flink.table.factories.TableSinkFactoryContextImpl;
 import org.apache.flink.table.factories.TableSourceFactory.Context;
@@ -919,17 +921,44 @@ public class HiveCatalog extends BaseCatalog {
 
 	private RichOutputFormatWithClassLoader createOutput(
 		ObjectPath objectPath, final Params params, Catalog catalog,
-		ReadableConfig config, HiveClassLoaderFactory factory, boolean isStream) {
+		final ReadableConfig config, HiveClassLoaderFactory factory, boolean isStream) {
 
-		TableSinkFactory.Context context = new TableSinkFactoryContextImpl(
-			ObjectIdentifier.of(
-				"default",
-				objectPath.getDatabaseName(),
-				objectPath.getObjectName()
-			),
-			getCatalogTable(objectPath, catalog, factory),
-			config, !isStream, false
+		final ObjectIdentifier identifier = ObjectIdentifier.of(
+			"default",
+			objectPath.getDatabaseName(),
+			objectPath.getObjectName()
 		);
+
+		final CatalogTable table = getCatalogTable(objectPath, catalog, factory);
+
+		final ClassLoader classLoader = factory.create();
+
+		final DynamicTableFactory.Context context = new DynamicTableFactory.Context() {
+			@Override
+			public ObjectIdentifier getObjectIdentifier() {
+				return identifier;
+			}
+
+			@Override
+			public CatalogTable getCatalogTable() {
+				return table;
+			}
+
+			@Override
+			public ReadableConfig getConfiguration() {
+				return config;
+			}
+
+			@Override
+			public ClassLoader getClassLoader() {
+				return classLoader;
+			}
+
+			@Override
+			public boolean isTemporary() {
+				return false;
+			}
+		};
 
 		return factory.doAsThrowRuntime(() -> {
 
@@ -945,7 +974,7 @@ public class HiveCatalog extends BaseCatalog {
 				true, Thread.currentThread().getContextClassLoader()
 			);
 
-			Method method = inputOutputFormat.getMethod("createOutputFormat", Catalog.class, TableSinkFactory.Context.class, Map.class);
+			Method method = inputOutputFormat.getMethod("createOutputFormat", Catalog.class, DynamicTableFactory.Context.class, Map.class);
 
 			OutputFormat<Row> internalRet =
 				(OutputFormat <Row>) method.invoke(null, catalog, context, partitions);
