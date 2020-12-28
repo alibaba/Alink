@@ -76,7 +76,7 @@ public class SelectMapper extends Mapper {
 		addScalarFunctionConsumer.accept("TO_BASE64", StringFunctions.TOBASE64);
 		addScalarFunctionConsumer.accept("LPAD", StringFunctions.LPAD);
 		addScalarFunctionConsumer.accept("RPAD", StringFunctions.RPAD);
-		addScalarFunctionConsumer.accept("REGEXP_REPLACE", StringFunctions.REGEXP_REPLACE);
+		//addScalarFunctionConsumer.accept("REGEXP_REPLACE", StringFunctions.REGEXP_REPLACE);
 		addScalarFunctionConsumer.accept("REGEXP_EXTRACT", StringFunctions.REGEXP_EXTRACT);
 
 		addScalarFunctionConsumer.accept("LTRIM", BuiltInMethod.LTRIM.method);
