@@ -4,8 +4,8 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.FileSystemFactory;
 import org.apache.flink.core.fs.Path;
-import org.apache.flink.core.plugin.TemporaryClassLoaderContext;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory.S3FileSystemClassLoaderFactory;
@@ -100,7 +100,7 @@ public abstract class S3FileSystem<T extends S3FileSystem <T>> extends BaseFileS
 			factory.configure(conf);
 
 			if (localPath.toUri().getScheme().equals(factory.getScheme())) {
-				try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(factory.getClassLoader())) {
+				try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(factory.getClassLoader())) {
 					loaded = factory.create(localPath.toUri());
 					return loaded;
 				} catch (IOException e) {
