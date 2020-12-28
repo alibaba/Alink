@@ -2,9 +2,9 @@ package com.alibaba.alink.common.io.catalog.sqlite;
 
 import org.apache.flink.api.common.io.OutputFormat;
 import org.apache.flink.api.common.io.RichInputFormat;
-import org.apache.flink.api.java.io.jdbc.JDBCInputFormat;
-import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
+import org.apache.flink.connector.jdbc.JdbcInputFormat;
+import org.apache.flink.connector.jdbc.JdbcOutputFormat;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.io.InputSplit;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -654,7 +654,8 @@ public class SqliteCatalog extends JdbcCatalog {
 	protected RichInputFormat <Row, InputSplit> createInputFormat(ObjectPath objectPath, TableSchema schema)
 		throws Exception {
 
-		return JDBCInputFormat.buildJDBCInputFormat()
+		return JdbcInputFormat
+			.buildJdbcInputFormat()
 			.setUsername(getParams().get(JdbcCatalogParams.USERNAME))
 			.setPassword(getParams().get(JdbcCatalogParams.PASSWORD))
 			.setDrivername(getParams().get(JdbcCatalogParams.DRIVER_NAME))
@@ -666,7 +667,8 @@ public class SqliteCatalog extends JdbcCatalog {
 
 	@Override
 	protected OutputFormat <Row> createOutputFormat(ObjectPath objectPath, TableSchema schema, String sql) {
-		return JDBCOutputFormat.buildJDBCOutputFormat()
+		return JdbcOutputFormat
+			.buildJdbcOutputFormat()
 			.setUsername(getParams().get(JdbcCatalogParams.USERNAME))
 			.setPassword(getParams().get(JdbcCatalogParams.PASSWORD))
 			.setDrivername(getParams().get(JdbcCatalogParams.DRIVER_NAME))

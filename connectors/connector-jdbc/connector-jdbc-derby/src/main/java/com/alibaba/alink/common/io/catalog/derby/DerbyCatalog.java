@@ -3,9 +3,9 @@ package com.alibaba.alink.common.io.catalog.derby;
 import org.apache.flink.api.common.io.OutputFormat;
 import org.apache.flink.api.common.io.RichInputFormat;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.io.jdbc.JDBCInputFormat;
-import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
+import org.apache.flink.connector.jdbc.JdbcInputFormat;
+import org.apache.flink.connector.jdbc.JdbcOutputFormat;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialect;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialects;
 import org.apache.flink.core.io.InputSplit;
@@ -467,7 +467,7 @@ public class DerbyCatalog extends JdbcCatalog {
 	 * Could not support now.
 	 * <p>
 	 * Note: org.apache.derby.impl.jdbc.EmbedBlob could not be deserialized by flink type system. Need to develop the
-	 * {@link JDBCInputFormat} afresh.
+	 * {@link org.apache.flink.connector.jdbc.JdbcInputFormat} afresh.
 	 */
 	public static final String DERBY_BLOB = "BLOB";
 	public static final TypeInformation <Blob> BLOB = TypeInformation.of(Blob.class);
@@ -476,7 +476,7 @@ public class DerbyCatalog extends JdbcCatalog {
 	 * Could not support now.
 	 * <p>
 	 * Note: org.apache.derby.impl.jdbc.EmbedClob could not be deserialized by flink type system. Need to develop the
-	 * {@link JDBCInputFormat} afresh.
+	 * {@link org.apache.flink.connector.jdbc.JdbcInputFormat} afresh.
 	 */
 	public static final String DERBY_CLOB = "CLOB";
 	public static final TypeInformation <Clob> CLOB = TypeInformation.of(Clob.class);
@@ -648,7 +648,8 @@ public class DerbyCatalog extends JdbcCatalog {
 	protected RichInputFormat <Row, InputSplit> createInputFormat(ObjectPath objectPath, TableSchema schema)
 		throws Exception {
 
-		return JDBCInputFormat.buildJDBCInputFormat()
+		return JdbcInputFormat
+			.buildJdbcInputFormat()
 			.setUsername(getParams().get(JdbcCatalogParams.USERNAME))
 			.setPassword(getParams().get(JdbcCatalogParams.PASSWORD))
 			.setDrivername(getParams().get(JdbcCatalogParams.DRIVER_NAME))
@@ -660,7 +661,8 @@ public class DerbyCatalog extends JdbcCatalog {
 
 	@Override
 	protected OutputFormat <Row> createOutputFormat(ObjectPath objectPath, TableSchema schema, String sql) {
-		return JDBCOutputFormat.buildJDBCOutputFormat()
+		return JdbcOutputFormat
+			.buildJdbcOutputFormat()
 			.setUsername(getParams().get(JdbcCatalogParams.USERNAME))
 			.setPassword(getParams().get(JdbcCatalogParams.PASSWORD))
 			.setDrivername(getParams().get(JdbcCatalogParams.DRIVER_NAME))
