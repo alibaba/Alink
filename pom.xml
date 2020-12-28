@@ -7,7 +7,7 @@
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink</artifactId>
     <packaging>pom</packaging>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3.1</version>
 
     <name>alink</name>
     <description>Alink is the Machine Learning algorithm platform based on Flink, developed by the PAI team of Alibaba computing platform.</description>
