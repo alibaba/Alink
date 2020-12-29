@@ -11,32 +11,37 @@ import java.io.ObjectOutputStream;
 
 public class InputSplitWithClassLoader implements InputSplit {
 	private static final long serialVersionUID = -7993725711297269105L;
-	private ClassLoaderFactory factory;
-	private InputSplit inputSplit;
+	private final ClassLoaderFactory factory;
+	private final byte[] serializedInputSplit;
+
+	private transient InputSplit inputSplit;
 
 	public InputSplitWithClassLoader(ClassLoaderFactory factory, InputSplit inputSplit) {
 		this.factory = factory;
 		this.inputSplit = inputSplit;
+
+		try {
+			serializedInputSplit = InstantiationUtil.serializeObject(inputSplit);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public InputSplit getInputSplit() {
+
+		if (inputSplit == null) {
+			try {
+				inputSplit = InstantiationUtil.deserializeObject(serializedInputSplit, factory.create());
+			} catch (IOException | ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		return inputSplit;
 	}
 
 	@Override
 	public int getSplitNumber() {
-		return inputSplit.getSplitNumber();
-	}
-
-	private void writeObject(ObjectOutputStream stream)
-		throws IOException {
-		InstantiationUtil.serializeObject(stream, factory);
-		InstantiationUtil.serializeObject(stream, inputSplit);
-	}
-
-	private void readObject(ObjectInputStream stream)
-		throws IOException, ClassNotFoundException {
-		factory = InstantiationUtil.deserializeObject(stream, Thread.currentThread().getContextClassLoader());
-		inputSplit = InstantiationUtil.deserializeObject(stream, factory.create());
+		return getInputSplit().getSplitNumber();
 	}
 }
