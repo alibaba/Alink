@@ -5,10 +5,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.params.io.shared.HasDataFormat;
+import com.alibaba.alink.params.io.shared.HasPluginVersion;
 import com.alibaba.alink.params.io.shared.HasTopic;
 
 public interface KafkaSinkParams<T> extends WithParams<T>,
-    HasTopic<T>, HasDataFormat<T>, HasFieldDelimiterDvComma<T>, HasProperties<T> {
+    HasTopic<T>,
+    HasDataFormat<T>,
+    HasFieldDelimiterDvComma<T>,
+    HasProperties<T>,
+    HasPluginVersion <T> {
 
     ParamInfo<String> BOOTSTRAP_SERVERS = ParamInfoFactory
         .createParamInfo("bootstrapServers", String.class)
