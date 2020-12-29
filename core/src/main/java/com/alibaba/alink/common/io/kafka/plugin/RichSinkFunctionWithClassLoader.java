@@ -18,53 +18,74 @@ import java.io.ObjectOutputStream;
 public class RichSinkFunctionWithClassLoader extends RichSinkFunction <Row>
 	implements CheckpointedFunction, CheckpointListener {
 
-	private KafkaClassLoaderFactory factory;
-	private RichSinkFunction <Row> internal;
+	private final KafkaClassLoaderFactory factory;
+	private final byte[] serializedRichSinkFunction;
+
+	private transient RichSinkFunction <Row> internal;
 
 	public RichSinkFunctionWithClassLoader(KafkaClassLoaderFactory factory, RichSinkFunction <Row> internal) {
 		this.factory = factory;
 		this.internal = internal;
+
+		try {
+			serializedRichSinkFunction = InstantiationUtil.serializeObject(internal);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private RichSinkFunction <Row> getRichSinkFunction() {
+
+		if (internal == null) {
+			try {
+				internal = InstantiationUtil.deserializeObject(serializedRichSinkFunction, factory.create());
+			} catch (IOException | ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		return internal;
 	}
 
 	@Override
 	public void setRuntimeContext(RuntimeContext t) {
-		factory.doAsThrowRuntime(() -> internal.setRuntimeContext(t));
+		factory.doAsThrowRuntime(() -> getRichSinkFunction().setRuntimeContext(t));
 	}
 
 	@Override
 	public RuntimeContext getRuntimeContext() {
-		return factory.doAsThrowRuntime(internal::getRuntimeContext);
+		return factory.doAsThrowRuntime(getRichSinkFunction()::getRuntimeContext);
 	}
 
 	@Override
 	public IterationRuntimeContext getIterationRuntimeContext() {
-		return factory.doAsThrowRuntime(internal::getIterationRuntimeContext);
+		return factory.doAsThrowRuntime(getRichSinkFunction()::getIterationRuntimeContext);
 	}
 
 	@Override
 	public void open(Configuration parameters) throws Exception {
-		factory.doAsThrowRuntime(() -> internal.open(parameters));
+		factory.doAsThrowRuntime(() -> getRichSinkFunction().open(parameters));
 	}
 
 	@Override
 	public void close() throws Exception {
-		factory.doAsThrowRuntime(internal::close);
+		factory.doAsThrowRuntime(getRichSinkFunction()::close);
 	}
 
 	@Override
 	public void invoke(Row value) throws Exception {
-		factory.doAsThrowRuntime(() -> internal.invoke(value));
+		factory.doAsThrowRuntime(() -> getRichSinkFunction().invoke(value));
 	}
 
 	@Override
 	public void invoke(Row value, Context context) throws Exception {
-		factory.doAsThrowRuntime(() -> internal.invoke(value, context));
+		factory.doAsThrowRuntime(() -> getRichSinkFunction().invoke(value, context));
 	}
 
 	@Override
 	public void notifyCheckpointComplete(long checkpointId) throws Exception {
 		if (internal instanceof CheckpointListener) {
-			factory.doAsThrowRuntime(() -> ((CheckpointListener) internal).notifyCheckpointComplete(checkpointId));
+			factory.doAsThrowRuntime(() -> ((CheckpointListener) getRichSinkFunction()).notifyCheckpointComplete(checkpointId));
 		} else {
 			throw new IllegalStateException("Internal is not the CheckpointListener.");
 		}
@@ -73,7 +94,7 @@ public class RichSinkFunctionWithClassLoader extends RichSinkFunction <Row>
 	@Override
 	public void snapshotState(FunctionSnapshotContext context) throws Exception {
 		if (internal instanceof CheckpointedFunction) {
-			factory.doAsThrowRuntime(() -> ((CheckpointedFunction) internal).snapshotState(context));
+			factory.doAsThrowRuntime(() -> ((CheckpointedFunction) getRichSinkFunction()).snapshotState(context));
 		} else {
 			throw new IllegalStateException("Internal is not the CheckpointedFunction.");
 		}
@@ -81,24 +102,10 @@ public class RichSinkFunctionWithClassLoader extends RichSinkFunction <Row>
 
 	@Override
 	public void initializeState(FunctionInitializationContext context) throws Exception {
-		if (internal instanceof CheckpointedFunction) {
-			factory.doAsThrowRuntime(() -> ((CheckpointedFunction) internal).initializeState(context));
+		if (getRichSinkFunction() instanceof CheckpointedFunction) {
+			factory.doAsThrowRuntime(() -> ((CheckpointedFunction) getRichSinkFunction()).initializeState(context));
 		} else {
 			throw new IllegalStateException("Internal is not the CheckpointedFunction.");
 		}
-	}
-
-	private void writeObject(ObjectOutputStream stream)
-		throws IOException {
-
-		InstantiationUtil.serializeObject(stream, factory);
-		InstantiationUtil.serializeObject(stream, internal);
-	}
-
-	private void readObject(ObjectInputStream stream)
-		throws IOException, ClassNotFoundException {
-
-		factory = InstantiationUtil.deserializeObject(stream, Thread.currentThread().getContextClassLoader());
-		internal = InstantiationUtil.deserializeObject(stream, factory.create());
 	}
 }
