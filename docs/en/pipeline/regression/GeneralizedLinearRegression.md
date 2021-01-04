@@ -13,6 +13,8 @@ Generalized Linear Model. https://en.wikipedia.org/wiki/Generalized_linear_model
 | regParam | Sets the regularization parameter for L2 regularization | Double |  | 0.0 |
 | epsilon | epsilon | Double |  | 1.0E-5 |
 | linkPredResultCol | link predict col name of output | String |  | null |
+| lazyPrintModelInfoEnabled | Enable lazyPrint of ModelInfo | Boolean |  | false |
+| lazyPrintModelInfoTitle | Title of ModelInfo in lazyPrint | String |  | null |
 | weightCol | Name of the column indicating weight | String |  | null |
 | maxIter | Maximum iterations, The default value is 10 | Integer |  | 10 |
 | predictionCol | Column name of prediction. | String | ✓ |  |

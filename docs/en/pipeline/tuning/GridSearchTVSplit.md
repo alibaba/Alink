@@ -1,32 +1,26 @@
-# gridsearchcv
+## Description
+Grid search implemented by Train-Validation.
 
-## 功能介绍
+ Grid search is an approach to parameter tuning that will methodically build and evaluate a model for each combination
+ of algorithm parameters specified in a grid.
 
-gridsearch是通过参数数组组成的网格，对其中的每一组输入参数的组很分别进行训练，预测，评估。取得评估参数最优的模型，作为最终的返回模型
+## Parameters
+| Name | Description | Type | Required？ | Default Value |
+| --- | --- | --- | --- | --- |
+| trainRatio | Ratio for training set and the validation set, range in (0, 1]. | Double |  | 0.8 |
+| lazyPrintTrainInfoEnabled | Enable lazyPrint of TrainInfo | Boolean |  | false |
+| lazyPrintTrainInfoTitle | Title of TrainInfo in lazyPrint | String |  | null |
 
-cv为交叉验证，将数据切分为k-folds，对每k-1份数据做训练，对剩余一份数据做预测和评估，得到一个评估结果。
+## Script Example
 
-此函数用cv方法得到每一个grid对应参数的评估结果，得到最优模型
-
-## 参数说明
-
-| 名称            | 中文名称  | 描述                                    | 类型            | 是否必须？ | 默认值 |
-| ---             | ---       | ---                                     | ---             | ---        | ---    |
-| NumFolds        | 折数      | 交叉验证的参数，数据的折数（大于等于2） | Integer         |            | 10     |
-| ParamGrid       | 参数网格  | 指定参数的网格                          | ParamGrid       |  ✓          | ---    |
-| Estimator       | Estimator | 用于调优的Estimator                     | Estimator       |  ✓          | ---    |
-| TuningEvaluator | 评估指标  | 用于选择最优模型的评估指标              | TuningEvaluator |      ✓      | ---    |
-
-## 脚本示例
-
-#### 脚本代码
+#### Code
 
 ```python
 def adult(url):
     data = (
         CsvSourceBatchOp()
-        .setFilePath('http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_train.csv')
-        .setSchemaStr(
+            .setFilePath('http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_train.csv')
+            .setSchemaStr(
             'age bigint, workclass string, fnlwgt bigint,'
             'education string, education_num bigint,'
             'marital_status string, occupation string,'
@@ -38,21 +32,17 @@ def adult(url):
     )
     return data
 
-
 def adult_train():
     return adult('http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_train.csv')
 
-
 def adult_test():
     return adult('http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_test.csv')
-
 
 def adult_numerical_feature_strs():
     return [
         "age", "fnlwgt", "education_num",
         "capital_gain", "capital_loss", "hours_per_week"
     ]
-
 
 def adult_categorical_feature_strs():
     return [
@@ -61,84 +51,78 @@ def adult_categorical_feature_strs():
         "native_country"
     ]
 
-
 def adult_features_strs():
     feature = adult_numerical_feature_strs()
     feature.extend(adult_categorical_feature_strs())
 
     return feature
 
-
 def rf_grid_search_cv(featureCols, categoryFeatureCols, label, metric):
     rf = (
         RandomForestClassifier()
-        .setFeatureCols(featureCols)
-        .setCategoricalCols(categoryFeatureCols)
-        .setLabelCol(label)
-        .setPredictionCol('prediction')
-        .setPredictionDetailCol('prediction_detail')
+            .setFeatureCols(featureCols)
+            .setCategoricalCols(categoryFeatureCols)
+            .setLabelCol(label)
+            .setPredictionCol('prediction')
+            .setPredictionDetailCol('prediction_detail')
     )
     paramGrid = (
         ParamGrid()
-        .addGrid(rf, 'SUBSAMPLING_RATIO', [1.0, 0.99, 0.98])
-        .addGrid(rf, 'NUM_TREES', [3, 6, 9])
+            .addGrid(rf, 'SUBSAMPLING_RATIO', [1.0, 0.99, 0.98])
+            .addGrid(rf, 'NUM_TREES', [3, 6, 9])
     )
     tuningEvaluator = (
         BinaryClassificationTuningEvaluator()
-        .setLabelCol(label)
-        .setPredictionDetailCol("prediction_detail")
-        .setTuningBinaryClassMetric(metric)
+            .setLabelCol(label)
+            .setPredictionDetailCol("prediction_detail")
+            .setTuningBinaryClassMetric(metric)
     )
     cv = (
         GridSearchCV()
-        .setEstimator(rf)
-        .setParamGrid(paramGrid)
-        .setTuningEvaluator(tuningEvaluator)
-        .setNumFolds(2)
-        .enableLazyPrintTrainInfo("TrainInfo")
+            .setEstimator(rf)
+            .setParamGrid(paramGrid)
+            .setTuningEvaluator(tuningEvaluator)
+            .setNumFolds(2)
+            .enableLazyPrintTrainInfo("TrainInfo")
     )
 
     return cv
-
 
 def rf_grid_search_tv(featureCols, categoryFeatureCols, label, metric):
     rf = (
         RandomForestClassifier()
-        .setFeatureCols(featureCols)
-        .setCategoricalCols(categoryFeatureCols)
-        .setLabelCol(label)
-        .setPredictionCol('prediction')
-        .setPredictionDetailCol('prediction_detail')
+            .setFeatureCols(featureCols)
+            .setCategoricalCols(categoryFeatureCols)
+            .setLabelCol(label)
+            .setPredictionCol('prediction')
+            .setPredictionDetailCol('prediction_detail')
     )
     paramGrid = (
         ParamGrid()
-        .addGrid(rf, 'SUBSAMPLING_RATIO', [1.0, 0.99, 0.98])
-        .addGrid(rf, 'NUM_TREES', [3, 6, 9])
+            .addGrid(rf, 'SUBSAMPLING_RATIO', [1.0, 0.99, 0.98])
+            .addGrid(rf, 'NUM_TREES', [3, 6, 9])
     )
     tuningEvaluator = (
         BinaryClassificationTuningEvaluator()
-        .setLabelCol(label)
-        .setPredictionDetailCol("prediction_detail")
-        .setMetricName(metric)
+            .setLabelCol(label)
+            .setPredictionDetailCol("prediction_detail")
+            .setTuningBinaryClassMetric(metric)
     )
     cv = (
         GridSearchTVSplit()
-        .setEstimator(rf)
-        .setParamGrid(paramGrid)
-        .setTuningEvaluator(tuningEvaluator)
-        .enableLazyPrintTrainInfo("TrainInfo")
+            .setEstimator(rf)
+            .setParamGrid(paramGrid)
+            .setTuningEvaluator(tuningEvaluator)
+            .enableLazyPrintTrainInfo("TrainInfo")
     )
 
     return cv
 
-
 def tuningcv(cv_estimator, input):
     return cv_estimator.fit(input)
 
-
 def tuningtv(tv_estimator, input):
     return tv_estimator.fit(input)
-
 
 def main():
     print('rf cv tuning')
@@ -147,7 +131,7 @@ def main():
                           adult_categorical_feature_strs(), 'label', 'AUC'),
         adult_train()
     )
-    
+
     print('rf tv tuning')
     model = tuningtv(
         rf_grid_search_tv(adult_features_strs(),
@@ -158,7 +142,7 @@ def main():
 main()
 ```
 
-#### 脚本结果
+#### Result
 ```
 rf cv tuning
 com.alibaba.alink.pipeline.tuning.GridSearchCV

@@ -1,5 +1,5 @@
 ## Description
-Grid search implemented by Train-Validation.
+Grid search implemented by Cross validation.
 
  Grid search is an approach to parameter tuning that will methodically build and evaluate a model for each combination
  of algorithm parameters specified in a grid.
@@ -7,7 +7,7 @@ Grid search implemented by Train-Validation.
 ## Parameters
 | Name | Description | Type | Required？ | Default Value |
 | --- | --- | --- | --- | --- |
-| trainRatio | Ratio for training set and the validation set, range in (0, 1]. | Double |  | 0.8 |
+| NumFolds | Number of folds for cross validation (>= 2) | Integer |  | 10 |
 | lazyPrintTrainInfoEnabled | Enable lazyPrint of TrainInfo | Boolean |  | false |
 | lazyPrintTrainInfoTitle | Title of TrainInfo in lazyPrint | String |  | null |
 
@@ -81,7 +81,7 @@ def rf_grid_search_cv(featureCols, categoryFeatureCols, label, metric):
         BinaryClassificationTuningEvaluator()
         .setLabelCol(label)
         .setPredictionDetailCol("prediction_detail")
-        .setMetricName(metric)
+        .setTuningBinaryClassMetric(metric)
     )
     cv = (
         GridSearchCV()
@@ -89,6 +89,7 @@ def rf_grid_search_cv(featureCols, categoryFeatureCols, label, metric):
         .setParamGrid(paramGrid)
         .setTuningEvaluator(tuningEvaluator)
         .setNumFolds(2)
+        .enableLazyPrintTrainInfo("TrainInfo")
     )
 
     return cv
@@ -112,13 +113,14 @@ def rf_grid_search_tv(featureCols, categoryFeatureCols, label, metric):
         BinaryClassificationTuningEvaluator()
         .setLabelCol(label)
         .setPredictionDetailCol("prediction_detail")
-        .setMetricName(metric)
+        .setTuningBinaryClassMetric(metric)
     )
     cv = (
         GridSearchTVSplit()
         .setEstimator(rf)
         .setParamGrid(paramGrid)
         .setTuningEvaluator(tuningEvaluator)
+        .enableLazyPrintTrainInfo("TrainInfo")
     )
 
     return cv
@@ -140,8 +142,6 @@ def main():
         adult_train()
     )
     
-    print(model.getReport())
-    
     print('rf tv tuning')
     model = tuningtv(
         rf_grid_search_tv(adult_features_strs(),
@@ -149,7 +149,6 @@ def main():
         adult_train()
     )
 
-    print(model.getReport())
 main()
 ```
 
