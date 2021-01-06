@@ -16,6 +16,7 @@
 
     <modules>
         <module>connector-kafka</module>
+        <module>connector-odps</module>
         <module>connector-jdbc</module>
         <module>connector-hive</module>
         <module>filesystem</module>
