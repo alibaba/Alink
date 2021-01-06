@@ -1,21 +1,26 @@
 package com.alibaba.alink.common.io.filesystem;
 
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.core.fs.FileInputSplit;
 import org.apache.flink.core.fs.FileStatus;
 import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
 import com.alibaba.alink.common.io.filesystem.copy.FileInputFormat;
 import com.alibaba.alink.common.io.filesystem.copy.FileOutputFormat;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -95,8 +100,51 @@ public class AkUtils {
 		return meta;
 	}
 
-	private interface FileProcFunction<T, R> {
+	public static Tuple2 <TableSchema, List <Row>> readFromPath(FilePath filePath) throws IOException {
+		FileForEachReader reader = new FileForEachReader();
+
+		getFromFolderForEach(filePath, reader);
+
+		return Tuple2.of(reader.getSchema(), reader.getContent());
+	}
+
+	public interface FileProcFunction<T, R> {
 		R apply(T t) throws IOException;
+	}
+
+	public static class FileForEachReader implements FileProcFunction <FilePath, Boolean> {
+		private final List <Row> content = new ArrayList <>();
+		private TableSchema schema;
+
+		@Override
+		public Boolean apply(FilePath filePath) throws IOException {
+
+			boolean fileExists = filePath.getFileSystem().exists(filePath.getPath());
+
+			if (!fileExists) {
+				throw new IllegalArgumentException("Could not find the file: " + filePath.getPathStr());
+			}
+
+			AkStream stream = new AkStream(filePath);
+
+			schema = CsvUtil.schemaStr2Schema(stream.getAkMeta().schemaStr);
+
+			try (AkReader reader = stream.getReader()) {
+				for (Row r : reader) {
+					content.add(r);
+				}
+			}
+
+			return true;
+		}
+
+		public List <Row> getContent() {
+			return content;
+		}
+
+		public TableSchema getSchema() {
+			return schema;
+		}
 	}
 
 	private static <T> T getFromFolder(FilePath filePath, FileProcFunction <FilePath, T> fileProc) throws IOException {
@@ -108,7 +156,7 @@ public class AkUtils {
 			// get file named taskId + 1
 			return fileProc.apply(new FilePath(fileNamed1, filePath.getFileSystem()));
 		} else {
-			List <Path> files = filePath.getFileSystem().listDirectories(filePath.getPath());
+			List <Path> files = filePath.getFileSystem().listFiles(filePath.getPath());
 
 			if (files.isEmpty()) {
 				throw new IOException(
@@ -116,6 +164,33 @@ public class AkUtils {
 				);
 			} else {
 				return fileProc.apply(new FilePath(files.get(0), filePath.getFileSystem()));
+			}
+		}
+	}
+
+	public static void getFromFolderForEach(FilePath filePath, FileProcFunction <FilePath, Boolean> fileReader)
+		throws IOException {
+
+		if (filePath.getFileSystem().exists(filePath.getPath())
+			&& !filePath.getFileSystem().getFileStatus(filePath.getPath()).isDir()) {
+
+			// get file named taskId + 1
+			if (!fileReader.apply(new FilePath(filePath.getPath(), filePath.getFileSystem()))) {
+				throw new IllegalStateException("Could not find content in the folder: " + filePath.toString());
+			}
+		} else {
+			List <Path> files = filePath.getFileSystem().listFiles(filePath.getPath());
+
+			if (files.isEmpty()) {
+				throw new IOException(
+					"Folder is empty. Could not determined content of op. folder: " + filePath.getPathStr()
+				);
+			} else {
+				for (Path path : files) {
+					if (!fileReader.apply(new FilePath(path, filePath.getFileSystem()))) {
+						break;
+					}
+				}
 			}
 		}
 	}
