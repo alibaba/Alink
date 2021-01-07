@@ -17,15 +17,12 @@ public class VectorTypes {
 	/**
 	 * <code>DenseVector</code> type information.
 	 */
-	//public static final TypeInformation <DenseVector> DENSE_VECTOR = TypeInformation.of(DenseVector.class);
-	public static final TypeInformation <DenseVector> DENSE_VECTOR = new com.alibaba.alink.common.types.VectorTypes.DenseVectorTypeInternal();
+	public static final TypeInformation <DenseVector> DENSE_VECTOR = TypeInformation.of(DenseVector.class);
 
 	/**
 	 * <code>SparseVector</code> type information.
 	 */
-	//public static final TypeInformation <SparseVector> SPARSE_VECTOR = TypeInformation.of(SparseVector.class);
-	public static final TypeInformation <SparseVector> SPARSE_VECTOR = new com.alibaba.alink.common.types.VectorTypes.SparseVectorTypeInternal();
-
+	public static final TypeInformation <SparseVector> SPARSE_VECTOR = TypeInformation.of(SparseVector.class);
 	/**
 	 * <code>Vector</code> type information.
 	 * For efficiency, use type information of sub-class <code>DenseVector</code> and <code>SparseVector</code>
