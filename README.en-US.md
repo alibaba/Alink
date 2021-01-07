@@ -32,16 +32,16 @@ Welcome everyone to join the Alink open source user group to communicate.
 
 #### About package names and versions:
   - PyAlink provides different Python packages for Flink versions that Alink supports: 
-  package `pyalink` always maintains Alink Python API against the latest Flink version, which is 1.11, 
-  while `pyalink-flink-***` support old-version Flink, which are `pyalink-flink-1.10` and `pyalink-flink-1.9` for now. 
-  - The version of python packages always follows Alink Java version, like `1.3.0`.
+  package `pyalink` always maintains Alink Python API against the latest Flink version, which is 1.12, 
+  while `pyalink-flink-***` support old-version Flink, which are `pyalink-flink-1.11`, `pyalink-flink-1.10` and `pyalink-flink-1.9` for now. 
+  - The version of python packages always follows Alink Java version, like `1.3.1`.
   
 #### Installation steps:
 
 1. Make sure the version of python3 on your computer is 3.6 or 3.7.
 2. Make sure Java 8 is installed on your computer.
 3. Use pip to install:
-  `pip install pyalink`, `pip install pyalink-flink-1.10` or `pip install pyalink-flink-1.9`.
+  `pip install pyalink`, `pip install pyalink-flink-1.11`, `pip install pyalink-flink-1.10` or `pip install pyalink-flink-1.9`.
 
 
 #### Potential issues:
@@ -50,9 +50,10 @@ Welcome everyone to join the Alink open source user group to communicate.
 If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstall pyalink` or `pip uninstall pyalink-flink-***` to remove them.
 
 2. If `pip install` is slow of failed, refer to [this article](https://segmentfault.com/a/1190000006111096) to change the pip source, or use the following download links:
-   - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.0/pyalink-1.3.0-py3-none-any.whl) (MD5: 1e5fb63c798a4aafe4461505521ac79a)
-   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.0/pyalink_flink_1.10-1.3.0-py3-none-any.whl) (MD5: f0d35a4c3500db0e52c390ed1ab830c5)
-   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.0/pyalink_flink_1.9-1.3.0-py3-none-any.whl) (MD5: 3bfbef09e5d5147d2db2aeba785f3ba6)
+   - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink-1.3.1-py3-none-any.whl) (MD5: a7c793b1bb38045c5d1ef4c50285562f)
+   - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.11-1.3.1-py3-none-any.whl) (MD5: f71779fb6d3afe99bab593d8c91f540f)
+   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.10-1.3.1-py3-none-any.whl) (MD5: 4950fc5cafac27d3062a047ab2b7bb34)
+   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.9-1.3.1-py3-none-any.whl) (MD5: f6071a4e9f6b41a3558ed97bb235346e)
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 
@@ -71,6 +72,9 @@ The following dependencies and their versions of jars are supported:
 - MySQL: 5.1.27
 - Derby: 10.6.1.0
 - SQLite: 3.19.3
+- S3-hadoop: 1.11.788
+- S3-presto: 1.11.788
+- odps: 0.36.4-public
 
 These jars will be installed to the ```lib/plugins``` folder of PyAlink. 
 Note that these command require the access for the folder.
@@ -149,12 +153,31 @@ Pipeline pipeline = new Pipeline().add(va).add(kMeans);
 pipeline.fit(data).transform(data).print();
 ```
 
+### With Flink-1.12
+```xml
+<dependency>
+    <groupId>com.alibaba.alink</groupId>
+    <artifactId>alink_core_flink-1.12_2.11</artifactId>
+    <version>1.3.1</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-streaming-scala_2.11</artifactId>
+    <version>1.12.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-table-planner_2.11</artifactId>
+    <version>1.12.0</version>
+</dependency>
+```
+
 ### With Flink-1.11
 ```xml
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.11_2.11</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -173,7 +196,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.10_2.11</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -193,7 +216,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.9_2.11</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -213,8 +236,8 @@ Get started to run Alink Algorithm with a Flink Cluster
 
 1. Prepare a Flink Cluster:
 ```shell
-  wget https://archive.apache.org/dist/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz
-  tar -xf flink-1.11.0-bin-scala_2.11.tgz && cd flink-1.11.0
+  wget https://archive.apache.org/dist/flink/flink-1.12.0/flink-1.12.0-bin-scala_2.11.tgz
+  tar -xf flink-1.12.0-bin-scala_2.11.tgz && cd flink-1.12.0
   ./bin/start-cluster.sh
 ```
 

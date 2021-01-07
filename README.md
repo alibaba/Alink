@@ -31,23 +31,24 @@
 #### 包名和版本说明：
 
   - PyAlink 根据 Alink 所支持的 Flink 版本提供不同的 Python 包：
-其中，`pyalink` 包对应为 Alink 所支持的最新 Flink 版本，当前为 1.11，而 `pyalink-flink-***` 为旧版本的 Flink 版本，当前提供 `pyalink-flink-1.10` 和 `pyalink-flink-1.9`。
-  - Python 包的版本号与 Alink 的版本号一致，例如`1.3.0`。
+其中，`pyalink` 包对应为 Alink 所支持的最新 Flink 版本，当前为 1.12，而 `pyalink-flink-***` 为旧版本的 Flink 版本，当前提供 `pyalink-flink-1.11`, `pyalink-flink-1.10` 和 `pyalink-flink-1.9`。
+  - Python 包的版本号与 Alink 的版本号一致，例如`1.3.1`。
 
 ####安装步骤：
 1. 确保使用环境中有Python3，版本限于 3.6 和 3.7。
 2. 确保使用环境中安装有 Java 8。
 3. 使用 pip 命令进行安装：
-  `pip install pyalink`、`pip install pyalink-flink-1.10` 或者 `pip install pyalink-flink-1.9`。
+  `pip install pyalink`、`pip install pyalink-flink-1.11`、`pip install pyalink-flink-1.10` 或者 `pip install pyalink-flink-1.9`。
   
 #### 安装注意事项：
 
 1. `pyalink` 和 `pyalink-flink-***` 不能同时安装，也不能与旧版本同时安装。
 如果之前安装过 `pyalink` 或者 `pyalink-flink-***`，请使用`pip uninstall pyalink` 或者 `pip uninstall pyalink-flink-***` 卸载之前的版本。
 2. 出现`pip`安装缓慢或不成功的情况，可以参考[这篇文章](https://segmentfault.com/a/1190000006111096)修改pip源，或者直接使用下面的链接下载 whl 包，然后使用 `pip` 安装：
-   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.0/pyalink-1.3.0-py3-none-any.whl) (MD5: 1e5fb63c798a4aafe4461505521ac79a)
-   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.0/pyalink_flink_1.10-1.3.0-py3-none-any.whl) (MD5: f0d35a4c3500db0e52c390ed1ab830c5)
-   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.0/pyalink_flink_1.9-1.3.0-py3-none-any.whl) (MD5: 3bfbef09e5d5147d2db2aeba785f3ba6)
+   - Flink 1.12：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink-1.3.1-py3-none-any.whl) (MD5: a7c793b1bb38045c5d1ef4c50285562f)
+   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.11-1.3.1-py3-none-any.whl) (MD5: f71779fb6d3afe99bab593d8c91f540f)
+   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.10-1.3.1-py3-none-any.whl) (MD5: 4950fc5cafac27d3062a047ab2b7bb34)
+   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.9-1.3.1-py3-none-any.whl) (MD5: f6071a4e9f6b41a3558ed97bb235346e)
 3. 如果有多个版本的 Python，可能需要使用特定版本的 `pip`，比如 `pip3`；如果使用 Anaconda，则需要在 Anaconda 命令行中进行安装。
 
 #### 下载安装文件系统或 Catalog 依赖 jar 包：
@@ -63,6 +64,9 @@
 - MySQL: 5.1.27
 - Derby: 10.6.1.0
 - SQLite: 3.19.3
+- S3-hadoop: 1.11.788
+- S3-presto: 1.11.788
+- odps: 0.36.4-public
 
 这些 jar 包将被下载到 PyAlink 安装路径的 ```lib/plugins``` 目录下，所以要求运行命令时有 PyAlink 安装目录的权限。
 
@@ -134,12 +138,32 @@ Pipeline pipeline = new Pipeline().add(va).add(kMeans);
 pipeline.fit(data).transform(data).print();
 ```
 
+
+### Flink-1.12 的 Maven 依赖
+```xml
+<dependency>
+    <groupId>com.alibaba.alink</groupId>
+    <artifactId>alink_core_flink-1.12_2.11</artifactId>
+    <version>1.3.1</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-streaming-scala_2.11</artifactId>
+    <version>1.12.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-table-planner_2.11</artifactId>
+    <version>1.12.0</version>
+</dependency>
+```
+
 ### Flink-1.11 的 Maven 依赖
 ```xml
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.11_2.11</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -158,7 +182,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.10_2.11</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -178,7 +202,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.9_2.11</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -199,8 +223,8 @@ pipeline.fit(data).transform(data).print();
 
 1. 准备Flink集群
 ```shell
-  wget https://archive.apache.org/dist/flink/flink-1.11.0/flink-1.10.0-bin-scala_2.11.tgz
-  tar -xf flink-1.11.0-bin-scala_2.11.tgz && cd flink-1.11.0
+  wget https://archive.apache.org/dist/flink/flink-1.12.0/flink-1.12.0-bin-scala_2.11.tgz
+  tar -xf flink-1.12.0-bin-scala_2.11.tgz && cd flink-1.12.0
   ./bin/start-cluster.sh
 ```
 
