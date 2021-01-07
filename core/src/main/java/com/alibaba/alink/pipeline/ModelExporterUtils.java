@@ -18,6 +18,8 @@ import org.apache.flink.util.Preconditions;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.filesystem.AkStream;
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
+import com.alibaba.alink.common.io.filesystem.AkUtils;
+import com.alibaba.alink.common.io.filesystem.AkUtils.FileProcFunction;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
@@ -717,51 +719,64 @@ public class ModelExporterUtils {
 		return postOrderDeserialize(stages, packed, schema, 1);
 	}
 
-	public static <T extends PipelineStageBase <?>> List <T> constructPipelineStagesFromMeta(Row metaRow,
-																							 TableSchema schema) {
+	public static <T extends PipelineStageBase <?>> List <T> constructPipelineStagesFromMeta(
+		Row metaRow, TableSchema schema) {
+
 		StageNode[] stages = deserializeMeta(metaRow, schema, 1);
 		return postOrderUnPackWithoutModelData(stages);
 	}
 
-	public static Tuple2 <TableSchema, Row> loadMetaFromAkFile(FilePath filePath) {
-		boolean fileExists;
-		try {
-			fileExists = filePath.getFileSystem().exists(filePath.getPath());
-		} catch (IOException e) {
-			throw new IllegalArgumentException(e);
-		}
+	private static class MetaReader implements FileProcFunction <FilePath, Boolean> {
+		private Row meta;
+		private TableSchema schema;
 
-		if (!fileExists) {
-			throw new IllegalArgumentException("Could not find the file: " + filePath.getPathStr());
-		}
+		@Override
+		public Boolean apply(FilePath filePath) throws IOException {
 
-		Row meta = null;
-		AkStream stream;
-		try {
-			stream = new AkStream(filePath);
-		} catch (IOException e) {
-			throw new IllegalArgumentException(e);
-		}
+			boolean fileExists = filePath.getFileSystem().exists(filePath.getPath());
 
-		TableSchema schema = CsvUtil.schemaStr2Schema(stream.getAkMeta().schemaStr);
-
-		final int idColIndex = TableUtil.findColIndexWithAssertAndHint(schema, ID_COL_NAME);
-
-		try (AkReader reader = stream.getReader()) {
-			for (Row r : reader) {
-				if ((Long) r.getField(idColIndex) < 0) {
-					meta = r;
-					break;
-				}
+			if (!fileExists) {
+				throw new IllegalArgumentException("Could not find the file: " + filePath.getPathStr());
 			}
 
-			Preconditions.checkState(meta != null,
-				"Could not find the meta row in the file: " + filePath.getPathStr());
+			AkStream stream = new AkStream(filePath);
+
+			schema = CsvUtil.schemaStr2Schema(stream.getAkMeta().schemaStr);
+
+			final int idColIndex = TableUtil.findColIndexWithAssertAndHint(schema, ID_COL_NAME);
+
+			try (AkReader reader = stream.getReader()) {
+				for (Row r : reader) {
+					if ((Long) r.getField(idColIndex) < 0) {
+						meta = r;
+
+						return true;
+					}
+				}
+
+				return false;
+			}
+		}
+
+		public Row getMeta() {
+			return meta;
+		}
+
+		public TableSchema getSchema() {
+			return schema;
+		}
+	}
+
+	public static Tuple2 <TableSchema, Row> loadMetaFromAkFile(FilePath filePath) {
+		MetaReader metaReader = new MetaReader();
+
+		try {
+			AkUtils.getFromFolderForEach(filePath, metaReader);
 		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}
 
-		return Tuple2.of(schema, meta);
+		return Tuple2.of(metaReader.getSchema(), metaReader.getMeta());
 	}
 
 	public static List <Tuple3 <PipelineStageBase <?>, TableSchema, List <Row>>> loadStagesFromPipelineModel(
@@ -896,25 +911,9 @@ public class ModelExporterUtils {
 	static LocalPredictor loadLocalPredictorFromPipelineModel(
 		FilePath filePath, TableSchema inputSchema) throws Exception {
 
-		boolean fileExists = filePath.getFileSystem().exists(filePath.getPath());
+		Tuple2<TableSchema, List<Row>> readed = AkUtils.readFromPath(filePath);
 
-		if (!fileExists) {
-			throw new IllegalArgumentException("Could not find the file: " + filePath.getPathStr());
-		}
-
-		AkStream stream = new AkStream(filePath);
-
-		TableSchema modelSchema = CsvUtil.schemaStr2Schema(stream.getAkMeta().schemaStr);
-
-		List <Row> all = new ArrayList <>();
-
-		try (AkReader reader = stream.getReader()) {
-			for (Row r : reader) {
-				all.add(r);
-			}
-		}
-
-		return loadLocalPredictorFromPipelineModel(all, modelSchema, inputSchema);
+		return loadLocalPredictorFromPipelineModel(readed.f1, readed.f0, inputSchema);
 	}
 
 	private static int next(List <Row> all, int cursor, int field) {

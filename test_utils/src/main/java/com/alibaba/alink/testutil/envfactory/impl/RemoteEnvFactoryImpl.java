@@ -19,20 +19,21 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 public class RemoteEnvFactoryImpl implements BaseEnvFactory {
     private ExecutionEnvironmentFactory executionEnvironmentFactory;
     private StreamExecutionEnvironmentFactory streamExecutionEnvironmentFactory;
+    private Configuration configuration;
 
     @Override
     public void initialize(Properties properties) {
         final String host = properties.getProperty("host");
         final int port = Integer.parseInt(properties.getProperty("port"));
         final int parallelism = Integer.parseInt(properties.getProperty("parallelism", "2"));
-        final Configuration configuration = createConfiguration(properties);
+        this.configuration = createConfiguration(properties);
 
         executionEnvironmentFactory = () -> {
             RemoteEnvironment remoteEnvironment = new RemoteEnvironment(host, port, configuration, null);
             remoteEnvironment.setParallelism(parallelism);
             return remoteEnvironment;
         };
-        streamExecutionEnvironmentFactory = () -> {
+        streamExecutionEnvironmentFactory = (Configuration configuration) -> {
             RemoteStreamEnvironment remoteStreamEnvironment = new RemoteStreamEnvironment(host, port, configuration);
             remoteStreamEnvironment.setParallelism(parallelism);
             return remoteStreamEnvironment;
@@ -42,7 +43,7 @@ public class RemoteEnvFactoryImpl implements BaseEnvFactory {
     @Override
     public Object getMlEnv() {
         ExecutionEnvironment benv = executionEnvironmentFactory.createExecutionEnvironment();
-        StreamExecutionEnvironment senv = streamExecutionEnvironmentFactory.createExecutionEnvironment();
+        StreamExecutionEnvironment senv = streamExecutionEnvironmentFactory.createExecutionEnvironment(configuration);
         BatchTableEnvironment btenv = BatchTableEnvironment.create(benv);
         StreamTableEnvironment stenv = StreamTableEnvironment.create(senv);
         return makeMlEnv(benv, btenv, senv, stenv);

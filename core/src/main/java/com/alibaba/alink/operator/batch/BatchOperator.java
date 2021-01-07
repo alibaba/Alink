@@ -268,7 +268,7 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 
 	@Deprecated
 	public static void disableLogging() {
-		MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
+		// pass
 	}
 
 	public long count() throws Exception {

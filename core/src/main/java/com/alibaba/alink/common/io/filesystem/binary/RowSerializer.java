@@ -23,7 +23,7 @@ public class RowSerializer implements Serializable {
 
 	public RowSerializer(String[] fieldNames, TypeInformation<?>[] fieldTypes) {
 		RowTypeInfo rowTypeInfo = new RowTypeInfo(fieldTypes, fieldNames);
-		this.serializer = rowTypeInfo.createSerializer(new ExecutionConfig());
+		this.serializer = rowTypeInfo.createLegacySerializer(new ExecutionConfig());
 		this.outputView = new DataOutputSerializer(START_SIZE_OUTPUT_VIEW);
 		this.inputView = new DataInputDeserializer();
 	}

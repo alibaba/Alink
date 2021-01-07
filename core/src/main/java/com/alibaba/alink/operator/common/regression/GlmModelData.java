@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.regression;
 
+import com.alibaba.alink.operator.common.regression.glm.GlmUtil.GlmModelSummary;
 import com.alibaba.alink.params.regression.GlmTrainParams;
 
 /**
@@ -81,4 +82,9 @@ public class GlmModelData {
 	 * diag{1/(AT * A)}
 	 */
 	public double[] diagInvAtWA;
+
+	/**
+	 * model summary.
+	 */
+	public GlmModelSummary modelSummary;
 }
