@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.linalg;
 
+import org.apache.flink.annotation.Internal;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -210,6 +212,38 @@ public class SparseVector extends Vector {
 	 */
 	public double[] getValues() {
 		return values;
+	}
+
+	/**
+	 * Make sparse vector as pojo-type
+	 */
+	@Internal
+	public int getN() {
+		return n;
+	}
+
+	/**
+	 * Make sparse vector as pojo-type
+	 */
+	@Internal
+	public void setN(int n) {
+		this.n = n;
+	}
+
+	/**
+	 * Make sparse vector as pojo-type
+	 */
+	@Internal
+	public void setIndices(int[] indices) {
+		this.indices = indices;
+	}
+
+	/**
+	 * Make sparse vector as pojo-type
+	 */
+	@Internal
+	public void setValues(double[] values) {
+		this.values = values;
 	}
 
 	@Override

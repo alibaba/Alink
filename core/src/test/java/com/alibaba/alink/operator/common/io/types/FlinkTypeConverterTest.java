@@ -6,27 +6,32 @@ import org.apache.flink.api.common.typeinfo.SqlTimeTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 
+import com.alibaba.alink.common.VectorTypes;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class FlinkTypeConverterTest {
 
 	private static final TypeInformation <?>[] TYPES = new TypeInformation <?>[] {
-		BasicTypeInfo.STRING_TYPE_INFO,
-		BasicTypeInfo.BOOLEAN_TYPE_INFO,
-		BasicTypeInfo.BYTE_TYPE_INFO,
-		BasicTypeInfo.SHORT_TYPE_INFO,
-		BasicTypeInfo.INT_TYPE_INFO,
-		BasicTypeInfo.LONG_TYPE_INFO,
-		BasicTypeInfo.FLOAT_TYPE_INFO,
-		BasicTypeInfo.DOUBLE_TYPE_INFO,
-		SqlTimeTypeInfo.DATE,
-		SqlTimeTypeInfo.TIME,
-		SqlTimeTypeInfo.TIMESTAMP,
-		BasicTypeInfo.BIG_DEC_TYPE_INFO,
-		Types.BIG_INT,
-		Types.BIG_DEC,
-		PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO};
+		//BasicTypeInfo.STRING_TYPE_INFO,
+		//BasicTypeInfo.BOOLEAN_TYPE_INFO,
+		//BasicTypeInfo.BYTE_TYPE_INFO,
+		//BasicTypeInfo.SHORT_TYPE_INFO,
+		//BasicTypeInfo.INT_TYPE_INFO,
+		//BasicTypeInfo.LONG_TYPE_INFO,
+		//BasicTypeInfo.FLOAT_TYPE_INFO,
+		//BasicTypeInfo.DOUBLE_TYPE_INFO,
+		//SqlTimeTypeInfo.DATE,
+		//SqlTimeTypeInfo.TIME,
+		//SqlTimeTypeInfo.TIMESTAMP,
+		//BasicTypeInfo.BIG_DEC_TYPE_INFO,
+		//Types.BIG_INT,
+		//Types.BIG_DEC,
+		//PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO,
+		VectorTypes.VECTOR,
+		VectorTypes.DENSE_VECTOR,
+		VectorTypes.SPARSE_VECTOR
+	};
 
 	@Test
 	public void testMutualConversion() {
