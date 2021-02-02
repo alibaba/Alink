@@ -160,6 +160,12 @@
             <version>0.9.10</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.fommil.netlib</groupId>
+            <artifactId>all</artifactId>
+            <type>pom</type>
+        </dependency>
+
         <!-- unit test dependency -->
         <dependency>
             <groupId>org.apache.flink</groupId>
