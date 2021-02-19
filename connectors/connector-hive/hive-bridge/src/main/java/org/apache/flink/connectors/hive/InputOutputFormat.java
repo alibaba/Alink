@@ -41,7 +41,7 @@ public class InputOutputFormat {
 			table);
 
 		if (remainingPartitions != null) {
-			hiveTableSource.applyPartitionPruning(remainingPartitions);
+			hiveTableSource = (HiveBatchAndStreamTableSource) hiveTableSource.applyPartitionPruning(remainingPartitions);
 		}
 
 		return Tuple3.of(
