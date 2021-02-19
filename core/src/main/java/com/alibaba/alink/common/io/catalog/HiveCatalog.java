@@ -42,6 +42,7 @@ import org.apache.flink.table.catalog.exceptions.TableNotPartitionedException;
 import org.apache.flink.table.catalog.exceptions.TablePartitionedException;
 import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
+import org.apache.flink.table.data.DecimalData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.binary.BinaryStringData;
 import org.apache.flink.table.expressions.Expression;
@@ -86,8 +87,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @CatalogAnnotation(name = "hive")
 public class HiveCatalog extends BaseCatalog {
@@ -544,6 +547,34 @@ public class HiveCatalog extends BaseCatalog {
 		return internal;
 	}
 
+	private TableSchema removePartitionKeySchema(
+		TableSchema schema, ObjectPath objectPath) throws TableNotExistException {
+
+		// remove static partition columns
+		List<String> staticPartCols = getPartitionCols(objectPath);
+		int numPartCols = staticPartCols.size();
+		if (numPartCols > 0) {
+			Set <String> partColsSet = new HashSet <>(staticPartCols);
+			int n = 0;
+			String[] fieldNames = new String[schema.getFieldNames().length - numPartCols];
+			TypeInformation <?>[] fieldTypes = new TypeInformation[fieldNames.length];
+			TypeInformation <?>[] allFieldTypes = schema.getFieldTypes();
+			for (int i = 0; i < allFieldTypes.length; i++) {
+				String fieldName = schema.getFieldNames()[i];
+				if (partColsSet.contains(fieldName)) {
+					continue;
+				}
+				fieldNames[n] = fieldName;
+				fieldTypes[n] = allFieldTypes[i];
+				n++;
+			}
+
+			return new TableSchema(fieldNames, fieldTypes);
+		} else {
+			return schema;
+		}
+	}
+
 	private void checkTableExistenceBeforeSink(ObjectPath objectPath, TableSchema schema, Params params) {
 		boolean tableExists = tableExists(objectPath);
 		boolean overwriteSink = params.get(HiveCatalogParams.OVERWRITE_SINK);
@@ -569,7 +600,7 @@ public class HiveCatalog extends BaseCatalog {
 	private void checkSchemaMatch(TableSchema outputSchema, ObjectPath objectPath) {
 		TableSchema tableSchema;
 		try {
-			tableSchema = getTable(objectPath).getSchema();
+			tableSchema = removePartitionKeySchema(getTable(objectPath).getSchema(), objectPath);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -614,6 +645,8 @@ public class HiveCatalog extends BaseCatalog {
 
 					if (o instanceof BinaryStringData) {
 						o = o.toString();
+					} else if (o instanceof DecimalData) {
+						o = ((DecimalData) o).toBigDecimal();
 					}
 
 					row.setField(i, o);
