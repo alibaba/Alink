@@ -223,6 +223,7 @@ Get started to run Alink Algorithm with a Flink Cluster
 2. Build Alink jar from the source:
 ```shell
   git clone https://github.com/alibaba/Alink.git
+  # add <scope>provided</scope> in pom.xml of alink_examples.
   cd Alink && mvn -Dmaven.test.skip=true clean package shade:shade
 ```
 
