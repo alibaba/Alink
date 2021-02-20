@@ -231,6 +231,7 @@ pipeline.fit(data).transform(data).print();
 2. 准备Alink算法包
 ```shell
   git clone https://github.com/alibaba/Alink.git
+  # add <scope>provided</scope> in pom.xml of alink_examples.
   cd Alink && mvn -Dmaven.test.skip=true clean package shade:shade
 ```
 
