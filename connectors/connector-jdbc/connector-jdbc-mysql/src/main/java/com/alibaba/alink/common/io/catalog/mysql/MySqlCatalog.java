@@ -255,10 +255,12 @@ public class MySqlCatalog extends JdbcCatalog {
 				}
 
 				sbd
+					.append("`")
 					.append(
 						schema.getFieldName(i)
 							.orElseThrow(() -> new IllegalArgumentException("Counld not find the column."))
 					)
+					.append("`")
 					.append(" ")
 					.append(flinkType2MySqlColumnDefinition(schema.getFieldDataType(i).orElseThrow(
 						() -> new IllegalArgumentException("Counld not find the column."))));
