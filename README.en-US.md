@@ -50,10 +50,10 @@ Welcome everyone to join the Alink open source user group to communicate.
 If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstall pyalink` or `pip uninstall pyalink-flink-***` to remove them.
 
 2. If `pip install` is slow of failed, refer to [this article](https://segmentfault.com/a/1190000006111096) to change the pip source, or use the following download links:
-   - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink-1.3.1-py3-none-any.whl) (MD5: a7c793b1bb38045c5d1ef4c50285562f)
-   - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.11-1.3.1-py3-none-any.whl) (MD5: f71779fb6d3afe99bab593d8c91f540f)
-   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.10-1.3.1-py3-none-any.whl) (MD5: 4950fc5cafac27d3062a047ab2b7bb34)
-   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.9-1.3.1-py3-none-any.whl) (MD5: f6071a4e9f6b41a3558ed97bb235346e)
+   - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink-1.3.2-py3-none-any.whl) (MD5: 80aa54edad5c3a6ca513bbf2b3ec2ebb)
+   - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.11-1.3.2-py3-none-any.whl) (MD5: e832f73c9503de12a02c1824c8963b87)
+   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.10-1.3.2-py3-none-any.whl) (MD5: 145e513dae8caa85f6a32c3ad45b3c33)
+   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.9-1.3.2-py3-none-any.whl) (MD5: 6ff04cbad4e6d6e0a2137d1d76a19a45)
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 
@@ -158,17 +158,17 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.12_2.11</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
     <artifactId>flink-streaming-scala_2.11</artifactId>
-    <version>1.12.0</version>
+    <version>1.12.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
     <artifactId>flink-table-planner_2.11</artifactId>
-    <version>1.12.0</version>
+    <version>1.12.1</version>
 </dependency>
 ```
 
@@ -177,7 +177,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.11_2.11</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -196,7 +196,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.10_2.11</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -216,7 +216,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.9_2.11</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -236,8 +236,8 @@ Get started to run Alink Algorithm with a Flink Cluster
 
 1. Prepare a Flink Cluster:
 ```shell
-  wget https://archive.apache.org/dist/flink/flink-1.12.0/flink-1.12.0-bin-scala_2.11.tgz
-  tar -xf flink-1.12.0-bin-scala_2.11.tgz && cd flink-1.12.0
+  wget https://archive.apache.org/dist/flink/flink-1.12.1/flink-1.12.1-bin-scala_2.11.tgz
+  tar -xf flink-1.12.1-bin-scala_2.11.tgz && cd flink-1.12.1
   ./bin/start-cluster.sh
 ```
 
