@@ -45,10 +45,10 @@
 1. `pyalink` 和 `pyalink-flink-***` 不能同时安装，也不能与旧版本同时安装。
 如果之前安装过 `pyalink` 或者 `pyalink-flink-***`，请使用`pip uninstall pyalink` 或者 `pip uninstall pyalink-flink-***` 卸载之前的版本。
 2. 出现`pip`安装缓慢或不成功的情况，可以参考[这篇文章](https://segmentfault.com/a/1190000006111096)修改pip源，或者直接使用下面的链接下载 whl 包，然后使用 `pip` 安装：
-   - Flink 1.12：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink-1.3.1-py3-none-any.whl) (MD5: 80aa54edad5c3a6ca513bbf2b3ec2ebb)
-   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.11-1.3.1-py3-none-any.whl) (MD5: e832f73c9503de12a02c1824c8963b87)
-   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.10-1.3.1-py3-none-any.whl) (MD5: 145e513dae8caa85f6a32c3ad45b3c33)
-   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.9-1.3.1-py3-none-any.whl) (MD5: 6ff04cbad4e6d6e0a2137d1d76a19a45)
+   - Flink 1.12：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink-1.3.2-py3-none-any.whl) (MD5: 80aa54edad5c3a6ca513bbf2b3ec2ebb)
+   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.11-1.3.2-py3-none-any.whl) (MD5: e832f73c9503de12a02c1824c8963b87)
+   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.10-1.3.2-py3-none-any.whl) (MD5: 145e513dae8caa85f6a32c3ad45b3c33)
+   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.9-1.3.2-py3-none-any.whl) (MD5: 6ff04cbad4e6d6e0a2137d1d76a19a45)
 3. 如果有多个版本的 Python，可能需要使用特定版本的 `pip`，比如 `pip3`；如果使用 Anaconda，则需要在 Anaconda 命令行中进行安装。
 
 #### 下载安装文件系统或 Catalog 依赖 jar 包：

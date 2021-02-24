@@ -50,10 +50,10 @@ Welcome everyone to join the Alink open source user group to communicate.
 If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstall pyalink` or `pip uninstall pyalink-flink-***` to remove them.
 
 2. If `pip install` is slow of failed, refer to [this article](https://segmentfault.com/a/1190000006111096) to change the pip source, or use the following download links:
-   - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink-1.3.2-py3-none-any.whl) (MD5: 80aa54edad5c3a6ca513bbf2b3ec2ebb)
-   - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.11-1.3.2-py3-none-any.whl) (MD5: e832f73c9503de12a02c1824c8963b87)
-   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.10-1.3.2-py3-none-any.whl) (MD5: 145e513dae8caa85f6a32c3ad45b3c33)
-   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.1/pyalink_flink_1.9-1.3.2-py3-none-any.whl) (MD5: 6ff04cbad4e6d6e0a2137d1d76a19a45)
+   - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink-1.3.2-py3-none-any.whl) (MD5: 80aa54edad5c3a6ca513bbf2b3ec2ebb)
+   - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.11-1.3.2-py3-none-any.whl) (MD5: e832f73c9503de12a02c1824c8963b87)
+   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.10-1.3.2-py3-none-any.whl) (MD5: 145e513dae8caa85f6a32c3ad45b3c33)
+   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.9-1.3.2-py3-none-any.whl) (MD5: 6ff04cbad4e6d6e0a2137d1d76a19a45)
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 
