@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "/app/vnpy/conda3/envs/flink/bin/python",
+    "jupyter.jupyterServerType": "local",
+    "java.configuration.updateBuildConfiguration": "interactive"
+}
