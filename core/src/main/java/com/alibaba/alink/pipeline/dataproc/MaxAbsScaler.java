@@ -1,5 +1,7 @@
 package com.alibaba.alink.pipeline.dataproc;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MaxAbsScalerTrainBatchOp;
@@ -20,6 +22,10 @@ public class MaxAbsScaler extends Trainer <MaxAbsScaler, MaxAbsScalerModel> impl
 
 	public MaxAbsScaler() {
 		super();
+	}
+
+	public MaxAbsScaler(Params params) {
+		super(params);
 	}
 
 	@Override

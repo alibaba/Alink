@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +49,7 @@ public class WordCountUtil {
 		return count(splitDoc(input, docColName, wordDelimiter), WORD_COL_NAME, COUNT_COL_NAME);
 	}
 
-	public static BatchOperator splitDoc(BatchOperator <?> input, String docColName, String wordDelimiter) {
+	public static BatchOperator <?> splitDoc(BatchOperator <?> input, String docColName, String wordDelimiter) {
 		return input.udtf(
 			docColName,
 			new String[] {WORD_COL_NAME, COUNT_COL_NAME},
@@ -59,11 +58,11 @@ public class WordCountUtil {
 		);
 	}
 
-	public static BatchOperator count(BatchOperator input, String wordColName) {
+	public static BatchOperator <?> count(BatchOperator <?> input, String wordColName) {
 		return count(input, wordColName, null);
 	}
 
-	public static BatchOperator count(BatchOperator input, String wordColName, String wordValueColName) {
+	public static BatchOperator <?> count(BatchOperator <?> input, String wordColName, String wordValueColName) {
 		if (null == wordValueColName) {
 			return input.groupBy(wordColName,
 				wordColName + " AS " + WORD_COL_NAME + ", COUNT(" + wordColName + ") AS " + COUNT_COL_NAME);
@@ -73,7 +72,7 @@ public class WordCountUtil {
 		}
 	}
 
-	public static BatchOperator randomIndexVocab(BatchOperator vocab, long startIndex) {
+	public static BatchOperator <?> randomIndexVocab(BatchOperator <?> vocab, long startIndex) {
 		TableSchema schema = vocab.getSchema();
 		return new TableSourceBatchOp(
 			DataSetConversionUtil.toTable(vocab.getMLEnvironmentId(),
@@ -155,7 +154,7 @@ public class WordCountUtil {
 				new RichMapPartitionFunction <Tuple2 <Integer, Row>, Tuple2 <Integer, long[]>>() {
 					private static final long serialVersionUID = -7621048604300571469L;
 					int instId;
-					Map <Object, Integer> typeMap = new HashMap <>();
+					final Map <Object, Integer> typeMap = new HashMap <>();
 
 					@Override
 					public void open(Configuration parameters) throws Exception {
@@ -173,8 +172,8 @@ public class WordCountUtil {
 
 					@Override
 					public void mapPartition(Iterable <Tuple2 <Integer, Row>> values,
-											 Collector <Tuple2 <Integer, long[]>> out)
-						throws Exception {
+											 Collector <Tuple2 <Integer, long[]>> out) {
+
 						long[] ret;
 
 						if (hasGroupType) {
@@ -204,7 +203,7 @@ public class WordCountUtil {
 			.mapPartition(new RichMapPartitionFunction <Tuple2 <Integer, Row>, Tuple2 <Integer, double[]>>() {
 				private static final long serialVersionUID = 3802056745076337899L;
 				int instId;
-				Map <Object, Integer> typeMap = new HashMap <>();
+				final Map <Object, Integer> typeMap = new HashMap <>();
 
 				@Override
 				public void open(Configuration parameters) throws Exception {
@@ -222,8 +221,7 @@ public class WordCountUtil {
 
 				@Override
 				public void mapPartition(Iterable <Tuple2 <Integer, Row>> values,
-										 Collector <Tuple2 <Integer, double[]>> out)
-					throws Exception {
+										 Collector <Tuple2 <Integer, double[]>> out) {
 
 					double[] ret;
 
@@ -265,7 +263,7 @@ public class WordCountUtil {
 				double[] curWeightTotal;
 				boolean isFirstPartition;
 
-				Map <Object, Integer> typeMap = new HashMap <>();
+				final Map <Object, Integer> typeMap = new HashMap <>();
 
 				@Override
 				public void open(Configuration parameters) throws Exception {
@@ -351,7 +349,7 @@ public class WordCountUtil {
 						valuesList.add(value.f1);
 					}
 
-					Collections.sort(valuesList, new RowComparator(2));
+					valuesList.sort(new RowComparator(2));
 
 					//System.out.println("taskid: " + getRuntimeContext().getIndexOfThisSubtask()
 					//    + ", val: " + valuesList.toString());
@@ -370,9 +368,10 @@ public class WordCountUtil {
 					if (isFirstPartition) {
 						for (int i = 0; i < size; ++i) {
 							out.collect(
-								Row.of(null, startIdx[i] + localStart[i], null, -(long) ((BOUND_SIZE + 1) * i + 1)));
+								Row.of(null, startIdx[i] + localStart[i], null,
+									-(long) ((long) (BOUND_SIZE + 1) * i + 1L)));
 							out.collect(Row.of(null, totalCountIdx[i] - 1 + localStart[i], null,
-								-(long) ((BOUND_SIZE + 1) * (i + 1))));
+								-(long) ((long) (BOUND_SIZE + 1) * (i + 1L))));
 						}
 					}
 
@@ -382,7 +381,7 @@ public class WordCountUtil {
 						boundIndex[i] = (long) Math.floor(weightStart[i] / weightTotal[i] * BOUND_SIZE);
 						if (weightStart[i] / weightTotal[i] * BOUND_SIZE <= boundIndex[i] && curWeightTotal[i] > 0.) {
 							out.collect(Row.of(null, startIdx[i] + localStart[i], null,
-								-(boundIndex[i] + (BOUND_SIZE + 1) * i + 1)));
+								-(boundIndex[i] + (long) (BOUND_SIZE + 1) * i + 1)));
 						}
 					}
 
@@ -399,7 +398,7 @@ public class WordCountUtil {
 						while (globalCumWeight / weightTotal[type] * BOUND_SIZE >= boundIndex[type] + 1) {
 							boundIndex[type]++;
 							out.collect(Row.of(null, startIdx[type] + localStart[type], null,
-								-(boundIndex[type] + (BOUND_SIZE + 1) * type + 1)));
+								-(boundIndex[type] + (long) (BOUND_SIZE + 1) * type + 1L)));
 						}
 
 						out.collect(Row.of(
@@ -450,7 +449,7 @@ public class WordCountUtil {
 
 				@Override
 				public Tuple2 <Long, Long> map(Row value) throws Exception {
-					return new Tuple2 <Long, Long>(-(Long) value.getField(3) - 1L, (Long) value.getField(1));
+					return new Tuple2 <>(-(Long) value.getField(3) - 1L, (Long) value.getField(1));
 				}
 			})
 			.reduceGroup(new RichGroupReduceFunction <Tuple2 <Long, Long>, Long[]>() {
@@ -557,32 +556,37 @@ public class WordCountUtil {
 		return new Tuple3 <>(vocabWithId, bound, typeStart);
 	}
 
-	public static BatchOperator transWord2Index(BatchOperator in, String[] selectedColNames, String[] keepColNames,
-												BatchOperator indexedVocab) {
+	public static BatchOperator <?> transWord2Index(BatchOperator <?> in, String[] selectedColNames,
+													String[] keepColNames,
+													BatchOperator <?> indexedVocab) {
 		return transWord2Index(in, selectedColNames, keepColNames, indexedVocab, WORD_COL_NAME, INDEX_COL_NAME);
 	}
 
-	public static BatchOperator transWord2Index(BatchOperator in, String[] selectedColNames, String[] keepColNames,
-												BatchOperator indexedVocab, String wordColName, String idxColName) {
+	public static BatchOperator <?> transWord2Index(BatchOperator <?> in, String[] selectedColNames,
+													String[] keepColNames,
+													BatchOperator <?> indexedVocab, String wordColName,
+													String idxColName) {
 		return trans(in, selectedColNames, keepColNames, indexedVocab, wordColName, idxColName, true, null);
 	}
 
-	public static BatchOperator transDoc2IndexVector(BatchOperator in, String[] selectedColNames, String wordDelimiter,
-													 String[] keepColNames, BatchOperator indexedVocab) {
+	public static BatchOperator <?> transDoc2IndexVector(BatchOperator <?> in, String[] selectedColNames,
+														 String wordDelimiter,
+														 String[] keepColNames, BatchOperator <?> indexedVocab) {
 		return transDoc2IndexVector(in, selectedColNames, wordDelimiter, keepColNames, indexedVocab, WORD_COL_NAME,
 			INDEX_COL_NAME);
 	}
 
-	public static BatchOperator transDoc2IndexVector(BatchOperator in, String[] selectedColNames, String wordDelimiter,
-													 String[] keepColNames,
-													 BatchOperator indexedVocab, String wordColName,
-													 String idxColName) {
+	public static BatchOperator <?> transDoc2IndexVector(BatchOperator <?> in, String[] selectedColNames,
+														 String wordDelimiter,
+														 String[] keepColNames,
+														 BatchOperator <?> indexedVocab, String wordColName,
+														 String idxColName) {
 		return trans(in, selectedColNames, keepColNames, indexedVocab, wordColName, idxColName, false, wordDelimiter);
 	}
 
-	private static BatchOperator trans(BatchOperator in, String[] selectedColNames, String[] keepColNames,
-									   BatchOperator indexedVocab, String wordColName, String idxColName,
-									   boolean isWord, String wordDelimiter) {
+	private static BatchOperator <?> trans(BatchOperator <?> in, String[] selectedColNames, String[] keepColNames,
+										   BatchOperator <?> indexedVocab, String wordColName, String idxColName,
+										   boolean isWord, String wordDelimiter) {
 		String[] colnames = in.getColNames();
 		TypeInformation <?>[] coltypes = in.getColTypes();
 		int[] colIdxs = findColIdx(selectedColNames, colnames, coltypes);
@@ -717,7 +721,8 @@ public class WordCountUtil {
 						valuesList.add(value.f1);
 					}
 
-					Collections.sort(valuesList, new RowComparator(field));
+					valuesList.sort(new RowComparator(field));
+
 					long cnt = 0L;
 
 					for (Row row : valuesList) {
@@ -741,8 +746,7 @@ public class WordCountUtil {
 
 		@Override
 		public Row map(Tuple2 <Long, Row> value) throws Exception {
-			Row ret = RowUtil.merge(value.f1, (Long) value.f0 + this.startIndex);
-			return ret;
+			return RowUtil.merge(value.f1, value.f0 + this.startIndex);
 		}
 	}
 
@@ -754,8 +758,8 @@ public class WordCountUtil {
 		private final int transColSize;
 		private final int keepColSize;
 		private final int outputColSize;
-		private int[] colIdxs;
-		private int[] appendColIdxs;
+		private final int[] colIdxs;
+		private final int[] appendColIdxs;
 		private Map <String, Long> vocMap;
 
 		public GenContentMapping(int[] colIdxs, int[] appendColIdxs, boolean isWord, String wordDelimiter) {
@@ -785,7 +789,7 @@ public class WordCountUtil {
 			for (int i = 0; i < transColSize; ++i) {
 				if (isWord) {
 					String word = (String) row.getField(colIdxs[i]);
-					row2.setField(i, vocMap.containsKey(word) ? vocMap.get(word) : null);
+					row2.setField(i, vocMap.getOrDefault(word, null));
 				} else {
 					String content = (String) row.getField(colIdxs[i]);
 					String[] words = content.split(wordDelimiter);
@@ -815,7 +819,7 @@ public class WordCountUtil {
 
 	public static class WordSpliter implements FlatMapFunction <Row, String[]> {
 		private static final long serialVersionUID = -699577713738103461L;
-		private String wordDelimiter;
+		private final String wordDelimiter;
 
 		public WordSpliter(String wordDelimiter) {
 			this.wordDelimiter = wordDelimiter;

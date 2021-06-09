@@ -1,8 +1,10 @@
 package com.alibaba.alink.operator.common.regression;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -12,7 +14,6 @@ import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.dataproc.ScalerUtil;
 import com.alibaba.alink.params.regression.IsotonicRegPredictParams;
 import com.alibaba.alink.params.regression.IsotonicRegTrainParams;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,40 +60,33 @@ public class IsotonicRegressionModelMapper extends ModelMapper {
 		}
 	}
 
-	/**
-	 * Get the table schema(includes column names and types) of the calculation result.
-	 *
-	 * @return the table schema of output Row type data.
-	 */
+
+
 	@Override
-	public TableSchema getOutputSchema() {
-		String predictResultColName = this.params.get(IsotonicRegPredictParams.PREDICTION_COL);
-		TableSchema dataSchema = getDataSchema();
-		return new TableSchema(
-			ArrayUtils.add(dataSchema.getFieldNames(), predictResultColName),
-			ArrayUtils.add(dataSchema.getFieldTypes(), Types.DOUBLE())
-		);
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(TableSchema modelSchema,
+																						   TableSchema dataSchema,
+																						   Params params) {
+		String[] selectedCols = dataSchema.getFieldNames();
+		String[] resCols = new String[] {this.params.get(IsotonicRegPredictParams.PREDICTION_COL)};
+		TypeInformation[] resTypes = new TypeInformation[] {Types.DOUBLE};
+		return Tuple4.of(selectedCols, resCols, resTypes, null);
 	}
 
 	/**
 	 * Map operation method.
 	 *
-	 * @param row the input Row type data.
-	 * @return one Row type data.
 	 * @throws Exception This method may throw exceptions. Throwing
 	 * an exception will cause the operation to fail.
 	 */
 	@Override
-	public Row map(Row row) throws Exception {
-		if (null == row) {
-			return null;
-		}
-		if (null == row.getField(colIdx)) {
-			return RowUtil.merge(row, (Object) null);
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		if (null == selection.get(colIdx)) {
+			result.set(0, null);
+			return;
 		}
 		//use Binary Search method to search for the boundaries.
-		double feature = (null == this.vectorColName ? ((Number) row.getField(colIdx)).doubleValue() :
-			VectorUtil.getVector(row.getField(colIdx)).get(this.featureIndex));
+		double feature = (null == this.vectorColName ? ((Number) selection.get(colIdx)).doubleValue() :
+			VectorUtil.getVector(selection.get(colIdx)).get(this.featureIndex));
 		int foundIndex = Arrays.binarySearch(modelData.boundaries, feature);
 		int insertIndex = -foundIndex - 1;
 		double predict;
@@ -107,6 +101,8 @@ public class IsotonicRegressionModelMapper extends ModelMapper {
 		} else {
 			predict = modelData.values[foundIndex];
 		}
-		return RowUtil.merge(row, predict);
+		result.set(0, predict);
+		return;
 	}
+
 }

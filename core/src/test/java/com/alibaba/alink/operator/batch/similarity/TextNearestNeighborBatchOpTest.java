@@ -1,11 +1,9 @@
 package com.alibaba.alink.operator.batch.similarity;
 
-import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.params.shared.HasNumThreads;
 import com.alibaba.alink.params.similarity.StringTextNearestNeighborTrainParams;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
@@ -21,6 +19,7 @@ import static com.alibaba.alink.operator.batch.similarity.StringNearestNeighborB
 /**
  * Test for ApproxTextSimilarityTopNBatchOp.
  */
+
 public class TextNearestNeighborBatchOpTest extends AlinkTestBase {
 
 	@Test
@@ -36,8 +35,8 @@ public class TextNearestNeighborBatchOpTest extends AlinkTestBase {
 			.setMetric(StringTextNearestNeighborTrainParams.Metric.LEVENSHTEIN_SIM)
 			.linkFrom(dict);
 
-		TextNearestNeighborPredictBatchOp predict = new TextNearestNeighborPredictBatchOp(
-			new Params().set(HasNumThreads.NUM_THREADS, 4))
+		TextNearestNeighborPredictBatchOp predict = new TextNearestNeighborPredictBatchOp()
+			.setNumThreads(4)
 			.setSelectedCol("str")
 			.setTopN(3)
 			.setOutputCol("topN")

@@ -1,13 +1,15 @@
 package com.alibaba.alink.operator.common.similarity.similarity;
 
 import com.alibaba.alink.operator.common.similarity.Sample;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * unit test for SimHashHammingSimilarity.
  */
-public class SimHashHammingSimilarityTest {
+
+public class SimHashHammingSimilarityTest extends AlinkTestBase {
 	private String s1 = "Good Morning!";
 	private String s2 = "Good Evening!";
 	private SimHashHammingSimilarity similarity = new SimHashHammingSimilarity();

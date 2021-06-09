@@ -14,6 +14,7 @@ import org.junit.Test;
 /**
  * Test for {@link EstimatorBase}.
  */
+
 public class EstimatorBaseTest extends PipelineStageTestBase {
 
 	/**

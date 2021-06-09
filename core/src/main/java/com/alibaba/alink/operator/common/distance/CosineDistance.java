@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.distance;
 
+import com.alibaba.alink.common.utils.Functional;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.linalg.BLAS;
@@ -136,10 +137,14 @@ public class CosineDistance extends FastDistance {
 	 */
 	@Override
 	void calc(FastDistanceVectorData leftVector, FastDistanceMatrixData rightVectors, double[] res) {
-		Arrays.fill(res, 1.0);
-		BLAS.gemv(-1.0, rightVectors.vectors, true, leftVector.vector, 1.0, new DenseVector(res));
+		baseCalc(leftVector, rightVectors, res, 1, -1);
 	}
 
+	static void baseCalc(FastDistanceVectorData leftVector, FastDistanceMatrixData rightVectors,
+						 double[] res, double fillVal, double alpha) {
+		Arrays.fill(res, fillVal);
+		BLAS.gemv(alpha, rightVectors.vectors, true, leftVector.vector, 1.0, new DenseVector(res));
+	}
 	/**
 	 * distance = 1 - a * b / ||a|| / ||b|
 	 *
@@ -149,13 +154,23 @@ public class CosineDistance extends FastDistance {
 	 */
 	@Override
 	void calc(FastDistanceMatrixData left, FastDistanceMatrixData right, DenseMatrix res) {
-		Arrays.fill(res.getData(), 1.0);
-		BLAS.gemm(-1.0, right.vectors, true, left.vectors, false, 1.0, res);
+		baseCalc(left, right, res, 1, -1);
+	}
+
+	static void baseCalc(FastDistanceMatrixData left, FastDistanceMatrixData right,
+						 DenseMatrix res, double fillVal, double alpha) {
+		Arrays.fill(res.getData(), fillVal);
+		BLAS.gemm(alpha, right.vectors, true, left.vectors, false, 1.0, res);
 	}
 
 	@Override
 	void calc(FastDistanceVectorData left, FastDistanceSparseData right, double[] res) {
-		Arrays.fill(res, 1.0);
+		baseCalc(left, right, res, 1.0, x->-x);
+	}
+
+	static void baseCalc(FastDistanceVectorData left, FastDistanceSparseData right, double[] res,
+						 double fillValue, Functional.SerializableFunction<Double, Double> function) {
+		Arrays.fill(res, fillValue);
 		int[][] rightIndices = right.getIndices();
 		double[][] rightValues = right.getValues();
 
@@ -175,16 +190,23 @@ public class CosineDistance extends FastDistance {
 			for (int i = 0; i < indices.length; i++) {
 				if (null != rightIndices[indices[i]]) {
 					for (int j = 0; j < rightIndices[indices[i]].length; j++) {
-						res[rightIndices[indices[i]][j]] -= rightValues[indices[i]][j] * values[i];
+						res[rightIndices[indices[i]][j]] += function
+							.apply(rightValues[indices[i]][j] * values[i]);
 					}
 				}
 			}
 		}
+
 	}
 
 	@Override
 	void calc(FastDistanceSparseData left, FastDistanceSparseData right, double[] res) {
-		Arrays.fill(res, 1.0);
+		baseCalc(left, right, res, 1.0, x -> -x);
+	}
+
+	static void baseCalc(FastDistanceSparseData left, FastDistanceSparseData right, double[] res,
+						 double fillValue, Functional.SerializableFunction<Double, Double> function) {
+		Arrays.fill(res, fillValue);
 		int[][] leftIndices = left.getIndices();
 		int[][] rightIndices = right.getIndices();
 		double[][] leftValues = left.getValues();
@@ -202,7 +224,8 @@ public class CosineDistance extends FastDistance {
 					int startIndex = leftIndicesList[j] * right.vectorNum;
 					if (null != rightIndicesList) {
 						for (int k = 0; k < rightIndicesList.length; k++) {
-							res[startIndex + rightIndicesList[k]] -= rightValuesList[k] * leftValue;
+							res[startIndex + rightIndicesList[k]] += function
+								.apply(rightValuesList[k] * leftValue);
 						}
 					}
 				}

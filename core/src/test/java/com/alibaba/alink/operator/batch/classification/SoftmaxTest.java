@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class SoftmaxTest  extends AlinkTestBase {
+public class SoftmaxTest extends AlinkTestBase {
 
 	Row[] vecrows = new Row[] {
 		Row.of("0:1.0 2:7.0 4:9.0", "1.0 7.0 9.0", 1.0, 7.0, 9.0, 2),

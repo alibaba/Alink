@@ -31,7 +31,7 @@ import org.junit.rules.TemporaryFolder;
 
 public class PipelineSaveAndLoadTest extends AlinkTestBase {
 
-	BatchOperator<?> data;
+	BatchOperator <?> data;
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();
@@ -145,7 +145,6 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		Assert.assertEquals(modelLoaded.transform(Iris.getBatchData()).count(), 150);
 	}
 
-
 	@Test
 	public void testNewSaveToFileMultiFile() throws Exception {
 		VectorAssembler va = new VectorAssembler()
@@ -165,7 +164,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		PipelineModel model = pipeline.fit(data);
 
 		FilePath filePath = new FilePath(folder.newFile().getAbsolutePath());
-		model.save(filePath, true, 2);
+		model.save(filePath, true, 3);
 
 		BatchOperator.execute();
 
@@ -211,7 +210,6 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		System.out.println(JsonConverter.toJson(result));
 	}
 
-
 	@Test
 	public void testLocalPredictorMultiFile() throws Exception {
 		VectorAssembler va = new VectorAssembler()
@@ -251,7 +249,8 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {
-		String schemaStr = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
+		String schemaStr
+			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 		CsvSourceBatchOp source = new CsvSourceBatchOp()
 			.setSchemaStr(schemaStr)
 			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
@@ -276,10 +275,12 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		String model_filename = "/tmp/model2.csv";
 
 		CsvSourceBatchOp source = new CsvSourceBatchOp()
-			.setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
+			.setSchemaStr(
+				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
 			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
 
-		QuantileDiscretizerTrainBatchOp train = new QuantileDiscretizerTrainBatchOp().setNumBuckets(2).setSelectedCols("petal_length")
+		QuantileDiscretizerTrainBatchOp train = new QuantileDiscretizerTrainBatchOp().setNumBuckets(2).setSelectedCols(
+			"petal_length")
 			.linkFrom(source);
 		train.link(new AkSinkBatchOp().setFilePath(model_filename).setOverwriteSink(true));
 		BatchOperator.execute();
@@ -289,7 +290,8 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		QuantileDiscretizer stage1 = new QuantileDiscretizer().setNumBuckets(2).setSelectedCols("sepal_length");
 		Binarizer stage2 = new Binarizer().setSelectedCol("petal_width").setThreshold(1.);
 		AkSourceBatchOp modelData = new AkSourceBatchOp().setFilePath(model_filename);
-		QuantileDiscretizerModel stage3 = new QuantileDiscretizerModel().setSelectedCols("petal_length").setModelData(modelData);
+		QuantileDiscretizerModel stage3 = new QuantileDiscretizerModel().setSelectedCols("petal_length").setModelData(
+			modelData);
 		PipelineModel prevPipelineModel = new Pipeline(stage1, stage2, stage3).fit(source);
 		prevPipelineModel.save(pipelineModelFilename, true);
 		BatchOperator.execute();
@@ -301,7 +303,8 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		String modelFilename = "/tmp/model12341.csv";
 
 		CsvSourceBatchOp source = new CsvSourceBatchOp()
-			.setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
+			.setSchemaStr(
+				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
 			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
 
 		new QuantileDiscretizer().setNumBuckets(2).setSelectedCols("petal_length")
@@ -311,13 +314,17 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		BatchOperator.execute();
 
 		//# save pipeline model data to file
-		QuantileDiscretizerModel model1 = new QuantileDiscretizer().setNumBuckets(2).setSelectedCols("sepal_length").fit(source);
+		QuantileDiscretizerModel model1 = new QuantileDiscretizer().setNumBuckets(2).setSelectedCols("sepal_length")
+			.fit(source);
 		Binarizer model2 = new Binarizer().setSelectedCol("petal_width").setThreshold(1.);
-		CsvSourceBatchOp modelData = new CsvSourceBatchOp().setFilePath(modelFilename).setSchemaStr("model_id BIGINT, model_info STRING");
-		QuantileDiscretizerModel model3 = new QuantileDiscretizerModel().setSelectedCols("petal_length").setModelData(modelData);
+		CsvSourceBatchOp modelData = new CsvSourceBatchOp().setFilePath(modelFilename).setSchemaStr(
+			"model_id BIGINT, model_info STRING");
+		QuantileDiscretizerModel model3 = new QuantileDiscretizerModel().setSelectedCols("petal_length").setModelData(
+			modelData);
 
 		CsvSourceStreamOp streamSource = new CsvSourceStreamOp()
-			.setSchemaStr("sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
+			.setSchemaStr(
+				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
 			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
 
 		PipelineModel pipelineModel = new PipelineModel(model1, model2, model3);
@@ -345,7 +352,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		BatchOperator.execute();
 
 		pipeline_model = PipelineModel.load(pipeline_model_filename);
-		BatchOperator<?> res = pipeline_model.transform(source);
+		BatchOperator <?> res = pipeline_model.transform(source);
 		res.print();
 	}
 }

@@ -12,7 +12,7 @@ public class StratifiedSampleBatchOpTest extends AlinkTestBase {
 
 	private String[] colnames = new String[] {"col1", "col2", "col3"};
 
-	private MemSourceBatchOp getSourceBatchOp(){
+	private MemSourceBatchOp getSourceBatchOp() {
 		Row[] testArray =
 			new Row[] {
 				Row.of("a", 1.3, 1.1),

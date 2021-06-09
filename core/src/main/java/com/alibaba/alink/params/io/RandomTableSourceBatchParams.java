@@ -59,7 +59,7 @@ public interface RandomTableSourceBatchParams<T> extends WithParams <T> {
 
 	default String[] getOutputCols() {return get(OUTPUT_COLS);}
 
-	default T setOutputCols(String[] value) {return set(OUTPUT_COLS, value);}
+	default T setOutputCols(String... value) {return set(OUTPUT_COLS, value);}
 
 	default Integer getNumCols() {return get(NUM_COLS);}
 

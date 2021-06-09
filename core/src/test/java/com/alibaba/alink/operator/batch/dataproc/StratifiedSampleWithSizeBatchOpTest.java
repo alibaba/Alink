@@ -1,9 +1,9 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class StratifiedSampleWithSizeBatchOpTest {
+public class StratifiedSampleWithSizeBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void testStratifiedSampleWithSize() throws Exception {

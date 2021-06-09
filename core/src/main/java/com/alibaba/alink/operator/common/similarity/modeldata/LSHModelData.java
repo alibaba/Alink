@@ -7,52 +7,30 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.common.similarity.lsh.BaseLSH;
 
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
-public class LSHModelData extends NearestNeighborModelData {
+public class LSHModelData extends HashModelData {
 	private static final long serialVersionUID = 1431580949382378771L;
-	private Map <Object, Vector> data;
-	private Map <Integer, List <Object>> indexMap;
-	private BaseLSH lsh;
-
-	private HashSet <Object> set;
-	private Iterator <Object> iterator;
-	private Vector vector;
+	private final Map <Object, Vector> data;
+	private final BaseLSH lsh;
 
 	public LSHModelData(Map <Integer, List <Object>> indexMap, Map <Object, Vector> data, BaseLSH lsh) {
-		this.indexMap = indexMap;
+		super(indexMap);
 		this.data = data;
 		this.lsh = lsh;
-		queue = new PriorityQueue <>(Comparator.comparingDouble(o -> -o.f0));
+		comparator = Comparator.comparingDouble(o -> -o.f0);
 	}
 
 	@Override
-	void iterabor(Object selectedCol) {
-		vector = VectorUtil.getVector(selectedCol);
-		int[] hashValue = lsh.hashFunction(vector);
-		set = new HashSet <>();
-		for (int hash : hashValue) {
-			List <Object> list = indexMap.get(hash);
-			if (null != list) {
-				set.addAll(indexMap.get(hash));
-			}
-		}
-		this.iterator = set.iterator();
+	protected Tuple2 <Object, int[]> getSampleAndHashValues(Object input) {
+		Vector v = VectorUtil.getVector(input);
+		int[] hashValue = lsh.hashFunction(v);
+		return Tuple2.of(v, hashValue);
 	}
 
 	@Override
-	boolean hasNext() {
-		return iterator.hasNext();
+	protected Double computeHashDistance(Object inputSample, Object sample) {
+		return lsh.keyDistance((Vector)inputSample, data.get(sample));
 	}
-
-	@Override
-	void next(Tuple2 <Double, Object> newValue) {
-		newValue.f1 = iterator.next();
-		newValue.f0 = lsh.keyDistance(vector, data.get(newValue.f1));
-	}
-
 }

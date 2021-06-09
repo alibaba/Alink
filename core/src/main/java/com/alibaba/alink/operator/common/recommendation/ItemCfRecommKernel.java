@@ -27,39 +27,27 @@ import java.util.Set;
 
 public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 	private static final long serialVersionUID = 9200579594017986392L;
-	private ItemCfRecommData model = null;
-	private int userColIdx = -1;
-	private int itemColIdx = -1;
+	private transient ThreadLocal <ItemCfRecommData> model;
 	private Integer topN;
 	private boolean excludeKnown = false;
-	private double[] scores = null;
+	private transient ThreadLocal <double[]> scores;
 
 	public ItemCfRecommKernel(TableSchema modelSchema, TableSchema dataSchema, Params params, RecommType recommType) {
 		super(modelSchema, dataSchema, params, recommType);
 		switch (recommType) {
 			case SIMILAR_ITEMS: {
-				String itemColName = this.params.get(BaseSimilarItemsRecommParams.ITEM_COL);
-				this.itemColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), itemColName);
 				this.topN = this.params.get(BaseSimilarItemsRecommParams.K);
 				break;
 			}
 			case ITEMS_PER_USER: {
-				String userColName = this.params.get(BaseItemsPerUserRecommParams.USER_COL);
-				this.userColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), userColName);
 				this.topN = this.params.get(BaseItemsPerUserRecommParams.K);
 				this.excludeKnown = this.params.get(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN);
 				break;
 			}
 			case RATE: {
-				String itemColName = this.params.get(BaseRateRecommParams.ITEM_COL);
-				this.itemColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), itemColName);
-				String userColName = this.params.get(BaseRateRecommParams.USER_COL);
-				this.userColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), userColName);
 				break;
 			}
 			case USERS_PER_ITEM: {
-				String itemColName = this.params.get(BaseUsersPerItemRecommParams.ITEM_COL);
-				this.itemColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), itemColName);
 				this.topN = this.params.get(BaseItemsPerUserRecommParams.K);
 				this.excludeKnown = this.params.get(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN);
 				break;
@@ -106,7 +94,8 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 								 ItemCfRecommData model,
 								 int topN,
 								 boolean excludeKnown,
-								 double[] res) {
+								 double[] res,
+								 String objectName) {
 		Arrays.fill(res, 0.0);
 		PriorityQueue <RecommItemTopKResult> queue = new PriorityQueue <>(Comparator.comparing(o -> o.similarity));
 		SparseVector itemRate = model.userItemRates.get(userId);
@@ -131,13 +120,14 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 			head = updateQueue(queue, topN, res[i] / items.size(), model.items[i], head);
 		}
 
-		return serializeQueue(queue, "score");
+		return serializeQueue(queue, KObjectUtil.SCORE_NAME, objectName);
 	}
 
 	static String recommendUsers(Object itemId,
 								 ItemCfRecommData model,
 								 int topN,
-								 boolean excludeKnown) {
+								 boolean excludeKnown,
+								 String objectName) {
 		PriorityQueue <RecommItemTopKResult> queue = new PriorityQueue <>(Comparator.comparing(o -> o.similarity));
 		Integer itemIndex = model.itemMap.get(itemId);
 		if (null == itemIndex) {
@@ -151,7 +141,7 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 		for (int i = 0; i < key.length; i++) {
 			if (model.userRateList[key[i]] != null) {
 				for (Tuple2 <Object, Double> t : model.userRateList[key[i]]) {
-					res.merge(t.f0, t.f1 * value[i], (v1, v2) -> (v1 + v2));
+					res.merge(t.f0, t.f1 * value[i], Double::sum);
 				}
 			}
 		}
@@ -163,12 +153,13 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 			head = updateQueue(queue, topN, entry.getValue() / users.size(), entry.getKey(), head);
 		}
 
-		return serializeQueue(queue, "score");
+		return serializeQueue(queue, KObjectUtil.SCORE_NAME, objectName);
 	}
 
 	static String findSimilarItems(Object itemId,
 								   ItemCfRecommData model,
-								   int topN) {
+								   int topN,
+								   String objectname) {
 		PriorityQueue <RecommItemTopKResult> queue = new PriorityQueue <>(Comparator.comparing(o -> o.similarity));
 		Integer itemIndex = model.itemMap.get(itemId);
 		if (null == itemIndex) {
@@ -181,7 +172,7 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 		for (int i = 0; i < key.length; i++) {
 			head = updateQueue(queue, topN, value[i], model.items[key[i]], head);
 		}
-		return serializeQueue(queue, "similarities");
+		return serializeQueue(queue, "similarities", objectname);
 	}
 
 	static Double rate(Object userId, Object itemId, ItemCfRecommData model) {
@@ -216,38 +207,40 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 
 	@Override
 	public void loadModel(List <Row> modelRows) {
-		this.model = new ItemCfRecommModelDataConverter(recommType).load(modelRows);
-	}
-
-	@Override
-	public Double rate(Row infoUserItem) {
-		Object userId = infoUserItem.getField(userColIdx);
-		Object itemId = infoUserItem.getField(itemColIdx);
-		return rate(userId, itemId, model);
-	}
-
-	@Override
-	public String recommendItemsPerUser(Row infoUser) {
-		Object userId = infoUser.getField(userColIdx);
-		if (null == scores) {
-			scores = new double[model.items.length];
+		for (Row row : modelRows) {
+			if (row.getField(0) == null && row.getField(1) == null) {
+				Params params = Params.fromJson((String) row.getField(2));
+				userColName = params.getString("userCol");
+				itemColName = params.getString("itemCol");
+			}
 		}
-		return recommendItems(userId, model, topN, excludeKnown, scores);
+		model = ThreadLocal.withInitial(() -> new ItemCfRecommModelDataConverter(recommType).load(modelRows));
+		scores = ThreadLocal.withInitial(() -> new double[model.get().items.length]);
 	}
 
 	@Override
-	public String recommendUsersPerItem(Row infoItem) {
-		Object itemId = infoItem.getField(itemColIdx);
-		return recommendUsers(itemId, model, topN, excludeKnown);
+	public Double rate(Object[] ids) throws Exception {
+		Object userId = ids[0];
+		Object itemId = ids[1];
+		return rate(userId, itemId, model.get());
 	}
 
 	@Override
-	public String recommendSimilarItems(Row infoItem) {
-		Object itemId = infoItem.getField(itemColIdx);
-		return findSimilarItems(itemId, model, topN);
+	public String recommendItemsPerUser(Object userId) throws Exception {
+		return recommendItems(userId, model.get(), topN, excludeKnown, scores.get(), itemColName);
 	}
 
-	private static String serializeQueue(Queue <RecommItemTopKResult> queue, String key) {
+	@Override
+	public String recommendUsersPerItem(Object itemId) throws Exception {
+		return recommendUsers(itemId, model.get(), topN, excludeKnown, userColName);
+	}
+
+	@Override
+	public String recommendSimilarItems(Object itemId) throws Exception {
+		return findSimilarItems(itemId, model.get(), topN, itemColName);
+	}
+
+	private static String serializeQueue(Queue <RecommItemTopKResult> queue, String key, String objectName) {
 		List <Object> items = new ArrayList <>();
 		List <Double> similarity = new ArrayList <>();
 		while (!queue.isEmpty()) {
@@ -258,25 +251,14 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 		Collections.reverse(items);
 		Collections.reverse(similarity);
 		return KObjectUtil.serializeRecomm(
-			KObjectUtil.OBJECT_NAME,
+			objectName,
 			items,
 			ImmutableMap.of(key, similarity)
 		);
 	}
 
 	@Override
-	public String recommendSimilarUsers(Row infoUser) {
+	public String recommendSimilarUsers(Object userId) throws Exception {
 		throw new RuntimeException("ItemCf not support recommendSimilarUsers");
 	}
-
-	@Override
-	protected RecommKernel mirror() {
-		try {
-			ItemCfRecommKernel kernel = (ItemCfRecommKernel) this.clone();
-			return kernel;
-		} catch (CloneNotSupportedException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 }

@@ -16,40 +16,29 @@ import java.util.List;
 public class UserCfRecommKernel extends RecommKernel implements Cloneable {
 
 	private static final long serialVersionUID = 3693021585823090111L;
-	private ItemCfRecommData model = null;
-	private int userColIdx = -1;
-	private int itemColIdx = -1;
+	private transient ThreadLocal <ItemCfRecommData> model;
+
 	private Integer topN;
 	private boolean excludeKnown = false;
-	private double[] scores = null;
+	private transient ThreadLocal <double[]> scores;
 
 	public UserCfRecommKernel(TableSchema modelSchema, TableSchema dataSchema, Params params, RecommType recommType) {
 		super(modelSchema, dataSchema, params, recommType);
 		switch (recommType) {
 			case SIMILAR_USERS: {
-				String userColName = this.params.get(BaseSimilarUsersRecommParams.USER_COL);
-				this.userColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), userColName);
 				this.topN = this.params.get(BaseSimilarItemsRecommParams.K);
 				break;
 			}
 			case USERS_PER_ITEM: {
-				String itemColName = this.params.get(BaseUsersPerItemRecommParams.ITEM_COL);
-				this.itemColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), itemColName);
 				this.topN = this.params.get(BaseUsersPerItemRecommParams.K);
 				this.excludeKnown = this.params.get(BaseUsersPerItemRecommParams.EXCLUDE_KNOWN);
 				break;
 			}
 			case ITEMS_PER_USER: {
-				String userColName = this.params.get(BaseItemsPerUserRecommParams.USER_COL);
-				this.userColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), userColName);
 				this.topN = this.params.get(BaseItemsPerUserRecommParams.K);
 				break;
 			}
 			case RATE: {
-				String itemColName = this.params.get(BaseRateRecommParams.ITEM_COL);
-				this.itemColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), itemColName);
-				String userColName = this.params.get(BaseRateRecommParams.USER_COL);
-				this.userColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), userColName);
 				break;
 			}
 			default: {
@@ -60,55 +49,50 @@ public class UserCfRecommKernel extends RecommKernel implements Cloneable {
 
 	@Override
 	public void loadModel(List <Row> modelRows) {
+		for (Row row : modelRows) {
+			if (row.getField(0) == null && row.getField(1) == null) {
+				Params params = Params.fromJson((String) row.getField(2));
+				userColName = params.getString("itemCol");
+				itemColName = params.getString("userCol");
+			}
+		}
 		if (recommType.equals(RecommType.USERS_PER_ITEM)) {
-			this.model = new ItemCfRecommModelDataConverter(RecommType.ITEMS_PER_USER).load(modelRows);
+			model = ThreadLocal.withInitial(()
+				-> new ItemCfRecommModelDataConverter(RecommType.ITEMS_PER_USER).load(modelRows));
 		} else if (recommType.equals(RecommType.ITEMS_PER_USER)) {
-			this.model = new ItemCfRecommModelDataConverter(RecommType.USERS_PER_ITEM).load(modelRows);
+			model = ThreadLocal.withInitial(()
+				-> new ItemCfRecommModelDataConverter(RecommType.USERS_PER_ITEM).load(modelRows));
 		} else {
-			this.model = new ItemCfRecommModelDataConverter(recommType).load(modelRows);
+			model = ThreadLocal.withInitial(()
+				-> new ItemCfRecommModelDataConverter(recommType).load(modelRows));
 		}
+		scores = ThreadLocal.withInitial(() -> new double[model.get().items.length]);
 	}
 
 	@Override
-	public Double rate(Row infoUserItem) {
-		Object userId = infoUserItem.getField(userColIdx);
-		Object itemId = infoUserItem.getField(itemColIdx);
-		return ItemCfRecommKernel.rate(itemId, userId, model);
+	public Double rate(Object[] ids) {
+		Object userId = ids[0];
+		Object itemId = ids[1];
+		return ItemCfRecommKernel.rate(itemId, userId, model.get());
 	}
 
 	@Override
-	public String recommendItemsPerUser(Row infoUser) {
-		Object userId = infoUser.getField(userColIdx);
-		return ItemCfRecommKernel.recommendUsers(userId, model, topN, excludeKnown);
+	public String recommendItemsPerUser(Object userId) {
+		return ItemCfRecommKernel.recommendUsers(userId, model.get(), topN, excludeKnown, itemColName);
 	}
 
 	@Override
-	public String recommendUsersPerItem(Row infoItem) {
-		Object itemId = infoItem.getField(itemColIdx);
-		if (null == scores) {
-			scores = new double[model.items.length];
-		}
-		return ItemCfRecommKernel.recommendItems(itemId, model, topN, excludeKnown, scores);
+	public String recommendUsersPerItem(Object itemId) {
+		return ItemCfRecommKernel.recommendItems(itemId, model.get(), topN, excludeKnown, scores.get(), userColName);
 	}
 
 	@Override
-	public String recommendSimilarItems(Row infoItem) {
+	public String recommendSimilarItems(Object itemId) {
 		throw new RuntimeException("ItemCf not support recommendSimilarItems");
 	}
 
 	@Override
-	public String recommendSimilarUsers(Row infoUser) {
-		Object userId = infoUser.getField(userColIdx);
-		return ItemCfRecommKernel.findSimilarItems(userId, model, topN);
-	}
-
-	@Override
-	protected RecommKernel mirror() {
-		try {
-			UserCfRecommKernel kernel = (UserCfRecommKernel) this.clone();
-			return kernel;
-		} catch (CloneNotSupportedException e) {
-			throw new RuntimeException(e);
-		}
+	public String recommendSimilarUsers(Object userId) {
+		return ItemCfRecommKernel.findSimilarItems(userId, model.get(), topN, userColName);
 	}
 }

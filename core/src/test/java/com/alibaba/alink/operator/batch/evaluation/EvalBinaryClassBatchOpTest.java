@@ -20,6 +20,7 @@ import java.util.Arrays;
 /**
  * Unit test for BinaryClassEvaluation.
  */
+
 public class EvalBinaryClassBatchOpTest extends AlinkTestBase {
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();

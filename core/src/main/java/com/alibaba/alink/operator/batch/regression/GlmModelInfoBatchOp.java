@@ -5,6 +5,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.linear.LinearRegressorModelInfo;
 import com.alibaba.alink.operator.common.regression.glm.GlmModelInfo;
 
 import java.util.List;

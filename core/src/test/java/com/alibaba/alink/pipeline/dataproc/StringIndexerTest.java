@@ -16,6 +16,7 @@ import java.util.Map;
 /**
  * Test cases for {@link StringIndexer}.
  */
+
 public class StringIndexerTest extends AlinkTestBase {
 	private static Row[] rows = new Row[] {
 		Row.of("football"),

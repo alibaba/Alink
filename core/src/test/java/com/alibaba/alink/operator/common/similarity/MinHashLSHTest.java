@@ -4,13 +4,15 @@ import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.similarity.lsh.MinHashLSH;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for MinHashLSH.
  */
-public class MinHashLSHTest {
+
+public class MinHashLSHTest extends AlinkTestBase {
 
 	@Test
 	public void testHashFunction() {

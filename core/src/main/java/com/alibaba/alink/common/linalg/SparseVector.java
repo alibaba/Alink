@@ -1,5 +1,8 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.common.linalg.VectorUtil.VectorType;
+
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -539,6 +542,24 @@ public class SparseVector extends Vector {
 		for (int i = 0; i < indices.length; i++) {
 			values[i] /= norm;
 		}
+	}
+
+	/**
+	 * encode this vector to a byte[]:
+	 * The format of the byte[] is: "vectorType size key1 value1 key2 value2..."
+	 * @return
+	 */
+	@Override
+	public byte[] toBytes() {
+		byte[] bytes = new byte[indices.length * (12) + 4 + 1];
+		ByteBuffer wrapper = ByteBuffer.wrap(bytes);
+		wrapper.put(VectorType.SPARSE_VECTOR);
+		wrapper.putInt(n);
+		for (int i = 0; i < indices.length; i ++) {
+			wrapper.putInt(indices[i]);
+			wrapper.putDouble(values[i]);
+		}
+		return bytes;
 	}
 
 	@Override

@@ -36,6 +36,7 @@ import com.alibaba.alink.operator.common.clustering.kmeans.KMeansPredictModelDat
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansTrainModelData;
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansUtil;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
+import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.clustering.StreamingKMeansParams;
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
@@ -43,6 +44,7 @@ import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -320,10 +322,11 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 
 		TypeInformation[] types = new TypeInformation[schema.getFieldTypes().length + 2];
 		String[] names = new String[schema.getFieldTypes().length + 2];
-		names[0] = "bid";
-		names[1] = "ntab";
-		types[0] = Types.LONG;
-		types[1] = Types.LONG;
+		names[0] = ModelStreamUtils.MODEL_STREAM_TIMESTAMP_COLUMN_NAME;
+		names[1] = ModelStreamUtils.MODEL_STREAM_COUNT_COLUMN_NAME;
+		types[0] = ModelStreamUtils.MODEL_STREAM_TIMESTAMP_COLUMN_TYPE;
+		types[1] = ModelStreamUtils.MODEL_STREAM_COUNT_COLUMN_TYPE;
+
 		for (int i = 0; i < schema.getFieldTypes().length; ++i) {
 			types[i + 2] = schema.getFieldTypes()[i];
 			names[i + 2] = schema.getFieldNames()[i];
@@ -335,18 +338,17 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 
 	public static class pipeModel implements FlatMapFunction <KMeansTrainModelData, Row> {
 		private static final long serialVersionUID = -6252541197996341634L;
-		private long iter = 0;
 
 		@Override
 		public void flatMap(KMeansTrainModelData linearModel, Collector <Row> collector) throws Exception {
 			RowCollector listCollector = new RowCollector();
 			new KMeansModelDataConverter().save(linearModel, listCollector);
 			List <Row> rows = listCollector.getRows();
-
+			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 			for (Row r : rows) {
 				int rowSize = r.getArity();
 				Row row = new Row(rowSize + 2);
-				row.setField(0, iter);
+				row.setField(0, timestamp);
 				row.setField(1, (long) rows.size());
 
 				for (int j = 0; j < rowSize; ++j) {
@@ -354,8 +356,6 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 				}
 				collector.collect(row);
 			}
-
-			iter++;
 		}
 	}
 

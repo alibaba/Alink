@@ -1,6 +1,9 @@
 package com.alibaba.alink.common.linalg;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
+
+import java.nio.ByteBuffer;
 
 /**
  * Utility class for the operations on {@link Vector} and its subclasses.
@@ -287,12 +290,61 @@ public class VectorUtil {
 		if (null == vec) {
 			return null;
 		}
+		return (vec instanceof SparseVector) ? (SparseVector) vec : ((DenseVector) vec).toSparseVector();
+	}
 
-		if (vec instanceof SparseVector) {
-			return (SparseVector) vec;
-		} else {
-			throw new IllegalArgumentException("CAN NOT get SparseVector!");
+	/**
+	 * decode the given bytes to a Vector:
+	 * The format of the byte[] is: "size key1 value1 key2 value2..."
+	 * @param bytes
+	 * @return
+	 */
+	public static SparseVector decodeSparseVector(byte[] bytes) {
+		Preconditions.checkArgument((bytes.length - 4 - 1) % 12 == 0);
+		int size = bytes.length / 12;
+		ByteBuffer wrapper = ByteBuffer.wrap(bytes);
+		wrapper.get(); // pass the first byte
+		int[] indices = new int[size];
+		int vectorSize = wrapper.getInt();
+		double[] values = new double[size];
+		for (int i = 0; i < size; i ++) {
+			indices[i] = wrapper.getInt();
+			values[i] = wrapper.getDouble();
 		}
+		return new SparseVector(vectorSize, indices, values);
+	}
+
+	/**
+	 * decode the given bytes to a Vector.
+	 * The format of the byte[] is: "value1 value2 value3..."
+	 * @param bytes
+	 * @return
+	 */
+	private static DenseVector decodeDenseVector(byte[] bytes) {
+		Preconditions.checkArgument((bytes.length - 1) % 8 == 0);
+		int size = bytes.length / 8;
+		ByteBuffer wrapper = ByteBuffer.wrap(bytes);
+		wrapper.get(); // pass the first byte
+		double[] value = new double[size];
+		for (int i = 0; i < size; i ++) {
+			value[i] = wrapper.getDouble();
+		}
+		return new DenseVector(value);
+	}
+
+	public static Vector fromBytes(byte[] bytes){
+		switch (bytes[0]) {
+			case VectorType.DENSE_VECTOR:
+				return decodeDenseVector(bytes);
+			case VectorType.SPARSE_VECTOR:
+				return decodeSparseVector(bytes);
+		}
+		throw new RuntimeException("Unsupported Vector Type");
+	}
+
+	static class VectorType {
+		public static final byte DENSE_VECTOR = (byte) 0;
+		public static final byte SPARSE_VECTOR = (byte) 1;
 	}
 
 }

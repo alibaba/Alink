@@ -4,7 +4,6 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,11 +45,11 @@ public class EqualWidthDiscretizerTrainBatchOpTest extends AlinkTestBase {
 
 		qop.lazyPrint(-1);
 		qpop.print();
-//		Assert.assertEquals(qpop.select(colnames[1]).distinct().count(), 3);
-//		Assert.assertEquals(qpop.select(colnames[2]).distinct().count(), 2);
-//
-//		thrown.expect(RuntimeException.class);
-//		qop.setNumBuckets(5).setNumBucketsArray(5, 6).linkFrom(sourceBatchOp);
+		//		Assert.assertEquals(qpop.select(colnames[1]).distinct().count(), 3);
+		//		Assert.assertEquals(qpop.select(colnames[2]).distinct().count(), 2);
+		//
+		//		thrown.expect(RuntimeException.class);
+		//		qop.setNumBuckets(5).setNumBucketsArray(5, 6).linkFrom(sourceBatchOp);
 	}
 
 }

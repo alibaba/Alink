@@ -3,10 +3,11 @@ package com.alibaba.alink.operator.common.tree.parallelcart;
 import com.alibaba.alink.operator.common.tree.parallelcart.booster.GradientBaseBooster;
 import com.alibaba.alink.operator.common.tree.parallelcart.data.Slice;
 import com.alibaba.alink.operator.common.tree.parallelcart.loss.LogLoss;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class BoostingTest {
+public class BoostingTest extends AlinkTestBase {
 	@Test
 	public void testGradient() {
 		GradientBaseBooster booster

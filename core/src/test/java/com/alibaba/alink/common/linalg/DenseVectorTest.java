@@ -1,12 +1,14 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Test cases for DenseVector.
  */
-public class DenseVectorTest {
+
+public class DenseVectorTest extends AlinkTestBase {
 	private static final double TOL = 1.0e-6;
 
 	@Test
@@ -137,6 +139,15 @@ public class DenseVectorTest {
 		Assert.assertEquals(iterator.getValue(), -3, 0);
 		iterator.next();
 		Assert.assertFalse(iterator.hasNext());
+	}
+
+	@Test
+	public void testToBytes() {
+		DenseVector vec = new DenseVector(new double[] {1, 2, -3});
+		byte[] convertedBytes = vec.toBytes();
+		Assert.assertTrue(convertedBytes.length == 24 + 1);
+		DenseVector convertedVec = (DenseVector) VectorUtil.fromBytes(convertedBytes);
+		Assert.assertArrayEquals(convertedVec.getData(), vec.getData(), TOL);
 	}
 
 }

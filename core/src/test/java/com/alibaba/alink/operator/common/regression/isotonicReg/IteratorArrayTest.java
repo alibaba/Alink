@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.regression.isotonicReg;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -7,7 +8,7 @@ import org.junit.Test;
  * Unit test of IteratorArray.
  */
 
-public class IteratorArrayTest {
+public class IteratorArrayTest extends AlinkTestBase {
 
 	@Test
 	public void iteratorArrayTest() {

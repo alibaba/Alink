@@ -3,12 +3,13 @@ package com.alibaba.alink.common.io.annotations;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.AlgoOperator;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 
-public class AnnotationUtilsTest {
+public class AnnotationUtilsTest extends AlinkTestBase {
 
 	@IoOpAnnotation(name = "test_fake_op_1", ioType = IOType.SourceBatch)
 	private static class FakeOp1 extends FakeOpBase {
@@ -39,6 +40,7 @@ public class AnnotationUtilsTest {
 	@IoOpAnnotation(name = "dummy2", ioType = IOType.SourceBatch)
 	private static class DummyClass2 {
 	}
+
 	@Test
 	public void testAnnotatedIoType() {
 		Assert.assertEquals(IOType.SourceBatch, AnnotationUtils.annotatedIoType(FakeOp1.class));
@@ -78,10 +80,10 @@ public class AnnotationUtilsTest {
 
 	@Test
 	public void testCreateOp() throws Exception {
-		AlgoOperator<?> op1 = AnnotationUtils.createOp("test_fake_op_1", IOType.SourceBatch, new Params());
+		AlgoOperator <?> op1 = AnnotationUtils.createOp("test_fake_op_1", IOType.SourceBatch, new Params());
 		Assert.assertTrue(op1 instanceof FakeOp1);
 
-		AlgoOperator<?> op2 = AnnotationUtils.createOp("test_fake_op_2", IOType.SourceBatch, new Params());
+		AlgoOperator <?> op2 = AnnotationUtils.createOp("test_fake_op_2", IOType.SourceBatch, new Params());
 		Assert.assertTrue(op2 instanceof FakeOp2);
 	}
 

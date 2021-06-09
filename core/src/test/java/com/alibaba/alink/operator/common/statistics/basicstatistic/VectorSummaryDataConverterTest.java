@@ -5,13 +5,14 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class VectorSummaryDataConverterTest {
+public class VectorSummaryDataConverterTest extends AlinkTestBase {
 
 	@Test
 	public void testDense() {

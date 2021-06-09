@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.classification;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
@@ -13,7 +14,6 @@ import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.similarity.NearestNeighborsMapper;
 import com.alibaba.alink.params.classification.KnnPredictParams;
@@ -28,11 +28,10 @@ import java.util.Map;
 public class KnnMapper extends ModelMapper {
 	private static final long serialVersionUID = -6357517568280870848L;
 	private NearestNeighborsMapper mapper;
-	private OutputColsHelper outputColsHelper;
-	private boolean isPredDetail;
+	private final boolean isPredDetail;
 	private int[] selectedIndices;
 	private int selectIndex;
-	private Type idType;
+	private final Type idType;
 
 	public KnnMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
@@ -40,23 +39,11 @@ public class KnnMapper extends ModelMapper {
 		params.set(NearestNeighborPredictParams.TOP_N, params.get(KnnPredictParams.K));
 
 		this.mapper = new NearestNeighborsMapper(modelSchema, dataSchema, params);
-
-		String[] keepColNames = this.params.get(KnnPredictParams.RESERVED_COLS);
-		String predResultColName = this.params.get(KnnPredictParams.PREDICTION_COL);
 		isPredDetail = params.contains(KnnPredictParams.PREDICTION_DETAIL_COL);
-		if (isPredDetail) {
-			String predDetailColName = params.get(KnnPredictParams.PREDICTION_DETAIL_COL);
-			this.outputColsHelper = new OutputColsHelper(dataSchema,
-				new String[] {predResultColName, predDetailColName},
-				new TypeInformation[] {this.mapper.getIdType(), Types.STRING}, keepColNames);
-		} else {
-			this.outputColsHelper = new OutputColsHelper(dataSchema, predResultColName, this.mapper.getIdType(),
-				keepColNames);
-		}
 		this.idType = this.mapper.getIdType().getTypeClass();
 	}
 
-	public static Tuple2 <Object, String> getKnn(Tuple2 <List <Object>, List <Object>> tuple) {
+	private Tuple2 <Object, String> getKnn(Tuple2 <List <Object>, List <Object>> tuple) {
 		double percent = 1.0 / tuple.f0.size();
 		Map <Object, Double> detail = new HashMap <>(0);
 
@@ -91,29 +78,38 @@ public class KnnMapper extends ModelMapper {
 	}
 
 	@Override
-	public TableSchema getOutputSchema() {
-		return outputColsHelper.getResultSchema();
-	}
-
-	@Override
-	public Row map(Row row) {
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
 		Vector vector;
 		if (null != selectedIndices) {
 			vector = new DenseVector(selectedIndices.length);
 			for (int i = 0; i < selectedIndices.length; i++) {
-				Preconditions.checkNotNull(row.getField(selectedIndices[i]), "There is NULL in featureCols!");
-				vector.set(i, ((Number) row.getField(selectedIndices[i])).doubleValue());
+				Preconditions.checkNotNull(selection.get(selectedIndices[i]), "There is NULL in featureCols!");
+				vector.set(i, ((Number) selection.get(selectedIndices[i])).doubleValue());
 			}
 		} else {
-			vector = VectorUtil.getVector(row.getField(selectIndex));
+			vector = VectorUtil.getVector(selection.get(selectIndex));
 		}
-		String s = (String) this.mapper.predictResult(vector.toString());
+		String s = (String) this.mapper.predictResult(vector);
 		Tuple2 <Object, String> tuple2 = getKnn(NearestNeighborsMapper.extractKObject(s, this.idType));
 
+		result.set(0, tuple2.f0);
 		if (isPredDetail) {
-			return outputColsHelper.getResultRow(row, Row.of(tuple2.f0, tuple2.f1));
-		} else {
-			return outputColsHelper.getResultRow(row, Row.of(tuple2.f0));
+			result.set(1, tuple2.f1);
 		}
+	}
+
+	@Override
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema modelSchema, TableSchema dataSchema, Params params) {
+		boolean isPredDetail = params.contains(KnnPredictParams.PREDICTION_DETAIL_COL);
+		TypeInformation <?> idType = modelSchema.getFieldTypes()[modelSchema.getFieldNames().length - 1];
+		String[] resultCols = isPredDetail ? new String[] {params.get(KnnPredictParams.PREDICTION_COL),
+			params.get(KnnPredictParams.PREDICTION_DETAIL_COL)} : new String[] {params.get(
+			KnnPredictParams.PREDICTION_COL)};
+		TypeInformation[] resultTypes = isPredDetail ? new TypeInformation[] {idType, Types.STRING}
+			: new TypeInformation[] {idType};
+
+		return Tuple4.of(dataSchema.getFieldNames(), resultCols, resultTypes,
+			params.get(KnnPredictParams.RESERVED_COLS));
 	}
 }

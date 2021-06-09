@@ -77,7 +77,9 @@ public class IsotonicRegTrainBatchOpTest extends AlinkTestBase {
 			.setLabelCol("col1").setVectorCol("col2").setFeatureIndex(0).linkFrom(trainData);
 		new IsotonicRegPredictStreamOp(model).setPredictionCol("predictCol").linkFrom(streamData).print();
 		BatchOperator res = predictBatchOp.linkFrom(model2, predictData);
-		res.collect();
+		res.lazyPrint(-1);
+		new IsotonicRegPredictBatchOp().setPredictionCol("predictCol")
+			.linkFrom(model2, predictData).print();
 		StreamOperator.execute();
 
 	}

@@ -8,8 +8,10 @@ import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
+import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
+import com.alibaba.alink.common.io.filesystem.AkStream.AkReader.AkReadIterator;
 import com.alibaba.alink.common.io.filesystem.copy.FileInputFormat;
 import com.alibaba.alink.common.io.filesystem.copy.FileOutputFormat;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -101,49 +104,112 @@ public class AkUtils {
 	}
 
 	public static Tuple2 <TableSchema, List <Row>> readFromPath(FilePath filePath) throws IOException {
-		FileForEachReader reader = new FileForEachReader();
+		FileForEachReaderIterator reader = new FileForEachReaderIterator();
 
 		getFromFolderForEach(filePath, reader);
 
-		return Tuple2.of(reader.getSchema(), reader.getContent());
+		List <Row> content = new ArrayList <>();
+
+		for (Row row : reader) {
+			content.add(row);
+		}
+
+		return Tuple2.of(reader.getSchema(), content);
 	}
 
 	public interface FileProcFunction<T, R> {
 		R apply(T t) throws IOException;
 	}
 
-	public static class FileForEachReader implements FileProcFunction <FilePath, Boolean> {
-		private final List <Row> content = new ArrayList <>();
+	public static class FileForEachReaderIterator implements FileProcFunction <FilePath, Boolean>, Iterable <Row> {
+		private final List <FilePath> files = new ArrayList <>();
 		private TableSchema schema;
 
 		@Override
 		public Boolean apply(FilePath filePath) throws IOException {
-
 			boolean fileExists = filePath.getFileSystem().exists(filePath.getPath());
 
 			if (!fileExists) {
 				throw new IllegalArgumentException("Could not find the file: " + filePath.getPathStr());
 			}
 
-			AkStream stream = new AkStream(filePath);
-
-			schema = CsvUtil.schemaStr2Schema(stream.getAkMeta().schemaStr);
-
-			try (AkReader reader = stream.getReader()) {
-				for (Row r : reader) {
-					content.add(r);
-				}
-			}
+			files.add(filePath);
 
 			return true;
 		}
 
-		public List <Row> getContent() {
-			return content;
-		}
-
 		public TableSchema getSchema() {
 			return schema;
+		}
+
+		private class ContentIterator implements Iterator <Row> {
+
+			private transient int cursor = 0;
+			private transient AkReader akReader;
+			private transient AkReadIterator akIterator;
+
+			private void clearState() {
+				try {
+					if (akReader != null) {
+						akReader.close();
+					}
+				} catch (IOException e) {
+					// pass
+				} finally {
+					akReader = null;
+					akIterator = null;
+				}
+			}
+
+			@Override
+			public boolean hasNext() {
+
+				Preconditions.checkState(
+					akReader == null && akIterator == null || akReader != null && akIterator != null
+				);
+
+				while (akIterator == null || !akIterator.hasNext()) {
+
+					if (cursor >= files.size()) {
+
+						clearState();
+
+						return false;
+					}
+
+					try {
+
+						if (akReader != null) {
+							akReader.close();
+						}
+
+						AkStream akStream = new AkStream(files.get(cursor++));
+
+						akReader = akStream.getReader();
+
+						schema = CsvUtil.schemaStr2Schema(akStream.getAkMeta().schemaStr);
+
+						akIterator = akReader.iterator();
+					} catch (IOException e) {
+
+						clearState();
+
+						throw new RuntimeException(e);
+					}
+				}
+
+				return true;
+			}
+
+			@Override
+			public Row next() {
+				return akIterator.next();
+			}
+		}
+
+		@Override
+		public Iterator <Row> iterator() {
+			return new ContentIterator();
 		}
 	}
 

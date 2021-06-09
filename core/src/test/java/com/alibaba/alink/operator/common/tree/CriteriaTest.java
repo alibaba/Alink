@@ -1,9 +1,10 @@
 package com.alibaba.alink.operator.common.tree;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class CriteriaTest {
+public class CriteriaTest extends AlinkTestBase {
 	private final static Criteria.Gini GINI
 		= new Criteria.Gini(10.0, 10, new double[] {2.0, 8.0});
 	private final static Criteria.Gini LEFT_GINI

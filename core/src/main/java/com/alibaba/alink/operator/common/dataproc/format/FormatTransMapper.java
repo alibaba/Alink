@@ -4,10 +4,12 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.OutputColsHelper;
@@ -35,11 +37,15 @@ import java.util.Map;
 public class FormatTransMapper extends Mapper {
 
 	private static final long serialVersionUID = 1593086924063348568L;
-	private OutputColsHelper outputColsHelper;
-	private HasHandleInvalidDefaultAsError.HandleInvalid handleInvalid;
+
+	private boolean isError;
+	private boolean toFillNull;
 	private int outputSize;
-	private transient FormatReader formatReader;
-	private transient FormatWriter formatWriter;
+
+	private transient ThreadLocal<Row> inputBufferThreadLocal;
+	private transient ThreadLocal<FormatReader> formatReaderThreadLocal;
+	private transient ThreadLocal<FormatWriter> formatWriterThreadLocal;
+
 
 	/**
 	 * Constructor.
@@ -49,35 +55,20 @@ public class FormatTransMapper extends Mapper {
 	 */
 	public FormatTransMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
-
-		Tuple2 <FormatReader, String[]> t2From = initFormatReader(dataSchema, params);
-		this.formatReader = t2From.f0;
-		String[] fromColNames = t2From.f1;
-
-		Tuple3 <FormatWriter, String[], TypeInformation[]> t3To = initFormatWriter(params, fromColNames);
-		formatWriter = t3To.f0;
-		String[] outputColNames = t3To.f1;
-		TypeInformation[] outputColTypes = t3To.f2;
-
-		this.handleInvalid = params.get(HasHandleInvalidDefaultAsError.HANDLE_INVALID);
-		if (HasHandleInvalidDefaultAsError.HandleInvalid.ERROR.equals(handleInvalid)) {
-			outputSize = outputColNames.length;
-		}
-		this.outputColsHelper = new OutputColsHelper(dataSchema, outputColNames, outputColTypes,
-			this.params.get(HasReservedColsDefaultAsNull.RESERVED_COLS));
 	}
+
 
 	@Override
 	public void open() {
 		Tuple2 <FormatReader, String[]> t2From = initFormatReader(super.getDataSchema(), params);
-		this.formatReader = t2From.f0;
+		formatReaderThreadLocal = ThreadLocal.withInitial(() -> initFormatReader(super.getDataSchema(), params).f0);
 		String[] fromColNames = t2From.f1;
 
-		Tuple3 <FormatWriter, String[], TypeInformation[]> t3To = initFormatWriter(params, fromColNames);
-		formatWriter = t3To.f0;
+		formatWriterThreadLocal = ThreadLocal.withInitial(() -> initFormatWriter(params, fromColNames).f0);
+		inputBufferThreadLocal = ThreadLocal.withInitial(() -> new Row(ioSchema.f0.length));
 	}
 
-	public static Tuple2 <FormatReader, String[]> initFormatReader(TableSchema dataSchema, Params params) {
+	static Tuple2 <FormatReader, String[]> initFormatReader(TableSchema dataSchema, Params params) {
 		FormatReader formatReader;
 		String[] fromColNames;
 		HasHandleInvalidDefaultAsError.HandleInvalid handleInvalid = params
@@ -184,7 +175,7 @@ public class FormatTransMapper extends Mapper {
 					fromColNames
 				);
 				outputColNames = new String[] {params.get(ToVectorParams.VECTOR_COL)};
-				outputColTypes = new TypeInformation[] {Types.STRING};
+				outputColTypes = new TypeInformation[] {VectorTypes.VECTOR};
 				break;
 			default:
 				throw new IllegalArgumentException("Can not translate to this type : " + toFormat);
@@ -196,49 +187,66 @@ public class FormatTransMapper extends Mapper {
 
 	/**
 	 * The operation function to transform vector to table columns.
-	 *
-	 * @param row the input Row type data
-	 * @return the output row.
 	 */
 	@Override
-	public Row map(Row row) {
-		if (null == row) {
-			return null;
-		}
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		Row inputBuffer = inputBufferThreadLocal.get();
+		selection.fillRow(inputBuffer);
 		Map <String, String> bufMap = new HashMap <>();
-		boolean success = formatReader.read(row, bufMap);
+		boolean success = formatReaderThreadLocal.get().read(inputBuffer, bufMap);
 		if (!success) {
-			if (handleInvalid.equals(HasHandleInvalidDefaultAsError.HandleInvalid.ERROR)) {
-				throw new RuntimeException("Fail to read: " + row);
+			if (isError) {
+				throw new RuntimeException("Fail to read: " + inputBuffer);
 			} else {
-				return outputColsHelper.getResultRow(row, new Row(outputSize));
+				for (int i = 0; i < outputSize; i++) {
+					result.set(i, null);
+				}
+				return;
 			}
 		}
-		Tuple2 <Boolean, Row> result = formatWriter.write(bufMap);
-		if (!result.f0) {
-			if (handleInvalid.equals(HasHandleInvalidDefaultAsError.HandleInvalid.ERROR)) {
+		Tuple2 <Boolean, Row> resultData = formatWriterThreadLocal.get().write(bufMap);
+		if (!resultData.f0) {
+			if (isError) {
 				throw new RuntimeException("Fail to write: " + JsonConverter.toJson(bufMap));
 			} else {
-				return outputColsHelper.getResultRow(row, new Row(outputSize));
+				for (int i = 0; i < outputSize; i++) {
+					result.set(i, null);
+				}
+				return;
 			}
 		}
-		if (params.get(FormatTransParams.FROM_FORMAT).equals(FormatType.VECTOR) &&
-			params.get(FormatTransParams.TO_FORMAT).equals(FormatType.COLUMNS)) {
-			int length = result.f1.getArity();
+		if (toFillNull) {
+			int length = resultData.f1.getArity();
 			for (int i = 0; i < length; i++) {
-				if (result.f1.getField(i) == null) {
-					result.f1.setField(i, 0.0);
+				if (resultData.f1.getField(i) == null) {
+					resultData.f1.setField(i, 0.0);
 				}
 			}
 		}
-		return outputColsHelper.getResultRow(row, result.f1);
+		for (int i = 0; i < outputSize; i++) {
+			result.set(i, resultData.f1.getField(i));
+		}
 	}
 
-	/**
-	 * Get the output data schema.
-	 */
 	@Override
-	public TableSchema getOutputSchema() {
-		return outputColsHelper.getResultSchema();
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(TableSchema dataSchema,
+																						   Params params) {
+		Tuple2 <FormatReader, String[]> t2From = initFormatReader(dataSchema, params);
+		String[] fromColNames = t2From.f1;
+
+		Tuple3 <FormatWriter, String[], TypeInformation[]> t3To = initFormatWriter(params, fromColNames);
+		String[] outputColNames = t3To.f1;
+		TypeInformation[] outputColTypes = t3To.f2;
+
+		this.isError = params.get(HasHandleInvalidDefaultAsError.HANDLE_INVALID)
+			.equals(HasHandleInvalidDefaultAsError.HandleInvalid.ERROR);
+		this.toFillNull = params.get(FormatTransParams.FROM_FORMAT).equals(FormatType.VECTOR) &&
+			params.get(FormatTransParams.TO_FORMAT).equals(FormatType.COLUMNS);
+		outputSize = outputColNames.length;
+
+		return Tuple4.of(dataSchema.getFieldNames(), outputColNames, outputColTypes,
+			params.get(HasReservedColsDefaultAsNull.RESERVED_COLS));
+
 	}
+
 }

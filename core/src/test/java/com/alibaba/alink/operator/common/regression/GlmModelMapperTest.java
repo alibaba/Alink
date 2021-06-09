@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.feature.pca.PcaModelDataConverter;
 import com.alibaba.alink.params.regression.GlmPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -18,10 +19,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class GlmModelMapperTest {
+public class GlmModelMapperTest extends AlinkTestBase {
 
 	@Test
-	public void testGamma() {
+	public void testGamma() throws Exception {
 		List <Row> modelRows = Arrays.asList(
 			Row.of(0L,
 				"{\"epsilon\":\"1.0E-5\",\"linkPower\":\"1.0\",\"fitIntercept\":\"false\",\"link\":\"\\\"Log\\\"\","
@@ -84,12 +85,10 @@ public class GlmModelMapperTest {
 		assertEquals(in.getField(4), out.getField(4));
 		assertEquals(22358.077643132798, out.getField(5));
 		assertEquals(10.014942950546882, out.getField(6));
-
-		assertNull(modelMapper.map(null));
 	}
 
 	@Test
-	public void testGammaNoOffset() {
+	public void testGammaNoOffset() throws Exception {
 		List <Row> modelRows = Arrays.asList(
 			Row.of(0L,
 				"{\"epsilon\":\"1.0E-5\",\"linkPower\":\"1.0\",\"fitIntercept\":\"false\",\"link\":\"\\\"Log\\\"\","

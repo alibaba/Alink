@@ -20,7 +20,6 @@ import org.junit.Test;
 import java.util.List;
 
 //import com.alibaba.alink.common.utils.RowTypeDataStream;
-
 /**
  * Test for DocHashIDFVectorizer.
  */

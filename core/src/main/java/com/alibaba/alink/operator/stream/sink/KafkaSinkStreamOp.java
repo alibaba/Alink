@@ -14,7 +14,7 @@ import com.alibaba.alink.params.io.KafkaSinkParams;
 public class KafkaSinkStreamOp extends BaseSinkStreamOp <KafkaSinkStreamOp>
 	implements KafkaSinkParams <KafkaSinkStreamOp> {
 
-	private KafkaClassLoaderFactory factory;
+	private final KafkaClassLoaderFactory factory;
 
 	public KafkaSinkStreamOp() {
 		this(new Params());
@@ -22,13 +22,12 @@ public class KafkaSinkStreamOp extends BaseSinkStreamOp <KafkaSinkStreamOp>
 
 	public KafkaSinkStreamOp(Params params) {
 		super(AnnotationUtils.annotatedName(KafkaSinkStreamOp.class), params);
+
+		factory = new KafkaClassLoaderFactory("0.11");
 	}
 
 	@Override
 	protected KafkaSinkStreamOp sinkFrom(StreamOperator <?> in) {
-		if (factory == null) {
-			factory = new KafkaClassLoaderFactory(getParams().get(KafkaSinkParams.PLUGIN_VERSION));
-		}
 
 		in.getDataStream()
 			.addSink(new RichSinkFunctionWithClassLoader(

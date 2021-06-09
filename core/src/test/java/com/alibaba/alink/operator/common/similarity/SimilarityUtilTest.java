@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.similarity;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,7 +14,8 @@ import java.util.PriorityQueue;
 /**
  * UT for SimilarityUtil
  */
-public class SimilarityUtilTest {
+
+public class SimilarityUtilTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

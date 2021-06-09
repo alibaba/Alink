@@ -15,6 +15,9 @@ import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
 
 /**
@@ -25,6 +28,40 @@ public class CsvUtil {
 	private static final Logger LOG = LoggerFactory.getLogger(CsvUtil.class);
 
 	/**
+	 * Split a string by commas that are not inside parentheses or brackets.
+	 *
+	 * @param s string
+	 * @return split strings.
+	 */
+	private static String[] robustSpiltByComma(String s) {
+		List <String> splits = new ArrayList <>();
+		char[] chars = s.toCharArray();
+		int start = 0;
+		int parenthesesLevel = 0;
+		int angleBracketsLevel = 0;
+		for (int i = 0; i < chars.length; i += 1) {
+			char ch = chars[i];
+			if (ch == '(') {
+				parenthesesLevel += 1;
+			} else if (ch == ')') {
+				parenthesesLevel -= 1;
+			} else if (ch == '<') {
+				angleBracketsLevel += 1;
+			} else if (ch == '>') {
+				angleBracketsLevel -= 1;
+			}
+			if (ch == ',' && (parenthesesLevel == 0) && (angleBracketsLevel == 0)) {
+				splits.add(new String(chars, start, i - start));
+				start = i += 1;
+			}
+		}
+		if (start < s.length()) {
+			splits.add(new String(chars, start, s.length() - start));
+		}
+		return splits.toArray(new String[0]);
+	}
+
+	/**
 	 * Extract the TableSchema from a string. The format of the string is comma
 	 * separated colName-colType pairs, such as "f0 int,f1 bigint,f2 string".
 	 *
@@ -32,11 +69,11 @@ public class CsvUtil {
 	 * @return TableSchema.
 	 */
 	public static TableSchema schemaStr2Schema(String schemaStr) {
-		String[] fields = schemaStr.split(",");
+		String[] fields = robustSpiltByComma(schemaStr);
 		String[] colNames = new String[fields.length];
 		TypeInformation[] colTypes = new TypeInformation[fields.length];
 		for (int i = 0; i < colNames.length; i++) {
-			String[] kv = fields[i].trim().split("\\s+");
+			String[] kv = fields[i].trim().split("\\s+", 2);
 			colNames[i] = kv[0];
 
 			if (kv[1].equalsIgnoreCase("VARBINARY")) {

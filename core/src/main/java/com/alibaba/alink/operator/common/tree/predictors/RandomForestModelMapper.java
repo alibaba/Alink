@@ -21,6 +21,8 @@ public class RandomForestModelMapper extends TreeModelMapper {
 	private static final Logger LOG = LoggerFactory.getLogger(RandomForestModelMapper.class);
 	private static final long serialVersionUID = 1392112308487523143L;
 
+	private transient ThreadLocal<Row> inputBufferThreadLocal;
+
 	public RandomForestModelMapper(
 		TableSchema modelSchema,
 		TableSchema dataSchema,
@@ -31,20 +33,19 @@ public class RandomForestModelMapper extends TreeModelMapper {
 	@Override
 	public void loadModel(List <Row> modelRows) {
 		init(modelRows);
+
+		inputBufferThreadLocal = ThreadLocal.withInitial(() -> new Row(ioSchema.f0.length));
 	}
 
 	@Override
-	protected Object predictResult(Row row) throws Exception {
-		return predictResultDetail(row).f0;
-	}
-
-	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) throws Exception {
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
 		Node[] root = treeModel.roots;
 
-		Row transRow = Row.copy(row);
+		Row inputBuffer = inputBufferThreadLocal.get();
 
-		transRow = transRow(transRow);
+		selection.fillRow(inputBuffer);
+
+		transform(inputBuffer);
 
 		int len = root.length;
 
@@ -55,10 +56,10 @@ public class RandomForestModelMapper extends TreeModelMapper {
 			LabelCounter labelCounter = new LabelCounter(
 				0, 0, new double[root[0].getCounter().getDistributions().length]);
 
-			predict(transRow, root[0], labelCounter, 1.0);
+			predict(inputBuffer, root[0], labelCounter, 1.0);
 
 			for (int i = 1; i < len; ++i) {
-				predict(transRow, root[i], labelCounter, 1.0);
+				predict(inputBuffer, root[i], labelCounter, 1.0);
 			}
 
 			labelCounter.normWithWeight();
@@ -87,5 +88,10 @@ public class RandomForestModelMapper extends TreeModelMapper {
 		}
 
 		return new Tuple2 <>(result, detail == null ? null : JsonConverter.toJson(detail));
+	}
+
+	@Override
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		return predictResultDetail(selection).f0;
 	}
 }

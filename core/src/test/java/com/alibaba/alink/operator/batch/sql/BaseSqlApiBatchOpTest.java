@@ -12,13 +12,25 @@ public class BaseSqlApiBatchOpTest extends AlinkTestBase {
 
 	Row[] rows = new Row[] {
 		Row.of("1L", "1L", 5.0),
-		Row.of("2L", "2L", 1.0),
 		Row.of("2L", "3L", 2.0),
 		Row.of("3L", "1L", 1.0),
-		Row.of("3L", "2L", 3.0),
-		Row.of("3L", "3L", 0.0),
 	};
 
+	Row[] rows1 = new Row[] {
+		Row.of("1L", "1L", 15.0),
+		Row.of("2L", "3L", 12.0),
+		Row.of("4L", "3L", 10.0),
+	};
+	@Test
+	public void test1() throws Exception{
+		BatchOperator data = new MemSourceBatchOp(rows, new String[] {"f1", "f2", "f3"});
+		BatchOperator data1 = new MemSourceBatchOp(rows1, new String[] {"f1", "f2", "f3"});
+
+		new FullOuterJoinBatchOp().setJoinPredicate("a.f1=b.f1")
+			.setSelectClause("case when a.f1 is null then b.f1 when b.f1 is null then a.f1 else b.f1 end as uid, "
+						   + "case when a.f1 is null then b.f3 when b.f1 is null then a.f3 else b.f3 end as factors")
+			.linkFrom(data, data1).print();
+	}
 	@Test
 	public void test() {
 		BatchOperator data = new MemSourceBatchOp(rows, new String[] {"f1", "f2", "f3"});

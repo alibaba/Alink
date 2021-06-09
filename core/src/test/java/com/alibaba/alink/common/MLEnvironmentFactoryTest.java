@@ -1,12 +1,13 @@
 package com.alibaba.alink.common;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Test cases for MLEnvironmentFactory.
  */
-public class MLEnvironmentFactoryTest {
+public class MLEnvironmentFactoryTest extends AlinkTestBase {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testInvalidMLEnvId() {

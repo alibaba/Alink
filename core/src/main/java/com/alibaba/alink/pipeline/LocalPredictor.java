@@ -6,6 +6,7 @@ import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.Mapper;
+import com.alibaba.alink.common.mapper.MapperChain;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 
 import java.util.ArrayList;
@@ -20,7 +21,8 @@ import java.util.List;
  * another system.
  */
 public class LocalPredictor {
-	private final ArrayList <Mapper> mappers = new ArrayList <>();
+	protected final ArrayList <Mapper> mappers = new ArrayList <>();
+	protected MapperChain mapperList;
 
 	public LocalPredictor(String pipelineModelPath, String inputSchemaStr) throws Exception {
 		this(new FilePath(pipelineModelPath), CsvUtil.schemaStr2Schema(inputSchemaStr));
@@ -61,10 +63,16 @@ public class LocalPredictor {
 		}
 
 		this.mappers.addAll(Arrays.asList(mappers));
+
+		this.mappers.forEach(Mapper::open);
+
+		this.mapperList = new MapperChain(this.mappers.toArray(new Mapper[0]));
+
 	}
 
 	public void merge(LocalPredictor otherPredictor) {
 		this.mappers.addAll(otherPredictor.mappers);
+		this.mapperList = new MapperChain(this.mappers.toArray(new Mapper[0]));
 	}
 
 	public TableSchema getOutputSchema() {
@@ -83,15 +91,11 @@ public class LocalPredictor {
 	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
 	public Row map(Row row) throws Exception {
-		Row r = row;
-		for (Mapper mapper : mappers) {
-			r = mapper.map(r);
-		}
-		return r;
+		return this.mapperList.map(row);
 	}
 
+	@Deprecated
 	public void open() {
-		this.mappers.forEach(Mapper::open);
 	}
 
 	public void close() {

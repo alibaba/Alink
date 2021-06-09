@@ -43,7 +43,6 @@ public class BinaryRecordReader implements Serializable {
 
 	public Row getNextRecord() throws IOException {
 		int len = (firstByte << 16) + (secondByte << 8) + thirdByte;
-		Preconditions.checkArgument(len <= BinaryRecordWriter.MAX_RECORD_LENGTH);
 		byte[] bytes = new byte[len];
 		int start = 0;
 		while (len > 0) {

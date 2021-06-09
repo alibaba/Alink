@@ -6,5 +6,6 @@ package com.alibaba.alink.params.recommendation;
 public interface BaseSimilarItemsRecommParams<T> extends
 	HasItemCol <T>,
 	HasKDefaultAs10 <T>,
-	BaseRecommParams <T> {
+	BaseRecommParams <T>,
+	HasInitRecommCol<T> {
 }

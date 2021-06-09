@@ -80,9 +80,7 @@ public interface WindowGroupByParams<T> extends WithParams <T> {
 		.setDescription("Sliding length")
 		.setRequired()
 		.build();
-	/**
-	 * @cn 窗口长度
-	 */
+
 	ParamInfo <Integer> WINDOW_LENGTH = ParamInfoFactory
 		.createParamInfo("windowLength", Integer.class)
 		.setDescription("Window length")

@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.common.linear.LinearModelMapper;
 import com.alibaba.alink.params.classification.LogisticRegressionPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class LinearModelMapperTest {
+public class LinearModelMapperTest extends AlinkTestBase {
 	Row[] rows = new Row[] {
 		Row.of(0L, "{\"hasInterceptItem\":\"true\",\"modelName\":\"\\\"Logistic Regression\\\"\",\"labelType\":\"4\","
 			+ "\"modelSchema\":\"\\\"model_id bigint,model_info string,label_type int\\\"\","

@@ -33,6 +33,13 @@ public abstract class TreeModelMapper extends RichModelMapper {
 	protected NumericalTypeCastMapper stringIndexerModelNumericalTypeCastMapper;
 	protected NumericalTypeCastMapper numericalTypeCastMapper;
 
+	protected int[] stringIndexerModelPredictorInputIndex;
+	protected int[] stringIndexerModelPredictorOutputIndex;
+	protected int[] stringIndexerModelNumericalTypeCastMapperInputIndex;
+	protected int[] stringIndexerModelNumericalTypeCastMapperOutputIndex;
+	protected int[] numericalTypeCastMapperInputIndex;
+	protected int[] numericalTypeCastMapperOutputIndex;
+
 	protected boolean zeroAsMissing;
 
 	public TreeModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
@@ -40,6 +47,10 @@ public abstract class TreeModelMapper extends RichModelMapper {
 	}
 
 	private void initRowPredict() {
+
+		final TableSchema dataSchema = getDataSchema();
+		final TableSchema modelSchema = getModelSchema();
+
 		String[] categoricalColNames = null;
 
 		if (treeModel.meta.contains(HasCategoricalCols.CATEGORICAL_COLS)) {
@@ -47,34 +58,65 @@ public abstract class TreeModelMapper extends RichModelMapper {
 		}
 
 		if (treeModel.stringIndexerModelSerialized != null) {
-			TableSchema modelSchema = getModelSchema();
+
+			final Params stringIndexerModelPredictorParams = new Params()
+				.set(HasSelectedCols.SELECTED_COLS, categoricalColNames)
+				.set(MultiStringIndexerPredictParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalid.SKIP);
+
 			stringIndexerModelPredictor = new MultiStringIndexerModelMapper(
-				modelSchema,
-				getDataSchema(),
-				new Params()
-					.set(HasSelectedCols.SELECTED_COLS, categoricalColNames)
-					.set(MultiStringIndexerPredictParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalid.SKIP)
+				modelSchema, dataSchema, stringIndexerModelPredictorParams
 			);
 
 			stringIndexerModelPredictor.loadModel(treeModel.stringIndexerModelSerialized);
 
+			stringIndexerModelPredictorInputIndex = TableUtil.findColIndicesWithAssertAndHint(
+				dataSchema, stringIndexerModelPredictorParams.get(HasSelectedCols.SELECTED_COLS)
+			);
+
+			stringIndexerModelPredictorOutputIndex = TableUtil.findColIndicesWithAssertAndHint(
+				dataSchema, stringIndexerModelPredictor.getResultCols()
+			);
+
+			final Params stringIndexerModelNumericalTypeCastMapperParams = new Params()
+				.set(NumericalTypeCastParams.SELECTED_COLS, categoricalColNames)
+				.set(NumericalTypeCastParams.TARGET_TYPE, NumericalTypeCastParams.TargetType.valueOf("INT"));
+
 			stringIndexerModelNumericalTypeCastMapper = new NumericalTypeCastMapper(getDataSchema(),
-				new Params()
-					.set(NumericalTypeCastParams.SELECTED_COLS, categoricalColNames)
-					.set(NumericalTypeCastParams.TARGET_TYPE, NumericalTypeCastParams.TargetType.valueOf("INT"))
+				stringIndexerModelNumericalTypeCastMapperParams
+			);
+
+			stringIndexerModelNumericalTypeCastMapperInputIndex = TableUtil.findColIndicesWithAssertAndHint(
+				dataSchema,
+				stringIndexerModelNumericalTypeCastMapperParams.get(NumericalTypeCastParams.SELECTED_COLS)
+			);
+
+			stringIndexerModelNumericalTypeCastMapperOutputIndex = TableUtil.findColIndicesWithAssertAndHint(
+				dataSchema,
+				stringIndexerModelNumericalTypeCastMapper.getResultCols()
 			);
 		}
 
-		numericalTypeCastMapper = new NumericalTypeCastMapper(getDataSchema(),
-			new Params()
-				.set(
-					NumericalTypeCastParams.SELECTED_COLS,
-					ArrayUtils.removeElements(treeModel.meta.get(HasFeatureCols.FEATURE_COLS), categoricalColNames)
-				)
-				.set(NumericalTypeCastParams.TARGET_TYPE, NumericalTypeCastParams.TargetType.valueOf("DOUBLE"))
+		final Params numericalTypeCastMapperParams = new Params()
+			.set(
+				NumericalTypeCastParams.SELECTED_COLS,
+				ArrayUtils.removeElements(treeModel.meta.get(HasFeatureCols.FEATURE_COLS), categoricalColNames)
+			)
+			.set(NumericalTypeCastParams.TARGET_TYPE, NumericalTypeCastParams.TargetType.valueOf("DOUBLE"));
+
+		numericalTypeCastMapper = new NumericalTypeCastMapper(
+			dataSchema, numericalTypeCastMapperParams
 		);
 
-		initFeatureIndices(treeModel.meta, getDataSchema());
+		numericalTypeCastMapperInputIndex = TableUtil.findColIndicesWithAssertAndHint(
+			dataSchema, numericalTypeCastMapperParams.get(NumericalTypeCastParams.SELECTED_COLS)
+		);
+
+		numericalTypeCastMapperOutputIndex = TableUtil.findColIndicesWithAssertAndHint(
+			dataSchema,
+			numericalTypeCastMapper.getResultCols()
+		);
+
+		initFeatureIndices(treeModel.meta, dataSchema);
 	}
 
 	protected void init(List <Row> modelRows) {
@@ -89,13 +131,26 @@ public abstract class TreeModelMapper extends RichModelMapper {
 		initRowPredict();
 	}
 
-	protected Row transRow(Row row) throws Exception {
+	protected void transform(Row row) throws Exception {
 		if (stringIndexerModelPredictor != null) {
-			row = stringIndexerModelPredictor.map(row);
-			row = stringIndexerModelNumericalTypeCastMapper.map(row);
+			stringIndexerModelPredictor.bufferMap(
+				row,
+				stringIndexerModelNumericalTypeCastMapperInputIndex,
+				stringIndexerModelNumericalTypeCastMapperOutputIndex
+			);
+
+			stringIndexerModelNumericalTypeCastMapper.bufferMap(
+				row,
+				stringIndexerModelNumericalTypeCastMapperInputIndex,
+				stringIndexerModelNumericalTypeCastMapperOutputIndex
+			);
 		}
 
-		return numericalTypeCastMapper.map(row);
+		numericalTypeCastMapper.bufferMap(
+			row,
+			numericalTypeCastMapperInputIndex,
+			numericalTypeCastMapperOutputIndex
+		);
 	}
 
 	private void processMissingByWeightConfidence(Row row, Node node, LabelCounter result, double weight)

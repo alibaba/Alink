@@ -167,28 +167,26 @@ public class TableSummarizer extends BaseSummarizer {
 		int numberN = numericalColIndices.length;
 
 		numMissingValue = new DenseVector(n);
-		if (numberN > 0) {
-			sum = new DenseVector(numberN);
-			squareSum = new DenseVector(numberN);
-			normL1 = new DenseVector(numberN);
+		sum = new DenseVector(numberN);
+		squareSum = new DenseVector(numberN);
+		normL1 = new DenseVector(numberN);
 
-			double[] minVals = new double[numberN];
-			Arrays.fill(minVals, Double.MAX_VALUE);
-			min = new DenseVector(minVals);
+		double[] minVals = new double[numberN];
+		Arrays.fill(minVals, Double.MAX_VALUE);
+		min = new DenseVector(minVals);
 
-			double[] maxVals = new double[numberN];
-			Arrays.fill(maxVals, -Double.MAX_VALUE);
-			max = new DenseVector(maxVals);
+		double[] maxVals = new double[numberN];
+		Arrays.fill(maxVals, -Double.MAX_VALUE);
+		max = new DenseVector(maxVals);
 
-			if (calculateOuterProduct) {
-				outerProduct = new DenseMatrix(numberN, numberN);
-				xSum = new DenseMatrix(numberN, numberN);
-				xSquareSum = new DenseMatrix(numberN, numberN);
-				xyCount = new DenseMatrix(numberN, numberN);
-			}
-
-			vals = new Double[numberN];
+		if (calculateOuterProduct) {
+			outerProduct = new DenseMatrix(numberN, numberN);
+			xSum = new DenseMatrix(numberN, numberN);
+			xSquareSum = new DenseMatrix(numberN, numberN);
+			xyCount = new DenseMatrix(numberN, numberN);
 		}
+
+		vals = new Double[numberN];
 	}
 
 	/**

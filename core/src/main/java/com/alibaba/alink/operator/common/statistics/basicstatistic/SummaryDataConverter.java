@@ -26,14 +26,16 @@ public class SummaryDataConverter extends SimpleModelDataConverter <TableSummary
 		if (summary != null) {
 			data = new ArrayList <>();
 			data.add(JsonConverter.toJson(summary.colNames));
-			data.add(VectorUtil.toString(summary.sum));
-			data.add(VectorUtil.toString(summary.squareSum));
-			data.add(VectorUtil.toString(summary.min));
-			data.add(VectorUtil.toString(summary.max));
-			data.add(VectorUtil.toString(summary.normL1));
-			data.add(VectorUtil.toString(summary.numMissingValue));
-			data.add(JsonConverter.toJson(summary.numericalColIndices));
 			data.add(String.valueOf(summary.count));
+			data.add(JsonConverter.toJson(summary.numericalColIndices));
+			if(summary.count() != 0) {
+				data.add(VectorUtil.toString(summary.numMissingValue));
+				data.add(VectorUtil.toString(summary.sum));
+				data.add(VectorUtil.toString(summary.squareSum));
+				data.add(VectorUtil.toString(summary.min));
+				data.add(VectorUtil.toString(summary.max));
+				data.add(VectorUtil.toString(summary.normL1));
+			}
 		}
 
 		return Tuple2.of(new Params(), data);
@@ -55,14 +57,18 @@ public class SummaryDataConverter extends SimpleModelDataConverter <TableSummary
 		Iterator <String> dataIterator = data.iterator();
 		TableSummary summary = new TableSummary();
 		summary.colNames = JsonConverter.fromJson(dataIterator.next(), String[].class);
-		summary.sum = VectorUtil.parseDense(dataIterator.next());
-		summary.squareSum = VectorUtil.parseDense(dataIterator.next());
-		summary.min = VectorUtil.parseDense(dataIterator.next());
-		summary.max = VectorUtil.parseDense(dataIterator.next());
-		summary.normL1 = VectorUtil.parseDense(dataIterator.next());
-		summary.numMissingValue = VectorUtil.parseDense(dataIterator.next());
-		summary.numericalColIndices = JsonConverter.fromJson(dataIterator.next(), int[].class);
 		summary.count = Long.parseLong(dataIterator.next());
+		summary.numericalColIndices = JsonConverter.fromJson(dataIterator.next(), int[].class);
+		if(summary.count != 0) {
+			summary.numMissingValue = VectorUtil.parseDense(dataIterator.next());
+			if(dataIterator.hasNext()) {
+				summary.sum = VectorUtil.parseDense(dataIterator.next());
+				summary.squareSum = VectorUtil.parseDense(dataIterator.next());
+				summary.min = VectorUtil.parseDense(dataIterator.next());
+				summary.max = VectorUtil.parseDense(dataIterator.next());
+				summary.normL1 = VectorUtil.parseDense(dataIterator.next());
+			}
+		}
 
 		return summary;
 	}

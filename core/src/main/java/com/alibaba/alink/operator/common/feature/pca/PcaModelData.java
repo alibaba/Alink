@@ -1,10 +1,11 @@
 package com.alibaba.alink.operator.common.feature.pca;
 
-import com.alibaba.alink.common.utils.AlinkSerializable;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import com.alibaba.alink.params.feature.HasCalculationType;
 
-public class PcaModelData implements AlinkSerializable {
+import java.io.Serializable;
+
+public class PcaModelData implements Serializable {
 
 	/**
 	 * col names

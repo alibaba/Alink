@@ -1,9 +1,12 @@
 package com.alibaba.alink.common.mapper;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
+
+import com.alibaba.alink.params.mapper.SISOMapperParams;
 
 /**
  * ModelMapper with Single Input column and Single Output column(SISO).
@@ -11,14 +14,9 @@ import org.apache.flink.types.Row;
 public abstract class SISOModelMapper extends ModelMapper {
 
 	private static final long serialVersionUID = -6621260232816861723L;
-	/**
-	 * The OutputColsHelper which helps to arrange final output from input and predicted result.
-	 */
-	private final SISOColsHelper colsHelper;
 
 	public SISOModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
-		this.colsHelper = new SISOColsHelper(dataSchema, initPredResultColType(), params);
 	}
 
 	/**
@@ -38,12 +36,24 @@ public abstract class SISOModelMapper extends ModelMapper {
 	protected abstract Object predictResult(Object input) throws Exception;
 
 	@Override
-	public TableSchema getOutputSchema() {
-		return colsHelper.getOutputSchema();
+	protected final Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema modelSchema, TableSchema dataSchema, Params params) {
+
+		String outputColName = params.get(SISOMapperParams.OUTPUT_COL);
+		if (outputColName == null) {
+			outputColName = params.get(SISOMapperParams.SELECTED_COL);
+		}
+
+		return Tuple4.of(
+			new String[] {params.get(SISOMapperParams.SELECTED_COL)},
+			new String[] {outputColName},
+			new TypeInformation<?>[] {initPredResultColType()},
+			params.get(SISOMapperParams.RESERVED_COLS)
+		);
 	}
 
 	@Override
-	public Row map(Row row) throws Exception {
-		return this.colsHelper.handleMap(row, this::predictResult);
+	protected final void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		result.set(0, predictResult(selection.get(0)));
 	}
 }

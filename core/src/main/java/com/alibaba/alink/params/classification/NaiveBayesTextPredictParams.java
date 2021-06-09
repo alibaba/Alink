@@ -1,7 +1,6 @@
 package com.alibaba.alink.params.classification;
 
 import com.alibaba.alink.params.mapper.RichModelMapperParams;
-import com.alibaba.alink.params.shared.HasNumThreads;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
 
 /**
@@ -9,5 +8,5 @@ import com.alibaba.alink.params.shared.colname.HasVectorCol;
  */
 public interface NaiveBayesTextPredictParams<T> extends
 	RichModelMapperParams <T>,
-	HasVectorCol <T>, HasNumThreads <T> {
+	HasVectorCol <T> {
 }

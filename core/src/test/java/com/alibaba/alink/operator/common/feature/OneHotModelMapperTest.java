@@ -12,6 +12,7 @@ import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.HasEncodeWithoutWoe;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
 import com.alibaba.alink.params.shared.colname.HasOutputCols;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,7 +24,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for OneHotModelMapper.
  */
-public class OneHotModelMapperTest {
+
+public class OneHotModelMapperTest extends AlinkTestBase {
 	private Row[] rows = new Row[] {
 		Row.of(-1L, "{\"selectedCols\":\"[\\\"docid\\\",\\\"word\\\",\\\"cnt\\\"]\"}", null),
 		Row.of(1L, "人", 0L),

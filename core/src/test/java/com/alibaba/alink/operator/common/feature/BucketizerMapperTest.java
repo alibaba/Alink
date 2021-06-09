@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.BucketizerParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,7 +19,8 @@ import static org.junit.Assert.assertNull;
 /**
  * Unit test for BucketizerMapper.
  */
-public class BucketizerMapperTest {
+
+public class BucketizerMapperTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -34,6 +36,7 @@ public class BucketizerMapperTest {
 			.set(BucketizerParams.CUTS_ARRAY, new double[][] {cuts});
 
 		BucketizerMapper mapper = new BucketizerMapper(schema, params);
+		mapper.open();
 		assertEquals(mapper.map(Row.of(-999.9)).getField(0), 0L);
 		assertEquals(mapper.map(Row.of(-0.5)).getField(0), 1L);
 		assertEquals(mapper.map(Row.of(-0.3)).getField(0), 2L);
@@ -53,6 +56,7 @@ public class BucketizerMapperTest {
 			.set(BucketizerParams.CUTS_ARRAY, cutsArray);
 
 		BucketizerMapper mapper = new BucketizerMapper(schema, params);
+		mapper.open();
 		assertEquals(mapper.map(Row.of(-999.9, -999.9)).getField(1), 0L);
 		assertEquals(mapper.map(Row.of(-0.5, -0.2)).getField(1), 1L);
 		assertEquals(mapper.map(Row.of(-0.3, -0.6)).getField(1), 0L);
@@ -73,12 +77,14 @@ public class BucketizerMapperTest {
 			.set(BucketizerParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalid.SKIP);
 
 		BucketizerMapper mapper = new BucketizerMapper(schema, params);
+		mapper.open();
 		assertNull(mapper.map(Row.of(0.5, null)).getField(1));
 		assertEquals(mapper.getOutputSchema(), schema);
 
 		thrown.expect(RuntimeException.class);
 		params.set(BucketizerParams.HANDLE_INVALID, HasHandleInvalid.HandleInvalid.ERROR);
 		mapper = new BucketizerMapper(schema, params);
+		mapper.open();
 		mapper.map(Row.of(0.5, null));
 	}
 
@@ -92,6 +98,7 @@ public class BucketizerMapperTest {
 			.set(BucketizerParams.CUTS_ARRAY_STR, new String[] {"-0.5 : 0.0:0.5", "-0.3: 0.0: 0.3: 0.4"});
 
 		BucketizerMapper mapper = new BucketizerMapper(schema, params);
+		mapper.open();
 		assertEquals(mapper.map(Row.of(-999.9, -999.9)).getField(1), 0L);
 		assertEquals(mapper.map(Row.of(-0.5, -0.2)).getField(1), 1L);
 	}

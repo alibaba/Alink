@@ -18,6 +18,7 @@ import java.util.Arrays;
 /**
  * Unit test for MultiClassEvaluation.
  */
+
 public class EvalMultiClassBatchOpTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {

@@ -5,12 +5,11 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperAdapter;
 import com.alibaba.alink.common.mapper.MapperAdapterMT;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.params.shared.HasNumThreads;
+import com.alibaba.alink.params.mapper.MapperParams;
 
 import java.util.function.BiFunction;
 
@@ -38,16 +37,11 @@ public class MapStreamOp<T extends MapStreamOp <T>> extends StreamOperator <T> {
 
 			DataStream <Row> resultRows;
 
-			final boolean isStreamPredictMultiThread = AlinkGlobalConfiguration.isStreamPredictMultiThread();
-
-			if (!isStreamPredictMultiThread
-				|| !getParams().contains(HasNumThreads.NUM_THREADS)
-				|| getParams().get(HasNumThreads.NUM_THREADS) <= 1) {
-
+			if (getParams().get(MapperParams.NUM_THREADS) <= 1) {
 				resultRows = in.getDataStream().map(new MapperAdapter(mapper));
 			} else {
 				resultRows = in.getDataStream().flatMap(
-					new MapperAdapterMT(mapper, getParams().get(HasNumThreads.NUM_THREADS))
+					new MapperAdapterMT(mapper, getParams().get(MapperParams.NUM_THREADS))
 				);
 			}
 

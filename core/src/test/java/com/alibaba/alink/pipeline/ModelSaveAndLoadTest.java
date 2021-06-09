@@ -59,7 +59,8 @@ public class ModelSaveAndLoadTest extends AlinkTestBase {
 
 		Pipeline pipeline = new Pipeline().add(va).add(classifier);
 		Pipeline pipeline2 = new Pipeline().add(pipeline);
-		Assert.assertEquals(PipelineModel.collectLoad(pipeline2.fit(data).save()).transform(Iris.getBatchData()).count(),
+		Assert.assertEquals(PipelineModel.collectLoad(pipeline2.fit(data).save()).transform(Iris.getBatchData())
+				.count(),
 			150);
 	}
 

@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.params.dataproc.vector.VectorNormalizeParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -16,7 +17,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for VectorNormalizeMapper.
  */
-public class VectorNormalizeMapperTest {
+
+public class VectorNormalizeMapperTest extends AlinkTestBase {
 	@Test
 	public void test1() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {Types.STRING});

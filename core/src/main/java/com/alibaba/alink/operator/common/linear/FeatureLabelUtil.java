@@ -14,6 +14,47 @@ import com.alibaba.alink.common.linalg.VectorUtil;
  */
 public class FeatureLabelUtil {
 
+	public static Vector getVectorFeature(Object input, boolean hasInterceptItem, Integer vectorSize) {
+		Vector aVector;
+		Vector vec = VectorUtil.getVector(input);
+		if (vec instanceof SparseVector) {
+			SparseVector tmp = (SparseVector) vec;
+			if (null != vectorSize && tmp.size() > 0) {
+				tmp.setSize(vectorSize);
+			}
+			aVector = hasInterceptItem ? tmp.prefix(1.0) : tmp;
+		} else {
+			DenseVector tmp = (DenseVector) vec;
+			aVector = hasInterceptItem ? tmp.prefix(1.0) : tmp;
+		}
+		return aVector;
+	}
+
+	/**
+	 * Retrieve the feature vector from the input row data.
+	 */
+	public static Vector getTableFeature(Row row, boolean hasInterceptItem, int featureN,
+										 int[] featureIdx) {
+		Vector aVector;
+		if (hasInterceptItem) {
+			aVector = new DenseVector(featureN + 1);
+			aVector.set(0, 1.0);
+			for (int i = 0; i < featureN; i++) {
+				if (row.getField(featureIdx[i]) instanceof Number) {
+					aVector.set(i + 1, ((Number) row.getField(featureIdx[i])).doubleValue());
+				}
+			}
+		} else {
+			aVector = new DenseVector(featureN);
+			for (int i = 0; i < featureN; i++) {
+				if (row.getField(featureIdx[i]) instanceof Number) {
+					aVector.set(i, ((Number) row.getField(featureIdx[i])).doubleValue());
+				}
+			}
+		}
+		return aVector;
+	}
+
 	/**
 	 * Retrieve the feature vector from the input row data.
 	 */
@@ -67,8 +108,7 @@ public class FeatureLabelUtil {
 	}
 
 	/**
-	 * After jsonized and un-jsonized, the label type may be changed.
-	 * So here we recover the label type.
+	 * After jsonized and un-jsonized, the label type may be changed. So here we recover the label type.
 	 */
 	public static Object[] recoverLabelType(Object[] labels, TypeInformation labelType) {
 
@@ -105,7 +145,16 @@ public class FeatureLabelUtil {
 	 */
 	public static double dot(Vector vec1, DenseVector vec2) {
 		if (vec1 instanceof DenseVector) {
-			return BLAS.dot((DenseVector) vec1, vec2);
+			if (vec1.size() == vec2.size()) {
+				return BLAS.dot((DenseVector) vec1, vec2);
+			} else {
+				double ret = 0.;
+				int size = Math.min(vec1.size(), vec2.size());
+				for (int i = 0; i < size; ++i) {
+					ret += vec1.get(i) * vec2.get(i);
+				}
+				return ret;
+			}
 		} else {
 			double[] values = ((SparseVector) vec1).getValues();
 			int[] indices = ((SparseVector) vec1).getIndices();

@@ -84,13 +84,12 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 		DataSet <Tuple2 <Long, Vector>> samples = KMeansInitCentroids.selectTopK(numClusters * numSamplesPerCluster,
 			seed,
 			data,
-			new Functional.SerializableFunction <Vector, String>() {
+			new Functional.SerializableFunction <Vector, byte[]>() {
 				private static final long serialVersionUID = -7473942125005406072L;
 
 				@Override
-				public String apply(Vector v) {
-					return v instanceof DenseVector ?
-						v.toString() : ((SparseVector) v).toDenseVector().toString();
+				public byte[] apply(Vector v) {
+					return v.toBytes();
 				}
 			});
 

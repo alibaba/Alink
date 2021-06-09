@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.dataproc.format;
 
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.common.linalg.VectorUtil;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
@@ -37,7 +38,7 @@ public class VectorWriter extends FormatWriter {
 				count++;
 			}
 
-			return new Tuple2 <>(true, Row.of(new SparseVector((int) this.size, indices, values).toString()));
+			return new Tuple2 <>(true, Row.of(new SparseVector((int) this.size, indices, values)));
 
 		} else {
 			StringBuilder sbd = new StringBuilder();
@@ -61,7 +62,7 @@ public class VectorWriter extends FormatWriter {
 				sbd.append(v);
 			}
 
-			return new Tuple2 <>(true, Row.of(sbd.toString()));
+			return new Tuple2 <>(true, Row.of(VectorUtil.getVector(sbd.toString())));
 
 		}
 	}

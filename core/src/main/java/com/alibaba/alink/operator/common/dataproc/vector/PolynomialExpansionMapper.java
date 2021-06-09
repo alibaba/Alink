@@ -23,7 +23,7 @@ public class PolynomialExpansionMapper extends SISOMapper {
 	/**
 	 * the degree of the expanded polynomial.
 	 */
-	private int degree;
+	private final int degree;
 
 	private static final int CONSTANT = 61;
 

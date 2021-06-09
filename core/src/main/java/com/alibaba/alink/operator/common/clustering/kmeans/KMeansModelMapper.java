@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.clustering.kmeans;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
@@ -10,8 +11,8 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.ModelMapper;
-import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
 import com.alibaba.alink.params.clustering.KMeansPredictParams;
@@ -27,16 +28,73 @@ public class KMeansModelMapper extends ModelMapper {
 	private KMeansPredictModelData modelData;
 	private int[] colIdx;
 	private FastDistance distance;
-	private final OutputColsHelper outputColsHelper;
 	private final boolean isPredDetail;
 	private final boolean isPredDistance;
 
 	public KMeansModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
-		String[] reservedColNames = this.params.get(KMeansPredictParams.RESERVED_COLS);
-		String predResultColName = this.params.get(KMeansPredictParams.PREDICTION_COL);
 		isPredDetail = params.contains(KMeansPredictParams.PREDICTION_DETAIL_COL);
 		isPredDistance = params.contains(KMeansPredictParams.PREDICTION_DISTANCE_COL);
+	}
+
+	@Override
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		Vector record;
+		if (colIdx.length > 1) {
+			record = new DenseVector(2);
+			record.set(0, ((Number) selection.get(colIdx[0])).doubleValue());
+			record.set(1, ((Number) selection.get(colIdx[1])).doubleValue());
+		} else {
+			record = VectorUtil.getVector(selection.get(colIdx[0]));
+		}
+
+		if (null == record) {
+			result.set(0, null);
+			if (isPredDetail) {
+				result.set(1, null);
+				if (isPredDistance) {
+					result.set(2, null);
+				}
+			} else {
+				if (isPredDistance) {
+					result.set(1, null);
+				}
+			}
+		} else {
+			DenseMatrix distanceMatrix = new DenseMatrix(this.modelData.params.k, 1);
+			FastDistanceVectorData vectorData = distance.prepareVectorData(Tuple2.of(record, null));
+			double[] clusterDistances = KMeansUtil.getClusterDistances(
+				vectorData,
+				this.modelData.centroids,
+				distance,
+				distanceMatrix);
+			int index = KMeansUtil.getMinPointIndex(clusterDistances, this.modelData.params.k);
+			result.set(0, (long) index);
+			if (isPredDetail) {
+				double[] probs = KMeansUtil.getProbArrayFromDistanceArray(clusterDistances);
+				DenseVector vec = new DenseVector(probs.length);
+				for (int i = 0; i < this.modelData.params.k; i++) {
+					vec.set((int) this.modelData.getClusterId(i), probs[i]);
+				}
+				result.set(1, vec.toString());
+				if (isPredDistance) {
+					result.set(2, clusterDistances[index]);
+				}
+			} else {
+				if (isPredDistance) {
+					result.set(1, clusterDistances[index]);
+				}
+			}
+		}
+	}
+
+	@Override
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema modelSchema, TableSchema dataSchema, Params params) {
+		String[] reservedColNames = params.get(KMeansPredictParams.RESERVED_COLS);
+		String predResultColName = params.get(KMeansPredictParams.PREDICTION_COL);
+		boolean isPredDetail = params.contains(KMeansPredictParams.PREDICTION_DETAIL_COL);
+		boolean isPredDistance = params.contains(KMeansPredictParams.PREDICTION_DISTANCE_COL);
 		List <String> outputCols = new ArrayList <>();
 		List <TypeInformation> outputTypes = new ArrayList <>();
 		outputCols.add(predResultColName);
@@ -49,52 +107,8 @@ public class KMeansModelMapper extends ModelMapper {
 			outputCols.add(params.get(KMeansPredictParams.PREDICTION_DISTANCE_COL));
 			outputTypes.add(Types.DOUBLE);
 		}
-		this.outputColsHelper = new OutputColsHelper(dataSchema, outputCols.toArray(new String[0]),
+		return Tuple4.of(dataSchema.getFieldNames(), outputCols.toArray(new String[0]),
 			outputTypes.toArray(new TypeInformation[0]), reservedColNames);
-	}
-
-	@Override
-	public TableSchema getOutputSchema() {
-		return outputColsHelper.getResultSchema();
-	}
-
-	@Override
-	public Row map(Row row) {
-		Vector record = KMeansUtil.getKMeansPredictVector(colIdx, row);
-
-		List <Object> res = new ArrayList <>();
-		if (null == record) {
-			res.add(null);
-			if (isPredDetail) {
-				res.add(null);
-			}
-			if (isPredDistance) {
-				res.add(null);
-			}
-		} else {
-			DenseMatrix distanceMatrix = new DenseMatrix(this.modelData.params.k, 1);
-			FastDistanceVectorData vectorData = distance.prepareVectorData(Tuple2.of(record, null));
-			double[] clusterDistances = KMeansUtil.getClusterDistances(
-				vectorData,
-				this.modelData.centroids,
-				distance,
-				distanceMatrix);
-			int index = KMeansUtil.getMinPointIndex(clusterDistances, this.modelData.params.k);
-			res.add((long) index);
-			if (isPredDetail) {
-				double[] probs = KMeansUtil.getProbArrayFromDistanceArray(clusterDistances);
-				DenseVector vec = new DenseVector(probs.length);
-				for (int i = 0; i < this.modelData.params.k; i++) {
-					vec.set((int) this.modelData.getClusterId(i), probs[i]);
-				}
-				res.add(vec.toString());
-			}
-			if (isPredDistance) {
-				res.add(clusterDistances[index]);
-			}
-		}
-
-		return outputColsHelper.getResultRow(row, Row.of(res.toArray(new Object[0])));
 	}
 
 	@Override

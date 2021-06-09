@@ -19,8 +19,7 @@ import com.alibaba.alink.params.regression.AftRegPredictParams;
 import java.util.List;
 
 /**
- * Accelerated Failure Time Survival Regression.
- * Based on the Weibull distribution of the survival time.
+ * Accelerated Failure Time Survival Regression. Based on the Weibull distribution of the survival time.
  * <p>
  * (https://en.wikipedia.org/wiki/Accelerated_failure_time_model)
  */
@@ -28,10 +27,10 @@ public class AFTModelMapper extends RichModelMapper {
 
 	private static final long serialVersionUID = 984867877738156476L;
 	private int vectorColIndex = -1;
-	private double[] quantileProbabilities;
+	private final double[] quantileProbabilities;
 	private LinearModelData model;
 	private int[] featureIdx;
-	private int featureN;
+	private transient ThreadLocal <DenseVector> threadLocalVec;
 
 	/**
 	 * Constructor.
@@ -43,12 +42,11 @@ public class AFTModelMapper extends RichModelMapper {
 	public AFTModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 		this.quantileProbabilities = params.get(AftRegPredictParams.QUANTILE_PROBABILITIES);
-		if (null != params) {
-			String vectorColName = params.get(LinearModelMapperParams.VECTOR_COL);
-			if (null != vectorColName && vectorColName.length() != 0) {
-				this.vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), vectorColName);
-			}
+		String vectorColName = params.get(LinearModelMapperParams.VECTOR_COL);
+		if (null != vectorColName && vectorColName.length() != 0) {
+			this.vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), vectorColName);
 		}
+
 	}
 
 	/**
@@ -63,10 +61,12 @@ public class AFTModelMapper extends RichModelMapper {
 		if (vectorColIndex == -1) {
 			TableSchema dataSchema = getDataSchema();
 			if (this.model.featureNames != null) {
-				this.featureN = this.model.featureNames.length;
-				this.featureIdx = new int[this.featureN];
+				int featureN = this.model.featureNames.length;
+				this.featureIdx = new int[featureN];
+				threadLocalVec =
+					ThreadLocal.withInitial(() -> new DenseVector(featureN + (model.hasInterceptItem ? 1 : 0)));
 				String[] predictTableColNames = dataSchema.getFieldNames();
-				for (int i = 0; i < this.featureN; i++) {
+				for (int i = 0; i < featureN; i++) {
 					this.featureIdx[i] = TableUtil.findColIndexWithAssert(predictTableColNames,
 						this.model.featureNames[i]);
 				}
@@ -79,34 +79,35 @@ public class AFTModelMapper extends RichModelMapper {
 	/**
 	 * Predict the result.
 	 *
-	 * @param row the predict data.
+	 * @param selection the predict data.
 	 * @return the predict result.
 	 */
 	@Override
-	protected Object predictResult(Row row) {
-		Vector aVector = FeatureLabelUtil.getFeatureVector(row, model.hasInterceptItem, this.featureN,
-			this.featureIdx, this.vectorColIndex, model.vectorSize);
-		double dot = Math.exp(AftRegObjFunc.getDotProduct(aVector, model.coefVector));
-		if (dot == Double.POSITIVE_INFINITY) {
-			dot = Double.MAX_VALUE;
-		}
-		return dot;
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		return predictResultDetail(selection).f0;
 	}
 
 	/**
 	 * Predict the result with detailed information.
 	 *
-	 * @param row the predict data.
+	 * @param selection the predict data.
 	 * @return the predict result with detailed information.
 	 */
 	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) {
-		Vector aVector = FeatureLabelUtil.getFeatureVector(row, model.hasInterceptItem, this.featureN,
-			this.featureIdx, this.vectorColIndex, model.vectorSize);
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
+		Vector vec;
+		if (vectorColIndex != -1) {
+			vec = FeatureLabelUtil.getVectorFeature(selection.get(vectorColIndex), model.hasInterceptItem,
+				model.vectorSize);
+		} else {
+			vec = threadLocalVec.get();
+			selection.fillDenseVector((DenseVector) vec, model.hasInterceptItem, featureIdx);
+		}
+
 		double[] data = model.coefVector.getData();
 		double scale = data[data.length - 1];
 		double[] res = new double[quantileProbabilities.length];
-		double dot = Math.exp(AftRegObjFunc.getDotProduct(aVector, model.coefVector));
+		double dot = Math.exp(AftRegObjFunc.getDotProduct(vec, model.coefVector));
 		if (dot == Double.POSITIVE_INFINITY) {
 			dot = Double.MAX_VALUE;
 		}

@@ -1,12 +1,14 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for ConfusionMatrix
  */
-public class ConfusionMatrixTest {
+
+public class ConfusionMatrixTest extends AlinkTestBase {
 
 	@Test
 	public void metricsTest() {

@@ -10,6 +10,7 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCols;
  * @param <T>
  */
 public interface MISOMapperParams<T> extends
+	MapperParams <T>,
 	HasSelectedCols <T>,
 	HasOutputCol <T>,
 	HasReservedColsDefaultAsNull <T> {

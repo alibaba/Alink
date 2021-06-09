@@ -4,6 +4,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +17,8 @@ import java.util.Set;
 /**
  * Test cases for DirectReader
  */
-public class DirectReaderTest {
+
+public class DirectReaderTest extends AlinkTestBase {
 	private String[] inputArray;
 	private BatchOperator input;
 

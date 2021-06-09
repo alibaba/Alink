@@ -1,16 +1,17 @@
 package com.alibaba.alink.operator.common.feature.pca;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.ModelMapper;
-import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.feature.HasCalculationType;
 import com.alibaba.alink.params.feature.PcaPredictParams;
@@ -34,14 +35,8 @@ public class PcaModelMapper extends ModelMapper {
 	private double[] sourceMean = null;
 	private double[] sourceStd = null;
 
-	private OutputColsHelper outputColsHelper;
-
 	public PcaModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
-
-		String[] keepColNames = this.params.get(PcaPredictParams.RESERVED_COLS);
-		String predResultColName = this.params.get(PcaPredictParams.PREDICTION_COL);
-		this.outputColsHelper = new OutputColsHelper(dataSchema, predResultColName, Types.STRING(), keepColNames);
 	}
 
 	private int[] checkGetColIndices(Boolean isVector, String[] featureColNames, String vectorColName) {
@@ -88,16 +83,21 @@ public class PcaModelMapper extends ModelMapper {
 	}
 
 	@Override
-	public TableSchema getOutputSchema() {
-		return this.outputColsHelper.getResultSchema();
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(TableSchema modelSchema,
+																						   TableSchema dataSchema,
+																						   Params params) {
+		return Tuple4.of(dataSchema.getFieldNames(),
+			new String[] {params.get(PcaPredictParams.PREDICTION_COL)},
+			new TypeInformation[] {VectorTypes.DENSE_VECTOR},
+			params.get(PcaPredictParams.RESERVED_COLS));
 	}
 
 	@Override
-	public Row map(Row in) throws Exception {
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
 		//transform data
 		double[] data = new double[this.model.nx];
 		if (isVector) {
-			Vector parsed = VectorUtil.getVector(in.getField(featureIdxs[0]));
+			Vector parsed = VectorUtil.getVector(selection.get(featureIdxs[0]));
 			if (parsed instanceof SparseVector) {
 				if (parsed.size() < 0) {
 					((SparseVector) parsed).setSize(model.nx);
@@ -108,7 +108,7 @@ public class PcaModelMapper extends ModelMapper {
 			}
 		} else {
 			for (int i = 0; i < this.featureIdxs.length; ++i) {
-				data[i] = (Double) in.getField(this.featureIdxs[i]);
+				data[i] = (Double) selection.get(this.featureIdxs[i]);
 			}
 		}
 
@@ -132,6 +132,6 @@ public class PcaModelMapper extends ModelMapper {
 			predictData = model.calcPrinValue(data);
 		}
 
-		return outputColsHelper.getResultRow(in, Row.of(VectorUtil.toString(new DenseVector(predictData))));
+		result.set(0, new DenseVector(predictData));
 	}
 }

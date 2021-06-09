@@ -23,11 +23,11 @@ public class FmRegressorTrainBatchOp extends FmTrainBatchOp <FmRegressorTrainBat
 	private static final long serialVersionUID = 8297633489045835451L;
 
 	public FmRegressorTrainBatchOp(Params params) {
-		super(params, "regression");
+		super(params, Task.REGRESSION);
 	}
 
 	public FmRegressorTrainBatchOp() {
-		super(new Params(), "regression");
+		super(new Params(),  Task.REGRESSION);
 	}
 
 	@Override

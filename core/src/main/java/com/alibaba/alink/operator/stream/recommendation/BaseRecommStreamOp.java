@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.stream.recommendation;
 
+import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.TableSchema;
@@ -14,13 +15,16 @@ import com.alibaba.alink.operator.common.recommendation.FourFunction;
 import com.alibaba.alink.operator.common.recommendation.RecommAdapter;
 import com.alibaba.alink.operator.common.recommendation.RecommAdapterMT;
 import com.alibaba.alink.operator.common.recommendation.RecommKernel;
+import com.alibaba.alink.operator.common.recommendation.RecommMapper;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.params.shared.HasNumThreads;
+import com.alibaba.alink.params.mapper.ModelMapperParams;
 
 /**
  * Base recommendation stream op.
  */
+
+@Internal
 public class BaseRecommStreamOp<T extends BaseRecommStreamOp <T>> extends StreamOperator <T> {
 
 	private static final long serialVersionUID = 5293170481337594373L;
@@ -53,25 +57,23 @@ public class BaseRecommStreamOp<T extends BaseRecommStreamOp <T>> extends Stream
 		try {
 			DataBridge modelDataBridge = DirectReader.collect(model);
 			DataBridgeModelSource modelSource = new DataBridgeModelSource(modelDataBridge);
-			RecommKernel recommKernel
-				= this.recommKernelBuilder.apply(modelSchema, in.getSchema(), this.getParams(), this.recommType);
-
+			RecommMapper mapper =
+				new RecommMapper(
+					this.recommKernelBuilder, this.recommType,
+					modelSchema,
+					in.getSchema(), this.getParams()
+				);
 			DataStream <Row> resultRows;
 
-			final boolean isStreamPredictMultiThread = AlinkGlobalConfiguration.isStreamPredictMultiThread();
-
-			if (!isStreamPredictMultiThread
-				|| !getParams().contains(HasNumThreads.NUM_THREADS)
-				|| getParams().get(HasNumThreads.NUM_THREADS) <= 1) {
-
-				resultRows = in.getDataStream().map(new RecommAdapter(recommKernel, modelSource));
+			if (getParams().get(ModelMapperParams.NUM_THREADS) <= 1) {
+				resultRows = in.getDataStream().map(new RecommAdapter(mapper, modelSource));
 			} else {
 				resultRows = in.getDataStream().flatMap(
-					new RecommAdapterMT(recommKernel, modelSource, getParams().get(HasNumThreads.NUM_THREADS))
+					new RecommAdapterMT(mapper, modelSource, getParams().get(ModelMapperParams.NUM_THREADS))
 				);
 			}
 
-			TableSchema outputSchema = recommKernel.getOutputSchema();
+			TableSchema outputSchema = mapper.getOutputSchema();
 
 			this.setOutput(resultRows, outputSchema);
 

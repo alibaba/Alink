@@ -6,6 +6,7 @@ import com.alibaba.alink.operator.common.regression.GlmModelData;
 import com.alibaba.alink.operator.common.regression.GlmModelDataConverter;
 import com.alibaba.alink.operator.common.regression.glm.GlmUtil.GlmModelSummary;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
+import com.alibaba.alink.params.regression.GlmTrainParams;
 import com.alibaba.alink.params.regression.GlmTrainParams.Family;
 import com.alibaba.alink.params.regression.GlmTrainParams.Link;
 
@@ -15,9 +16,9 @@ import java.util.List;
 public class GlmModelInfo implements Serializable {
 	public String[] featureColNames;
 	public String labelColName;
-	public Family family;
+	public GlmTrainParams.Family family;
 	public double variancePower;
-	public Link link;
+	public GlmTrainParams.Link link;
 	public double linkPower;
 	public double[] coefficients;
 	public double intercept;

@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 /**
  * Evaluation for Ranking system.
  */
+
 public class EvalRankingBatchOpTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();

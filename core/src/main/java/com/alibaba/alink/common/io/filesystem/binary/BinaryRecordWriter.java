@@ -22,7 +22,6 @@ public class BinaryRecordWriter implements Serializable {
 	static final int MAGIC1 = 'A';
 	static final int MAGIC2 = 'L';
 	static final int MAGIC3 = 'K';
-	static final int MAX_RECORD_LENGTH = 8 * 1024 * 1024;
 	private static final long serialVersionUID = -2186048394178435538L;
 
 	private final OutputStream stream;
@@ -41,7 +40,6 @@ public class BinaryRecordWriter implements Serializable {
 
 	public void writeRecord(Row record) throws IOException {
 		byte[] bytes = serializer.serialize(record);
-		Preconditions.checkArgument(bytes.length <= MAX_RECORD_LENGTH);
 		int len = bytes.length;
 		stream.write(len >> 16);
 		stream.write(len >> 8);

@@ -37,7 +37,8 @@ public class IterableModelLoaderModelMapperAdapterMT extends RichFlatMapFunction
 			}
 		}
 		assert null != iterableModelMapper;
-		this.wrapper = new MapperMTWrapper(numThreads, () -> this.iterableModelMapper.mirror()::map);
+		iterableModelMapper.open();
+		this.wrapper = new MapperMTWrapper(numThreads, () -> this.iterableModelMapper::map);
 		this.wrapper.open(parameters);
 	}
 

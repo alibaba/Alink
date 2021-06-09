@@ -4,13 +4,15 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for OutputColsHelper.
  */
-public class OutputColsHelperTest {
+
+public class OutputColsHelperTest extends AlinkTestBase {
 
 	private TableSchema tableSchema = new TableSchema(
 		new String[] {"f0", "f1", "f2"},

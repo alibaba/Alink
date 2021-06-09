@@ -9,12 +9,11 @@ import com.alibaba.alink.operator.batch.regression.FmRegressorTrainBatchOp;
 import com.alibaba.alink.params.recommendation.FmPredictParams;
 import com.alibaba.alink.params.recommendation.FmTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
-import com.alibaba.alink.pipeline.classification.FmModel;
 
 /**
  * Fm regression pipeline op.
  */
-public class FmRegressor extends Trainer <FmRegressor, FmModel>
+public class FmRegressor extends Trainer <FmRegressor, FmRegressionModel>
 	implements FmTrainParams <FmRegressor>, FmPredictParams <FmRegressor>, HasLazyPrintModelInfo <FmRegressor>,
 	HasLazyPrintTrainInfo <FmRegressor> {
 

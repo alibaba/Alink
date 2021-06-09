@@ -19,6 +19,7 @@ import java.util.Arrays;
 /**
  * Unit test for RegressionEvaluation
  */
+
 public class EvalRegressionBatchOpTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {

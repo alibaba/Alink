@@ -7,4 +7,6 @@ import com.alibaba.alink.params.shared.HasHandleInvalid;
  * parameters of vector assembler.
  */
 public interface VectorAssemblerParams<T> extends
-	MISOMapperParams <T>, HasHandleInvalid <T> {}
+	MISOMapperParams <T>,
+	HasHandleInvalid <T> {
+}

@@ -10,6 +10,7 @@ import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,7 +21,8 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Test cases for VectorTypes.
  */
-public class VectorTypesTest {
+
+public class VectorTypesTest extends AlinkTestBase {
 
 	@Test
 	public void testGetTypeName() {

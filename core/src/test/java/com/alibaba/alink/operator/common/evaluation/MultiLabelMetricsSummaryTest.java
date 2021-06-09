@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.evaluation;
 
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -8,7 +9,8 @@ import java.util.HashSet;
 /**
  * Unit test for MultiLabelMetricsSummary.
  */
-public class MultiLabelMetricsSummaryTest {
+
+public class MultiLabelMetricsSummaryTest extends AlinkTestBase {
 	@Test
 	public void test() {
 		String s = JsonConverter.toJson(new String[] {"a", "b", "c", "a"});

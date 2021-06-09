@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -9,7 +10,8 @@ import java.util.TreeMap;
 /**
  * Test cases for SparseVector.
  */
-public class SparseVectorTest {
+
+public class SparseVectorTest extends AlinkTestBase {
 	private static final double TOL = 1.0e-6;
 	private SparseVector v1 = new SparseVector(8, new int[] {1, 3, 5, 7}, new double[] {2.0, 2.0, 2.0, 2.0});
 	private SparseVector v2 = new SparseVector(8, new int[] {3, 4, 5}, new double[] {1.0, 1.0, 1.0});
@@ -215,5 +217,19 @@ public class SparseVectorTest {
 		Assert.assertEquals(iterator.getValue(), 2, 0);
 		iterator.next();
 		Assert.assertFalse(iterator.hasNext());
+	}
+
+	@Test
+	public void testToBytes() {
+		int[] indices = new int[] {1, 3, 5};
+		double[] values = new double[] {1.0, 3.0, 5.0};
+		SparseVector vec = new SparseVector(-1, indices, values);
+
+		byte[] convertedBytes = vec.toBytes();
+		Assert.assertTrue(convertedBytes.length == 36 + 4 + 1);
+		SparseVector convertedVec = (SparseVector) VectorUtil.fromBytes(convertedBytes);
+		Assert.assertArrayEquals(convertedVec.getIndices(), vec.getIndices());
+		Assert.assertArrayEquals(convertedVec.getValues(), vec.getValues(), TOL);
+		Assert.assertTrue(convertedVec.size() == vec.size());
 	}
 }

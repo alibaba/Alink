@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.linear.unarylossfunc;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -7,7 +8,8 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test for the unary loss functions.
  */
-public class UnaryLossFuncTest {
+
+public class UnaryLossFuncTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 		UnaryLossFunc[] lossFuncs;

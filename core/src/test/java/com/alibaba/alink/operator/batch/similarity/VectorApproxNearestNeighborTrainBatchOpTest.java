@@ -1,12 +1,10 @@
 package com.alibaba.alink.operator.batch.similarity;
 
-import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.similarity.Solver;
-import com.alibaba.alink.params.shared.HasNumThreads;
 import com.alibaba.alink.params.similarity.VectorApproxNearestNeighborTrainParams;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
@@ -125,8 +123,8 @@ public class VectorApproxNearestNeighborTrainBatchOpTest extends AlinkTestBase {
 			.setSolver(Solver.LSH)
 			.linkFrom(dict);
 
-		VectorApproxNearestNeighborPredictBatchOp predict = new VectorApproxNearestNeighborPredictBatchOp(
-			new Params().set(HasNumThreads.NUM_THREADS, 4))
+		VectorApproxNearestNeighborPredictBatchOp predict = new VectorApproxNearestNeighborPredictBatchOp()
+			.setNumThreads(4)
 			.setSelectedCol("vec")
 			.setOutputCol("topN")
 			.setTopN(3)

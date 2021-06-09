@@ -2,24 +2,35 @@ package com.alibaba.alink.operator.common.classification;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.tuple.Tuple4;
+import org.apache.flink.ml.api.misc.param.ParamInfo;
+import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.mapper.ModelMapper;
+import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.common.mapper.ComboModelMapper;
+import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.utils.OutputColsHelper;
-import com.alibaba.alink.operator.common.classification.ann.SigmoidFunction;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.common.io.types.JdbcTypeConverter;
 import com.alibaba.alink.operator.common.linear.LinearModelMapper;
 import com.alibaba.alink.operator.common.tree.predictors.GbdtModelMapper;
 import com.alibaba.alink.params.classification.OneVsRestPredictParams;
+import com.alibaba.alink.params.shared.colname.HasOutputCol;
+import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
+import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.pipeline.classification.GbdtClassifier;
 import com.alibaba.alink.pipeline.classification.LinearSvm;
 import com.alibaba.alink.pipeline.classification.LogisticRegression;
 import com.alibaba.alink.pipeline.classification.OneVsRest;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,35 +42,292 @@ import static com.alibaba.alink.common.utils.JsonConverter.gson;
 /**
  * ModelMapper for {@link OneVsRest}.
  */
-public class OneVsRestModelMapper extends ModelMapper {
+public class OneVsRestModelMapper extends ComboModelMapper {
 
 	private static final long serialVersionUID = 7008077848896699027L;
-	private List <RichModelMapper> predictors;
-	private List <Object> labels;
-	private Params binClsPredParams;
-	private OutputColsHelper outputColsHelper;
-	private boolean predDetail;
+
+	private List <Mapper> mapperList;
+
+	private static final String ONE_VS_REST_RESULT_VECTOR_COL_NAME = "one_vs_rest_result_vector_internal_implement";
+	private static final String ONE_VS_REST_PRED_RESULT_COL_NAME = "one_vs_rest_pred_result_internal_implement";
+	private static final String ONE_VS_REST_PRED_DETAIL_COL_NAME = "one_vs_rest_pred_detail_internal_implement";
 
 	public OneVsRestModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
+	}
 
-		String predResultColName = params.get(OneVsRestPredictParams.PREDICTION_COL);
-		String[] keepColNames = params.get(OneVsRestPredictParams.RESERVED_COLS);
-		this.predDetail = params.contains(OneVsRestPredictParams.PREDICTION_DETAIL_COL);
-		int numModelCols = modelSchema.getFieldNames().length;
-		TypeInformation labelType = modelSchema.getFieldTypes()[numModelCols - 1];
-		if (predDetail) {
-			String predDetailColName = params.get(OneVsRestPredictParams.PREDICTION_DETAIL_COL);
-			outputColsHelper = new OutputColsHelper(dataSchema, new String[] {predResultColName, predDetailColName},
-				new TypeInformation[] {labelType, Types.STRING}, keepColNames);
-		} else {
-			outputColsHelper = new OutputColsHelper(dataSchema, predResultColName, labelType, keepColNames);
+	@Override
+	public void loadModel(List <Row> modelRows) {
+		Params meta = extractMeta(modelRows);
+		int numClasses = meta.get(ModelParamName.NUM_CLASSES);
+		String labelsStr = meta.get(ModelParamName.LABELS);
+		String labelTypeName = meta.get(ModelParamName.LABEL_TYPE_NAME);
+		String binClsClassName = meta.get(ModelParamName.BIN_CLS_CLASS_NAME);
+		String[] modelColNames = meta.get(ModelParamName.MODEL_COL_NAMES);
+		Integer[] modelColTypesInt = meta.get(ModelParamName.MODEL_COL_TYPES);
+		TypeInformation <?>[] modelColTypes = new TypeInformation[modelColTypesInt.length];
+		for (int i = 0; i < modelColTypesInt.length; i++) {
+			modelColTypes[i] = JdbcTypeConverter.getFlinkType(modelColTypesInt[i]);
 		}
 
-		this.binClsPredParams = params.clone();
-		this.binClsPredParams.set(OneVsRestPredictParams.RESERVED_COLS, new String[0]);
-		this.binClsPredParams.set(OneVsRestPredictParams.PREDICTION_COL, "pred_result");
-		this.binClsPredParams.set(OneVsRestPredictParams.PREDICTION_DETAIL_COL, "pred_detail");
+		mapperList = new ArrayList <>();
+
+		String[] reserveColNames = getDataSchema().getFieldNames();
+
+		Params binClsPredParams = params.clone()
+			.set(OneVsRestPredictParams.RESERVED_COLS,
+				ArrayUtils.add(reserveColNames, ONE_VS_REST_RESULT_VECTOR_COL_NAME))
+			.set(OneVsRestPredictParams.PREDICTION_COL, ONE_VS_REST_PRED_RESULT_COL_NAME)
+			.set(OneVsRestPredictParams.PREDICTION_DETAIL_COL, ONE_VS_REST_PRED_DETAIL_COL_NAME);
+
+		Mapper initialResultMapper = new InitialResultMapper(
+			getDataSchema(),
+			params.clone()
+				.set(OneVsRestPredictParams.RESERVED_COLS, reserveColNames)
+				.set(ModelParamName.NUM_CLASSES, numClasses)
+				.set(HasOutputCol.OUTPUT_COL, ONE_VS_REST_RESULT_VECTOR_COL_NAME)
+		);
+
+		mapperList.add(initialResultMapper);
+
+		TableSchema setOutputSchema = null;
+
+		try {
+			for (int i = 0; i < numClasses; i++) {
+				List <Row> rows = new ArrayList <>();
+				for (Row row : modelRows) {
+					if (row.getField(2) == null) {
+						continue;
+					}
+					long id = (Long) row.getField(2);
+					if ((long) (i) == id) {
+						Row subRow = new Row(row.getArity() - 4);
+						for (int j = 0; j < subRow.getArity(); j++) {
+							subRow.setField(j, row.getField(3 + j));
+						}
+						rows.add(subRow);
+					}
+				}
+				TableSchema schema = new TableSchema(modelColNames, modelColTypes);
+				RichModelMapper predictor = createModelPredictor(
+					binClsClassName,
+					schema,
+					initialResultMapper.getOutputSchema(),
+					binClsPredParams,
+					rows
+				);
+
+				Mapper setMapper = new SetPositiveResultMapper(
+					predictor.getOutputSchema(),
+					params.clone()
+						.merge(binClsPredParams)
+						.set(SetPositiveResultMapper.CLASS_INDEX, i)
+						.set(HasVectorCol.VECTOR_COL, ONE_VS_REST_RESULT_VECTOR_COL_NAME)
+						.set(HasOutputCol.OUTPUT_COL, ONE_VS_REST_RESULT_VECTOR_COL_NAME)
+						.set(OneVsRestPredictParams.RESERVED_COLS, reserveColNames)
+				);
+
+				mapperList.add(predictor);
+				mapperList.add(setMapper);
+				setOutputSchema = setMapper.getOutputSchema();
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		String[] reserveColNamesRaw = params.get(OneVsRestPredictParams.RESERVED_COLS);
+
+		mapperList.add(new VoteMapper(
+			setOutputSchema,
+			params.clone()
+				.set(ModelParamName.LABELS, labelsStr)
+				.set(ModelParamName.LABEL_TYPE_NAME, labelTypeName)
+				.set(HasVectorCol.VECTOR_COL, ONE_VS_REST_RESULT_VECTOR_COL_NAME)
+				.set(
+					OneVsRestPredictParams.RESERVED_COLS,
+					null == reserveColNamesRaw ? reserveColNames : reserveColNamesRaw
+				)
+		));
+	}
+
+	@Override
+	public List <Mapper> getLoadedMapperList() {
+		return mapperList;
+	}
+
+	@Override
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema modelSchema, TableSchema dataSchema, Params params) {
+
+		String predResultColName = params.get(OneVsRestPredictParams.PREDICTION_COL);
+		String[] reserveColNames = params.get(OneVsRestPredictParams.RESERVED_COLS);
+		int numModelCols = modelSchema.getFieldNames().length;
+		TypeInformation <?> labelType = modelSchema.getFieldTypes()[numModelCols - 1];
+
+		if (params.contains(OneVsRestPredictParams.PREDICTION_DETAIL_COL)) {
+			return Tuple4.of(
+				dataSchema.getFieldNames(),
+				new String[] {
+					predResultColName,
+					params.get(OneVsRestPredictParams.PREDICTION_DETAIL_COL)
+				},
+				new TypeInformation <?>[] {labelType, Types.STRING},
+				reserveColNames
+			);
+		} else {
+			return Tuple4.of(
+				dataSchema.getFieldNames(),
+				new String[] {predResultColName},
+				new TypeInformation <?>[] {labelType},
+				reserveColNames
+			);
+		}
+	}
+
+	private static class InitialResultMapper extends Mapper {
+		private final int numClasses;
+
+		public InitialResultMapper(TableSchema dataSchema, Params params) {
+			super(dataSchema, params);
+
+			numClasses = params.get(ModelParamName.NUM_CLASSES);
+		}
+
+		@Override
+		protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+			result.set(0, new DenseVector(numClasses));
+		}
+
+		@Override
+		protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+			TableSchema dataSchema, Params params) {
+
+			return Tuple4.of(
+				dataSchema.getFieldNames(),
+				new String[] {params.get(HasOutputCol.OUTPUT_COL)},
+				new TypeInformation <?>[] {VectorTypes.DENSE_VECTOR},
+				params.get(HasReservedColsDefaultAsNull.RESERVED_COLS)
+			);
+		}
+	}
+
+	private static class SetPositiveResultMapper extends Mapper {
+		private final int classIndex;
+
+		public static final ParamInfo <Integer> CLASS_INDEX = ParamInfoFactory
+			.createParamInfo("classIndex", Integer.class)
+			.build();
+
+		public SetPositiveResultMapper(TableSchema dataSchema, Params params) {
+			super(dataSchema, params);
+
+			classIndex = params.get(CLASS_INDEX);
+		}
+
+		@Override
+		protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+			Map <String, String> probMap = JsonConverter.fromJson(
+				(String) selection.get(0),
+				new TypeReference <Map <String, String>>() {}.getType()
+			);
+			DenseVector vector = VectorUtil.getDenseVector(selection.get(1));
+
+			vector.set(classIndex, Double.parseDouble(probMap.get("1.0")));
+
+			result.set(0, vector);
+		}
+
+		@Override
+		protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+			TableSchema dataSchema, Params params) {
+
+			return Tuple4.of(
+				new String[] {
+					params.get(OneVsRestPredictParams.PREDICTION_DETAIL_COL),
+					params.get(HasVectorCol.VECTOR_COL)
+				},
+				new String[] {params.get(HasOutputCol.OUTPUT_COL)},
+				new TypeInformation <?>[] {VectorTypes.DENSE_VECTOR},
+				params.get(HasReservedColsDefaultAsNull.RESERVED_COLS)
+			);
+		}
+	}
+
+	private static class VoteMapper extends Mapper {
+		private final boolean predDetail;
+		private final List <Object> labels;
+
+		public VoteMapper(TableSchema dataSchema, Params params) {
+			super(dataSchema, params);
+
+			predDetail = params.contains(OneVsRestPredictParams.PREDICTION_DETAIL_COL);
+			labels = recoverLabel(params.get(ModelParamName.LABELS), params.get(ModelParamName.LABEL_TYPE_NAME));
+		}
+
+		@Override
+		protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+
+			double[] score = VectorUtil.getDenseVector(selection.get(0)).getData();
+
+			int maxIdx = -1;
+			double maxProb = -Double.MAX_VALUE;
+			double sum = 0.;
+			for (int i = 0; i < score.length; i++) {
+				sum += score[i];
+				if (maxProb < score[i]) {
+					maxIdx = i;
+					maxProb = score[i];
+				}
+			}
+			if (predDetail) {
+				HashMap <Object, Double> details = new HashMap <>(labels.size());
+				labels.forEach(label -> {
+					details.put(label, 0.0);
+				});
+
+				for (int i = 0; i < score.length; i++) {
+					details.replace(labels.get(i), score[i] / sum);
+				}
+
+				result.set(1, gson.toJson(details));
+			}
+
+			Object label = labels.get(maxIdx);
+			result.set(0, label);
+		}
+
+		@Override
+		protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+			TableSchema dataSchema, Params params) {
+
+			String vectorColName = params.get(HasVectorCol.VECTOR_COL);
+			String predResultColName = params.get(OneVsRestPredictParams.PREDICTION_COL);
+			String[] reservedCols = params.get(OneVsRestPredictParams.RESERVED_COLS);
+
+			TypeInformation <?> labelType = FlinkTypeConverter.getFlinkType(
+				params.get(ModelParamName.LABEL_TYPE_NAME)
+			);
+
+			if (params.contains(OneVsRestPredictParams.PREDICTION_DETAIL_COL)) {
+
+				return Tuple4.of(
+					new String[] {vectorColName},
+					new String[] {predResultColName, params.get(OneVsRestPredictParams.PREDICTION_DETAIL_COL)},
+					new TypeInformation <?>[] {labelType, Types.STRING},
+					reservedCols
+				);
+
+			} else {
+
+				return Tuple4.of(
+					new String[] {vectorColName},
+					new String[] {predResultColName},
+					new TypeInformation <?>[] {labelType},
+					reservedCols
+				);
+
+			}
+		}
 	}
 
 	private static void recoverLabelType(List <Object> labels, String labelTypeName) {
@@ -101,11 +369,6 @@ public class OneVsRestModelMapper extends ModelMapper {
 		return predictor;
 	}
 
-	@Override
-	public TableSchema getOutputSchema() {
-		return outputColsHelper.getResultSchema();
-	}
-
 	public Params extractMeta(List <Row> modelRows) {
 		Params meta = null;
 		for (Row row : modelRows) {
@@ -117,101 +380,11 @@ public class OneVsRestModelMapper extends ModelMapper {
 		return meta;
 	}
 
-	@Override
-	public void loadModel(List <Row> modelRows) {
-		Params meta = extractMeta(modelRows);
-		int numClasses = meta.get(ModelParamName.NUM_CLASSES);
-		String labelsStr = meta.get(ModelParamName.LABELS);
-		String labelTypeName = meta.get(ModelParamName.LABEL_TYPE_NAME);
-		String binClsClassName = meta.get(ModelParamName.BIN_CLS_CLASS_NAME);
-		String[] modelColNames = meta.get(ModelParamName.MODEL_COL_NAMES);
-		Integer[] modelColTypesInt = meta.get(ModelParamName.MODEL_COL_TYPES);
-		TypeInformation[] modelColTypes = new TypeInformation[modelColTypesInt.length];
-		for (int i = 0; i < modelColTypesInt.length; i++) {
-			modelColTypes[i] = JdbcTypeConverter.getFlinkType(modelColTypesInt[i]);
-		}
-		this.predictors = new ArrayList <>(numClasses);
-		this.labels = gson.fromJson(labelsStr, ArrayList.class);
+	private static List <Object> recoverLabel(String labelsStr, String labelTypeName) {
+		List <Object> labels = gson.fromJson(labelsStr, ArrayList.class);
 		recoverLabelType(labels, labelTypeName);
 
-		try {
-			for (int i = 0; i < numClasses; i++) {
-				List <Row> rows = new ArrayList <Row>();
-				for (Row row : modelRows) {
-					if (row.getField(2) == null) {
-						continue;
-					}
-					long id = (Long) row.getField(2);
-					if ((long) (i) == id) {
-						Row subRow = new Row(row.getArity() - 4);
-						for (int j = 0; j < subRow.getArity(); j++) {
-							subRow.setField(j, row.getField(3 + j));
-						}
-						rows.add(subRow);
-					}
-				}
-				TableSchema schema = new TableSchema(modelColNames, modelColTypes);
-				RichModelMapper predictor = createModelPredictor(binClsClassName, schema, getDataSchema(),
-					binClsPredParams,
-					rows);
-				this.predictors.add(predictor);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return labels;
 	}
 
-	@Override
-	public Row map(Row row) throws Exception {
-		Row output = new Row(predDetail ? 2 : 1);
-		double[] score = new double[labels.size()];
-		HashMap <Object, Double> details = new HashMap <>(this.predictors.size());
-		labels.forEach(label -> {
-			details.put(label, 0.0);
-		});
-
-		int numClasses = this.predictors.size();
-		for (int i = 0; i < numClasses; i++) {
-			RichModelMapper predictor = this.predictors.get(i);
-			if (predictor instanceof LinearModelMapper) {
-				LinearModelMapper linearModelPredictor = (LinearModelMapper) predictor;
-				Row result = linearModelPredictor.map(row);
-				if (result.getArity() < 2 || result.getField(1) == null) {
-					throw new RuntimeException("no pred detail in the binary classifier");
-				}
-				Map <String, String> probMap = gson.fromJson((String) result.getField(1), Map.class);
-				score[i] = Double.valueOf(probMap.get("1.0"));
-			} else if (predictor instanceof GbdtModelMapper) {
-				Row result = predictor.map(row);
-				score[i] = (Double) result.getField(0);
-				score[i] = new SigmoidFunction().eval(score[i]);
-			} else {
-				throw new UnsupportedOperationException("Not supported predictor: " +
-					predictors.getClass().toString());
-			}
-		}
-
-		int maxIdx = -1;
-		double maxProb = -Double.MAX_VALUE;
-		double sum = 0.;
-		for (int i = 0; i < score.length; i++) {
-			sum += score[i];
-			if (maxProb < score[i]) {
-				maxIdx = i;
-				maxProb = score[i];
-			}
-		}
-		if (predDetail) {
-			for (int i = 0; i < score.length; i++) {
-				details.replace(labels.get(i), score[i] / sum);
-			}
-		}
-
-		Object label = labels.get(maxIdx);
-		output.setField(0, label);
-		if (predDetail) {
-			output.setField(1, gson.toJson(details));
-		}
-		return outputColsHelper.getResultRow(row, output);
-	}
 }

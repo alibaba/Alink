@@ -11,6 +11,7 @@ import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.operator.common.linear.SoftmaxObjFunc;
 import com.alibaba.alink.params.shared.linear.HasL1;
 import com.alibaba.alink.params.shared.linear.HasL2;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class SoftmaxObjFuncTest {
+public class SoftmaxObjFuncTest extends AlinkTestBase {
 	private final static int FDIM = 10;
 	private final static double EPS = 1.0e-16;
 

@@ -2,13 +2,15 @@ package com.alibaba.alink.operator.common.statistics.basicstatistic;
 
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Test cases for {@link MultivariateGaussian}.
  */
-public class MultivariateGaussianTest {
+
+public class MultivariateGaussianTest extends AlinkTestBase {
 	private static final double TOL = 1.0e-5;
 
 	@Test
