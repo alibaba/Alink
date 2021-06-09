@@ -8,6 +8,7 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.params.io.HasIoName;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +25,8 @@ import java.io.OutputStream;
  * <p>
  * Methods that using distribute file system need to test manually.
  */
-public class BaseFileSystemTest {
+
+public class BaseFileSystemTest extends AlinkTestBase {
 
 	@Rule
 	public TemporaryFolder folder = new TemporaryFolder();

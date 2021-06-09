@@ -5,6 +5,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,7 +13,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OnlineLogLikelihoodTest {
+public class OnlineLogLikelihoodTest extends AlinkTestBase {
 
 	@Test
 	public void testCalc() {

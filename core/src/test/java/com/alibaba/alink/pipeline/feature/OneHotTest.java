@@ -32,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Test for OneHot.
  */
+
 public class OneHotTest extends AlinkTestBase {
 	private TableSchema schema = new TableSchema(
 		new String[] {"id", "docid", "word", "cnt"},
@@ -72,6 +73,7 @@ public class OneHotTest extends AlinkTestBase {
 
 		VectorAssembler va = new VectorAssembler()
 			.setSelectedCols(new String[] {"cnt", "results"})
+			.enableLazyPrintTransformStat("xxxxxx")
 			.setOutputCol("outN");
 
 		Pipeline pl = new Pipeline().add(oneHot).add(va);

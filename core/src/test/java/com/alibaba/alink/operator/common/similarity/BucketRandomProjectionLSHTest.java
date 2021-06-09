@@ -4,13 +4,15 @@ import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.similarity.lsh.BucketRandomProjectionLSH;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit Test for HyperPlaneLSH.
  */
-public class BucketRandomProjectionLSHTest {
+
+public class BucketRandomProjectionLSHTest extends AlinkTestBase {
 
 	@Test
 	public void testHashFunction() {

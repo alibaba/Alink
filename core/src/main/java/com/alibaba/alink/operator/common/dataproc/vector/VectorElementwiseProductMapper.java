@@ -17,7 +17,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorElementwiseProductParams;
  */
 public class VectorElementwiseProductMapper extends SISOMapper {
 	private static final long serialVersionUID = -8030477987774641696L;
-	private Vector scalingVector;
+	private final Vector scalingVector;
 
 	public VectorElementwiseProductMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);

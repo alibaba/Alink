@@ -7,10 +7,11 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.dataproc.JsonValueParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class JsonPathMapperTest {
+public class JsonPathMapperTest extends AlinkTestBase {
 
 	@Test
 	public void testStringType() throws Exception {
@@ -26,15 +27,39 @@ public class JsonPathMapperTest {
 
 		JsonPathMapper jsonPathMapper = new JsonPathMapper(dataSchema, params);
 
-		RowCollector rowCollector = new RowCollector();
+		jsonPathMapper.open();
 
-		jsonPathMapper.flatMap(Row.of("{\"key\": [\"value\"]}"), rowCollector);
+		Row ret = jsonPathMapper.map(Row.of("{\"key\": [\"value\"]}"));
 
-		Assert.assertArrayEquals(
-			new Row[] {Row.of("{\"key\": [\"value\"]}", "[\"value\"]")},
-			rowCollector.getRows().toArray(new Row[0])
-		);
+		Assert.assertEquals(Row.of("{\"key\": [\"value\"]}", "[\"value\"]"), ret);
+
+		jsonPathMapper.close();
 	}
+
+
+	@Test
+	public void testMultiColumn() throws Exception {
+		TableSchema dataSchema = new TableSchema(
+			new String[] {"content", "content1"},
+			new TypeInformation <?>[] {Types.STRING, Types.STRING}
+		);
+
+		Params params = new Params()
+			.set(JsonValueParams.JSON_PATHS, new String[] {"$.key"})
+			.set(JsonValueParams.SELECTED_COL, "content1")
+			.set(JsonValueParams.OUTPUT_COLS, new String[] {"parsed_content"});
+
+		JsonPathMapper jsonPathMapper = new JsonPathMapper(dataSchema, params);
+
+		jsonPathMapper.open();
+
+		Row ret = jsonPathMapper.map(Row.of("{\"key\": [\"value\"]}", "{\"key\": [\"value\"]}"));
+
+		Assert.assertEquals(Row.of("{\"key\": [\"value\"]}", "{\"key\": [\"value\"]}", "[\"value\"]"), ret);
+
+		jsonPathMapper.close();
+	}
+
 
 	@Test
 	public void testLongType() throws Exception {
@@ -51,13 +76,12 @@ public class JsonPathMapperTest {
 
 		JsonPathMapper jsonPathMapper = new JsonPathMapper(dataSchema, params);
 
-		RowCollector rowCollector = new RowCollector();
+		jsonPathMapper.open();
 
-		jsonPathMapper.flatMap(Row.of("{\"key\": 123}"), rowCollector);
+		Row ret =  jsonPathMapper.map(Row.of("{\"key\": 123}"));
 
-		Assert.assertArrayEquals(
-			new Row[] {Row.of("{\"key\": 123}", 123L)},
-			rowCollector.getRows().toArray(new Row[0])
-		);
+		Assert.assertEquals(Row.of("{\"key\": 123}", 123L), ret);
+
+		jsonPathMapper.close();
 	}
 }

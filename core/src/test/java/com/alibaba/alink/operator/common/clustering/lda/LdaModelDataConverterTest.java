@@ -7,6 +7,7 @@ import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.operator.common.clustering.LdaModelData;
 import com.alibaba.alink.operator.common.clustering.LdaModelDataConverter;
 import com.alibaba.alink.params.clustering.LdaTrainParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class LdaModelDataConverterTest {
+public class LdaModelDataConverterTest extends AlinkTestBase {
 
 	private DenseMatrix denseMatrix = new DenseMatrix(new double[][]
 		{{576.6534038086453, 484.876383945505, 562.4320336284154, 667.3878438751825, 633.2160319763818},

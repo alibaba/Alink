@@ -21,6 +21,9 @@ import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils.FileProcFunction;
 import com.alibaba.alink.common.io.filesystem.FilePath;
+import com.alibaba.alink.common.mapper.ComboModelMapper;
+import com.alibaba.alink.common.mapper.Mapper;
+import com.alibaba.alink.common.mapper.MapperChain;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -45,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * A utility class for exporting {@link PipelineModel}.
@@ -206,7 +210,7 @@ public class ModelExporterUtils {
 			if (found < 0) {
 				bIdx[i] = merged.size();
 				merged.add(b[i]);
-						bCurrentIdx.put(b[i], found);
+				bCurrentIdx.put(b[i], found);
 			} else {
 				bIdx[i] = found;
 				bCurrentIdx.put(b[i], found + 1);
@@ -784,17 +788,25 @@ public class ModelExporterUtils {
 
 		final int idColIndex = TableUtil.findColIndexWithAssertAndHint(modelSchema, ID_COL_NAME);
 
-		pipelineModel.sort(Comparator.comparing(o -> ((Long) o.getField(idColIndex))));
+		int size = pipelineModel.size();
+
+		Integer[] order = new Integer[size];
+
+		for (int i = 0; i < size; ++i) {
+			order[i] = i;
+		}
+
+		Arrays.sort(order, Comparator.comparing(o -> ((Long) pipelineModel.get(o).getField(idColIndex))));
 
 		Preconditions.checkState(!pipelineModel.isEmpty(), "Model to load should not be empty.");
 
-		StageNode[] stages = deserializePipelineStagesFromMeta(pipelineModel.get(0), modelSchema);
+		StageNode[] stages = deserializePipelineStagesFromMeta(pipelineModel.get(order[0]), modelSchema);
 
 		if (stages == null || stages.length == 0) {
 			return new ArrayList <>();
 		}
 
-		final int[] cursor = new int[] {pipelineModel.size() - 1};
+		final int[] cursor = new int[] {size - 1};
 
 		final int offset = 1;
 
@@ -827,9 +839,10 @@ public class ModelExporterUtils {
 
 					final int[] localSchemaIndices = stageNode.schemaIndices;
 					final int oldCursor = cursor[0];
-					cursor[0] = next(pipelineModel, cursor[0], idColIndex);
-					List <Row> localData = pipelineModel
-						.subList(cursor[0] + 1, oldCursor + 1).stream()
+					cursor[0] = next(pipelineModel, order, cursor[0], idColIndex);
+					List <Row> localData = IntStream
+						.range(cursor[0] + 1, oldCursor + 1)
+						.mapToObj(value -> pipelineModel.get(order[value]))
 						.map(value -> {
 							Row ret = new Row(localSchemaIndices.length);
 
@@ -862,26 +875,12 @@ public class ModelExporterUtils {
 	}
 
 	public static LocalPredictor loadLocalPredictorFromPipelineModel(
-		List <Tuple3 <PipelineStageBase <?>, TableSchema, List <Row>>> stages, TableSchema inputSchema)
-		throws Exception {
-
-		LocalPredictor predictor = null;
-
-		for (Tuple3 <PipelineStageBase <?>, TableSchema, List <Row>> element : stages) {
-			if (predictor == null) {
-				predictor = createLocalPredictor(element.f0, element.f1, element.f2, inputSchema);
-			} else {
-				predictor.merge(createLocalPredictor(element.f0, element.f1, element.f2, inputSchema));
-			}
-
-			inputSchema = predictor.getOutputSchema();
-		}
-
-		return predictor;
+		List <Tuple3 <PipelineStageBase <?>, TableSchema, List <Row>>> stages, TableSchema inputSchema) {
+		return new LocalPredictor(loadMapperListFromStages(stages, inputSchema).getMappers());
 	}
 
 	public static LocalPredictor loadLocalPredictorFromPipelineModel(
-		List <Row> pipelineModel, TableSchema modelSchema, TableSchema inputSchema) throws Exception {
+		List <Row> pipelineModel, TableSchema modelSchema, TableSchema inputSchema) {
 
 		return loadLocalPredictorFromPipelineModel(
 			loadStagesFromPipelineModel(pipelineModel, modelSchema),
@@ -889,41 +888,80 @@ public class ModelExporterUtils {
 		);
 	}
 
-	private static LocalPredictor createLocalPredictor(
-		PipelineStageBase <?> stage, TableSchema modelSchema, List <Row> data, TableSchema inputSchema)
-		throws Exception {
+	//mapper not open.
+	public static MapperChain loadMapperListFromStages(
+		List <Row> pipelineModel, TableSchema modelSchema, TableSchema inputSchema) {
+		return loadMapperListFromStages(
+			loadStagesFromPipelineModel(pipelineModel, modelSchema),
+			inputSchema
+		);
+	}
+
+	//mapper not open.
+	public static MapperChain loadMapperListFromStages(
+		List <Tuple3 <PipelineStageBase <?>, TableSchema, List <Row>>> stages, TableSchema inputSchema) {
+
+		TableSchema outSchema = inputSchema;
+		List <Mapper> mappers = new ArrayList <>();
+		for (Tuple3 <PipelineStageBase <?>, TableSchema, List <Row>> stageTuple3 : stages) {
+			Mapper mapper = createMapperFromStage(stageTuple3.f0, stageTuple3.f1, outSchema, stageTuple3.f2);
+			mappers.add(mapper);
+			outSchema = mapper.getOutputSchema();
+		}
+
+		return new MapperChain(mappers.toArray(new Mapper[0]));
+	}
+
+	//not open and load.
+	public static Mapper createMapperFromStage(
+		PipelineStageBase <?> stage, TableSchema modelSchema, TableSchema inputSchema, List <Row> data) {
+		Mapper mapper = null;
 		if (stage instanceof MapModel) {
 			MapModel <?> mapModel = (MapModel <?>) stage;
-			ModelMapper mapper = mapModel
+			mapper = mapModel
 				.mapperBuilder
 				.apply(modelSchema, inputSchema, mapModel.getParams());
-			mapper.loadModel(data);
-			return new LocalPredictor(mapper);
+			if (data != null) {
+				((ModelMapper) mapper).loadModel(data);
+			}
 		} else if (stage instanceof BaseRecommender) {
-			return RecommenderUtil.createRecommLocalPredictor(
+			mapper = RecommenderUtil.createRecommMapper(
 				(BaseRecommender <?>) stage, modelSchema, inputSchema, data
 			);
+		} else if (stage instanceof MapTransformer) {
+			MapTransformer <?> mapTransformer = (MapTransformer <?>) stage;
+			mapper = mapTransformer
+				.mapperBuilder
+				.apply(inputSchema, mapTransformer.getParams());
 		} else {
-			return ((LocalPredictable) stage).collectLocalPredictor(inputSchema);
+			throw new RuntimeException("not support yet.");
 		}
+
+		if(mapper instanceof ComboModelMapper) {
+			((ComboModelMapper) mapper).newMapperList();
+		}
+
+		return mapper;
 	}
+
+
 
 	static LocalPredictor loadLocalPredictorFromPipelineModel(
 		FilePath filePath, TableSchema inputSchema) throws Exception {
 
-		Tuple2<TableSchema, List<Row>> readed = AkUtils.readFromPath(filePath);
+		Tuple2 <TableSchema, List <Row>> readed = AkUtils.readFromPath(filePath);
 
-		return loadLocalPredictorFromPipelineModel(readed.f1, readed.f0, inputSchema);
+		return new LocalPredictor(loadMapperListFromStages(readed.f1, readed.f0, inputSchema).getMappers());
 	}
 
-	private static int next(List <Row> all, int cursor, int field) {
-		Object obj = all.get(cursor).getField(field);
+	private static int next(List <Row> all, Integer[] order, int cursor, int field) {
+		Object obj = all.get(order[cursor]).getField(field);
 		cursor--;
 
 		while (cursor >= 0
-			&& all.get(cursor) != null
-			&& all.get(cursor).getField(field) != null
-			&& all.get(cursor).getField(field).equals(obj)) {
+			&& all.get(order[cursor]) != null
+			&& all.get(order[cursor]).getField(field) != null
+			&& all.get(order[cursor]).getField(field).equals(obj)) {
 
 			cursor--;
 		}

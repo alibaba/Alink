@@ -2,10 +2,11 @@ package com.alibaba.alink.operator.stream.utils;
 
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class UDTFStreamOpTest {
+public class UDTFStreamOpTest extends AlinkTestBase {
 
 	@Test
 	public void testUdtf() throws Exception {

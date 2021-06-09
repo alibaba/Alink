@@ -39,8 +39,8 @@ public class ModelMapperAdapterMT extends RichFlatMapFunction <Row, Row> impleme
 
 		List <Row> modelRows = this.modelSource.getModelRows(getRuntimeContext());
 		this.mapper.loadModel(modelRows);
-
-		this.wrapper = new MapperMTWrapper(numThreads, () -> this.mapper.mirror()::map);
+		this.mapper.open();
+		this.wrapper = new MapperMTWrapper(numThreads, () -> this.mapper::map);
 		this.wrapper.open(parameters);
 	}
 

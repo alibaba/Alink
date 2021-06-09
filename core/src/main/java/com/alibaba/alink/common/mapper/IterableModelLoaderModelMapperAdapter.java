@@ -32,10 +32,12 @@ public class IterableModelLoaderModelMapperAdapter extends RichMapFunction <Row,
 			}
 		}
 		assert null != iterableModelMapper;
+		iterableModelMapper.open();
 	}
 
 	@Override
 	public void close() throws Exception {
+		iterableModelMapper.close();
 		super.close();
 	}
 

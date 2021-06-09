@@ -48,26 +48,58 @@ import static com.alibaba.alink.common.utils.JsonConverter.gson;
  */
 public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 	implements OneVsRestTrainParams <OneVsRest>, OneVsRestPredictParams <OneVsRest> {
+
 	private static final long serialVersionUID = -5340633471006011434L;
-	private EstimatorBase classifier;
 
-	private static BatchOperator <?> generateTrainData(BatchOperator <?> data, BatchOperator <?> allLabels,
-													   BatchOperator <?>
-														   prevModel, final int iLabel, final int labelColIdx) {
+	private EstimatorBase<?, ?> classifier;
 
-		DataSet <Integer> barrier;
-		if (prevModel != null) {
-			barrier = ((DataSet <Row>) prevModel.getDataSet())
-				.mapPartition(new MapPartitionFunction <Row, Integer>() {
-					private static final long serialVersionUID = -8974058451262076273L;
+	@Override
+	public OneVsRestModel fit(BatchOperator <?> input) {
+		String labelColName = classifier.getParams().get(HasLabelCol.LABEL_COL);
+		BatchOperator <?> allLabels = getAllLabels(input, labelColName);
+		int numClasses = getNumClass();
 
-					@Override
-					public void mapPartition(Iterable <Row> values, Collector <Integer> out) throws Exception {
-					}
-				});
-		} else {
-			barrier = MLEnvironmentFactory.get(data.getMLEnvironmentId()).getExecutionEnvironment().fromElements(0);
+		int labelColIdx = TableUtil.findColIndexWithAssertAndHint(input.getColNames(), labelColName);
+		TypeInformation<?> labelColType = input.getColTypes()[labelColIdx];
+
+		ModelBase <?>[] models = new ModelBase <?>[numClasses];
+		for (int iCls = 0; iCls < numClasses; iCls++) {
+			this.classifier.set(HasPositiveLabelValueString.POS_LABEL_VAL_STR, "1");
+
+			BatchOperator <?> trainData = generateTrainData(input, allLabels, iCls, labelColIdx);
+
+			models[iCls] = this.classifier.fit(trainData);
 		}
+
+		Table modelData = unionAllModels(models);
+
+		Params meta = new Params()
+			.set(ModelParamName.NUM_CLASSES, numClasses)
+			.set(ModelParamName.BIN_CLS_CLASS_NAME, this.classifier.getClass().getCanonicalName())
+			.set(ModelParamName.BIN_CLS_PARAMS, this.classifier.getParams().toJson())
+			.set(ModelParamName.LABEL_TYPE_NAME, FlinkTypeConverter.getTypeString(labelColType))
+			.set(ModelParamName.MODEL_COL_NAMES, models[0].getModelData().getSchema().getFieldNames())
+			.set(ModelParamName.MODEL_COL_TYPES,
+				toJdbcColTypes(models[0].getModelData().getSchema().getFieldTypes()));
+
+		Table modelMeta = createModelMeta(meta, allLabels);
+
+		OneVsRestModel oneVsRestModel = new OneVsRestModel(classifier.getParams().clone().merge(this.getParams()));
+		oneVsRestModel.setModelData(BatchOperator.fromTable(
+			TableUtil.concatTables(new Table[] {modelMeta, modelData, allLabels.getOutputTable()},
+				getMLEnvironmentId())
+		));
+		return oneVsRestModel;
+	}
+
+	public OneVsRest setClassifier(EstimatorBase<?, ?> classifier) {
+		this.classifier = classifier;
+		return this;
+	}
+
+	private static BatchOperator <?> generateTrainData(
+		BatchOperator <?> data, BatchOperator <?> allLabels,
+		final int iLabel, final int labelColIdx) {
 
 		DataSet <Row> dataSet = data.getDataSet();
 		dataSet = dataSet
@@ -99,7 +131,7 @@ public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 				}
 
 				@Override
-				public Row map(Row value) throws Exception {
+				public Row map(Row value) {
 					for (int i = 0; i < value.getArity(); i++) {
 						if (i == labelColIdx) {
 							if (value.getField(i).equals(label)) {
@@ -112,63 +144,16 @@ public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 					return value;
 				}
 			})
-			//                .withBroadcastSet(barrier, "barrier")
 			.withBroadcastSet(allLabels.getDataSet(), "allLabels")
 			.name("CreateTrainData#" + iLabel);
 
-		TypeInformation[] colTypes = data.getColTypes().clone();
+		TypeInformation<?>[] colTypes = data.getColTypes().clone();
 		colTypes[labelColIdx] = Types.DOUBLE;
 		return new DataSetWrapperBatchOp(dataSet, data.getColNames(), colTypes)
 			.setMLEnvironmentId(data.getMLEnvironmentId());
 	}
 
-	public OneVsRest setClassifier(EstimatorBase classifier) {
-		this.classifier = classifier;
-		return this;
-	}
-
-	@Override
-	public OneVsRestModel fit(BatchOperator <?> input) {
-		BatchOperator <?> data = input;
-		String labelColName = classifier.getParams().get(HasLabelCol.LABEL_COL);
-		BatchOperator <?> allLabels = getAllLabels(data, labelColName);
-		int numClasses = getNumClass();
-
-		int labelColIdx = TableUtil.findColIndexWithAssertAndHint(data.getColNames(), labelColName);
-		TypeInformation labelColType = data.getColTypes()[labelColIdx];
-
-		ModelBase <?>[] models = new ModelBase <?>[numClasses];
-		for (int iCls = 0; iCls < numClasses; iCls++) {
-			this.classifier.set(HasPositiveLabelValueString.POS_LABEL_VAL_STR, "1");
-			BatchOperator <?> prevModel = iCls == 0 ? null :
-				models[iCls - 1].getModelData().setMLEnvironmentId(input.getMLEnvironmentId());
-
-			BatchOperator <?> trainData = generateTrainData(data, allLabels, prevModel, iCls, labelColIdx);
-			models[iCls] = this.classifier.fit(trainData);
-		}
-
-		Table modelData = unionAllModels(models);
-
-		Params meta = new Params()
-			.set(ModelParamName.NUM_CLASSES, numClasses)
-			.set(ModelParamName.BIN_CLS_CLASS_NAME, this.classifier.getClass().getCanonicalName())
-			.set(ModelParamName.BIN_CLS_PARAMS, this.classifier.getParams().toJson())
-			.set(ModelParamName.LABEL_TYPE_NAME, FlinkTypeConverter.getTypeString(labelColType))
-			.set(ModelParamName.MODEL_COL_NAMES, ((ModelBase) models[0]).getModelData().getSchema().getFieldNames())
-			.set(ModelParamName.MODEL_COL_TYPES,
-				toJdbcColTypes(((ModelBase) models[0]).getModelData().getSchema().getFieldTypes()));
-
-		Table modelMeta = createModelMeta(meta, allLabels, labelColType);
-
-		OneVsRestModel oneVsRestModel = new OneVsRestModel(classifier.getParams().clone().merge(this.getParams()));
-		oneVsRestModel.setModelData(BatchOperator.fromTable(
-			TableUtil.concatTables(new Table[] {modelMeta, modelData, allLabels.getOutputTable()},
-				getMLEnvironmentId())
-		));
-		return oneVsRestModel;
-	}
-
-	private Table createModelMeta(final Params meta, BatchOperator <?> allLabels, TypeInformation labelColType) {
+	private Table createModelMeta(final Params meta, BatchOperator <?> allLabels) {
 		DataSet <Row> metaDataSet = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment()
 			.fromElements(meta.toJson())
 			.map(new RichMapFunction <String, String>() {
@@ -182,17 +167,14 @@ public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 					for (int i = 0; i < order.length; i++) {
 						order[i] = i;
 					}
-					Arrays.sort(order, new Comparator <Integer>() {
-						@Override
-						public int compare(Integer o1, Integer o2) {
-							Comparable v1 = (Comparable) bc.get(o1).getField(0);
-							Comparable v2 = (Comparable) bc.get(o2).getField(0);
-							return v1.compareTo(v2);
-						}
+					Arrays.sort(order, (o1, o2) -> {
+						Comparable v1 = (Comparable) bc.get(o1).getField(0);
+						Comparable v2 = (Comparable) bc.get(o2).getField(0);
+						return v1.compareTo(v2);
 					});
 					List <Object> orderedLabels = new ArrayList <>(order.length);
-					for (int i = 0; i < order.length; i++) {
-						orderedLabels.add(bc.get(order[i]).getField(0));
+					for (Integer integer : order) {
+						orderedLabels.add(bc.get(integer).getField(0));
 					}
 					params.set(ModelParamName.LABELS, gson.toJson(orderedLabels, ArrayList.class));
 					return params.toJson();
@@ -211,7 +193,7 @@ public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 			new TypeInformation[] {Types.STRING});
 	}
 
-	private Table unionAllModels(ModelBase[] models) {
+	private Table unionAllModels(ModelBase<?>[] models) {
 		BatchOperator <?> allModel = null;
 		for (int i = 0; i < models.length; i++) {
 			BatchOperator <?> model = models[i].getModelData();
@@ -227,7 +209,7 @@ public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 		return allModel.getOutputTable();
 	}
 
-	private Integer[] toJdbcColTypes(TypeInformation[] colTypes) {
+	private Integer[] toJdbcColTypes(TypeInformation<?>[] colTypes) {
 		Integer[] typesInInt = new Integer[colTypes.length];
 		for (int i = 0; i < colTypes.length; i++) {
 			typesInInt[i] = JdbcTypeConverter.getIntegerSqlType(colTypes[i]);
@@ -239,11 +221,11 @@ public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 		final int labelColIdx = TableUtil.findColIndexWithAssertAndHint(data.getColNames(), labelColName);
 		DataSet <Row> input = data.getDataSet();
 		DataSet <Row> output = input
-			. <Tuple1 <Comparable>>mapPartition(new MapPartitionFunction <Row, Tuple1 <Comparable>>() {
+			.mapPartition(new MapPartitionFunction <Row, Tuple1 <Comparable>>() {
 				private static final long serialVersionUID = 8885186467183165174L;
 
 				@Override
-				public void mapPartition(Iterable <Row> values, Collector <Tuple1 <Comparable>> out) throws Exception {
+				public void mapPartition(Iterable <Row> values, Collector <Tuple1 <Comparable>> out) {
 					Set <Object> distinctLabels = new HashSet <>();
 					values.forEach(row -> {
 						distinctLabels.add(row.getField(labelColIdx));

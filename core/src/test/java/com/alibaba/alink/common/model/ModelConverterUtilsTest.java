@@ -7,6 +7,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,7 +18,8 @@ import java.util.List;
 /**
  * Unit test cases for {@link ModelConverterUtils}.
  */
-public class ModelConverterUtilsTest {
+
+public class ModelConverterUtilsTest extends AlinkTestBase {
 
 	class MockCollector implements Collector <Row> {
 		List <Row> buffer = new ArrayList <>();

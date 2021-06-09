@@ -26,7 +26,7 @@ public class GmmModelMapper extends RichModelMapper {
 	private int vectorColIdx;
 	private GmmModelData modelData;
 	private MultivariateGaussian[] multivariateGaussians;
-	private double[] prob;
+	private transient ThreadLocal <double[]> threadLocalProb;
 
 	public GmmModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
@@ -35,14 +35,14 @@ public class GmmModelMapper extends RichModelMapper {
 	}
 
 	@Override
-	protected Object predictResult(Row row) throws Exception {
-		return predictResultDetail(row).f0;
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		return predictResultDetail(selection).f0;
 	}
 
 	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) throws Exception {
-		Vector sample = VectorUtil.getVector(row.getField(vectorColIdx));
-
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
+		Vector sample = VectorUtil.getVector(selection.get(vectorColIdx));
+		double[] prob = threadLocalProb.get();
 		int k = modelData.k;
 		double probSum = 0.;
 		for (int i = 0; i < k; i++) {
@@ -69,7 +69,7 @@ public class GmmModelMapper extends RichModelMapper {
 	}
 
 	@Override
-	protected TypeInformation initPredResultColType() {
+	protected TypeInformation <?> initPredResultColType(TableSchema modelSchema) {
 		return Types.LONG;
 	}
 
@@ -81,6 +81,6 @@ public class GmmModelMapper extends RichModelMapper {
 			this.multivariateGaussians[i] = new MultivariateGaussian(modelData.data.get(i).mean,
 				GmmModelData.expandCovarianceMatrix(modelData.data.get(i).cov, modelData.dim));
 		}
-		this.prob = new double[this.modelData.k];
+		threadLocalProb = ThreadLocal.withInitial(() -> new double[this.modelData.k]);
 	}
 }

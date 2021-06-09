@@ -1,10 +1,11 @@
 package com.alibaba.alink.pipeline.tuning;
 
 import com.alibaba.alink.operator.common.statistics.DistributionFuncName;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ValueDistFuncTest {
+public class ValueDistFuncTest extends AlinkTestBase {
 
 	@Test
 	public void testStdNormal() {

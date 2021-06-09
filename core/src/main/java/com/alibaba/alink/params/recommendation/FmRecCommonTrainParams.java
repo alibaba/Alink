@@ -32,19 +32,19 @@ public interface FmRecCommonTrainParams<T> extends
             .setHasDefaultValue(new String[0])
             .build();
 
-    default T setUserFeatureCols(String[] value) {
+    default T setUserFeatureCols(String... value) {
         return set(USER_FEATURE_COLS, value);
     }
 
-    default T setUserCategoricalFeatureCols(String[] value) {
+    default T setUserCategoricalFeatureCols(String... value) {
         return set(USER_CATEGORICAL_FEATURE_COLS, value);
     }
 
-    default T setItemFeatureCols(String[] value) {
+    default T setItemFeatureCols(String... value) {
         return set(ITEM_FEATURE_COLS, value);
     }
 
-    default T setItemCategoricalFeatureCols(String[] value) {
+    default T setItemCategoricalFeatureCols(String... value) {
         return set(ITEM_CATEGORICAL_FEATURE_COLS, value);
     }
 

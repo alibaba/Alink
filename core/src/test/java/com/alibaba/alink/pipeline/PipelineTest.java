@@ -39,9 +39,9 @@ public class PipelineTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 		CsvSourceBatchOp source = new CsvSourceBatchOp()
-            .setSchemaStr(
-			"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-            .setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setSchemaStr(
+				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
+			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
 
 		String pipeline_model_filename = "/tmp/model123123123123.csv";
 		QuantileDiscretizerModel model1 = new QuantileDiscretizer()
@@ -55,7 +55,7 @@ public class PipelineTest extends AlinkTestBase {
 		BatchOperator.execute();
 
 		pipeline_model = PipelineModel.load(pipeline_model_filename);
-		BatchOperator<?> res = pipeline_model.transform(source);
+		BatchOperator <?> res = pipeline_model.transform(source);
 		res.print();
 	}
 

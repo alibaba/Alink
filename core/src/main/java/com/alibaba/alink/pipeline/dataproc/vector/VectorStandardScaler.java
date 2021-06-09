@@ -1,5 +1,7 @@
 package com.alibaba.alink.pipeline.dataproc.vector;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorStandardScalerTrainBatchOp;
@@ -21,6 +23,10 @@ public class VectorStandardScaler extends Trainer <VectorStandardScaler, VectorS
 
 	public VectorStandardScaler() {
 		super();
+	}
+
+	public VectorStandardScaler(Params params) {
+		super(params);
 	}
 
 	@Override

@@ -7,5 +7,6 @@ public interface BaseItemsPerUserRecommParams<T> extends
 	HasUserCol <T>,
 	HasKDefaultAs10 <T>,
 	HasExcludeKnownDefaultAsFalse <T>,
-	BaseRecommParams <T> {
+	BaseRecommParams <T>,
+	HasInitRecommCol<T> {
 }

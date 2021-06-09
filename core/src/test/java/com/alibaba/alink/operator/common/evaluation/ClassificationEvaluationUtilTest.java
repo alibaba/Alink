@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +28,8 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getDet
 /**
  * Unit test for ClassificationEvaluationUtil.
  */
-public class ClassificationEvaluationUtilTest {
+
+public class ClassificationEvaluationUtilTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

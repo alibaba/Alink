@@ -1,12 +1,13 @@
 package com.alibaba.alink.operator.batch.feature;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PcaTrainBatchOpTest {
+public class PcaTrainBatchOpTest extends AlinkTestBase {
 	@Test
 	public void testDotProductionCut() {
 		int nAll = 5;

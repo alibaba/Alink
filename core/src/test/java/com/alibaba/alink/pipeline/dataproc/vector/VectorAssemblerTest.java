@@ -5,7 +5,6 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -58,7 +57,7 @@ public class VectorAssemblerTest extends AlinkTestBase {
 			new SparseVector(15, new int[] {1, 2, 7, 8, 9, 10, 11, 12, 13, 14},
 				new double[] {2.0, 3.0, 4.3, 3.0, 2.0, 3.0, 1.0, 4.0, 6.0, 8.0}));
 		assertEquals(map.get("0"),
-			VectorUtil.getSparseVector("$13$1:2.0 2:3.0 5:4.3 6:3.0 7:2.0 8:3.0 9:1.0 10:4.0 11:6.0 12:8.0"));
+			VectorUtil.getDenseVector("0.0 2.0 3.0 0.0 0.0 4.3 3.0 2.0 3.0 1.0 4.0 6.0 8.0"));
 		assertEquals(map.get("2"),
 			new SparseVector(14, new int[] {1, 2, 7, 8, 9, 10, 11, 12, 13},
 				new double[] {2.0, 3.0, 4.3, 2.0, 3.0, 1.0, 4.0, 6.0, 8.0}));

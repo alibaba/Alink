@@ -6,17 +6,15 @@ import com.alibaba.alink.operator.common.distance.FastCategoricalDistance;
 import com.alibaba.alink.operator.common.similarity.Sample;
 import com.alibaba.alink.operator.common.similarity.similarity.Similarity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.PriorityQueue;
 
 public class StringModelData extends NearestNeighborModelData {
 	private static final long serialVersionUID = 7378206633997295502L;
-	private Sample[] dictSamples;
-	private FastCategoricalDistance similarity;
-	private boolean text;
-
-	private Sample sample;
-	private int start;
+	private final Sample[] dictSamples;
+	private final FastCategoricalDistance similarity;
+	private final boolean text;
 
 	public StringModelData(Sample[] dictSamples, FastCategoricalDistance similarity, boolean text) {
 		this.dictSamples = dictSamples;
@@ -24,28 +22,32 @@ public class StringModelData extends NearestNeighborModelData {
 		this.text = text;
 
 		if (similarity instanceof Similarity) {
-			queue = new PriorityQueue <>(Comparator.comparingDouble(o -> o.f0));
+			comparator = Comparator.comparingDouble(o -> o.f0);
 		} else {
-			queue = new PriorityQueue <>(Comparator.comparingDouble(o -> -o.f0));
+			comparator = Comparator.comparingDouble(o -> -o.f0);
 		}
 	}
 
 	@Override
-	void iterabor(Object selectedCol) {
-		queue.clear();
-		sample = similarity.prepareSample((String) selectedCol, text);
-		start = 0;
+	protected Integer getLength() {
+		return dictSamples.length;
 	}
 
 	@Override
-	boolean hasNext() {
-		return start < dictSamples.length;
+	protected Object prepareSample(Object input) {
+		return similarity.prepareSample((String) input, text);
 	}
 
 	@Override
-	void next(Tuple2 <Double, Object> newValue) {
-		newValue.f1 = dictSamples[start].getRow().getField(0);
-		newValue.f0 = similarity.calc(dictSamples[start], sample, text);
-		start++;
+	protected ArrayList <Tuple2 <Double, Object>> computeDistiance(Object input, Integer index, Integer topN,
+																   Tuple2 <Double, Object> radius) {
+		Tuple2 <Double, Object> value = Tuple2.of(
+			similarity.calc(dictSamples[index], (Sample)input, text),
+			dictSamples[index].getRow().getField(0)
+		);
+		if (null == radius || radius.f0 == null || this.getQueueComparator().compare(radius, value) <= 0) {
+			return new ArrayList <>(Arrays.asList(value));
+		}
+		return null;
 	}
 }

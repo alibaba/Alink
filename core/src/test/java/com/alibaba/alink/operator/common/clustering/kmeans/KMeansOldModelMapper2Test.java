@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.clustering.KMeansPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -17,7 +18,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for KMeansModelMapper.
  */
-public class KMeansOldModelMapper2Test {
+
+public class KMeansOldModelMapper2Test extends AlinkTestBase {
 	private Row[] rows = new Row[] {
 		Row.of(0L, "{\"vectorCol\":\"\\\"Y\\\"\",\"latitudeCol\":null,\"longitudeCol\":null,"
 			+ "\"distanceType\":\"\\\"EUCLIDEAN\\\"\",\"k\":\"2\",\"vectorSize\":\"3\"}"),

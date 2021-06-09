@@ -1,5 +1,7 @@
 package com.alibaba.alink.pipeline.dataproc.vector;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorMinMaxScalerTrainBatchOp;
@@ -20,7 +22,11 @@ public class VectorMinMaxScaler extends Trainer <VectorMinMaxScaler, VectorMinMa
 	private static final long serialVersionUID = -4425448502218692981L;
 
 	public VectorMinMaxScaler() {
-		super();
+		this(new Params());
+	}
+
+	public VectorMinMaxScaler(Params params) {
+		super(params);
 	}
 
 	@Override

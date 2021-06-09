@@ -88,7 +88,7 @@ public class VectorMinMaxScalerModelMapper extends SISOModelMapper {
 	}
 
 	/**
-	 * This function transforms dense vector to normalized format.
+	 * This function transforms sparse vector to normalized format.
 	 *
 	 * @param vector the input sparse vector
 	 * @return normalized vector

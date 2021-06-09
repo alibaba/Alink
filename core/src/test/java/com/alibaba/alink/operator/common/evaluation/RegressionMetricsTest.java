@@ -1,12 +1,14 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for RegressionMetrics.
  */
-public class RegressionMetricsTest {
+
+public class RegressionMetricsTest extends AlinkTestBase {
 
 	@Test
 	public void reduceTest() {

@@ -15,65 +15,80 @@ import java.util.Arrays;
 
 public class MultilayerPerceptronClassifierTest extends AlinkTestBase {
 
-    @Test
-    public void testMLPC() throws Exception {
-        BatchOperator data = Iris.getBatchData();
+	@Test
+	public void testMLPC() throws Exception {
+		BatchOperator data = Iris.getBatchData();
 
-        MultilayerPerceptronClassifier classifier = new MultilayerPerceptronClassifier()
-                .setFeatureCols(Iris.getFeatureColNames())
-                .setLabelCol(Iris.getLabelColName())
-                .setLayers(new int[]{4, 5, 3})
-                .setMaxIter(100)
-                .setPredictionCol("pred_label")
-                .setPredictionDetailCol("pred_detail");
+		MultilayerPerceptronClassifier classifier = new MultilayerPerceptronClassifier()
+			.setFeatureCols(Iris.getFeatureColNames())
+			.setLabelCol(Iris.getLabelColName())
+			.setLayers(new int[] {4, 5, 3})
+			.setMaxIter(100)
+			.setPredictionCol("pred_label")
+			.setPredictionDetailCol("pred_detail");
 
-        BatchOperator res = classifier.fit(data).transform(data);
+		BatchOperator res = classifier.fit(data).transform(data);
 
-        MultiClassMetrics metrics = new EvalMultiClassBatchOp()
-                .setPredictionDetailCol("pred_detail")
-                .setLabelCol(Iris.getLabelColName())
-                .linkFrom(res)
-                .collectMetrics();
+		MultiClassMetrics metrics = new EvalMultiClassBatchOp()
+			.setPredictionDetailCol("pred_detail")
+			.setLabelCol(Iris.getLabelColName())
+			.linkFrom(res)
+			.collectMetrics();
 
-        Assert.assertTrue(metrics.getAccuracy() > 0.9);
+		Assert.assertTrue(metrics.getAccuracy() > 0.9);
 
-    }
+	}
 
-    @Test
-    public void testDenseMLPC() throws Exception {
+	@Test
+	public void testMLPCV1() throws Exception {
+		BatchOperator data = Iris.getBatchData();
 
-        Row[] array = new Row[]{
-                Row.of(new Object[]{"$31$01.0 11.0 21.0 301.0", "1.0 1.0 1.0 1.0", 1.0, 1.0, 1.0, 1.0, 1}),
-                Row.of(new Object[]{"$31$01.0 11.0 20.0 301.0", "1.0 1.0 0.0 1.0", 1.0, 1.0, 0.0, 1.0, 1}),
-                Row.of(new Object[]{"$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1}),
-                Row.of(new Object[]{"$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1}),
-                Row.of(new Object[]{"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0}),
-                Row.of(new Object[]{"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0}),
-                Row.of(new Object[]{"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0}),
-                Row.of(new Object[]{"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0})
-        };
-        String[] veccolNames = new String[]{"svec", "vec", "f0", "f1", "f2", "f3", "label"};
+		MultilayerPerceptronClassifier classifier = new MultilayerPerceptronClassifier()
+			.setFeatureCols(Iris.getFeatureColNames())
+			.setLabelCol(Iris.getLabelColName())
+			.setLayers(new int[] {4, 5, 3})
+			.setMaxIter(100)
+			.setPredictionCol("pred_label");
 
-        BatchOperator data = new MemSourceBatchOp(Arrays.asList(array), veccolNames);
+		classifier.fit(data).transform(data).lazyPrint(1);
+		BatchOperator.execute();
 
+	}
 
-        MultilayerPerceptronClassifier classifier = new MultilayerPerceptronClassifier()
-                .setVectorCol("vec")
-                .setLabelCol("label")
-                .setLayers(new int[]{4, 5, 2})
-                .setMaxIter(100)
-                .setPredictionCol("pred_label")
-                .setPredictionDetailCol("pred_detail");
+	@Test
+	public void testDenseMLPC() throws Exception {
 
-        BatchOperator res = classifier.fit(data).transform(data);
+		Row[] array = new Row[] {
+			Row.of(new Object[] {"$31$01.0 11.0 21.0 301.0", "1.0 1.0 1.0 1.0", 1.0, 1.0, 1.0, 1.0, 1}),
+			Row.of(new Object[] {"$31$01.0 11.0 20.0 301.0", "1.0 1.0 0.0 1.0", 1.0, 1.0, 0.0, 1.0, 1}),
+			Row.of(new Object[] {"$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1}),
+			Row.of(new Object[] {"$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1}),
+			Row.of(new Object[] {"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0}),
+			Row.of(new Object[] {"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0}),
+			Row.of(new Object[] {"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0}),
+			Row.of(new Object[] {"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0})
+		};
+		String[] veccolNames = new String[] {"svec", "vec", "f0", "f1", "f2", "f3", "label"};
 
-        MultiClassMetrics metrics = new EvalMultiClassBatchOp()
-                .setPredictionDetailCol("pred_detail")
-                .setLabelCol("label")
-                .linkFrom(res)
-                .collectMetrics();
+		BatchOperator data = new MemSourceBatchOp(Arrays.asList(array), veccolNames);
 
-        Assert.assertTrue(metrics.getAccuracy() > 0.9);
+		MultilayerPerceptronClassifier classifier = new MultilayerPerceptronClassifier()
+			.setVectorCol("vec")
+			.setLabelCol("label")
+			.setLayers(new int[] {4, 5, 2})
+			.setMaxIter(100)
+			.setPredictionCol("pred_label")
+			.setPredictionDetailCol("pred_detail");
 
-    }
+		BatchOperator res = classifier.fit(data).transform(data);
+
+		MultiClassMetrics metrics = new EvalMultiClassBatchOp()
+			.setPredictionDetailCol("pred_detail")
+			.setLabelCol("label")
+			.linkFrom(res)
+			.collectMetrics();
+
+		Assert.assertTrue(metrics.getAccuracy() > 0.9);
+
+	}
 }

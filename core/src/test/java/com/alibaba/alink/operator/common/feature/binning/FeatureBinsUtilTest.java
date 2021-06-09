@@ -1,12 +1,14 @@
 package com.alibaba.alink.operator.common.feature.binning;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for FeatureBinsUtil.
  */
-public class FeatureBinsUtilTest {
+
+public class FeatureBinsUtilTest extends AlinkTestBase {
 
 	@Test
 	public void keepGivenDecimal() {

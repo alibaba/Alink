@@ -10,15 +10,15 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Adapt a {@link RecommKernel} to run within flink.
+ * Adapt a {@link RecommMapper} to run within flink.
  * <p>
- * This adapter class hold the target {@link RecommKernel} and it's {@link ModelSource}. Upon open(),
- * it will load model rows from {@link ModelSource} into {@link RecommKernel}.
+ * This adapter class hold the target {@link RecommMapper} and it's {@link ModelSource}. Upon open(), it will load model
+ * rows from {@link ModelSource} into {@link RecommMapper}.
  */
 public class RecommAdapter extends RichMapFunction <Row, Row> implements Serializable {
 
 	private static final long serialVersionUID = 1074780682017058609L;
-	private final RecommKernel recommKernel;
+	private final RecommMapper recommMapper;
 	private transient long numInputRecords;
 
 	/**
@@ -26,15 +26,15 @@ public class RecommAdapter extends RichMapFunction <Row, Row> implements Seriali
 	 */
 	private final ModelSource modelSource;
 
-	public RecommAdapter(RecommKernel recommKernel, ModelSource modelSource) {
-		this.recommKernel = recommKernel;
+	public RecommAdapter(RecommMapper recommMapper, ModelSource modelSource) {
+		this.recommMapper = recommMapper;
 		this.modelSource = modelSource;
 	}
 
 	@Override
 	public void open(Configuration parameters) throws Exception {
 		List <Row> modelRows = this.modelSource.getModelRows(getRuntimeContext());
-		this.recommKernel.loadModel(modelRows);
+		this.recommMapper.loadModel(modelRows);
 		this.numInputRecords = 0L;
 	}
 
@@ -46,6 +46,6 @@ public class RecommAdapter extends RichMapFunction <Row, Row> implements Seriali
 	@Override
 	public Row map(Row row) throws Exception {
 		this.numInputRecords++;
-		return this.recommKernel.recommend(row);
+		return  recommMapper.map(row);
 	}
 }

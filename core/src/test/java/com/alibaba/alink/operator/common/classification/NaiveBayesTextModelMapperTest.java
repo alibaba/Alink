@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.classification.NaiveBayesTextPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class NaiveBayesTextModelMapperTest {
+public class NaiveBayesTextModelMapperTest extends AlinkTestBase {
 	Row[] rows = new Row[] {
 		Row.of(0L, "{\"labelType\":\"4\",\"modelType\":\"\\\"Bernoulli\\\"\",\"labelTypeName\":\"\\\"INTEGER\\\"\","
 				+ "\"modelSchema\":\"\\\"model_id bigint,model_info string,label_type int\\\"\","

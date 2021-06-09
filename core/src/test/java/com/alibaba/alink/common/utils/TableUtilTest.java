@@ -4,6 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,7 +13,8 @@ import org.junit.rules.ExpectedException;
 /**
  * Unit test for TableUtil.
  */
-public class TableUtilTest {
+
+public class TableUtilTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 	private String[] colNames = new String[] {"f0", "f1", "f2"};

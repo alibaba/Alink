@@ -1,12 +1,14 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for curves.
  */
-public class BaseEvaluationCurveTest {
+
+public class BaseEvaluationCurveTest extends AlinkTestBase {
 
 	@Test
 	public void calcArea() {

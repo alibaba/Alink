@@ -1,57 +1,69 @@
 package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.BinarizerBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.BinarizerStreamOp;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * Test for Binarizer.
  */
-public class BinarizerTest extends AlinkTestBase {
-	Row[] rows = new Row[] {
-		Row.of(1.218, 16.0, "1.560 -0.605"),
-		Row.of(2.949, 4.0, "0.346 2.158"),
-		Row.of(3.627, 2.0, "1.380 0.231"),
-		Row.of(0.273, 15.0, "0.520 1.151"),
-		Row.of(4.199, 7.0, "0.795 -0.226")
-	};
 
-	Table data = MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"label", "censor",
-		"features"});
-	Table dataStream = MLEnvironmentFactory.getDefault().createStreamTable(rows,
-		new String[] {"label", "censor", "features"});
+public class BinarizerTest extends AlinkTestBase {
+
+	Row[] rows = new Row[] {
+		Row.of(1, 1.218, 16.0, "1.560 -0.605"),
+		Row.of(2, 2.949, 4.0, "0.346 2.158"),
+		Row.of(3, 3.627, 2.0, "1.380 0.231"),
+		Row.of(4, 0.273, 15.0, "0.520 1.151"),
+		Row.of(5, 4.199, 7.0, "0.795 -0.226")
+	};
 
 	@Test
 	public void test() throws Exception {
+		BatchOperator data = new MemSourceBatchOp(rows, new String[] {"id", "label", "censor", "features"});
+		StreamOperator dataStream = new MemSourceStreamOp(rows, new String[] {"id", "label", "censor", "features"});
 		Binarizer op = new Binarizer()
 			.setSelectedCol("censor")
 			.setThreshold(8.0);
 
-		Table res = op.transform(data);
+		BatchOperator res = op.transform(data);
 
-		List <Double> list = MLEnvironmentFactory.getDefault().getBatchTableEnvironment().toDataSet(
-			res.select("censor"), Double.class)
+		List <Row> list =
+			res.select("id, censor")
 			.collect();
 
-		Assert.assertEquals(list.toArray(new Double[0]), new Double[] {1.0, 0.0, 0.0, 1.0, 0.0});
+		// for stability in multi-thread case
+		Collections.sort(list, new Comparator<Row>() {
+			@Override
+			public int compare(Row o1, Row o2) {
+				return Double.compare((int) o1.getField(0), (int) o2.getField(0));
+			}
+		});
 
-		res = op.transform(dataStream);
+		Assert.assertEquals(list.get(0).getField(1), 1.0);
+		Assert.assertEquals(list.get(1).getField(1), 0.0);
+		Assert.assertEquals(list.get(2).getField(1), 0.0);
+		Assert.assertEquals(list.get(3).getField(1), 1.0);
+		Assert.assertEquals(list.get(4).getField(1), 0.0);
 
-		DataStreamConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, res).print();
+		StreamOperator resS = op.transform(dataStream);
 
-		MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute();
+		resS.print();
+		StreamOperator.execute();
 	}
 
 	@Test

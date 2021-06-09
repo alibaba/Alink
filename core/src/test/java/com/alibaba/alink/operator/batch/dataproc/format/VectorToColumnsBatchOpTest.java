@@ -1,10 +1,10 @@
 package com.alibaba.alink.operator.batch.dataproc.format;
 
-import com.alibaba.alink.pipeline.dataproc.format.VectorToColumns;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.pipeline.dataproc.format.VectorToColumns;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 

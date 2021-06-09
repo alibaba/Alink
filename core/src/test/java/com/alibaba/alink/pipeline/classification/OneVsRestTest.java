@@ -22,15 +22,14 @@ public class OneVsRestTest extends AlinkTestBase {
 		LogisticRegression lr = new LogisticRegression()
 			.setFeatureCols(Iris.getFeatureColNames())
 			.setLabelCol(Iris.getLabelColName())
+			.setPredictionCol("pred_label")
 			.setPredictionDetailCol("pred_detail")
 			.setMaxIter(100);
 
 		OneVsRest oneVsRest = new OneVsRest()
-			.setClassifier(lr).setNumClass(3)
-			.setPredictionCol("pred_label");
+			.setClassifier(lr).setNumClass(3);
 
 		OneVsRestModel model = oneVsRest.fit(data);
-		model.setPredictionCol("pred_result").setPredictionDetailCol("pred_detail");
 		BatchOperator pred = model.transform(data);
 
 		MultiClassMetrics metrics = new EvalMultiClassBatchOp()
@@ -54,11 +53,12 @@ public class OneVsRestTest extends AlinkTestBase {
 			.setLearningRate(0.3)
 			.setMinInfoGain(0.0)
 			.setSubsamplingRatio(1.0)
-			.setFeatureSubsamplingRatio(1.0);
+			.setFeatureSubsamplingRatio(1.0)
+			.setPredictionCol("pred_result")
+			.setPredictionDetailCol("pred_detail");
 
 		OneVsRest oneVsRest = new OneVsRest().setClassifier(gbdt).setNumClass(3);
 		OneVsRestModel model = oneVsRest.fit(data);
-		model.setPredictionCol("pred_result").setPredictionDetailCol("pred_detail");
 		BatchOperator pred = model.transform(data);
 
 		MultiClassMetrics metrics = new EvalMultiClassBatchOp()

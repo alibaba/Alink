@@ -14,16 +14,19 @@ import com.alibaba.alink.operator.common.similarity.dataConverter.NearestNeighbo
 import com.alibaba.alink.operator.common.similarity.modeldata.NearestNeighborModelData;
 import com.alibaba.alink.params.similarity.NearestNeighborPredictParams;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 public class NearestNeighborsMapper extends SISOModelMapper implements Cloneable {
 	private static final long serialVersionUID = 3350330064758380671L;
 	private transient NearestNeighborModelData modelData;
 	private NearestNeighborDataConverter dataConverter;
-	private Integer topN;
-	private Double radius;
+	private final Integer topN;
+	private final Double radius;
 
 	public NearestNeighborsMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
@@ -31,8 +34,8 @@ public class NearestNeighborsMapper extends SISOModelMapper implements Cloneable
 			.valueOf(modelSchema.getFieldNames()[modelSchema.getFieldNames().length - 1].toUpperCase())
 			.getDataConverter();
 		this.dataConverter.setIdType(modelSchema.getFieldTypes()[modelSchema.getFieldNames().length - 1]);
-		this.topN = params.get(NearestNeighborPredictParams.TOP_N);
-		this.radius = params.get(NearestNeighborPredictParams.RADIUS);
+		this.topN = this.params.get(NearestNeighborPredictParams.TOP_N);
+		this.radius = this.params.get(NearestNeighborPredictParams.RADIUS);
 		Preconditions.checkArgument(!(topN == null && radius == null), "Must give topN or radius!");
 	}
 
@@ -74,16 +77,5 @@ public class NearestNeighborsMapper extends SISOModelMapper implements Cloneable
 			s, new String[] {"ID", "METRIC"}, new Type[] {idType, Double.class}
 		);
 		return Tuple2.of(map.get("ID"), map.get("METRIC"));
-	}
-
-	@Override
-	protected NearestNeighborsMapper mirror() {
-		try {
-			NearestNeighborsMapper mapper = (NearestNeighborsMapper) this.clone();
-			mapper.modelData = mapper.modelData.mirror();
-			return mapper;
-		} catch (CloneNotSupportedException e) {
-			throw new RuntimeException(e);
-		}
 	}
 }

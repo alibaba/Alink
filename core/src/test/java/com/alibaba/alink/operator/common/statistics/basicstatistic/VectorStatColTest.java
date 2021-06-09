@@ -1,10 +1,11 @@
 package com.alibaba.alink.operator.common.statistics.basicstatistic;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class VectorStatColTest {
+public class VectorStatColTest extends AlinkTestBase {
 
 	@Test
 	public void test() {

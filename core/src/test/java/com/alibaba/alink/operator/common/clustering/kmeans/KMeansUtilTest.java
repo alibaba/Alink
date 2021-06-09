@@ -13,6 +13,7 @@ import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
 import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,7 +24,8 @@ import java.util.List;
 /**
  * Unit test for KMeansUtil.
  */
-public class KMeansUtilTest {
+
+public class KMeansUtilTest extends AlinkTestBase {
 	private final FastDistance distance = new EuclideanDistance();
 	private final int vectorSize = 2;
 	private final int length = 10;

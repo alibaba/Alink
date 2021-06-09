@@ -7,6 +7,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.common.feature.ChisqSelectorUtil;
 import com.alibaba.alink.params.feature.BasedChisqSelectorParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class ChiSquareTestTest {
+public class ChiSquareTestTest extends AlinkTestBase {
 
 	@Test
 	public void testChiSquare() {

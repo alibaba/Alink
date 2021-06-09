@@ -8,6 +8,7 @@ import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,7 +18,8 @@ import java.util.List;
 /**
  * Unit test for cosineDistance.
  */
-public class CosineDistanceTest {
+
+public class CosineDistanceTest extends AlinkTestBase {
 	private CosineDistance distance = new CosineDistance();
 	private DenseVector denseVector1 = new DenseVector(new double[] {1, 2, 4, 1, 3});
 	private DenseVector denseVector2 = new DenseVector(new double[] {4, 6, 1, 2, 4});

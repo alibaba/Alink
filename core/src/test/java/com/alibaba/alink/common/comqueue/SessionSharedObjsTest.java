@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.comqueue;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -11,7 +12,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class SessionSharedObjsTest {
+public class SessionSharedObjsTest extends AlinkTestBase {
 
 	@Test
 	public void testPutGet() {

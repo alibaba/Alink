@@ -24,8 +24,9 @@ import java.util.List;
  */
 public class VectorImputerModelMapper extends SISOModelMapper {
 	private static final long serialVersionUID = 961247156517825658L;
-	private double[] values;
-	private double value;
+	private double[] defaultValueArray;
+	private double defaultValue;
+	private boolean useOneDefaultValue = false;
 
 	public VectorImputerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params.set(VectorSrtPredictorParams.SELECTED_COL,
@@ -66,12 +67,13 @@ public class VectorImputerModelMapper extends SISOModelMapper {
 	public void loadModel(List <Row> modelRows) {
 		VectorImputerModelDataConverter converter = new VectorImputerModelDataConverter();
 		Tuple3 <HasStrategy.Strategy, double[], Double> tuple2 = converter.load(modelRows);
-		this.values = tuple2.f1;
-		if (this.values == null) {
+		this.defaultValueArray = tuple2.f1;
+		if (this.defaultValueArray == null || this.defaultValueArray.length == 0) {
 			if (tuple2.f2 == null) {
 				throw new RuntimeException("In VALUE strategy, the filling value is necessary.");
 			}
-			this.value = tuple2.f2;
+			this.defaultValue = tuple2.f2;
+			this.useOneDefaultValue = true;
 		}
 	}
 
@@ -83,16 +85,16 @@ public class VectorImputerModelMapper extends SISOModelMapper {
 	 */
 	private DenseVector predict(DenseVector vector) {
 		double[] data = vector.getData();
-		if (this.values != null) {
+		if (!this.useOneDefaultValue) {
 			for (int i = 0; i < data.length; i++) {
 				if (Double.isNaN(data[i])) {
-					data[i] = this.values[i];
+					data[i] = this.defaultValueArray[i];
 				}
 			}
 		} else {
 			for (int i = 0; i < data.length; i++) {
 				if (Double.isNaN(data[i])) {
-					data[i] = this.value;
+					data[i] = this.defaultValue;
 				}
 			}
 		}
@@ -107,16 +109,16 @@ public class VectorImputerModelMapper extends SISOModelMapper {
 	 */
 	private SparseVector predict(SparseVector vector) {
 		double[] vectorValues = vector.getValues();
-		if (this.values != null) {
+		if (!this.useOneDefaultValue) {
 			for (int i = 0; i < vector.numberOfValues(); i++) {
 				if (Double.isNaN(vectorValues[i])) {
-					vectorValues[i] = this.values[vector.getIndices()[i]];
+					vectorValues[i] = this.defaultValueArray[vector.getIndices()[i]];
 				}
 			}
 		} else {
 			for (int i = 0; i < vector.numberOfValues(); i++) {
 				if (Double.isNaN(vectorValues[i])) {
-					vectorValues[i] = this.value;
+					vectorValues[i] = this.defaultValue;
 				}
 			}
 		}

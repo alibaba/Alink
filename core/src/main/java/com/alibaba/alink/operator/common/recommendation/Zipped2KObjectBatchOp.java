@@ -44,10 +44,10 @@ public class Zipped2KObjectBatchOp extends BatchOperator <Zipped2KObjectBatchOp>
 		String[] rewriteCols;
 		if (getParams().contains(INFO_COLS)) {
 			selectedCols = ArrayUtils.addAll(new String[] {getObjectCol()}, getInfoCols());
-			rewriteCols = ArrayUtils.addAll(new String[] {KObjectUtil.OBJECT_NAME}, getInfoCols());
+			rewriteCols = ArrayUtils.addAll(new String[] {getObjectCol()}, getInfoCols());
 		} else {
 			selectedCols = new String[] {getObjectCol()};
-			rewriteCols = new String[] {KObjectUtil.OBJECT_NAME};
+			rewriteCols = new String[] {getObjectCol()};
 		}
 
 		DataSet <Row> data = in

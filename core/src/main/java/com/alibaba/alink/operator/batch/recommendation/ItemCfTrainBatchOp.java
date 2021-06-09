@@ -201,7 +201,7 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 						treeMap.put((int) neighborId, similarity);
 					}
 				}
-				collector.collect(Row.of(null, itemId, new SparseVector((int) itemNum, treeMap).toString()));
+				collector.collect(Row.of(null, itemId, new SparseVector((int) itemNum, treeMap)));
 			}
 		}
 	}
@@ -244,7 +244,7 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 				}
 				treeMap.put((int) itemId, rate);
 			}
-			collector.collect(Row.of(userId, null, new SparseVector((int) itemNum, treeMap).toString()));
+			collector.collect(Row.of(userId, null, new SparseVector((int) itemNum, treeMap)));
 		}
 	}
 

@@ -11,6 +11,7 @@ import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.feature.HasEncodeWithoutWoe;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.params.shared.colname.HasOutputCols;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -21,7 +22,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for QuantileDiscretizerModelMapper.
  */
-public class QuantileDiscretizerModelMapperTest {
+
+public class QuantileDiscretizerModelMapperTest extends AlinkTestBase {
 	static Row[] rows = new Row[] {
 		Row.of(0L, "{\"selectedCols\":\"[\\\"col2\\\",\\\"col3\\\"]\",\"version\":\"\\\"v2\\\"\","
 			+ "\"numBuckets\":\"3\"}\n"),

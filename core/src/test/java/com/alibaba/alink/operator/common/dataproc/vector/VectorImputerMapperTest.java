@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class VectorImputerMapperTest {
+public class VectorImputerMapperTest extends AlinkTestBase {
 
 	TableSchema modelSchema = new TableSchema(new String[] {"model_id", "model_info", "vec"},
 		new TypeInformation[] {Types.LONG, Types.STRING, Types.STRING});

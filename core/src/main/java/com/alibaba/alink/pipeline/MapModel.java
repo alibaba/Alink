@@ -36,6 +36,10 @@ public abstract class MapModel<T extends MapModel <T>>
 		this.mapperBuilder = Preconditions.checkNotNull(mapperBuilder, "mapperBuilder can not be null");
 	}
 
+	void validate(TableSchema modelSchema, TableSchema dataSchema) {
+		mapperBuilder.apply(modelSchema, dataSchema, params);
+	}
+
 	@Override
 	public BatchOperator <?> transform(BatchOperator <?> input) {
 		return postProcessTransformResult(new ModelMapBatchOp <>(this.mapperBuilder, this.params)

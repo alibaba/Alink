@@ -8,6 +8,7 @@ import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
  * Params for RichModelMapper.
  */
 public interface RichModelMapperParams<T> extends
+	ModelMapperParams <T>,
 	HasPredictionCol <T>,
 	HasPredictionDetailCol <T>,
 	HasReservedColsDefaultAsNull <T> {

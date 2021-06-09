@@ -13,7 +13,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * Fm classifier pipeline op.
  */
-public class FmClassifier extends Trainer <FmClassifier, FmModel>
+public class FmClassifier extends Trainer <FmClassifier, FmClassificationModel>
 	implements FmTrainParams <FmClassifier>, FmPredictParams <FmClassifier>, HasLazyPrintModelInfo <FmClassifier>,
 	HasLazyPrintTrainInfo <FmClassifier> {
 
@@ -31,5 +31,4 @@ public class FmClassifier extends Trainer <FmClassifier, FmModel>
 	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new FmClassifierTrainBatchOp(this.getParams()).linkFrom(in);
 	}
-
 }

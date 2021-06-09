@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.mapper;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.types.DataType;
@@ -8,6 +10,7 @@ import org.apache.flink.types.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -32,18 +35,37 @@ public abstract class ModelMapper extends Mapper {
 
 	public ModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
+
 		this.modelFieldNames = modelSchema.getFieldNames();
 		this.modelFieldTypes = modelSchema.getFieldDataTypes();
+
+		ioSchema = prepareIoSchema(modelSchema, dataSchema, params);
+
+		checkIoSchema();
+
+		initializeSliced();
 	}
 
-	protected TableSchema getModelSchema() {
+	protected final TableSchema getModelSchema() {
 		return TableSchema.builder().fields(this.modelFieldNames, this.modelFieldTypes).build();
 	}
 
-	public void open() {
+	/**
+	 * Note: Can not be called by the subclasses of ModelMapper.
+	 */
+	@Override
+	protected final Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema dataSchema, Params params) {
+		return null;
 	}
 
-	public void close() {
+	protected abstract Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema modelSchema, TableSchema dataSchema, Params params);
+
+	public ModelMapper createNew(List<Row> newModelRows) {
+		ModelMapper newModelMapper = reflectCreate();
+		newModelMapper.loadModel(newModelRows);
+		return newModelMapper;
 	}
 
 	/**
@@ -53,15 +75,22 @@ public abstract class ModelMapper extends Mapper {
 	 */
 	public abstract void loadModel(List <Row> modelRows);
 
-	/**
-	 * Return a copy of 'this' object that is used in multi-threaded prediction.
-	 * A rule of thumb is to share model data with the mirrored object, but not
-	 * to share runtime buffer.
-	 *
-	 * If the ModelMapper is thread-safe (no runtime buffer), then just return 'this' is enough.
-	 */
-	@Override
-	protected ModelMapper mirror() {
-		return this;
+	private ModelMapper reflectCreate() {
+
+		try {
+			return getClass()
+				.getConstructor(TableSchema.class, TableSchema.class, Params.class)
+				.newInstance(
+					getModelSchema(),
+					getDataSchema(),
+					params.clone()
+				);
+		} catch (NoSuchMethodException
+			| IllegalAccessException
+			| InstantiationException
+			| InvocationTargetException e) {
+
+			throw new RuntimeException(e);
+		}
 	}
 }

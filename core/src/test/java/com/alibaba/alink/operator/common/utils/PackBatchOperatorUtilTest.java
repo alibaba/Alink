@@ -15,7 +15,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class PackBatchOperatorUtilTest extends AlinkTestBase {
 
@@ -33,7 +34,7 @@ public class PackBatchOperatorUtilTest extends AlinkTestBase {
 
 	public void testPackBatchOps(List <Row> rows, TableSchema modelSchema) {
 		assertArrayEquals(new String[] {"id", "p0", "p1", "p2", "p3", "p4", "p5"}, modelSchema.getFieldNames());
-		assertArrayEquals(new TypeInformation[] {Types.INT, Types.STRING, Types.INT,
+		assertArrayEquals(new TypeInformation[] {Types.LONG, Types.STRING, Types.INT,
 				Types.INT, Types.INT, Types.DOUBLE, Types.DOUBLE},
 			modelSchema.getFieldTypes());
 

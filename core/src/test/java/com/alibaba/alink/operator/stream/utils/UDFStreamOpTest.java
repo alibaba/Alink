@@ -2,10 +2,11 @@ package com.alibaba.alink.operator.stream.utils;
 
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class UDFStreamOpTest {
+public class UDFStreamOpTest extends AlinkTestBase {
 
 	@Test
 	public void testDefaultReservedCols() throws Exception {

@@ -8,74 +8,52 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
 import com.alibaba.alink.operator.common.similarity.KDTree;
-import com.alibaba.alink.operator.common.similarity.SimilarityUtil;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
 
 public class KDTreeModelData extends NearestNeighborModelData {
 	private static final long serialVersionUID = 6293716822361507135L;
-	private EuclideanDistance distance = new EuclideanDistance();
-	private List <KDTree> treeList;
+	private static final EuclideanDistance distance = new EuclideanDistance();
+	private final List <KDTree> treeList;
 
 	public KDTreeModelData(List <KDTree> list) {
 		this.treeList = list;
-		this.queue = new PriorityQueue <>(Comparator.comparingDouble(v -> -v.f0));
+		this.comparator = Comparator.comparingDouble(v -> -v.f0);
 	}
 
 	@Override
-	public PriorityQueue <Tuple2 <Double, Object>> search(Object s, int topN, Tuple2 <Double, Object> radius) {
-		queue.clear();
-		Vector vector = VectorUtil.getVector(s);
-		FastDistanceVectorData vectorData = distance.prepareVectorData(Tuple2.of(vector, null));
+	protected Integer getLength() {
+		return treeList.size();
+	}
 
-		Tuple2 <Double, Object> head = Tuple2.of(Double.MIN_VALUE, null);
-		Tuple2 <Double, Object> newValue = Tuple2.of(null, null);
-		for (KDTree tree : treeList) {
-			Tuple2 <Double, Row>[] treeTopN = tree.getTopN(topN, vectorData);
-			for (Tuple2 <Double, Row> t : treeTopN) {
-				newValue.f0 = t.f0;
-				newValue.f1 = t.f1.getField(0);
-				if (null == radius || queue.comparator().compare(radius, newValue) < 0) {
-					head = SimilarityUtil.updateQueue(queue, topN, newValue, head);
+	@Override
+	protected Object prepareSample(Object input) {
+		Vector vector = VectorUtil.getVector(input);
+		return distance.prepareVectorData(Tuple2.of(vector, null));
+	}
+
+	@Override
+	protected ArrayList <Tuple2 <Double, Object>> computeDistiance(Object input, Integer index, Integer topN,
+																   Tuple2 <Double, Object> radius) {
+		KDTree tree = treeList.get(index);
+		ArrayList <Tuple2 <Double, Object>> tupleList = new ArrayList <>();
+		if (null != topN) {
+			Tuple2 <Double, Row>[] treeTopN = tree.getTopN(topN, (FastDistanceVectorData) input);
+			for (int i = 0; i < treeTopN.length; i++) {
+				Tuple2 <Double, Object> tuple = Tuple2.of(treeTopN[i].f0, treeTopN[i].f1.getField(0));
+				if (null == radius || radius.f0 == null || this.getQueueComparator().compare(radius, tuple) <= 0) {
+					tupleList.add(tuple);
 				}
 			}
-		}
-		return queue;
-	}
-
-	@Override
-	public PriorityQueue <Tuple2 <Double, Object>> search(Object selectedCol, int topN) {
-		queue.clear();
-		Vector vector = VectorUtil.getVector(selectedCol);
-		FastDistanceVectorData vectorData = distance.prepareVectorData(Tuple2.of(vector, null));
-
-		Tuple2 <Double, Object> head = Tuple2.of(Double.MIN_VALUE, null);
-		Tuple2 <Double, Object> newValue = Tuple2.of(null, null);
-		for (KDTree tree : treeList) {
-			Tuple2 <Double, Row>[] treeTopN = tree.getTopN(topN, vectorData);
-			for (Tuple2 <Double, Row> t : treeTopN) {
-				newValue.f0 = t.f0;
-				newValue.f1 = t.f1.getField(0);
-				head = SimilarityUtil.updateQueue(queue, topN, newValue, head);
+		} else {
+			List <FastDistanceVectorData> list = tree.rangeSearch(radius.f0, (FastDistanceVectorData) input);
+			for (FastDistanceVectorData data : list) {
+				Double dist = distance.calc(data, (FastDistanceVectorData) input).get(0, 0);
+				tupleList.add(Tuple2.of(dist, data.getRows()[0].getField(0)));
 			}
 		}
-		return queue;
+		return tupleList;
 	}
-
-	@Override
-	public PriorityQueue <Tuple2 <Double, Object>> search(Object selectedCol, Tuple2 <Double, Object> radius) {
-		queue.clear();
-		Vector vector = VectorUtil.getVector(selectedCol);
-		FastDistanceVectorData vectorData = distance.prepareVectorData(Tuple2.of(vector, null));
-
-		for (KDTree tree : treeList) {
-			List <FastDistanceVectorData> list = tree.rangeSearch(radius.f0, vectorData);
-			list.forEach(v -> queue.add(Tuple2.of(distance.calc(v, vectorData).get(0, 0), v.getRows()[0].getField(0)
-			)));
-		}
-		return queue;
-	}
-
 }

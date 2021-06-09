@@ -112,6 +112,12 @@ public abstract class Vector implements Serializable {
 	public abstract DenseMatrix outer();
 
 	/**
+	 * convert the vector to a byte[]
+	 * @return
+	 */
+	public abstract byte[] toBytes();
+
+	/**
 	 * Parse either a {@link SparseVector} or a {@link DenseVector} from a formatted string.
 	 *
 	 * <p>The format of a dense vector is comma separated values such as "1 2 3 4".

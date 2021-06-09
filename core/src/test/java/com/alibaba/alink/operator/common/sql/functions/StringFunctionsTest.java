@@ -1,12 +1,13 @@
 package com.alibaba.alink.operator.common.sql.functions;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 
-public class StringFunctionsTest {
+public class StringFunctionsTest extends AlinkTestBase {
 
 	@Test
 	public void testFromBase64() throws InvocationTargetException, IllegalAccessException {

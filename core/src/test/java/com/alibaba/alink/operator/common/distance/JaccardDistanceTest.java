@@ -6,6 +6,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,7 +18,8 @@ import java.util.List;
 /**
  * Unit test for JaccardDistance.
  */
-public class JaccardDistanceTest {
+
+public class JaccardDistanceTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

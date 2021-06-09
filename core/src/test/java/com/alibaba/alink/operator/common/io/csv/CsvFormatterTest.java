@@ -5,12 +5,13 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
 
-public class CsvFormatterTest {
+public class CsvFormatterTest extends AlinkTestBase {
 	@Test
 	public void testFormatter() throws Exception {
 		TypeInformation[] types = new TypeInformation[] {Types.STRING, Types.DOUBLE, Types.LONG,

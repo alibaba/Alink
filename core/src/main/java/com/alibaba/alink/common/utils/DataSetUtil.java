@@ -166,38 +166,6 @@ public class DataSetUtil {
 	}
 
 	/**
-	 * Redistribute the data set to first N partitions.
-	 */
-	public static DataSet <Row> firstNPartitionRebalance(DataSet <Row> input, final int n) {
-		return input
-			. <Tuple2 <Integer, Row>>map(new RichMapFunction <Row, Tuple2 <Integer, Row>>() {
-				private static final long serialVersionUID = 5072779969295321676L;
-
-				@Override
-				public Tuple2 <Integer, Row> map(Row row) throws Exception {
-					int part = Math.abs(row.hashCode()) % n;
-					return Tuple2.of(part, row);
-				}
-			})
-			.partitionCustom(new Partitioner <Integer>() {
-				private static final long serialVersionUID = -44838855219045312L;
-
-				@Override
-				public int partition(Integer key, int nPart) {
-					return key;
-				}
-			}, 0)
-			.map(new MapFunction <Tuple2 <Integer, Row>, Row>() {
-				private static final long serialVersionUID = 5543012093523253627L;
-
-				@Override
-				public Row map(Tuple2 <Integer, Row> value) throws Exception {
-					return value.f1;
-				}
-			});
-	}
-
-	/**
 	 * Stack a dataset of rows
 	 */
 	public static DataSet <List <Row>> stack(DataSet <Row> input, final int size) {

@@ -4,10 +4,10 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.feature.EqualWidthDiscretizerModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.feature.EqualWidthDiscretizerPredictBatchOp;
 import com.alibaba.alink.operator.batch.feature.EqualWidthDiscretizerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.NumSeqSourceBatchOp;
-import com.alibaba.alink.operator.batch.feature.EqualWidthDiscretizerModelInfoBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.EqualWidthDiscretizerPredictStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 /**
  * Pipeline test for EqualWidthDiscretizer.
  */
+
 public class EqualWidthDiscretizerTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();

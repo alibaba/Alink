@@ -45,7 +45,9 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends ModelBase <M>>
 	@Override
 	public M fit(BatchOperator <?> input) {
 		BatchOperator <?> trainer = postProcessTrainOp(train(input));
-		return postProcessModel(createModel(trainer));
+		M model = createModel(trainer);
+		checkModelValidity(model, input);
+		return postProcessModel(model);
 	}
 
 	protected BatchOperator <?> postProcessTrainOp(BatchOperator <?> trainOp) {
@@ -63,6 +65,12 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends ModelBase <M>>
 			}
 		}
 		return trainOp;
+	}
+
+	protected void checkModelValidity(M model, BatchOperator <?> input) {
+		if (model instanceof MapModel) {
+			((MapModel <?>) model).validate(model.getModelData().getSchema(), input.getSchema());
+		}
 	}
 
 	protected M postProcessModel(M model) {

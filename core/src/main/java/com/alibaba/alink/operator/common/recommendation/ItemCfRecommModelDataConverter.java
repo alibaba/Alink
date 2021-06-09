@@ -10,6 +10,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.model.ModelDataConverter;
@@ -31,7 +32,7 @@ public class ItemCfRecommModelDataConverter
 	implements ModelDataConverter <Tuple2 <Params, Iterable <Row>>, ItemCfRecommData> {
 	private String userCol;
 	private String itemCol;
-	private TypeInformation userType;
+	private TypeInformation<?> userType;
 	private RecommType recommType;
 
 	public static ParamInfo <String[]> ITEMS = ParamInfoFactory
@@ -52,7 +53,7 @@ public class ItemCfRecommModelDataConverter
 		.setRequired()
 		.build();
 
-	public ItemCfRecommModelDataConverter(String userCol, TypeInformation userType, String itemCol) {
+	public ItemCfRecommModelDataConverter(String userCol, TypeInformation<?> userType, String itemCol) {
 		this.userCol = userCol;
 		this.itemCol = itemCol;
 		this.userType = userType;
@@ -65,7 +66,7 @@ public class ItemCfRecommModelDataConverter
 	@Override
 	public TableSchema getModelSchema() {
 		String[] colNames = new String[] {userCol, itemCol, "vector"};
-		TypeInformation[] colTypes = new TypeInformation[] {userType, Types.LONG, Types.STRING};
+		TypeInformation<?>[] colTypes = new TypeInformation[] {userType, Types.LONG, Types.STRING};
 		return new TableSchema(colNames, colTypes);
 	}
 
@@ -97,7 +98,7 @@ public class ItemCfRecommModelDataConverter
 					} else {
 						modelData.meta = Params.fromJson((String) row.getField(2));
 						items = modelData.meta.get(ITEMS);
-						TypeInformation itemType = FlinkTypeConverter.getFlinkType(modelData.meta.get(ITEM_TYPE));
+						TypeInformation<?> itemType = FlinkTypeConverter.getFlinkType(modelData.meta.get(ITEM_TYPE));
 						modelData.itemMap = new HashMap <>();
 						for (int i = 0; i < items.length; i++) {
 							modelData.itemMap.put(EvaluationUtil.castTo(items[i], itemType), i);
@@ -126,7 +127,7 @@ public class ItemCfRecommModelDataConverter
 						modelData.meta = Params.fromJson((String) row.getField(2));
 						String[] items = modelData.meta.get(ITEMS);
 						modelData.items = new Object[items.length];
-						TypeInformation itemType = FlinkTypeConverter.getFlinkType(modelData.meta.get(ITEM_TYPE));
+						TypeInformation<?> itemType = FlinkTypeConverter.getFlinkType(modelData.meta.get(ITEM_TYPE));
 						modelData.itemMap = new HashMap <>();
 						for (int i = 0; i < items.length; i++) {
 							modelData.items[i] = EvaluationUtil.castTo(items[i], itemType);
@@ -160,7 +161,7 @@ public class ItemCfRecommModelDataConverter
 						modelData.meta = Params.fromJson((String) row.getField(2));
 						String[] items = modelData.meta.get(ITEMS);
 						modelData.items = new Object[items.length];
-						TypeInformation itemType = FlinkTypeConverter.getFlinkType(modelData.meta.get(ITEM_TYPE));
+						TypeInformation<?> itemType = FlinkTypeConverter.getFlinkType(modelData.meta.get(ITEM_TYPE));
 						for (int i = 0; i < items.length; i++) {
 							modelData.items[i] = EvaluationUtil.castTo(items[i], itemType);
 						}
@@ -191,7 +192,7 @@ public class ItemCfRecommModelDataConverter
 						modelData.rateCol = modelData.meta.get(ItemCfRecommTrainParams.RATE_COL);
 						String[] items = modelData.meta.get(ITEMS);
 						modelData.items = new Object[items.length];
-						TypeInformation itemType = FlinkTypeConverter.getFlinkType(modelData.meta.get(ITEM_TYPE));
+						TypeInformation<?> itemType = FlinkTypeConverter.getFlinkType(modelData.meta.get(ITEM_TYPE));
 						modelData.itemMap = new HashMap <>();
 						for (int i = 0; i < items.length; i++) {
 							modelData.items[i] = EvaluationUtil.castTo(items[i], itemType);
@@ -213,6 +214,12 @@ public class ItemCfRecommModelDataConverter
 		if (modelData.f0 != null) {
 			collector.collect(Row.of(null, null, modelData.f0.toJson()));
 		}
-		modelData.f1.forEach(collector::collect);
+
+		for (Row row : modelData.f1) {
+			// To align with meta row.
+			row.setField(2, row.getField(2).toString());
+
+			collector.collect(row);
+		}
 	}
 }

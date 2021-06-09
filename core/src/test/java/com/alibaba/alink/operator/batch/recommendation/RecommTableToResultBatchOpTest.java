@@ -12,6 +12,7 @@ import org.junit.Test;
 /**
  * Test for RecommTableToKv.
  */
+
 public class RecommTableToResultBatchOpTest extends AlinkTestBase {
 	private Row[] rows1 = new Row[] {
 		Row.of(1L, 1L, 0.6),
@@ -37,9 +38,9 @@ public class RecommTableToResultBatchOpTest extends AlinkTestBase {
 
 		FlattenKObjectBatchOp op1 = new FlattenKObjectBatchOp()
 			.setSelectedCol("recomm")
-			.setOutputColTypes("long","double")
+			.setOutputColTypes("long", "double")
 			.setReservedCols("user")
-			.setOutputCols("object", "rating")
+			.setOutputCols("item", "rating")
 			.linkFrom(op)
 			.lazyPrint(-1);
 

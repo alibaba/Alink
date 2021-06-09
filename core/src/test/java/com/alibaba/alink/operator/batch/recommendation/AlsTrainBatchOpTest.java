@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.batch.recommendation;
 
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
@@ -20,23 +21,23 @@ import org.junit.Test;
 
 public class AlsTrainBatchOpTest extends AlinkTestBase {
 	Row[] rows1 = new Row[] {
-		Row.of("1L", "1L", 5.0),
-		Row.of("2L", "2L", 1.0),
-		Row.of("2L", "3L", 2.0),
-		Row.of("3L", "1L", 1.0),
-		Row.of("3L", "2L", 3.0),
-		Row.of("3L", "3L", 0.0),
+		Row.of("1L", "5L", 5.0),
+		Row.of("2L", "6L", 1.0),
+		Row.of("2L", "7L", 2.0),
+		Row.of("3L", "8L", 1.0),
+		Row.of("3L", "9L", 3.0),
+		Row.of("3L", "6L", 0.0),
 	};
 	Row[] rows2 = new Row[] {
-		Row.of(1L, 1L, 5.0),
-		Row.of(2L, 2L, 1.0),
-		Row.of(2L, 3L, 2.0),
-		Row.of(3L, 1L, 1.0),
-		Row.of(3L, 2L, 3.0),
-		Row.of(3L, 3L, 0.0),
+		Row.of(1L, 5L, 5.0),
+		Row.of(2L, 6L, 1.0),
+		Row.of(2L, 8L, 2.0),
+		Row.of(3L, 7L, 1.0),
+		Row.of(3L, 6L, 3.0),
+		Row.of(3L, 5L, 0.0),
 	};
 
-	private BatchOperator train() throws Exception {
+	private AlsTrainBatchOp train() throws Exception {
 		Long envId = MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID;
 		BatchOperator samples = new MemSourceBatchOp(rows1, new String[] {"uid", "iid", "label"}).setMLEnvironmentId(
 			envId);
@@ -47,8 +48,19 @@ public class AlsTrainBatchOpTest extends AlinkTestBase {
 			.setItemCol("iid")
 			.setRateCol("label");
 
-		BatchOperator model = alsOp.linkFrom(samples);
+		AlsTrainBatchOp model = alsOp.linkFrom(samples);
 		return model;
+	}
+
+	@Test
+	public void testUserItemExtraction() throws Exception {
+		AlsTrainBatchOp model = train();
+		model.lazyPrintModelInfo();
+		//		model.print();
+		Params params = new Params();
+		AlsModelInfoBatchOp transformModel = new AlsModelInfoBatchOp(params).linkFrom(model);
+		transformModel.getUserEmbedding().print();
+		transformModel.getItemEmbedding().print();
 	}
 
 	@Test

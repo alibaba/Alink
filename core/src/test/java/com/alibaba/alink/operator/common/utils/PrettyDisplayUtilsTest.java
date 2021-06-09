@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.utils;
 
 import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
@@ -14,7 +15,7 @@ import java.util.Map;
 import static com.alibaba.alink.operator.common.utils.PrettyDisplayUtils.display;
 import static com.alibaba.alink.operator.common.utils.PrettyDisplayUtils.displayList;
 
-public class PrettyDisplayUtilsTest {
+public class PrettyDisplayUtilsTest extends AlinkTestBase {
 
 	public static double[] generateRandomDoubleArray(int n) {
 		double[] arr = new double[n];

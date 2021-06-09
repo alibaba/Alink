@@ -2,10 +2,11 @@ package com.alibaba.alink.operator.common.statistics.basicstatistic;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SparseVectorSummarizerTest {
+public class SparseVectorSummarizerTest extends AlinkTestBase {
 
 	@Test
 	public void testEmpty() {

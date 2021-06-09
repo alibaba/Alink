@@ -5,16 +5,18 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.Types;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
+import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.utils.OutputColsHelper;
+import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 import com.alibaba.alink.params.recommendation.BaseRecommParams;
+import com.alibaba.alink.params.recommendation.BaseUsersPerItemRecommParams;
 
 import java.io.Serializable;
 import java.util.List;
 
 /**
- * Abstract class for Recommenders.
- * RecommKernel provides the common methods of recommendation.
+ * Abstract class for Recommenders. RecommKernel provides the common methods of recommendation.
  */
 public abstract class RecommKernel implements Serializable {
 	private static final long serialVersionUID = 377536139766639654L;
@@ -35,15 +37,17 @@ public abstract class RecommKernel implements Serializable {
 	private final DataType[] dataFieldTypes;
 
 	/**
-	 * params used for FlatMapper.
-	 * User can set the params before that the FlatMapper is executed.
+	 * params used for FlatMapper. User can set the params before that the FlatMapper is executed.
 	 */
 	protected Params params;
 
 	protected final RecommType recommType;
 
-	private OutputColsHelper outputColsHelper4Rate;
-	private OutputColsHelper outputColsHelper4RecommObjs;
+	protected String userColName;
+	protected String itemColName;
+
+	private final OutputColsHelper outputColsHelper4Rate;
+	private final OutputColsHelper outputColsHelper4RecommObjs;
 
 	public RecommKernel(TableSchema modelSchema, TableSchema dataSchema, Params params, RecommType recommType) {
 		this.modelFieldNames = modelSchema.getFieldNames();
@@ -78,23 +82,22 @@ public abstract class RecommKernel implements Serializable {
 	/**
 	 * Return the recommend result for the input info.
 	 *
-	 * @param row the input Row type data
+	 * @param input the input data
 	 * @return the recommend result with Row type
-	 * @throws Exception This method may throw exceptions. Throwing
-	 * an exception will cause the operation to fail.
+	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	public Row recommend(Row row) throws Exception {
+	public Object recommend(Object[] input) throws Exception {
 		switch (this.recommType) {
 			case RATE:
-				return this.outputColsHelper4Rate.getResultRow(row, Row.of(rate(row)));
+				return rate(input);
 			case ITEMS_PER_USER:
-				return this.outputColsHelper4RecommObjs.getResultRow(row, Row.of(recommendItemsPerUser(row)));
+				return recommendItemsPerUser(input[0]);
 			case USERS_PER_ITEM:
-				return this.outputColsHelper4RecommObjs.getResultRow(row, Row.of(recommendUsersPerItem(row)));
+				return recommendUsersPerItem(input[0]);
 			case SIMILAR_ITEMS:
-				return this.outputColsHelper4RecommObjs.getResultRow(row, Row.of(recommendSimilarItems(row)));
+				return recommendSimilarItems(input[0]);
 			case SIMILAR_USERS:
-				return this.outputColsHelper4RecommObjs.getResultRow(row, Row.of(recommendSimilarUsers(row)));
+				return recommendSimilarUsers(input[0]);
 			default:
 				throw new IllegalArgumentException("NOT supported recommend type : " + recommType);
 		}
@@ -105,50 +108,45 @@ public abstract class RecommKernel implements Serializable {
 	 *
 	 * @param infoUserItem the input Row type data of the user info and item info
 	 * @return the rating result with Double type
-	 * @throws Exception This method may throw exceptions. Throwing
-	 * an exception will cause the operation to fail.
+	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	abstract Double rate(Row infoUserItem) throws Exception;
+	abstract Double rate(Object[] infoUserItem) throws Exception;
 
 	/**
 	 * Recommend items observed for the input user.
 	 *
 	 * @param infoUser The input user info.
 	 * @return Json string of the result values.
-	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation
-	 * to fail.
+	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	abstract String recommendItemsPerUser(Row infoUser) throws Exception;
+	abstract String recommendItemsPerUser(Object infoUser) throws Exception;
 
 	/**
 	 * Recommend users observed for the input item.
 	 *
 	 * @param infoItem The input item info.
 	 * @return Json string of the result values.
-	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation
-	 * to fail.
+	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	abstract String recommendUsersPerItem(Row infoItem) throws Exception;
+	abstract String recommendUsersPerItem(Object infoItem) throws Exception;
 
 	/**
 	 * Recommend the k most similar items for the input item.
 	 *
 	 * @param infoItem The input item info.
 	 * @return Json string of the result values.
-	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation
-	 * to fail.
+	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	abstract String recommendSimilarItems(Row infoItem) throws Exception;
+	abstract String recommendSimilarItems(Object infoItem) throws Exception;
 
 	/**
 	 * Recommend the k most similar users for the input user.
 	 *
 	 * @param infoUser The input user info.
 	 * @return Json string of the result values.
-	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation
-	 * to fail.
+	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	abstract String recommendSimilarUsers(Row infoUser) throws Exception;
+	abstract String recommendSimilarUsers(Object infoUser) throws Exception;
 
 	/**
 	 * Get the table schema(includes column names and types) of the calculation result.
@@ -163,6 +161,21 @@ public abstract class RecommKernel implements Serializable {
 		}
 	}
 
+	public String getObjectName() {
+		if (recommType == RecommType.ITEMS_PER_USER) {
+			return itemColName;
+		} else if (recommType == RecommType.USERS_PER_ITEM) {
+			return userColName;
+		} else if (recommType == RecommType.SIMILAR_USERS) {
+			return userColName;
+		} else if (recommType == RecommType.SIMILAR_ITEMS) {
+			return itemColName;
+		} else {
+			throw new RuntimeException("not support yet.");
+		}
+	}
+
+
 	/**
 	 * Return a copy of 'this' object that is used in multi-threaded prediction.
 	 * A rule of thumb is to share model data with the mirrored object, but not
@@ -170,7 +183,7 @@ public abstract class RecommKernel implements Serializable {
 	 *
 	 * If the ReommKernel is thread-safe (no runtime buffer), then just return 'this' is enough.
 	 */
-	protected RecommKernel mirror() {
-		return this;
-	}
+	//protected RecommKernel mirror() {
+	//	return this;
+	//}
 }

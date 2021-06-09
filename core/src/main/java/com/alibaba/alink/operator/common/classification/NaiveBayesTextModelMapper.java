@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.classification;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
@@ -49,6 +50,35 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
 			}
 		}
 	}
+
+	/**
+	 * Calculate the probability of each label and return the most possible one.
+	 *
+	 * @param selection the input data.
+	 * @return the most possible label.
+	 */
+	@Override
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		Vector featVec = VectorUtil.getVector(selection.get(this.vectorIndex));
+		double[] prob = calculateProb(featVec);
+		return findMaxProbLabel(prob, modelData.labels);
+	}
+
+	/**
+	 * Calculate the probability of each label and return the most possible one and the detail.
+	 *
+	 * @param selection the input data.
+	 * @return the most possible label and the detail.
+	 */
+	@Override
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
+		Vector featVec = VectorUtil.getVector(selection.get(this.vectorIndex));
+		double[] prob = calculateProb(featVec);
+		Object result = findMaxProbLabel(prob, modelData.labels);
+		String jsonDetail = generateDetail(prob, modelData.pi, modelData.labels);
+		return new Tuple2 <>(result, jsonDetail);
+	}
+
 
 	/**
 	 * Calculate the probability that the input data belongs to each class in multinomial method.
@@ -119,36 +149,8 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
 	public void loadModel(List <Row> modelRows) {
 		modelData = new NaiveBayesTextModelDataConverter().load(modelRows);
 		vectorColName = modelData.vectorColName;
-
 	}
 
-	/**
-	 * Calculate the probability of each label and return the most possible one.
-	 *
-	 * @param row the input data.
-	 * @return the most possible label.
-	 */
-	@Override
-	protected Object predictResult(Row row) {
-		Vector featVec = VectorUtil.getVector(row.getField(this.vectorIndex));
-		double[] prob = calculateProb(featVec);
-		return findMaxProbLabel(prob, modelData.labels);
-	}
-
-	/**
-	 * Calculate the probability of each label and return the most possible one and the detail.
-	 *
-	 * @param row the input data.
-	 * @return the most possible label and the detail.
-	 */
-	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) {
-		Vector featVec = VectorUtil.getVector(row.getField(this.vectorIndex));
-		double[] prob = calculateProb(featVec);
-		Object result = findMaxProbLabel(prob, modelData.labels);
-		String jsonDetail = generateDetail(prob, modelData.pi, modelData.labels);
-		return new Tuple2 <>(result, jsonDetail);
-	}
 
 	protected static String generateDetail(double[] prob, double[] pi, Object[] labels) {
 		double maxProb = prob[0];

@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.nlp.StopWordsRemoverParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -14,7 +15,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for StopWordsRemoverMapper.
  */
-public class StopWordsRemoverMapperTest {
+
+public class StopWordsRemoverMapperTest extends AlinkTestBase {
 	@Test
 	public void testStopWords() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"sentence"}, new TypeInformation <?>[] {Types.STRING});

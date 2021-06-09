@@ -7,11 +7,12 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.nlp.SegmentParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class SegmentMapperTest {
+public class SegmentMapperTest extends AlinkTestBase {
 	@Test
 	public void test1() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"sentence", "id"},
