@@ -1,12 +1,14 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Test cases for DenseMatrix.
  */
-public class DenseMatrixTest {
+
+public class DenseMatrixTest extends AlinkTestBase {
 
 	private static final double TOL = 1.0e-6;
 

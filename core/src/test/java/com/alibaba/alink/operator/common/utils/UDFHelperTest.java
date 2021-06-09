@@ -1,11 +1,12 @@
 package com.alibaba.alink.operator.common.utils;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class UDFHelperTest {
+public class UDFHelperTest extends AlinkTestBase {
 
 	@Test
 	public void generateUDFClause() {

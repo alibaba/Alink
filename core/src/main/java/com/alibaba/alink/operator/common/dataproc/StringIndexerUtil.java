@@ -15,7 +15,10 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.params.dataproc.HasStringOrderTypeDefaultAsRandom;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * A utility class to assign indices to columns of strings.
@@ -64,20 +67,45 @@ public class StringIndexerUtil {
 	public static DataSet <Tuple3 <Integer, String, Long>> indexRandom(
 		DataSet <Row> data, final long startIndex, final boolean ignoreNull) {
 
-		DataSet <Tuple2 <Integer, String>> distinctTokens = flattenTokens(data, ignoreNull)
-			.groupBy(0, 1)
-			.reduce(new ReduceFunction <Tuple2 <Integer, String>>() {
-				private static final long serialVersionUID = 3246078624056103227L;
+		DataSet <Tuple2 <Integer, String>> flattened =  flattenTokens(data, ignoreNull);
+		DataSet <Tuple2 <Integer, String>> distinctTokens;
+		if (ignoreNull) {
+			distinctTokens = flattened.groupBy(0, 1)
+				.reduce(new ReduceFunction <Tuple2 <Integer, String>>() {
+					private static final long serialVersionUID = 3246078624056103227L;
 
-				@Override
-				public Tuple2 <Integer, String> reduce(Tuple2 <Integer, String> value1, Tuple2 <Integer, String>
-					value2)
-					throws Exception {
-					return value1;
-				}
-			})
-			.name("distinct_tokens");
-
+					@Override
+					public Tuple2 <Integer, String> reduce(Tuple2 <Integer, String> value1, Tuple2 <Integer, String>
+						value2)
+						throws Exception {
+						return value1;
+					}
+				})
+				.name("distinct_tokens");
+		} else {
+			distinctTokens = flattened.groupBy(0)
+				.reduceGroup(new GroupReduceFunction <Tuple2 <Integer, String>, Tuple2 <Integer, String>>() {
+					@Override
+					public void reduce(Iterable <Tuple2 <Integer, String>> values,
+									   Collector <Tuple2 <Integer, String>> out) throws Exception {
+						boolean containNull = false;
+						HashSet<String> tokenSet = new HashSet <>();
+						for (Tuple2 <Integer, String> value : values) {
+							if (value.f1 == null) {
+								if (!containNull) {
+									containNull = true;
+									out.collect(value);
+								}
+							} else {
+								if (!tokenSet.contains(value.f1)) {
+									out.collect(value);
+									tokenSet.add(value.f1);
+								}
+							}
+						}
+					}
+				}).name("distinct_tokens");
+		}
 		return zipWithIndexPerColumn(distinctTokens)
 			.map(new MapFunction <Tuple3 <Long, Integer, String>, Tuple3 <Integer, String, Long>>() {
 				private static final long serialVersionUID = 5009352124958484740L;
@@ -120,6 +148,60 @@ public class StringIndexerUtil {
 			});
 	}
 
+	public static DataSet <Tuple3 <Integer, String, Long>> distinct(DataSet <Row> data,
+																	final long startIndex,
+																	final boolean ignoreNull) {
+		DataSet <Tuple2 <Integer, String>> flattened =  flattenTokens(data, ignoreNull);
+		DataSet <Tuple2 <Integer, String>> distinctTokens;
+		if (ignoreNull) {
+			distinctTokens = flattened.groupBy(0, 1)
+				.reduce(new ReduceFunction <Tuple2 <Integer, String>>() {
+					private static final long serialVersionUID = 3246078624056103227L;
+
+					@Override
+					public Tuple2 <Integer, String> reduce(Tuple2 <Integer, String> value1, Tuple2 <Integer, String>
+						value2)
+						throws Exception {
+						return value1;
+					}
+				})
+				.name("distinct_tokens");
+		} else {
+			distinctTokens = flattened.groupBy(0)
+				.reduceGroup(new GroupReduceFunction <Tuple2 <Integer, String>, Tuple2 <Integer, String>>() {
+					@Override
+					public void reduce(Iterable <Tuple2 <Integer, String>> values,
+									   Collector <Tuple2 <Integer, String>> out) throws Exception {
+						boolean containNull = false;
+						HashSet<String> tokenSet = new HashSet <>();
+						for (Tuple2 <Integer, String> value : values) {
+							if (value.f1 == null) {
+								if (!containNull) {
+									containNull = true;
+									out.collect(value);
+								}
+							} else {
+								if (!tokenSet.contains(value.f1)) {
+									out.collect(value);
+									tokenSet.add(value.f1);
+								}
+							}
+						}
+					}
+				}).name("distinct_tokens");
+		}
+		return zipWithIndexPerColumn(distinctTokens)
+			.map(new MapFunction <Tuple3 <Long, Integer, String>, Tuple3 <Integer, String, Long>>() {
+				private static final long serialVersionUID = 5009352124958484740L;
+
+				@Override
+				public Tuple3 <Integer, String, Long> map(Tuple3 <Long, Integer, String> value) throws Exception {
+					return Tuple3.of(value.f1, value.f2, value.f0 + startIndex);
+				}
+			})
+			.name("assign_index");
+	}
+
 	public static DataSet <Tuple3 <Integer, String, Long>> countTokens(DataSet <Row> data, final boolean ignoreNull) {
 		return flattenTokens(data, ignoreNull)
 			.map(new MapFunction <Tuple2 <Integer, String>, Tuple3 <Integer, String, Long>>() {
@@ -130,17 +212,43 @@ public class StringIndexerUtil {
 					return Tuple3.of(value.f0, value.f1, 1L);
 				}
 			})
-			.groupBy(0, 1)
-			.reduce(new ReduceFunction <Tuple3 <Integer, String, Long>>() {
-				private static final long serialVersionUID = 4178064032728207563L;
-
+			.groupBy(0)
+			.reduceGroup(new GroupReduceFunction <Tuple3<Integer, String, Long>, Tuple3<Integer, String, Long>>() {
 				@Override
-				public Tuple3 <Integer, String, Long> reduce(Tuple3 <Integer, String, Long> value1,
-															 Tuple3 <Integer, String, Long> value2) throws Exception {
-					value1.f2 += value2.f2;
-					return value1;
+				public void reduce(Iterable <Tuple3 <Integer, String, Long>> values,
+								   Collector <Tuple3 <Integer, String, Long>> out) throws Exception {
+					int columnIndex = -1;
+					long nullNumber = 0;
+					HashMap<String, Long> tokenNumber = new HashMap <>();
+					for (Tuple3 <Integer, String, Long> value : values) {
+						if (columnIndex == -1) {
+							columnIndex = value.f0;
+						}
+						if (value.f1 == null) {
+							nullNumber += value.f2;
+						} else {
+							long thisNumber = tokenNumber.getOrDefault(value.f1, 0L);
+							tokenNumber.put(value.f1, value.f2 + thisNumber);
+						}
+					}
+					if (nullNumber != 0) {
+						out.collect(Tuple3.of(columnIndex, null, nullNumber));
+					}
+					for (Entry <String, Long> entry : tokenNumber.entrySet()) {
+						out.collect(Tuple3.of(columnIndex, entry.getKey(), entry.getValue()));
+					}
 				}
 			})
+			//.reduce(new ReduceFunction <Tuple3 <Integer, String, Long>>() {
+			//	private static final long serialVersionUID = 4178064032728207563L;
+			//
+			//	@Override
+			//	public Tuple3 <Integer, String, Long> reduce(Tuple3 <Integer, String, Long> value1,
+			//												 Tuple3 <Integer, String, Long> value2) throws Exception {
+			//		value1.f2 += value2.f2;
+			//		return value1;
+			//	}
+			//})
 			.name("count_tokens");
 	}
 

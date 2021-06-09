@@ -1,15 +1,10 @@
 package com.alibaba.alink.params.shared.clustering;
 
+import com.alibaba.alink.operator.common.distance.*;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-import com.alibaba.alink.operator.common.distance.CosineDistance;
-import com.alibaba.alink.operator.common.distance.EuclideanDistance;
-import com.alibaba.alink.operator.common.distance.FastDistance;
-import com.alibaba.alink.operator.common.distance.JaccardDistance;
-import com.alibaba.alink.operator.common.distance.ManHattanDistance;
-import com.alibaba.alink.operator.common.distance.PearsonDistance;
 import com.alibaba.alink.params.ParamUtil;
 
 import java.io.Serializable;
@@ -44,6 +39,10 @@ public interface HasFastMetric<T> extends WithParams <T> {
 		 * COSINE
 		 */
 		COSINE(new CosineDistance()),
+		/**
+		 * INNERPRODUCT
+		 */
+		INNERPRODUCT(new InnerProduct()),
 		/**
 		 * CITYBLOCK
 		 */

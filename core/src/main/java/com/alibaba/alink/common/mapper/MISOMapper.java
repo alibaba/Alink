@@ -1,12 +1,10 @@
 package com.alibaba.alink.common.mapper;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.utils.OutputColsHelper;
-import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.mapper.MISOMapperParams;
 
 /**
@@ -14,15 +12,6 @@ import com.alibaba.alink.params.mapper.MISOMapperParams;
  */
 public abstract class MISOMapper extends Mapper {
 	private static final long serialVersionUID = 7808362775563479371L;
-	/**
-	 * The OutputColsHelper which helps to arrange final output from input and predicted result.
-	 */
-	private final OutputColsHelper outputColsHelper;
-
-	/**
-	 * Column indices of input columns.
-	 */
-	private final int[] colIndices;
 
 	/**
 	 * Constructor.
@@ -32,14 +21,6 @@ public abstract class MISOMapper extends Mapper {
 	 */
 	public MISOMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
-		String[] inputColNames = this.params.get(MISOMapperParams.SELECTED_COLS);
-		this.colIndices = TableUtil.findColIndicesWithAssertAndHint(dataSchema.getFieldNames(), inputColNames);
-		String outputColName = params.get(MISOMapperParams.OUTPUT_COL);
-		String[] keepColNames = null;
-		if (this.params.contains(MISOMapperParams.RESERVED_COLS)) {
-			keepColNames = this.params.get(MISOMapperParams.RESERVED_COLS);
-		}
-		this.outputColsHelper = new OutputColsHelper(dataSchema, outputColName, initOutputColType(), keepColNames);
 	}
 
 	/**
@@ -47,7 +28,7 @@ public abstract class MISOMapper extends Mapper {
 	 *
 	 * @return the output column type.
 	 */
-	protected abstract TypeInformation initOutputColType();
+	protected abstract TypeInformation<?> initOutputColType();
 
 	/**
 	 * Map input objects to single object.
@@ -58,16 +39,28 @@ public abstract class MISOMapper extends Mapper {
 	protected abstract Object map(Object[] input) throws Exception;
 
 	@Override
-	public TableSchema getOutputSchema() {
-		return outputColsHelper.getResultSchema();
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		Object[] input = new Object[selection.length()];
+		for (int i = 0; i < selection.length(); i++) {
+			input[i] = selection.get(i);
+		}
+
+		result.set(0, map(input));
 	}
 
 	@Override
-	public Row map(Row row) throws Exception {
-		Object[] input = new Object[this.colIndices.length];
-		for (int i = 0; i < this.colIndices.length; i++) {
-			input[i] = row.getField(this.colIndices[i]);
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema dataSchema, Params params) {
+		String[] keepColNames = null;
+		if (params.contains(MISOMapperParams.RESERVED_COLS)) {
+			keepColNames = params.get(MISOMapperParams.RESERVED_COLS);
 		}
-		return this.outputColsHelper.getResultRow(row, Row.of(map(input)));
+
+		return Tuple4.of(
+			params.get(MISOMapperParams.SELECTED_COLS),
+			new String[] {params.get(MISOMapperParams.OUTPUT_COL)},
+			new TypeInformation<?>[] {initOutputColType()},
+			keepColNames
+		);
 	}
 }

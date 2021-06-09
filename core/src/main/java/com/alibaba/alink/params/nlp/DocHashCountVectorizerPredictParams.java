@@ -1,9 +1,11 @@
 package com.alibaba.alink.params.nlp;
 
-import com.alibaba.alink.params.shared.HasNumThreads;
+import com.alibaba.alink.params.mapper.ModelMapperParams;
+
 /**
  * Params for DocHashCountVectorizerPredict.
  */
 public interface DocHashCountVectorizerPredictParams<T> extends
-	DocCountVectorizerPredictParams <T>, HasNumThreads <T> {
+	ModelMapperParams <T>,
+	DocCountVectorizerPredictParams <T> {
 }

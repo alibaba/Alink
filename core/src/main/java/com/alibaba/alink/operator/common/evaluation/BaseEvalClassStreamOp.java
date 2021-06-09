@@ -26,7 +26,7 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getMul
 
 /**
  * Base class for EvalBinaryClassStreamOp and EvalMultiClassStreamOp. Calculate the evaluation data within time windows
- * for binary classifiction and multi classification. You can either give label column and predResult column or give
+ * for binary classification and multi classification. You can either give label column and predResult column or give
  * label column and predDetail column. Once predDetail column is given, the predResult column is ignored.
  */
 public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends StreamOperator <T> {

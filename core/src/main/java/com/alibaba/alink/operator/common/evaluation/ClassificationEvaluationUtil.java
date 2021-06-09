@@ -74,7 +74,7 @@ import static com.alibaba.alink.operator.common.evaluation.BaseSimpleClassifierM
  * Common functions for classification evaluation.
  */
 public class ClassificationEvaluationUtil implements Serializable {
-	static final String STATISTICS_OUTPUT = "Statistics";
+	public static final String STATISTICS_OUTPUT = "Statistics";
 	public static final Tuple2 <String, Integer> WINDOW = Tuple2.of("window", 0);
 	public static final Tuple2 <String, Integer> ALL = Tuple2.of("all", 1);
 	private static final long serialVersionUID = -2732226343798663348L;

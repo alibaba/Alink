@@ -6,6 +6,7 @@ import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,7 +15,7 @@ import java.util.List;
 
 import static com.alibaba.alink.operator.common.clustering.kmeans.KMeansUpdateCentroids.updateCentroids;
 
-public class KMeansUpdateCentroidsTest {
+public class KMeansUpdateCentroidsTest extends AlinkTestBase {
 
 	@Test
 	public void updateCentroidsTest() {

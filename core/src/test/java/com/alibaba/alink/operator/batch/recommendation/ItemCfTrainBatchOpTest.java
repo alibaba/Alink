@@ -8,7 +8,7 @@ import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.evaluation.EvalRegressionBatchOp;
 import com.alibaba.alink.operator.common.evaluation.RegressionMetrics;
-import com.alibaba.alink.operator.common.recommendation.ItemCfRecommKernelTest;
+import com.alibaba.alink.operator.common.recommendation.KObjectUtil;
 import com.alibaba.alink.operator.common.recommendation.Zipped2KObjectBatchOp;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
@@ -17,6 +17,7 @@ import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import java.util.Map;
 /**
  * Test for ItemSimilarityRecommTrainBatchOp.
  */
+
 public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 	private Row[] rows1 = new Row[] {
 		Row.of(1L, 1L, 0.7),
@@ -78,7 +80,7 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 			.setObjectCol("user")
 			.setInfoCols("rate")
 			.setOutputCol("label")
-			.linkFrom(emptyRate);
+			.linkFrom(emptyRate).lazyPrint(-1);
 
 		ItemCfRateRecommBatchOp rateRecommBatchOp = new ItemCfRateRecommBatchOp()
 			.setUserCol("user")
@@ -98,7 +100,7 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 		ItemCfUsersPerItemRecommBatchOp recommUsers = new ItemCfUsersPerItemRecommBatchOp()
 			.setItemCol("item")
 			.setRecommCol("recomm")
-			.linkFrom(trainBatchOp, zipItem);
+			.linkFrom(trainBatchOp, zipItem).lazyPrint(-1);
 
 		List <Row> recommendItems = new ItemCfItemsPerUserRecommBatchOp()
 			.setUserCol("user")
@@ -111,7 +113,7 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 		score.put(1L, new Double[] {2.211538461538462, 1.7692307692307696, 1.0963225241337864, 0.3922322702763681});
 		score.put(2L, new Double[] {1.2579416330459492, 1.0406035275510874, 0.7808214813428701, 0.4118128641127321});
 		for (Row row : recommendItems) {
-			Double[] actual = ItemCfRecommKernelTest.extractScore((String) row.getField(2), "score");
+			Double[] actual = extractScore((String) row.getField(2), "score");
 			Double[] expect = score.get(row.getField(0));
 			for (int i = 0; i < actual.length; i++) {
 				Assert.assertEquals(actual[i], expect[i], 0.01);
@@ -131,7 +133,7 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 			.collect();
 
 		for (Row row : similarItems) {
-			Double[] actual = ItemCfRecommKernelTest.extractScore((String) row.getField(2), "similarities");
+			Double[] actual = extractScore((String) row.getField(2), "similarities");
 			Double[] expect = similarity.get(row.getField(0));
 			for (int i = 0; i < actual.length; i++) {
 				Assert.assertEquals(actual[i], expect[i], 0.01);
@@ -215,7 +217,7 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 						(String) res.getField(3),
 						Map.class
 					)
-					.get("object"),
+					.get("item"),
 				new TypeReference <List <Long>>() {
 				}.getType()
 			);
@@ -227,7 +229,7 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 					(String) (JsonConverter
 						.gson
 						.fromJson((String) res.getField(3), Map.class)
-						.get("object")
+						.get("item")
 					),
 					new TypeReference <List <Long>>() {
 					}.getType()
@@ -235,5 +237,11 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 
 		Assert.assertEquals(JsonConverter.toJson(recomm), "[2,1,3]");
 		Assert.assertEquals(JsonConverter.toJson(recommGson), "[2,1,3]");
+	}
+
+	public static Double[] extractScore(String res, String key) {
+		return KObjectUtil.deserializeKObject(
+			res, new String[] {key}, new Type[] {Double.class}
+		).get(key).toArray(new Double[0]);
 	}
 }

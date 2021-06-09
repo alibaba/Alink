@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.nlp.RegexTokenizerParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -14,7 +15,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for RegexTokenizerMapper.
  */
-public class RegexTokenizerMapperTest {
+
+public class RegexTokenizerMapperTest extends AlinkTestBase {
 	@Test
 	public void testDefault() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"sentence", "id"},

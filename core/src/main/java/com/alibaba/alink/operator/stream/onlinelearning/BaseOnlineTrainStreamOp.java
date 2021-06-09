@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.stream.onlinelearning;
 
+import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
@@ -42,10 +43,12 @@ import com.alibaba.alink.operator.common.linear.LabelTypeEnum.StringTypeEnum;
 import com.alibaba.alink.operator.common.linear.LinearModelData;
 import com.alibaba.alink.operator.common.linear.LinearModelDataConverter;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
+import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.onlinelearning.OnlineTrainParams;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +59,8 @@ import java.util.Map;
  * output
  * model after every time interval.
  */
+
+@Internal
 public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp <T>> extends StreamOperator <T> {
 
 	private static final long serialVersionUID = 5419987051076832208L;
@@ -106,8 +111,8 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 		StreamExecutionEnvironment
 			streamEnv = MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment();
 		int parallelism = streamEnv.getParallelism();
-		streamEnv.setBufferTimeout(10);
-		streamEnv.enableCheckpointing(180000, CheckpointingMode.EXACTLY_ONCE, true);
+		streamEnv.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
+		streamEnv.getCheckpointConfig().setForceCheckpointing(true);
 
 		checkOpSize(1, inputs);
 
@@ -183,10 +188,10 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 
 		TypeInformation[] types = new TypeInformation[schema.getFieldTypes().length + 2];
 		String[] names = new String[schema.getFieldTypes().length + 2];
-		names[0] = "bid";
-		names[1] = "ntab";
-		types[0] = Types.LONG;
-		types[1] = Types.LONG;
+		names[0] = ModelStreamUtils.MODEL_STREAM_TIMESTAMP_COLUMN_NAME;
+		names[1] = ModelStreamUtils.MODEL_STREAM_COUNT_COLUMN_NAME;
+		types[0] = ModelStreamUtils.MODEL_STREAM_TIMESTAMP_COLUMN_TYPE;
+		types[1] = ModelStreamUtils.MODEL_STREAM_COUNT_COLUMN_TYPE;
 		for (int i = 0; i < schema.getFieldTypes().length; ++i) {
 			types[i + 2] = schema.getFieldTypes()[i];
 			names[i + 2] = schema.getFieldNames()[i];
@@ -200,7 +205,6 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 		extends RichFlatMapFunction <Tuple2 <Long, Object>, Row> {
 		private static final long serialVersionUID = 828728999893377750L;
 		private StringTypeEnum type;
-		private long iter = 0L;
 		private String vectorColName;
 		private String[] featureCols;
 		private boolean hasInterceptItem;
@@ -229,11 +233,11 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 			RowCollector listCollector = new RowCollector();
 			new LinearModelDataConverter().save(modelData, listCollector);
 			List <Row> rows = listCollector.getRows();
-
+			long time =  System.currentTimeMillis();
 			for (Row r : rows) {
 				int rowSize = r.getArity();
 				Row row = new Row(rowSize + 2);
-				row.setField(0, iter);
+				row.setField(0, new Timestamp(time));
 				row.setField(1, rows.size() + 0L);
 
 				for (int j = 0; j < rowSize; ++j) {
@@ -255,8 +259,6 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 				}
 				out.collect(row);
 			}
-
-			iter++;
 		}
 	}
 

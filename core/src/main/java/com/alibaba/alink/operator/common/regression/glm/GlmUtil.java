@@ -17,6 +17,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.LinearSolver;
 import com.alibaba.alink.common.utils.AlinkSerializable;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.regression.GlmModelData;
@@ -352,7 +353,7 @@ public class GlmUtil {
 								   double[] coefficients, double intercept) {
 		double[] features = new double[numFeature];
 		for (int i = 0; i < numFeature; i++) {
-			features[i] = (double) row.getField(i);
+			features[i] = ((Number) row.getField(i)).doubleValue();
 		}
 
 		double label = (Double) row.getField(numFeature);
@@ -1172,7 +1173,7 @@ public class GlmUtil {
 			double weight;
 			for (Row row : iterable) {
 				for (int i = 0; i < featureSize; i++) {
-					features[i] = (Double) row.getField(i);
+					features[i] = ((Number) row.getField(i)).doubleValue();
 				}
 				label = (Double) row.getField(featureSize);
 				weight = (Double) row.getField(featureSize + 1);

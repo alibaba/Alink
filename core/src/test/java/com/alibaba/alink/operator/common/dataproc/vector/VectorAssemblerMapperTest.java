@@ -10,6 +10,7 @@ import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.dataproc.vector.VectorAssemblerParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -18,7 +19,7 @@ import static org.junit.Assert.assertEquals;
  * Unit test for VectorAssemblerMapper.
  */
 
-public class VectorAssemblerMapperTest {
+public class VectorAssemblerMapperTest extends AlinkTestBase {
 	@Test
 	public void testToDense() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"c0", "c1", "c2"},
@@ -35,7 +36,7 @@ public class VectorAssemblerMapperTest {
 		/* join the DenseVector, the number and the SparseVector together. the forth field shows the result */
 		assertEquals(mapper.map(Row.of(new DenseVector(new double[] {3.0, 4.0}), 3.0,
 			new SparseVector(3, new int[] {0, 2}, new double[] {1.0, 4.0}))).getField(3),
-			new SparseVector(6, new int[] {0, 1, 2, 3, 5}, new double[] {3, 4, 3, 1, 4}));
+			new DenseVector(new double[] {3.0, 4.0, 3.0, 1.0, 0.0, 4.0}));
 		assertEquals(mapper.getOutputSchema(), outSchema);
 	}
 

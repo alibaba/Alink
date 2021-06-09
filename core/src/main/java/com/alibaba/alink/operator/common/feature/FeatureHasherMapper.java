@@ -1,14 +1,14 @@
 package com.alibaba.alink.operator.common.feature;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.shaded.guava18.com.google.common.hash.HashFunction;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.Mapper;
-import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.feature.FeatureHasherParams;
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,15 +34,16 @@ import static org.apache.flink.shaded.guava18.com.google.common.hash.Hashing.mur
  */
 public class FeatureHasherMapper extends Mapper {
 	private static final long serialVersionUID = -2866356757003004579L;
-	private int[] numericColIndexes, categoricalColIndexes;
-	private OutputColsHelper outputColsHelper;
+
+	private int[] numericColIndexes;
+	private int[] categoricalColIndexes;
 	private static final HashFunction HASH = murmur3_32(0);
 	private int numFeature;
-	private String[] colNames;
+	private String[] selectedCols;
 
 	public FeatureHasherMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
-		String[] selectedCols = this.params.get(FeatureHasherParams.SELECTED_COLS);
+		selectedCols = this.params.get(FeatureHasherParams.SELECTED_COLS);
 		String[] categoricalCols = TableUtil.getCategoricalCols(
 			dataSchema,
 			selectedCols,
@@ -50,50 +51,42 @@ public class FeatureHasherMapper extends Mapper {
 				params.get(FeatureHasherParams.CATEGORICAL_COLS) : null
 		);
 		String[] numericCols = ArrayUtils.removeElements(selectedCols, categoricalCols);
-		colNames = dataSchema.getFieldNames();
 
-		numericColIndexes = TableUtil.findColIndicesWithAssertAndHint(colNames, numericCols);
-		categoricalColIndexes = TableUtil.findColIndicesWithAssertAndHint(colNames, categoricalCols);
-
-		outputColsHelper = new OutputColsHelper(
-			dataSchema,
-			this.params.get(FeatureHasherParams.OUTPUT_COL),
-			VectorTypes.VECTOR,
-			this.params.get(FeatureHasherParams.RESERVED_COLS)
-		);
+		numericColIndexes = TableUtil.findColIndicesWithAssertAndHint(selectedCols, numericCols);
+		categoricalColIndexes = TableUtil.findColIndicesWithAssertAndHint(selectedCols, categoricalCols);
 
 		numFeature = this.params.get(FeatureHasherParams.NUM_FEATURES);
 	}
 
 	@Override
-	public TableSchema getOutputSchema() {
-		return outputColsHelper.getResultSchema();
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema dataSchema, Params params) {
+
+		return Tuple4.of(this.params.get(FeatureHasherParams.SELECTED_COLS),
+			new String[] {this.params.get(FeatureHasherParams.OUTPUT_COL)},
+			new TypeInformation<?>[] {VectorTypes.VECTOR},
+			this.params.get(FeatureHasherParams.RESERVED_COLS)
+		);
 	}
 
-	/**
-	 * Projects a number of categorical or numerical features into a feature vector of a specified dimension.
-	 *
-	 * @param row the input Row type data
-	 * @return the output row.
-	 */
 	@Override
-	public Row map(Row row) {
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
 		TreeMap <Integer, Double> feature = new TreeMap <>();
 		for (int key : numericColIndexes) {
-			if (null != row.getField(key)) {
-				double value = ((Number) row.getField(key)).doubleValue();
-				String colName = colNames[key];
+			if (null != selection.get(key)) {
+				double value = ((Number) selection.get(key)).doubleValue();
+				String colName = selectedCols[key];
 				updateMap(colName, value, feature, numFeature);
 			}
 		}
 		for (int key : categoricalColIndexes) {
-			if (null != row.getField(key)) {
-				String colName = colNames[key];
-				updateMap(colName + "=" + row.getField(key).toString(), 1.0, feature, numFeature);
+			if (null != selection.get(key)) {
+				String colName = selectedCols[key];
+				updateMap(colName + "=" + selection.get(key).toString(), 1.0, feature, numFeature);
 			}
 		}
 
-		return outputColsHelper.getResultRow(row, Row.of(new SparseVector(numFeature, feature)));
+		result.set(0, new SparseVector(numFeature, feature));
 	}
 
 	/**

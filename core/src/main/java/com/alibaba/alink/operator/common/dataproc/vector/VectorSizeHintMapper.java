@@ -16,9 +16,9 @@ import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
  */
 public class VectorSizeHintMapper extends SISOMapper {
 	private static final long serialVersionUID = 5056834356417351493L;
-	private int size;
+	private final int size;
 
-	private HandleInvalidMethod handleMethod;
+	private final HandleInvalidMethod handleMethod;
 
 	public VectorSizeHintMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);

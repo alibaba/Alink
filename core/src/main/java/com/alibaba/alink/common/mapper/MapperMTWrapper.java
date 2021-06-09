@@ -21,6 +21,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 
@@ -59,6 +62,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 	private transient long numInputRecords = 0L;
 	private transient long numOutputRecords = 0L;
 	private transient Collector <Row> collector;
+	private transient AtomicReference<Throwable> threadException;
 
 	public MapperMTWrapper(int numThreads, SupplierWithException <FunctionWithException <Row, Row>> supplier) {
 		this.numThreads = numThreads;
@@ -67,6 +71,8 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 
 	public void open(Configuration parameters) throws Exception {
 		super.open(parameters);
+
+		threadException = new AtomicReference <>();
 
 		inputQueues = new ArrayList <>(numThreads);
 		outputQueues = new ArrayList <>(numThreads);
@@ -102,8 +108,6 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 					boolean exitFlag = false;
 					while (true) {
 						if (exitFlag) {
-							//							System.out.println("Thread " + tid + " exit.");
-							//							LOG.info("Thread " + tid + " exit.");
 							break;
 						}
 						List <Row> inputs = new ArrayList <>();
@@ -118,7 +122,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 									outputQueue.put(output); // blocking put
 								}
 							} catch (Exception e) {
-								throw new CompletionException(e);
+								throw new RuntimeException(e);
 							}
 						}
 					}
@@ -126,12 +130,11 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 					return null;
 				}, executorService)
 				.exceptionally(throwable -> {
-					throw new CompletionException(throwable);
+					threadException.compareAndSet(null, throwable);
+
+					return throwable;
 				});
 		}
-
-		//		System.out.println(new Date().toString() + ": start prediction");
-		//		LOG.info("start prediction");
 	}
 
 	@Override
@@ -142,17 +145,17 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 		boolean writeSuccess;
 		int targetTid = (int) (numInputRecords % numThreads);
 		do {
-			numOutputRecords += drainRead(outputQueues.get(targetTid), false, collector);
+			numOutputRecords += drainRead(outputQueues.get(targetTid), false, null, collector);
 			writeSuccess = inputQueues.get(targetTid).offer(Row.copy(value)); // non-blocking write
 			if (!writeSuccess) {
+				if (!threadException.compareAndSet(null, null)) {
+					throw new RuntimeException(threadException.get());
+				}
+
 				targetTid = (targetTid + 1) % numThreads;
 				Thread.yield();
 			} else {
 				numInputRecords++;
-				//				if (numInputRecords % 100000L == 0) {
-				//					System.out.println(new Date().toString() + ", # input records: " +
-				// numInputRecords);
-				//				}
 			}
 		} while (!writeSuccess);
 	}
@@ -164,7 +167,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 			//put the read & write in a loop to avoid dead lock between write queue and read queue.
 			boolean writeSuccess = false;
 			do {
-				numOutputRecords += drainRead(outputQueues.get(i), false, collector);
+				numOutputRecords += drainRead(outputQueues.get(i), false, null, collector);
 				// put an empty row to signal the end of input queue
 				writeSuccess = inputQueues.get(i).offer(new Row(0)); // non-blocking write
 				if (!writeSuccess) {
@@ -173,16 +176,16 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 			} while (!writeSuccess);
 		}
 		for (int i = 0; i < numThreads; i++) {
-			numOutputRecords += drainRead(outputQueues.get(i), true, this.collector);
+			numOutputRecords += drainRead(outputQueues.get(i), true, threadException, this.collector);
 		}
 
 		if (executorService != null) {
 			ExecutorUtils.gracefulShutdown(5, TimeUnit.SECONDS, executorService);
 		}
 
-		//		System.out.println(new Date().toString() + ": done prediction, # in " + numInputRecords + ", # out " +
-		// numOutputRecords);
-		//		LOG.info("done prediction");
+		if (!threadException.compareAndSet(null, null)) {
+			throw new RuntimeException(threadException.get());
+		}
 	}
 
 	/**
@@ -191,7 +194,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 	 * @param readUntilEOF If true, read til the end of the queue; otherwise read as many as possible.
 	 * @param collector    collector of row.
 	 */
-	private long drainRead(BlockingQueue <Row> queue, boolean readUntilEOF, Collector <Row> collector)
+	private long drainRead(BlockingQueue <Row> queue, boolean readUntilEOF, AtomicReference<Throwable> threadException, Collector <Row> collector)
 		throws Exception {
 		long numRead = 0L;
 		if (readUntilEOF) {
@@ -199,6 +202,9 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 			do {
 				Row result = queue.poll(); // non-blocking read
 				if (result == null) {
+					if (!threadException.compareAndSet(null, null)) {
+						return numRead;
+					}
 					Thread.yield();
 				} else {
 					if (result.getArity() > 0) {

@@ -4,13 +4,15 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for FastDistanceVectorData.
  */
-public class FastDistanceVectorDataTest {
+
+public class FastDistanceVectorDataTest extends AlinkTestBase {
 
 	@Test
 	public void cloneTest() {

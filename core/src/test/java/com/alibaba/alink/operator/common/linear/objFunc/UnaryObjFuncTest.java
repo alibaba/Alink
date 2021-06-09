@@ -11,6 +11,7 @@ import com.alibaba.alink.operator.common.linear.UnaryLossObjFunc;
 import com.alibaba.alink.operator.common.linear.unarylossfunc.LogLossFunc;
 import com.alibaba.alink.params.shared.linear.HasL1;
 import com.alibaba.alink.params.shared.linear.HasL2;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class UnaryObjFuncTest {
+public class UnaryObjFuncTest extends AlinkTestBase {
 	private final static int FEATURE_DIM = 10;
 	private final static double EPS = 1.0e-16;
 

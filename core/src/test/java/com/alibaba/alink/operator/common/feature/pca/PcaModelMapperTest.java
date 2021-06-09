@@ -6,6 +6,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.params.feature.PcaPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-public class PcaModelMapperTest {
+public class PcaModelMapperTest extends AlinkTestBase {
 
 	private TableSchema modelSchema;
 	private TableSchema dataSchema;
@@ -36,7 +37,7 @@ public class PcaModelMapperTest {
 
 		assertEquals(in.getField(0), out.getField(0));
 		assertEquals(in.getField(1), out.getField(1));
-		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2));
+		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2).toString());
 
 	}
 
@@ -54,7 +55,7 @@ public class PcaModelMapperTest {
 
 		assertEquals(in.getField(0), out.getField(0));
 		assertEquals(in.getField(1), out.getField(1));
-		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2));
+		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2).toString());
 
 	}
 
@@ -72,7 +73,7 @@ public class PcaModelMapperTest {
 
 		assertEquals(in.getField(0), out.getField(0));
 		assertEquals(in.getField(1), out.getField(1));
-		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2));
+		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2).toString());
 	}
 
 	@Test
@@ -92,7 +93,7 @@ public class PcaModelMapperTest {
 		assertEquals(in.getField(2), out.getField(2));
 		assertEquals(in.getField(3), out.getField(3));
 		assertEquals(in.getField(4), out.getField(4));
-		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(5));
+		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(5).toString());
 	}
 
 	private void genDense() {

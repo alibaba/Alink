@@ -86,22 +86,18 @@ public final class OneHotTrainBatchOp extends BatchOperator <OneHotTrainBatchOp>
 		boolean enableElse = isEnableElse(thresholdArray);
 
 		DataSet <Row> inputRows = in.select(selectedColNames).getDataSet();
-		DataSet <Tuple3 <Integer, String, Long>> countTokens = StringIndexerUtil.countTokens(inputRows, true);
+		DataSet <Tuple3 <Integer, String, Long>> countTokens = StringIndexerUtil.countTokens(inputRows, true)
+			.filter(new FilterFunction <Tuple3 <Integer, String, Long>>() {
+				private static final long serialVersionUID = -8219708805787440332L;
 
-		if (enableElse) {
-			countTokens = countTokens
-				.filter(new FilterFunction <Tuple3 <Integer, String, Long>>() {
-					private static final long serialVersionUID = -8219708805787440332L;
-
-					@Override
-					public boolean filter(Tuple3 <Integer, String, Long> value) {
-						return value.f2 >= thresholdArray[value.f0];
-					}
-				});
-		}
+				@Override
+				public boolean filter(Tuple3 <Integer, String, Long> value) {
+					return value.f2 >= thresholdArray[value.f0];
+				}
+			});
 
 		DataSet <Tuple3 <Integer, String, Long>> indexedToken = StringIndexerUtil
-			.zipWithIndexPerColumn(countTokens.project(0, 1))
+			.zipWithIndexPerColumn((DataSet) countTokens.project(0, 1))
 			.project(1, 2, 0);
 
 		DataSet <Row> values = indexedToken

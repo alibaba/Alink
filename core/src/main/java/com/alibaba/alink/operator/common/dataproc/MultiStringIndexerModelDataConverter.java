@@ -39,11 +39,11 @@ public class MultiStringIndexerModelDataConverter implements
 		modelData.tokenAndIndex = new ArrayList <>();
 		modelData.tokenNumber = new HashMap <>();
 		for (Row row : rows) {
-			long colIndex = (Long) row.getField(0);
+			long colIndex = ((Number) row.getField(0)).longValue();
 			if (colIndex < 0L) {
 				modelData.meta = Params.fromJson((String) row.getField(1));
 			} else {
-				int columnIndex = ((Long) row.getField(0)).intValue();
+				int columnIndex = ((Number) row.getField(0)).intValue();
 				Long tokenIndex = Long.valueOf(String.valueOf(row.getField(2)));
 				modelData.tokenAndIndex.add(Tuple3.of(columnIndex, (String) row.getField(1), tokenIndex));
 				modelData.tokenNumber.merge(columnIndex, 1L, Long::sum);

@@ -16,6 +16,7 @@ import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.classification.MultilayerPerceptronPredictParams;
 import com.alibaba.alink.params.classification.MultilayerPerceptronTrainParams;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,35 +32,37 @@ public class MlpcModelMapper extends RichModelMapper {
 	private int[] featureColIdx;
 	private transient TopologyModel topo;
 	private transient List <Object> labels;
-	private int vecSize;
+	String[] featureColNames;
+	private transient ThreadLocal <DenseVector> threadLocalVec;
 
 	public MlpcModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 	}
 
-	public static DenseVector getFeaturesVector(Row row, boolean isVectorInput,
-												int[] featureColIdx, int vectorColIdx, int vecSize) {
+	private void getFeaturesVector(SlicedSelectedSample selection, boolean isVectorInput,
+								   int[] featureColIdx, int vectorColIdx, DenseVector features) {
 		if (isVectorInput) {
-			Vector vec = VectorUtil.getVector(row.getField(vectorColIdx));
+			Vector vec = VectorUtil.getVector(selection.get(vectorColIdx));
 			if (null == vec) {
-				return null;
+				Arrays.fill(features.getData(), 0.0);
 			} else {
 				if (vec instanceof DenseVector) {
-					return (DenseVector) vec;
+					features.setData(((DenseVector) vec).getData());
 				} else {
-					SparseVector tmpVec = (SparseVector) vec;
-					tmpVec.setSize(vecSize);
-					return tmpVec.toDenseVector();
+					Arrays.fill(features.getData(), 0.0);
+					int[] indices = ((SparseVector) vec).getIndices();
+					double[] vals = ((SparseVector) vec).getValues();
+					for(int i = 0; i < indices.length; ++i) {
+						features.set(indices[i], vals[i]);
+					}
 				}
 			}
 		} else {
 			int n = featureColIdx.length;
-			DenseVector features = new DenseVector(n);
 			for (int i = 0; i < n; i++) {
-				double v = ((Number) row.getField(featureColIdx[i])).doubleValue();
+				double v = ((Number) selection.get(i)).doubleValue();
 				features.set(i, v);
 			}
-			return features;
 		}
 	}
 
@@ -70,7 +73,6 @@ public class MlpcModelMapper extends RichModelMapper {
 
 		this.labels = model.labels;
 		int[] layerSize0 = model.meta.get(MultilayerPerceptronTrainParams.LAYERS);
-		this.vecSize = layerSize0[0];
 		Topology topology = FeedForwardTopology.multiLayerPerceptron(layerSize0, true);
 		this.topo = topology.getModel(model.weights);
 		isVectorInput = model.meta.get(ModelParamName.IS_VECTOR_INPUT);
@@ -82,21 +84,19 @@ public class MlpcModelMapper extends RichModelMapper {
 				model.meta.get(MultilayerPerceptronPredictParams.VECTOR_COL);
 			this.vectorColIdx = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), vectorColName);
 		} else {
-			String[] featureColNames = model.meta.get(MultilayerPerceptronTrainParams.FEATURE_COLS);
+			featureColNames = model.meta.get(MultilayerPerceptronTrainParams.FEATURE_COLS);
 			this.featureColIdx = TableUtil.findColIndicesWithAssert(dataSchema.getFieldNames(), featureColNames);
 		}
+		threadLocalVec =
+			ThreadLocal.withInitial(() -> new DenseVector(layerSize0[0]));
 	}
 
 	@Override
-	protected Object predictResult(Row row) throws Exception {
-		return predictResultDetail(row).f0;
-	}
-
-	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) throws Exception {
-		DenseVector x = getFeaturesVector(row, isVectorInput, featureColIdx, vectorColIdx, vecSize);
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
+		DenseVector x = threadLocalVec.get();
+		getFeaturesVector(selection, isVectorInput, featureColIdx, vectorColIdx, x);
 		DenseVector prob = this.topo.predict(x);
-		Map <Comparable, Double> predDetailMap = new HashMap <>(prob.size());
+		Map <Comparable<?>, Double> predDetailMap = new HashMap <>(prob.size());
 
 		int argmax = -1;
 		double maxProb = 0.;
@@ -107,8 +107,14 @@ public class MlpcModelMapper extends RichModelMapper {
 			}
 		}
 		for (int i = 0; i < prob.size(); i++) {
-			predDetailMap.put((Comparable) labels.get(i), prob.get(i));
+			predDetailMap.put((Comparable<?>) labels.get(i), prob.get(i));
 		}
 		return Tuple2.of(labels.get(argmax), JsonConverter.toJson(predDetailMap));
+	}
+
+
+	@Override
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		return predictResultDetail(selection).f0;
 	}
 }

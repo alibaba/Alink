@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelDataConverter;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelMapper;
 import com.alibaba.alink.params.clustering.KMeansPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -21,7 +22,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for KMeansModelMapper.
  */
-public class BisectingKMeansModelMapperTest {
+
+public class BisectingKMeansModelMapperTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

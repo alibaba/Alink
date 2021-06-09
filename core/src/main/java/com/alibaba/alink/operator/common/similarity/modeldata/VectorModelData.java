@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.similarity.modeldata;
 
+import com.alibaba.alink.operator.common.distance.InnerProduct;
+
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
 
@@ -9,61 +11,48 @@ import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceData;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
 
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.PriorityQueue;
 
 public class VectorModelData extends NearestNeighborModelData {
 	private static final long serialVersionUID = -2940551481683238630L;
-	private List <FastDistanceData> dictData;
-	private FastDistance fastDistance;
-	private DenseMatrix res;
-
-	private FastDistanceVectorData vectorData;
-	private Iterator <FastDistanceData> iterabor;
-	private double[] curData;
-	private Row[] curRows;
-	private int curIndex = 0;
+	private final List <FastDistanceData> dictData;
+	private final FastDistance fastDistance;
 
 	public VectorModelData(List <FastDistanceData> list, FastDistance distance) {
 		this.dictData = list;
 		this.fastDistance = distance;
-		queue = new PriorityQueue <>(Comparator.comparingDouble(o -> -o.f0));
-	}
-
-	@Override
-	void iterabor(Object selectedCol) {
-		vectorData = fastDistance.prepareVectorData(Tuple2.of(VectorUtil.getVector(selectedCol), null));
-		iterabor = dictData.iterator();
-		if (iterabor.hasNext()) {
-			curIndex = 0;
-			FastDistanceData data = iterabor.next();
-			res = fastDistance.calc(vectorData, data, res);
-			curRows = data.getRows();
-			curData = res.getData();
+		if (distance instanceof InnerProduct) {
+			comparator = Comparator.comparingDouble(o -> o.f0);
 		} else {
-			curIndex = 0;
-			curRows = new Row[0];
+			comparator = Comparator.comparingDouble(o -> -o.f0);
 		}
 	}
 
 	@Override
-	boolean hasNext() {
-		return iterabor.hasNext() || curIndex < curRows.length;
+	protected Integer getLength() {
+		return dictData.size();
 	}
 
 	@Override
-	void next(Tuple2 <Double, Object> newValue) {
-		if (curIndex >= curRows.length) {
-			curIndex = 0;
-			FastDistanceData data = iterabor.next();
-			res = fastDistance.calc(vectorData, data, res);
-			curRows = data.getRows();
-			curData = res.getData();
+	protected Object prepareSample(Object input) {
+		return fastDistance.prepareVectorData(Tuple2.of(VectorUtil.getVector(input), null));
+	}
+
+	@Override
+	protected ArrayList<Tuple2 <Double, Object>> computeDistiance(Object input, Integer index, Integer topN,
+														 Tuple2 <Double, Object> radius) {
+		FastDistanceData data = dictData.get(index);
+		DenseMatrix res = fastDistance.calc((FastDistanceVectorData)input, data);
+		ArrayList<Tuple2 <Double, Object>> list = new ArrayList();
+		Row[] curRows = data.getRows();
+		for (int i = 0; i < data.getRows().length; i++){
+			Tuple2 <Double, Object> tuple = Tuple2.of(res.getData()[i], curRows[i].getField(0));
+			if (null == radius || radius.f0 == null || this.getQueueComparator().compare(radius, tuple) <= 0) {
+				list.add(tuple);
+			}
 		}
-		newValue.f0 = curData[curIndex];
-		newValue.f1 = curRows[curIndex].getField(0);
-		curIndex++;
+		return list;
 	}
 }

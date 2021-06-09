@@ -2,13 +2,15 @@ package com.alibaba.alink.operator.common.statistics.basicstatistic;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Test for TableSummary.
  */
-public class TableSummaryTest {
+
+public class TableSummaryTest extends AlinkTestBase {
 
 	@Test
 	public void test() {

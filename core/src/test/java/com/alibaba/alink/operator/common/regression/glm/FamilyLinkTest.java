@@ -14,12 +14,13 @@ import com.alibaba.alink.operator.common.regression.glm.link.Power;
 import com.alibaba.alink.operator.common.regression.glm.link.Probit;
 import com.alibaba.alink.operator.common.regression.glm.link.Sqrt;
 import com.alibaba.alink.params.regression.GlmTrainParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 
-public class FamilyLinkTest {
+public class FamilyLinkTest extends AlinkTestBase {
 	@Test
 	public void test() {
 		FamilyLink familyLink1 = new FamilyLink(GlmTrainParams.Family.Binomial, 0, null, 0);

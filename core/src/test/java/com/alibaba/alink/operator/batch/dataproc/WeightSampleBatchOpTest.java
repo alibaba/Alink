@@ -12,11 +12,12 @@ import java.util.Arrays;
 /**
  * Test for WeightSampleBatchOp.
  */
-public class WeightSampleBatchOpTest  extends AlinkTestBase {
+
+public class WeightSampleBatchOpTest extends AlinkTestBase {
 
 	private String[] colnames = new String[] {"id", "weight", "col0"};
 
-	private MemSourceBatchOp getSourceBatchOp(){
+	private MemSourceBatchOp getSourceBatchOp() {
 		Row[] testArray =
 			new Row[] {
 				Row.of("a", 1.3, 1.1),

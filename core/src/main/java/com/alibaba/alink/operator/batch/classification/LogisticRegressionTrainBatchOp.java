@@ -5,7 +5,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp;
 import com.alibaba.alink.operator.common.linear.LinearClassifierModelInfo;
-import com.alibaba.alink.operator.common.linear.LinearClassifierModelInfoBatchOp;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
 import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
 
@@ -16,7 +15,7 @@ import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
 public final class LogisticRegressionTrainBatchOp extends BaseLinearModelTrainBatchOp <LogisticRegressionTrainBatchOp>
 	implements LinearBinaryClassTrainParams <LogisticRegressionTrainBatchOp>,
 	WithModelInfoBatchOp <LinearClassifierModelInfo, LogisticRegressionTrainBatchOp,
-		LinearClassifierModelInfoBatchOp> {
+		LogisticRegressionModelInfoBatchOp> {
 
 	private static final long serialVersionUID = 2337925921060991692L;
 
@@ -29,7 +28,7 @@ public final class LogisticRegressionTrainBatchOp extends BaseLinearModelTrainBa
 	}
 
 	@Override
-	public LinearClassifierModelInfoBatchOp getModelInfoBatchOp() {
-		return new LinearClassifierModelInfoBatchOp(this.getParams()).linkFrom(this);
+	public LogisticRegressionModelInfoBatchOp getModelInfoBatchOp() {
+		return new LogisticRegressionModelInfoBatchOp(this.getParams()).linkFrom(this);
 	}
 }

@@ -10,6 +10,7 @@ import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.common.functions.RichCoGroupFunction;
 import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
+import org.apache.flink.api.common.functions.RichJoinFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.operators.Order;
@@ -31,13 +32,16 @@ import org.apache.flink.util.Preconditions;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.NormalEquation;
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerPredictBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerTrainBatchOp;
+import com.alibaba.alink.operator.batch.sql.FullOuterJoinBatchOp;
 import com.alibaba.alink.operator.batch.sql.LeftOuterJoinBatchOp;
+import com.alibaba.alink.operator.batch.sql.UnionBatchOp;
 import com.alibaba.alink.params.recommendation.AlsImplicitTrainParams;
 import com.alibaba.alink.params.recommendation.AlsTrainParams;
 import org.slf4j.Logger;
@@ -140,6 +144,146 @@ public class HugeMfAlsImpl {
 		}
 
 		return Tuple2.of(userFactors, itemFactors);
+	}
+
+	public static Tuple4 <BatchOperator, BatchOperator, BatchOperator, BatchOperator> factorize(
+		BatchOperator userInitEmbedding,
+		BatchOperator itemInitEmbedding,
+		BatchOperator data,
+		Params params, boolean implicit) {
+		final Long envId = data.getMLEnvironmentId();
+		final String userColName = params.get(AlsTrainParams.USER_COL);
+		final String itemColName = params.get(AlsTrainParams.ITEM_COL);
+		final String rateColName = params.get(AlsTrainParams.RATE_COL);
+
+		final double lambda = params.get(AlsTrainParams.LAMBDA);
+		final int rank = params.get(AlsTrainParams.RANK);
+		final int numIter = params.get(AlsTrainParams.NUM_ITER);
+		final boolean nonNegative = params.get(AlsTrainParams.NON_NEGATIVE);
+		final double alpha = params.get(AlsImplicitTrainParams.ALPHA);
+		final int numMiniBatches = params.get(AlsTrainParams.NUM_BLOCKS);
+
+		final int userColIdx = TableUtil.findColIndexWithAssert(data.getColNames(), userColName);
+		final int itemColIdx = TableUtil.findColIndexWithAssert(data.getColNames(), itemColName);
+		final int rateColIdx = TableUtil.findColIndexWithAssert(data.getColNames(), rateColName);
+
+		TypeInformation userType = data.getColTypes()[userColIdx];
+		TypeInformation itemType = data.getColTypes()[itemColIdx];
+		boolean isLongTypeId = userType.equals(Types.LONG) && itemType.equals(Types.LONG);
+
+		BatchOperator distinctUsers = null;
+		BatchOperator distinctItems = null;
+
+		if (!isLongTypeId) {
+			distinctUsers = new UnionBatchOp().linkFrom(userInitEmbedding.select("`" + userColName + "`"),
+				data.select("`" + userColName + "`")).distinct();
+			distinctItems = new UnionBatchOp().linkFrom(itemInitEmbedding.select("`" + itemColName + "`"),
+				data.select("`" + itemColName + "`")).distinct();
+
+			MultiStringIndexerTrainBatchOp userMsi = new MultiStringIndexerTrainBatchOp()
+				.setMLEnvironmentId(envId)
+				.setSelectedCols(userColName).linkFrom(distinctUsers);
+			MultiStringIndexerTrainBatchOp itemMsi = new MultiStringIndexerTrainBatchOp()
+				.setMLEnvironmentId(envId)
+				.setSelectedCols(itemColName).linkFrom(distinctItems);
+
+			MultiStringIndexerPredictBatchOp userPredictor = new MultiStringIndexerPredictBatchOp()
+				.setMLEnvironmentId(envId)
+				.setSelectedCols(userColName);
+			MultiStringIndexerPredictBatchOp itemPredictor = new MultiStringIndexerPredictBatchOp()
+				.setMLEnvironmentId(envId)
+				.setSelectedCols(itemColName);
+			data = itemPredictor.linkFrom(itemMsi, userPredictor.linkFrom(userMsi, data));
+
+			userInitEmbedding = new MultiStringIndexerPredictBatchOp()
+				.setMLEnvironmentId(envId)
+				.setSelectedCols(userColName).linkFrom(userMsi, userInitEmbedding);
+
+			itemInitEmbedding =  new MultiStringIndexerPredictBatchOp()
+				.setMLEnvironmentId(envId)
+				.setSelectedCols(itemColName)
+				.linkFrom(itemMsi, itemInitEmbedding);
+
+			distinctUsers = new MultiStringIndexerPredictBatchOp()
+				.setMLEnvironmentId(envId)
+				.setSelectedCols(userColName)
+				.setOutputCols("__user_index").linkFrom(userMsi, distinctUsers);
+
+			distinctItems = new MultiStringIndexerPredictBatchOp()
+				.setMLEnvironmentId(envId)
+				.setSelectedCols(itemColName)
+				.setOutputCols("__item_index").linkFrom(itemMsi, distinctItems);
+		}
+
+		// tuple3: userId, itemId, rating
+		DataSet <Tuple3 <Long, Long, Float>> alsInput = data.getDataSet()
+			.map(new MapFunction <Row, Tuple3 <Long, Long, Float>>() {
+				private static final long serialVersionUID = 6671683813980584160L;
+
+				@Override
+				public Tuple3 <Long, Long, Float> map(Row value) {
+					Object user = value.getField(userColIdx);
+					Object item = value.getField(itemColIdx);
+					Object rating = value.getField(rateColIdx);
+					Preconditions.checkNotNull(user, "user is null");
+					Preconditions.checkNotNull(item, "item is null");
+					Preconditions.checkNotNull(rating, "rating is null");
+					return new Tuple3 <>(((Number) user).longValue(),
+						((Number) item).longValue(),
+						((Number) rating).floatValue());
+				}
+			});
+
+		AlsTrain als = new AlsTrain(rank, numIter, lambda, implicit, alpha, numMiniBatches, nonNegative);
+		DataSet <Tuple3 <Byte, Long, float[]>> factors = als.fit(userInitEmbedding.getDataSet(),
+			itemInitEmbedding.getDataSet(), alsInput);
+
+		BatchOperator userFactors = getFactors(envId, factors, userColName, (byte) 0);
+		BatchOperator itemFactors = getFactors(envId, factors, itemColName, (byte) 1);
+
+		if (!isLongTypeId) {
+			BatchOperator joinUser = new LeftOuterJoinBatchOp()
+				.setMLEnvironmentId(envId)
+				.setJoinPredicate(String.format("a.`%s`=b.__user_index", userColName))
+				.setSelectClause(String.format("b.`%s`, a.`%s`", userColName, "factors"));
+			userFactors = joinUser.linkFrom(userFactors, distinctUsers);
+			BatchOperator joinInitUser = new LeftOuterJoinBatchOp()
+				.setMLEnvironmentId(envId)
+				.setJoinPredicate(String.format("a.`%s`=b.__user_index", userColName))
+				.setSelectClause(String.format("b.`%s`, a.`%s`", userColName, "factors"));
+			userInitEmbedding = joinInitUser.linkFrom(userInitEmbedding, distinctUsers);
+			BatchOperator joinItem = new LeftOuterJoinBatchOp()
+				.setMLEnvironmentId(envId)
+				.setJoinPredicate(String.format("a.`%s`=b.__item_index", itemColName))
+				.setSelectClause(String.format("b.`%s`, a.`%s`", itemColName, "factors"));
+			itemFactors = joinItem.linkFrom(itemFactors, distinctItems);
+
+			BatchOperator joinInitItem = new LeftOuterJoinBatchOp()
+				.setMLEnvironmentId(envId)
+				.setJoinPredicate(String.format("a.`%s`=b.__item_index", itemColName))
+				.setSelectClause(String.format("b.`%s`, a.`%s`", itemColName, "factors"));
+			itemInitEmbedding = joinInitItem.linkFrom(itemInitEmbedding, distinctItems);
+		}
+
+		BatchOperator allUserFactors = new FullOuterJoinBatchOp()
+			.setJoinPredicate("a." + userColName + "=b." + userColName)
+			.setSelectClause(
+				"case when a." + userColName + " is null then b." + userColName + " when b." + userColName
+					+ " is null then a." + userColName + " else b." + userColName
+					+ " end as " + userColName + ", case when a." + userColName + " is null then b.factors when b."
+					+ userColName + " is null then a.factors else b.factors end as factors")
+			.linkFrom(userInitEmbedding, userFactors);
+
+		BatchOperator allItemFactors = new FullOuterJoinBatchOp()
+			.setJoinPredicate("a." + itemColName + "=b." + itemColName)
+			.setSelectClause(
+				"case when a." + itemColName + " is null then b." + itemColName + " when b." + itemColName
+					+ " is null then a." + itemColName + " else b." + itemColName + " end as " + itemColName
+					+ ", case when a." + itemColName + " is null then b.factors when b." + itemColName
+					+ " is null then a.factors else b.factors end as factors")
+			.linkFrom(itemInitEmbedding, itemFactors);
+
+		return Tuple4.of(allUserFactors, allItemFactors, userFactors, itemFactors);
 	}
 
 	private static BatchOperator getFactors(Long envId, DataSet <Tuple3 <Byte, Long, float[]>> factors,
@@ -276,6 +420,36 @@ public class HugeMfAlsImpl {
 		}
 
 		/**
+		 * Calculate users' and items' factors.
+		 *
+		 * @param userInitEmbedding initial user embedding.
+		 * @param itemInitEmbedding initial item embedding.
+		 * @param ratings           a dataset of user-item-rating tuples
+		 * @return a dataset of user factors and item factors
+		 */
+		public DataSet <Tuple3 <Byte, Long, float[]>> fit(DataSet <Row> userInitEmbedding,
+														  DataSet <Row> itemInitEmbedding,
+														  DataSet <Tuple3 <Long, Long, Float>> ratings) {
+			DataSet <Ratings> graphData = initGraph(ratings);
+			DataSet <Factors> factors = initFactors(userInitEmbedding, itemInitEmbedding, graphData, numFactors);
+
+			IterativeDataSet <Factors> loop = factors.iterate(Integer.MAX_VALUE);
+
+			Tuple2 <DataSet <Factors>, DataSet <Integer>> factorsAndStopCriterion =
+				updateFactors(loop, graphData, numMiniBatches, numFactors, nonnegative, numIters);
+			factors = loop.closeWith(factorsAndStopCriterion.f0, factorsAndStopCriterion.f1);
+
+			return factors.map(new MapFunction <Factors, Tuple3 <Byte, Long, float[]>>() {
+				private static final long serialVersionUID = -8820639290497738048L;
+
+				@Override
+				public Tuple3 <Byte, Long, float[]> map(Factors value) throws Exception {
+					return Tuple3.of(value.identity, value.nodeId, value.factors);
+				}
+			});
+		}
+
+		/**
 		 * Group users and items ratings from user-item-rating tuples.
 		 */
 		private DataSet <Ratings>
@@ -361,6 +535,119 @@ public class HugeMfAlsImpl {
 					}
 				})
 				.name("InitFactors");
+		}
+
+		/**
+		 * Initialize user factors and item factors with initModel.
+		 *
+		 * @param userInitEmbedding initial user embedding.
+		 * @param itemInitEmbedding initial item embedding.
+		 * @param graph             Users' and items' ratings.
+		 * @param numFactors        Number of factors.
+		 * @return Randomly initialized users' and items' factors.
+		 */
+		private DataSet <Factors> initFactors(DataSet <Row> userInitEmbedding, DataSet <Row> itemInitEmbedding,
+											  DataSet <Ratings> graph, final int numFactors) {
+			DataSet <Tuple2 <String, Factors>> randomFactors
+				= graph.map(new RichMapFunction <Ratings, Tuple2 <String, Factors>>() {
+				private static final long serialVersionUID = -6242580857177532093L;
+				transient Random random;
+				transient Factors reusedFactors;
+
+				@Override
+				public void open(Configuration parameters) throws Exception {
+					random = new Random(getRuntimeContext().getIndexOfThisSubtask());
+					reusedFactors = new Factors();
+					reusedFactors.factors = null;
+				}
+
+				@Override
+				public Tuple2 <String, Factors> map(Ratings value) throws Exception {
+					reusedFactors.identity = value.identity;
+					reusedFactors.nodeId = value.nodeId;
+					return Tuple2.of((value.identity + "_" + value.nodeId), reusedFactors);
+				}
+			}).name("InitFactors_hot_init");
+
+			DataSet <Tuple2 <String, float[]>> userFactors
+				= userInitEmbedding.map(new RichMapFunction <Row, Tuple2 <String, float[]>>() {
+				private final byte identity = 0;
+				private float[] reusedArray;
+
+				@Override
+				public void open(Configuration parameters) throws Exception {
+					reusedArray = new float[numFactors];
+				}
+
+				@Override
+				public Tuple2 <String, float[]> map(Row value) throws Exception {
+					double[] arr = VectorUtil.getDenseVector(value.getField(1)).getData();
+					for (int i = 0; i < numFactors; i++) {
+						reusedArray[i] = (float) arr[i];
+					}
+					return Tuple2.of(identity + "_" + value.getField(0), reusedArray);
+				}
+			});
+
+			DataSet <Tuple2 <String, float[]>> itemFactors
+				= itemInitEmbedding.map(new RichMapFunction <Row, Tuple2 <String, float[]>>() {
+				private final byte identity = 1;
+				private float[] reusedArray;
+
+				@Override
+				public void open(Configuration parameters) throws Exception {
+					reusedArray = new float[numFactors];
+				}
+
+				@Override
+				public Tuple2 <String, float[]> map(Row value) throws Exception {
+					double[] arr = VectorUtil.getDenseVector(value.getField(1)).getData();
+					for (int i = 0; i < numFactors; i++) {
+						reusedArray[i] = (float) arr[i];
+					}
+					return Tuple2.of(identity + "_" + value.getField(0), reusedArray);
+				}
+			});
+
+			DataSet <Tuple2 <String, float[]>> initFactors = userFactors.union(itemFactors);
+
+			return randomFactors.leftOuterJoin(initFactors).where(0).equalTo(0)
+				.with(new RichJoinFunction <Tuple2 <String, Factors>, Tuple2 <String, float[]>, Factors>() {
+					transient private Random random;
+
+					@Override
+					public void open(Configuration parameters) throws Exception {
+						super.open(parameters);
+						random = new Random(2020);
+					}
+
+					@Override
+					public Factors join(Tuple2 <String, Factors> first, Tuple2 <String, float[]> second)
+						throws Exception {
+						if (second == null) {
+							first.f1.factors = new float[numFactors];
+							for (int i = 0; i < numFactors; i++) {
+								first.f1.factors[i] = random.nextFloat();
+							}
+						} else if (first == null) {
+							Factors fac = new Factors();
+							fac.factors = second.f1;
+							String[] contents = second.f0.split("_");
+							fac.identity = Byte.valueOf(contents[0]);
+							fac.nodeId = Long.valueOf(contents[1]);
+
+							first = Tuple2.of(second.f0, fac);
+
+							first.f1.factors = new float[numFactors];
+							for (int i = 0; i < numFactors; i++) {
+								first.f1.factors[i] = random.nextFloat();
+							}
+						} else {
+							first.f1.factors = second.f1;
+						}
+						return first.f1;
+					}
+				});
 		}
 
 		public static class DataProfile implements Serializable {
@@ -856,6 +1143,7 @@ public class HugeMfAlsImpl {
 							cachedFactors.get(pos).f1.getFactorsAsDoubleArray(buffer.getData());
 							ls.add(buffer, ((r > 0.0) ? (1.0 + c1) : 0.0), c1);
 						}
+						numExplicit = Math.max(numExplicit, 1);
 						ls.regularize(numExplicit * lambda);
 						ls.solve(x, nonnegative);
 					}

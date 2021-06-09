@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -26,6 +27,8 @@ public class LinearModelMapper extends RichModelMapper {
 	private LinearModelData model;
 	private int[] featureIdx;
 	private int featureN;
+	private String vectorColName;
+	private transient ThreadLocal <DenseVector> threadLocalVec;
 
 	/**
 	 * Constructor function.
@@ -37,7 +40,7 @@ public class LinearModelMapper extends RichModelMapper {
 	public LinearModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 		if (null != params) {
-			String vectorColName = params.get(LinearModelMapperParams.VECTOR_COL);
+			this.vectorColName = params.get(LinearModelMapperParams.VECTOR_COL);
 			if (null != vectorColName && vectorColName.length() != 0) {
 				this.vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), vectorColName);
 			}
@@ -64,8 +67,11 @@ public class LinearModelMapper extends RichModelMapper {
 					this.featureIdx[i] = TableUtil.findColIndexWithAssert(predictTableColNames,
 						this.model.featureNames[i]);
 				}
+				threadLocalVec =
+					ThreadLocal.withInitial(() -> new DenseVector(featureN + (model.hasInterceptItem ? 1 : 0)));
 			} else {
-				vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), model.vectorColName);
+				this.vectorColName = model.vectorColName;
+				vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), this.vectorColName);
 			}
 		}
 	}
@@ -88,31 +94,27 @@ public class LinearModelMapper extends RichModelMapper {
 		}
 	}
 
-	/**
-	 * Preditc the result information.
-	 */
 	@Override
-	protected Object predictResult(Row row) throws Exception {
-		Vector aVector = FeatureLabelUtil.getFeatureVector(row, model.hasInterceptItem, this.featureN,
-			this.featureIdx,
-			this.vectorColIndex, model.vectorSize);
-		return predict(aVector);
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		return predictResultDetail(selection).f0;
 	}
 
-	/**
-	 * Predict the result information with the probability of each label.
-	 */
 	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) throws Exception {
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
 		Object predResult;
 		String jsonDetail = null;
 
-		Vector aVector = FeatureLabelUtil.getFeatureVector(row, model.hasInterceptItem, this.featureN,
-			this.featureIdx,
-			this.vectorColIndex, model.vectorSize);
+		Vector vec;
+		if (vectorColIndex != -1) {
+			vec = FeatureLabelUtil.getVectorFeature(selection.get(vectorColIndex), model.hasInterceptItem,
+				model.vectorSize);
+		} else {
+			vec = threadLocalVec.get();
+			selection.fillDenseVector((DenseVector) vec, model.hasInterceptItem, featureIdx);
+		}
 
 		if (model.linearModelType == LinearModelType.LR || model.linearModelType == LinearModelType.SVM) {
-			Tuple2 <Object, Double[]> result = predictWithProb(aVector);
+			Tuple2 <Object, Double[]> result = predictWithProb(vec);
 			predResult = result.f0;
 			Map <String, String> detail = new HashMap <>(0);
 			int labelSize = model.labelValues.length;
@@ -121,7 +123,7 @@ public class LinearModelMapper extends RichModelMapper {
 			}
 			jsonDetail = JsonConverter.toJson(detail);
 		} else {
-			predResult = predict(aVector);
+			predResult = predict(vec);
 		}
 
 		return new Tuple2 <>(predResult, jsonDetail);

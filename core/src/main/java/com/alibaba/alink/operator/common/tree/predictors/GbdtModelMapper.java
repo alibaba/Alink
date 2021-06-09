@@ -29,6 +29,8 @@ public class GbdtModelMapper extends TreeModelMapper {
 
 	private int vectorColIndex = -1;
 
+	private transient ThreadLocal <Row> inputBufferThreadLocal;
+
 	public GbdtModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 
@@ -41,6 +43,7 @@ public class GbdtModelMapper extends TreeModelMapper {
 	@Override
 	public void loadModel(List <Row> modelRows) {
 		init(modelRows);
+
 		period = treeModel.meta.get(SaveModel.GBDT_Y_PERIOD);
 
 		if (treeModel.meta.contains(LossUtils.LOSS_TYPE)) {
@@ -52,21 +55,27 @@ public class GbdtModelMapper extends TreeModelMapper {
 			isClassification = treeModel.meta.get(BaseGbdtTrainBatchOp.ALGO_TYPE) == 1;
 		}
 
+		if (vectorColIndex < 0) {
+			inputBufferThreadLocal = ThreadLocal.withInitial(() -> new Row(ioSchema.f0.length));
+		}
 	}
 
 	@Override
-	protected Object predictResult(Row row) throws Exception {
-		return predictResultDetail(row).f0;
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		return predictResultDetail(selection).f0;
 	}
 
 	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) throws Exception {
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
 		Tuple2 <Object, Map <String, Double>> result;
 
 		if (vectorColIndex >= 0) {
-			result = predictResultDetailVector(treeModel.roots, VectorUtil.getVector(row.getField(vectorColIndex)));
+			result = predictResultDetailVector(treeModel.roots, VectorUtil.getVector(selection.get(vectorColIndex)));
 		} else {
-			result = predictResultDetailTable(treeModel.roots, row);
+			Row inputBuffer = inputBufferThreadLocal.get();
+			selection.fillRow(inputBuffer);
+
+			result = predictResultDetailTable(treeModel.roots, inputBuffer);
 		}
 
 		return new Tuple2 <>(result.f0, result.f1 == null ? null : JsonConverter.toJson(result.f1));
@@ -102,7 +111,7 @@ public class GbdtModelMapper extends TreeModelMapper {
 	}
 
 	private Tuple2 <Object, Map <String, Double>> predictResultDetailWithLabelCounter(LabelCounter labelCounter) {
-		Object result = null;
+		Object result;
 		Map <String, Double> detail = null;
 
 		if (isClassification) {
@@ -151,9 +160,8 @@ public class GbdtModelMapper extends TreeModelMapper {
 	}
 
 	private Tuple2 <Object, Map <String, Double>> predictResultDetailTable(Node[] root, Row row) throws Exception {
-		Row transRow = Row.copy(row);
 
-		transRow = transRow(transRow);
+		transform(row);
 
 		int len = root.length;
 
@@ -164,11 +172,11 @@ public class GbdtModelMapper extends TreeModelMapper {
 			LabelCounter labelCounter = new LabelCounter(
 				0, 0, new double[root[0].getCounter().getDistributions().length]);
 
-			predict(transRow, root[0], labelCounter, 1.0);
+			predict(row, root[0], labelCounter, 1.0);
 
 			for (int i = 1; i < len; ++i) {
 				if (root[i] != null) {
-					predict(transRow, root[i], labelCounter, 1.0);
+					predict(row, root[i], labelCounter, 1.0);
 				}
 			}
 

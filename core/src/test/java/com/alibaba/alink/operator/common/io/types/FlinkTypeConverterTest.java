@@ -6,10 +6,11 @@ import org.apache.flink.api.common.typeinfo.SqlTimeTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class FlinkTypeConverterTest {
+public class FlinkTypeConverterTest extends AlinkTestBase {
 
 	private static final TypeInformation <?>[] TYPES = new TypeInformation <?>[] {
 		BasicTypeInfo.STRING_TYPE_INFO,

@@ -12,6 +12,7 @@ import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp;
 import com.alibaba.alink.operator.common.fm.FmModelMapper;
@@ -39,13 +40,13 @@ final public class FmRecommKernel extends RecommKernel {
 
 	private int userColIdx = -1;
 	private int itemColIdx = -1;
-	private Integer topK;
+	private final Integer topK;
 	private boolean excludeKnown = false;
 
 	public FmRecommKernel(TableSchema modelSchema, TableSchema dataSchema, Params params, RecommType recommType) {
 		super(modelSchema, dataSchema, params, recommType);
-		String userColName = getParamDefaultAsNull(params, BaseRateRecommParams.USER_COL);
-		String itemColName = getParamDefaultAsNull(params, BaseRateRecommParams.ITEM_COL);
+		userColName = getParamDefaultAsNull(params, BaseRateRecommParams.USER_COL);
+		itemColName = getParamDefaultAsNull(params, BaseRateRecommParams.ITEM_COL);
 		this.topK = getParamDefaultAsNull(params, BaseItemsPerUserRecommParams.K);
 		if (userColName != null) {
 			this.userColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), userColName);
@@ -83,19 +84,20 @@ final public class FmRecommKernel extends RecommKernel {
 	}
 
 	@Override
-	Double rate(Row infoUserItem) throws Exception {
-		Object userId = infoUserItem.getField(userColIdx);
-		Object itemId = infoUserItem.getField(itemColIdx);
+	Double rate(Object[] ids) throws Exception {
+		Object userId = ids[0];
+		Object itemId = ids[1];
 		SparseVector userFea = userFeatures.get(userId);
 		SparseVector itemFea = itemFeatures.get(itemId);
 		if (userFea != null && itemFea != null) {
 			return getScore(combine(userFea, itemFea));
 		} else {
-			return null; // unknown user or item
+			/** unknown user or item */
+			return null;
 		}
 	}
 
-	private String recommend(Object userId, SparseVector userFea, Set <Object> excludes,
+	private String recommend(String objectColName, SparseVector userFea, Set <Object> excludes,
 							 Map <Object, SparseVector> itemFeatures, final boolean reverse) {
 		RecommUtils.RecommPriorityQueue priorityQueue = new RecommUtils.RecommPriorityQueue(topK);
 
@@ -122,43 +124,39 @@ final public class FmRecommKernel extends RecommKernel {
 		Tuple2 <List <Object>, List <Double>> itemsAndScores = priorityQueue.getOrderedObjects();
 
 		return KObjectUtil.serializeRecomm(
-			KObjectUtil.OBJECT_NAME,
+			objectColName,
 			itemsAndScores.f0,
-			ImmutableMap.of("rate", itemsAndScores.f1)
+			ImmutableMap.of(KObjectUtil.RATING_NAME, itemsAndScores.f1)
 		);
 	}
 
 	@Override
-	String recommendItemsPerUser(Row infoUser) throws Exception {
-		Object userId = infoUser.getField(userColIdx);
+	public String recommendItemsPerUser(Object userId) throws Exception {
 		SparseVector userFea = userFeatures.get(userId);
-		//Preconditions.checkArgument(userFea != null, "can't find feature id " + userId);
 		Set <Object> excludes = null;
 		if (excludeKnown) {
 			excludes = historyUserItems.get(userId);
 		}
-		return recommend(userId, userFea, excludes, itemFeatures, false);
+		return recommend(itemColName, userFea, excludes, itemFeatures, false);
 	}
 
 	@Override
-	public String recommendUsersPerItem(Row infoItem) throws Exception {
-		Object itemId = infoItem.getField(itemColIdx);
+	public String recommendUsersPerItem(Object itemId) throws Exception {
 		SparseVector itemFea = itemFeatures.get(itemId);
-		//Preconditions.checkArgument(itemFea != null, "can't find feature id " + itemId);
 		Set <Object> excludes = null;
 		if (excludeKnown) {
 			excludes = historyItemUsers.get(itemId);
 		}
-		return recommend(itemId, itemFea, excludes, userFeatures, true);
+		return recommend(userColName, itemFea, excludes, userFeatures, true);
 	}
 
 	@Override
-	String recommendSimilarItems(Row infoItem) throws Exception {
+	public String recommendSimilarItems(Object itemId) throws Exception {
 		throw new UnsupportedOperationException("not supported");
 	}
 
 	@Override
-	String recommendSimilarUsers(Row infoUser) throws Exception {
+	public String recommendSimilarUsers(Object userId) throws Exception {
 		throw new UnsupportedOperationException("not supported");
 	}
 
@@ -166,11 +164,17 @@ final public class FmRecommKernel extends RecommKernel {
 		return fmModelMapper.getY(feature, isBinCls);
 	}
 
-	public static final TableSchema META_SCHEMA = new TableSchema(new String[] {"meta"},
-		new TypeInformation[] {Types.STRING});
-
 	@Override
 	public void loadModel(List <Row> modelRows) {
+		for (Row row : modelRows) {
+			if (((Number) row.getField(0)).intValue() == -1) {
+				Tuple2 <List <List <String>>, List <List <Integer>>> metaData =
+					JsonConverter.fromJson((String) row.getField(1), Tuple2.class);
+				userColName = metaData.f0.get(3).get(0);
+				itemColName = metaData.f0.get(3).get(1);
+			}
+		}
+
 		List <Row> fmModelRow = PackBatchOperatorUtil.unpackRows(modelRows, 0);
 		fmModelMapper = new FmModelMapper(PackBatchOperatorUtil.unpackSchema(modelRows, getModelSchema(), 0),
 			new TableSchema(new String[] {"__alink_features__"}, new TypeInformation[] {Types.STRING}),

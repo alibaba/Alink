@@ -9,6 +9,7 @@ import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.linear.AftRegObjFunc;
 import com.alibaba.alink.params.regression.AftRegTrainParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.text.DecimalFormat;
@@ -18,7 +19,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class AftObjFuncTest {
+public class AftObjFuncTest extends AlinkTestBase {
 	private final static int FDIM = 10;
 	private final static double EPS = 1.0e-16;
 

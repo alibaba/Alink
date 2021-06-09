@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.statistics;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -11,7 +12,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class CrosstabTest {
+public class CrosstabTest extends AlinkTestBase {
 
 	@Test
 	public void convert() {

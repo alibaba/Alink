@@ -15,17 +15,17 @@ import java.util.List;
 
 /**
  * Multi-threaded version.
- * Adapt a {@link RecommKernel} to run within flink.
+ * Adapt a {@link RecommMapper} to run within flink.
  * <p>
- * This adapter class hold the target {@link RecommKernel} and it's {@link ModelSource}. Upon open(),
- * it will load model rows from {@link ModelSource} into {@link RecommKernel}.
+ * This adapter class hold the target {@link RecommMapper} and it's {@link ModelSource}. Upon open(),
+ * it will load model rows from {@link ModelSource} into {@link RecommMapper}.
  */
 public class RecommAdapterMT extends RichFlatMapFunction <Row, Row> implements Serializable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(MapperMTWrapper.class);
 	private static final long serialVersionUID = -5842480394711815042L;
 
-	private final RecommKernel recommKernel;
+	private final RecommMapper recommMapper;
 
 	/**
 	 * Load model data from ModelSource when open().
@@ -36,8 +36,8 @@ public class RecommAdapterMT extends RichFlatMapFunction <Row, Row> implements S
 
 	private transient MapperMTWrapper wrapper;
 
-	public RecommAdapterMT(RecommKernel recommKernel, ModelSource modelSource, int numThreads) {
-		this.recommKernel = recommKernel;
+	public RecommAdapterMT(RecommMapper recommMapper, ModelSource modelSource, int numThreads) {
+		this.recommMapper = recommMapper;
 		this.modelSource = modelSource;
 		this.numThreads = numThreads;
 	}
@@ -47,9 +47,9 @@ public class RecommAdapterMT extends RichFlatMapFunction <Row, Row> implements S
 		LOG.info("start loading model");
 
 		List <Row> modelRows = this.modelSource.getModelRows(getRuntimeContext());
-		this.recommKernel.loadModel(modelRows);
-
-		this.wrapper = new MapperMTWrapper(numThreads, () -> this.recommKernel.mirror()::recommend);
+		this.recommMapper.loadModel(modelRows);
+		this.recommMapper.open();
+		this.wrapper = new MapperMTWrapper(numThreads, () -> this.recommMapper::map);
 		this.wrapper.open(parameters);
 	}
 

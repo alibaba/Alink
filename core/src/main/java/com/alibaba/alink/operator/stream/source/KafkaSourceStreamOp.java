@@ -20,7 +20,7 @@ import com.alibaba.alink.params.io.KafkaSourceParams;
 public class KafkaSourceStreamOp extends BaseSourceStreamOp <KafkaSourceStreamOp>
 	implements KafkaSourceParams <KafkaSourceStreamOp> {
 
-	private KafkaClassLoaderFactory factory;
+	private final KafkaClassLoaderFactory factory;
 
 	public KafkaSourceStreamOp() {
 		this(new Params());
@@ -28,14 +28,12 @@ public class KafkaSourceStreamOp extends BaseSourceStreamOp <KafkaSourceStreamOp
 
 	public KafkaSourceStreamOp(Params params) {
 		super(AnnotationUtils.annotatedName(KafkaSourceStreamOp.class), params);
+
+		factory = new KafkaClassLoaderFactory("0.11");
 	}
 
 	@Override
 	protected Table initializeDataSource() {
-		if (factory == null) {
-			factory = new KafkaClassLoaderFactory(getParams().get(KafkaSourceParams.PLUGIN_VERSION));
-		}
-
 		Tuple2 <RichParallelSourceFunction <Row>, TableSchema> sourceFunction = KafkaClassLoaderFactory
 			.create(factory)
 			.createKafkaSourceFunction(getParams());

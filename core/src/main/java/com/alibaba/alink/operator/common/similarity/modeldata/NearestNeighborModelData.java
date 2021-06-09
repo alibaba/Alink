@@ -11,13 +11,13 @@ import com.alibaba.alink.operator.common.similarity.SimilarityUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
 public class NearestNeighborModelData implements Serializable, Cloneable {
 	private static final long serialVersionUID = -6611164130651479716L;
-	protected PriorityQueue <Tuple2 <Double, Object>> queue;
-	private Tuple2 <Double, Object> newValue;
+	protected Comparator <? super Tuple2 <Double, Object>> comparator;
 
 	private TypeInformation idType;
 
@@ -26,24 +26,19 @@ public class NearestNeighborModelData implements Serializable, Cloneable {
 	}
 
 	public String findNeighbor(Object input, Integer topN, Double radius) {
-		PriorityQueue <Tuple2 <Double, Object>> queue;
-		if (null == topN) {
-			queue = search(input, Tuple2.of(radius, null));
-		} else if (null == radius) {
-			queue = search(input, topN);
-		} else {
-			queue = search(input, topN, Tuple2.of(radius, null));
-		}
+		PriorityQueue <Tuple2 <Double, Object>> priorityQueue = new PriorityQueue <>(this.getQueueComparator());
+		search(input, topN, Tuple2.of(radius, null), priorityQueue);
 
 		List <Object> items = new ArrayList <>();
 		List <Double> metrics = new ArrayList <>();
-		while (!queue.isEmpty()) {
-			Tuple2 <Double, Object> result = queue.poll();
+		while (!priorityQueue.isEmpty()) {
+			Tuple2 <Double, Object> result = priorityQueue.poll();
 			items.add(EvaluationUtil.castTo(result.f1, idType));
 			metrics.add(result.f0);
 		}
 		Collections.reverse(items);
 		Collections.reverse(metrics);
+		priorityQueue.clear();
 		return KObjectUtil.serializeRecomm(
 			"ID",
 			items,
@@ -51,61 +46,48 @@ public class NearestNeighborModelData implements Serializable, Cloneable {
 		);
 	}
 
-	protected PriorityQueue <Tuple2 <Double, Object>> search(Object selectedCol, int topN) {
-		this.iterabor(selectedCol);
-		queue.clear();
+	protected void search(Object input, Integer topN,
+						  Tuple2 <Double, Object> radius,
+						  PriorityQueue <Tuple2 <Double, Object>> priorityQueue) {
+		Object sample = prepareSample(input);
 		Tuple2 <Double, Object> head = null;
-		newValue = Tuple2.of(null, null);
-		while (this.hasNext()) {
-			this.next(newValue);
-			head = SimilarityUtil.updateQueue(queue, topN, newValue, head);
-		}
-		return queue;
-	}
-
-	protected PriorityQueue <Tuple2 <Double, Object>> search(Object selectedCol, Tuple2 <Double, Object> radius) {
-		this.iterabor(selectedCol);
-		queue.clear();
-		newValue = Tuple2.of(null, null);
-		while (this.hasNext()) {
-			this.next(newValue);
-			if (null != newValue && queue.comparator().compare(radius, newValue) <= 0) {
-				queue.add(Tuple2.of(newValue.f0, newValue.f1));
+		for (int i = 0; i < getLength(); i++) {
+			ArrayList<Tuple2 <Double, Object>> values = computeDistiance(sample, i, topN, radius);
+			if (null == values || values.size() == 0) { continue; }
+			for (Tuple2 <Double, Object> currentValue : values) {
+				if (null == topN) {
+					priorityQueue.add(Tuple2.of(currentValue.f0, currentValue.f1));
+				} else {
+					head = SimilarityUtil.updateQueue(priorityQueue, topN, currentValue, head);
+				}
 			}
 		}
-		return queue;
 	}
-
-	protected PriorityQueue <Tuple2 <Double, Object>> search(Object selectedCol, int topN,
-															 Tuple2 <Double, Object> radius) {
-		queue.clear();
-		this.iterabor(selectedCol);
-		Tuple2 <Double, Object> head = null;
-		newValue = Tuple2.of(null, null);
-		while (this.hasNext()) {
-			this.next(newValue);
-			if (queue.comparator().compare(radius, newValue) <= 0) {
-				head = SimilarityUtil.updateQueue(queue, topN, newValue, head);
-			}
-		}
-		return queue;
-	}
-
-	void iterabor(Object selectedCol) {}
-
-	boolean hasNext() {
-		return false;
-	}
-
-	void next(Tuple2 <Double, Object> newValue) {}
 
 	public NearestNeighborModelData mirror() {
 		try {
 			NearestNeighborModelData modelData = (NearestNeighborModelData) this.clone();
-			modelData.queue = new PriorityQueue(modelData.queue.comparator());
+			modelData.comparator = modelData.getQueueComparator();
 			return modelData;
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public Comparator <? super Tuple2 <Double, Object>> getQueueComparator() {
+		return comparator;
+	}
+
+	protected Integer getLength() {
+		return null;
+	}
+
+	protected Object prepareSample(Object input) {
+		return null;
+	}
+
+	protected ArrayList<Tuple2 <Double, Object>> computeDistiance(Object input, Integer index, Integer topN,
+														 Tuple2 <Double, Object> radius) {
+		return null;
 	}
 }

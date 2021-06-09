@@ -1,9 +1,10 @@
 package com.alibaba.alink.operator.common.feature.pca;
 
 import com.alibaba.alink.params.feature.HasCalculationType;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
-public class PcaModelDataTest {
+public class PcaModelDataTest extends AlinkTestBase {
 	@Test
 	public void test() {
 		PcaModelData modelData = new PcaModelData();

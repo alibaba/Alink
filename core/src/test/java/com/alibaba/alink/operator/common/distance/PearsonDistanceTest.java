@@ -8,6 +8,7 @@ import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,7 +18,8 @@ import java.util.List;
 /**
  * Unit test for PearsonDistance.
  */
-public class PearsonDistanceTest {
+
+public class PearsonDistanceTest extends AlinkTestBase {
 	private static PearsonDistance distance = new PearsonDistance();
 
 	private DenseVector denseVector1 = new DenseVector(new double[] {1, 2, 4, 1, 3});

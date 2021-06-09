@@ -1,19 +1,19 @@
 package com.alibaba.alink.operator.common.regression;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.mapper.ModelMapper;
-import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.regression.glm.FamilyLink;
 import com.alibaba.alink.operator.common.regression.glm.GlmUtil;
+import com.alibaba.alink.params.mapper.RichModelMapperParams;
 import com.alibaba.alink.params.regression.GlmPredictParams;
 import com.alibaba.alink.params.regression.GlmTrainParams;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.List;
 
@@ -54,11 +54,6 @@ public class GlmModelMapper extends ModelMapper {
 	private boolean hasLinkPredit;
 
 	/**
-	 * features.
-	 */
-	private double[] features;
-
-	/**
 	 * @param modelSchema
 	 * @param dataSchema
 	 * @param params
@@ -67,10 +62,7 @@ public class GlmModelMapper extends ModelMapper {
 		super(modelSchema, dataSchema, params);
 		String linkPredResultColName = params.get(GlmPredictParams.LINK_PRED_RESULT_COL);
 
-		hasLinkPredit = true;
-		if (linkPredResultColName == null || linkPredResultColName.isEmpty()) {
-			hasLinkPredit = false;
-		}
+		hasLinkPredit = linkPredResultColName != null && !linkPredResultColName.isEmpty();
 	}
 
 	/**
@@ -96,8 +88,6 @@ public class GlmModelMapper extends ModelMapper {
 				modelData.featureColNames[i]);
 		}
 
-		features = new double[featureColIdxs.length];
-
 		GlmTrainParams.Family familyName = modelData.familyName;
 		double variancePower = modelData.variancePower;
 		GlmTrainParams.Link linkName = modelData.linkName;
@@ -107,56 +97,50 @@ public class GlmModelMapper extends ModelMapper {
 
 	}
 
-	/**
-	 * @return table schema.
-	 */
 	@Override
-	public TableSchema getOutputSchema() {
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(TableSchema modelSchema,
+																						   TableSchema dataSchema,
+																						   Params params) {
+		String[] resultColNames;
+		TypeInformation[] resultColTypes;
 		String predResultColName = params.get(GlmPredictParams.PREDICTION_COL);
 		String linkPredResultColName = params.get(GlmPredictParams.LINK_PRED_RESULT_COL);
-
-		String[] colNames;
-		TypeInformation[] colTypes;
-
-		TableSchema dataSchema = getDataSchema();
 		if (linkPredResultColName == null || linkPredResultColName.isEmpty()) {
-			colNames = ArrayUtils.add(dataSchema.getFieldNames(), predResultColName);
-			colTypes = ArrayUtils.add(dataSchema.getFieldTypes(), Types.DOUBLE());
+			resultColNames = new String[] {predResultColName};
+			resultColTypes = new TypeInformation[] {Types.DOUBLE()};
 		} else {
-			colNames = ArrayUtils.addAll(dataSchema.getFieldNames(),
-				predResultColName, linkPredResultColName);
-			colTypes = ArrayUtils.addAll(dataSchema.getFieldTypes(),
-				Types.DOUBLE(), Types.DOUBLE());
+			resultColNames = new String[] {predResultColName, linkPredResultColName};
+			resultColTypes = new TypeInformation[] {Types.DOUBLE(), Types.DOUBLE()};
 		}
-		return new TableSchema(colNames, colTypes);
+		return Tuple4.of(
+			this.getDataSchema().getFieldNames(),
+			resultColNames,
+			resultColTypes,
+			params.get(RichModelMapperParams.RESERVED_COLS)
+		);
 	}
 
-	/**
-	 * @param row the input Row type data
-	 * @return
-	 */
 	@Override
-	public Row map(Row row) {
-		if (row == null) {
-			return null;
-		}
-
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
 		double offset = 0;
 		if (offsetColIdx >= 0) {
-			offset = (Double) row.getField(offsetColIdx);
+			offset = ((Number) selection.get(offsetColIdx)).doubleValue();
 		}
 
+		double[] features = new double[featureColIdxs.length];
 		for (int i = 0; i < features.length; i++) {
-			features[i] = (Double) row.getField(featureColIdxs[i]);
+			features[i] = ((Number) selection.get(featureColIdxs[i])).doubleValue();
 		}
 
 		double predict = GlmUtil.predict(coefficients, intercept, features, offset, familyLink);
 
 		if (hasLinkPredit) {
 			double eta = GlmUtil.linearPredict(coefficients, intercept, features) + offset;
-			return RowUtil.merge(row, Row.of(predict, eta));
+			result.set(0, predict);
+			result.set(1, eta);
 		} else {
-			return RowUtil.merge(row, Row.of(predict));
+			result.set(0, predict);
 		}
 	}
+
 }

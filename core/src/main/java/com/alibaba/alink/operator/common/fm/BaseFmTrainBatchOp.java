@@ -5,7 +5,6 @@ import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
-import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -20,8 +19,6 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.MLEnvironment;
-import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -118,7 +115,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         dim[1] = params.get(FmTrainParams.WITH_LINEAR_ITEM) ? 1 : 0;
         dim[2] = params.get(FmTrainParams.NUM_FACTOR);
 
-        boolean isRegProc = Task.valueOf(params.get(ModelParamName.TASK).toUpperCase()).equals(Task.REGRESSION);
+        boolean isRegProc = params.get(ModelParamName.TASK).equals(Task.REGRESSION);
         this.labelType = isRegProc ? Types.DOUBLE : in.getColTypes()[TableUtil
                 .findColIndex(in.getColNames(), params.get(FmTrainParams.LABEL_COL))];
 
@@ -258,7 +255,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
             tmpArr.add(row);
         }
         Object[] labels = tmpArr.toArray(new Object[0]);
-
+        Preconditions.checkState((labels.length == 2), "labels count should be 2 in 2 classification algo.");
         if (labels[0] instanceof Number) {
             if (((Number) labels[0]).doubleValue() + ((Number) labels[1]).doubleValue() == 1.0) {
                 if (((Number) labels[0]).doubleValue() == 0.0) {
@@ -268,7 +265,6 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                 }
             }
         } else {
-            Preconditions.checkState((labels.length == 2), "labels count should be 2 in 2 classification algo.");
             String str0 = labels[0].toString();
             String str1 = labels[1].toString();
             String positiveLabelValueString = (str1.compareTo(str0) > 0) ? str1 : str0;
@@ -521,7 +517,6 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      */
     public static class FmDataFormat implements Serializable {
         private static final long serialVersionUID = 192926704450234984L;
-        public double[] linearItems;
         public double[][] factors;
         public double bias;
         public int[] dim;
@@ -532,38 +527,21 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
 
         public FmDataFormat(int vecSize, int[] dim, double initStdev) {
             this.dim = dim;
-            if (dim[1] > 0) {
-                this.linearItems = new double[vecSize];
-            }
-            if (dim[2] > 0) {
-                this.factors = new double[vecSize][dim[2]];
-            }
+            this.factors = new double[vecSize][dim[2] + dim[1]];
             reset(initStdev);
         }
 
         public FmDataFormat(int vecSize, int numField, int[] dim, double initStdev) {
             this.dim = dim;
-            if (dim[1] > 0) {
-                this.linearItems = new double[vecSize];
-            }
-            if (dim[2] > 0) {
-                this.factors = new double[vecSize * numField][dim[2]];
-            }
+            this.factors = new double[vecSize * numField][dim[2] + dim[1]];
             reset(initStdev);
         }
 
         public void reset(double initStdev) {
             Random rand = new Random(2020);
-            if (dim[1] > 0) {
-                for (int i = 0; i < linearItems.length; ++i) {
-                    linearItems[i] = rand.nextGaussian() * initStdev;
-                }
-            }
-            if (dim[2] > 0) {
-                for (int i = 0; i < factors.length; ++i) {
-                    for (int j = 0; j < dim[2]; ++j) {
-                        factors[i][j] = rand.nextGaussian() * initStdev;
-                    }
+            for (int i = 0; i < factors.length; ++i) {
+                for (int j = 0; j < factors[0].length; ++j) {
+                    factors[i][j] = rand.nextGaussian() * initStdev;
                 }
             }
         }

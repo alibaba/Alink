@@ -8,6 +8,7 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCol;
  * Parameters for SISOMapper.
  */
 public interface SISOMapperParams<T> extends
+	MapperParams <T>,
 	HasSelectedCol <T>,
 	HasOutputColDefaultAsNull <T>,
 	HasReservedColsDefaultAsNull <T> {

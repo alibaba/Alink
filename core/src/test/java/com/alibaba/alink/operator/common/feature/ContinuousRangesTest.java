@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.feature;
 
 import org.apache.flink.api.common.typeinfo.Types;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,7 +11,8 @@ import org.junit.rules.ExpectedException;
 /**
  * UT for ContinuousRanges
  */
-public class ContinuousRangesTest {
+
+public class ContinuousRangesTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

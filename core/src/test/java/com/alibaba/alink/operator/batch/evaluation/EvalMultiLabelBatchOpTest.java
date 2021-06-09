@@ -13,6 +13,7 @@ import java.util.Arrays;
 /**
  * Test for EvalMultiLabel.
  */
+
 public class EvalMultiLabelBatchOpTest extends AlinkTestBase {
 	private Row[] rows = new Row[] {
 		Row.of("{\"object\":\"[0.0, 1.0]\"}", "{\"object\":\"[0.0, 2.0]\"}"),

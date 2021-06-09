@@ -1,5 +1,8 @@
 package com.alibaba.alink.operator.batch.statistics;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -9,7 +12,9 @@ import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class SummarizerBatchOpTest extends AlinkTestBase {
@@ -81,6 +86,28 @@ public class SummarizerBatchOpTest extends AlinkTestBase {
 
 		BatchOperator.execute();
 
+	}
+
+	@Test
+	public void testEmptyData() throws Exception {
+		TableSchema schema = new TableSchema(
+			new String[] {"string_1", "long_1", "long_2", "long_3", "long_4", "long_5", "string_2", "string_3",
+				"string_4"},
+			new TypeInformation <?>[] {Types.STRING(), Types.LONG(), Types.LONG(),
+				Types.LONG(), Types.LONG(), Types.LONG(),
+				Types.STRING(), Types.STRING(), Types.STRING()}
+		);
+
+		List <Row> dataList = new ArrayList <>();
+
+		MemSourceBatchOp source = new MemSourceBatchOp(dataList, schema);
+
+		SummarizerBatchOp allStat = new SummarizerBatchOp()
+			.setSelectedCols(new String[] {"long_1", "long_2", "long_3", "long_4", "long_5"});
+
+		source.link(allStat).lazyPrintSummary();
+
+		BatchOperator.execute();
 	}
 
 }

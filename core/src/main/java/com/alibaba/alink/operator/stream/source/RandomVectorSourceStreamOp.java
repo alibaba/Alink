@@ -17,7 +17,7 @@ import com.alibaba.alink.params.io.RandomVectorSourceStreamParams;
 
 @IoOpAnnotation(name = "random_vector", ioType = IOType.SourceStream)
 public final class RandomVectorSourceStreamOp extends BaseSourceStreamOp <RandomVectorSourceStreamOp>
-	implements RandomVectorSourceStreamParams<RandomVectorSourceStreamOp> {
+	implements RandomVectorSourceStreamParams <RandomVectorSourceStreamOp> {
 
 	private static final long serialVersionUID = -2004518005886439388L;
 	private XRandom rd = new XRandom();

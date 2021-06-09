@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.utils;
 
 import com.alibaba.alink.operator.common.dataproc.FFT;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.apache.commons.math3.complex.Complex;
 import org.junit.Test;
 
@@ -9,7 +10,8 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test for Fast Fourier Transformation(FFT).
  */
-public class FFTTest {
+
+public class FFTTest extends AlinkTestBase {
 	@Test
 	public void testRadix2CooleyTukey() throws Exception {
 		double[] input = new double[] {1.0, 2.0, 1.0, 2.0};

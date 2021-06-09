@@ -2,11 +2,12 @@ package com.alibaba.alink.operator.common.regression.glm;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class GlmUtilTest {
+public class GlmUtilTest extends AlinkTestBase {
 
 	@Test
 	public void test() {

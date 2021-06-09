@@ -33,7 +33,7 @@ public class VectorAssemblerMapper extends MISOMapper {
 	/**
 	 * the way to handle invalid input.
 	 */
-	private HandleInvalidMethod handleInvalid;
+	private final HandleInvalidMethod handleInvalid;
 
 	public VectorAssemblerMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
@@ -41,7 +41,7 @@ public class VectorAssemblerMapper extends MISOMapper {
 	}
 
 	@Override
-	protected TypeInformation initOutputColType() {
+	protected TypeInformation<?> initOutputColType() {
 		return VectorTypes.VECTOR;
 	}
 
@@ -98,7 +98,12 @@ public class VectorAssemblerMapper extends MISOMapper {
 		}
 
 		/* form the vector, and finally toString it. */
-		return new SparseVector(pos, map);
+		Vector vec = new SparseVector(pos, map);
+
+		if (map.size() * RATIO > pos) {
+			vec = ((SparseVector)vec).toDenseVector();
+		}
+		return vec;
 	}
 
 	private static int appendVector(Vector vec, Map <Integer, Double> map, int pos) {

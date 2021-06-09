@@ -12,6 +12,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
@@ -128,19 +129,7 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 
 		getParams().set(ALGO_TYPE, LossUtils.lossTypeToInt(loss));
 
-		if (LossUtils.isClassification(loss)) {
-			getParams().set(
-				ModelParamName.LABEL_TYPE_NAME,
-				FlinkTypeConverter.getTypeString(
-					TableUtil.findColType(in.getSchema(), getParams().get(GbdtTrainParams.LABEL_COL))
-				)
-			);
-		} else {
-			getParams().set(
-				ModelParamName.LABEL_TYPE_NAME,
-				FlinkTypeConverter.getTypeString(Types.DOUBLE)
-			);
-		}
+		rewriteLabelType(in.getSchema(), getParams());
 
 		if (!Preprocessing.isSparse(getParams())) {
 			getParams().set(
@@ -373,6 +362,24 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 		});
 
 		return (T) this;
+	}
+
+	public static void rewriteLabelType(TableSchema schema, Params params) {
+		LossType loss = params.get(LossUtils.LOSS_TYPE);
+
+		if (LossUtils.isClassification(loss)) {
+			params.set(
+				ModelParamName.LABEL_TYPE_NAME,
+				FlinkTypeConverter.getTypeString(
+					TableUtil.findColType(schema, params.get(GbdtTrainParams.LABEL_COL))
+				)
+			);
+		} else {
+			params.set(
+				ModelParamName.LABEL_TYPE_NAME,
+				FlinkTypeConverter.getTypeString(Types.DOUBLE)
+			);
+		}
 	}
 
 	private String[] trainColsWithGroup() {

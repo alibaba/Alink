@@ -7,10 +7,11 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class StringParsersTest {
+public class StringParsersTest extends AlinkTestBase {
 	@Test
 	public void testJsonParser() throws Exception {
 		String jsonStr = "{\n" +

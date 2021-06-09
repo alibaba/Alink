@@ -22,7 +22,7 @@ import static com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo.LAZY_PRINT
  * A pipeline is a linear workflow which chains {@link EstimatorBase}s and {@link TransformerBase}s to execute an
  * algorithm.
  */
-public class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
+public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 
 	private static final long serialVersionUID = 1562871813230757217L;
 	ArrayList <PipelineStageBase <?>> stages = new ArrayList <>();
@@ -133,44 +133,31 @@ public class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 		TransformerBase <?>[] transformers = new TransformerBase <?>[stages.size()];
 		for (int i = 0; i < stages.size(); i++) {
 			PipelineStageBase <?> stage = stages.get(i);
+
 			if (i <= lastEstimatorIdx) {
 				if (stage instanceof EstimatorBase) {
 					transformers[i] = ((EstimatorBase <?, ?>) stage).fit(input);
 				} else if (stage instanceof TransformerBase) {
 					transformers[i] = (TransformerBase <?>) stage;
 				}
-				if (i < lastEstimatorIdx) {
-					// temporarily disable lazy print transform results
-					Boolean lazyPrintTransformDataEnabled = (Boolean) transformers[i].get(
-						LAZY_PRINT_TRANSFORM_DATA_ENABLED);
-					Boolean lazyPrintTransformStatEnabled = (Boolean) transformers[i].get(
-						LAZY_PRINT_TRANSFORM_STAT_ENABLED);
-					transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, false);
-					transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, false);
-
-					input = transformers[i].transform(input);
-
-					transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, lazyPrintTransformDataEnabled);
-					transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, lazyPrintTransformStatEnabled);
-				}
 			} else {
 				// After lastEstimatorIdx, there're only Transformer stages, so it's safe to do type cast.
 				transformers[i] = (TransformerBase <?>) stage;
+			}
 
-				if(withTransform){
-					// temporarily disable lazy print transform results
-					Boolean lazyPrintTransformDataEnabled = (Boolean) transformers[i].get(
-						LAZY_PRINT_TRANSFORM_DATA_ENABLED);
-					Boolean lazyPrintTransformStatEnabled = (Boolean) transformers[i].get(
-						LAZY_PRINT_TRANSFORM_STAT_ENABLED);
-					transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, false);
-					transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, false);
+			if (i < lastEstimatorIdx || withTransform) {
+				// temporarily disable lazy print transform results
+				Boolean lazyPrintTransformDataEnabled = (Boolean) transformers[i].get(
+					LAZY_PRINT_TRANSFORM_DATA_ENABLED);
+				Boolean lazyPrintTransformStatEnabled = (Boolean) transformers[i].get(
+					LAZY_PRINT_TRANSFORM_STAT_ENABLED);
+				transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, false);
+				transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, false);
 
-					input = transformers[i].transform(input);
+				input = transformers[i].transform(input);
 
-					transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, lazyPrintTransformDataEnabled);
-					transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, lazyPrintTransformStatEnabled);
-				}
+				transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, lazyPrintTransformDataEnabled);
+				transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, lazyPrintTransformStatEnabled);
 			}
 		}
 		return new Tuple2 <>(transformers, input);
@@ -276,6 +263,16 @@ public class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 		return load(filePath, MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID);
 	}
 
+	public static Pipeline collectLoad(BatchOperator <?> batchOp) {
+		return new Pipeline(
+			ModelExporterUtils.fillPipelineStages(
+				batchOp,
+				ModelExporterUtils.collectMetaFromOp(batchOp),
+				batchOp.getSchema()
+			).toArray(new PipelineStageBase[0]));
+	}
+
+	@Deprecated
 	public static Pipeline load(FilePath filePath, Long mlEnvId) {
 		Tuple2 <TableSchema, Row> schemaAndMeta = ModelExporterUtils.loadMetaFromAkFile(filePath);
 
@@ -289,25 +286,6 @@ public class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 				),
 				schemaAndMeta.f0
 			).toArray(new PipelineStageBase[0])
-		);
-	}
-
-	public static Pipeline collectLoad(BatchOperator <?> batchOp) {
-		return new Pipeline(
-			ModelExporterUtils.fillPipelineStages(
-				batchOp,
-				ModelExporterUtils.collectMetaFromOp(batchOp),
-				batchOp.getSchema()
-			).toArray(new PipelineStageBase[0]));
-	}
-
-	public static Pipeline load(BatchOperator <?> batchOp, Row metaRow) {
-		return new Pipeline(
-			ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
-				batchOp,
-				ModelExporterUtils.deserializePipelineStagesFromMeta(metaRow, batchOp.getSchema()),
-				batchOp.getSchema()
-			).toArray(new PipelineStageBase <?>[0])
 		);
 	}
 }

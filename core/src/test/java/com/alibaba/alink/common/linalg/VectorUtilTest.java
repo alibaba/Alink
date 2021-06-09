@@ -1,12 +1,14 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Test cases for VectorUtil.
  */
-public class VectorUtilTest {
+
+public class VectorUtilTest extends AlinkTestBase {
 	@Test
 	public void testParseDenseAndToString() {
 		DenseVector vec = new DenseVector(new double[] {1, 2, -3});

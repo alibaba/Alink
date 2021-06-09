@@ -16,6 +16,7 @@ import org.apache.flink.api.java.utils.DataSetUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.ExecutorUtils;
@@ -95,19 +96,9 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 	public T linkFrom(BatchOperator <?>... inputs) {
 		BatchOperator <?> in = checkAndGetFirst(inputs);
 
-		rewriteTreeType();
+		rewriteTreeType(getParams());
 
-		if (Criteria.isRegression(getParams().get(TreeUtil.TREE_TYPE))) {
-			getParams().set(ModelParamName.LABEL_TYPE, FlinkTypeConverter.getTypeString(Types.DOUBLE));
-		} else {
-			getParams().set(
-				ModelParamName.LABEL_TYPE,
-				FlinkTypeConverter.getTypeString(
-					TableUtil.findColTypeWithAssertAndHint(in.getSchema(),
-						getParams().get(RandomForestTrainParams.LABEL_COL))
-				)
-			);
-		}
+		rewriteLabelType(in.getSchema(), getParams());
 
 		getParams().set(ModelParamName.FEATURE_TYPES,
 			FlinkTypeConverter.getTypeString(
@@ -173,6 +164,21 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 		);
 
 		return (T) this;
+	}
+
+	public static void rewriteLabelType(TableSchema inputSchema, Params params) {
+		if (Criteria.isRegression(params.get(TreeUtil.TREE_TYPE))) {
+			params.set(ModelParamName.LABEL_TYPE, FlinkTypeConverter.getTypeString(Types.DOUBLE));
+		} else {
+			params.set(
+				ModelParamName.LABEL_TYPE,
+				FlinkTypeConverter.getTypeString(
+					TableUtil.findColTypeWithAssertAndHint(
+						inputSchema,
+						params.get(RandomForestTrainParams.LABEL_COL))
+				)
+			);
+		}
 	}
 
 	private DataSet <Row> parallelTrain(BatchOperator <?> in) {
@@ -339,33 +345,33 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 			.withBroadcastSet(labels, "labels");
 	}
 
-	private void rewriteTreeType() {
+	public static void rewriteTreeType(Params params) {
 		int numTrees = 0;
 		StringBuilder stringBuilder = new StringBuilder();
 
-		if (getParams().contains(RandomForestTrainParams.NUM_TREES_OF_INFO_GAIN)) {
-			int numTreeOfInfoGain = getParams().get(RandomForestTrainParams.NUM_TREES_OF_INFO_GAIN);
+		if (params.contains(RandomForestTrainParams.NUM_TREES_OF_INFO_GAIN)) {
+			int numTreeOfInfoGain = params.get(RandomForestTrainParams.NUM_TREES_OF_INFO_GAIN);
 			numTrees += numTreeOfInfoGain;
 		}
 
 		stringBuilder.append(numTrees);
 
-		if (getParams().contains(RandomForestTrainParams.NUM_TREES_OF_GINI)) {
-			int numTreeOfGini = getParams().get(RandomForestTrainParams.NUM_TREES_OF_GINI);
+		if (params.contains(RandomForestTrainParams.NUM_TREES_OF_GINI)) {
+			int numTreeOfGini = params.get(RandomForestTrainParams.NUM_TREES_OF_GINI);
 			numTrees += numTreeOfGini;
 		}
 
 		stringBuilder.append(",").append(numTrees);
 
-		if (getParams().contains(RandomForestTrainParams.NUM_TREES_OF_INFO_GAIN_RATIO)) {
-			int numTreeOfInfoGain = getParams().get(RandomForestTrainParams.NUM_TREES_OF_INFO_GAIN_RATIO);
+		if (params.contains(RandomForestTrainParams.NUM_TREES_OF_INFO_GAIN_RATIO)) {
+			int numTreeOfInfoGain = params.get(RandomForestTrainParams.NUM_TREES_OF_INFO_GAIN_RATIO);
 			numTrees += numTreeOfInfoGain;
 		}
 
 		if (numTrees > 0) {
-			getParams().set(RandomForestTrainParams.NUM_TREES, numTrees);
-			getParams().set(TreeUtil.TREE_TYPE, TreeUtil.TreeType.PARTITION);
-			getParams().set(HasTreePartition.TREE_PARTITION, stringBuilder.toString());
+			params.set(RandomForestTrainParams.NUM_TREES, numTrees);
+			params.set(TreeUtil.TREE_TYPE, TreeUtil.TreeType.PARTITION);
+			params.set(HasTreePartition.TREE_PARTITION, stringBuilder.toString());
 		}
 	}
 

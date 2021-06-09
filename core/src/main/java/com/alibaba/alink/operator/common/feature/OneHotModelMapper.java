@@ -1,11 +1,15 @@
 package com.alibaba.alink.operator.common.feature;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.Functional;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -13,9 +17,11 @@ import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper.
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.HasEnableElse;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
+import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,7 +147,6 @@ public class OneHotModelMapper extends ModelMapper {
 	 */
 	public OneHotModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
-		mapperBuilder = new OneHotMapperBuilder(params, dataSchema);
 	}
 
 	/**
@@ -169,8 +174,16 @@ public class OneHotModelMapper extends ModelMapper {
 
 		mapperBuilder.setSelectedColIndicesInData(super.getDataSchema());
 		mapperBuilder.setInvalidStrategy(model.modelData.meta.get(HasEnableElse.ENABLE_ELSE));
-		int[] selectedColIndicesInModel = TableUtil.findColIndicesWithAssert(trainColNames,
+		int[] selectedColIndicesInModel = TableUtil.findColIndices(trainColNames,
 			mapperBuilder.getSelectedCols());
+		for (int i : selectedColIndicesInModel) {
+			if (i == -1) {
+				mapperBuilder.setSelectedCols(trainColNames);
+				selectedColIndicesInModel = TableUtil.findColIndices(trainColNames,
+					mapperBuilder.getSelectedCols());
+				break;
+			}
+		}
 
 		for (int i = 0; i < mapperBuilder.getSelectedCols().length; i++) {
 			Map <String, Long> mapper = new HashMap <>();
@@ -264,46 +277,49 @@ public class OneHotModelMapper extends ModelMapper {
 			}
 		}
 
-		Row map(Row row) {
+		void map(SlicedSelectedSample selection, SlicedResult result) {
 			Long[] predictIndices = new Long[paramsBuilder.selectedCols.length];
 			for (int i = 0; i < paramsBuilder.selectedCols.length; i++) {
 				Map <String, Long> mapper = indexMapper.get(i);
-				int colIdxInData = selectedColIndicesInData[i];
-				Object val = row.getField(colIdxInData);
+				Object val = selection.get(i);
 				predictIndices[i] = null == val ? null : mapper.get(String.valueOf(val));
 
 				if (predictIndices[i] == null) {
 					predictIndices[i] = invalidStrategy.predictIndexFunc.apply(val, vectorSize.get(i));
 				}
 			}
-			return paramsBuilder
-				.outputColsHelper
-				.getResultRow(
-					row,
-					QuantileDiscretizerModelMapper
-						.setResultRow(
-							predictIndices,
-							paramsBuilder.encode,
-							dropIndex,
-							vectorSize,
-							paramsBuilder.dropLast,
-							assembledVectorSize)
-				);
+
+			Row res = QuantileDiscretizerModelMapper
+				.setResultRow(
+					predictIndices,
+					paramsBuilder.encode,
+					dropIndex,
+					vectorSize,
+					paramsBuilder.dropLast,
+					assembledVectorSize);
+			for (int i = 0; i < result.length(); i++) {
+				result.set(i, res.getField(i));
+			}
 		}
 	}
 
-	/**
-	 * Get output schema.
-	 *
-	 * @return output schema.
-	 */
 	@Override
-	public TableSchema getOutputSchema() {
-		return mapperBuilder.paramsBuilder.outputColsHelper.getResultSchema();
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(TableSchema modelSchema,
+																						   TableSchema dataSchema,
+																						   Params params) {
+		mapperBuilder = new OneHotMapperBuilder(params, dataSchema);
+		if (mapperBuilder.getSelectedCols() == null) {
+			mapperBuilder.setSelectedCols(dataSchema.getFieldNames());
+		}
+		return Tuple4.of(mapperBuilder.paramsBuilder.selectedCols,
+			mapperBuilder.paramsBuilder.resultCols,
+			mapperBuilder.paramsBuilder.resultColTypes,
+			mapperBuilder.paramsBuilder.reservedCols);
 	}
 
 	@Override
-	public Row map(Row row) throws Exception {
-		return mapperBuilder.map(row);
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		mapperBuilder.map(selection, result);
 	}
+
 }

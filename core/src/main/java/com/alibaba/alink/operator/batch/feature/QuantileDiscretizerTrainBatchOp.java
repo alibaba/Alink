@@ -8,8 +8,10 @@ import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.functions.RichReduceFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.api.java.utils.DataSetUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -68,6 +70,26 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		final int[] quantileNum,
 		final HasRoundMode.RoundMode roundMode,
 		final boolean zeroAsMissing) {
+
+        Tuple4<DataSet <PairComparable>, DataSet <Tuple2 <Integer, Long>>,
+            DataSet <Long>, DataSet <Tuple2 <Integer, Long>>> quantileData =
+            quantilePreparing(input, zeroAsMissing);
+
+		/* calculate quantile */
+		return quantileData.f0
+			.mapPartition(new MultiQuantile(quantileNum, roundMode))
+			.withBroadcastSet(quantileData.f1, "counts")
+			.withBroadcastSet(quantileData.f2, "totalCnt")
+			.withBroadcastSet(quantileData.f3, "missingCounts")
+			.groupBy(0)
+			.reduceGroup(new ReduceQuantile());
+	}
+
+
+
+	public static Tuple4<DataSet <PairComparable>, DataSet <Tuple2 <Integer, Long>>,
+        DataSet <Long>, DataSet <Tuple2 <Integer, Long>>> quantilePreparing(DataSet <Row> input,
+											final boolean zeroAsMissing) {
 		/* instance count of dataset */
 		DataSet <Long> cnt = DataSetUtils
 			.countElementsPerPartition(input)
@@ -193,47 +215,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		/* sort data */
 		Tuple2 <DataSet <PairComparable>, DataSet <Tuple2 <Integer, Long>>> sortedData
 			= SortUtilsNext.pSort(flatten);
-
-		/* calculate quantile */
-		return sortedData.f0
-			.mapPartition(new MultiQuantile(quantileNum, roundMode))
-			.withBroadcastSet(sortedData.f1, "counts")
-			.withBroadcastSet(cnt, "totalCnt")
-			.withBroadcastSet(missingCount, "missingCounts")
-			.groupBy(0)
-			.reduceGroup(new RichGroupReduceFunction <Tuple2 <Integer, Number>, Row>() {
-				private static final long serialVersionUID = 9176005213564219097L;
-
-				@Override
-				public void open(Configuration parameters) throws Exception {
-					super.open(parameters);
-					LOG.info("{} open.", getRuntimeContext().getTaskName());
-				}
-
-				@Override
-				public void close() throws Exception {
-					super.close();
-					LOG.info("{} close.", getRuntimeContext().getTaskName());
-				}
-
-				@Override
-				public void reduce(Iterable <Tuple2 <Integer, Number>> values, Collector <Row> out) throws Exception {
-					TreeSet <Number> set = new TreeSet <>(new Comparator <Number>() {
-						@Override
-						public int compare(Number o1, Number o2) {
-							return SortUtils.OBJECT_COMPARATOR.compare(o1, o2);
-						}
-					});
-
-					int id = -1;
-					for (Tuple2 <Integer, Number> val : values) {
-						id = val.f0;
-						set.add(val.f1);
-					}
-
-					out.collect(Row.of(id, set.toArray(new Number[0])));
-				}
-			});
+		return Tuple4.of(sortedData.f0, sortedData.f1, cnt, missingCount);
 	}
 
 	@Override
@@ -279,13 +261,14 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		return this;
 	}
 
+
 	public static class MultiQuantile
 		extends RichMapPartitionFunction <PairComparable, Tuple2 <Integer, Number>> {
 		private static final long serialVersionUID = -467677491431226184L;
 		private List <Tuple2 <Integer, Long>> counts;
 		private List <Tuple2 <Integer, Long>> missingCounts;
 		private long totalCnt = 0;
-		private int[] quantileNum;
+		protected int[] quantileNum;
 		private HasRoundMode.RoundMode roundType;
 		private int taskId;
 
@@ -433,11 +416,45 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		}
 	}
 
-	public static class SerializeModel implements GroupReduceFunction <Row, Row> {
+	public static class ReduceQuantile extends RichGroupReduceFunction <Tuple2 <Integer, Number>, Row> {
+		private static final long serialVersionUID = 9176005213564219097L;
+
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			super.open(parameters);
+			LOG.info("{} open.", getRuntimeContext().getTaskName());
+		}
+
+		@Override
+		public void close() throws Exception {
+			super.close();
+			LOG.info("{} close.", getRuntimeContext().getTaskName());
+		}
+
+		@Override
+		public void reduce(Iterable <Tuple2 <Integer, Number>> values, Collector <Row> out) throws Exception {
+			TreeSet <Number> set = new TreeSet <>(new Comparator <Number>() {
+				@Override
+				public int compare(Number o1, Number o2) {
+					return SortUtils.OBJECT_COMPARATOR.compare(o1, o2);
+				}
+			});
+
+			int id = -1;
+			for (Tuple2 <Integer, Number> val : values) {
+				id = val.f0;
+				set.add(val.f1);
+			}
+
+			out.collect(Row.of(id, set.toArray(new Number[0])));
+		}
+	}
+
+	public static class SerializeModel extends RichGroupReduceFunction <Row, Row> {
 		private static final long serialVersionUID = 7835845627485620888L;
 		private Params meta;
-		private String[] colNames;
-		private TypeInformation <?>[] colTypes;
+		protected String[] colNames;
+		protected TypeInformation <?>[] colTypes;
 
 		public SerializeModel(Params meta, String[] colNames, TypeInformation <?>[] colTypes) {
 			this.meta = meta;

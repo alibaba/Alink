@@ -36,8 +36,8 @@ public class MultivariateGaussian implements Serializable {
 	private double u;
 
 	// data buffers for computing pdf
-	private DenseVector delta;
-	private DenseVector v;
+	private transient ThreadLocal<DenseVector> threadLocalDelta;
+	private transient ThreadLocal<DenseVector> threadLocalV;
 
 	/**
 	 * The constructor.
@@ -48,16 +48,16 @@ public class MultivariateGaussian implements Serializable {
 	public MultivariateGaussian(DenseVector mean, DenseMatrix cov) {
 		this.mean = mean;
 		this.cov = cov;
-		this.delta = DenseVector.zeros(mean.size());
-		this.v = DenseVector.zeros(mean.size());
+		threadLocalDelta = ThreadLocal.withInitial(() -> DenseVector.zeros(mean.size()));
+		threadLocalV = ThreadLocal.withInitial(() -> DenseVector.zeros(mean.size()));
 		calculateCovarianceConstants();
 	}
 
 	public MultivariateGaussian(MultivariateGaussian md) {
 		this.mean = md.mean;
 		this.cov = md.cov;
-		this.delta = DenseVector.zeros(mean.size());
-		this.v = DenseVector.zeros(mean.size());
+		threadLocalDelta = ThreadLocal.withInitial(() -> DenseVector.zeros(mean.size()));
+		threadLocalV = ThreadLocal.withInitial(() -> DenseVector.zeros(mean.size()));
 		this.rootSigmaInv = md.rootSigmaInv;
 		this.u = md.u;
 	}
@@ -73,6 +73,8 @@ public class MultivariateGaussian implements Serializable {
 	 * Returns the log-density of this multivariate Gaussian at given point x .
 	 */
 	public double logpdf(Vector x) {
+		DenseVector delta = threadLocalDelta.get();
+		DenseVector v = threadLocalV.get();
 		int n = mean.size();
 		System.arraycopy(mean.getData(), 0, delta.getData(), 0, n);
 		BLAS.scal(-1.0, delta);
@@ -81,6 +83,7 @@ public class MultivariateGaussian implements Serializable {
 		} else if (x instanceof SparseVector) {
 			BLAS.axpy(1., (SparseVector) x, delta);
 		}
+		// Note that here beta is always zero otherwise we cannot achieve thread-safe.
 		BLAS.gemv(1.0, rootSigmaInv, true, delta, 0., v);
 		return u - 0.5 * BLAS.dot(v, v);
 	}

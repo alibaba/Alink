@@ -8,13 +8,14 @@ import org.apache.flink.api.java.tuple.Tuple3;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.common.dataproc.BlockwiseCross;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockwiseCrossTest {
+public class BlockwiseCrossTest extends AlinkTestBase {
 	@Test
 	public void testFindTopK() throws Exception {
 

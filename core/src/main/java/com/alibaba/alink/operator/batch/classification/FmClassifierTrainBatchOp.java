@@ -24,11 +24,11 @@ public class FmClassifierTrainBatchOp extends FmTrainBatchOp <FmClassifierTrainB
 	private static final long serialVersionUID = -8385944325790904485L;
 
 	public FmClassifierTrainBatchOp() {
-		super(new Params(), "binary_classification");
+		super(new Params(), Task.BINARY_CLASSIFICATION);
 	}
 
 	public FmClassifierTrainBatchOp(Params params) {
-		super(params, "binary_classification");
+		super(params, Task.BINARY_CLASSIFICATION);
 	}
 
 	@Override

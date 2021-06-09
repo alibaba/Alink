@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.distance;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +14,8 @@ import java.util.List;
 /**
  * Unit test for FastDistanceSparseData.
  */
-public class FastDistanceSparseDataTest {
+
+public class FastDistanceSparseDataTest extends AlinkTestBase {
 	private List <Integer>[] indices;
 	private List <Double>[] values;
 	private HashMap <Integer, Tuple2 <List <Integer>, List <Double>>> indexHashMap;

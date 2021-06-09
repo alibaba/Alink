@@ -1,78 +1,112 @@
 package com.alibaba.alink.operator.common.fm;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
+import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.model.LabeledModelDataConverter;
+import com.alibaba.alink.common.model.ModelDataConverter;
 import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.FmDataFormat;
-import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
+
+import static com.alibaba.alink.common.utils.JsonConverter.gson;
 
 /**
  * Fm model converter. This converter can help serialize and deserialize the model data.
  */
-public class FmModelDataConverter extends LabeledModelDataConverter <FmModelData, FmModelData> {
+public class FmModelDataConverter implements ModelDataConverter<FmModelData, FmModelData> {
 
-	public FmModelDataConverter() {
-		this(null);
-	}
+    /**
+     * Data type of labels.
+     */
+    protected TypeInformation labelType;
 
-	/**
-	 * @param labelType label type.
-	 */
-	public FmModelDataConverter(TypeInformation labelType) {
-		super(labelType);
-	}
+    public FmModelDataConverter(TypeInformation labelType) {
+        this.labelType = labelType;
+    }
 
-	/**
-	 * @param modelData The model data to serialize.
-	 * @return
-	 */
-	@Override
-	protected Tuple3 <Params, Iterable <String>, Iterable <Object>> serializeModel(FmModelData modelData) {
-		Params meta = new Params()
-			.set(ModelParamName.VECTOR_COL_NAME, modelData.vectorColName)
-			.set(ModelParamName.LABEL_COL_NAME, modelData.labelColName)
-			.set(ModelParamName.TASK, modelData.task.toString())
-			.set(ModelParamName.VECTOR_SIZE, modelData.vectorSize)
-			.set(ModelParamName.FEATURE_COL_NAMES, modelData.featureColNames)
-			.set(ModelParamName.LABEL_VALUES, modelData.labelValues)
-			.set(ModelParamName.DIM, modelData.dim)
-			.set(ModelParamName.LOSS_CURVE, modelData.convergenceInfo);
-		FmDataFormat factors = modelData.fmModel;
+    public FmModelDataConverter() {
+    }
 
-		return Tuple3.of(meta, Collections.singletonList(JsonConverter.toJson(factors)),
-			Arrays.asList(modelData.labelValues));
-	}
+    @Override
+    public void save(FmModelData modelData, Collector<Row> collector) {
+        Params meta = new Params()
+                .set(ModelParamName.VECTOR_COL_NAME, modelData.vectorColName)
+                .set(ModelParamName.LABEL_COL_NAME, modelData.labelColName)
+                .set(ModelParamName.TASK, modelData.task)
+                .set(ModelParamName.VECTOR_SIZE, modelData.vectorSize)
+                .set(ModelParamName.FEATURE_COL_NAMES, modelData.featureColNames)
+                .set(ModelParamName.LABEL_VALUES, modelData.labelValues)
+                .set(ModelParamName.DIM, modelData.dim)
+                .set(ModelParamName.LOSS_CURVE, modelData.convergenceInfo);
+        FmDataFormat factors = modelData.fmModel;
 
-	/**
-	 * @param meta           The model meta data.
-	 * @param data           The model concrete data.
-	 * @param distinctLabels Distinct label values of training data.
-	 * @return
-	 */
-	@Override
-	protected FmModelData deserializeModel(Params meta, Iterable <String> data, Iterable <Object> distinctLabels) {
-		FmModelData modelData = new FmModelData();
-		String json = data.iterator().next();
-		modelData.fmModel = JsonConverter.fromJson(json, FmDataFormat.class);
-		modelData.vectorColName = meta.get(ModelParamName.VECTOR_COL_NAME);
-		modelData.featureColNames = meta.get(ModelParamName.FEATURE_COL_NAMES);
-		modelData.labelColName = meta.get(ModelParamName.LABEL_COL_NAME);
-		modelData.task = Task.valueOf(meta.get(ModelParamName.TASK));
-		modelData.dim = meta.get(ModelParamName.DIM);
-		modelData.vectorSize = meta.get(ModelParamName.VECTOR_SIZE);
-		modelData.convergenceInfo = meta.get(ModelParamName.LOSS_CURVE);
+        collector.collect(Row.of(null, meta.toJson(), null));
 
-		if (meta.contains(ModelParamName.LABEL_VALUES)) {
-			modelData.labelValues = meta.get(ModelParamName.LABEL_VALUES);
-		}
+        for (int i = 0; i < factors.factors.length; ++i) {
+            double[] factor = factors.factors[i];
+            collector.collect(Row.of((long)i, gson.toJson(factor), null));
+        }
+        collector.collect(Row.of(-1L, gson.toJson(new double[]{factors.bias}), null));
+    }
 
-		return modelData;
-	}
+    @Override
+    public FmModelData load(List<Row> rows) {
+        Params meta = null;
+        for (Row row : rows) {
+            Long featureId = (Long) row.getField(0);
+            if (featureId == null && row.getField(1) != null) {
+                String metaStr = (String) row.getField(1);
+                meta = Params.fromJson(metaStr);
+                break;
+            }
+        }
+
+        FmModelData modelData = new FmModelData();
+        modelData.vectorColName = meta.get(ModelParamName.VECTOR_COL_NAME);
+        modelData.featureColNames = meta.get(ModelParamName.FEATURE_COL_NAMES);
+        modelData.labelColName = meta.get(ModelParamName.LABEL_COL_NAME);
+        modelData.task = meta.get(ModelParamName.TASK);
+        modelData.dim = meta.get(ModelParamName.DIM);
+        modelData.vectorSize = meta.get(ModelParamName.VECTOR_SIZE);
+        modelData.convergenceInfo = meta.get(ModelParamName.LOSS_CURVE);
+
+        if (meta.contains(ModelParamName.LABEL_VALUES)) {
+            modelData.labelValues = meta.get(ModelParamName.LABEL_VALUES);
+        }
+        modelData.fmModel = new FmDataFormat();
+        modelData.fmModel.factors = new double[modelData.vectorSize][];
+        modelData.fmModel.dim = modelData.dim;
+        for (Row row : rows) {
+            Long featureId = (Long) row.getField(0);
+            if (featureId == null) {
+                continue;
+            } else if (featureId >= 0) {
+                double[] factor = gson.fromJson((String) row.getField(1), double[].class);
+                modelData.fmModel.factors[featureId.intValue()] = factor;
+            } else if (featureId == -1) {
+                double[] factor = gson.fromJson((String) row.getField(1), double[].class);
+                modelData.fmModel.bias = factor[0];
+            }
+        }
+        return modelData;
+    }
+
+    /**
+     * A utility function to extract label type from model schema.
+     */
+    public static TypeInformation extractLabelType(TableSchema modelSchema) {
+        return modelSchema.getFieldTypes()[2];
+    }
+
+    @Override
+    public TableSchema getModelSchema() {
+        String[] modelColNames = new String[] {"feature_id", "feature_weights", "label_type"};
+        TypeInformation[] modelColTypes = new TypeInformation[] {Types.LONG, Types.STRING, labelType};
+        return new TableSchema(modelColNames, modelColTypes);
+    }
 }

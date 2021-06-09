@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.distance;
 
 import com.alibaba.alink.operator.common.similarity.Sample;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -8,7 +9,7 @@ import org.junit.rules.ExpectedException;
 
 import java.math.BigInteger;
 
-public class SimHashHammingDistanceTest {
+public class SimHashHammingDistanceTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

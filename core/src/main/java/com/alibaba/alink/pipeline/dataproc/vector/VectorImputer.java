@@ -1,5 +1,7 @@
 package com.alibaba.alink.pipeline.dataproc.vector;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorImputerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.vector.VectorImputerPredictParams;
@@ -23,6 +25,10 @@ public class VectorImputer extends Trainer <VectorImputer, VectorImputerModel> i
 
 	public VectorImputer() {
 		super();
+	}
+
+	public VectorImputer(Params params) {
+		super(params);
 	}
 
 	@Override

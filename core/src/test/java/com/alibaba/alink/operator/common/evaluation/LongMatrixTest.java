@@ -1,12 +1,14 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for LongMatrix.
  */
-public class LongMatrixTest {
+
+public class LongMatrixTest extends AlinkTestBase {
 	private LongMatrix longMatrix = new LongMatrix(new long[][] {{5, 1, 2}, {1, 4, 0}});
 
 	@Test

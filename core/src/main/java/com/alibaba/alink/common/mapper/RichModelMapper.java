@@ -3,9 +3,9 @@ package com.alibaba.alink.common.mapper;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.params.mapper.RichModelMapperParams;
@@ -24,12 +24,6 @@ import com.alibaba.alink.params.mapper.RichModelMapperParams;
 public abstract class RichModelMapper extends ModelMapper {
 
 	private static final long serialVersionUID = -6722995426402759862L;
-	/**
-	 * The output column helper which control the output format.
-	 *
-	 * @see OutputColsHelper
-	 */
-	private final OutputColsHelper outputColsHelper;
 
 	/**
 	 * The condition that the mapper output the prediction detail or not.
@@ -38,19 +32,7 @@ public abstract class RichModelMapper extends ModelMapper {
 
 	public RichModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
-		String[] reservedColNames = this.params.get(RichModelMapperParams.RESERVED_COLS);
-		String predResultColName = this.params.get(RichModelMapperParams.PREDICTION_COL);
-		TypeInformation predResultColType = initPredResultColType();
 		isPredDetail = params.contains(RichModelMapperParams.PREDICTION_DETAIL_COL);
-		if (isPredDetail) {
-			String predDetailColName = params.get(RichModelMapperParams.PREDICTION_DETAIL_COL);
-			this.outputColsHelper = new OutputColsHelper(dataSchema,
-				new String[] {predResultColName, predDetailColName},
-				new TypeInformation[] {predResultColType, Types.STRING}, reservedColNames);
-		} else {
-			this.outputColsHelper = new OutputColsHelper(dataSchema, predResultColName, predResultColType,
-				reservedColNames);
-		}
 	}
 
 	/**
@@ -60,39 +42,60 @@ public abstract class RichModelMapper extends ModelMapper {
 	 *
 	 * @return the type of the prediction result column
 	 */
-	protected TypeInformation initPredResultColType() {
-		return super.getModelSchema().getFieldTypes()[2];
+	protected TypeInformation <?> initPredResultColType(TableSchema modelSchema) {
+		return modelSchema.getFieldTypes()[2];
 	}
 
 	@Override
-	public TableSchema getOutputSchema() {
-		return outputColsHelper.getResultSchema();
+	protected final Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema modelSchema, TableSchema dataSchema, Params params) {
+
+		String[] selectedCols = dataSchema.getFieldNames();
+
+		String[] outputCols;
+		TypeInformation <?>[] outputTypes;
+		TypeInformation <?> predResultColType = initPredResultColType(modelSchema);
+		String predResultColName = params.get(RichModelMapperParams.PREDICTION_COL);
+		boolean isPredDetail = params.contains(RichModelMapperParams.PREDICTION_DETAIL_COL);
+		if (isPredDetail) {
+			String predDetailColName = params.get(RichModelMapperParams.PREDICTION_DETAIL_COL);
+			outputCols = new String[] {predResultColName, predDetailColName};
+			outputTypes = new TypeInformation <?>[] {predResultColType, Types.STRING};
+		} else {
+			outputCols = new String[] {predResultColName};
+			outputTypes = new TypeInformation <?>[] {predResultColType};
+		}
+
+		String[] reservedColNames = params.get(RichModelMapperParams.RESERVED_COLS);
+
+		return Tuple4.of(selectedCols, outputCols, outputTypes, reservedColNames);
+	}
+
+	@Override
+	protected final void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		if (isPredDetail) {
+			Tuple2 <Object, String> t2 = predictResultDetail(selection);
+			result.set(0, t2.f0);
+			result.set(1, t2.f1);
+		} else {
+			result.set(0, predictResult(selection));
+		}
 	}
 
 	/**
 	 * Calculate the prediction result.
 	 *
-	 * @param row the input
+	 * @param selection the input
 	 * @return the prediction result.
 	 */
-	protected abstract Object predictResult(Row row) throws Exception;
+	protected abstract Object predictResult(SlicedSelectedSample selection) throws Exception;
 
 	/**
 	 * Calculate the prediction result ant the prediction detail.
 	 *
-	 * @param row the input
+	 * @param selection the input
 	 * @return The prediction result and the the prediction detail.
 	 */
-	protected abstract Tuple2 <Object, String> predictResultDetail(Row row) throws Exception;
-
-	@Override
-	public Row map(Row row) throws Exception {
-		if (isPredDetail) {
-			Tuple2 <Object, String> t2 = predictResultDetail(row);
-			return this.outputColsHelper.getResultRow(row, Row.of(t2.f0, t2.f1));
-		} else {
-			return this.outputColsHelper.getResultRow(row, Row.of(predictResult(row)));
-		}
-	}
+	protected abstract Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception;
 
 }

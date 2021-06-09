@@ -2,9 +2,9 @@ package com.alibaba.alink.operator.common.dataproc.vector;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.Vector;
@@ -17,45 +17,45 @@ import java.util.ArrayList;
  */
 public class VectorSerializeMapper extends Mapper {
 	private static final long serialVersionUID = -9127538856735420252L;
-	private final boolean needSerialize;
-	private final String[] colNames;
-	private final TypeInformation[] colTypes;
-	private ArrayList <Integer> colIndices = new ArrayList <>();
 
 	public VectorSerializeMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
-		TypeInformation[] types = dataSchema.getFieldTypes();
+	}
+
+	@Override
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema dataSchema, Params params) {
+
+		ArrayList <String> vectorCols = new ArrayList <>();
+		ArrayList <TypeInformation <?>> vectorColTypes = new ArrayList <>();
+
+		String[] names = dataSchema.getFieldNames();
+		TypeInformation <?>[] types = dataSchema.getFieldTypes();
+
 		for (int i = 0; i < types.length; i++) {
 			if (VectorTypes.VECTOR.equals(types[i]) ||
 				VectorTypes.DENSE_VECTOR.equals(types[i]) ||
 				VectorTypes.SPARSE_VECTOR.equals(types[i])) {
-				colIndices.add(i);
+
+				vectorCols.add(names[i]);
+				vectorColTypes.add(Types.STRING);
 			}
 		}
-		this.needSerialize = colIndices.size() > 0;
-		for (Integer idx : colIndices) {
-			types[idx] = Types.STRING;
-		}
-		this.colNames = dataSchema.getFieldNames();
-		this.colTypes = types;
+
+		String[] selectedCols = vectorCols.toArray(new String[0]);
+		TypeInformation <?>[] selectedColTypes = vectorColTypes.toArray(new TypeInformation <?>[0]);
+
+		return Tuple4.of(selectedCols, selectedCols, selectedColTypes, null);
 	}
 
 	@Override
-	public TableSchema getOutputSchema() {
-		return new TableSchema(this.colNames, this.colTypes);
-	}
-
-	@Override
-	public Row map(Row row) throws Exception {
-		if (this.needSerialize) {
-			for (Integer idx : colIndices) {
-				Vector vector = (Vector) row.getField(idx);
-				if (null != vector) {
-					row.setField(idx, vector.toString());
-				}
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		for (int i = 0; i < selection.length(); i++) {
+			Vector vector = (Vector) selection.get(i);
+			if (null != vector) {
+				result.set(i, vector.toString());
 			}
 		}
-		return row;
 	}
 }
 

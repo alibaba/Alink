@@ -10,6 +10,7 @@ import com.alibaba.alink.operator.batch.source.NumSeqSourceBatchOp;
 import com.alibaba.alink.operator.stream.onlinelearning.FtrlPredictStreamOp;
 import com.alibaba.alink.operator.stream.onlinelearning.FtrlTrainStreamOp;
 import com.alibaba.alink.pipeline.PipelineStageBase;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.reflections.Reflections;
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class OperatorConstructorTest {
+public class OperatorConstructorTest extends AlinkTestBase {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	public <T extends WithParams> void testConstructor(Class <T> clazz) {

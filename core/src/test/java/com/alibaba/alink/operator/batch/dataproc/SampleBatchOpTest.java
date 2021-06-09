@@ -33,7 +33,7 @@ public class SampleBatchOpTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 		TableSourceBatchOp tableSourceBatchOp = new TableSourceBatchOp(getBatchTable());
-		long cnt = tableSourceBatchOp.link(new SampleBatchOp(0.5, true)).count();
+		long cnt = tableSourceBatchOp.link(new SampleBatchOp(0.5, false)).count();
 		assert cnt >= 0 && cnt <= 10;
 	}
 }

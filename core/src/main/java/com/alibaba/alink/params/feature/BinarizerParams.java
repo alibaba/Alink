@@ -8,8 +8,7 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
 /**
  * Params for binarizer.
  */
-public interface BinarizerParams<T> extends
-	SISOMapperParams <T> {
+public interface BinarizerParams<T> extends SISOMapperParams <T> {
 
 	ParamInfo <Double> THRESHOLD = ParamInfoFactory
 		.createParamInfo("threshold", Double.class)

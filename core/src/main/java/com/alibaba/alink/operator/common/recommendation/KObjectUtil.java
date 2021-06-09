@@ -15,6 +15,8 @@ import java.util.TreeMap;
 
 public class KObjectUtil {
 	public static final String OBJECT_NAME = "object";
+	public static final String RATING_NAME = "rate";
+	public static final String SCORE_NAME = "score";
 
 	public static String serializeKObject(Map <String, List <Object>> kobject) {
 		Map <String, String> result = new HashMap <>();
@@ -102,6 +104,33 @@ public class KObjectUtil {
 		}
 
 		return JsonConverter.toJson(result);
+	}
+
+	public static String MergeRecommJson(String recommName, String recommJson, String initRecommJson) {
+		Map <String, String> initRecomm = JsonConverter.fromJson(
+			initRecommJson,
+			new TypeReference <Map <String, String>>() {
+			}.getType()
+		);
+		Map <String, String> recomm = JsonConverter.fromJson(
+			recommJson,
+			new TypeReference <Map <String, String>>() {
+			}.getType()
+		);
+		Map <String, String> result = new TreeMap <>();
+
+		List <Object> initRecommList = JsonConverter.fromJson(initRecomm.get(recommName), List.class);
+		List <Object> recommList = JsonConverter.fromJson(recomm.get(recommName), List.class);
+
+		for (Object obj : initRecommList) {
+			if (!recommList.contains(obj)) {
+				recommList.add(obj);
+			}
+		}
+		result.put(recommName, JsonConverter.toJson(recommList));
+
+		return JsonConverter.toJson(result);
+
 	}
 
 	public static Tuple2 <List <Object>, Map <String, List <Double>>>

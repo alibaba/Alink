@@ -8,8 +8,7 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
 /**
  * parameters of vector normalizer.
  */
-public interface VectorNormalizeParams<T> extends
-	SISOMapperParams <T> {
+public interface VectorNormalizeParams<T> extends SISOMapperParams <T> {
 
 	ParamInfo <Double> P = ParamInfoFactory
 		.createParamInfo("p", Double.class)

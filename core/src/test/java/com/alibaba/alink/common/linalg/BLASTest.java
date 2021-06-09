@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -8,7 +9,7 @@ import org.junit.rules.ExpectedException;
 /**
  * The test cases for {@link BLAS}.
  */
-public class BLASTest {
+public class BLASTest extends AlinkTestBase {
 	private static final double TOL = 1.0e-8;
 	private DenseMatrix mat = new DenseMatrix(2, 3, new double[] {1, 4, 2, 5, 3, 6});
 	private DenseVector dv1 = new DenseVector(new double[] {1, 2});
@@ -48,14 +49,14 @@ public class BLASTest {
 	public void testSparseAxpy() throws Exception {
 		DenseVector v2 = DenseVector.ones(2);
 		BLAS.axpy(1.0, spv3, v2);
-		Assert.assertArrayEquals(v2.getData(), new double[]{2, 1}, TOL);
+		Assert.assertArrayEquals(v2.getData(), new double[] {2, 1}, TOL);
 	}
 
 	@Test
 	public void testSparseAxpy2() throws Exception {
 		DenseVector v3 = DenseVector.ones(3);
 		BLAS.axpy(1.0, spv3, v3);
-		Assert.assertArrayEquals(v3.getData(), new double[]{2, 1, 4}, TOL);
+		Assert.assertArrayEquals(v3.getData(), new double[] {2, 1, 4}, TOL);
 	}
 
 	@Test

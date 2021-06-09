@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.nlp.NGramParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -16,7 +17,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for NGramMapper.
  */
-public class NGramMapperTest {
+
+public class NGramMapperTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

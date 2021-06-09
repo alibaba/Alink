@@ -7,10 +7,11 @@ import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.dataproc.format.FromKvParams;
 import com.alibaba.alink.params.dataproc.format.ToTripleParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class AnyToTripleFlatMapperTest {
+public class AnyToTripleFlatMapperTest extends AlinkTestBase {
 	@Test
 	public void flatMap() throws Exception {
 

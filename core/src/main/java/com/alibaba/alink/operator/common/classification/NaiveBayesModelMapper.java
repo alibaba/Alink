@@ -26,7 +26,6 @@ import java.util.List;
 public class NaiveBayesModelMapper extends RichModelMapper {
 
 	private static final long serialVersionUID = -1139163925664147812L;
-	private String[] colNames;
 	private int[] featureIndices;
 	private NaiveBayesModelData modelData;
 	private MultiStringIndexerModelMapper stringIndexerModelPredictor;
@@ -41,25 +40,30 @@ public class NaiveBayesModelMapper extends RichModelMapper {
 	 */
 	private final double maxValue = 0.;
 	private final double minValue = Math.log(1e-9);
+	private transient ThreadLocal<Row> inputBufferThreadLocal;
 
 	public NaiveBayesModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
-		this.colNames = dataSchema.getFieldNames();
 	}
 
 	@Override
-	protected Object predictResult(Row row) throws Exception {
-		double[] probs = calculateProb(row);
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		Row inputBuffer = inputBufferThreadLocal.get();
+		selection.fillRow(inputBuffer);
+		double[] probs = calculateProb(inputBuffer);
 		return NaiveBayesTextModelMapper.findMaxProbLabel(probs, modelData.label);
 	}
 
 	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) throws Exception {
-		double[] probs = calculateProb(row);
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
+		Row inputBuffer = inputBufferThreadLocal.get();
+		selection.fillRow(inputBuffer);
+		double[] probs = calculateProb(inputBuffer);
 		Object label = NaiveBayesTextModelMapper.findMaxProbLabel(probs, modelData.label);
 		String jsonDetail = NaiveBayesTextModelMapper.generateDetail(probs, modelData.piArray, modelData.label);
 		return Tuple2.of(label, jsonDetail);
 	}
+
 
 	@Override
 	public void loadModel(List <Row> modelRows) {
@@ -67,7 +71,7 @@ public class NaiveBayesModelMapper extends RichModelMapper {
 		int featureNumber = modelData.featureNames.length;
 		featureIndices = new int[featureNumber];
 		for (int i = 0; i < featureNumber; ++i) {
-			featureIndices[i] = TableUtil.findColIndex(colNames, modelData.featureNames[i]);
+			featureIndices[i] = TableUtil.findColIndex(ioSchema.f0, modelData.featureNames[i]);
 		}
 		TableSchema modelSchema = getModelSchema();
 		List <String> listCateCols = new ArrayList <>();
@@ -106,6 +110,7 @@ public class NaiveBayesModelMapper extends RichModelMapper {
 				)
 				.set(NumericalTypeCastParams.TARGET_TYPE, NumericalTypeCastParams.TargetType.valueOf("DOUBLE"))
 		);
+		inputBufferThreadLocal = ThreadLocal.withInitial(() -> new Row(ioSchema.f0.length));
 	}
 
 	private Row transRow(Row row) throws Exception {
@@ -120,8 +125,7 @@ public class NaiveBayesModelMapper extends RichModelMapper {
 	/**
 	 * Calculate probability of the input data.
 	 */
-	private double[] calculateProb(Row row) throws Exception {
-		Row rowData = Row.copy(row);
+	private double[] calculateProb(Row rowData) throws Exception {
 		rowData = transRow(rowData);
 		int labelSize = this.modelData.label.length;
 		double[] probs = new double[labelSize];

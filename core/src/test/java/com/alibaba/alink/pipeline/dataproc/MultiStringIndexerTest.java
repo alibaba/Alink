@@ -4,6 +4,7 @@ import org.apache.flink.runtime.client.JobExecutionException;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.HugeMultiStringIndexerPredictBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerPredictBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -22,6 +23,7 @@ import java.util.Map;
 /**
  * Test cases for {@link MultiStringIndexer}.
  */
+
 public class MultiStringIndexerTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
@@ -73,6 +75,33 @@ public class MultiStringIndexerTest extends AlinkTestBase {
 	}
 
 	@Test
+	public void testHugeMultiStringIndexerPredictBatchOp() {
+		BatchOperator data = new MemSourceBatchOp(Arrays.asList(rows), new String[] {"f0", "f1"});
+
+		MultiStringIndexerTrainBatchOp stringIndexer = new MultiStringIndexerTrainBatchOp()
+			.setSelectedCols("f1", "f0")
+			.setStringOrderType("frequency_desc");
+
+		HugeMultiStringIndexerPredictBatchOp predictor = new HugeMultiStringIndexerPredictBatchOp()
+			.setSelectedCols("f0")
+			.setReservedCols("f0")
+			.setOutputCols("f0_index")
+			.setHandleInvalid("skip");
+
+		stringIndexer.linkFrom(data);
+		data = predictor.linkFrom(stringIndexer, data);
+
+		Assert.assertEquals(data.getColNames().length, 2);
+		List <Row> result = data.collect();
+		Assert.assertEquals(result.size(), 4);
+
+		result.forEach(row -> {
+			String token = (String) row.getField(0);
+			Assert.assertEquals(map1.get(token), row.getField(1));
+		});
+	}
+
+	@Test
 	public void testMultiStringIndexerPredictBatchOp() {
 		BatchOperator data = new MemSourceBatchOp(Arrays.asList(rows), new String[] {"f0", "f1"});
 
@@ -109,7 +138,7 @@ public class MultiStringIndexerTest extends AlinkTestBase {
 			.setStringOrderType("frequency_desc")
 			.linkFrom(data.firstN(3));
 
-		MultiStringIndexerPredictBatchOp predictor = new MultiStringIndexerPredictBatchOp()
+		HugeMultiStringIndexerPredictBatchOp predictor = new HugeMultiStringIndexerPredictBatchOp()
 			.setSelectedCols("f0", "f1")
 			.setReservedCols("f0")
 			.setOutputCols("f0_index")

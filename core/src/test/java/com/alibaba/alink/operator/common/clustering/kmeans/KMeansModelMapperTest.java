@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.clustering.KMeansPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -17,7 +18,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for KMeansModelMapper.
  */
-public class KMeansModelMapperTest {
+
+public class KMeansModelMapperTest extends AlinkTestBase {
 	private Row[] rows = new Row[] {
 		Row.of(0L, "{\"vectorCol\":\"\\\"Y\\\"\",\"latitudeCol\":null,\"longitudeCol\":null,"
 			+ "\"distanceType\":\"\\\"EUCLIDEAN\\\"\",\"k\":\"2\",\"vectorSize\":\"3\"}"),
@@ -29,7 +31,7 @@ public class KMeansModelMapperTest {
 	private TableSchema modelSchema = new KMeansModelDataConverter().getModelSchema();
 
 	@Test
-	public void testDefault() {
+	public void testDefault() throws Exception {
 		TableSchema dataSchema = new TableSchema(
 			new String[] {"Y", "id"}, new TypeInformation <?>[] {Types.STRING, Types.INT}
 		);
@@ -46,7 +48,7 @@ public class KMeansModelMapperTest {
 	}
 
 	@Test
-	public void testDetailOutput() {
+	public void testDetailOutput() throws Exception {
 		TableSchema dataSchema = new TableSchema(
 			new String[] {"Y", "id"}, new TypeInformation <?>[] {Types.STRING, Types.INT}
 		);
@@ -64,7 +66,7 @@ public class KMeansModelMapperTest {
 	}
 
 	@Test
-	public void testDistanceOutput() {
+	public void testDistanceOutput() throws Exception {
 		TableSchema dataSchema = new TableSchema(
 			new String[] {"Y", "id"}, new TypeInformation <?>[] {Types.STRING, Types.INT}
 		);
@@ -82,7 +84,7 @@ public class KMeansModelMapperTest {
 	}
 
 	@Test
-	public void testDetailDistanceOutput() {
+	public void testDetailDistanceOutput() throws Exception {
 		TableSchema dataSchema = new TableSchema(
 			new String[] {"Y", "id"}, new TypeInformation <?>[] {Types.STRING, Types.INT}
 		);

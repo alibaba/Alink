@@ -18,16 +18,24 @@ public class JsonReader extends FormatReader {
 	@Override
 	boolean read(Row row, Map <String, String> out) {
 		String line = (String) row.getField(jsonColIndex);
+		try {
+			Map map = JsonConverter.fromJson(line, Map.class);
 
-		Map map = JsonConverter.fromJson(line, Map.class);
+			map.forEach((key, value) -> {
+				if (null != value) {
+					if (value instanceof Map) {
+						out.put(key.toString(), JsonConverter.toJson(value));
+					} else {
+						out.put(key.toString(), value.toString());
+					}
+				} else {
+					out.put(key.toString(), null);
+				}
+			});
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 
-		map.forEach((key, value) -> {
-			if (null != value) {
-				out.put(key.toString(), value.toString());
-			} else {
-				out.put(key.toString(), null);
-			}
-		});
-		return true;
 	}
 }

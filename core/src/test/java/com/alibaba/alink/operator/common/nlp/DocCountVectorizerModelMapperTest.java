@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.nlp.DocCountVectorizerPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -19,7 +20,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for DocCountVectorizer.
  */
-public class DocCountVectorizerModelMapperTest {
+
+public class DocCountVectorizerModelMapperTest extends AlinkTestBase {
 	private TableSchema modelSchema = new DocCountVectorizerModelDataConverter().getModelSchema();
 	private TableSchema dataSchema = new TableSchema(new String[] {"sentence"},
 		new TypeInformation <?>[] {Types.STRING});

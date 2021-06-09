@@ -10,10 +10,11 @@ import com.alibaba.alink.params.validators.MaxValidator;
 import com.alibaba.alink.params.validators.MinValidator;
 import com.alibaba.alink.params.validators.RangeValidator;
 import com.alibaba.alink.params.validators.Validator;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ValidatorTest {
+public class ValidatorTest extends AlinkTestBase {
 
 	public interface HasNum<T> extends WithParams <T> {
 

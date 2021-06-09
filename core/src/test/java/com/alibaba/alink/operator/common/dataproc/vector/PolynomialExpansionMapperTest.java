@@ -10,6 +10,7 @@ import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.dataproc.vector.VectorPolynomialExpandParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -17,7 +18,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for PolynomialExpansionMapper.
  */
-public class PolynomialExpansionMapperTest {
+
+public class PolynomialExpansionMapperTest extends AlinkTestBase {
 	@Test
 	public void testDense() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {Types.STRING});
