@@ -7,6 +7,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.common.recommendation.KObjectUtil;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,7 +24,8 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getReg
 /**
  * Test for EvaluationConst.
  */
-public class EvaluationUtilTest {
+
+public class EvaluationUtilTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -329,6 +331,6 @@ public class EvaluationUtilTest {
 				Row.of("prefix1", "{\"prefix1\": 0.6, \"prefix0\": 0.4}")
 			};
 		BaseMetricsSummary baseMetric = getDetailStatistics(Arrays.asList(rows), null, true, Types.STRING);
-		Assert.assertEquals(Double.compare(((BinaryClassMetrics)baseMetric.toMetrics()).getAuc(), Double.NaN), 0);
+		Assert.assertEquals(Double.compare(((BinaryClassMetrics) baseMetric.toMetrics()).getAuc(), Double.NaN), 0);
 	}
 }

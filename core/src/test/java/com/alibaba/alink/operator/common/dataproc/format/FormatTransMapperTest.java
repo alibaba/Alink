@@ -13,10 +13,11 @@ import com.alibaba.alink.params.dataproc.format.KvToJsonParams;
 import com.alibaba.alink.params.dataproc.format.KvToVectorParams;
 import com.alibaba.alink.params.dataproc.format.VectorToColumnsParams;
 import com.alibaba.alink.params.dataproc.format.VectorToKvParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class FormatTransMapperTest {
+public class FormatTransMapperTest extends AlinkTestBase {
 
 	@Test
 	public void testSparse() throws Exception {

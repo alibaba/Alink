@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.feature.FeatureHasherParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -16,7 +17,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for FeatureHasherMapper.
  */
-public class FeatureHasherMapperTest {
+
+public class FeatureHasherMapperTest extends AlinkTestBase {
 	@Test
 	public void test1() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"double", "bool", "number", "str"},
@@ -28,6 +30,7 @@ public class FeatureHasherMapperTest {
 			.set(FeatureHasherParams.RESERVED_COLS, new String[] {});
 
 		FeatureHasherMapper mapper = new FeatureHasherMapper(schema, params);
+		mapper.open();
 
 		assertEquals(mapper.map(Row.of(1.1, true, "2", "A")).getField(0),
 			new SparseVector(262144, new int[] {62393, 85133, 120275, 214318}, new double[] {1.0, 1.0, 1.0, 1.1}));
@@ -49,6 +52,7 @@ public class FeatureHasherMapperTest {
 			.set(FeatureHasherParams.NUM_FEATURES, 10);
 
 		FeatureHasherMapper mapper = new FeatureHasherMapper(schema, params);
+		mapper.open();
 
 		assertEquals(mapper.map(Row.of(1.1, true, "2", "A")).getField(4),
 			new SparseVector(10, new int[] {5, 8, 9}, new double[] {2.0, 1.1, 1.0}));
@@ -72,6 +76,7 @@ public class FeatureHasherMapperTest {
 			.set(FeatureHasherParams.CATEGORICAL_COLS, new String[] {"double"});
 
 		FeatureHasherMapper mapper = new FeatureHasherMapper(schema, params);
+		mapper.open();
 
 		assertEquals(mapper.map(Row.of(1.1, true, "2", "A")).getField(4),
 			new SparseVector(10, new int[] {0, 5, 9}, new double[] {1.0, 2.0, 1.0}));

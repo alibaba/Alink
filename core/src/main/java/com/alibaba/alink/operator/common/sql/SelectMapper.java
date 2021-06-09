@@ -1,9 +1,9 @@
 package com.alibaba.alink.operator.common.sql;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 /**
@@ -33,9 +34,9 @@ import java.util.function.BiConsumer;
 public class SelectMapper extends Mapper {
 
 	private static final long serialVersionUID = 6207092249511500058L;
-	private TableSchema outputSchema;
-	private Connection connection;
-	private PreparedStatement preparedStatement;
+
+	private final ConcurrentHashMap <Thread, Connection> threadConnectionMap = new ConcurrentHashMap <>();
+	private final ConcurrentHashMap <Thread, PreparedStatement> threadPreparedStatementMap = new ConcurrentHashMap <>();
 
 	private final static String TEMPLATE = "SELECT %s FROM (SELECT %s FROM (VALUES (1))) foo";
 
@@ -76,7 +77,7 @@ public class SelectMapper extends Mapper {
 		addScalarFunctionConsumer.accept("TO_BASE64", StringFunctions.TOBASE64);
 		addScalarFunctionConsumer.accept("LPAD", StringFunctions.LPAD);
 		addScalarFunctionConsumer.accept("RPAD", StringFunctions.RPAD);
-		//addScalarFunctionConsumer.accept("REGEXP_REPLACE", StringFunctions.REGEXP_REPLACE);
+		addScalarFunctionConsumer.accept("REGEXP_REPLACE", StringFunctions.REGEXP_REPLACE);
 		addScalarFunctionConsumer.accept("REGEXP_EXTRACT", StringFunctions.REGEXP_EXTRACT);
 
 		addScalarFunctionConsumer.accept("LTRIM", BuiltInMethod.LTRIM.method);
@@ -92,19 +93,41 @@ public class SelectMapper extends Mapper {
 	}
 
 	@Override
-	public void open() {
-		super.open();
+	public void close() {
+		super.close();
+		try {
+			for (PreparedStatement preparedStatement : threadPreparedStatementMap.values()) {
+				preparedStatement.close();
+			}
+			for (Connection connection : threadConnectionMap.values()) {
+				connection.close();
+			}
+		} catch (SQLException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	private Connection getConnection() {
+		/*
+		In EAS, threads started have no contextClassLoader, which makes {@link
+		CompilerFactoryFactory#getDefaultCompilerFactory} failed. So we manually set it to the classloader of this
+		class.
+		 */
+		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 		try {
 			Class.forName("org.apache.calcite.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
+			return DriverManager.getConnection("jdbc:calcite:fun=mysql");
+		} catch (ClassNotFoundException | SQLException e) {
 			throw new RuntimeException(e);
 		}
+	}
 
+	private PreparedStatement getPreparedStatement() {
+		Connection connection = threadConnectionMap.computeIfAbsent(Thread.currentThread(), d -> getConnection());
 		CalciteConnection calciteConnection;
 		try {
-			connection = DriverManager.getConnection("jdbc:calcite:fun=mysql");
 			calciteConnection = connection.unwrap(CalciteConnection.class);
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
 
@@ -113,9 +136,6 @@ public class SelectMapper extends Mapper {
 
 		TableSchema dataSchema = getDataSchema();
 		String clause = params.get(SelectParams.CLAUSE);
-
-		MemSourceBatchOp source = new MemSourceBatchOp(Collections.emptyList(), dataSchema);
-		outputSchema = source.linkTo(new SelectBatchOp().setClause(clause)).getSchema();
 
 		TypeInformation <?>[] fieldTypes = dataSchema.getFieldTypes();
 		String[] fieldNames = dataSchema.getFieldNames();
@@ -134,43 +154,42 @@ public class SelectMapper extends Mapper {
 
 		String query = String.format(TEMPLATE, clause, sb);
 		try {
-			preparedStatement = calciteConnection.prepareStatement(query);
+			return calciteConnection.prepareStatement(query);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
-	public void close() {
-		super.close();
-		try {
-			connection.close();
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-	}
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		PreparedStatement preparedStatement = threadPreparedStatementMap.computeIfAbsent(
+			Thread.currentThread(), d -> getPreparedStatement());
 
-	@Override
-	public TableSchema getOutputSchema() {
-		return outputSchema;
-	}
-
-	@Override
-	public Row map(Row row) throws Exception {
-		for (int i = 0; i < row.getArity(); i += 1) {
-			preparedStatement.setObject(i + 1, row.getField(i));
+		for (int i = 0; i < selection.length(); i += 1) {
+			preparedStatement.setObject(i + 1, selection.get(i));
 		}
 		try (ResultSet resultSet = preparedStatement.executeQuery()) {
 			ResultSetMetaData metaData = resultSet.getMetaData();
 			int columnCount = metaData.getColumnCount();
-			Object[] values = new Object[columnCount];
 			if (resultSet.next()) {
 				for (int i = 0; i < columnCount; i += 1) {
-					values[i] = resultSet.getObject(i + 1);
+					result.set(i, resultSet.getObject(i + 1));
 				}
 			}
-			return Row.of(values);
 		}
 	}
 
+	@Override
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(TableSchema dataSchema,
+																						   Params params) {
+		String clause = params.get(SelectParams.CLAUSE);
+		MemSourceBatchOp source = new MemSourceBatchOp(Collections.emptyList(), dataSchema);
+		TableSchema outputSchema = source.linkTo(new SelectBatchOp().setClause(clause)).getSchema();
+		return Tuple4.of(
+			dataSchema.getFieldNames(),
+			outputSchema.getFieldNames(),
+			outputSchema.getFieldTypes(),
+			new String[0]
+		);
+	}
 }

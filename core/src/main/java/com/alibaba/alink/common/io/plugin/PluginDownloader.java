@@ -52,7 +52,7 @@ public class PluginDownloader {
 		isConfigLoaded = true;
 	}
 
-	public void loadConfig(String configFileName) throws IOException {
+	private void loadConfig(String configFileName) throws IOException {
 		String remotePath = getRemoteFlinkRoot() + "/" + configFileName;
 		String localPath = getLocalFlinkRoot() + "/" + configFileName;
 		File configFile = new File(localPath);

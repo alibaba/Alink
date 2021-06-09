@@ -8,6 +8,7 @@ import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +17,8 @@ import static com.alibaba.alink.operator.common.clustering.kmeans.LocalKmeansFun
 /**
  * Test for LocalKmeans.
  */
-public class LocalKmeansFuncTest {
+
+public class LocalKmeansFuncTest extends AlinkTestBase {
 	@Test
 	public void kmeansTest() {
 		EuclideanDistance distance = new EuclideanDistance();

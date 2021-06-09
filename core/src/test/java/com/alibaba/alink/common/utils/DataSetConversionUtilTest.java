@@ -10,6 +10,7 @@ import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,7 +22,8 @@ import java.util.List;
 /**
  * Unit test for RowTypeDataSet.
  */
-public class DataSetConversionUtilTest {
+
+public class DataSetConversionUtilTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

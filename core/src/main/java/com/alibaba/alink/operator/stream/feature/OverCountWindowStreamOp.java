@@ -1,0 +1,31 @@
+package com.alibaba.alink.operator.stream.feature;
+
+import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.params.feature.featuregenerator.OverCountWindowParams;
+
+/**
+ * Stream feature builder base on over window with user-defined recent several pieces of data.
+ */
+public class OverCountWindowStreamOp
+	extends BaseOverWindowStreamOp <OverCountWindowStreamOp>
+	implements OverCountWindowParams <OverCountWindowStreamOp> {
+
+	public OverCountWindowStreamOp() {
+		super(null);
+	}
+
+	public OverCountWindowStreamOp(Params params) {
+		super(params);
+	}
+
+	@Override
+	public void generateWindowClause() {
+		Integer precedingRows = getPrecedingRows();
+		String strWindowRows = "UNBOUNDED";
+		if (null != precedingRows && precedingRows >= 0) {
+			strWindowRows = String.valueOf(precedingRows);
+		}
+		setWindowParams("ROWS", strWindowRows, -1);
+	}
+}

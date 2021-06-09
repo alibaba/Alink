@@ -1,11 +1,7 @@
 package com.alibaba.alink.operator.batch.clustering;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -52,9 +48,7 @@ public class KMeansTrainBatchOpTest extends AlinkTestBase {
 			array3[i] = Row.of(i, new SparseVector(size, new int[] {i % 10, i * 2 % 10}, new double[] {1.0, 1.0}));
 		}
 
-		MemSourceBatchOp data = new MemSourceBatchOp(Arrays.asList(array3), new TableSchema(new String[] {"id", "labelVector"}, new TypeInformation[] {
-			Types.INT, VectorTypes.SPARSE_VECTOR
-		}));
+		MemSourceBatchOp data = new MemSourceBatchOp(Arrays.asList(array3), new String[] {"id", "labelVector"});
 
 		KMeans kMeans = new KMeans()
 			.setVectorCol("labelVector")

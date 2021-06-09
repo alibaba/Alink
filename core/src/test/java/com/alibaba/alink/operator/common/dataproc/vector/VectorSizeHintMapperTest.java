@@ -8,6 +8,7 @@ import org.apache.flink.table.api.TableSchema;
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.dataproc.vector.VectorSizeHintParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -15,7 +16,8 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit test for VectorSizeHintMapper.
  */
-public class VectorSizeHintMapperTest {
+
+public class VectorSizeHintMapperTest extends AlinkTestBase {
 	@Test
 	public void testError() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {Types.STRING});

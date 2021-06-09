@@ -25,13 +25,14 @@ public class SoftmaxModelMapper extends RichModelMapper {
 	private static final long serialVersionUID = -4309479266141950255L;
 	protected int vectorColIndex = -1;
 	private LinearModelData model;
+	private String vectorColName;
 	private int[] featureIdx;
-	private int featureN;
+	private transient ThreadLocal <DenseVector> threadLocalVec;
 
 	public SoftmaxModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 		if (null != params) {
-			String vectorColName = params.get(SoftmaxPredictParams.VECTOR_COL);
+			this.vectorColName = params.get(SoftmaxPredictParams.VECTOR_COL);
 			if (null != vectorColName && vectorColName.length() != 0) {
 				this.vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), vectorColName);
 			}
@@ -40,56 +41,48 @@ public class SoftmaxModelMapper extends RichModelMapper {
 
 	@Override
 	public void loadModel(List <Row> modelRows) {
-		LinearModelDataConverter softmaxConverter
+		LinearModelDataConverter softMaxConverter
 			= new LinearModelDataConverter();
-		model = softmaxConverter.load(modelRows);
+		model = softMaxConverter.load(modelRows);
 		TableSchema dataSchema = getDataSchema();
 		if (vectorColIndex == -1) {
 			if (this.model.featureNames != null) {
-				this.featureN = this.model.featureNames.length;
-				this.featureIdx = new int[this.featureN];
+				int featureN = this.model.featureNames.length;
+				this.featureIdx = new int[featureN];
 				String[] predictTableColNames = dataSchema.getFieldNames();
-				for (int i = 0; i < this.featureN; i++) {
+				for (int i = 0; i < featureN; i++) {
 					this.featureIdx[i] = TableUtil.findColIndexWithAssert(predictTableColNames,
 						this.model.featureNames[i]);
 				}
+				threadLocalVec =
+					ThreadLocal.withInitial(() -> new DenseVector(featureN + (model.hasInterceptItem ? 1 : 0)));
 			} else {
+				this.vectorColName = model.vectorColName;
 				vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), model.vectorColName);
 			}
 		}
 	}
 
 	@Override
-	protected Object predictResult(Row row) throws Exception {
-		Vector aVector = FeatureLabelUtil.getFeatureVector(row, model.hasInterceptItem, this.featureN,
-			this.featureIdx, this.vectorColIndex, model.vectorSize);
-
-		DenseVector[] coefVectors = model.coefVectors;
-		int lableSize = model.labelValues.length;
-
-		double maxVal = 0.0;
-		int maxIdx = lableSize - 1;
-
-		double t;
-		for (int k = 0; k < lableSize - 1; k++) {
-			t = FeatureLabelUtil.dot(aVector, coefVectors[k]);
-			if (t > maxVal) {
-				maxVal = t;
-				maxIdx = k;
-			}
-		}
-		return model.labelValues[maxIdx];
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		return predictResultDetail(selection).f0;
 	}
 
 	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) throws Exception {
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
 		Object predResult;
 		String jsonDetail;
 
-		Vector aVector = FeatureLabelUtil.getFeatureVector(row, model.hasInterceptItem, this.featureN,
-			this.featureIdx,
-			this.vectorColIndex, model.vectorSize);
-		Tuple2 <Object, Double[]> result = predictSoftmaxWithProb(aVector);
+		Vector vec;
+		if (vectorColIndex != -1) {
+			vec = FeatureLabelUtil.getVectorFeature(selection.get(vectorColIndex), model.hasInterceptItem, model.vectorSize);
+		} else {
+			vec = threadLocalVec.get();
+			selection.fillDenseVector((DenseVector) vec, model.hasInterceptItem, featureIdx);
+		}
+
+
+		Tuple2 <Object, Double[]> result = predictSoftmaxWithProb(vec);
 		predResult = result.f0;
 		Map <String, String> detail = new HashMap <>(0);
 		int labelSize = model.labelValues.length;

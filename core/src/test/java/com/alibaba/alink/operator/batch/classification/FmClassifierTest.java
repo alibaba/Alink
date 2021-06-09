@@ -47,7 +47,6 @@ public class FmClassifierTest extends AlinkTestBase {
 			.linkFrom(result)
 			.link(new JsonValueBatchOp()
 				.setSelectedCol("Data")
-				.setReservedCols(new String[] {"Statistics"})
 				.setOutputCols(new String[] {"Accuracy", "AUC", "ConfusionMatrix"})
 				.setJsonPath(new String[] {"$.Accuracy", "$.AUC", "$.ConfusionMatrix"}))
 			.print();
@@ -124,8 +123,8 @@ public class FmClassifierTest extends AlinkTestBase {
 			.enableLazyPrintModelInfo();
 
 		FmModel model = adagrad.fit(trainData);
-		BatchOperator result = model.transform(trainData);
-
-		result.print();
+		BatchOperator result = model.transform(trainData).lazyPrint(10);
+		BatchOperator.execute();
+		//		result.print();
 	}
 }

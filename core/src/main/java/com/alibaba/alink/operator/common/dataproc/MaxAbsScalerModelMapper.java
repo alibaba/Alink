@@ -1,14 +1,13 @@
 package com.alibaba.alink.operator.common.dataproc;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.model.RichModelDataConverter;
-import com.alibaba.alink.common.utils.OutputColsHelper;
-import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dataproc.SrtPredictMapperParams;
 
 import java.util.List;
@@ -18,9 +17,7 @@ import java.util.List;
  */
 public class MaxAbsScalerModelMapper extends ModelMapper {
 	private static final long serialVersionUID = -358829029280240904L;
-	private int[] selectedColIndices;
 	private double[] maxAbs;
-	private OutputColsHelper predictResultColsHelper;
 
 	/**
 	 * Constructor.
@@ -31,17 +28,18 @@ public class MaxAbsScalerModelMapper extends ModelMapper {
 	 */
 	public MaxAbsScalerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
+	}
+
+	@Override
+	protected Tuple4<String[], String[], TypeInformation<?>[], String[]> prepareIoSchema(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		String[] selectedColNames = RichModelDataConverter.extractSelectedColNames(modelSchema);
 		TypeInformation[] selectedColTypes = RichModelDataConverter.extractSelectedColTypes(modelSchema);
-		this.selectedColIndices = TableUtil.findColIndicesWithAssert(dataSchema, selectedColNames);
 
 		String[] outputColNames = params.get(SrtPredictMapperParams.OUTPUT_COLS);
 		if (outputColNames == null) {
 			outputColNames = selectedColNames;
 		}
-
-		this.predictResultColsHelper = new OutputColsHelper(dataSchema,
-			outputColNames, selectedColTypes, null);
+		return Tuple4.of(selectedColNames, outputColNames, selectedColTypes, null);
 	}
 
 	/**
@@ -55,32 +53,13 @@ public class MaxAbsScalerModelMapper extends ModelMapper {
 		maxAbs = converter.load(modelRows);
 	}
 
-	/**
-	 * Get the table schema(includes column names and types) of the calculation result.
-	 *
-	 * @return the table schema of output Row type data.
-	 */
 	@Override
-	public TableSchema getOutputSchema() {
-		return this.predictResultColsHelper.getResultSchema();
-	}
-
-	/**
-	 * Map operation method.
-	 *
-	 * @param row the input Row type data.
-	 * @return one Row type data.
-	 * @throws Exception This method may throw exceptions. Throwing
-	 * an exception will cause the operation to fail.
-	 */
-	@Override
-	public Row map(Row row) throws Exception {
-		if (null == row) {
-			return null;
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		if (null == selection || selection.length() == 0) {
+			return;
 		}
-		Row r = new Row(selectedColIndices.length);
-		for (int i = 0; i < this.selectedColIndices.length; i++) {
-			Object obj = row.getField(this.selectedColIndices[i]);
+		for (int i = 0; i < selection.length(); i++) {
+			Object obj = selection.get(i);
 			if (null != obj) {
 				double d;
 				if (obj instanceof Number) {
@@ -88,9 +67,8 @@ public class MaxAbsScalerModelMapper extends ModelMapper {
 				} else {
 					d = Double.parseDouble(obj.toString());
 				}
-				r.setField(i, ScalerUtil.maxAbsScaler(this.maxAbs[i], d));
+				result.set(i, ScalerUtil.maxAbsScaler(this.maxAbs[i], d));
 			}
 		}
-		return this.predictResultColsHelper.getResultRow(row, r);
 	}
 }

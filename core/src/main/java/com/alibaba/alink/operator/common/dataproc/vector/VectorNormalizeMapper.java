@@ -15,7 +15,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorNormalizeParams;
  */
 public class VectorNormalizeMapper extends SISOMapper {
 	private static final long serialVersionUID = -7691431287429070555L;
-	private double p;
+	private final double p;
 
 	/**
 	 * constructor.

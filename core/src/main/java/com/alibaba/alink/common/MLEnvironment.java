@@ -14,6 +14,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.lazy.LazyObjectsManager;
+import com.alibaba.alink.common.sql.builtin.BuildInAggRegister;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -99,6 +100,14 @@ public class MLEnvironment {
 		this.batchTableEnv = batchTableEnv;
 		this.streamEnv = streamEnv;
 		this.streamTableEnv = streamTableEnv;
+		if (this.batchTableEnv != null) {
+			BuildInAggRegister.registerUdf(this.batchTableEnv);
+			BuildInAggRegister.registerUdaf(this.batchTableEnv);
+		}
+		if (this.streamTableEnv != null) {
+			BuildInAggRegister.registerUdf(this.streamTableEnv);
+			BuildInAggRegister.registerUdaf(this.streamTableEnv);
+		}
 	}
 
 	/**
@@ -157,6 +166,8 @@ public class MLEnvironment {
 	public BatchTableEnvironment getBatchTableEnvironment() {
 		if (null == batchTableEnv) {
 			batchTableEnv = BatchTableEnvironment.create(getExecutionEnvironment());
+			BuildInAggRegister.registerUdf(this.batchTableEnv);
+			BuildInAggRegister.registerUdaf(this.batchTableEnv);
 		}
 		return batchTableEnv;
 	}
@@ -178,6 +189,8 @@ public class MLEnvironment {
 						.useOldPlanner()
 						.build()
 				);
+			BuildInAggRegister.registerUdf(this.streamTableEnv);
+			BuildInAggRegister.registerUdaf(this.streamTableEnv);
 		}
 		return streamTableEnv;
 	}

@@ -115,8 +115,4 @@ public class LdaTrainBatchOpTest extends AlinkTestBase {
 		BatchOperator.execute();
 	}
 
-	@Test
-	public void test() {
-		System.out.println(1 << 18);
-	}
 }

@@ -3,14 +3,10 @@ package com.alibaba.alink.params.regression;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
-import com.alibaba.alink.params.shared.HasNumThreads;
-import com.alibaba.alink.params.shared.colname.HasPredictionCol;
-
 /**
  * Parameter of glm predict.
  */
-public interface GlmPredictParams<T> extends
-	HasPredictionCol <T>, HasNumThreads <T> {
+public interface GlmPredictParams<T> extends RegPredictParams <T> {
 
 	ParamInfo <String> LINK_PRED_RESULT_COL = ParamInfoFactory
 		.createParamInfo("linkPredResultCol", String.class)

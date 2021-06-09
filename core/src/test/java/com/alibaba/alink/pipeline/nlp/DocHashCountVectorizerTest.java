@@ -1,12 +1,10 @@
 package com.alibaba.alink.pipeline.nlp;
 
-import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -19,8 +17,9 @@ import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-//import com.alibaba.alink.common.utils.RowTypeDataStream;
+import java.util.List;
 
+//import com.alibaba.alink.common.utils.RowTypeDataStream;
 /**
  * Test for DocHashIDFVectorizer.
  */
@@ -46,20 +45,12 @@ public class DocHashCountVectorizerTest extends AlinkTestBase {
 
 		Table res = model.transform(data);
 
-		Assert.assertArrayEquals(
-			MLEnvironmentFactory
-				.getDefault()
-				.getBatchTableEnvironment()
-				.toDataSet(res.select("res"), new RowTypeInfo(VectorTypes.SPARSE_VECTOR))
-				.collect()
-				.stream()
-				.map(row -> (SparseVector) row.getField(0))
-				.toArray(SparseVector[]::new),
-			new SparseVector[] {
-				new SparseVector(10, new int[] {3, 4, 5, 7}, new double[] {1.0, 3.0, 1.0, 1.0}),
-				new SparseVector(10, new int[] {4, 5, 6, 7}, new double[] {1.0, 2.0, 1.0, 1.0})
-			}
-		);
+		List <SparseVector> list = MLEnvironmentFactory.getDefault().getBatchTableEnvironment().toDataSet(
+			res.select("res"), SparseVector.class).collect();
+
+		Assert.assertArrayEquals(list.toArray(new SparseVector[0]),
+			new SparseVector[] {new SparseVector(10, new int[] {3, 4, 5, 7}, new double[] {1.0, 3.0, 1.0, 1.0}),
+				new SparseVector(10, new int[] {4, 5, 6, 7}, new double[] {1.0, 2.0, 1.0, 1.0})});
 
 		res = model.transform(dataStream);
 

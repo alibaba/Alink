@@ -3,13 +3,15 @@ package com.alibaba.alink.operator.common.distance;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseMatrix;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for FastDistanceMatrixData.
  */
-public class FastDistanceMatrixDataTest {
+
+public class FastDistanceMatrixDataTest extends AlinkTestBase {
 
 	@Test
 	public void cloneTest() {

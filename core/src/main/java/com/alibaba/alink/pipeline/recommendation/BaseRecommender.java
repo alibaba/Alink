@@ -1,6 +1,6 @@
 package com.alibaba.alink.pipeline.recommendation;
 
-import org.apache.flink.ml.api.misc.param.Params;
+import 	org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
@@ -10,6 +10,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.recommendation.BaseRecommBatchOp;
 import com.alibaba.alink.operator.common.recommendation.FourFunction;
 import com.alibaba.alink.operator.common.recommendation.RecommKernel;
+import com.alibaba.alink.operator.common.recommendation.RecommMapper;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.recommendation.BaseRecommStreamOp;
@@ -33,9 +34,9 @@ public abstract class BaseRecommender<T extends BaseRecommender <T>>
 	/**
 	 * (modelScheme, dataSchema, params) -> RecommKernel
 	 */
-	final FourFunction <TableSchema, TableSchema, Params, RecommType, RecommKernel> recommKernelBuilder;
+	public final FourFunction <TableSchema, TableSchema, Params, RecommType, RecommKernel> recommKernelBuilder;
 
-	final RecommType recommType;
+	public final RecommType recommType;
 
 	protected BaseRecommender(
 		FourFunction <TableSchema, TableSchema, Params, RecommType, RecommKernel> recommKernelBuilder,

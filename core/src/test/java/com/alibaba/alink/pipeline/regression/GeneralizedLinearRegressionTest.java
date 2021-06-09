@@ -12,7 +12,6 @@ import com.alibaba.alink.operator.batch.regression.GlmTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.regression.glm.famliy.Tweedie;
 import com.alibaba.alink.params.regression.GlmTrainParams;
-import com.alibaba.alink.params.regression.GlmTrainParams.Family;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,16 +23,16 @@ public class GeneralizedLinearRegressionTest extends AlinkTestBase {
 
 	@Test
 	public void testAll() throws Exception {
-		test(Family.Gamma, 8.717807596657824, false);
-		test(Family.Gaussian, 2.0630965899629286, true);
-		test(Family.Tweedie, 440.2158560037892, false);
-		test(Family.Poisson, 0.7751000666424476, true);
+		test(GlmTrainParams.Family.Gamma, 8.717807596657824, false);
+		test(GlmTrainParams.Family.Gaussian, 2.0630965899629286, true);
+		test(GlmTrainParams.Family.Tweedie, 440.2158560037892, false);
+		test(GlmTrainParams.Family.Poisson, 0.7751000666424476, true);
 		testBinomial();
 
 		BatchOperator.execute();
 	}
 
-	public void test(Family family, double rmse, boolean fitIntercept) throws Exception {
+	public void test(GlmTrainParams.Family family, double rmse, boolean fitIntercept) throws Exception {
 		double[][] data = new double[][] {{1, 5, 118, 69},
 			{2, 10, 58, 35},
 			{3, 15, 42, 26},

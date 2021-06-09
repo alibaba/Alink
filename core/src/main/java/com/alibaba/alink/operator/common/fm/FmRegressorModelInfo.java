@@ -98,7 +98,7 @@ public class FmRegressorModelInfo implements Serializable {
 			for (int i = 0; i < printSize; ++i) {
 				out[i][0] = featureColNames[i];
 				if (hasLinearItem) {
-					out[i][1] = df.format(factors.linearItems[i]);
+					out[i][1] = df.format(factors.factors[i][k]);
 				} else {
 					out[i][1] = df.format(0.0);
 				}
@@ -125,7 +125,7 @@ public class FmRegressorModelInfo implements Serializable {
 			for (int i = 0; i < printSize; ++i) {
 				out[i][0] = String.valueOf(i);
 				if (hasLinearItem) {
-					out[i][1] = df.format(factors.linearItems[i]);
+					out[i][1] = df.format(factors.factors[i][k]);
 				} else {
 					out[i][1] = df.format(0.0);
 				}

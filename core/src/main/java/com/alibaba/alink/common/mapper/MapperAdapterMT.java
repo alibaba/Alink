@@ -28,7 +28,7 @@ public class MapperAdapterMT extends RichFlatMapFunction <Row, Row> implements S
 	public void open(Configuration parameters) throws Exception {
 		super.open(parameters);
 		this.mapper.open();
-		this.wrapper = new MapperMTWrapper(numThreads, () -> this.mapper.mirror()::map);
+		this.wrapper = new MapperMTWrapper(numThreads, () -> this.mapper::map);
 		this.wrapper.open(parameters);
 	}
 

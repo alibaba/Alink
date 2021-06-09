@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 	implements EvalMultiLabelParams <EvalMultiLabelBatchOp>,
-	EvaluationMetricsCollector <BaseSimpleMultiLabelMetrics, EvalMultiLabelBatchOp> {
+	EvaluationMetricsCollector <MultiLabelMetrics, EvalMultiLabelBatchOp> {
 	private static final long serialVersionUID = -1588545393316444529L;
 	public static String LABELS = "labels";
 

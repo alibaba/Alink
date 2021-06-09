@@ -28,6 +28,9 @@ import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
 import com.alibaba.alink.operator.common.optim.subfunc.OptimVariable;
 import com.alibaba.alink.params.recommendation.FmTrainParams;
 
+import javax.jws.WebParam.Mode;
+import scala.xml.PrettyPrinter.Para;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +45,7 @@ public class FmOptimizer {
 	private int[] dim;
 	protected DataSet <FmDataFormat> fmModel = null;
 	private double[] lambda;
-
+    private final static int BLOCK_SIZE = 1000;
 	/**
 	 * construct function.
 	 *
@@ -107,7 +110,7 @@ public class FmOptimizer {
 		public FmIterTermination(Params params) {
 			this.maxIter = params.get(FmTrainParams.NUM_EPOCHS);
 			this.epsilon = params.get(FmTrainParams.EPSILON);
-			this.task = Task.valueOf(params.get(ModelParamName.TASK).toUpperCase());
+			this.task = params.get(ModelParamName.TASK);
 			this.batchSize = params.get(FmTrainParams.MINIBATCH_SIZE);
 			this.oldTime = System.currentTimeMillis();
 		}
@@ -173,9 +176,9 @@ public class FmOptimizer {
 		private LossFunction lossFunc = null;
 		private Task task;
 
-		public CalcLossAndEvaluation(int[] dim, String task) {
+		public CalcLossAndEvaluation(int[] dim, Task task) {
 			this.dim = dim;
-			this.task = Task.valueOf(task.toUpperCase());
+			this.task = task;
 			if (this.task.equals(Task.REGRESSION)) {
 				double minTarget = -1.0e20;
 				double maxTarget = 1.0e20;
@@ -298,8 +301,8 @@ public class FmOptimizer {
 						sigmaGii.factors[i][j] = buffer[(vectorSize + i) * dim[2] + j] / weightSum;
 					}
 					if (dim[1] > 0) {
-						factors.linearItems[i] = buffer[vectorSize * dim[2] * 2 + i] / weightSum;
-						sigmaGii.linearItems[i] = buffer[vectorSize * (dim[2] * 2 + 1) + i] / weightSum;
+						factors.factors[i][dim[2]] = buffer[vectorSize * dim[2] * 2 + i] / weightSum;
+						sigmaGii.factors[i][dim[2]] = buffer[vectorSize * (dim[2] * 2 + 1) + i] / weightSum;
 					}
 				}
 			}
@@ -332,7 +335,7 @@ public class FmOptimizer {
 		public UpdateLocalModel(int[] dim, double[] lambda, Params params) {
 			this.lambda = lambda;
 			this.dim = dim;
-			this.task = Task.valueOf(params.get(ModelParamName.TASK).toUpperCase());
+			this.task = params.get(ModelParamName.TASK);
 			this.learnRate = params.get(FmTrainParams.LEARN_RATE);
 			this.batchSize = params.get(FmTrainParams.MINIBATCH_SIZE);
 			if (task.equals(Task.REGRESSION)) {
@@ -359,7 +362,7 @@ public class FmOptimizer {
 			FmDataFormat innerModel = ((List <FmDataFormat>) context.getObj(OptimVariable.fmModel)).get(0);
 			double[] weights = context.getObj(OptimVariable.weights);
 			if (weights == null) {
-				vectorSize = (innerModel.factors != null) ? innerModel.factors.length : innerModel.linearItems.length;
+				vectorSize = (innerModel.factors != null) ? innerModel.factors.length : innerModel.factors.length;
 				weights = new double[vectorSize];
 				context.putObj(OptimVariable.weights, weights);
 			} else {
@@ -388,8 +391,8 @@ public class FmOptimizer {
 					buffer[(vectorSize + i) * dim[2] + j] = sigmaGii.factors[i][j] * weights[i];
 				}
 				if (dim[1] > 0) {
-					buffer[vectorSize * dim[2] * 2 + i] = innerModel.linearItems[i] * weights[i];
-					buffer[vectorSize * (dim[2] * 2 + dim[1]) + i] = sigmaGii.linearItems[i] * weights[i];
+					buffer[vectorSize * dim[2] * 2 + i] = innerModel.factors[i][dim[2]] * weights[i];
+					buffer[vectorSize * (dim[2] * 2 + dim[1]) + i] = sigmaGii.factors[i][dim[2]] * weights[i];
 				}
 				buffer[vectorSize * ((dim[2] + dim[1]) * 2) + i] = weights[i];
 			}
@@ -444,9 +447,10 @@ public class FmOptimizer {
 						factors.factors[idx][j] += -learnRate * grad / (Math.sqrt(sigmaGii.factors[idx][j] + eps));
 					}
 					if (dim[1] > 0) {
-						double grad = dldy * vals[i] + lambda[1] * factors.linearItems[idx];
-						sigmaGii.linearItems[idx] += grad * grad;
-						factors.linearItems[idx] += -grad * learnRate / (Math.sqrt(sigmaGii.linearItems[idx] + eps));
+						double grad = dldy * vals[i] + lambda[1] * factors.factors[idx][dim[2]];
+						sigmaGii.factors[idx][dim[2]] += grad * grad;
+						factors.factors[idx][dim[2]]
+								+= -grad * learnRate / (Math.sqrt(sigmaGii.factors[idx][dim[2]] + eps));
 					}
 				}
 			}
@@ -467,10 +471,31 @@ public class FmOptimizer {
 			}
 			double[] lossCurve = context.getObj(OptimVariable.convergenceInfo);
 
-			FmDataFormat factors = ((List <FmDataFormat>) context.getObj(OptimVariable.fmModel)).get(0);
+			FmDataFormat format = ((List <FmDataFormat>) context.getObj(OptimVariable.fmModel)).get(0);
+
 			List <Row> model = new ArrayList <>();
-			model.add(Row.of(0, JsonConverter.toJson(factors)));
-			model.add(Row.of(1, JsonConverter.toJson(lossCurve)));
+			double[][] factors = format.factors;
+
+			int numBlock = factors.length / BLOCK_SIZE + ((factors.length % BLOCK_SIZE == 0) ? 0 : 1);
+
+			double[][] buffer = new double[BLOCK_SIZE][];
+			for (int i = 0; i < numBlock - 1; ++i) {
+                for(int j = 0; j < BLOCK_SIZE; ++j) {
+                    buffer[j] = factors[i * BLOCK_SIZE + j];
+                }
+                model.add(Row.of(i, factors.length, JsonConverter.toJson(buffer)));
+            }
+			int endIdx = factors.length - (BLOCK_SIZE * (numBlock - 1));
+
+			buffer = new double[endIdx][];
+			for (int j = 0; j < endIdx; ++j) {
+			    buffer[j] = factors[(numBlock - 1) * BLOCK_SIZE + j];
+			}
+			model.add(Row.of(numBlock - 1, factors.length, JsonConverter.toJson(buffer)));
+
+		    format.factors = null;
+            model.add(Row.of(-2, JsonConverter.toJson(format)));
+            model.add(Row.of(-1, JsonConverter.toJson(lossCurve)));
 			return model;
 		}
 	}
@@ -483,16 +508,28 @@ public class FmOptimizer {
 								 Collector <Tuple2 <FmDataFormat, double[]>> collector) throws Exception {
 			int taskId = getRuntimeContext().getIndexOfThisSubtask();
 			if (taskId == 0) {
-				FmDataFormat factor = new FmDataFormat();
+				FmDataFormat format = new FmDataFormat();
 				double[] cinfo = new double[0];
+				double[][] factors = null;
 				for (Row row : iterable) {
-					if ((int) row.getField(0) == 0) {
-						factor = JsonConverter.fromJson((String) row.getField(1), FmDataFormat.class);
-					} else {
+					if ((int) row.getField(0) >= 0) {
+						if (factors == null) {
+                            int vecSize =(int)row.getField(1);
+                            factors = new double[vecSize][];
+                        }
+						int blockId = (int)row.getField(0);
+						double[][] buffer = JsonConverter.fromJson((String) row.getField(2), double[][].class);
+						for (int i = 0; i < buffer.length; ++i) {
+						    factors[BLOCK_SIZE * blockId + i] = buffer[i];
+						}
+					} else if ((int) row.getField(0) == -1) {
 						cinfo = JsonConverter.fromJson((String) row.getField(1), double[].class);
-					}
+					} else if ((int) row.getField(0) == -2) {
+                        format = JsonConverter.fromJson((String) row.getField(1), FmDataFormat.class);
+                    }
 				}
-				collector.collect(Tuple2.of(factor, cinfo));
+                format.factors = factors;
+                collector.collect(Tuple2.of(format, cinfo));
 			}
 		}
 	}
@@ -535,7 +572,7 @@ public class FmOptimizer {
 
 			// the linear term
 			if (dim[1] > 0) {
-				y += x * fmModel.linearItems[featurePos];
+				y += x * fmModel.factors[featurePos][dim[2]];
 			}
 			// the quadratic term
 			for (int j = 0; j < dim[2]; j++) {

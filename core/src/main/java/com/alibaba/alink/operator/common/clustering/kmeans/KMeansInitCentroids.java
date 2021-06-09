@@ -94,13 +94,12 @@ public class KMeansInitCentroids implements Serializable {
 															   DataSet <Integer> vectorSize,
 															   int seed) {
 		return selectTopK(k, seed, data,
-			new Functional.SerializableFunction <FastDistanceVectorData, String>() {
+			new Functional.SerializableFunction <FastDistanceVectorData, byte[]>() {
 				private static final long serialVersionUID = 6092460932245165972L;
 
 				@Override
-				public String apply(FastDistanceVectorData v) {
-					return v.getVector() instanceof DenseVector ?
-						v.getVector().toString() : ((SparseVector) v.getVector()).toDenseVector().toString();
+				public byte[] apply(FastDistanceVectorData v) {
+					return v.getVector().toBytes();
 				}
 			})
 			.mapPartition(
@@ -230,7 +229,7 @@ public class KMeansInitCentroids implements Serializable {
 		final int k,
 		int seed,
 		DataSet <T> data,
-		final Functional.SerializableFunction <T, String> func) {
+		final Functional.SerializableFunction <T, byte[]> func) {
 		TypeInformation dataType = data.getType();
 
 		final HashFunction hashFunc = murmur3_128(seed);
@@ -240,7 +239,7 @@ public class KMeansInitCentroids implements Serializable {
 
 			@Override
 			public Tuple2 <Long, T> map(T value) throws Exception {
-				Long hashValue = hashFunc.hashUnencodedChars(func.apply(value)).asLong();
+				Long hashValue = hashFunc.hashBytes(func.apply(value)).asLong();
 				return Tuple2.of(hashValue, value);
 			}
 		}).returns(new TupleTypeInfo(Types.LONG, dataType))

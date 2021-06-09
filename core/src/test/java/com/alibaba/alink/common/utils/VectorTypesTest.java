@@ -10,6 +10,7 @@ import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -20,22 +21,24 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Test cases for VectorTypes.
  */
-public class VectorTypesTest {
+
+public class VectorTypesTest extends AlinkTestBase {
 
 	@Test
 	public void testGetTypeName() {
-		Assert.assertEquals("VEC_TYPES_DENSE_VECTOR", VectorTypes.getTypeName(VectorTypes.DENSE_VECTOR));
-		Assert.assertEquals("VEC_TYPES_SPARSE_VECTOR", VectorTypes.getTypeName(VectorTypes.SPARSE_VECTOR));
-		Assert.assertEquals("VEC_TYPES_VECTOR", VectorTypes.getTypeName(VectorTypes.VECTOR));
+		Assert.assertEquals("VEC_TYPES_DENSE_VECTOR", VectorTypes.getTypeName(TypeInformation.of(DenseVector.class)));
+		Assert.assertEquals("VEC_TYPES_SPARSE_VECTOR", VectorTypes.getTypeName(TypeInformation.of(SparseVector
+			.class)));
+		Assert.assertEquals("VEC_TYPES_VECTOR", VectorTypes.getTypeName(TypeInformation.of(Vector.class)));
 	}
 
 	@Test
 	public void testGetTypeInformation() {
 		Assert.assertEquals(VectorTypes.getTypeInformation("VEC_TYPES_DENSE_VECTOR"),
-			VectorTypes.DENSE_VECTOR);
+			TypeInformation.of(DenseVector.class));
 		Assert.assertEquals(VectorTypes.getTypeInformation("VEC_TYPES_SPARSE_VECTOR"),
-			VectorTypes.SPARSE_VECTOR);
-		Assert.assertEquals(VectorTypes.getTypeInformation("VEC_TYPES_VECTOR"), VectorTypes.VECTOR);
+			TypeInformation.of(SparseVector.class));
+		Assert.assertEquals(VectorTypes.getTypeInformation("VEC_TYPES_VECTOR"), TypeInformation.of(Vector.class));
 	}
 
 	@SuppressWarnings("unchecked")

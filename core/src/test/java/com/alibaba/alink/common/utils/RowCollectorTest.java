@@ -2,6 +2,7 @@ package com.alibaba.alink.common.utils;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,7 +12,8 @@ import java.util.List;
 /**
  * Unit test for RowCollector.
  */
-public class RowCollectorTest {
+
+public class RowCollectorTest extends AlinkTestBase {
 
 	@Test
 	public void testRowCollector() {

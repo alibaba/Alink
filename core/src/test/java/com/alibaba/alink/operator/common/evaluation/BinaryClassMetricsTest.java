@@ -1,8 +1,8 @@
 package com.alibaba.alink.operator.common.evaluation;
 
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,7 +15,8 @@ import static com.alibaba.alink.operator.common.evaluation.BinaryMetricsSummary.
 /**
  * Unit test for BinaryClassMetrics.
  */
-public class BinaryClassMetricsTest {
+
+public class BinaryClassMetricsTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

@@ -61,7 +61,7 @@ public class PackBatchOperatorUtil {
 		Tuple2 <String[], int[]> colNamesAndIndices = getColNamesAndIndices(modelRows, selectedOpIndex);
 		List <Row> output = new ArrayList <>();
 		for (Row row : modelRows) {
-			if (row.getField(0).equals(selectedOpIndex)) {
+			if (((Number) row.getField(0)).intValue() == selectedOpIndex) {
 				output.add(Row.project(row, colNamesAndIndices.f1));
 			}
 		}
@@ -92,7 +92,7 @@ public class PackBatchOperatorUtil {
 	private static Tuple2 <String[], int[]> getColNamesAndIndices(List <Row> modelRows,
 																  int selectedOpIndex) {
 		for (Row row : modelRows) {
-			if (row.getField(0).equals(-1)) {
+			if (((Number) row.getField(0)).intValue() == -1) {
 				Tuple2 <List <List <String>>, List <List <Integer>>> metaData =
 					JsonConverter.fromJson((String) row.getField(1), Tuple2.class);
 
@@ -136,7 +136,7 @@ public class PackBatchOperatorUtil {
 			colNames[i + 1] = MODEL_COL_PREFIX + i;
 		}
 		TypeInformation[] colTypes = new TypeInformation[colNames.length];
-		colTypes[0] = Types.INT;
+		colTypes[0] = Types.LONG;
 		System.arraycopy(mergeOpTypes, 0, colTypes, 1, mergeOpTypes.length);
 
 		return Tuple2.of(new TableSchema(colNames, colTypes), colIndices);
@@ -163,7 +163,7 @@ public class PackBatchOperatorUtil {
 		String meta = JsonConverter.toJson(Tuple2.of(colNames, colIndices));
 
 		Row row = new Row(schema.getFieldNames().length);
-		row.setField(0, -1);
+		row.setField(0, -1L);
 		row.setField(1, meta);
 
 		List <Row> rowData = new ArrayList <>();
@@ -202,7 +202,7 @@ public class PackBatchOperatorUtil {
 		@Override
 		public Row map(Row value) throws Exception {
 			Row row = new Row(this.colNum);
-			row.setField(0, this.opIdx);
+			row.setField(0, (long) this.opIdx);
 			for (int i = 0; i < value.getArity(); i++) {
 				row.setField(colIndices[i], value.getField(i));
 			}

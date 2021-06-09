@@ -3,13 +3,13 @@ package com.alibaba.alink.operator.common.dataproc;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.mapper.ModelMapper;
-import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
@@ -37,29 +37,14 @@ public class MultiStringIndexerModelMapper extends ModelMapper {
 	 */
 	private transient Map <Integer, Long> defaultIndex;
 
-	private OutputColsHelper outputColsHelper;
-	private String[] selectedColNames;
-
-	private int[] selectedColIndicesInData;
-	private HasHandleInvalid.HandleInvalid handleInvalidStrategy;
+	private final String[] selectedColNames;
+	private final HasHandleInvalid.HandleInvalid handleInvalidStrategy;
 
 	public MultiStringIndexerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
-		selectedColNames = params.get(MultiStringIndexerPredictParams.SELECTED_COLS);
-		String[] outputColNames = params.get(MultiStringIndexerPredictParams.OUTPUT_COLS);
-		if (outputColNames == null) {
-			outputColNames = selectedColNames;
-		}
-		Preconditions.checkArgument(outputColNames.length == selectedColNames.length,
-			"OutputCol length must be equal to selectedCol length!");
-		String[] reservedColNames = params.get(MultiStringIndexerPredictParams.RESERVED_COLS);
 
-		handleInvalidStrategy = params.get(MultiStringIndexerPredictParams.HANDLE_INVALID);
-
-		TypeInformation[] outputColTypes = new TypeInformation[selectedColNames.length];
-		Arrays.fill(outputColTypes, Types.LONG);
-
-		outputColsHelper = new OutputColsHelper(dataSchema, outputColNames, outputColTypes, reservedColNames);
+		handleInvalidStrategy = this.params.get(MultiStringIndexerPredictParams.HANDLE_INVALID);
+		selectedColNames = this.params.get(MultiStringIndexerPredictParams.SELECTED_COLS);
 	}
 
 	@Override
@@ -67,7 +52,6 @@ public class MultiStringIndexerModelMapper extends ModelMapper {
 		MultiStringIndexerModelData model = new MultiStringIndexerModelDataConverter().load(modelRows);
 
 		String[] trainColNames = model.meta.get(HasSelectedCols.SELECTED_COLS);
-		this.selectedColIndicesInData = TableUtil.findColIndicesWithAssert(super.getDataSchema(), selectedColNames);
 		int[] selectedColIndicesInModel = TableUtil.findColIndicesWithAssert(trainColNames, selectedColNames);
 		this.indexMapper = new HashMap <>();
 		this.defaultIndex = new HashMap <>();
@@ -89,29 +73,42 @@ public class MultiStringIndexerModelMapper extends ModelMapper {
 	}
 
 	@Override
-	public TableSchema getOutputSchema() {
-		return outputColsHelper.getResultSchema();
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema modelSchema, TableSchema dataSchema, Params params) {
+
+		String[] selectedColNames = params.get(MultiStringIndexerPredictParams.SELECTED_COLS);
+
+		String[] outputColNames = params.get(MultiStringIndexerPredictParams.OUTPUT_COLS);
+		if (outputColNames == null) {
+			outputColNames = selectedColNames;
+		}
+
+		Preconditions.checkArgument(outputColNames.length == selectedColNames.length,
+			"OutputCol length must be equal to selectedCol length!");
+
+		String[] reservedColNames = params.get(MultiStringIndexerPredictParams.RESERVED_COLS);
+
+		TypeInformation <?>[] outputColTypes = new TypeInformation[selectedColNames.length];
+		Arrays.fill(outputColTypes, Types.LONG);
+
+		return Tuple4.of(selectedColNames, outputColNames, outputColTypes, reservedColNames);
 	}
 
 	@Override
-	public Row map(Row row) throws Exception {
-		Row result = new Row(selectedColNames.length);
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
 		for (int i = 0; i < selectedColNames.length; i++) {
-			Map <String, Long> mapper = indexMapper.get(i);
-			int colIdxInData = selectedColIndicesInData[i];
-			Object val = row.getField(colIdxInData);
+			Object val = selection.get(i);
 			String key = val == null ? null : String.valueOf(val);
-			Long index = mapper.get(key);
+			Long index = indexMapper.get(i).get(key);
 			if (index != null) {
-				result.setField(i, index);
+				result.set(i, index);
 			} else {
 				switch (this.handleInvalidStrategy) {
 					case KEEP:
-						Long localDefaultIndex = defaultIndex.get(i);
-						result.setField(i, localDefaultIndex);
+						result.set(i, defaultIndex.get(i));
 						break;
 					case SKIP:
-						result.setField(i, null);
+						result.set(i, null);
 						break;
 					case ERROR:
 						throw new RuntimeException("Unseen token: " + key);
@@ -120,6 +117,5 @@ public class MultiStringIndexerModelMapper extends ModelMapper {
 				}
 			}
 		}
-		return outputColsHelper.getResultRow(row, result);
 	}
 }

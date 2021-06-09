@@ -25,8 +25,8 @@ import java.util.Arrays;
  */
 public class BinarizerMapper extends SISOMapper {
 	private static final long serialVersionUID = 3404239364851551683L;
-	private double threshold;
-	private TypeInformation selectedColType;
+	private final double threshold;
+	private final TypeInformation selectedColType;
 	private Object objectValue0, objectValue1;
 
 	public BinarizerMapper(TableSchema dataSchema, Params params) {

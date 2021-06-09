@@ -1,13 +1,15 @@
 package com.alibaba.alink.operator.common.similarity.similarity;
 
 import com.alibaba.alink.operator.common.similarity.Sample;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for LongestCommonSubsequence
  */
-public class LongestCommonSubsequenceTest {
+
+public class LongestCommonSubsequenceTest extends AlinkTestBase {
 	private String s1 = "Good Morning!";
 	private String s2 = "Good Evening!";
 	private LongestCommonSubsequence similarity = new LongestCommonSubsequence();

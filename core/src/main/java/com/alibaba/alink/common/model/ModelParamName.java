@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
 
 /**
@@ -132,8 +133,8 @@ public class ModelParamName {
 		.setRequired()
 		.build();
 
-	public final static ParamInfo <String> TASK = ParamInfoFactory
-		.createParamInfo("task", String.class)
+	public final static ParamInfo <Task> TASK = ParamInfoFactory
+		.createParamInfo("task", Task.class)
 		.setDescription("task")
 		.setRequired()
 		.build();

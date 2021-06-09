@@ -30,13 +30,13 @@ public class LdaModelMapper extends RichModelMapper {
 
 	private static final long serialVersionUID = -7533400774149397164L;
 	public LdaModelData modelData = new LdaModelData();
-	private int documentColIdx;
+	private final int documentColIdx;
 	private DenseMatrix expELogBeta;
 	private DenseMatrix alphaMatrix;
 	private int topicNum;
 	public int vocabularySize;
 
-	private FeatureType featureType = FeatureType.WORD_COUNT;
+	private final FeatureType featureType = FeatureType.WORD_COUNT;
 	private HashMap <String, Tuple2 <Integer, Double>> wordIdWeight;
 	private int featureNum;
 	private int gammaShape;
@@ -62,8 +62,25 @@ public class LdaModelMapper extends RichModelMapper {
 	 * Get the result doc label col type.
 	 */
 	@Override
-	protected TypeInformation initPredResultColType() {
+	protected TypeInformation<?> initPredResultColType(TableSchema modelSchema) {
 		return Types.LONG;
+	}
+
+
+	/**
+	 * Predict the label topic of the input document.
+	 */
+	@Override
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		return this.predictResultDetail(selection).f0;
+	}
+
+	/**
+	 * Predict the label and the probability that the document belongs to each topic.
+	 */
+	@Override
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
+		return predictResultDetail(selection, null);
 	}
 
 	/**
@@ -135,20 +152,17 @@ public class LdaModelMapper extends RichModelMapper {
 	}
 
 	/**
-	 * Predict the label topic of the input document.
-	 */
-	@Override
-	protected Object predictResult(Row row) throws Exception {
-		return this.predictResultDetail(row).f0;
-	}
-
-	/**
 	 * Predict the label and the probability that the document belongs to each topic.
 	 */
-	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) throws Exception {
+
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection, int[] fromIndices) throws Exception {
 		double minTF = 1.0;
-		String doc = (String) row.getField(documentColIdx);
+		int docColIdx = this.documentColIdx;
+		if (fromIndices != null) {
+			docColIdx = fromIndices[0];
+		}
+		String doc = (String) selection.get(docColIdx);
+
 		SparseVector sv = DocCountVectorizerModelMapper.predictSparseVector(
 			doc, minTF, wordIdWeight, featureType, featureNum);
 		double[] values;
@@ -171,6 +185,5 @@ public class LdaModelMapper extends RichModelMapper {
 		}
 
 		return new Tuple2 <>(maxIndex, dv.toString());
-
 	}
 }

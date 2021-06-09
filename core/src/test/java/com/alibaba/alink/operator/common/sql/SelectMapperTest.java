@@ -6,16 +6,25 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.params.dataproc.HasClause;
 import com.alibaba.alink.testutil.AlinkTestBase;
+import io.reactivex.rxjava3.functions.BiFunction;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
+
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
 public class SelectMapperTest extends AlinkTestBase {
 
 	@Test
-	public void testGenereal() throws Exception {
+	public void testGeneral() throws Exception {
 		TableSchema dataSchema = TableSchema.builder().fields(
 			new String[] {"id", "name"},
 			new DataType[] {DataTypes.INT(), DataTypes.STRING()}).build();
@@ -291,4 +300,69 @@ public class SelectMapperTest extends AlinkTestBase {
 		}
 	}
 
+	public static <T extends Mapper> void testMultiThreadMapper(BiFunction <TableSchema, Params, T> constructor,
+																TableSchema dataSchema, Params params, Row[] inputs,
+																int numThreads) throws Throwable {
+		int numItems = inputs.length;
+		T mapper = constructor.apply(dataSchema, params);
+		mapper.open();
+		Row[] outputs = new Row[numItems];
+		for (int i = 0; i < numItems; i += 1) {
+			outputs[i] = mapper.map(inputs[i]);
+		}
+		mapper.close();
+
+		T multiThreadMapper = constructor.apply(dataSchema, params);
+		multiThreadMapper.open();
+
+		ExecutorService executorService = new ThreadPoolExecutor(
+			numThreads, numThreads, 0, TimeUnit.MILLISECONDS, new ArrayBlockingQueue <>(numThreads));
+
+		Future <?>[] futures = new Future[numThreads];
+		for (int threadId = 0; threadId < numThreads; threadId += 1) {
+			int finalThreadId = threadId;
+			futures[threadId] = executorService.submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						for (int i = 0; i < numItems; i += 1) {
+							System.err.println("threadId = " + finalThreadId);
+							Row output = multiThreadMapper.map(inputs[i]);
+							assertEquals(output.toString(), outputs[i].toString());
+							Thread.sleep(10);
+						}
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+		}
+		for (int i = 0; i < numThreads; i += 1) {
+			futures[i].get();
+		}
+		multiThreadMapper.close();
+	}
+
+	@Test
+	public void testMultiThread() throws Exception {
+		int numItems = 100;
+
+		Row[] inputs = new Row[numItems];
+		for (int i = 0; i < numItems; i += 1) {
+			inputs[i] = Row.of(i, RandomStringUtils.randomAlphanumeric(8));
+		}
+
+		TableSchema dataSchema = TableSchema.builder().fields(
+			new String[] {"id", "name"},
+			new DataType[] {DataTypes.INT(), DataTypes.STRING()}).build();
+		Params params = new Params();
+		params.set(HasClause.CLAUSE,
+			"id, name as eman, id + 1 as id2, CASE WHEN id=1 THEN 'q' ELSE 'p' END as col3, UPPER(name) as col4");
+
+		try {
+			testMultiThreadMapper(SelectMapper::new, dataSchema, params, inputs, 4);
+		} catch (Throwable throwable) {
+			throw new RuntimeException(throwable);
+		}
+	}
 }

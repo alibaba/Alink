@@ -7,10 +7,11 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.ParamUtil;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ParamsTest {
+public class ParamsTest extends AlinkTestBase {
 
 	@Test
 	public void testOpSetString() {

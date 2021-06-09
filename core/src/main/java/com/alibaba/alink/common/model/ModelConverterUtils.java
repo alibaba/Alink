@@ -105,7 +105,7 @@ class ModelConverterUtils {
 		// extract meta
 		List <String> metaSegments = new ArrayList <>();
 		for (int i = 0; i < order.length; i++) {
-			long id = (Long) rows.get(order[i]).getField(0);
+			long id = ((Number) rows.get(order[i]).getField(0)).longValue();
 			int currStringId = getStringIndex(id);
 			if (currStringId == 0) {
 				metaSegments.add((String) rows.get(order[i]).getField(1));
@@ -167,7 +167,7 @@ class ModelConverterUtils {
 				if (listPos >= order.length || modelRows.get(order[listPos]).getField(1) == null) {
 					break;
 				}
-				long id = (Long) modelRows.get(order[listPos]).getField(0);
+				long id = ((Number) modelRows.get(order[listPos]).getField(0)).longValue();
 				String segment = (String) modelRows.get(order[listPos]).getField(1);
 
 				int stringId = getStringIndex(id);
@@ -216,7 +216,7 @@ class ModelConverterUtils {
 			this.isLabel = isLabel;
 
 			for (; listPos < order.length; listPos++) {
-				long id = (Long) modelRows.get(order[listPos]).getField(0);
+				long id = ((Number) modelRows.get(order[listPos]).getField(0)).longValue();
 				if (getStringIndex(id) == Integer.MAX_VALUE) {
 					break;
 				}
@@ -292,7 +292,7 @@ class ModelConverterUtils {
 		Arrays.sort(order, new Comparator <Integer>() {
 			@Override
 			public int compare(Integer o1, Integer o2) {
-				return Long.compare((Long) rows.get(o1).getField(0), (Long) rows.get(o2).getField(0));
+				return Long.compare(((Number) rows.get(o1).getField(0)).longValue(), ((Number) rows.get(o2).getField(0)).longValue());
 			}
 		});
 		return order;

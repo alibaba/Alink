@@ -11,6 +11,7 @@ import com.alibaba.alink.params.shared.colname.HasOutputCol;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 import com.alibaba.alink.params.similarity.HasMetric;
 import com.alibaba.alink.params.similarity.StringTextPairwiseParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -20,7 +21,8 @@ import static org.junit.Assert.assertArrayEquals;
 /**
  * Test for TextSimilarityPairwiseMapper.
  */
-public class TextSimilarityPairwiseMapperTest {
+
+public class TextSimilarityPairwiseMapperTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

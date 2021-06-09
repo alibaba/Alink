@@ -12,17 +12,17 @@ import com.alibaba.alink.params.similarity.StringTextPairwiseParams;
 
 public class TextSimilarityPairwiseMapper extends MISOMapper {
 	private static final long serialVersionUID = -2281014249293525621L;
-	private Similarity similarity;
-	private HasMetric.Metric method;
+	private final Similarity similarity;
+	private final HasMetric.Metric method;
 
 	public TextSimilarityPairwiseMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
-		this.similarity = StringSimilarityPairwiseMapper.createSimilarity(params);
-		this.method = params.get(StringTextPairwiseParams.METRIC);
+		this.similarity = StringSimilarityPairwiseMapper.createSimilarity(this.params);
+		this.method = this.params.get(StringTextPairwiseParams.METRIC);
 	}
 
 	@Override
-	protected TypeInformation initOutputColType() {
+	protected TypeInformation<?> initOutputColType() {
 		return Types.DOUBLE;
 	}
 

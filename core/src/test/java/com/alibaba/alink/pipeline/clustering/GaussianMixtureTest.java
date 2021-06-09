@@ -57,7 +57,7 @@ public class GaussianMixtureTest extends AlinkTestBase {
 		Row.of("0:9.5218499 1:10.4179416")
 	};
 
-	private static final double TOL = 1.0e-2;
+	private final double TOL = 1.0e-2;
 
 	private GmmClusterSummary cluster1D1 = new GmmClusterSummary(0, 2.0 / 3.0,
 		new DenseVector(new double[] {5.1604}), new DenseVector(new double[] {0.86644}));
@@ -73,7 +73,7 @@ public class GaussianMixtureTest extends AlinkTestBase {
 		new DenseVector(new double[] {0.11731091, -0.06192351}),
 		new DenseVector(new double[] {0.62049934, 0.06880802, 1.27431874}));
 
-	private static boolean isSameCluster(GmmClusterSummary c1, GmmClusterSummary c2) {
+	private boolean isSameCluster(GmmClusterSummary c1, GmmClusterSummary c2) {
 		if (Math.abs(c1.weight - c2.weight) > TOL) {
 			return false;
 		}
@@ -86,7 +86,7 @@ public class GaussianMixtureTest extends AlinkTestBase {
 		return true;
 	}
 
-	private static void compareClusterSummariesOfTwoClusters(List <GmmClusterSummary> actual,
+	private void compareClusterSummariesOfTwoClusters(List <GmmClusterSummary> actual,
 															 List <GmmClusterSummary> expected) {
 		Assert.assertEquals(actual.size(), 2);
 		Assert.assertEquals(expected.size(), 2);
@@ -96,7 +96,7 @@ public class GaussianMixtureTest extends AlinkTestBase {
 	}
 
 	// Check whether GMM is converged.
-	private static boolean converged(GmmModelData modelData) {
+	private boolean converged(GmmModelData modelData) {
 		for (int i = 0; i < modelData.k; i++) {
 			double norm = modelData.data.get(i).cov.normInf();
 			if (norm > 5.0) {
@@ -160,8 +160,6 @@ public class GaussianMixtureTest extends AlinkTestBase {
 			.setPredictionCol("pred")
 			.linkFrom(gmm, op);
 
-		gmm.lazyPrintModelInfo("GMM");
-
 		ClusterMetrics eval = new EvalClusterBatchOp()
 			.setVectorCol("x")
 			.setLabelCol(Iris.getLabelColName())
@@ -169,8 +167,7 @@ public class GaussianMixtureTest extends AlinkTestBase {
 			.linkFrom(predict)
 			.collectMetrics();
 
-		System.out.println(eval.toString());
-		Assert.assertEquals(eval.getDb(), 0.38, 0.01);
-		Assert.assertEquals(eval.getAri(), 0.57, 0.01);
+		Assert.assertEquals(eval.getDb(), 1.15, 0.01);
+		Assert.assertEquals(eval.getAri(), 0.35, 0.01);
 	}
 }

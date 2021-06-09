@@ -1,11 +1,13 @@
 package com.alibaba.alink.operator.common.feature;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 /**
  * Unit test for QuantileDiscretizerModelDataConverter.
  */
-public class QuantileDiscretizerModelDataConverterTest {
+
+public class QuantileDiscretizerModelDataConverterTest extends AlinkTestBase {
 
 	@Test
 	public void testAssembledVector() throws Exception {

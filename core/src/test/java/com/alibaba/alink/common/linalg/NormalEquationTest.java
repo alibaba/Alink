@@ -1,8 +1,9 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
-public class NormalEquationTest {
+public class NormalEquationTest extends AlinkTestBase {
 	@Test
 	public void solve() throws Exception {
 		NormalEquation ls = new NormalEquation(4);

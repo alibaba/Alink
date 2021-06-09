@@ -8,8 +8,7 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
 /**
  * parameters of vector element wise product.
  */
-public interface VectorElementwiseProductParams<T> extends
-	SISOMapperParams <T> {
+public interface VectorElementwiseProductParams<T> extends SISOMapperParams <T> {
 
 	ParamInfo <String> SCALING_VECTOR = ParamInfoFactory
 		.createParamInfo("scalingVector", String.class)

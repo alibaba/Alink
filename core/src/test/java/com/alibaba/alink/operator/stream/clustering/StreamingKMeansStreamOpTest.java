@@ -43,7 +43,7 @@ public class StreamingKMeansStreamOpTest extends AlinkTestBase {
 
 		MemSourceBatchOp sourceBatchOp = new MemSourceBatchOp(Arrays.asList(rows), tableSchema);
 
-		Row[] predict = new Row[200000];
+		Row[] predict = new Row[2000000];
 		for (int i = 0; i < predict.length; i++) {
 			predict[i] = Row.of(DenseVector.rand(3));
 		}

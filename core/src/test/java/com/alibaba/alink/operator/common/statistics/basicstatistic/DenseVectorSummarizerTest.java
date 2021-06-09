@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.statistics.basicstatistic;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class DenseVectorSummarizerTest {
+public class DenseVectorSummarizerTest extends AlinkTestBase {
 
 	@Test
 	public void visit() {

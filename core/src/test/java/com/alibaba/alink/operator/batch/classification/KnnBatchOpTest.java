@@ -3,7 +3,6 @@ package com.alibaba.alink.operator.batch.classification;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.format.VectorToColumnsBatchOp;
 import com.alibaba.alink.operator.batch.evaluation.EvalMultiClassBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.evaluation.MultiClassMetrics;
@@ -16,10 +15,9 @@ import java.util.Arrays;
 
 public class KnnBatchOpTest extends AlinkTestBase {
 	@Test
-	public void test1() throws Exception {
-		String labelName = "g";
-
-		Row[] testArray = new Row[] {
+	public void test() throws Exception {
+		String[] colNames = new String[] {"label", "vector"};
+		Row[] trainArray = new Row[] {
 			Row.of("f", "2.0,3.0"),
 			Row.of("f", "2.1,3.1"),
 			Row.of("m", "200.1,300.1"),
@@ -43,38 +41,31 @@ public class KnnBatchOpTest extends AlinkTestBase {
 			Row.of("f", "2.1,3.1")
 		};
 
-		String[] colnames = new String[] {"g", "vector"};
-		MemSourceBatchOp inOp = new MemSourceBatchOp(Arrays.asList(testArray), colnames);
-
-		Row[] preArray =
+		Row[] testArray =
 			new Row[] {
 				Row.of("e", "4.0 4.1"),
 				Row.of("m", "300 42")
 			};
 
-		MemSourceBatchOp outOp = new MemSourceBatchOp(Arrays.asList(preArray), new String[] {"g", "vector"});
+		MemSourceBatchOp trainDataOp = new MemSourceBatchOp(Arrays.asList(trainArray), colNames);
+		MemSourceBatchOp testDataOp = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
 
-		VectorToColumnsBatchOp vectorToColumnsBatchOp = new VectorToColumnsBatchOp()
+		BatchOperator <?> knnModel = new KnnTrainBatchOp()
 			.setVectorCol("vector")
-			.setSchemaStr("f0 double, f1 double")
-			.linkFrom(inOp);
-
-		BatchOperator<?> op = new KnnTrainBatchOp()
-			.setFeatureCols("f0", "f1")
-			.setLabelCol(labelName)
+			.setLabelCol("label")
 			.setDistanceType(HasKMeansDistanceType.DistanceType.EUCLIDEAN)
-			.linkFrom(vectorToColumnsBatchOp);
+			.linkFrom(trainDataOp);
 
-		KnnPredictBatchOp predict = new KnnPredictBatchOp()
+		KnnPredictBatchOp predictResult = new KnnPredictBatchOp()
 			.setPredictionCol("pred")
 			.setK(4)
 			.setPredictionDetailCol("detail")
-			.linkFrom(op, vectorToColumnsBatchOp.linkFrom(outOp));
+			.linkFrom(knnModel, testDataOp);
 
 		MultiClassMetrics metrics = new EvalMultiClassBatchOp()
-			.setLabelCol(labelName)
+			.setLabelCol("label")
 			.setPredictionDetailCol("detail")
-			.linkFrom(predict)
+			.linkFrom(predictResult)
 			.collectMetrics();
 
 		Assert.assertTrue(metrics.getAccuracy() > 0.9);

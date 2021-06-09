@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -13,7 +14,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class MaxAbsScalerMapperTest {
+public class MaxAbsScalerMapperTest extends AlinkTestBase {
 
 	TableSchema modelSchema = new TableSchema(new String[] {"model_id", "model_info", "f0", "f1"},
 		new TypeInformation[] {Types.LONG, Types.STRING, Types.DOUBLE, Types.DOUBLE});

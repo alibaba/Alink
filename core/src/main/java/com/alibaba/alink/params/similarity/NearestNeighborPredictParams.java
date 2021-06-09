@@ -9,8 +9,7 @@ import com.alibaba.alink.params.validators.MinValidator;
 /**
  * Parameters for nearest neighbor predict.
  */
-public interface NearestNeighborPredictParams<T> extends
-	SISOMapperParams <T> {
+public interface NearestNeighborPredictParams<T> extends SISOMapperParams <T> {
 
 	ParamInfo <Double> RADIUS = ParamInfoFactory
 		.createParamInfo("radius", Double.class)

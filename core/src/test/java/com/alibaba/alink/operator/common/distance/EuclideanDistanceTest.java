@@ -7,6 +7,7 @@ import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +17,8 @@ import java.util.List;
 /**
  * Unit test EuclideanDistance
  */
-public class EuclideanDistanceTest {
+
+public class EuclideanDistanceTest extends AlinkTestBase {
 	private EuclideanDistance distance = new EuclideanDistance();
 	private DenseVector denseVector1 = new DenseVector(new double[] {1, 2, 4, 1, 3});
 	private DenseVector denseVector2 = new DenseVector(new double[] {4, 6, 1, 2, 4});

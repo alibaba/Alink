@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.params.regression.AftRegPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class AFTRegressionMapperTest {
+public class AFTRegressionMapperTest extends AlinkTestBase {
 
 	Row[] rows = new Row[] {
 		Row.of(0L, "{\"hasInterceptItem\":\"true\",\"vectorColName\":\"\\\"features\\\"\","

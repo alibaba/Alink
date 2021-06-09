@@ -75,7 +75,7 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 
 		DataSet <Row> data = GlmUtil.preProc(in, featureColNames, offsetColName, weightColName, labelColName);
 
-		DataSet <WeightedLeastSquaresModel> finalModel =
+		DataSet <GlmUtil.WeightedLeastSquaresModel> finalModel =
 			GlmUtil.train(data, numFeature, familyLink, regParam, fitIntercept, numIter, epsilon);
 
 		DataSet <Row> residual = GlmUtil.residual(finalModel, data, numFeature, familyLink);
@@ -183,9 +183,9 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 		}
 
 		@Override
-		public void mapPartition(Iterable <WeightedLeastSquaresModel> iterable, Collector <Row> result)
+		public void mapPartition(Iterable <GlmUtil.WeightedLeastSquaresModel> iterable, Collector <Row> result)
 			throws Exception {
-			WeightedLeastSquaresModel model = iterable.iterator().next();
+			GlmUtil.WeightedLeastSquaresModel model = iterable.iterator().next();
 			GlmModelDataConverter outModel = new GlmModelDataConverter();
 			GlmModelData modelData = new GlmModelData();
 			modelData.featureColNames = featureColNames;

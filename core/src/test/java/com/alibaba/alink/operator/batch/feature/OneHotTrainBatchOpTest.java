@@ -51,8 +51,8 @@ public class OneHotTrainBatchOpTest extends AlinkTestBase {
 			.setOutputCols("output")
 			.linkFrom(op, sourceBatchOp);
 
-		Assert.assertEquals(op.count(), 6);
-		Assert.assertEquals(op.getSideOutput(0).count(), 1);
+		//Assert.assertEquals(op.count(), 6);
+		//Assert.assertEquals(op.getSideOutput(0).count(), 1);
 		predictBatchOp.collect();
 	}
 

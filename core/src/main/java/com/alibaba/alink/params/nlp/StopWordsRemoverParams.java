@@ -8,8 +8,7 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
 /**
  * Params for StopWordsRemover.
  */
-public interface StopWordsRemoverParams<T> extends
-	SISOMapperParams <T> {
+public interface StopWordsRemoverParams<T> extends SISOMapperParams <T> {
 
 	ParamInfo <Boolean> CASE_SENSITIVE = ParamInfoFactory
 		.createParamInfo("caseSensitive", Boolean.class)

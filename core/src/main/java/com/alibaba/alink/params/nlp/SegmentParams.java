@@ -8,8 +8,7 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
 /**
  * Params for segment.
  */
-public interface SegmentParams<T> extends
-	SISOMapperParams <T> {
+public interface SegmentParams<T> extends SISOMapperParams <T> {
 
 	ParamInfo <String[]> USER_DEFINED_DICT = ParamInfoFactory
 		.createParamInfo("userDefinedDict", String[].class)

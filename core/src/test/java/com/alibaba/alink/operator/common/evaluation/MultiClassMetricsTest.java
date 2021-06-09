@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -8,7 +9,8 @@ import org.junit.rules.ExpectedException;
 /**
  * Unit test for MultiClassMetrics.
  */
-public class MultiClassMetricsTest {
+
+public class MultiClassMetricsTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

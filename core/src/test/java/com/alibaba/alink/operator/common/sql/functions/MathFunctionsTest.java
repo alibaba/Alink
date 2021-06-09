@@ -1,12 +1,13 @@
 package com.alibaba.alink.operator.common.sql.functions;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 
-public class MathFunctionsTest {
+public class MathFunctionsTest extends AlinkTestBase {
 
 	private static final double EPS = 1e-9;
 

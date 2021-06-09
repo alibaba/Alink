@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.common.linear.SoftmaxModelMapper;
 import com.alibaba.alink.params.classification.SoftmaxPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class SoftmaxModelMapperTest {
+public class SoftmaxModelMapperTest extends AlinkTestBase {
 	Row[] rows = new Row[] {
 		Row.of(0L, "{\"hasInterceptItem\":\"true\",\"modelName\":\"\\\"softmax\\\"\",\"labelType\":\"4\","
 				+ "\"modelSchema\":\"\\\"model_id bigint,model_info string,label_type int\\\"\","

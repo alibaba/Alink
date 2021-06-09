@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.common.feature;
 
-import com.alibaba.alink.common.linalg.DenseVector;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -10,6 +9,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.params.feature.BinarizerParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -18,7 +18,8 @@ import static org.junit.Assert.assertNull;
 /**
  * Unit test for BinarizerMapper.
  */
-public class BinarizerMapperTest {
+
+public class BinarizerMapperTest extends AlinkTestBase {
 	@Test
 	public void test1() throws Exception {
 		TableSchema schema = new TableSchema(new String[] {"feature"}, new TypeInformation <?>[] {VectorTypes.VECTOR});
@@ -45,7 +46,8 @@ public class BinarizerMapperTest {
 
 		BinarizerMapper mapper = new BinarizerMapper(schema, params);
 
-		assertEquals(mapper.map(Row.of(VectorUtil.getVector("0.1 0.6"))).getField(0), VectorUtil.getDenseVector("0.0 0.0"));
+		assertEquals(mapper.map(Row.of(VectorUtil.getVector("0.1 0.6"))).getField(0),
+			VectorUtil.getDenseVector("0.0 0.0"));
 		assertEquals(mapper.map(Row.of(VectorUtil.getVector("2.1 2.6 4.1 0.6 3.2"))).getField(0),
 			VectorUtil.getVector("1.0 1.0 1.0 0.0 1.0"));
 		assertEquals(mapper.map(Row.of(VectorUtil.getVector("$20$4:0.2 6:1.0 7:0.05"))).getField(0),

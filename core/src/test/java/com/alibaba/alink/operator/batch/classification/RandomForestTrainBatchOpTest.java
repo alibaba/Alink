@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.batch.classification;
 
-import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
@@ -534,7 +533,6 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 		decisionTreeRegTrainBatchOp.linkFrom(memSourceBatchOp).collect();
 	}
 
-
 	@Test
 	public void testC45() throws Exception {
 		C45TrainBatchOp c45BatchOp = new C45TrainBatchOp()
@@ -556,14 +554,15 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 			.setPredictionCol("c45_predict_result")
 			.setPredictionDetailCol("c45_predict_detail");
 
-		BatchOperator<?> c45Model = input.linkTo(c45BatchOp);
-		BatchOperator<?> c45Pred = c45PredictBatchOp.linkFrom(c45Model, input);
+		BatchOperator <?> c45Model = input.linkTo(c45BatchOp);
+		BatchOperator <?> c45Pred = c45PredictBatchOp.linkFrom(c45Model, input);
 
 		c45Pred.collect();
 
-		BatchOperator<?> evalResult = evalClassificationBatchOp.linkFrom(c45Pred);
+		BatchOperator <?> evalResult = evalClassificationBatchOp.linkFrom(c45Pred);
 
 		evalResult.collect();
+
 		c45PredictStreamOp.linkFrom(inputStream);
 
 		EvalMultiClassStreamOp evalClassStreamOp = new EvalMultiClassStreamOp()
@@ -597,12 +596,12 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 			.setPredictionCol("id3_predict_result")
 			.setPredictionDetailCol("id3_predict_detail");
 
-		BatchOperator<?> id3Model = input.linkTo(id3BatchOp);
-		BatchOperator<?> id3Pred = id3PredictBatchOp.linkFrom(id3Model, input);
+		BatchOperator <?> id3Model = input.linkTo(id3BatchOp);
+		BatchOperator <?> id3Pred = id3PredictBatchOp.linkFrom(id3Model, input);
 
 		id3Pred.collect();
 
-		BatchOperator<?> evalResult = evalClassificationBatchOp.linkFrom(id3Pred);
+		BatchOperator <?> evalResult = evalClassificationBatchOp.linkFrom(id3Pred);
 
 		evalResult.collect();
 
@@ -638,12 +637,12 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 			.setPredictionCol("cart_predict_result")
 			.setPredictionDetailCol("cart_predict_detail");
 
-		BatchOperator<?> cartModel = input.linkTo(cartBatchOp);
-		BatchOperator<?> cartPred = cartPredictBatchOp.linkFrom(cartModel, input);
+		BatchOperator <?> cartModel = input.linkTo(cartBatchOp);
+		BatchOperator <?> cartPred = cartPredictBatchOp.linkFrom(cartModel, input);
 
 		cartPred.collect();
 
-		BatchOperator<?> evalResult = evalClassificationBatchOp.linkFrom(cartPred);
+		BatchOperator <?> evalResult = evalClassificationBatchOp.linkFrom(cartPred);
 
 		evalResult.collect();
 
@@ -677,12 +676,12 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 		CartRegPredictStreamOp cartRegPredictStreamOp = new CartRegPredictStreamOp(cartRegBatchOp)
 			.setPredictionCol("cart_reg_predict_result");
 
-		BatchOperator<?> cartRegModel = input.linkTo(cartRegBatchOp);
-		BatchOperator<?> cartRegPred = cartRegPredictBatchOp.linkFrom(cartRegModel, input);
+		BatchOperator <?> cartRegModel = input.linkTo(cartRegBatchOp);
+		BatchOperator <?> cartRegPred = cartRegPredictBatchOp.linkFrom(cartRegModel, input);
 
 		cartRegPred.collect();
 
-		BatchOperator<?> evalResult = evalClassificationBatchOp.linkFrom(cartRegPred);
+		BatchOperator <?> evalResult = evalClassificationBatchOp.linkFrom(cartRegPred);
 
 		evalResult.collect();
 
@@ -710,12 +709,12 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 			= new RandomForestRegPredictStreamOp(randomForestsRegBatchOp)
 			.setPredictionCol("random_forests_reg_predict_result");
 
-		BatchOperator<?> randomForestsRegModel = input.linkTo(randomForestsRegBatchOp);
-		BatchOperator<?> randomForestsRegPred = randomForestsRegPredictBatchOp.linkFrom(randomForestsRegModel, input);
+		BatchOperator <?> randomForestsRegModel = input.linkTo(randomForestsRegBatchOp);
+		BatchOperator <?> randomForestsRegPred = randomForestsRegPredictBatchOp.linkFrom(randomForestsRegModel, input);
 
 		randomForestsRegPred.collect();
 
-		BatchOperator<?> evalResult = evalClassificationBatchOp.linkFrom(randomForestsRegPred);
+		BatchOperator <?> evalResult = evalClassificationBatchOp.linkFrom(randomForestsRegPred);
 
 		evalResult.collect();
 
@@ -749,11 +748,11 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 			.setPredictionDetailCol("rf_predict_result_detail");
 
 		BatchOperator <?> rfModel = input.linkTo(randomForestBatchOp);
-		BatchOperator<?> rfPred = randomForestPredictBatchOp.linkFrom(rfModel, input);
+		BatchOperator <?> rfPred = randomForestPredictBatchOp.linkFrom(rfModel, input);
 
 		rfPred.collect();
 
-		BatchOperator<?> evalResult = evalClassificationBatchOp.linkFrom(rfPred);
+		BatchOperator <?> evalResult = evalClassificationBatchOp.linkFrom(rfPred);
 
 		evalResult.collect();
 
@@ -780,15 +779,15 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 
 		Pipeline pipeline = new Pipeline().add(c45);
 
-		BatchOperator<?> output = pipeline.fit(input).transform(input);
+		BatchOperator <?> output = pipeline.fit(input).transform(input);
 
 		output.lazyPrint(-1);
 
-		BatchOperator<?> output1 = BatchOperator.fromTable(output.getOutputTable());
+		BatchOperator <?> output1 = BatchOperator.fromTable(output.getOutputTable());
 
 		output1.lazyPrint(-1);
 
-		AlgoOperator<?> outputStream = pipeline.fit(input).transform(inputStream);
+		AlgoOperator <?> outputStream = pipeline.fit(input).transform(inputStream);
 
 		outputStream.print();
 
@@ -805,11 +804,11 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 			.setPredictionDetailCol("id3_test_detail");
 		Pipeline pipeline = new Pipeline().add(id3);
 
-		BatchOperator<?> output = pipeline.fit(input).transform(input);
+		BatchOperator <?> output = pipeline.fit(input).transform(input);
 
 		output.lazyPrint(-1);
 
-		BatchOperator<?> output1 = BatchOperator.fromTable(output.getOutputTable());
+		BatchOperator <?> output1 = BatchOperator.fromTable(output.getOutputTable());
 
 		output1.lazyPrint(-1);
 
@@ -831,11 +830,11 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 
 		Pipeline pipeline = new Pipeline().add(cart);
 
-		BatchOperator<?> output = pipeline.fit(input).transform(input);
+		BatchOperator <?> output = pipeline.fit(input).transform(input);
 
 		output.lazyPrint(-1);
 
-		BatchOperator<?> output1 = BatchOperator.fromTable(output.getOutputTable());
+		BatchOperator <?> output1 = BatchOperator.fromTable(output.getOutputTable());
 
 		output1.lazyPrint(-1);
 

@@ -3,12 +3,13 @@ package com.alibaba.alink.operator.common.io.types;
 import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Types;
 
-public class JdbcTypeConverterTest {
+public class JdbcTypeConverterTest extends AlinkTestBase {
 	@Test
 	public void testMutualConversion() {
 		int[] types = new int[] {Types.VARCHAR, Types.BOOLEAN,

@@ -41,4 +41,18 @@ public class FlinkTypeConverter {
 	public static TypeInformation <?> getFlinkType(String typeSQL) {
 		return TypeStringUtils.readTypeInfo(typeSQL);
 	}
+
+	/**
+	 * Convert string representation to flink TypeInformation.
+	 *
+	 * @param typeSQLs string representation of types
+	 * @return flink TypeInformation
+	 */
+	public static TypeInformation <?>[] getFlinkType(String[] typeSQLs) {
+		TypeInformation[] types = new TypeInformation[typeSQLs.length];
+		for (int i = 0; i < typeSQLs.length; i++) {
+			types[i] = getFlinkType(typeSQLs[i]);
+		}
+		return types;
+	}
 }

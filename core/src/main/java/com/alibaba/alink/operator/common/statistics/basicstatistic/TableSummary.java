@@ -96,6 +96,9 @@ public class TableSummary extends BaseSummary {
 	public double sum(String colName) {
 		int idx = findIdx(colName);
 		if (idx >= 0) {
+			if (isEmpty(colName)) {
+				return 0;
+			}
 			return sum.get(idx);
 		} else {
 			return Double.NaN;
@@ -108,11 +111,10 @@ public class TableSummary extends BaseSummary {
 	public double mean(String colName) {
 		int idx = findIdx(colName);
 		if (idx >= 0) {
-			double numVaildValue = count - numMissingValue.get(idx);
-			if (0 == numVaildValue) {
-				return 0;
+			if(isEmpty(colName)) {
+				return Double.NaN;
 			}
-			return sum.get(idx) / numVaildValue;
+			return sum.get(idx) / numValidValue(colName);
 		} else {
 			return Double.NaN;
 		}
@@ -124,7 +126,7 @@ public class TableSummary extends BaseSummary {
 	public double variance(String colName) {
 		int idx = findIdx(colName);
 		if (idx >= 0) {
-			double numVaildValue = count - numMissingValue.get(idx);
+			long numVaildValue = numValidValue(colName);
 			if (0 == numVaildValue || 1 == numVaildValue) {
 				return 0;
 			}
@@ -148,6 +150,9 @@ public class TableSummary extends BaseSummary {
 	public double min(String colName) {
 		int idx = findIdx(colName);
 		if (idx >= 0) {
+			if (isEmpty(colName)) {
+				return Double.NaN;
+			}
 			return min.get(idx);
 		} else {
 			return Double.NaN;
@@ -160,6 +165,9 @@ public class TableSummary extends BaseSummary {
 	public double max(String colName) {
 		int idx = findIdx(colName);
 		if (idx >= 0) {
+			if (isEmpty(colName)) {
+				return Double.NaN;
+			}
 			return max.get(idx);
 		} else {
 			return Double.NaN;
@@ -172,6 +180,9 @@ public class TableSummary extends BaseSummary {
 	public double normL1(String colName) {
 		int idx = findIdx(colName);
 		if (idx >= 0) {
+			if (isEmpty(colName)) {
+				return Double.NaN;
+			}
 			return normL1.get(idx);
 		} else {
 			return Double.NaN;
@@ -184,6 +195,9 @@ public class TableSummary extends BaseSummary {
 	public double normL2(String colName) {
 		int idx = findIdx(colName);
 		if (idx >= 0) {
+			if (isEmpty(colName)) {
+				return Double.NaN;
+			}
 			return Math.sqrt(squareSum.get(idx));
 		} else {
 			return Double.NaN;
@@ -202,6 +216,9 @@ public class TableSummary extends BaseSummary {
 	 */
 	public long numMissingValue(String colName) {
 		int idx = TableUtil.findColIndexWithAssertAndHint(colNames, colName);
+		if (this.count == 0) {
+			return 0;
+		}
 		return Math.round(numMissingValue.get(idx));
 	}
 
@@ -223,6 +240,10 @@ public class TableSummary extends BaseSummary {
 			}
 		}
 		return -1;
+	}
+
+	private boolean isEmpty(String colName) {
+		return 0 == numValidValue(colName);
 	}
 
 }

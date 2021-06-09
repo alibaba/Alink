@@ -1,14 +1,15 @@
 package com.alibaba.alink.common.io.plugin;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-public class PluginDownloaderTest {
+public class PluginDownloaderTest extends AlinkTestBase {
 
 	String jsonString = "{\n"
 		+ "  \"oss\": {\n"

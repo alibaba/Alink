@@ -12,6 +12,8 @@ import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class SplitBatchOpTest extends AlinkTestBase {
@@ -79,11 +81,19 @@ public class SplitBatchOpTest extends AlinkTestBase {
 		BatchOperator right = spliter.getSideOutput(0);
 		List <Row> list = left.collect();
 		Assert.assertEquals(list.size(), 5);
-		Assert.assertEquals((double) list.get(0).getField(0), 6.1, 0.01);
-		Assert.assertEquals((double) list.get(1).getField(0), 6.8, 0.01);
-		Assert.assertEquals((double) list.get(2).getField(0), 7.1, 0.01);
-		Assert.assertEquals((double) list.get(3).getField(0), 6.4, 0.01);
-		Assert.assertEquals((double) list.get(4).getField(0), 4.4, 0.01);
+
+		// for stability in multi-thread case
+		Collections.sort(list, new Comparator <Row>() {
+			@Override
+			public int compare(Row o1, Row o2) {
+				return Double.compare((double) o1.getField(0), (double) o2.getField(0));
+			}
+		});
+		Assert.assertEquals((double) list.get(0).getField(0), 4.4, 0.01);
+		Assert.assertEquals((double) list.get(1).getField(0), 6.1, 0.01);
+		Assert.assertEquals((double) list.get(2).getField(0), 6.4, 0.01);
+		Assert.assertEquals((double) list.get(3).getField(0), 6.8, 0.01);
+		Assert.assertEquals((double) list.get(4).getField(0), 7.1, 0.01);
 		Assert.assertEquals(right.count(), 445);
 	}
 }

@@ -7,6 +7,7 @@ import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import com.google.common.collect.Iterables;
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,7 +19,8 @@ import java.util.Random;
 /**
  * Unit test for FastDistance.
  */
-public class FastDistanceTest {
+
+public class FastDistanceTest extends AlinkTestBase {
 	@Test
 	public void testDenseVectorRowInput() {
 		Vector vec = DenseVector.rand(10);

@@ -1,8 +1,5 @@
 package com.alibaba.alink.pipeline.dataproc;
 
-import com.alibaba.alink.operator.batch.dataproc.IndexToStringPredictBatchOp;
-import com.alibaba.alink.operator.batch.dataproc.StringIndexerPredictBatchOp;
-import com.alibaba.alink.operator.batch.dataproc.StringIndexerTrainBatchOp;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;

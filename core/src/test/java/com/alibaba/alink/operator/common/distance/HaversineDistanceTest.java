@@ -7,6 +7,7 @@ import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,7 +21,8 @@ import static com.alibaba.alink.operator.common.distance.HaversineDistance.haver
 /**
  * Unit test for HaversineDistance.
  */
-public class HaversineDistanceTest {
+
+public class HaversineDistanceTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -144,7 +146,7 @@ public class HaversineDistanceTest {
 		sparse.add(Row.of(1, sparseVector2));
 		FastDistanceSparseData data = (FastDistanceSparseData) new EuclideanDistance().prepareMatrixData(sparse, 1)
 			.get(
-			0);
+				0);
 		distance.calc(data, data);
 		distance.calc(distance.prepareVectorData(Row.of(0, denseVector1), 1), data);
 	}

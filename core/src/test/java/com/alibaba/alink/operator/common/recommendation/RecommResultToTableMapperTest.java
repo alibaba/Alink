@@ -8,13 +8,15 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.params.recommendation.FlattenKObjectParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Unit test for RecommResultToTableMapper.
  */
-public class RecommResultToTableMapperTest {
+
+public class RecommResultToTableMapperTest extends AlinkTestBase {
 	private static Row[] rows = new Row[] {
 		Row.of(3L, "{\"rating\":\"[0.6,0.1]\",\"recomm\":\"[1,3]\"}", "{\"calc\":\"[0.11404907704943987,"
 			+ "0.17940763151627642,0.26367136145632203]\",\"recomm\":\"[\\\"1\\\",\\\"2\\\",\\\"3\\\"]\"}"),

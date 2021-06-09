@@ -41,7 +41,7 @@ public class UserCfTrainBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {
-		BatchOperator<?> data = BatchOperator.fromTable(
+		BatchOperator <?> data = BatchOperator.fromTable(
 			MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"user", "item", "rating"}));
 
 		UserCfTrainBatchOp op = new UserCfTrainBatchOp()

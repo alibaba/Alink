@@ -1,8 +1,9 @@
 package com.alibaba.alink.operator.common.feature;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.mapper.Mapper;
@@ -17,10 +18,11 @@ import java.util.stream.IntStream;
  */
 public class BucketizerMapper extends Mapper {
 	private static final long serialVersionUID = -174160347441153948L;
-	private DiscreteMapperBuilder mapperBuilder;
+	private final DiscreteMapperBuilder mapperBuilder;
 
 	public BucketizerMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
+
 		mapperBuilder = new DiscreteMapperBuilder(params, dataSchema);
 
 		double[][] cutsArray;
@@ -35,7 +37,7 @@ public class BucketizerMapper extends Mapper {
 				String[] points = cutsArrayStr[i].split(":");
 				cutsArray[i] = new double[points.length];
 				for (int j = 0; j < points.length; j++) {
-					cutsArray[i][j] = Double.valueOf(points[j].trim());
+					cutsArray[i][j] = Double.parseDouble(points[j].trim());
 				}
 			}
 		}
@@ -71,22 +73,38 @@ public class BucketizerMapper extends Mapper {
 
 			int[] boundsIndex = IntStream.range(0, binCount + 2).toArray();
 			boundsIndex[binCount] = binCount - 1;
-			mapperBuilder.discretizers[i] = new QuantileDiscretizerModelMapper.DoubleNumericQuantileDiscretizer(bounds,
+			mapperBuilder.discretizers[i] = new QuantileDiscretizerModelMapper.DoubleNumericQuantileDiscretizer(
+				bounds,
 				params.get(BucketizerParams.LEFT_OPEN),
 				boundsIndex,
 				binCount,
-				false);
+				false
+			);
 		}
+
 		mapperBuilder.setAssembledVectorSize();
 	}
 
 	@Override
-	public TableSchema getOutputSchema() {
-		return mapperBuilder.paramsBuilder.outputColsHelper.getResultSchema();
+	public void open() {
+		this.mapperBuilder.open();
 	}
 
 	@Override
-	public Row map(Row row) throws Exception {
-		return mapperBuilder.map(row);
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		mapperBuilder.map(selection, result);
+	}
+
+	@Override
+	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
+		TableSchema dataSchema, Params params) {
+
+		DiscreteMapperBuilder discreteMapperBuilder = new DiscreteMapperBuilder(params, dataSchema);
+
+		return Tuple4.of(discreteMapperBuilder.paramsBuilder.selectedCols,
+			discreteMapperBuilder.paramsBuilder.resultCols,
+			discreteMapperBuilder.paramsBuilder.resultColTypes,
+			discreteMapperBuilder.paramsBuilder.reservedCols
+		);
 	}
 }

@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,7 +8,8 @@ import org.junit.Test;
 /**
  * Test cases for {@link MatVecOp}.
  */
-public class MatVecOpTest {
+
+public class MatVecOpTest extends AlinkTestBase {
 	private static final double TOL = 1.0e-6;
 	private DenseVector dv;
 	private SparseVector sv;

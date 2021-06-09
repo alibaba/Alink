@@ -10,6 +10,7 @@ import org.apache.flink.util.Preconditions;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.utils.PackBatchOperatorUtil;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
@@ -31,42 +32,25 @@ public class AlsRecommKernel extends RecommKernel {
 	protected transient Map <Object, Set <Object>> historyUserItems;
 	protected transient Map <Object, Set <Object>> historyItemUsers;
 
-	private int userColIdx = -1;
-	private int itemColIdx = -1;
-	private Integer topK;
+	private final Integer topK;
 	private boolean excludeKnown = false;
 
 	public AlsRecommKernel(TableSchema modelSchema, TableSchema dataSchema, Params params, RecommType recommType) {
 		super(modelSchema, dataSchema, params, recommType);
-		String userColName = getParamDefaultAsNull(params, BaseRateRecommParams.USER_COL);
-		String itemColName = getParamDefaultAsNull(params, BaseRateRecommParams.ITEM_COL);
+		userColName = getParamDefaultAsNull(params, BaseRateRecommParams.USER_COL);
+		itemColName = getParamDefaultAsNull(params, BaseRateRecommParams.ITEM_COL);
 		this.topK = getParamDefaultAsNull(params, BaseItemsPerUserRecommParams.K);
-		if (userColName != null) {
-			this.userColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), userColName);
-		}
-		if (itemColName != null) {
-			this.itemColIdx = TableUtil.findColIndex(dataSchema.getFieldNames(), itemColName);
-		}
 
-		if (recommType == RecommType.RATE) {
-			Preconditions.checkArgument(userColIdx >= 0, "Can't find user col: " + userColName);
-			Preconditions.checkArgument(itemColIdx >= 0, "Can't find item col: " + itemColName);
-		} else if (recommType == RecommType.ITEMS_PER_USER) {
-			Preconditions.checkArgument(userColIdx >= 0, "Can't find user col: " + userColName);
+		if (recommType == RecommType.ITEMS_PER_USER) {
 			Preconditions.checkArgument(topK != null, "Missing param topK");
 			excludeKnown = params.get(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN);
 		} else if (recommType == RecommType.USERS_PER_ITEM) {
-			Preconditions.checkArgument(itemColIdx >= 0, "Can't find item col: " + itemColName);
 			Preconditions.checkArgument(topK != null, "Missing param topK");
 			excludeKnown = params.get(BaseUsersPerItemRecommParams.EXCLUDE_KNOWN);
 		} else if (recommType == RecommType.SIMILAR_USERS) {
-			Preconditions.checkArgument(userColIdx >= 0, "Can't find user col: " + userColName);
 			Preconditions.checkArgument(topK != null, "Missing param topK");
 		} else if (recommType == RecommType.SIMILAR_ITEMS) {
-			Preconditions.checkArgument(itemColIdx >= 0, "Can't find item col: " + itemColName);
 			Preconditions.checkArgument(topK != null, "Missing param topK");
-		} else {
-			throw new UnsupportedOperationException("Not supported rec type.");
 		}
 	}
 
@@ -84,6 +68,14 @@ public class AlsRecommKernel extends RecommKernel {
 
 	@Override
 	public void loadModel(List <Row> modelRows) {
+		for (Row row : modelRows) {
+			if (((Number) row.getField(0)).intValue() == -1) {
+				Tuple2 <List <List <String>>, List <List <Integer>>> metaData =
+					JsonConverter.fromJson((String) row.getField(1), Tuple2.class);
+				this.userColName = metaData.f0.get(2).get(0);
+				this.itemColName = metaData.f0.get(2).get(1);
+			}
+		}
 		List <Row> userFactorsRows = PackBatchOperatorUtil.unpackRows(modelRows, 0);
 		List <Row> itemFactorsRows = PackBatchOperatorUtil.unpackRows(modelRows, 1);
 
@@ -124,67 +116,59 @@ public class AlsRecommKernel extends RecommKernel {
 	}
 
 	@Override
-	public Double rate(Row infoUserItem) throws Exception {
-		return predictRating(infoUserItem, userColIdx, itemColIdx);
+	public Double rate(Object[] infoUserItem) throws Exception {
+		return predictRating(infoUserItem);
 	}
 
 	@Override
-	public String recommendItemsPerUser(Row infoUser) throws Exception {
-		Object userId = infoUser.getField(userColIdx);
+	public String recommendItemsPerUser(Object userId) throws Exception {
 		DenseVector userFea = userFactors.get(userId);
-		//Preconditions.checkArgument(userFea != null, "can't find user id " + userId);
 		Set <Object> excludes = null;
 		if (excludeKnown) {
 			excludes = historyUserItems.get(userId);
 		}
-		return recommend(userId, userFea, excludes, itemFactors, "rate");
+		return recommend(itemColName, userFea, excludes, itemFactors, KObjectUtil.RATING_NAME);
 	}
 
 	@Override
-	public String recommendUsersPerItem(Row infoItem) throws Exception {
-		Object itemId = infoItem.getField(itemColIdx);
+	public String recommendUsersPerItem(Object itemId) throws Exception {
 		DenseVector itemFea = itemFactors.get(itemId);
-		//Preconditions.checkArgument(itemFea != null, "can't find item id " + itemId);
 		Set <Object> excludes = null;
 		if (excludeKnown) {
 			excludes = historyItemUsers.get(itemId);
 		}
-		return recommend(itemId, itemFea, excludes, userFactors, "rate");
+		return recommend(userColName, itemFea, excludes, userFactors, KObjectUtil.RATING_NAME);
 	}
 
 	@Override
-	public String recommendSimilarItems(Row infoItem) throws Exception {
-		Object itemId = infoItem.getField(itemColIdx);
+	public String recommendSimilarItems(Object itemId) throws Exception {
 		DenseVector itemFea = itemFactors.get(itemId);
-		//Preconditions.checkArgument(itemFea != null, "can't find item id " + itemId);
 		Set <Object> excludes = new HashSet <>();
 		excludes.add(itemId);
-		return recommend(itemId, itemFea, excludes, itemFactors, "score");
+		return recommend(itemColName, itemFea, excludes, itemFactors, KObjectUtil.SCORE_NAME);
 	}
 
 	@Override
-	public String recommendSimilarUsers(Row infoUser) throws Exception {
-		Object userId = infoUser.getField(userColIdx);
+	public String recommendSimilarUsers(Object userId) throws Exception {
 		DenseVector userFea = userFactors.get(userId);
-		//Preconditions.checkArgument(userFea != null, "can't find user id " + userId);
 		Set <Object> excludes = new HashSet <>();
 		excludes.add(userId);
-		return recommend(userId, userFea, excludes, userFactors, "score");
+		return recommend(userColName, userFea, excludes, userFactors, KObjectUtil.SCORE_NAME);
 	}
 
-	private Double predictRating(Row row, int userColIdx, int itemColIdx) throws Exception {
-		Object userId = row.getField(userColIdx);
-		Object itemId = row.getField(itemColIdx);
+	private Double predictRating(Object[] ids) throws Exception {
+		Object userId = ids[0];
+		Object itemId = ids[1];
 		DenseVector userFea = userFactors.get(userId);
 		DenseVector itemFea = itemFactors.get(itemId);
 		if (userFea != null && itemFea != null) {
 			return BLAS.dot(userFea, itemFea);
 		} else {
-			return null; // unknown user or item
+			return null;
 		}
 	}
 
-	private String recommend(Object userId, DenseVector userFea, Set <Object> excludes,
+	private String recommend(String objectColName, DenseVector userFea, Set <Object> excludes,
 							 Map <Object, DenseVector> itemFeatures, String resultName) {
 		RecommUtils.RecommPriorityQueue priorQueue = new RecommUtils.RecommPriorityQueue(topK);
 
@@ -200,7 +184,7 @@ public class AlsRecommKernel extends RecommKernel {
 		Tuple2 <List <Object>, List <Double>> itemsAndScores = priorQueue.getOrderedObjects();
 
 		return KObjectUtil.serializeRecomm(
-			KObjectUtil.OBJECT_NAME,
+			objectColName,
 			itemsAndScores.f0,
 			ImmutableMap.of(resultName, itemsAndScores.f1)
 		);

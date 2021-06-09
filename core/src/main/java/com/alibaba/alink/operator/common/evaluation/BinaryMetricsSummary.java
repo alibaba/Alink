@@ -51,6 +51,9 @@ public final class BinaryMetricsSummary
 	 */
 	double logLoss;
 
+	public BinaryMetricsSummary() {
+	}
+
 	public BinaryMetricsSummary(long[] positiveBin, long[] negativeBin, Object[] labels, double logLoss,
 								long total) {
 		this.positiveBin = positiveBin;

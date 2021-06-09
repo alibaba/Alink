@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.utils;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
+import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
@@ -15,7 +16,6 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.function.TriFunction;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
 import com.alibaba.alink.common.mapper.IterableModelLoader;
 import com.alibaba.alink.common.mapper.IterableModelLoaderModelMapperAdapter;
@@ -23,9 +23,13 @@ import com.alibaba.alink.common.mapper.IterableModelLoaderModelMapperAdapterMT;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.ModelMapperAdapter;
 import com.alibaba.alink.common.mapper.ModelMapperAdapterMT;
+import com.alibaba.alink.common.mapper.ModelStreamModelMapperAdapt;
 import com.alibaba.alink.common.model.BroadcastVariableModelSource;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.shared.HasNumThreads;
+import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.params.mapper.ModelMapperParams;
+
+import java.util.List;
 
 /**
  * *
@@ -50,22 +54,24 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 	public T linkFrom(BatchOperator <?>... inputs) {
 		checkOpSize(2, inputs);
 		try {
-			ModelMapper mapper = this.mapperBuilder.apply(
+			final ModelMapper mapper = this.mapperBuilder.apply(
 				inputs[0].getSchema(),
 				inputs[1].getSchema(),
 				this.getParams());
-			DataSet<Row> resultRows = null;
-			if(mapper instanceof IterableModelLoader){
+			DataSet <Row> resultRows = null;
+			if (mapper instanceof IterableModelLoader) {
 				final long handler = IterTaskObjKeeper.getNewHandle();
 				DataSet <Row> modelRows = inputs[0].getDataSet();
 				DataSet <Row> distributedModelRows = modelRows.flatMap(
 					new RichFlatMapFunction <Row, Tuple2 <Integer, Row>>() {
 						private static final long serialVersionUID = 3544759002096859673L;
 						int numTask;
+
 						@Override
-						public void open(Configuration parameters){
+						public void open(Configuration parameters) {
 							numTask = getRuntimeContext().getNumberOfParallelSubtasks();
 						}
+
 						@Override
 						public void flatMap(Row value, Collector <Tuple2 <Integer, Row>> out) {
 							for (int i = 0; i < numTask; ++i) {
@@ -75,12 +81,13 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 					}).returns(new TupleTypeInfo <>(Types.INT, modelRows.getType()))
 					.partitionCustom(new Partitioner <Integer>() {
 						private static final long serialVersionUID = -2924355974935165844L;
+
 						@Override
 						public int partition(Integer key, int numPartitions) {
 							return key;
 						}
 					}, 0)
-					.map(new MapFunction <Tuple2<Integer, Row>, Row>() {
+					.map(new MapFunction <Tuple2 <Integer, Row>, Row>() {
 						private static final long serialVersionUID = 8884296007768771379L;
 
 						@Override
@@ -90,38 +97,57 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 					})
 					.returns(modelRows.getType());
 
-				DataSet<Integer> barrier = distributedModelRows.mapPartition(new RichMapPartitionFunction <Row, Integer>() {
-					private static final long serialVersionUID = 2358845952757630826L;
-					@Override
-					public void mapPartition(Iterable <Row> values, Collector <Integer> out) {
-						int taskId = getRuntimeContext().getIndexOfThisSubtask();
-						((IterableModelLoader) mapper).loadIterableModel(values);
-						IterTaskObjKeeper.put(handler, taskId, mapper);
-					}
-				});
+				DataSet <Integer> barrier = distributedModelRows.mapPartition(
+					new RichMapPartitionFunction <Row, Integer>() {
+						private static final long serialVersionUID = 2358845952757630826L;
 
-				final boolean isBatchPredictMultiThread = AlinkGlobalConfiguration.isBatchPredictMultiThread();
+						@Override
+						public void mapPartition(Iterable <Row> values, Collector <Integer> out) {
+							int taskId = getRuntimeContext().getIndexOfThisSubtask();
+							((IterableModelLoader) mapper).loadIterableModel(values);
+							IterTaskObjKeeper.put(handler, taskId, mapper);
+						}
+					});
 
-				if (!isBatchPredictMultiThread
-					|| !getParams().contains(HasNumThreads.NUM_THREADS)
-					|| getParams().get(HasNumThreads.NUM_THREADS) <= 1) {
+				if (getParams().get(ModelMapperParams.NUM_THREADS) <= 1) {
 					resultRows = inputs[1].getDataSet()
 						.map(new IterableModelLoaderModelMapperAdapter(handler))
 						.withBroadcastSet(barrier, "barrier");
 				} else {
 					resultRows = inputs[1].getDataSet()
-						.flatMap(new IterableModelLoaderModelMapperAdapterMT(handler, getParams().get(HasNumThreads.NUM_THREADS)))
+						.flatMap(new IterableModelLoaderModelMapperAdapterMT(handler,
+							getParams().get(ModelMapperParams.NUM_THREADS)))
 						.withBroadcastSet(barrier, "barrier");
 				}
-			}
-			else {
-				BroadcastVariableModelSource modelSource = new BroadcastVariableModelSource(BROADCAST_MODEL_TABLE_NAME);
+			} else {
+				final BroadcastVariableModelSource modelSource = new BroadcastVariableModelSource(
+					BROADCAST_MODEL_TABLE_NAME);
 				DataSet <Row> modelRows = inputs[0].getDataSet().rebalance();
-				final boolean isBatchPredictMultiThread = AlinkGlobalConfiguration.isBatchPredictMultiThread();
 
-				if (!isBatchPredictMultiThread
-					|| !getParams().contains(HasNumThreads.NUM_THREADS)
-					|| getParams().get(HasNumThreads.NUM_THREADS) <= 1) {
+				if (ModelStreamUtils.useModelStreamFile(getParams())) {
+
+					resultRows = inputs[1]
+						.getDataSet()
+						.map(new RichMapFunction <Row, Row>() {
+							ModelStreamModelMapperAdapt modelStreamModelMapper;
+
+							@Override
+							public void open(Configuration parameters) throws Exception {
+								super.open(parameters);
+								List <Row> modelRows = modelSource.getModelRows(getRuntimeContext());
+								mapper.loadModel(modelRows);
+								mapper.open();
+
+								modelStreamModelMapper = new ModelStreamModelMapperAdapt(mapper);
+							}
+
+							@Override
+							public Row map(Row value) throws Exception {
+								return modelStreamModelMapper.map(value);
+							}
+						})
+						.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
+				} else if (getParams().get(ModelMapperParams.NUM_THREADS) <= 1) {
 					resultRows = inputs[1]
 						.getDataSet()
 						.map(new ModelMapperAdapter(mapper, modelSource))
@@ -130,7 +156,8 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 					resultRows = inputs[1]
 						.getDataSet()
 						.flatMap(
-							new ModelMapperAdapterMT(mapper, modelSource, getParams().get(HasNumThreads.NUM_THREADS))
+							new ModelMapperAdapterMT(mapper, modelSource,
+								getParams().get(ModelMapperParams.NUM_THREADS))
 						)
 						.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
 				}

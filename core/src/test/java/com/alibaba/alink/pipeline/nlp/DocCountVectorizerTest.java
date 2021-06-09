@@ -1,12 +1,10 @@
 package com.alibaba.alink.pipeline.nlp;
 
-import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -24,7 +22,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Test for DocCountVectorizer.
@@ -54,14 +51,8 @@ public class DocCountVectorizerTest extends AlinkTestBase {
 
 		Table res = model.transform(data);
 
-		List <SparseVector> list = MLEnvironmentFactory
-			.getDefault()
-			.getBatchTableEnvironment()
-			.toDataSet(res.select("features"), new RowTypeInfo(VectorTypes.SPARSE_VECTOR))
-			.collect()
-			.stream()
-			.map(row -> (SparseVector) row.getField(0))
-			.collect(Collectors.toList());
+		List <SparseVector> list = MLEnvironmentFactory.getDefault().getBatchTableEnvironment().toDataSet(
+			res.select("features"), SparseVector.class).collect();
 
 		Assert.assertEquals(list.size(), 2);
 		Assert.assertEquals(list.get(0).getValues().length, 5);

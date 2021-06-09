@@ -12,6 +12,7 @@ public interface HasNumThreads<T> extends WithParams <T> {
 	ParamInfo <Integer> NUM_THREADS = ParamInfoFactory
 		.createParamInfo("numThreads", Integer.class)
 		.setDescription("Thread number of operator.")
+		.setAlias(new String[] {"threadNum"})
 		.setHasDefaultValue(1)
 		.build();
 

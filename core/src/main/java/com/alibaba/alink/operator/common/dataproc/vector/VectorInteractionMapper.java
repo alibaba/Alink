@@ -23,7 +23,7 @@ public class VectorInteractionMapper extends MISOMapper {
 	}
 
 	@Override
-	protected TypeInformation initOutputColType() {
+	protected TypeInformation<?> initOutputColType() {
 		return VectorTypes.VECTOR;
 	}
 

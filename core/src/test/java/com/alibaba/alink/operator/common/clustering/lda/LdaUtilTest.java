@@ -4,10 +4,11 @@ import org.apache.flink.api.java.tuple.Tuple2;
 
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class LdaUtilTest {
+public class LdaUtilTest extends AlinkTestBase {
 
 	@Test
 	public void dirichletExpectationTest() {

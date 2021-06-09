@@ -7,8 +7,6 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.mapper.ModelMapper;
-import com.alibaba.alink.common.utils.OutputColsHelper;
-import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dataproc.SrtPredictMapperParams;
 
 import java.util.List;
@@ -23,13 +21,10 @@ import java.util.List;
  */
 public class MinMaxScalerModelMapper extends ModelMapper {
 	private static final long serialVersionUID = 9164408346601562197L;
-	private int[] selectedColIndices;
 	private double[] eMaxs;
 	private double[] eMins;
 	private double max;
 	private double min;
-
-	private OutputColsHelper predictResultColsHelper;
 
 	/**
 	 * Constructor
@@ -40,16 +35,18 @@ public class MinMaxScalerModelMapper extends ModelMapper {
 	 */
 	public MinMaxScalerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
+	}
+
+	@Override
+	protected Tuple4<String[], String[], TypeInformation<?>[], String[]> prepareIoSchema(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		String[] selectedColNames = ImputerModelDataConverter.extractSelectedColNames(modelSchema);
 		TypeInformation[] selectedColTypes = ImputerModelDataConverter.extractSelectedColTypes(modelSchema);
-		this.selectedColIndices = TableUtil.findColIndicesWithAssert(dataSchema, selectedColNames);
 
 		String[] outputColNames = params.get(SrtPredictMapperParams.OUTPUT_COLS);
 		if (outputColNames == null) {
 			outputColNames = selectedColNames;
 		}
-
-		this.predictResultColsHelper = new OutputColsHelper(dataSchema, outputColNames, selectedColTypes, null);
+		return Tuple4.of(selectedColNames, outputColNames, selectedColTypes, null);
 	}
 
 	/**
@@ -68,32 +65,13 @@ public class MinMaxScalerModelMapper extends ModelMapper {
 		this.eMaxs = tuple4.f3;
 	}
 
-	/**
-	 * Get the table schema(includs column names and types) of the calculation result.
-	 *
-	 * @return the table schema of output Row type data.
-	 */
 	@Override
-	public TableSchema getOutputSchema() {
-		return this.predictResultColsHelper.getResultSchema();
-	}
-
-	/**
-	 * map operation method.
-	 *
-	 * @param row the input Row type data.
-	 * @return one Row type data.
-	 * @throws Exception This method may throw exceptions. Throwing
-	 * an exception will cause the operation to fail.
-	 */
-	@Override
-	public Row map(Row row) throws Exception {
-		if (null == row) {
-			return null;
+	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+		if (null == selection || selection.length() == 0) {
+			return;
 		}
-		Row r = new Row(selectedColIndices.length);
-		for (int i = 0; i < this.selectedColIndices.length; i++) {
-			Object obj = row.getField(this.selectedColIndices[i]);
+		for (int i = 0; i < selection.length(); i++) {
+			Object obj = selection.get(i);
 			if (null != obj) {
 				double d;
 				if (obj instanceof Number) {
@@ -102,9 +80,8 @@ public class MinMaxScalerModelMapper extends ModelMapper {
 					d = Double.parseDouble(obj.toString());
 				}
 				d = ScalerUtil.minMaxScaler(d, eMins[i], eMaxs[i], max, min);
-				r.setField(i, d);
+				result.set(i, d);
 			}
 		}
-		return this.predictResultColsHelper.getResultRow(row, r);
 	}
 }

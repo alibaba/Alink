@@ -1,5 +1,8 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.common.linalg.VectorUtil.VectorType;
+
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -290,6 +293,27 @@ public class DenseVector extends Vector {
 	}
 
 	/**
+	 * Convert to a sparse vector.
+	 */
+	public SparseVector toSparseVector() {
+		int nnz = 0;
+		for (int i = 0; i < this.data.length; ++i) {
+			if (data[i] != 0) {
+				nnz++;
+			}
+		}
+		int[] indices = new int[nnz];
+		double[] vals = new double[nnz];
+		int iter = 0;
+		for (int i = 0; i < this.data.length; ++i) {
+			if (data[i] != 0) {
+				indices[iter] = i;
+				vals[iter++] = data[i];
+			}
+		}
+		return new SparseVector(data.length, indices, vals);
+	}
+	/**
 	 * Plus with another vector scaled by "alpha".
 	 */
 	public void plusScaleEqual(Vector other, double alpha) {
@@ -321,6 +345,23 @@ public class DenseVector extends Vector {
 			}
 		}
 		return new DenseMatrix(nrows, ncols, data, false);
+	}
+
+
+	/**
+	 * encode this vector to a byte[]:
+	 * The format of the byte[] is: "vectorType value1 value2 value3..."
+	 * @return
+	 */
+	@Override
+	public byte[] toBytes() {
+		byte[] bytes = new byte[data.length * 8 + 1];
+		ByteBuffer wrapper = ByteBuffer.wrap(bytes);
+		wrapper.put(VectorType.DENSE_VECTOR);
+		for (int i = 0; i < data.length; i ++) {
+			wrapper.putDouble(data[i]);
+		}
+		return bytes;
 	}
 
 	@Override

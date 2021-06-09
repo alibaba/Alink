@@ -3,13 +3,14 @@ package com.alibaba.alink.operator.common.tree;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class PreprocessingTest {
+public class PreprocessingTest extends AlinkTestBase {
 	@Test
 	public void dense() {
 		Row[] rows = new Row[] {

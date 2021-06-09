@@ -5,7 +5,6 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
@@ -27,7 +26,7 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getMul
 
 /**
  * Base class for EvalBinaryClassStreamOp and EvalMultiClassStreamOp. Calculate the evaluation data within time windows
- * for binary classifiction and multi classification. You can either give label column and predResult column or give
+ * for binary classification and multi classification. You can either give label column and predResult column or give
  * label column and predDetail column. Once predDetail column is given, the predResult column is ignored.
  */
 public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends StreamOperator <T> {
@@ -46,7 +45,7 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 	public T linkFrom(StreamOperator <?>... inputs) {
 		StreamOperator <?> in = checkAndGetFirst(inputs);
 		String labelColName = this.get(EvalMultiClassStreamParams.LABEL_COL);
-		TypeInformation<?> labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelColName);
+		TypeInformation labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelColName);
 		String positiveValue = this.get(EvalBinaryClassStreamParams.POS_LABEL_VAL_STR);
 		double timeInterval = this.get(EvalMultiClassStreamParams.TIME_INTERVAL);
 
@@ -66,10 +65,9 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 				LabelPredictionWindow predMultiWindowFunction = new LabelPredictionWindow(binary, positiveValue,
 					labelType);
-				statistics = in
-					.select(new String[] {labelColName, predResultColName})
+				statistics = in.select(new String[] {labelColName, predResultColName})
 					.getDataStream()
-					.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+					.timeWindowAll(TimeUtil.convertTime(timeInterval))
 					.apply(predMultiWindowFunction);
 				break;
 			}
@@ -81,7 +79,7 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 				statistics = in.select(new String[] {labelColName, predDetailColName})
 					.getDataStream()
-					.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+					.timeWindowAll(TimeUtil.convertTime(timeInterval))
 					.apply(eval);
 				break;
 			}

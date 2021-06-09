@@ -26,7 +26,7 @@ public abstract class ExtractModelInfoBatchOp<S, T extends ExtractModelInfoBatch
 	 * @return
 	 */
 	@Override
-	final public T linkFrom(BatchOperator <?>... inputs) {
+	public T linkFrom(BatchOperator <?>... inputs) {
 		BatchOperator <?> op = checkAndGetFirst(inputs);
 		if (op.isNullOutputTable() && !(op instanceof BaseSourceBatchOp)) {
 			LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(op);

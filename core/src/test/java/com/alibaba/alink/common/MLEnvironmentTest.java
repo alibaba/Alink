@@ -6,13 +6,15 @@ import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * Test cases for MLEnvironment.
  */
-public class MLEnvironmentTest {
+
+public class MLEnvironmentTest extends AlinkTestBase {
 	@Test
 	public void testDefaultConstructor() {
 		MLEnvironment mlEnvironment = new MLEnvironment();

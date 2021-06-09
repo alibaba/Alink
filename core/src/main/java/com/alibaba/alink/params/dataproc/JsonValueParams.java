@@ -2,8 +2,8 @@ package com.alibaba.alink.params.dataproc;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
-import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.params.mapper.MapperParams;
 import com.alibaba.alink.params.shared.colname.HasOutputColTypesDefaultAsNull;
 import com.alibaba.alink.params.shared.colname.HasOutputCols;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
@@ -14,7 +14,8 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCol;
  *
  * @param <T>
  */
-public interface JsonValueParams<T> extends WithParams <T>,
+public interface JsonValueParams<T> extends
+	MapperParams <T>,
 	HasSelectedCol <T>,
 	HasReservedColsDefaultAsNull <T>,
 	HasOutputCols <T>,
@@ -43,7 +44,7 @@ public interface JsonValueParams<T> extends WithParams <T>,
 		return get(JSON_PATHS);
 	}
 
-	default T setJsonPath(String[] value) {
+	default T setJsonPath(String... value) {
 		return set(JSON_PATHS, value);
 	}
 

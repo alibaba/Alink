@@ -3,10 +3,11 @@ package com.alibaba.alink.operator.common.io.csv;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class CsvParserTest {
+public class CsvParserTest extends AlinkTestBase {
 
 	@Test
 	public void testParser() throws Exception {

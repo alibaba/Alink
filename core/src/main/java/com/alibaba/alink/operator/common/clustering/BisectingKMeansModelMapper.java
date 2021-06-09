@@ -38,19 +38,26 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
 	}
 
 	@Override
-	protected TypeInformation initPredResultColType() {
+	protected TypeInformation<?> initPredResultColType(TableSchema modelSchema) {
 		return Types.LONG;
 	}
 
-	@Override
-	protected Object predictResult(Row row) {
-		return predictResultDetail(row).f0;
+	private double[] computeProbability(long nodeId, List <Long> otherNodeIds) {
+		double[] distances = new double[otherNodeIds.size()];
+		for (int i = 0; i < distances.length; i++) {
+			distances[i] = nodeDistanceInTree(nodeId, otherNodeIds.get(i));
+		}
+		return KMeansUtil.getProbArrayFromDistanceArray(distances);
 	}
 
 	@Override
-	protected Tuple2 <Object, String> predictResultDetail(Row row) {
-		Vector x = VectorUtil.getVector(row.getField(vectorColIdx));
-		//Vector x = (vec instanceof DenseVector) ? (DenseVector)vec : ((SparseVector)vec).toDenseVector();
+	protected Object predictResult(SlicedSelectedSample selection) throws Exception {
+		return predictResultDetail(selection).f0;
+	}
+
+	@Override
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
+		Vector x = VectorUtil.getVector(selection.get(vectorColIdx));
 		if (x.size() != this.modelData.vectorSize) {
 			throw new RuntimeException(
 				"Dim of predict data not equal to vectorSize of training data: " + this.modelData.vectorSize);
@@ -61,15 +68,7 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
 		return Tuple2.of(clusterIdAndTreeNodeId.f0, new DenseVector(prob).toString());
 	}
 
-	private static double[] computeProbability(long nodeId, List <Long> otherNodeIds) {
-		double[] distances = new double[otherNodeIds.size()];
-		for (int i = 0; i < distances.length; i++) {
-			distances[i] = nodeDistanceInTree(nodeId, otherNodeIds.get(i));
-		}
-		return KMeansUtil.getProbArrayFromDistanceArray(distances);
-	}
-
-	private static int level(long node) {
+	private int level(long node) {
 		int l = 0;
 		while (node > 1) {
 			node /= 2;
@@ -78,7 +77,7 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
 		return l;
 	}
 
-	private static double nodeDistanceInTree(long node1, long node2) {
+	private double nodeDistanceInTree(long node1, long node2) {
 		int level1 = level(node1);
 		int level2 = level(node2);
 		int d = 0;
@@ -187,15 +186,6 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
 			}
 			return child.predict(sample, distance);
 		}
-
-		//public void show() {
-		//    Map<String, Long> keyValue = new HashMap<>();
-		//    keyValue.put("treeNodeId", treeNodeId);
-		//    keyValue.put("leftChild", null == leftChild ? null : leftChild.treeNodeId);
-		//    keyValue.put("rightChild", null == rightChild ? null : rightChild.treeNodeId);
-		//    System.out.println(JsonConverter.toJson(keyValue));
-		//    System.out.println(JsonConverter.toJson(this));
-		//}
 	}
 
 	public static class Tree {
@@ -251,22 +241,6 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
 				}
 			}
 		}
-
-		//public void show() {
-		//    Queue<TreeNode> queue = new ArrayDeque<>();
-		//    queue.add(root);
-		//
-		//    while (!queue.isEmpty()) {
-		//        TreeNode top = queue.poll();
-		//        top.show();
-		//        if (top.leftChild != null) {
-		//            queue.add(top.leftChild);
-		//        }
-		//        if (top.rightChild != null) {
-		//            queue.add(top.rightChild);
-		//        }
-		//    }
-		//}
 
 		public Tuple2 <Long, Long> predict(Vector x, ContinuousDistance distance) {
 			return root.predict(x, distance);

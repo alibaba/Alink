@@ -19,6 +19,7 @@ import java.util.List;
 /**
  * Test for StopWordsRemover.
  */
+
 public class StopWordsRemoverTest extends AlinkTestBase {
 	@Test
 	public void testFilterStopWords() throws Exception {

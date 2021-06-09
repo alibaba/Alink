@@ -11,7 +11,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.operator.common.optim.FmOptimizer;
@@ -30,7 +29,7 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
      * @param params parameters needed by training process.
      * @param task   Fm task: maybe "classification" or "regression".
      */
-    public FmTrainBatchOp(Params params, String task) {
+    public FmTrainBatchOp(Params params, Task task) {
         super(params.set(ModelParamName.TASK, task));
     }
 
@@ -39,7 +38,7 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
      *
      * @param task
      */
-    public FmTrainBatchOp(String task) {
+    public FmTrainBatchOp(Task task) {
         super(new Params().set(ModelParamName.TASK, task));
     }
 
@@ -135,7 +134,7 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
             modelData.featureColNames = params.get(FmTrainParams.FEATURE_COLS);
             modelData.dim = dim;
             modelData.labelColName = params.get(FmTrainParams.LABEL_COL);
-            modelData.task = Task.valueOf(params.get(ModelParamName.TASK).toUpperCase());
+            modelData.task = params.get(ModelParamName.TASK);
             modelData.convergenceInfo = value.f1;
             if (!isRegProc) {
                 modelData.labelValues = this.labelValues;

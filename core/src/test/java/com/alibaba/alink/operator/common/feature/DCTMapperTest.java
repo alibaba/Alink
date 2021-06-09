@@ -9,13 +9,14 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.params.feature.DCTParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Random;
 
 import static org.junit.Assert.assertTrue;
 
-public class DCTMapperTest {
+public class DCTMapperTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {

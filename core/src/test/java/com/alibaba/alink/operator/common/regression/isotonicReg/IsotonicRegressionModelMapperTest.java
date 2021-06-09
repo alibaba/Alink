@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.common.regression.IsotonicRegressionModelMapper;
 import com.alibaba.alink.params.regression.IsotonicRegPredictParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class IsotonicRegressionModelMapperTest {
+public class IsotonicRegressionModelMapperTest extends AlinkTestBase {
 	@Test
 	public void testIsoReg() throws Exception {
 		Row[] rows = new Row[] {
