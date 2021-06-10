@@ -31,6 +31,7 @@ public class LagUdaf extends BaseUdaf<Object, LagData> {
 		return new LagData(considerNull);
 	}
 
+	@Override
 	public void accumulate(LagData acc, Object... values) {
 		Object value = values[0];
 		int k = 0;
@@ -47,12 +48,15 @@ public class LagUdaf extends BaseUdaf<Object, LagData> {
 		}
 	}
 
+	@Override
 	public void retract(LagData acc, Object... values) {}
 
+	@Override
 	public void resetAccumulator(LagData acc) {
 		acc.reset();
 	}
 
+	@Override
 	public void merge(LagData acc, Iterable <LagData> it) {
 		LastValueTypeData.merge(acc, it);
 	}

@@ -32,6 +32,7 @@ public class LastValueUdaf extends BaseUdaf<Object, LastValueData> {
 
 
 	//valueCol, [k, ] timeCol, timeInterval
+	@Override
 	public void accumulate(LastValueData acc, Object... values) {
 		Object value = values[0];
 		Object time;
@@ -48,12 +49,15 @@ public class LastValueUdaf extends BaseUdaf<Object, LastValueData> {
 		acc.addData(value, time, k, timeInterval);
 	}
 
+	@Override
 	public void retract(LastValueData acc, Object... values) {}
 
+	@Override
 	public void resetAccumulator(LastValueData acc) {
 		acc.reset();
 	}
 
+	@Override
 	public void merge(LastValueData acc, Iterable <LastValueData> it) {
 		LastValueTypeData.merge(acc, it);
 	}

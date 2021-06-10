@@ -32,6 +32,7 @@ public class LastTimeUdaf extends BaseUdaf<Object, LastTimeData> {
 	}
 
 
+	@Override
 	public void accumulate(LastTimeData acc, Object... values) {
 		int k = 0;
 		Object time;
@@ -47,12 +48,15 @@ public class LastTimeUdaf extends BaseUdaf<Object, LastTimeData> {
 		acc.addData(values[0], time, k, timeInterval);
 	}
 
+	@Override
 	public void retract(LastTimeData acc, Object... values) {}
 
+	@Override
 	public void resetAccumulator(LastTimeData acc) {
 		acc.reset();
 	}
 
+	@Override
 	public void merge(LastTimeData acc, Iterable <LastTimeData> it) {
 		Iterable<LastValueData> its =
 			StreamSupport.stream(it.spliterator(), false).map(x->(LastValueData) x)
