@@ -28,8 +28,7 @@ public class VectorTypes {
 	 * For efficiency, use type information of sub-class <code>DenseVector</code> and <code>SparseVector</code>
 	 * as much as possible. When an operator output both sub-class type of vectors, use this one.
 	 */
-	//public static final TypeInformation <Vector> VECTOR = TypeInformation.of(Vector.class);
-	public static final TypeInformation <Vector> VECTOR = new com.alibaba.alink.common.types.VectorTypes.VectorTypeInternal();
+	public static final TypeInformation <Vector> VECTOR = TypeInformation.of(Vector.class);
 
 	static {
 		TYPES.put("VEC_TYPES_DENSE_VECTOR", DENSE_VECTOR);
