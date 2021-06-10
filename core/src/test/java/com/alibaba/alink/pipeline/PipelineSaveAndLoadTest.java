@@ -164,7 +164,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		PipelineModel model = pipeline.fit(data);
 
 		FilePath filePath = new FilePath(folder.newFile().getAbsolutePath());
-		model.save(filePath, true, 3);
+		model.save(filePath, true, 2);
 
 		BatchOperator.execute();
 
