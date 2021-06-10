@@ -66,7 +66,7 @@ public class InputOutputFormat {
 			context.getConfiguration(),
 			new JobConf(hiveCatalog.getHiveConf()),
 			context.getObjectIdentifier(),
-			context.getCatalogTable());
+			context.getCatalogTable(), null);
 
 		if (partitions != null) {
 			hiveTableSink.applyStaticPartition(partitions);

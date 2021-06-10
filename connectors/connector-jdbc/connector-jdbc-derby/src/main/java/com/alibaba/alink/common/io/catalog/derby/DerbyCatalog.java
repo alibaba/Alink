@@ -639,6 +639,7 @@ public class DerbyCatalog extends JdbcCatalog {
 		}
 	}
 
+	@Override
 	protected int flinkType2JdbcType(DataType flinkType) {
 
 		return flinkType.getLogicalType().accept(new DerbyFlink2Jdbc());

@@ -9,6 +9,7 @@ import org.apache.flink.shaded.guava18.com.google.common.base.Joiner;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.catalog.CatalogBaseTable;
 import org.apache.flink.table.catalog.CatalogDatabase;
+import org.apache.flink.table.catalog.CommonCatalogOptions;
 import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseAlreadyExistException;
@@ -16,8 +17,9 @@ import org.apache.flink.table.catalog.exceptions.DatabaseNotEmptyException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
 import org.apache.flink.table.catalog.exceptions.TableAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.TableNotExistException;
-import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
 import org.apache.flink.table.factories.CatalogFactory;
+import org.apache.flink.table.factories.CatalogFactory.Context;
+import org.apache.flink.table.factories.FactoryUtil.DefaultCatalogContext;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
 
@@ -58,7 +60,8 @@ public class SqliteCatalog extends JdbcCatalog {
 		this(
 			new Params()
 				.set(SqliteCatalogParams.CATALOG_NAME, catalogName)
-				.set(SqliteCatalogParams.DEFAULT_DATABASE, defaultDatabase == null ? parseDbNameFromUrl(dbUrls[0]) : defaultDatabase)
+				.set(SqliteCatalogParams.DEFAULT_DATABASE,
+					defaultDatabase == null ? parseDbNameFromUrl(dbUrls[0]) : defaultDatabase)
 				.set(SqliteCatalogParams.URLS, dbUrls)
 				.set(SqliteCatalogParams.USERNAME, userName)
 				.set(SqliteCatalogParams.PASSWORD, password)
@@ -234,17 +237,6 @@ public class SqliteCatalog extends JdbcCatalog {
 
 		CatalogFactory factory = createCatalogFactory(classLoader);
 
-		List <String> supportedKeys = factory.supportedProperties();
-
-		if (!supportedKeys.contains(CATALOG_SQLITE_URLS)
-			|| !supportedKeys.contains(CATALOG_SQLITE_USERNAME)
-			|| !supportedKeys.contains(CATALOG_SQLITE_PASSWORD)) {
-
-			throw new IllegalStateException(
-				"Incorrect sqlite dependency. Please check the configure of sqlite environment."
-			);
-		}
-
 		Map <String, String> properties = new HashMap <>();
 
 		properties.put(CATALOG_SQLITE_URLS, Joiner.on(",").join(params.get(SqliteCatalogParams.URLS)));
@@ -257,12 +249,12 @@ public class SqliteCatalog extends JdbcCatalog {
 		}
 
 		if (params.get(SqliteCatalogParams.DEFAULT_DATABASE) != null) {
-			properties.put(CatalogDescriptorValidator.CATALOG_DEFAULT_DATABASE,
+			properties.put(CommonCatalogOptions.DEFAULT_DATABASE_KEY,
 				params.get(SqliteCatalogParams.DEFAULT_DATABASE));
 		}
 
-		properties.putAll(factory.requiredContext());
+		Context context = new DefaultCatalogContext(catalogName, properties, null, null);
 
-		return (JdbcCatalog) factory.createCatalog(catalogName, properties);
+		return (JdbcCatalog) factory.createCatalog(context);
 	}
 }

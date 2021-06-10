@@ -26,7 +26,8 @@ import org.apache.flink.table.catalog.CatalogTable;
 import org.apache.flink.table.catalog.CatalogTableImpl;
 import org.apache.flink.table.catalog.ObjectIdentifier;
 import org.apache.flink.table.catalog.ObjectPath;
-import org.apache.flink.table.catalog.config.CatalogConfig;
+import org.apache.flink.table.catalog.ResolvedCatalogTable;
+import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotEmptyException;
@@ -439,9 +440,9 @@ public class HiveCatalog extends BaseCatalog {
 
 	@Override
 	public Table sourceStream(ObjectPath objectPath, Params params, Long sessionId) {
-		Tuple3 <TableSchema, TypeInformation<RowData>, RichInputFormatWithClassLoader <RowData>> all
+		Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormatWithClassLoader <RowData>> all
 			= createInputFormat(
-				objectPath, params, loadCatalog(),
+			objectPath, params, loadCatalog(),
 			MLEnvironmentFactory.get(sessionId)
 				.getStreamTableEnvironment().getConfig().getConfiguration(), hiveClassLoaderFactory);
 
@@ -473,7 +474,7 @@ public class HiveCatalog extends BaseCatalog {
 		RichOutputFormatWithClassLoader outputFormat =
 			createOutput(objectPath, params, loadCatalog(),
 				MLEnvironmentFactory.get(sessionId)
-				.getStreamTableEnvironment().getConfig().getConfiguration(), hiveClassLoaderFactory, true);
+					.getStreamTableEnvironment().getConfig().getConfiguration(), hiveClassLoaderFactory, true);
 
 		StreamOperator
 			.fromTable(in)
@@ -485,7 +486,7 @@ public class HiveCatalog extends BaseCatalog {
 
 	@Override
 	public Table sourceBatch(ObjectPath objectPath, Params params, Long sessionId) {
-		Tuple3 <TableSchema, TypeInformation<RowData>, RichInputFormatWithClassLoader <RowData>> all
+		Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormatWithClassLoader <RowData>> all
 			= createInputFormat(
 			objectPath, params, loadCatalog(),
 			MLEnvironmentFactory.get(sessionId)
@@ -551,7 +552,7 @@ public class HiveCatalog extends BaseCatalog {
 		TableSchema schema, ObjectPath objectPath) throws TableNotExistException {
 
 		// remove static partition columns
-		List<String> staticPartCols = getPartitionCols(objectPath);
+		List <String> staticPartCols = getPartitionCols(objectPath);
 		int numPartCols = staticPartCols.size();
 		if (numPartCols > 0) {
 			Set <String> partColsSet = new HashSet <>(staticPartCols);
@@ -656,7 +657,6 @@ public class HiveCatalog extends BaseCatalog {
 		}
 	}
 
-
 	private static CatalogBaseTable createNewTableDesc(ObjectPath objectPath, TableSchema schema, Params params) {
 		String[] partitionCols = new String[0];
 		String partitionSpec = params.get(HiveCatalogParams.PARTITION);
@@ -684,10 +684,7 @@ public class HiveCatalog extends BaseCatalog {
 			schema = new TableSchema(fieldNames, fieldTypes);
 		}
 
-		Map <String, String> properties = new HashMap <>();
-		properties.put(CatalogConfig.IS_GENERIC, "false");
-
-		return new CatalogTableImpl(schema, Arrays.asList(partitionCols), properties, objectPath.getFullName());
+		return new CatalogTableImpl(schema, Arrays.asList(partitionCols), new HashMap <>(), objectPath.getFullName());
 	}
 
 	public static boolean fileExists(FilePath folder, String file) throws IOException {
@@ -910,7 +907,7 @@ public class HiveCatalog extends BaseCatalog {
 		return (CatalogTable) action.doAsThrowRuntime(() -> catalog.getTable(objectPath));
 	}
 
-	private Tuple3 <TableSchema, TypeInformation<RowData>, RichInputFormatWithClassLoader <RowData>> createInputFormat(
+	private Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormatWithClassLoader <RowData>> createInputFormat(
 		ObjectPath objectPath, final Params params, Catalog catalog,
 		ReadableConfig config, HiveClassLoaderFactory factory) {
 
@@ -941,11 +938,12 @@ public class HiveCatalog extends BaseCatalog {
 
 			Method method = inputOutputFormat.getMethod("createInputFormat", Catalog.class, Context.class, List.class);
 
-			Tuple3 <TableSchema, TypeInformation<RowData>, RichInputFormat <RowData, InputSplit>> internalRet =
-				(Tuple3 <TableSchema, TypeInformation<RowData>, RichInputFormat <RowData, InputSplit>>)
+			Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormat <RowData, InputSplit>> internalRet =
+				(Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormat <RowData, InputSplit>>)
 					method.invoke(null, catalog, context, selectedPartitions);
 
-			return Tuple3.of(internalRet.f0, internalRet.f1, new RichInputFormatWithClassLoader <>(factory, internalRet.f2));
+			return Tuple3.of(internalRet.f0, internalRet.f1,
+				new RichInputFormatWithClassLoader <>(factory, internalRet.f2));
 		});
 	}
 
@@ -970,8 +968,20 @@ public class HiveCatalog extends BaseCatalog {
 			}
 
 			@Override
-			public CatalogTable getCatalogTable() {
-				return table;
+			public ResolvedCatalogTable getCatalogTable() {
+				if (table instanceof ResolvedCatalogTable) {
+					return (ResolvedCatalogTable) table;
+				}
+
+				if (table.getSchema() != null) {
+					TableSchema schema = table.getSchema();
+
+					return new ResolvedCatalogTable(table,
+						ResolvedSchema.physical(schema.getFieldNames(), schema.getFieldDataTypes())
+					);
+				}
+
+				throw new IllegalArgumentException("Catalog table must be the ResolvedCatalogTable");
 			}
 
 			@Override
@@ -1004,9 +1014,10 @@ public class HiveCatalog extends BaseCatalog {
 				true, Thread.currentThread().getContextClassLoader()
 			);
 
-			Method method = inputOutputFormat.getMethod("createOutputFormat", Catalog.class, DynamicTableFactory.Context.class, Map.class);
+			Method method = inputOutputFormat.getMethod("createOutputFormat", Catalog.class,
+				DynamicTableFactory.Context.class, Map.class);
 
-			OutputFormat<Row> internalRet =
+			OutputFormat <Row> internalRet =
 				(OutputFormat <Row>) method.invoke(null, catalog, context, partitions);
 
 			return new RichOutputFormatWithClassLoader(factory, internalRet);

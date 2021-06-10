@@ -22,6 +22,7 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.serialization.BulkWriter;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.connectors.hive.read.HiveCompactReaderFactory;
+import org.apache.flink.connectors.hive.util.HiveConfUtils;
 import org.apache.flink.connectors.hive.write.HiveBulkWriterFactory;
 import org.apache.flink.connectors.hive.write.HiveOutputFormatFactory;
 import org.apache.flink.connectors.hive.write.HiveWriterFactory;
@@ -44,7 +45,7 @@ import org.apache.flink.table.catalog.hive.client.HiveMetastoreClientFactory;
 import org.apache.flink.table.catalog.hive.client.HiveMetastoreClientWrapper;
 import org.apache.flink.table.catalog.hive.client.HiveShim;
 import org.apache.flink.table.catalog.hive.client.HiveShimLoader;
-import org.apache.flink.table.catalog.hive.descriptors.HiveCatalogValidator;
+import org.apache.flink.table.catalog.hive.factories.HiveCatalogFactoryOptions;
 import org.apache.flink.table.catalog.hive.util.HiveReflectionUtils;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.sink.DataStreamSinkProvider;
@@ -80,6 +81,8 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.LinkedHashMap;
@@ -95,9 +98,7 @@ import static org.apache.flink.table.filesystem.FileSystemOptions.SINK_ROLLING_P
 import static org.apache.flink.table.filesystem.FileSystemOptions.SINK_ROLLING_POLICY_ROLLOVER_INTERVAL;
 import static org.apache.flink.table.filesystem.stream.compact.CompactOperator.convertToUncompacted;
 
-/**
- * Table sink to write to Hive tables.
- */
+/** Table sink to write to Hive tables. */
 public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPartitioning, SupportsOverwrite {
 
 	private static final Logger LOG = LoggerFactory.getLogger(HiveTableSink.class);
@@ -114,54 +115,70 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 	private boolean overwrite = false;
 	private boolean dynamicGrouping = false;
 
+	@Nullable private final Integer configuredParallelism;
+
 	public HiveBatchAndStreamTableSink(
-		ReadableConfig flinkConf, JobConf jobConf, ObjectIdentifier identifier, CatalogTable table) {
+		ReadableConfig flinkConf,
+		JobConf jobConf,
+		ObjectIdentifier identifier,
+		CatalogTable table,
+		@Nullable Integer configuredParallelism) {
 		this.flinkConf = flinkConf;
 		this.jobConf = jobConf;
 		this.identifier = identifier;
 		this.catalogTable = table;
-		hiveVersion = Preconditions.checkNotNull(jobConf.get(HiveCatalogValidator.CATALOG_HIVE_VERSION),
-			"Hive version is not defined");
+		hiveVersion =
+			Preconditions.checkNotNull(
+				jobConf.get(HiveCatalogFactoryOptions.HIVE_VERSION.key()),
+				"Hive version is not defined");
 		hiveShim = HiveShimLoader.loadHiveShim(hiveVersion);
 		tableSchema = TableSchemaUtils.getPhysicalSchema(table.getSchema());
+		this.configuredParallelism = configuredParallelism;
 	}
 
 	public FileSystemOutputFormat<Row> getOutputFormat() {
 		checkAcidTable(catalogTable, identifier.toObjectPath());
 
-		try (HiveMetastoreClientWrapper client = HiveMetastoreClientFactory.create(
-			new HiveConf(jobConf, HiveConf.class), hiveVersion)) {
+		try (HiveMetastoreClientWrapper client =
+				 HiveMetastoreClientFactory.create(HiveConfUtils.create(jobConf), hiveVersion)) {
 			Table table = client.getTable(identifier.getDatabaseName(), identifier.getObjectName());
 			StorageDescriptor sd = table.getSd();
 
-			Class hiveOutputFormatClz = hiveShim.getHiveOutputFormatClass(
-				Class.forName(sd.getOutputFormat()));
-			boolean isCompressed = jobConf.getBoolean(HiveConf.ConfVars.COMPRESSRESULT.varname, false);
-			HiveWriterFactory writerFactory = new HiveWriterFactory(
-				jobConf,
-				hiveOutputFormatClz,
-				sd.getSerdeInfo(),
-				tableSchema,
-				getPartitionKeyArray(),
-				HiveReflectionUtils.getTableMetadata(hiveShim, table),
-				hiveShim,
-				isCompressed);
-			String extension = Utilities.getFileExtension(jobConf, isCompressed,
-				(HiveOutputFormat<?, ?>) hiveOutputFormatClz.newInstance());
+			Class hiveOutputFormatClz =
+				hiveShim.getHiveOutputFormatClass(Class.forName(sd.getOutputFormat()));
+			boolean isCompressed =
+				jobConf.getBoolean(HiveConf.ConfVars.COMPRESSRESULT.varname, false);
+			HiveWriterFactory writerFactory =
+				new HiveWriterFactory(
+					jobConf,
+					hiveOutputFormatClz,
+					sd.getSerdeInfo(),
+					tableSchema,
+					getPartitionKeyArray(),
+					HiveReflectionUtils.getTableMetadata(hiveShim, table),
+					hiveShim,
+					isCompressed);
+			String extension =
+				Utilities.getFileExtension(
+					jobConf,
+					isCompressed,
+					(HiveOutputFormat<?, ?>) hiveOutputFormatClz.newInstance());
 
-			OutputFileConfig.OutputFileConfigBuilder fileNamingBuilder = OutputFileConfig.builder()
-				.withPartPrefix("part-" + UUID.randomUUID().toString())
-				.withPartSuffix(extension == null ? "" : extension);
+			OutputFileConfig.OutputFileConfigBuilder fileNamingBuilder =
+				OutputFileConfig.builder()
+					.withPartPrefix("part-" + UUID.randomUUID().toString())
+					.withPartSuffix(extension == null ? "" : extension);
 
 			OutputFileConfig fileNaming = fileNamingBuilder.build();
 
-			FileSystemOutputFormat.Builder <Row> builder = new FileSystemOutputFormat.Builder <>();
-			builder.setPartitionComputer(new HiveRowPartitionComputer(
-				hiveShim,
-				defaultPartName(),
-				tableSchema.getFieldNames(),
-				tableSchema.getFieldDataTypes(),
-				getPartitionKeyArray()));
+			FileSystemOutputFormat.Builder<Row> builder = new FileSystemOutputFormat.Builder<>();
+			builder.setPartitionComputer(
+				new HiveRowPartitionComputer(
+					hiveShim,
+					defaultPartName(),
+					tableSchema.getFieldNames(),
+					tableSchema.getFieldDataTypes(),
+					getPartitionKeyArray()));
 			builder.setDynamicGrouped(dynamicGrouping);
 			builder.setPartitionColumns(getPartitionKeyArray());
 			builder.setFileSystemFactory(fsFactory());
@@ -169,8 +186,8 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 			builder.setMetaStoreFactory(msFactory());
 			builder.setOverwrite(overwrite);
 			builder.setStaticPartitions(staticPartitionSpec);
-			builder.setTempPath(new org.apache.flink.core.fs.Path(
-				toStagingDir(sd.getLocation(), jobConf)));
+			builder.setTempPath(
+				new org.apache.flink.core.fs.Path(toStagingDir(sd.getLocation(), jobConf)));
 			builder.setOutputFileConfig(fileNaming);
 
 			return builder.build();
@@ -187,48 +204,60 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 
 	@Override
 	public SinkRuntimeProvider getSinkRuntimeProvider(Context context) {
-		DataStructureConverter converter = context.createDataStructureConverter(tableSchema.toRowDataType());
-		return (DataStreamSinkProvider) dataStream -> consume(dataStream, context.isBounded(), converter);
+		DataStructureConverter converter =
+			context.createDataStructureConverter(tableSchema.toRowDataType());
+		return (DataStreamSinkProvider)
+			dataStream -> consume(dataStream, context.isBounded(), converter);
 	}
 
 	private DataStreamSink<?> consume(
 		DataStream<RowData> dataStream, boolean isBounded, DataStructureConverter converter) {
 		checkAcidTable(catalogTable, identifier.toObjectPath());
 
-		try (HiveMetastoreClientWrapper client = HiveMetastoreClientFactory.create(
-			new HiveConf(jobConf, HiveConf.class), hiveVersion)) {
+		try (HiveMetastoreClientWrapper client =
+				 HiveMetastoreClientFactory.create(HiveConfUtils.create(jobConf), hiveVersion)) {
 			Table table = client.getTable(identifier.getDatabaseName(), identifier.getObjectName());
 			StorageDescriptor sd = table.getSd();
 
-			Class hiveOutputFormatClz = hiveShim.getHiveOutputFormatClass(
-				Class.forName(sd.getOutputFormat()));
-			boolean isCompressed = jobConf.getBoolean(HiveConf.ConfVars.COMPRESSRESULT.varname, false);
-			HiveWriterFactory writerFactory = new HiveWriterFactory(
-				jobConf,
-				hiveOutputFormatClz,
-				sd.getSerdeInfo(),
-				tableSchema,
-				getPartitionKeyArray(),
-				HiveReflectionUtils.getTableMetadata(hiveShim, table),
-				hiveShim,
-				isCompressed);
-			String extension = Utilities.getFileExtension(jobConf, isCompressed,
-				(HiveOutputFormat<?, ?>) hiveOutputFormatClz.newInstance());
+			Class hiveOutputFormatClz =
+				hiveShim.getHiveOutputFormatClass(Class.forName(sd.getOutputFormat()));
+			boolean isCompressed =
+				jobConf.getBoolean(HiveConf.ConfVars.COMPRESSRESULT.varname, false);
+			HiveWriterFactory writerFactory =
+				new HiveWriterFactory(
+					jobConf,
+					hiveOutputFormatClz,
+					sd.getSerdeInfo(),
+					tableSchema,
+					getPartitionKeyArray(),
+					HiveReflectionUtils.getTableMetadata(hiveShim, table),
+					hiveShim,
+					isCompressed);
+			String extension =
+				Utilities.getFileExtension(
+					jobConf,
+					isCompressed,
+					(HiveOutputFormat<?, ?>) hiveOutputFormatClz.newInstance());
 
-			OutputFileConfig.OutputFileConfigBuilder fileNamingBuilder = OutputFileConfig.builder()
-				.withPartPrefix("part-" + UUID.randomUUID().toString())
-				.withPartSuffix(extension == null ? "" : extension);
+			OutputFileConfig.OutputFileConfigBuilder fileNamingBuilder =
+				OutputFileConfig.builder()
+					.withPartPrefix("part-" + UUID.randomUUID().toString())
+					.withPartSuffix(extension == null ? "" : extension);
 
+			final int parallelism =
+				Optional.ofNullable(configuredParallelism).orElse(dataStream.getParallelism());
 			if (isBounded) {
 				OutputFileConfig fileNaming = fileNamingBuilder.build();
-				return createBatchSink(dataStream, converter, sd, writerFactory, fileNaming);
+				return createBatchSink(
+					dataStream, converter, sd, writerFactory, fileNaming, parallelism);
 			} else {
 				if (overwrite) {
 					throw new IllegalStateException("Streaming mode not support overwrite.");
 				}
 
 				Properties tableProps = HiveReflectionUtils.getTableMetadata(hiveShim, table);
-				return createStreamSink(dataStream, sd, tableProps, writerFactory, fileNamingBuilder);
+				return createStreamSink(
+					dataStream, sd, tableProps, writerFactory, fileNamingBuilder, parallelism);
 			}
 		} catch (TException e) {
 			throw new CatalogException("Failed to query Hive metaStore", e);
@@ -246,14 +275,17 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 		DataStructureConverter converter,
 		StorageDescriptor sd,
 		HiveWriterFactory recordWriterFactory,
-		OutputFileConfig fileNaming) throws IOException {
+		OutputFileConfig fileNaming,
+		final int parallelism)
+		throws IOException {
 		FileSystemOutputFormat.Builder<Row> builder = new FileSystemOutputFormat.Builder<>();
-		builder.setPartitionComputer(new HiveRowPartitionComputer(
-			hiveShim,
-			defaultPartName(),
-			tableSchema.getFieldNames(),
-			tableSchema.getFieldDataTypes(),
-			getPartitionKeyArray()));
+		builder.setPartitionComputer(
+			new HiveRowPartitionComputer(
+				hiveShim,
+				defaultPartName(),
+				tableSchema.getFieldNames(),
+				tableSchema.getFieldDataTypes(),
+				getPartitionKeyArray()));
 		builder.setDynamicGrouped(dynamicGrouping);
 		builder.setPartitionColumns(getPartitionKeyArray());
 		builder.setFileSystemFactory(fsFactory());
@@ -261,13 +293,13 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 		builder.setMetaStoreFactory(msFactory());
 		builder.setOverwrite(overwrite);
 		builder.setStaticPartitions(staticPartitionSpec);
-		builder.setTempPath(new org.apache.flink.core.fs.Path(
-			toStagingDir(sd.getLocation(), jobConf)));
+		builder.setTempPath(
+			new org.apache.flink.core.fs.Path(toStagingDir(sd.getLocation(), jobConf)));
 		builder.setOutputFileConfig(fileNaming);
 		return dataStream
 			.map((MapFunction<RowData, Row>) value -> (Row) converter.toExternal(value))
 			.writeUsingOutputFormat(builder.build())
-			.setParallelism(dataStream.getParallelism());
+			.setParallelism(parallelism);
 	}
 
 	private DataStreamSink<?> createStreamSink(
@@ -275,23 +307,26 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 		StorageDescriptor sd,
 		Properties tableProps,
 		HiveWriterFactory recordWriterFactory,
-		OutputFileConfig.OutputFileConfigBuilder fileNamingBuilder) {
-		org.apache.flink.configuration.Configuration conf = new org.apache.flink.configuration.Configuration();
+		OutputFileConfig.OutputFileConfigBuilder fileNamingBuilder,
+		final int parallelism) {
+		org.apache.flink.configuration.Configuration conf =
+			new org.apache.flink.configuration.Configuration();
 		catalogTable.getOptions().forEach(conf::setString);
 
-		HiveRowDataPartitionComputer partComputer = new HiveRowDataPartitionComputer(
-			hiveShim,
-			defaultPartName(),
-			tableSchema.getFieldNames(),
-			tableSchema.getFieldDataTypes(),
-			getPartitionKeyArray());
+		HiveRowDataPartitionComputer partComputer =
+			new HiveRowDataPartitionComputer(
+				hiveShim,
+				defaultPartName(),
+				tableSchema.getFieldNames(),
+				tableSchema.getFieldDataTypes(),
+				getPartitionKeyArray());
 		TableBucketAssigner assigner = new TableBucketAssigner(partComputer);
-		HiveRollingPolicy rollingPolicy = new HiveRollingPolicy(
-			conf.get(SINK_ROLLING_POLICY_FILE_SIZE).getBytes(),
-			conf.get(SINK_ROLLING_POLICY_ROLLOVER_INTERVAL).toMillis());
+		HiveRollingPolicy rollingPolicy =
+			new HiveRollingPolicy(
+				conf.get(SINK_ROLLING_POLICY_FILE_SIZE).getBytes(),
+				conf.get(SINK_ROLLING_POLICY_ROLLOVER_INTERVAL).toMillis());
 
 		boolean autoCompaction = conf.getBoolean(FileSystemOptions.AUTO_COMPACTION);
-
 		if (autoCompaction) {
 			fileNamingBuilder.withPartPrefix(
 				convertToUncompacted(fileNamingBuilder.build().getPartPrefix()));
@@ -302,21 +337,29 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 
 		BucketsBuilder<RowData, String, ? extends BucketsBuilder<RowData, ?, ?>> builder;
 		if (flinkConf.get(HiveOptions.TABLE_EXEC_HIVE_FALLBACK_MAPRED_WRITER)) {
-			builder = bucketsBuilderForMRWriter(recordWriterFactory, sd, assigner, rollingPolicy, outputFileConfig);
+			builder =
+				bucketsBuilderForMRWriter(
+					recordWriterFactory, sd, assigner, rollingPolicy, outputFileConfig);
 			LOG.info("Hive streaming sink: Use MapReduce RecordWriter writer.");
 		} else {
-			Optional<BulkWriter.Factory<RowData>> bulkFactory = createBulkWriterFactory(getPartitionKeyArray(), sd);
+			Optional<BulkWriter.Factory<RowData>> bulkFactory =
+				createBulkWriterFactory(getPartitionKeyArray(), sd);
 			if (bulkFactory.isPresent()) {
-				builder = StreamingFileSink.forBulkFormat(
-					path,
-					new FileSystemTableSink.ProjectionBulkFactory(bulkFactory.get(), partComputer))
-					.withBucketAssigner(assigner)
-					.withRollingPolicy(rollingPolicy)
-					.withOutputFileConfig(outputFileConfig);
+				builder =
+					StreamingFileSink.forBulkFormat(
+						path,
+						new FileSystemTableSink.ProjectionBulkFactory(
+							bulkFactory.get(), partComputer))
+						.withBucketAssigner(assigner)
+						.withRollingPolicy(rollingPolicy)
+						.withOutputFileConfig(outputFileConfig);
 				LOG.info("Hive streaming sink: Use native parquet&orc writer.");
 			} else {
-				builder = bucketsBuilderForMRWriter(recordWriterFactory, sd, assigner, rollingPolicy, outputFileConfig);
-				LOG.info("Hive streaming sink: Use MapReduce RecordWriter writer because BulkWriter Factory not available.");
+				builder =
+					bucketsBuilderForMRWriter(
+						recordWriterFactory, sd, assigner, rollingPolicy, outputFileConfig);
+				LOG.info(
+					"Hive streaming sink: Use MapReduce RecordWriter writer because BulkWriter Factory not available.");
 			}
 		}
 
@@ -324,32 +367,28 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 
 		DataStream<PartitionCommitInfo> writerStream;
 		if (autoCompaction) {
-			long compactionSize = conf
-				.getOptional(FileSystemOptions.COMPACTION_FILE_SIZE)
-				.orElse(conf.get(SINK_ROLLING_POLICY_FILE_SIZE))
-				.getBytes();
+			long compactionSize =
+				conf.getOptional(FileSystemOptions.COMPACTION_FILE_SIZE)
+					.orElse(conf.get(SINK_ROLLING_POLICY_FILE_SIZE))
+					.getBytes();
 
-			writerStream = StreamingSink.compactionWriter(
-				dataStream,
-				bucketCheckInterval,
-				builder,
-				fsFactory(),
-				path,
-				createCompactReaderFactory(sd, tableProps),
-				compactionSize);
+			writerStream =
+				StreamingSink.compactionWriter(
+					dataStream,
+					bucketCheckInterval,
+					builder,
+					fsFactory(),
+					path,
+					createCompactReaderFactory(sd, tableProps),
+					compactionSize,
+					parallelism);
 		} else {
-			writerStream = StreamingSink.writer(
-				dataStream, bucketCheckInterval, builder);
+			writerStream =
+				StreamingSink.writer(dataStream, bucketCheckInterval, builder, parallelism);
 		}
 
 		return StreamingSink.sink(
-			writerStream,
-			path,
-			identifier,
-			getPartitionKeys(),
-			msFactory(),
-			fsFactory(),
-			conf);
+			writerStream, path, identifier, getPartitionKeys(), msFactory(), fsFactory(), conf);
 	}
 
 	private String defaultPartName() {
@@ -379,7 +418,8 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 		return new HadoopFileSystemFactory(jobConf);
 	}
 
-	private BucketsBuilder<RowData, String, ? extends BucketsBuilder<RowData, ?, ?>> bucketsBuilderForMRWriter(
+	private BucketsBuilder<RowData, String, ? extends BucketsBuilder<RowData, ?, ?>>
+	bucketsBuilderForMRWriter(
 		HiveWriterFactory recordWriterFactory,
 		StorageDescriptor sd,
 		TableBucketAssigner assigner,
@@ -392,8 +432,8 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 			.withOutputFileConfig(outputFileConfig);
 	}
 
-	private Optional<BulkWriter.Factory<RowData>> createBulkWriterFactory(String[] partitionColumns,
-																		  StorageDescriptor sd) {
+	private Optional<BulkWriter.Factory<RowData>> createBulkWriterFactory(
+		String[] partitionColumns, StorageDescriptor sd) {
 		String serLib = sd.getSerdeInfo().getSerializationLib().toLowerCase();
 		int formatFieldCount = tableSchema.getFieldCount() - partitionColumns.length;
 		String[] formatNames = new String[formatFieldCount];
@@ -406,14 +446,16 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 		if (serLib.contains("parquet")) {
 			Configuration formatConf = new Configuration(jobConf);
 			sd.getSerdeInfo().getParameters().forEach(formatConf::set);
-			return Optional.of(ParquetRowDataBuilder.createWriterFactory(
-				formatType, formatConf, hiveVersion.startsWith("3.")));
+			return Optional.of(
+				ParquetRowDataBuilder.createWriterFactory(
+					formatType, formatConf, hiveVersion.startsWith("3.")));
 		} else if (serLib.contains("orc")) {
 			Configuration formatConf = new ThreadLocalClassLoaderConfiguration(jobConf);
 			sd.getSerdeInfo().getParameters().forEach(formatConf::set);
 			TypeDescription typeDescription = OrcSplitReaderUtil.logicalTypeToOrcType(formatType);
-			return Optional.of(hiveShim.createOrcBulkWriterFactory(
-				formatConf, typeDescription.toString(), formatTypes));
+			return Optional.of(
+				hiveShim.createOrcBulkWriterFactory(
+					formatConf, typeDescription.toString(), formatTypes));
 		} else {
 			return Optional.empty();
 		}
@@ -435,7 +477,8 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 		res += ".staging_" + System.currentTimeMillis();
 		Path path = new Path(res);
 		FileSystem fs = path.getFileSystem(conf);
-		Preconditions.checkState(fs.exists(path) || fs.mkdirs(path), "Failed to create staging dir " + path);
+		Preconditions.checkState(
+			fs.exists(path) || fs.mkdirs(path), "Failed to create staging dir " + path);
 		fs.deleteOnExit(path);
 		return res;
 	}
@@ -471,7 +514,9 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 
 	@Override
 	public DynamicTableSink copy() {
-		HiveBatchAndStreamTableSink sink = new HiveBatchAndStreamTableSink(flinkConf, jobConf, identifier, catalogTable);
+		HiveBatchAndStreamTableSink sink =
+			new HiveBatchAndStreamTableSink(
+				flinkConf, jobConf, identifier, catalogTable, configuredParallelism);
 		sink.staticPartitionSpec = staticPartitionSpec;
 		sink.overwrite = overwrite;
 		sink.dynamicGrouping = dynamicGrouping;
@@ -484,19 +529,17 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 	}
 
 	/**
-	 * Getting size of the file is too expensive. See {@link HiveBulkWriterFactory#create}.
-	 * We can't check for every element, which will cause great pressure on DFS.
-	 * Therefore, in this implementation, only check the file size in
-	 * {@link #shouldRollOnProcessingTime}, which can effectively avoid DFS pressure.
+	 * Getting size of the file is too expensive. See {@link HiveBulkWriterFactory#create}. We can't
+	 * check for every element, which will cause great pressure on DFS. Therefore, in this
+	 * implementation, only check the file size in {@link #shouldRollOnProcessingTime}, which can
+	 * effectively avoid DFS pressure.
 	 */
 	private static class HiveRollingPolicy extends CheckpointRollingPolicy<RowData, String> {
 
 		private final long rollingFileSize;
 		private final long rollingTimeInterval;
 
-		private HiveRollingPolicy(
-			long rollingFileSize,
-			long rollingTimeInterval) {
+		private HiveRollingPolicy(long rollingFileSize, long rollingTimeInterval) {
 			Preconditions.checkArgument(rollingFileSize > 0L);
 			Preconditions.checkArgument(rollingTimeInterval > 0L);
 			this.rollingFileSize = rollingFileSize;
@@ -517,8 +560,8 @@ public class HiveBatchAndStreamTableSink implements DynamicTableSink, SupportsPa
 		public boolean shouldRollOnProcessingTime(
 			PartFileInfo<String> partFileState, long currentTime) {
 			try {
-				return currentTime - partFileState.getCreationTime() >= rollingTimeInterval ||
-					partFileState.getSize() > rollingFileSize;
+				return currentTime - partFileState.getCreationTime() >= rollingTimeInterval
+					|| partFileState.getSize() > rollingFileSize;
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}

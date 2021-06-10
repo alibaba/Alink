@@ -7,6 +7,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.catalog.CatalogBaseTable;
 import org.apache.flink.table.catalog.CatalogDatabase;
+import org.apache.flink.table.catalog.CommonCatalogOptions;
 import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseAlreadyExistException;
@@ -14,8 +15,9 @@ import org.apache.flink.table.catalog.exceptions.DatabaseNotEmptyException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
 import org.apache.flink.table.catalog.exceptions.TableAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.TableNotExistException;
-import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
 import org.apache.flink.table.factories.CatalogFactory;
+import org.apache.flink.table.factories.CatalogFactory.Context;
+import org.apache.flink.table.factories.FactoryUtil.DefaultCatalogContext;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
 
@@ -212,17 +214,6 @@ public class DerbyCatalog extends JdbcCatalog {
 
 		CatalogFactory factory = createCatalogFactory(classLoader);
 
-		List <String> supportedKeys = factory.supportedProperties();
-
-		if (!supportedKeys.contains(CATALOG_DERBY_PATH)
-			|| !supportedKeys.contains(CATALOG_DERBY_USERNAME)
-			|| !supportedKeys.contains(CATALOG_DERBY_PASSWORD)) {
-
-			throw new IllegalStateException(
-				"Incorrect derby dependency. Please check the configure of hive environment."
-			);
-		}
-
 		Map <String, String> properties = new HashMap <>();
 
 		properties.put(CATALOG_DERBY_PATH, params.get(JdbcCatalogParams.URL));
@@ -235,12 +226,12 @@ public class DerbyCatalog extends JdbcCatalog {
 		}
 
 		if (params.get(JdbcCatalogParams.DEFAULT_DATABASE) != null) {
-			properties.put(CatalogDescriptorValidator.CATALOG_DEFAULT_DATABASE,
+			properties.put(CommonCatalogOptions.DEFAULT_DATABASE_KEY,
 				params.get(JdbcCatalogParams.DEFAULT_DATABASE));
 		}
 
-		properties.putAll(factory.requiredContext());
+		Context context = new DefaultCatalogContext(catalogName, properties, null, null);
 
-		return (JdbcCatalog) factory.createCatalog(catalogName, properties);
+		return (JdbcCatalog) factory.createCatalog(context);
 	}
 }

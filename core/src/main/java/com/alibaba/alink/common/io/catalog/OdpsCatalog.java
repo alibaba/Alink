@@ -28,6 +28,8 @@ import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
 import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.CatalogFactory;
+import org.apache.flink.table.factories.CatalogFactory.Context;
+import org.apache.flink.table.factories.FactoryUtil.DefaultCatalogContext;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.io.annotations.CatalogAnnotation;
@@ -411,19 +413,6 @@ public class OdpsCatalog extends InputOutputFormatCatalog {
 
 		CatalogFactory factory = createCatalogFactory(classLoader);
 
-		List <String> supportedKeys = factory.supportedProperties();
-
-		if (!supportedKeys.contains(CATALOG_ODPS_ACCESS_ID)
-			|| !supportedKeys.contains(CATALOG_ODPS_ACCESS_KEY)
-			|| !supportedKeys.contains(CATALOG_ODPS_ENDPOINT)
-			|| !supportedKeys.contains(CATALOG_ODPS_PROJECT)
-			|| !supportedKeys.contains(CATALOG_ODPS_RUNNING_PROJECT)) {
-
-			throw new IllegalStateException(
-				"Incorrect mysql dependency. Please check the configure of mysql environment."
-			);
-		}
-
 		Map <String, String> properties = new HashMap <>();
 
 		properties.put(CATALOG_ODPS_ACCESS_ID, params.get(OdpsCatalogParams.ACCESS_ID));
@@ -435,7 +424,7 @@ public class OdpsCatalog extends InputOutputFormatCatalog {
 			properties.put(CATALOG_ODPS_RUNNING_PROJECT, params.get(OdpsCatalogParams.RUNNING_PROJECT));
 		}
 
-		properties.putAll(factory.requiredContext());
+		Context context = new DefaultCatalogContext(catalogName, properties, null, null);
 
 		return (InputOutputFormatCatalog) factory.createCatalog(catalogName, properties);
 	}

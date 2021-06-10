@@ -7,6 +7,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.catalog.CatalogBaseTable;
 import org.apache.flink.table.catalog.CatalogDatabase;
+import org.apache.flink.table.catalog.CommonCatalogOptions;
 import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseAlreadyExistException;
@@ -14,8 +15,9 @@ import org.apache.flink.table.catalog.exceptions.DatabaseNotEmptyException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
 import org.apache.flink.table.catalog.exceptions.TableAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.TableNotExistException;
-import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
 import org.apache.flink.table.factories.CatalogFactory;
+import org.apache.flink.table.factories.CatalogFactory.Context;
+import org.apache.flink.table.factories.FactoryUtil.DefaultCatalogContext;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
 
@@ -216,18 +218,6 @@ public class MySqlCatalog extends JdbcCatalog {
 
 		CatalogFactory factory = createCatalogFactory(classLoader);
 
-		List <String> supportedKeys = factory.supportedProperties();
-
-		if (!supportedKeys.contains(CATALOG_MYSQL_URL)
-			|| !supportedKeys.contains(CATALOG_MYSQL_PORT)
-			|| !supportedKeys.contains(CATALOG_MYSQL_USERNAME)
-			|| !supportedKeys.contains(CATALOG_MYSQL_PASSWORD)) {
-
-			throw new IllegalStateException(
-				"Incorrect mysql dependency. Please check the configure of mysql environment."
-			);
-		}
-
 		Map <String, String> properties = new HashMap <>();
 
 		properties.put(CATALOG_MYSQL_URL, params.get(MySqlCatalogParams.URL));
@@ -241,12 +231,12 @@ public class MySqlCatalog extends JdbcCatalog {
 		}
 
 		if (params.get(MySqlCatalogParams.DEFAULT_DATABASE) != null) {
-			properties.put(CatalogDescriptorValidator.CATALOG_DEFAULT_DATABASE,
+			properties.put(CommonCatalogOptions.DEFAULT_DATABASE_KEY,
 				params.get(MySqlCatalogParams.DEFAULT_DATABASE));
 		}
 
-		properties.putAll(factory.requiredContext());
+		Context context = new DefaultCatalogContext(catalogName, properties, null, null);
 
-		return (JdbcCatalog) factory.createCatalog(catalogName, properties);
+		return (JdbcCatalog) factory.createCatalog(context);
 	}
 }

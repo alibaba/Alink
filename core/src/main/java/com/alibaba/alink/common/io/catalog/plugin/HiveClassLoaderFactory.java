@@ -7,8 +7,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
-import org.apache.flink.table.factories.TableFactory;
+import org.apache.flink.table.factories.Factory;
 import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import com.alibaba.alink.common.io.catalog.HiveCatalog;
@@ -82,7 +81,7 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 		ClassLoader classLoader = ClassLoaderContainer
 			.getInstance()
 			.create(
-				registerKey, registerContext, TableFactory.class,
+				registerKey, registerContext, Factory.class,
 				new HiveServiceFilter(), new HiveVersionGetter()
 			);
 
@@ -136,11 +135,11 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 		}
 	}
 
-	private static class HiveServiceFilter implements Predicate <TableFactory> {
+	private static class HiveServiceFilter implements Predicate <Factory> {
 
 		@Override
-		public boolean test(TableFactory factory) {
-			String catalogType = factory.requiredContext().get(CatalogDescriptorValidator.CATALOG_TYPE);
+		public boolean test(Factory factory) {
+			String catalogType = factory.factoryIdentifier();
 			return catalogType != null
 				&& catalogType.equalsIgnoreCase("hive")
 				&& factory.getClass().getName().contains("HiveCatalogFactory");
@@ -182,9 +181,9 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 		}
 	}
 
-	private static class HiveVersionGetter implements Function <Tuple2 <TableFactory, PluginDescriptor>, String> {
+	private static class HiveVersionGetter implements Function <Tuple2 <Factory, PluginDescriptor>, String> {
 		@Override
-		public String apply(Tuple2 <TableFactory, PluginDescriptor> factory) {
+		public String apply(Tuple2 <Factory, PluginDescriptor> factory) {
 			try {
 				if (factory.f1.getVersion() != null) {
 					return factory.f1.getVersion();
