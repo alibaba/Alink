@@ -57,20 +57,20 @@ public class PackBatchOperatorUtilTest extends AlinkTestBase {
 		List <Row> row0 = PackBatchOperatorUtil.unpackRows(rows, 0);
 		assertEquals(2, row0.size());
 
-		assertEquals("10,11,12,13.0", row0.get(0).toString());
-		assertEquals("20,21,22,23.0", row0.get(1).toString());
+		assertEquals("+I[10, 11, 12, 13.0]", row0.get(0).toString());
+		assertEquals("+I[20, 21, 22, 23.0]", row0.get(1).toString());
 
 		List <Row> row1 = PackBatchOperatorUtil.unpackRows(rows, 1);
 		assertEquals(2, row1.size());
 
-		assertEquals("30.0,31.0,32,33", row1.get(0).toString());
-		assertEquals("40.0,41.0,42,43", row1.get(1).toString());
+		assertEquals("+I[30.0, 31.0, 32, 33]", row1.get(0).toString());
+		assertEquals("+I[40.0, 41.0, 42, 43]", row1.get(1).toString());
 
 		List <Row> row2 = PackBatchOperatorUtil.unpackRows(rows, 2);
 		assertEquals(2, row2.size());
 
-		assertEquals("50,51,52,53.0", row2.get(0).toString());
-		assertEquals("60,61,63,63.0", row2.get(1).toString());
+		assertEquals("+I[50, 51, 52, 53.0]", row2.get(0).toString());
+		assertEquals("+I[60, 61, 63, 63.0]", row2.get(1).toString());
 	}
 
 	public void testUnpackSchema(List <Row> rows, TableSchema modelSchema) {

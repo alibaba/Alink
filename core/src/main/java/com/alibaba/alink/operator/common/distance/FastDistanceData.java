@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.distance;
 
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import java.io.Serializable;
@@ -29,5 +30,67 @@ public abstract class FastDistanceData implements Serializable, Cloneable {
 
 	FastDistanceData(FastDistanceData fastDistanceData) {
 		this.rows = null == fastDistanceData.rows ? null : fastDistanceData.rows.clone();
+	}
+
+	public static Row parseRowCompatible(Params params) {
+		if (params == null) {
+			return null;
+		}
+
+		Row row = params.getOrDefault("rows", Row.class, null);
+
+		if (row == null) {
+			return null;
+		}
+
+		if (row.getKind() == null) {
+			LegacyRow legacyRow = params.getOrDefault("rows", LegacyRow.class, null);
+
+			Object[] objects = legacyRow.getFields();
+
+			row = Row.of(objects);
+		}
+
+		return row;
+	}
+
+	public static Row[] parseRowArrayCompatible(Params params) {
+		if (params == null) {
+			return null;
+		}
+
+		Row[] rows = params.get("rows", Row[].class);
+
+		if (rows == null) {
+			return null;
+		}
+
+		if (rows.length == 0) {
+			return rows;
+		}
+
+		if (rows[0].getKind() == null) {
+			LegacyRow[] legacyRow = params.get("rows", LegacyRow[].class);
+
+			rows = new Row[legacyRow.length];
+
+			for (int i = 0; i < legacyRow.length; ++i) {
+				rows[i] = Row.of(legacyRow[i].getFields());
+			}
+		}
+
+		return rows;
+	}
+
+	private static final class LegacyRow {
+		private final Object[] fields;
+
+		public LegacyRow(Object[] fields) {
+			this.fields = fields;
+		}
+
+		public Object[] getFields() {
+			return fields;
+		}
 	}
 }
