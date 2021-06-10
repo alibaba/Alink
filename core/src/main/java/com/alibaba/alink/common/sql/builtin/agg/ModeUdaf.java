@@ -30,6 +30,7 @@ public class ModeUdaf extends BaseUdaf<Object, ModeData> {
 		acc.addData(value);
 	}
 
+	@Override
 	public void resetAccumulator(ModeData acc) {
 		acc.reset();
 	}
@@ -40,6 +41,7 @@ public class ModeUdaf extends BaseUdaf<Object, ModeData> {
 		acc.retractData(value);
 	}
 
+	@Override
 	public void merge(ModeData acc, Iterable <ModeData> it) {
 		for (ModeData modeData : it) {
 			acc.merge(modeData);

@@ -38,6 +38,7 @@ public class LastDistinctValueUdaf extends BaseUdaf<Object, LastDistinctSaveFirs
 		return new LastDistinctSaveFirst(timeInterval, considerNull);
 	}
 
+	@Override
 	public void accumulate(LastDistinctSaveFirst acc, Object... values) {
 		if (values.length != 4) {
 			throw new RuntimeException();
@@ -51,15 +52,18 @@ public class LastDistinctValueUdaf extends BaseUdaf<Object, LastDistinctSaveFirs
 		acc.setLastTime(eventTime);
 	}
 
+	@Override
 	public void retract(LastDistinctSaveFirst acc, Object... values) {
 	}
 
+	@Override
 	public void resetAccumulator(LastDistinctSaveFirst acc) {
 		acc.save = null;
 		acc.setLastTime(null);
 		acc.setLastKey(null);
 	}
 
+	@Override
 	public void merge(LastDistinctSaveFirst acc, Iterable <LastDistinctSaveFirst> it) {
 	}
 

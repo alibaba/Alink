@@ -32,6 +32,7 @@ public class SumLastUdaf extends BaseUdaf<Object, SumLastData> {
 		return new SumLastData();
 	}
 
+	@Override
 	public void accumulate(SumLastData acc, Object... values) {
 		Object value = values[0];
 		int k = 1;
@@ -51,12 +52,15 @@ public class SumLastUdaf extends BaseUdaf<Object, SumLastData> {
 		acc.addData(value, time, k, timeInterval);
 	}
 
+	@Override
 	public void retract(SumLastData acc, Object... values) {}
 
+	@Override
 	public void resetAccumulator(SumLastData acc) {
 		acc.reset();
 	}
 
+	@Override
 	public void merge(SumLastData acc, Iterable <SumLastData> it) {
 		Iterable <LastValueData> its =
 			StreamSupport.stream(it.spliterator(), false).map(x -> (LastValueData) x)
