@@ -26,18 +26,22 @@ public class ListAggUdaf extends BaseUdaf<String, ListAggData> {
 		return new ListAggData(excludeLast);
 	}
 
+	@Override
 	public void accumulate(ListAggData acc, Object... valueAndDelimiter) {
 		acc.accumulate(valueAndDelimiter);
 	}
 
+	@Override
 	public void resetAccumulator(ListAggData acc) {
 		acc.aggData = null;
 	}
 
+	@Override
 	public void retract(ListAggData acc, Object... valueAndDelimiter) {
 		acc.retract(valueAndDelimiter);
 	}
 
+	@Override
 	public void merge(ListAggData acc, Iterable <ListAggData> it) {
 		acc.merge(it);
 	}

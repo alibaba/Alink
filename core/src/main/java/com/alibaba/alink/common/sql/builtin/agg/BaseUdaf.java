@@ -4,15 +4,16 @@ import org.apache.flink.table.functions.AggregateFunction;
 
 public abstract class BaseUdaf<T, ACC> extends AggregateFunction<T, ACC> {
 
-	public abstract void accumulate(ACC acc, Object... values);
+	public void accumulate(ACC acc, Object... values) {};
 
-	public abstract void retract(ACC acc, Object... values);
+	public void retract(ACC acc, Object... values) {};
 
-	public abstract void resetAccumulator(ACC acc);
+	public void resetAccumulator(ACC acc) {};
 
-	public abstract void merge(ACC acc, Iterable<ACC> it);
+	public void merge(ACC acc, Iterable<ACC> it) {};
 
 	ACC acc;
+
 	public void accumulateBatch(Object... values) {
 		if (acc == null) {
 			acc = createAccumulator();
@@ -23,5 +24,4 @@ public abstract class BaseUdaf<T, ACC> extends AggregateFunction<T, ACC> {
 	public T getValueBatch() {
 		return getValue(acc);
 	}
-
 }

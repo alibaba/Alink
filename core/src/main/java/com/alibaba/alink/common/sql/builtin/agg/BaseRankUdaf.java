@@ -6,6 +6,7 @@ public abstract class BaseRankUdaf extends BaseUdaf<Long, RankData> {
 
 	public BaseRankUdaf() {}
 
+	@Override
 	public Long getValue(RankData accumulator) {
 		return accumulator.count();
 	}
@@ -37,6 +38,7 @@ public abstract class BaseRankUdaf extends BaseUdaf<Long, RankData> {
 
 	public void retract(RankData acc, Object value) {}
 
+	@Override
 	public void resetAccumulator(RankData acc) {
 		acc.reset();
 	}
@@ -44,6 +46,7 @@ public abstract class BaseRankUdaf extends BaseUdaf<Long, RankData> {
 	@Override
 	public void retract(RankData acc, Object... values) {}
 
+	@Override
 	public void merge(RankData acc, Iterable <RankData> it) {}
 
 }
