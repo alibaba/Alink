@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.stream.source;
 
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
@@ -12,7 +13,6 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import com.alibaba.alink.operator.stream.StreamOperator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,7 +95,8 @@ public final class MemSourceStreamOp extends BaseSourceStreamOp <MemSourceStream
 		Long mlEnvironmentId = getMLEnvironmentId();
 		DataStream <Row> dataStream = MLEnvironmentFactory.get(mlEnvironmentId)
 			.getStreamExecutionEnvironment()
-			.fromCollection(rows, new RowTypeInfo(colTypes));
+			.fromCollection(rows, new RowTypeInfo(colTypes))
+			.assignTimestampsAndWatermarks(WatermarkStrategy.forMonotonousTimestamps());;
 		return DataStreamConversionUtil.toTable(mlEnvironmentId, dataStream, colNames, colTypes);
 	}
 
