@@ -58,10 +58,10 @@ public class FmModelMapper extends RichModelMapper {
 			= new FmModelDataConverter(FmModelDataConverter.extractLabelType(super.getModelSchema()));
 		this.model = fmModelDataConverter.load(modelRows);
 		this.dim = model.dim;
-		if (labelType == Types.INT) {
+		if (labelType.equals(Types.INT)) {
 			this.model.labelValues[0] = Double.valueOf(model.labelValues[0].toString()).intValue();
 			this.model.labelValues[1] = Double.valueOf(model.labelValues[1].toString()).intValue();
-		} else if (labelType == Types.LONG) {
+		} else if (labelType.equals(Types.LONG)) {
 			this.model.labelValues[0] = Double.valueOf(model.labelValues[0].toString()).longValue();
 			this.model.labelValues[1] = Double.valueOf(model.labelValues[1].toString()).longValue();
 		}

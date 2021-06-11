@@ -1,13 +1,11 @@
 package com.alibaba.alink.operator.common.feature;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.params.feature.MultiHotTrainParams;
-import com.alibaba.alink.params.shared.HasSize;
 
 import java.util.ArrayList;
 import java.util.HashMap;

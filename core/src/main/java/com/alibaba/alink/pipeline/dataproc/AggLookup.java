@@ -17,6 +17,10 @@ public class AggLookup extends MapModel <AggLookup>
 		super(AggLookupModelMapper::new, params);
 	}
 
+	public AggLookup() {
+		super(AggLookupModelMapper::new, new Params());
+	}
+
 	public BatchOperator <?> getVectors() {
 		return this.getModelData();
 	}
