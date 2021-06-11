@@ -49,6 +49,8 @@ import org.apache.flink.table.data.binary.BinaryStringData;
 import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.CatalogFactory;
 import org.apache.flink.table.factories.DynamicTableFactory;
+import org.apache.flink.table.factories.FactoryUtil;
+import org.apache.flink.table.factories.FactoryUtil.DefaultCatalogContext;
 import org.apache.flink.table.factories.TableSourceFactory.Context;
 import org.apache.flink.table.factories.TableSourceFactoryContextImpl;
 import org.apache.flink.table.types.DataType;
@@ -684,7 +686,10 @@ public class HiveCatalog extends BaseCatalog {
 			schema = new TableSchema(fieldNames, fieldTypes);
 		}
 
-		return new CatalogTableImpl(schema, Arrays.asList(partitionCols), new HashMap <>(), objectPath.getFullName());
+		Map <String, String> properties = new HashMap <>();
+		properties.put(FactoryUtil.CONNECTOR.key(), "hive");
+
+		return new CatalogTableImpl(schema, Arrays.asList(partitionCols), properties, objectPath.getFullName());
 	}
 
 	public static boolean fileExists(FilePath folder, String file) throws IOException {
@@ -806,17 +811,6 @@ public class HiveCatalog extends BaseCatalog {
 
 		CatalogFactory factory = createCatalogFactory(classLoader);
 
-		List <String> supportedKeys = factory.supportedProperties();
-
-		if (!supportedKeys.contains(CATALOG_HIVE_VERSION)
-			|| !supportedKeys.contains(CATALOG_HIVE_CONF_DIR)
-			|| !supportedKeys.contains(CATALOG_DEFAULT_DATABASE)) {
-
-			throw new IllegalStateException(
-				"Incorrect hive dependency. Please check the configure of hive environment."
-			);
-		}
-
 		String localHiveConfDir;
 
 		try {
@@ -836,9 +830,9 @@ public class HiveCatalog extends BaseCatalog {
 			properties.put(CATALOG_DEFAULT_DATABASE, params.get(HiveCatalogParams.DEFAULT_DATABASE));
 		}
 
-		properties.putAll(factory.requiredContext());
+		CatalogFactory.Context context = new DefaultCatalogContext(catalogName, properties, null, null);
 
-		return factory.createCatalog(catalogName, properties);
+		return factory.createCatalog(context);
 	}
 
 	/**
