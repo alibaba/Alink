@@ -32,16 +32,16 @@ Welcome everyone to join the Alink open source user group to communicate.
 
 #### About package names and versions:
   - PyAlink provides different Python packages for Flink versions that Alink supports: 
-  package `pyalink` always maintains Alink Python API against the latest Flink version, which is 1.12, 
-  while `pyalink-flink-***` support old-version Flink, which are `pyalink-flink-1.11`, `pyalink-flink-1.10` and `pyalink-flink-1.9` for now. 
-  - The version of python packages always follows Alink Java version, like `1.3.1`.
+  package `pyalink` always maintains Alink Python API against the latest Flink version, which is 1.13, 
+  while `pyalink-flink-***` support old-version Flink, which are `pyalink-flink-1.12`, `pyalink-flink-1.11`, `pyalink-flink-1.10` and `pyalink-flink-1.9` for now. 
+  - The version of python packages always follows Alink Java version, like `1.4.0`.
   
 #### Installation steps:
 
-1. Make sure the version of python3 on your computer is 3.6 or 3.7.
+1. Make sure the version of python3 on your computer is 3.6, 3.7 or 3.8.
 2. Make sure Java 8 is installed on your computer.
 3. Use pip to install:
-  `pip install pyalink`, `pip install pyalink-flink-1.11`, `pip install pyalink-flink-1.10` or `pip install pyalink-flink-1.9`.
+  `pip install pyalink`, `pip install pyalink-flink-1.12`, `pip install pyalink-flink-1.11`, `pip install pyalink-flink-1.10` or `pip install pyalink-flink-1.9`.
 
 
 #### Potential issues:
@@ -50,10 +50,11 @@ Welcome everyone to join the Alink open source user group to communicate.
 If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstall pyalink` or `pip uninstall pyalink-flink-***` to remove them.
 
 2. If `pip install` is slow of failed, refer to [this article](https://segmentfault.com/a/1190000006111096) to change the pip source, or use the following download links:
-   - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink-1.3.2-py3-none-any.whl) (MD5: 80aa54edad5c3a6ca513bbf2b3ec2ebb)
-   - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.11-1.3.2-py3-none-any.whl) (MD5: e832f73c9503de12a02c1824c8963b87)
-   - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.10-1.3.2-py3-none-any.whl) (MD5: 145e513dae8caa85f6a32c3ad45b3c33)
-   - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.3.2/pyalink_flink_1.9-1.3.2-py3-none-any.whl) (MD5: 6ff04cbad4e6d6e0a2137d1d76a19a45)
+    - Flink 1.13：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.4.0/pyalink-1.4.0-py3-none-any.whl) (MD5: 94751cc1e31f174b446142455293fb30)
+    - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.4.0/pyalink_flink_1.12-1.4.0-py3-none-any.whl) (MD5: 4cbafe08b24b3467d9096f8a8a07321f)
+    - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.4.0/pyalink_flink_1.11-1.4.0-py3-none-any.whl) (MD5: 1810f6769bd2d2d77358f4e51948a937)
+    - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.4.0/pyalink_flink_1.10-1.4.0-py3-none-any.whl) (MD5: 79ceea2788ad2159ae23ad3e9e83a261)
+    - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.4.0/pyalink_flink_1.9-1.4.0-py3-none-any.whl) (MD5: fc143df37d15d6bd3b0733fef8969ef1)
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 
@@ -153,12 +154,31 @@ Pipeline pipeline = new Pipeline().add(va).add(kMeans);
 pipeline.fit(data).transform(data).print();
 ```
 
+### With Flink-1.13
+```xml
+<dependency>
+    <groupId>com.alibaba.alink</groupId>
+    <artifactId>alink_core_flink-1.13_2.11</artifactId>
+    <version>1.4.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-streaming-scala_2.11</artifactId>
+    <version>1.13.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-table-planner_2.11</artifactId>
+    <version>1.13.0</version>
+</dependency>
+```
+
 ### With Flink-1.12
 ```xml
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.12_2.11</artifactId>
-    <version>1.3.2</version>
+    <version>1.4.0</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -177,7 +197,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.11_2.11</artifactId>
-    <version>1.3.2</version>
+    <version>1.4.0</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -196,7 +216,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.10_2.11</artifactId>
-    <version>1.3.2</version>
+    <version>1.4.0</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -216,7 +236,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.9_2.11</artifactId>
-    <version>1.3.2</version>
+    <version>1.4.0</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -236,8 +256,8 @@ Get started to run Alink Algorithm with a Flink Cluster
 
 1. Prepare a Flink Cluster:
 ```shell
-  wget https://archive.apache.org/dist/flink/flink-1.12.1/flink-1.12.1-bin-scala_2.11.tgz
-  tar -xf flink-1.12.1-bin-scala_2.11.tgz && cd flink-1.12.1
+  wget https://archive.apache.org/dist/flink/flink-1.13.0/flink-1.13.0-bin-scala_2.11.tgz
+  tar -xf flink-1.13.0-bin-scala_2.11.tgz && cd flink-1.13.0
   ./bin/start-cluster.sh
 ```
 
@@ -250,9 +270,9 @@ Get started to run Alink Algorithm with a Flink Cluster
 
 3. Run Java examples:
 ```shell
-  ./bin/flink run -p 1 -c com.alibaba.alink.ALSExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
-  # ./bin/flink run -p 1 -c com.alibaba.alink.GBDTExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
-  # ./bin/flink run -p 1 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-1.1-SNAPSHOT.jar
+  ./bin/flink run -p 1 -c com.alibaba.alink.ALSExample [path_to_Alink]/examples/target/alink_examples-1.4-SNAPSHOT.jar
+  # ./bin/flink run -p 1 -c com.alibaba.alink.GBDTExample [path_to_Alink]/examples/target/alink_examples-1.4-SNAPSHOT.jar
+  # ./bin/flink run -p 1 -c com.alibaba.alink.KMeansExample [path_to_Alink]/examples/target/alink_examples-1.4-SNAPSHOT.jar
 ```
 
 Deployment
