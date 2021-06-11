@@ -754,11 +754,13 @@ public class ModelExporterUtils {
 					if ((Long) r.getField(idColIndex) < 0) {
 						meta = r;
 
-						return true;
+						// find the meta row, interrupt the loop.
+						return false;
 					}
 				}
 
-				return false;
+				// continue to scan folder
+				return true;
 			}
 		}
 
