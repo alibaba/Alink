@@ -236,7 +236,7 @@
                         <configuration>
                             <embedBuildProfileDependencies>true</embedBuildProfileDependencies>
                             <flattenDependencyMode>direct</flattenDependencyMode>
-                            <flattenMode>ossrh</flattenMode>
+                            <flattenMode>oss</flattenMode>
                             <updatePomFile>true</updatePomFile>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                         </configuration>
