@@ -22,8 +22,10 @@ public class RichParallelSourceFunctionWithClassLoader extends RichParallelSourc
 	ResultTypeQueryable <Row>,
 	CheckpointedFunction {
 
-	private KafkaClassLoaderFactory factory;
-	private RichParallelSourceFunction <Row> internal;
+	private final KafkaClassLoaderFactory factory;
+	private final byte[] serializedRichParallelSourceFunction;
+
+	private transient RichParallelSourceFunction <Row> internal;
 
 	public RichParallelSourceFunctionWithClassLoader(
 		KafkaClassLoaderFactory factory,
@@ -31,37 +33,56 @@ public class RichParallelSourceFunctionWithClassLoader extends RichParallelSourc
 
 		this.factory = factory;
 		this.internal = internal;
+
+		try {
+			serializedRichParallelSourceFunction = InstantiationUtil.serializeObject(internal);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private RichParallelSourceFunction <Row> getRichParallelSourceFunction() {
+
+		if (internal == null) {
+			try {
+				internal = InstantiationUtil.deserializeObject(serializedRichParallelSourceFunction, factory.create());
+			} catch (IOException | ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		return internal;
 	}
 
 	@Override
 	public void setRuntimeContext(RuntimeContext t) {
-		factory.doAsThrowRuntime(() -> internal.setRuntimeContext(t));
+		factory.doAsThrowRuntime(() -> getRichParallelSourceFunction().setRuntimeContext(t));
 	}
 
 	@Override
 	public RuntimeContext getRuntimeContext() {
-		return factory.doAsThrowRuntime(internal::getRuntimeContext);
+		return factory.doAsThrowRuntime(getRichParallelSourceFunction()::getRuntimeContext);
 	}
 
 	@Override
 	public IterationRuntimeContext getIterationRuntimeContext() {
-		return factory.doAsThrowRuntime(internal::getIterationRuntimeContext);
+		return factory.doAsThrowRuntime(getRichParallelSourceFunction()::getIterationRuntimeContext);
 	}
 
 	@Override
 	public void open(Configuration parameters) throws Exception {
-		factory.doAsThrowRuntime(() -> internal.open(parameters));
+		factory.doAsThrowRuntime(() -> getRichParallelSourceFunction().open(parameters));
 	}
 
 	@Override
 	public void close() throws Exception {
-		factory.doAsThrowRuntime(internal::close);
+		factory.doAsThrowRuntime(getRichParallelSourceFunction()::close);
 	}
 
 	@Override
 	public TypeInformation <Row> getProducedType() {
 		if (internal instanceof ResultTypeQueryable) {
-			return factory.doAsThrowRuntime(((ResultTypeQueryable <Row>) internal)::getProducedType);
+			return factory.doAsThrowRuntime(((ResultTypeQueryable <Row>) getRichParallelSourceFunction())::getProducedType);
 		} else {
 			throw new IllegalStateException("Internal is not the ResultTypeQueryable.");
 		}
@@ -70,7 +91,7 @@ public class RichParallelSourceFunctionWithClassLoader extends RichParallelSourc
 	@Override
 	public void notifyCheckpointComplete(long checkpointId) throws Exception {
 		if (internal instanceof CheckpointListener) {
-			factory.doAsThrowRuntime(() -> (CheckpointListener) internal).notifyCheckpointComplete(checkpointId);
+			factory.doAsThrowRuntime(() -> (CheckpointListener) getRichParallelSourceFunction()).notifyCheckpointComplete(checkpointId);
 		} else {
 			throw new IllegalStateException("Internal is not the CheckpointListener.");
 		}
@@ -79,7 +100,7 @@ public class RichParallelSourceFunctionWithClassLoader extends RichParallelSourc
 	@Override
 	public void snapshotState(FunctionSnapshotContext context) throws Exception {
 		if (internal instanceof CheckpointedFunction) {
-			factory.doAsThrowRuntime(() -> (CheckpointedFunction) internal).snapshotState(context);
+			factory.doAsThrowRuntime(() -> (CheckpointedFunction) getRichParallelSourceFunction()).snapshotState(context);
 		} else {
 			throw new IllegalStateException("Internal is not the CheckpointedFunction.");
 		}
@@ -88,7 +109,7 @@ public class RichParallelSourceFunctionWithClassLoader extends RichParallelSourc
 	@Override
 	public void initializeState(FunctionInitializationContext context) throws Exception {
 		if (internal instanceof CheckpointedFunction) {
-			factory.doAsThrowRuntime(() -> (CheckpointedFunction) internal).initializeState(context);
+			factory.doAsThrowRuntime(() -> (CheckpointedFunction) getRichParallelSourceFunction()).initializeState(context);
 		} else {
 			throw new IllegalStateException("Internal is not the CheckpointedFunction.");
 		}
@@ -96,25 +117,11 @@ public class RichParallelSourceFunctionWithClassLoader extends RichParallelSourc
 
 	@Override
 	public void run(SourceContext <Row> ctx) throws Exception {
-		factory.doAsThrowRuntime(() -> internal.run(ctx));
+		factory.doAsThrowRuntime(() -> getRichParallelSourceFunction().run(ctx));
 	}
 
 	@Override
 	public void cancel() {
-		factory.doAsThrowRuntime(internal::cancel);
-	}
-
-	private void writeObject(ObjectOutputStream stream)
-		throws IOException {
-
-		InstantiationUtil.serializeObject(stream, factory);
-		InstantiationUtil.serializeObject(stream, internal);
-	}
-
-	private void readObject(ObjectInputStream stream)
-		throws IOException, ClassNotFoundException {
-
-		factory = InstantiationUtil.deserializeObject(stream, Thread.currentThread().getContextClassLoader());
-		internal = InstantiationUtil.deserializeObject(stream, factory.create());
+		factory.doAsThrowRuntime(getRichParallelSourceFunction()::cancel);
 	}
 }
