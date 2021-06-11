@@ -19,6 +19,7 @@ public class FileSystemClassLoaderFactory extends ClassLoaderFactory {
 		super(new RegisterKey(name, version), ClassLoaderContainer.createPluginContextOnClient());
 	}
 
+	@Override
 	public ClassLoader create() {
 		return ClassLoaderContainer.getInstance().create(
 			registerKey,
