@@ -84,7 +84,7 @@ public class ModelStreamUtils {
 			}
 
 			rawNames[counter] = modelStreamSchema.getFieldNames()[i];
-			rawTypes[counter] = modelStreamSchema.getFieldTypes()[i];
+			rawTypes[counter++] = modelStreamSchema.getFieldTypes()[i];
 		}
 
 		return new TableSchema(rawNames, rawTypes);
@@ -129,7 +129,7 @@ public class ModelStreamUtils {
 					}
 
 					while (fileIdIterator.hasNext()) {
-						AkUtils.FileForEachReaderIterator fileForEachReaderIterator = new FileForEachReaderIterator();
+						FileForEachReaderIterator fileForEachReaderIterator = new FileForEachReaderIterator();
 
 						modelDescCache = descModel(filePath, fileIdIterator.next());
 
@@ -801,7 +801,7 @@ public class ModelStreamUtils {
 		String zeros = "000000000";
 
 		if (s == null) {
-			throw new java.lang.IllegalArgumentException("null string");
+			throw new IllegalArgumentException("null string");
 		}
 
 		// Split the string into date and time components
@@ -818,7 +818,7 @@ public class ModelStreamUtils {
 
 		// Parse the time
 		if (timeS.isEmpty()) {
-			throw new java.lang.IllegalArgumentException(formatError);
+			throw new IllegalArgumentException(formatError);
 		}
 
 		// Convert the date
@@ -830,7 +830,7 @@ public class ModelStreamUtils {
 		day = Integer.parseInt(dd);
 
 		if (!((month >= 1 && month <= MAX_MONTH) && (day >= 1 && day <= MAX_DAY))) {
-			throw new java.lang.IllegalArgumentException(formatError);
+			throw new IllegalArgumentException(formatError);
 		}
 
 		int timeLen = TIME_LENGTH * 3;
@@ -845,18 +845,18 @@ public class ModelStreamUtils {
 			if (timeS.length() > timeLen) {
 				nanosS = timeS.substring(timeLen);
 				if (nanosS.length() > 9) {
-					throw new java.lang.IllegalArgumentException(formatError);
+					throw new IllegalArgumentException(formatError);
 				}
 				if (!Character.isDigit(nanosS.charAt(0))) {
-					throw new java.lang.IllegalArgumentException(formatError);
+					throw new IllegalArgumentException(formatError);
 				}
 				nanosS = nanosS + zeros.substring(0,9-nanosS.length());
 				aNanos = Integer.parseInt(nanosS);
 			} else {
-				throw new java.lang.IllegalArgumentException(formatError);
+				throw new IllegalArgumentException(formatError);
 			}
 		} else {
-			throw new java.lang.IllegalArgumentException(formatError);
+			throw new IllegalArgumentException(formatError);
 		}
 
 		return new Timestamp(year - 1900, month - 1, day, hour, minute, second, aNanos);

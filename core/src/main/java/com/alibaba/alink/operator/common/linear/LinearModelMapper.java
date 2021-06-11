@@ -72,6 +72,8 @@ public class LinearModelMapper extends RichModelMapper {
 			} else {
 				this.vectorColName = model.vectorColName;
 				vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), this.vectorColName);
+				threadLocalVec =
+					ThreadLocal.withInitial(() -> new DenseVector(model.vectorSize + (model.hasInterceptItem ? 1 : 0)));
 			}
 		}
 	}
@@ -92,6 +94,8 @@ public class LinearModelMapper extends RichModelMapper {
 				vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), model.vectorColName);
 			}
 		}
+		threadLocalVec =
+			ThreadLocal.withInitial(() -> new DenseVector(model.vectorSize + (model.hasInterceptItem ? 1 : 0)));
 	}
 
 	@Override
