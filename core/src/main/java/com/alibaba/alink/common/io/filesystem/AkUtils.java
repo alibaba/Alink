@@ -241,9 +241,7 @@ public class AkUtils {
 			&& !filePath.getFileSystem().getFileStatus(filePath.getPath()).isDir()) {
 
 			// get file named taskId + 1
-			if (!fileReader.apply(new FilePath(filePath.getPath(), filePath.getFileSystem()))) {
-				throw new IllegalStateException("Could not find content in the folder: " + filePath.toString());
-			}
+			fileReader.apply(new FilePath(filePath.getPath(), filePath.getFileSystem()));
 		} else {
 			List <Path> files = filePath.getFileSystem().listFiles(filePath.getPath());
 
