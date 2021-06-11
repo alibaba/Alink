@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>alink_test_utils-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
+    <name>alink_test_utils</name>
 
     <build>
         <plugins>
