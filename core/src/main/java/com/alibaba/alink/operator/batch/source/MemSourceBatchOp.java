@@ -12,7 +12,7 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +52,10 @@ public final class MemSourceBatchOp extends BaseSourceBatchOp <MemSourceBatchOp>
 	public MemSourceBatchOp(List <Row> rows, TableSchema schema) {
 		super(NAME, null);
 		init(rows, schema.getFieldNames(), schema.getFieldTypes());
+	}
+
+	public MemSourceBatchOp(List <Row> rows, String schemaStr) {
+		this(rows, CsvUtil.schemaStr2Schema(schemaStr));
 	}
 
 	public MemSourceBatchOp(Row[] rows, String[] colNames) {

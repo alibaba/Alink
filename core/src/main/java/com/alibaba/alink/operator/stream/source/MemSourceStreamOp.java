@@ -13,6 +13,7 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,10 @@ public final class MemSourceStreamOp extends BaseSourceStreamOp <MemSourceStream
 	public MemSourceStreamOp(List <Row> rows, TableSchema schema) {
 		super(NAME, null);
 		init(rows, schema.getFieldNames(), schema.getFieldTypes());
+	}
+
+	public MemSourceStreamOp(List <Row> rows, String schemaStr) {
+		this(rows, CsvUtil.schemaStr2Schema(schemaStr));
 	}
 
 	public MemSourceStreamOp(Row[] rows, String[] colNames) {
