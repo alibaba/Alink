@@ -160,6 +160,11 @@ pipeline.fit(data).transform(data).print();
     <artifactId>flink-table-planner_2.11</artifactId>
     <version>1.13.0</version>
 </dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-clients_2.11</artifactId>
+    <version>1.13.0</version>
+</dependency>
 ```
 
 ### Flink-1.12 的 Maven 依赖
@@ -179,6 +184,11 @@ pipeline.fit(data).transform(data).print();
     <artifactId>flink-table-planner_2.11</artifactId>
     <version>1.12.1</version>
 </dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-clients_2.11</artifactId>
+    <version>1.12.1</version>
+</dependency>
 ```
 
 ### Flink-1.11 的 Maven 依赖
@@ -196,6 +206,11 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>org.apache.flink</groupId>
     <artifactId>flink-table-planner_2.11</artifactId>
+    <version>1.11.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.flink</groupId>
+    <artifactId>flink-clients_2.11</artifactId>
     <version>1.11.0</version>
 </dependency>
 ```
