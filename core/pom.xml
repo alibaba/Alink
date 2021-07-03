@@ -18,7 +18,14 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>4.3.0</version>
+                <configuration>
+                    <jvmArgs>
+                      <jvmArg>-Xms64m</jvmArg>
+                      <jvmArg>-Xmx1024m</jvmArg>
+                      <jvmArg>-Djava.home=/app/eclipse/oraclejdk/jdk1.8.0_261</jvmArg>
+                    </jvmArgs>
+                  </configuration>
                 <executions>
                     <execution>
                         <id>scala-compile-first</id>

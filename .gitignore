@@ -1,6 +1,13 @@
+# idea
 *.iml
 target
 .idea
 .DS_Store
 *.iml
 *dependency-reduced-pom.xml
+
+# eclipse
+.settings/
+*.project
+*.classpath
+*.factorypath
