@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<!DOCTYPE module PUBLIC
+        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+
+<!--
+This is a checkstyle configuration file. For descriptions of
+what the following rules do, please see the checkstyle configuration
+page at http://checkstyle.sourceforge.net/config.html.
+
+This file is based on the checkstyle file of Apache Beam.
+-->
+
+<module name="Checker">
+
+    <!--<module name="FileTabCharacter">-->
+    <!--&lt;!&ndash; Checks that there are no tab characters in the file. &ndash;&gt;-->
+    <!--</module>-->
+    <property name="charset" value="UTF-8"/>
+
+    <module name="NewlineAtEndOfFile">
+        <!-- windows can use \r\n vs \n, so enforce the most used one ie UNIx style -->
+        <property name="lineSeparator" value="lf" />
+    </module>
+
+    <module name="RegexpSingleline">
+        <!-- Checks that TODOs don't have stuff in parenthesis, e.g., username. -->
+        <property name="format" value="((//.*)|(\*.*))TODO\(" />
+        <property name="message" value="TODO comments must not include usernames." />
+        <property name="severity" value="error" />
+    </module>
+
+    <!--<module name="RegexpSingleline">-->
+        <!--<property name="format" value="\s+$"/>-->
+        <!--<property name="message" value="Trailing whitespace"/>-->
+        <!--<property name="severity" value="error"/>-->
+    <!--</module>-->
+
+    <module name="RegexpSingleline">
+        <property name="format" value="Throwables.propagate\("/>
+        <property name="message" value="Throwables.propagate is deprecated"/>
+        <property name="severity" value="error"/>
+    </module>
+
+    <!-- Prevent *Tests.java as tools may not pick them up -->
+    <!--<module name="RegexpOnFilename">-->
+    <!--<property name="fileNamePattern" value=".*Tests\.java$" />-->
+    <!--</module>-->
+
+    <!-- Check that every module has a package-info.java -->
+    <!--<module name="JavadocPackage"/>-->
+
+    <!--
+
+    FLINK CUSTOM CHECKS
+
+    -->
+
+    <module name="FileLength">
+        <property name="max" value="3000"/>
+    </module>
+</module>
+

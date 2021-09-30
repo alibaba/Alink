@@ -1,0 +1,18 @@
+<configuration>
+    <property>
+        <name>storage_type</name>
+        <value>storage_zookeeper</value>
+    </property>
+    <property>
+        <name>zookeeper_connect_str</name>
+        <value>127.0.0.1:2181</value>
+    </property>
+    <property>
+        <name>zookeeper_base_path</name>
+        <value>/tensorflow</value>
+    </property>
+    <property>
+        <name>cross_queue_size</name>
+        <value>8388608</value>
+    </property>
+</configuration>

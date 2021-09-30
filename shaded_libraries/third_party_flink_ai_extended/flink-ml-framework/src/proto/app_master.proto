@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+option java_outer_classname = "AppMasterProtos";
+option java_multiple_files = true;
+option java_package = "com.alibaba.flink.ml.proto";
+import "node.proto";
+
+enum AMStatus{
+    AM_UNKNOW = 0;
+    AM_INIT = 1;
+    AM_FAILOVER = 2;
+    AM_RUNNING = 3;
+    AM_FINISH = 4;
+}
+
+message AMStatusMessage{
+    AMStatus status = 1;
+}
+
+
+message GetVersionRequest{
+    string message = 1;
+}
+
+message GetVersionResponse{
+    int64 version = 1;
+}
+
+message RegisterNodeRequest{
+    int64 version = 1;
+    NodeSpec node_spec = 2;
+}
+
+message RegisterFailedNodeRequest{
+    int64 version = 1;
+    NodeSpec node_spec = 2;
+    string message = 3;
+}
+
+message StopAllWorkerRequest{
+    int64 version = 1;
+    string job_name = 2;
+    int32 index = 3;
+}
+
+message HeartBeatRequest{
+    int64 version = 1;
+    NodeSpec node_spec = 2;
+}
+
+message FinishNodeRequest{
+    int64 version = 1;
+    NodeSpec node_spec = 2;
+}
+
+message SimpleResponse{
+    int32 code = 1;
+    string message = 2;
+}
+
+message GetClusterInfoRequest{
+    int64 version = 1;
+    string message = 2;
+}
+
+message GetClusterInfoResponse{
+    int32 code = 1;    //code=0 means the cluster is ready.
+    MLClusterDef cluster_def = 2;
+    string message = 3;
+}
+
+message GetAMStatusRequest{
+    string message = 1;
+}
+
+message GetTaskIndexRequest{
+    int64 version = 1;
+    string scope = 2;
+    string key = 3;
+}
+
+message GetTaskIndexResponse{
+    int32 code = 1;
+    int32 index = 2;
+    string message = 3;
+}
+
+message GetFinishedNodeRequest{
+    int64 version = 1;
+}
+
+message GetFinishNodeResponse{
+    int32 code = 1;
+    string message = 2;
+    repeated int32 workers = 3;
+}

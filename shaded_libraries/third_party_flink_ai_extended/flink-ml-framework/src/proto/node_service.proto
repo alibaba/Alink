@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+
+option java_outer_classname = "NodeServiceProtos";
+option java_multiple_files = true;
+option java_package = "com.alibaba.flink.ml.proto";
+import "node.proto";
+
+service NodeService {
+
+    rpc GetNodeSpec(NodeSpecRequest) returns(NodeSpecResponse);
+
+    rpc NodeRestart(NodeRestartRequest) returns(NodeRestartResponse);
+
+    rpc NodeStop(NodeStopRequest) returns(NodeStopResponse);
+
+    rpc GetContext (ContextRequest) returns (ContextResponse);
+
+    rpc GetFinishWorker(NodeSimpleRequest) returns (FinishWorkerResponse);
+
+    rpc FinishJob(NodeSimpleRequest) returns (NodeSimpleResponse);
+
+}

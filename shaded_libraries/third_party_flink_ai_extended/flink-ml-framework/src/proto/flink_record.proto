@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option cc_enable_arenas = true;
+option java_outer_classname = "MLFlinkRecordProtos";
+option java_multiple_files = true;
+option java_package = "com.alibaba.flink.ml.proto";
+package tensorflow;
+
+message FlinkBytes {
+    repeated bytes value = 1;
+}
+message FlinkFloats {
+    repeated float value = 1 [packed = true];
+}
+message FlinkInt64s {
+    repeated int64 value = 1 [packed = true];
+}
+message FlinkDoubles {
+    repeated double value = 1 [packed = true];
+}
+message FlinkInt32s {
+    repeated int32 value = 1 [packed = true];
+}
+
+
+message Cell {
+    oneof value{
+        FlinkBytes int32_v = 1;
+        FlinkInt64s int64_v = 2;
+        FlinkFloats float_v = 3;
+        FlinkDoubles double_v = 4;
+        FlinkBytes string_v = 5;
+    }
+}
+
+message Row {
+    repeated Cell values = 1;
+}

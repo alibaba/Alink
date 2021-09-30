@@ -1,0 +1,115 @@
+syntax = "proto3";
+option java_outer_classname = "NodeProtos";
+option java_multiple_files = true;
+option java_package = "com.alibaba.flink.ml.proto";
+
+
+enum NodeStatus{
+    NODE_UNKNOW = 0;
+    NODE_INIT = 1;
+    NODE_FAIL = 2;
+    NODE_RUNNING = 3;
+    NODE_FINISH = 4;
+}
+
+message NodeStatusMessage{
+    NodeStatus status = 1;
+}
+
+message NodeSpec{
+    string roleName = 1;
+    int32 index = 2;
+    string ip = 3;
+    int32 client_port = 4;
+    map<string, string> props = 5;
+}
+
+message MLJobDef {
+    string name = 1;
+    map<int32, NodeSpec> tasks = 2;
+}
+
+message MLClusterDef{
+    repeated MLJobDef job = 1;
+}
+
+message NodeSpecList{
+    repeated NodeSpec nodes = 1;
+}
+
+message NodeSpecRequest{
+    string message = 1;
+}
+
+message NodeSpecResponse{
+    int32 code = 1;
+    NodeSpec node_spec = 2;
+    string message =3;
+}
+
+message NodeRestartRequest{
+    string message = 1;
+}
+
+message NodeRestartResponse{
+    int32 code = 1;
+    string message = 2;
+}
+
+message NodeStopRequest{
+    string message = 1;
+}
+
+message NodeStopResponse{
+    int32 code = 1;
+    string message = 2;
+}
+
+message ColumnInfoPB {
+    string name = 1;
+    string type = 2;
+}
+
+message ContextProto {
+    string mode = 1;
+    string roleName = 2;
+    int32 index = 3;
+    map<string, int32> roleParallelism = 4;
+    MLClusterDef cluster = 5;
+    map<string, string> props = 6;
+    string userScript = 7;
+    string identity = 8;
+    string funcName = 9;
+    int32 failNum = 10;
+    //used for ipc queue
+    string outQueueName = 11;
+    string inQueueName = 12;
+    int64  outQueueMMapLen = 13;
+    int64  inQueueMMapLen = 14;
+    repeated ColumnInfoPB columnInfos = 15;
+}
+
+message ContextRequest {
+    string message = 1;
+}
+
+message ContextResponse {
+    int32 code = 1;
+    ContextProto context = 2;
+    string message = 3;
+}
+
+message NodeSimpleRequest {
+    int32 code = 1;
+}
+
+message NodeSimpleResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+message FinishWorkerResponse{
+    repeated int32 workers = 1;
+    int32 code = 2;
+    string message = 3;
+}
