@@ -150,6 +150,7 @@
     <modules>
         <module>test_utils</module>
         <module>core</module>
+        <module>dl_predictors</module>
         <module>connectors</module>
         <module>examples</module>
     </modules>
