@@ -28,13 +28,13 @@ public class DLEnvConfig {
 
 	static {
 		PYTHON_ENV_PATH_MAP.put(Pair.of(LINUX, TF115),
-			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/tf_env/20210823/tf115-ai030-py36-linux.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf115_python_env_linux-0.01/tf115-ai030-py36-linux.tar.gz");
 		PYTHON_ENV_PATH_MAP.put(Pair.of(MACOSX, TF115),
-			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/tf_env/20210823/tf115-ai030-py36-mac.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf115_python_env_macosx-0.01/tf115-ai030-py36-mac.tar.gz");
 		PYTHON_ENV_PATH_MAP.put(Pair.of(LINUX, TF231),
-			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/tf_env/20210823/tf231-ai030-py36-linux.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf231_python_env_linux-0.01/tf231-ai030-py36-linux.tar.gz");
 		PYTHON_ENV_PATH_MAP.put(Pair.of(MACOSX, TF231),
-			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/tf_env/20210823/tf231-ai030-py36-mac.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf231_python_env_macosx-0.01/tf231-ai030-py36-mac.tar.gz");
 
 		PYTHON_ENV_KEY.put(TF115, "TF115_PYTHON_ENV_PATH");
 		PYTHON_ENV_KEY.put(TF231, "TF231_PYTHON_ENV_PATH");

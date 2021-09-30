@@ -37,23 +37,22 @@ public class BertResources {
 			"res:///tf_algos/bert/resources/bert-base-cased-vocab.tar.gz");
 
 		BERT_RESOURCE_PATH_MAP.put(Pair.of(BASE_CHINESE, SAVED_MODEL),
-			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/bert_files/bert-base-chinese-savedmodel.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/base_chinese_saved_model-0.01/bert-base-chinese-savedmodel.tar.gz");
 		BERT_RESOURCE_PATH_MAP.put(Pair.of(BASE_MULTILINGUAL_CASED, SAVED_MODEL),
-			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs"
-				+ ".com/bert_files/bert-base-multilingual-cased-savedmodel.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/base_multilingual_cased_saved_model-0.01/bert-base-multilingual-cased-savedmodel.tar.gz");
 		BERT_RESOURCE_PATH_MAP.put(Pair.of(BASE_UNCASED, SAVED_MODEL),
-			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/bert_files/bert-base-uncased-savedmodel.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/base_uncased_saved_model-0.01/bert-base-uncased-savedmodel.tar.gz");
 		BERT_RESOURCE_PATH_MAP.put(Pair.of(BASE_CASED, SAVED_MODEL),
-			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/bert_files/bert-base-cased-savedmodel.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/base_cased_saved_model-0.01/bert-base-cased-savedmodel.tar.gz");
 
 		BERT_RESOURCE_PATH_MAP.put(Pair.of(BASE_CHINESE, CKPT),
-			"http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/bert_models/chinese_L-12_H-768_A-12.zip");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/base_chinese_ckpt-0.01/chinese_L-12_H-768_A-12.zip");
 		BERT_RESOURCE_PATH_MAP.put(Pair.of(BASE_MULTILINGUAL_CASED, CKPT),
-			"http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/bert_models/multi_cased_L-12_H-768_A-12.zip");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/base_multilingual_cased_ckpt-0.01/multi_cased_L-12_H-768_A-12.zip");
 		BERT_RESOURCE_PATH_MAP.put(Pair.of(BASE_UNCASED, CKPT),
-			"http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/bert_models/uncased_L-12_H-768_A-12.zip");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/base_uncased_ckpt-0.01/uncased_L-12_H-768_A-12.zip");
 		BERT_RESOURCE_PATH_MAP.put(Pair.of(BASE_CASED, CKPT),
-			"http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/bert_models/cased_L-12_H-768_A-12.zip");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/base_cased_ckpt-0.01/cased_L-12_H-768_A-12.zip");
 	}
 
 	static RegisterKey getRegisterKey(ModelName modelName, ResourceType type) {
