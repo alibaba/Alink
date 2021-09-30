@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.feature;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
@@ -10,6 +11,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.ModelMapper;
+
 import com.alibaba.alink.params.dataproc.HasHandleInvalid.HandleInvalid;
 import com.alibaba.alink.params.feature.HasEncodeWithoutWoeAndIndex.Encode;
 import com.alibaba.alink.params.feature.MultiHotPredictParams;

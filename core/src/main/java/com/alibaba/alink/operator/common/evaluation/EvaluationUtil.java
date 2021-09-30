@@ -13,6 +13,8 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.dataproc.SortUtils;
 import com.alibaba.alink.operator.common.recommendation.KObjectUtil;
@@ -337,11 +339,72 @@ public class EvaluationUtil implements Serializable {
 				regressionSummary.predSum2Local += predictVal * predictVal;
 				regressionSummary.maeLocal += diff;
 				regressionSummary.sseLocal += diff * diff;
-				regressionSummary.mapeLocal += Math.abs(diff / yVal);
+				regressionSummary.mapeLocal += 0.0 == yVal ? Math.abs(diff / 1e-6) : Math.abs(diff / yVal);
 				regressionSummary.total++;
 			}
 		}
 		return regressionSummary.total == 0 ? null : regressionSummary;
+	}
+
+	/**
+	 * Calculate the RegressionMetrics from local data.
+	 *
+	 * @param rows Input rows, the first field is label value, the second field is prediction value.
+	 * @return RegressionMetricsSummary.
+	 */
+	public static TimeSeriesMetricsSummary getTimeSeriesStatistics(Iterable <Row> rows) {
+		TimeSeriesMetricsSummary timeSeriesSummary = new TimeSeriesMetricsSummary();
+		for (Row row : rows) {
+			if (checkRowFieldNotNull(row)) {
+				if (row.getField(0) instanceof Number) {
+					double yVal = ((Number) row.getField(0)).doubleValue();
+					double predictVal = ((Number) row.getField(1)).doubleValue();
+					double diff = Math.abs(yVal - predictVal);
+					timeSeriesSummary.ySumLocal += yVal;
+					timeSeriesSummary.aySumLocal += Math.abs(yVal);
+					timeSeriesSummary.ySum2Local += yVal * yVal;
+					timeSeriesSummary.predSumLocal += predictVal;
+					timeSeriesSummary.predSum2Local += predictVal * predictVal;
+					timeSeriesSummary.maeLocal += diff;
+					timeSeriesSummary.sseLocal += diff * diff;
+					if (0.0 == yVal) {
+						timeSeriesSummary.mapeLocal += (0.0 == diff) ? 0.0 : 1e+6;
+						timeSeriesSummary.smapeLocal +=
+							(0.0 == predictVal) ? 0.0 : Math.abs(diff) / (Math.abs(yVal) + Math.abs(predictVal));
+					} else {
+						timeSeriesSummary.mapeLocal += Math.abs(diff / yVal);
+						timeSeriesSummary.smapeLocal += Math.abs(diff) / (Math.abs(yVal) + Math.abs(predictVal));
+					}
+					timeSeriesSummary.total++;
+				} else {
+					Vector yVec = VectorUtil.getVector(row.getField(0));
+					Vector predictVec = VectorUtil.getVector(row.getField(1));
+
+					if (yVec.size() > 0 && predictVec.size() > 0 && yVec.size() == predictVec.size()) {
+						Vector diffVec = yVec.minus(predictVec);
+						double y1 = yVec.normL1();
+						double diff = diffVec.normL1();
+						timeSeriesSummary.ySumLocal += y1;
+						timeSeriesSummary.aySumLocal += y1;
+						timeSeriesSummary.ySum2Local += yVec.normL2Square();
+						timeSeriesSummary.predSumLocal += predictVec.normL1();
+						timeSeriesSummary.predSum2Local += predictVec.normL2Square();
+						timeSeriesSummary.maeLocal += diff;
+						timeSeriesSummary.sseLocal += diffVec.normL2Square();
+						if (y1 == 0.0) {
+							timeSeriesSummary.mapeLocal += (0.0 == diff) ? 0.0 : 1e+6;
+							timeSeriesSummary.smapeLocal += predictVec.normL1() == 0.0 ? 0.0
+								: diff / (y1 + predictVec.normL1());
+						} else {
+							timeSeriesSummary.mapeLocal += diff / y1;
+							timeSeriesSummary.smapeLocal += diff / (y1 + predictVec.normL1());
+						}
+						timeSeriesSummary.total += yVec.size();
+					}
+				}
+			}
+		}
+		return timeSeriesSummary.total == 0 ? null : timeSeriesSummary;
 	}
 
 	/**
@@ -609,7 +672,7 @@ public class EvaluationUtil implements Serializable {
 
 		@Override
 		public Row map(BaseMetricsSummary baseMetricsSummary) throws Exception {
-			BaseMetrics<?> baseMetrics = baseMetricsSummary.toMetrics();
+			BaseMetrics <?> baseMetrics = baseMetricsSummary.toMetrics();
 			Row row = baseMetrics.serialize();
 			return Row.of(tag, row.getField(0));
 		}

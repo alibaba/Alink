@@ -2,18 +2,20 @@ package com.alibaba.alink.operator.stream.feature;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseOperator;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil.ClauseInfo;
 import com.alibaba.alink.params.feature.featuregenerator.BaseOverWindowParams;
-
 import org.apache.commons.lang3.EnumUtils;
 
 /**
  * This is the base stream feature builder
  * for over count window and over time window.
  */
-abstract class BaseOverWindowStreamOp <T extends BaseOverWindowStreamOp <T>>
+abstract class BaseOverWindowStreamOp<T extends BaseOverWindowStreamOp <T>>
 	extends BaseWindowStreamOp <T> {
 
 	private String intervalType;
@@ -31,12 +33,12 @@ abstract class BaseOverWindowStreamOp <T extends BaseOverWindowStreamOp <T>>
 	}
 
 	@Override
-	Tuple2 <ClauseInfo, String> generateSqlInfo(String registerName) {
+	Tuple2 <ClauseInfo, String> generateSqlInfo(String registerName, TableSchema inputSchema) {
 		String[] reservedCols = getParams().get(BaseOverWindowParams.RESERVED_COLS);
 		if (reservedCols == null) {
 			reservedCols = inputColNames;
 		}
-		return extractSqlClause(reservedCols, registerName);
+		return extractSqlClause(reservedCols, registerName, inputSchema);
 	}
 
 	@Override
@@ -44,7 +46,7 @@ abstract class BaseOverWindowStreamOp <T extends BaseOverWindowStreamOp <T>>
 		return new String[] {timeCol};
 	}
 
-	private Tuple2<ClauseInfo, String> extractSqlClause(String[] reservedCols, String registerName) {
+	private Tuple2 <ClauseInfo, String> extractSqlClause(String[] reservedCols, String registerName, TableSchema inputSchema) {
 		String exprStr = getParams().get(BaseOverWindowParams.CLAUSE);
 		String[] partitionCols = getParams().get(BaseOverWindowParams.PARTITION_COLS);
 		String timeCol = getParams().get(BaseOverWindowParams.TIME_COL);
@@ -57,6 +59,8 @@ abstract class BaseOverWindowStreamOp <T extends BaseOverWindowStreamOp <T>>
 			sbd.append(reservedCol)
 				.append(", ");
 		}
+		sbd.append(ROW_TIME_COL_NAME)
+			.append(", ");
 		String[][] clauses = FeatureClauseUtil.splitClauseForMultiInput(exprStr);
 		int clauseNum = clauses.length;
 		ClauseInfo clauseInfo = new ClauseInfo(clauseNum);
@@ -66,7 +70,9 @@ abstract class BaseOverWindowStreamOp <T extends BaseOverWindowStreamOp <T>>
 		for (int i = 0; i < clauseNum; i++) {
 			String[] localClause = clauses[i];
 			String operator = localClause[0].trim();
-			FeatureClauseUtil.buildOperatorClause(operatorFunc, operators, i, operator, timeCol, timeInterval);
+			FeatureClauseUtil.buildOperatorClause(operatorFunc, operators,
+				i, operator, timeCol, timeInterval,
+				inputSchema, MLEnvironmentFactory.get(this.getMLEnvironmentId()));
 			String asClause = localClause[1].trim();
 			asClauses[i] = asClause;
 			clauseInfo.addClauseInfo(operator, asClause);
@@ -79,7 +85,7 @@ abstract class BaseOverWindowStreamOp <T extends BaseOverWindowStreamOp <T>>
 				.append(partitionBy);
 		}
 		sbdOver.append(" ORDER BY ")
-			.append(timeCol)
+			.append(ROW_TIME_COL_NAME)
 			.append(" " + intervalType + " BETWEEN ")
 			.append(windowClause)
 			.append(" PRECEDING AND CURRENT ROW) as ");
@@ -95,6 +101,7 @@ abstract class BaseOverWindowStreamOp <T extends BaseOverWindowStreamOp <T>>
 			}
 		}
 		sbd.append(" from ").append(registerName);
+
 		return Tuple2.of(clauseInfo, sbd.toString());
 	}
 

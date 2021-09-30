@@ -146,4 +146,18 @@ public class IterTaskObjKeeper implements Serializable {
 			rwlock.readLock().unlock();
 		}
 	}
+
+	public static <T> T containsAndRemoves(long handler, int taskId) {
+		rwlock.writeLock().lock();
+		try {
+			if (states.containsKey(Tuple2.of(handler, taskId))) {
+				return (T) states.remove(Tuple2.of(handler, taskId));
+			}
+			else {
+				return null;
+			}
+		} finally {
+			rwlock.writeLock().unlock();
+		}
+	}
 }

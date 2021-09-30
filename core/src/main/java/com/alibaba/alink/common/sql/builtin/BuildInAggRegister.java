@@ -34,7 +34,9 @@ public class BuildInAggRegister {
         SQUARE_SUM("square_sum"),
         MEDIAN("median"),
         FREQ("freq"),
-        IS_EXIST("is_exist");
+        IS_EXIST("is_exist"),
+        TIMESERIES_AGG("timeseries_agg"),
+        MTABLE_AGG("mtable_agg");
 
         public String name;
         UdafName(String name) {
@@ -85,6 +87,8 @@ public class BuildInAggRegister {
         env.registerFunction(UdafName.FREQ.name, new FreqUdaf(false));
         env.registerFunction(UdafName.FREQ.name + EXTEND, new FreqUdaf(true));
         env.registerFunction(UdafName.IS_EXIST.name, new IsExistUdaf());
+        env.registerFunction(UdafName.TIMESERIES_AGG.name + EXTEND, new TimeSeriesAgg(true));
+        env.registerFunction(UdafName.TIMESERIES_AGG.name, new TimeSeriesAgg(false));
     }
 
     public static void registerUdaf(BatchTableEnvironment env) {
@@ -120,5 +124,7 @@ public class BuildInAggRegister {
         env.registerFunction(UdafName.FREQ.name, new FreqUdaf(false));
         env.registerFunction(UdafName.FREQ.name + EXTEND, new FreqUdaf(true));
         env.registerFunction(UdafName.IS_EXIST.name, new IsExistUdaf());
+        env.registerFunction(UdafName.TIMESERIES_AGG.name + EXTEND, new TimeSeriesAgg(true));
+        env.registerFunction(UdafName.TIMESERIES_AGG.name, new TimeSeriesAgg(false));
     }
 }

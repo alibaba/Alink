@@ -8,6 +8,7 @@ import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import org.apache.commons.io.IOUtils;
 
@@ -18,7 +19,9 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class FilePath implements Serializable {
 
@@ -51,11 +54,6 @@ public final class FilePath implements Serializable {
 	}
 
 	public String getPathStr() {
-		if (null != fileSystem && !fileSystem.isDistributedFS()) {
-			if (!path.isAbsolute()) {
-				path = new Path(fileSystem.getWorkingDirectory(), path);
-			}
-		}
 		return path.toString();
 	}
 
@@ -147,21 +145,98 @@ public final class FilePath implements Serializable {
 		}
 	}
 
-	private void init() {
-		Preconditions.checkNotNull(path, "Must be set path.");
-		String schema = path.toUri().getScheme();
-
-		if (schema != null && (schema.equals("http") || schema.equals("https"))) {
-			return;
+	private static Map <String, String> getQueryMap(String query) {
+		if (query == null) {
+			return null;
 		}
 
+		String[] params = query.split("&");
+		Map <String, String> map = new HashMap <String, String>();
+
+		for (String param : params) {
+			String name = param.split("=")[0];
+			String value = param.split("=")[1];
+			map.put(name, value);
+		}
+		return map;
+	}
+
+	private void init() {
+		Preconditions.checkNotNull(path, "Must be set path.");
+
 		if (fileSystem == null) {
+
+			URI uri = path.toUri();
+			String schema = uri.getScheme();
+
+			// for http
+			if (schema != null && (schema.equals("http") || schema.equals("https"))) {
+				fileSystem = new HttpFileReadOnlyFileSystem();
+				return;
+			}
+
+			// for oss
+			if (schema != null && schema.equals("oss")) {
+				String authority = CsvUtil.unEscape(uri.getAuthority());
+
+				if (authority.contains("\u0001") && authority.contains("\u0002")) {
+					// oss://[bucket-name]\u0001host=[endpoint]\u0002id=[access_id]\u0002key=[access_key]/[path]
+
+					String[] hostParsed = authority.split("\u0001");
+
+					Preconditions.checkArgument(hostParsed.length == 2);
+
+					String[] endpointAndAk = hostParsed[1].split("\u0002");
+
+					Preconditions.checkArgument(endpointAndAk.length == 3);
+
+					String bucketName = hostParsed[0];
+					String endpoint = endpointAndAk[0];
+					String accessId = endpointAndAk[1];
+					String accessKey = endpointAndAk[2];
+					String ossFilePath = uri.getPath();
+
+					fileSystem = new OssFileSystem("3.4.1", endpoint, bucketName, accessId, accessKey);
+					path = new Path(ossFilePath);
+
+					return;
+				} else {
+					try {
+						// oss://alink-dataset/tf/savedmodel/?host=cn-zhangjiakou.oss-internal.aliyun-inc
+						// .com&access_key_id=xxxxxxx&access_key_secret=xxxxxx
+
+						URI queryable = new URI(path.toString());
+
+						Map <String, String> queryMap = getQueryMap(queryable.getQuery());
+
+						if (queryMap != null
+							&& queryMap.containsKey("host")
+							&& queryMap.containsKey("access_key_id")
+							&& queryMap.containsKey("access_key_secret")) {
+
+							String bucketName = uri.getHost();
+							String endpoint = queryMap.get("host");
+							String accessId = queryMap.get("access_key_id");
+							String accessKey = queryMap.get("access_key_secret");
+							String ossFilePath = uri.getPath();
+
+							fileSystem = new OssFileSystem("3.4.1", endpoint, bucketName, accessId, accessKey);
+							path = new Path(ossFilePath);
+
+							return;
+						}
+					} catch (URISyntaxException e) {
+						// pass
+					}
+				}
+			}
+
 			schema = rewriteUri(path.toUri()).getScheme();
 
-			List<String> allFileSystemNames = AnnotationUtils.allFileSystemNames();
+			List <String> allFileSystemNames = AnnotationUtils.allFileSystemNames();
 
 			for (String fileSystemName : allFileSystemNames) {
-				BaseFileSystem<?> localFileSystem;
+				BaseFileSystem <?> localFileSystem;
 
 				try {
 					localFileSystem = AnnotationUtils.createFileSystem(fileSystemName, new Params());
@@ -199,8 +274,7 @@ public final class FilePath implements Serializable {
 
 		if (fsUri.getScheme() != null) {
 			uri = fsUri;
-		}
-		else {
+		} else {
 			// Apply the default fs scheme
 			final URI defaultUri = org.apache.flink.core.fs.local.LocalFileSystem.getLocalFsURI();
 			URI rewrittenUri = null;
@@ -208,8 +282,7 @@ public final class FilePath implements Serializable {
 			try {
 				rewrittenUri = new URI(defaultUri.getScheme(), null, defaultUri.getHost(),
 					defaultUri.getPort(), fsUri.getPath(), null, null);
-			}
-			catch (URISyntaxException e) {
+			} catch (URISyntaxException e) {
 				// for local URIs, we make one more try to repair the path by making it absolute
 				if (defaultUri.getScheme().equals("file")) {
 					try {
@@ -225,8 +298,7 @@ public final class FilePath implements Serializable {
 
 			if (rewrittenUri != null) {
 				uri = rewrittenUri;
-			}
-			else {
+			} else {
 				throw new IllegalArgumentException("The file system URI '" + fsUri +
 					"' declares no scheme and cannot be interpreted relative to the default file system URI ("
 					+ defaultUri + ").");
@@ -237,8 +309,10 @@ public final class FilePath implements Serializable {
 		if (uri.getScheme().equals("file") && uri.getAuthority() != null && !uri.getAuthority().isEmpty()) {
 			String supposedUri = "file:///" + uri.getAuthority() + uri.getPath();
 
-			throw new IllegalArgumentException("Found local file path with authority '" + uri.getAuthority() + "' in path '"
-				+ uri.toString() + "'. Hint: Did you forget a slash? (correct path would be '" + supposedUri + "')");
+			throw new IllegalArgumentException(
+				"Found local file path with authority '" + uri.getAuthority() + "' in path '"
+					+ uri.toString() + "'. Hint: Did you forget a slash? (correct path would be '" + supposedUri
+					+ "')");
 		}
 
 		return uri;

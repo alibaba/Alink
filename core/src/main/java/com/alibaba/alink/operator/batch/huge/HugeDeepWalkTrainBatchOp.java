@@ -10,12 +10,16 @@ public final class HugeDeepWalkTrainBatchOp extends DeepWalkImpl <HugeDeepWalkTr
 	implements HasNumCheckpoint <HugeDeepWalkTrainBatchOp> {
 	private static final long serialVersionUID = 5413242732809242754L;
 
-	public HugeDeepWalkTrainBatchOp(ApsCheckpoint checkpoint) {
-		this(null, checkpoint);
+	public HugeDeepWalkTrainBatchOp() {
+		this(new Params());
 	}
 
 	public HugeDeepWalkTrainBatchOp(Params params) {
 		this(params, null);
+	}
+
+	public HugeDeepWalkTrainBatchOp(ApsCheckpoint checkpoint) {
+		this(null, checkpoint);
 	}
 
 	public HugeDeepWalkTrainBatchOp(Params params, ApsCheckpoint checkpoint) {

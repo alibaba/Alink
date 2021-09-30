@@ -54,6 +54,7 @@ public class FmClassifierTest extends AlinkTestBase {
 
 	@Test
 	public void testFmSparse() throws Exception {
+		//MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
 		BatchOperator trainData = new MemSourceBatchOp(
 			new Object[][] {
 				{"1:1.1 3:2.0", 1.0},
@@ -103,6 +104,7 @@ public class FmClassifierTest extends AlinkTestBase {
 
 	@Test
 	public void testPipelineFmSparse() throws Exception {
+		//MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
 		BatchOperator trainData = new MemSourceBatchOp(
 			new Object[][] {
 				{"0:1.1 1:2.0", 1.0},

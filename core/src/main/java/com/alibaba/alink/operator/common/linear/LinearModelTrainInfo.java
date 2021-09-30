@@ -139,7 +139,7 @@ public final class LinearModelTrainInfo implements Serializable {
 					out[i][3] = df.format(weightList.get(i).f1);
 				}
 				sbd.append(PrettyDisplayUtils.displayTable(out, importanceList.size(), 4, null,
-					new String[] {"colName", "importnaceValue", "colName", "weightValue"}, null,
+					new String[] {"colName", "importanceValue", "colName", "weightValue"}, null,
 					importanceList.size(), 4));
 			} else {
 				Object[][] out = new Object[7][4];
@@ -160,7 +160,7 @@ public final class LinearModelTrainInfo implements Serializable {
 					out[7 - i][3] = df.format(weightList.get(idx).f1);
 				}
 				sbd.append(PrettyDisplayUtils.displayTable(out, 7, 4, null,
-					new String[] {"colName", "importnaceValue", "colName", "weightValue"}, null, 7, 4));
+					new String[] {"colName", "importanceValue", "colName", "weightValue"}, null, 7, 4));
 			}
 		}
 		sbd.append(PrettyDisplayUtils.displayHeadline("train convergence info", '-'));

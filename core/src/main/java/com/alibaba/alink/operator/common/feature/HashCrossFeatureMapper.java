@@ -44,8 +44,11 @@ public class HashCrossFeatureMapper extends MISOMapper {
 			sbd.append(o);
 		}
 		String s = sbd.toString();
-		int hashValue = Math.abs(HASH.hashUnencodedChars(s).asInt());
+		int hashValue = HASH.hashUnencodedChars(s).asInt();
 		hashValue %= svLength;
+		if (hashValue < 0) {
+			hashValue += svLength;
+		}
 		return new SparseVector(svLength, new int[] {hashValue}, new double[] {1.0});
 	}
 }

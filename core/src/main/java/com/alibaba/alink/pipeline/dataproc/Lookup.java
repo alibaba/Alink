@@ -21,9 +21,4 @@ public class Lookup extends MapModel <Lookup>
 		super(LookupModelMapper::new, params);
 	}
 
-	@Override
-	public Lookup setModelData(BatchOperator <?> modelData) {
-		return super.setModelData(modelData);
-	}
-
 }

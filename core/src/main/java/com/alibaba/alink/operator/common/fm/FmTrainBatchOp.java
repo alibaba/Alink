@@ -49,7 +49,7 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
      * @param vecSize   vector size.
      * @param params    parameters.
      * @param dim       dimension.
-     * @return
+     * @return result.
      */
     @Override
     protected DataSet<Tuple2<FmDataFormat, double[]>> optimize(DataSet<Tuple3<Double, Double, Vector>> trainData,
@@ -64,9 +64,7 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
 
             @Override
             public FmDataFormat map(Integer value) throws Exception {
-                FmDataFormat innerModel = new FmDataFormat(value, dim, initStdev);
-
-                return innerModel;
+                return new FmDataFormat(value, dim, initStdev);
             }
         });
 
@@ -94,7 +92,7 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
                                           Params params,
                                           int[] dim,
                                           boolean isRegProc,
-                                          TypeInformation labelType) {
+                                          TypeInformation<?> labelType) {
         return model.flatMap(new GenerateModelRows(params, dim, labelType, isRegProc))
                 .withBroadcastSet(labelValues, LABEL_VALUES)
                 .withBroadcastSet(vecSize, VEC_SIZE);
@@ -105,14 +103,14 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
      */
     public static class GenerateModelRows extends RichFlatMapFunction<Tuple2<FmDataFormat, double[]>, Row> {
         private static final long serialVersionUID = -380930181466110905L;
-        private Params params;
-        private int[] dim;
-        private TypeInformation labelType;
+        private final Params params;
+        private final int[] dim;
+        private final TypeInformation<?> labelType;
         private Object[] labelValues;
-        private boolean isRegProc;
+        private final boolean isRegProc;
         private int vecSize;
 
-        public GenerateModelRows(Params params, int[] dim, TypeInformation labelType, boolean isRegProc) {
+        public GenerateModelRows(Params params, int[] dim, TypeInformation<?> labelType, boolean isRegProc) {
             this.params = params;
             this.labelType = labelType;
             this.dim = dim;

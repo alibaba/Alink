@@ -17,6 +17,13 @@ public class ToTimeStamp extends ScalarFunction {
 		return new Timestamp(in);
 	}
 
+	public Timestamp eval(Integer in) {
+		if (in == null) {
+			return null;
+		}
+		return new Timestamp(in);
+	}
+
 	public Timestamp eval(String in) {
 		if (in == null) {
 			return null;

@@ -65,7 +65,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 		BatchOperator <?> in = checkAndGetFirst(inputs);
 		String[] featureColNames = this.getFeatureCols();
 
-		TypeInformation labelType = Types.DOUBLE;
+		TypeInformation<?> labelType = Types.DOUBLE;
 		DataSet <Object> labelValues = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment()
 			.fromElements(new Object());
 
@@ -73,28 +73,28 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 		params.set(LinearTrainParams.WEIGHT_COL, this.getCensorCol());
 		DataSet <Tuple3 <Double, Object, Vector>> initData = BaseLinearModelTrainBatchOp
 			.transform(in, params, true, true);
-		DataSet <Tuple3 <DenseVector[], Object[], Integer>> utilInfo = BaseLinearModelTrainBatchOp
+		DataSet <Tuple3 <DenseVector[], Object[], Integer[]>> utilInfo = BaseLinearModelTrainBatchOp
 			.getUtilInfo(initData, true, true);
 
 		DataSet <double[]> std = utilInfo.map(
-			new MapFunction <Tuple3 <DenseVector[], Object[], Integer>, double[]>() {
+			new MapFunction <Tuple3 <DenseVector[], Object[], Integer[]>, double[]>() {
 				private static final long serialVersionUID = -7070926092286155032L;
 
 				@Override
-				public double[] map(Tuple3 <DenseVector[], Object[], Integer> value)
+				public double[] map(Tuple3 <DenseVector[], Object[], Integer[]> value)
 					throws Exception {
 					return value.f0[1].getData();
 				}
 			});
 
 		DataSet <Integer> vectorSize = utilInfo.map(
-			new MapFunction <Tuple3 <DenseVector[], Object[], Integer>, Integer>() {
+			new MapFunction <Tuple3 <DenseVector[], Object[], Integer[]>, Integer>() {
 				private static final long serialVersionUID = 5463028282798602155L;
 
 				@Override
-				public Integer map(Tuple3 <DenseVector[], Object[], Integer> value)
+				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value)
 					throws Exception {
-					return value.f2;
+					return value.f2[0];
 				}
 			});
 
@@ -130,13 +130,13 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 
 		this.setOutput(modelRows, new LinearModelDataConverter(labelType).getModelSchema());
 		DataSet <Integer> featSize = utilInfo.map(
-			new MapFunction <Tuple3 <DenseVector[], Object[], Integer>, Integer>() {
+			new MapFunction <Tuple3 <DenseVector[], Object[], Integer[]>, Integer>() {
 				private static final long serialVersionUID = 2773811388068064638L;
 
 				@Override
-				public Integer map(Tuple3 <DenseVector[], Object[], Integer> value)
+				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value)
 					throws Exception {
-					return value.f2;
+					return value.f2[0];
 				}
 			});
 		this.setSideOutputTables(
@@ -170,7 +170,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 								 Collector <Tuple3 <Double, Double, Vector>> out)
 			throws Exception {
 			for (Tuple3 <Double, Object, Vector> row : rows) {
-				double weight = row.getField(0);
+				Double weight = row.getField(0);
 				if (Math.abs(weight + 1) < 1e-4 || Math.abs(weight + 2) < 1e-4) {
 					continue;
 				}
@@ -181,7 +181,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 					throw new IllegalArgumentException("Survival Time must be greater than 0!");
 				}
 				//judge whether the weight is legal or not.
-				if (weight != 0.0 && weight != 1.0) {
+				if (!weight.equals(0.0) && !weight.equals(1.0)) {
 					throw new IllegalArgumentException("Censor must be 1.0 or 0.0!");
 				}
 				Vector aVector;

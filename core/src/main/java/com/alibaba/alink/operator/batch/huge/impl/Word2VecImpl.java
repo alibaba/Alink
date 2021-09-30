@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.batch.huge.impl;
 
+import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.CoGroupFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.JoinFunction;
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+@Internal
 public class Word2VecImpl<T extends Word2VecImpl <T>> extends BatchOperator <T>
 	implements Word2VecParams <T> {
 

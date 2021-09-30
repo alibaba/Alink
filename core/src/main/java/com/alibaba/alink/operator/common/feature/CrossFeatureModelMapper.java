@@ -35,7 +35,6 @@ public class CrossFeatureModelMapper extends ModelMapper {
 								   Params params) {
 		super(modelSchema, dataSchema, params);
 		dataColNames = dataSchema.getFieldNames();
-
 	}
 
 	@Override

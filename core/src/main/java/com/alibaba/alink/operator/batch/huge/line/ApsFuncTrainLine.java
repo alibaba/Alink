@@ -34,7 +34,6 @@ public class ApsFuncTrainLine extends ApsFuncTrain <Number[], float[][]> {
 			int negaTime = params.get(HasNegative.NEGATIVE);
 			int threadNum = params.getIntegerOrDefault("threadNum", 8);
 			double sampleRatioPerPartition = params.get(LineParams.SAMPLE_RATIO_PER_PARTITION);
-
 			double leaningRate = params.get(LineParams.RHO);
 			int vectorSize = params.get(HasVectorSizeDv100.VECTOR_SIZE);
 			int order = params.get(LineParams.ORDER).getValue();
@@ -57,12 +56,10 @@ public class ApsFuncTrainLine extends ApsFuncTrain <Number[], float[][]> {
 						contextBuffer, i * vectorSize, vectorSize);
 				}
 			}
-
 			TrainSubSet trainSubSet = new TrainSubSet(nsPool, negaTime, sampleRatioPerPartition, leaningRate,
 				minRhoRate, vectorSize, threadNum);
 			trainSubSet.train(seed, trainData, order, valueBuffer, contextBuffer,
 				mapFeatureId2Local, getIterationRuntimeContext().getSuperstepNumber());
-
 			if (order == 1) {
 				for (int i = 0; i < modelLength; i++) {
 					float[] valueOrigin = relatedFeatures.get(i).f1[0];
@@ -80,7 +77,6 @@ public class ApsFuncTrainLine extends ApsFuncTrain <Number[], float[][]> {
 					}
 				}
 			}
-
 			return relatedFeatures;
 		} else {
 			throw new RuntimeException();
@@ -111,14 +107,13 @@ public class ApsFuncTrainLine extends ApsFuncTrain <Number[], float[][]> {
 						  float[] buffer, float[] contextBuffer,
 						  Map <Long, Integer> mapFeatureId2Local, int iterNum) throws InterruptedException {
 			Thread[] thread = new Thread[threadNum];
-
 			DistributedInfo distributedInfo = new DefaultDistributedInfo();
 			for (int i = 0; i < threadNum; ++i) {
 				int start = (int) distributedInfo.startPos(i, threadNum, trainData.size());
 				int end = (int) distributedInfo.localRowCnt(i, threadNum, trainData.size()) + start;
 				thread[i] = new TrainRunner(nsPool, seed + i, vectorSize, order,
 					negaTime, sampleRatioPerPartition, leaningRate, minRhoRate,
-					buffer, contextBuffer, mapFeatureId2Local, trainData.subList(start, end), i, iterNum);
+					buffer, contextBuffer, mapFeatureId2Local, trainData.subList(start, end));
 				thread[i].start();
 			}
 
@@ -137,18 +132,16 @@ public class ApsFuncTrainLine extends ApsFuncTrain <Number[], float[][]> {
 		double leaningRate;
 		double minRhoRate;
 		int vectorSize;
-		boolean orderEqual1;
+		boolean isOrderOne;
 		float[] valueBuffer;
 		float[] contextBuffer;
 		Map <Long, Integer> modelMapper;
-		int threadId;
-		int iterNum;
 
 		TrainRunner(Long[] nsPool, int seed, int vectorSize, int order,
 					int negaTime, double sampleRatioPerPartition, double leaningRate, double minRhoRate,
 					float[] valueBuffer, float[] contextBuffer,
 					Map <Long, Integer> mapFeatureId2Local,
-					List <Number[]> trainData, int threadId, int iterNum) {
+					List <Number[]> trainData) {
 			this.nsPool = nsPool;
 			this.edges = trainData;
 			this.seed = seed;
@@ -160,16 +153,14 @@ public class ApsFuncTrainLine extends ApsFuncTrain <Number[], float[][]> {
 			this.valueBuffer = valueBuffer;
 			this.contextBuffer = contextBuffer;
 			this.modelMapper = mapFeatureId2Local;
-			this.orderEqual1 = order == 1;
-			this.threadId = threadId;
-			this.iterNum = iterNum;
+			this.isOrderOne = order == 1;
 		}
 
 		@Override
 		public void run() {
 			LinePullAndTrainOperation trainOperation = new LinePullAndTrainOperation(negaTime, nsPool);
-			trainOperation.train(seed, leaningRate, minRhoRate, orderEqual1, vectorSize, sampleRatioPerPartition,
-				valueBuffer, contextBuffer, modelMapper, edges, threadId, iterNum);
+			trainOperation.train(seed, leaningRate, minRhoRate, isOrderOne, vectorSize, sampleRatioPerPartition,
+				valueBuffer, contextBuffer, modelMapper, edges);
 		}
 	}
 

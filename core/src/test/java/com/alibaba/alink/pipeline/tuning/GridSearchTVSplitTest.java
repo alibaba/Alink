@@ -9,6 +9,7 @@ import com.alibaba.alink.operator.common.evaluation.TuningMultiClassMetric;
 import com.alibaba.alink.operator.common.evaluation.TuningRegressionMetric;
 import com.alibaba.alink.params.shared.clustering.HasKMeansDistanceType;
 import com.alibaba.alink.pipeline.Pipeline;
+import com.alibaba.alink.pipeline.PipelineModel;
 import com.alibaba.alink.pipeline.classification.GbdtClassifier;
 import com.alibaba.alink.pipeline.clustering.KMeans;
 import com.alibaba.alink.pipeline.dataproc.format.ColumnsToVector;
@@ -76,6 +77,39 @@ public class GridSearchTVSplitTest extends AlinkTestBase {
 		Assert.assertEquals(
 			testArray.length,
 			model.transform(memSourceBatchOp).collect().size()
+		);
+	}
+
+	@Test
+	public void findBestAndGet() {
+		GbdtClassifier gbdtClassifier = new GbdtClassifier()
+			.setFeatureCols(colNames[0], colNames[1])
+			.setLabelCol(colNames[2])
+			.setMinSamplesPerLeaf(1)
+			.setPredictionCol("pred")
+			.setPredictionDetailCol("pred_detail");
+
+		ParamGrid grid = new ParamGrid()
+			.addGrid(gbdtClassifier, GbdtClassifier.NUM_TREES, new Integer[] {1, 2});
+
+		GridSearchTVSplit gridSearchTVSplit = new GridSearchTVSplit()
+			.setEstimator(gbdtClassifier)
+			.setParamGrid(grid)
+			.setTuningEvaluator(
+				new BinaryClassificationTuningEvaluator()
+					.setTuningBinaryClassMetric(TuningBinaryClassMetric.ACCURACY)
+					.setLabelCol(colNames[2])
+					.setPositiveLabelValueString("1")
+					.setPredictionDetailCol("pred_detail")
+			);
+
+		GridSearchTVSplitModel model = gridSearchTVSplit.fit(memSourceBatchOp);
+
+		PipelineModel loaded = PipelineModel.collectLoad(model.getBestPipelineModel().save());
+
+		Assert.assertEquals(
+			testArray.length,
+			loaded.transform(memSourceBatchOp).collect().size()
 		);
 	}
 

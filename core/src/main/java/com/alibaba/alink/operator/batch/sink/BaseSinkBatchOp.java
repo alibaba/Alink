@@ -7,6 +7,8 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.utils.MTableSerializeBatchOp;
+import com.alibaba.alink.operator.batch.utils.TensorSerializeBatchOp;
 import com.alibaba.alink.operator.batch.utils.VectorSerializeBatchOp;
 import com.alibaba.alink.params.io.HasIoName;
 import com.alibaba.alink.params.io.HasIoType;
@@ -31,7 +33,11 @@ public abstract class BaseSinkBatchOp<T extends BaseSinkBatchOp <T>> extends Bat
 	@Override
 	public T linkFrom(BatchOperator <?>... inputs) {
 		BatchOperator <?> in = checkAndGetFirst(inputs);
-		return sinkFrom(in.link(new VectorSerializeBatchOp().setMLEnvironmentId(getMLEnvironmentId())));
+		return sinkFrom(in
+			.link(new VectorSerializeBatchOp().setMLEnvironmentId(getMLEnvironmentId()))
+			.link(new MTableSerializeBatchOp().setMLEnvironmentId(getMLEnvironmentId()))
+			.link(new TensorSerializeBatchOp().setMLEnvironmentId(getMLEnvironmentId()))
+		);
 	}
 
 	protected abstract T sinkFrom(BatchOperator<?> in);

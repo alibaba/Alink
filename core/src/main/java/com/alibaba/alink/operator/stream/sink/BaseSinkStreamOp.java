@@ -12,6 +12,8 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.utils.MTableSerializeStreamOp;
+import com.alibaba.alink.operator.stream.utils.TensorSerializeStreamOp;
 import com.alibaba.alink.operator.stream.utils.VectorSerializeStreamOp;
 import com.alibaba.alink.params.io.HasIoName;
 import com.alibaba.alink.params.io.HasIoType;
@@ -35,7 +37,11 @@ public abstract class BaseSinkStreamOp<T extends BaseSinkStreamOp <T>> extends S
 	@Override
 	public T linkFrom(StreamOperator <?>... inputs) {
 		StreamOperator <?> in = checkAndGetFirst(inputs);
-		return sinkFrom(in.link(new VectorSerializeStreamOp().setMLEnvironmentId(getMLEnvironmentId())));
+		return sinkFrom(in
+			.link(new VectorSerializeStreamOp().setMLEnvironmentId(getMLEnvironmentId()))
+			.link(new MTableSerializeStreamOp().setMLEnvironmentId(getMLEnvironmentId()))
+			.link(new TensorSerializeStreamOp().setMLEnvironmentId(getMLEnvironmentId()))
+		);
 	}
 
 	protected abstract T sinkFrom(StreamOperator <?> in);

@@ -598,7 +598,11 @@ public class DenseMatrix implements Serializable {
 	 * @return
 	 */
 	public double norm2() {
-		return new SingularValueDecomposition(this).norm2();
+		if (numCols() == 1) {
+			return new DenseVector(getColumn(0)).normL2();
+		} else {
+			return new SingularValueDecomposition(this).norm2();
+		}
 	}
 
 	/**

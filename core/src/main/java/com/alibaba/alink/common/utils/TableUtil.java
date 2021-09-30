@@ -573,7 +573,7 @@ public class TableUtil {
 
 			sbd.append(colNames[i]);
 
-			int t = null == colNames[i] ? 4 : colNames[i].length();
+			int t = null == colNames[i] ? 4 : Math.max(colNames[i].length(), 3);
 			for (int j = 0; j < t; j++) {
 				sbdSplitter.append("-");
 			}

@@ -15,6 +15,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.api.java.tuple.Tuple5;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -53,11 +54,14 @@ import com.alibaba.alink.params.shared.linear.HasL2;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -71,8 +75,8 @@ import java.util.Set;
 public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrainBatchOp<T>> extends BatchOperator<T>
         implements WithTrainInfo<LinearModelTrainInfo, T> {
     private static final long serialVersionUID = 6162495789625212086L;
-    private String modelName;
-    private LinearModelType linearModelType;
+    private final String modelName;
+    private final LinearModelType linearModelType;
     private static final String META = "meta";
     private static final String MEAN_VAR = "meanVar";
     private static final String LABEL_VALUES = "labelValues";
@@ -96,44 +100,44 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
         // Get type of processing: regression or not
         final boolean isRegProc = getIsRegProc(params, linearModelType, modelName);
         final boolean standardization = params.get(LinearTrainParams.STANDARDIZATION);
-        TypeInformation labelType = isRegProc ? Types.DOUBLE : in.getColTypes()[TableUtil
+        TypeInformation<?> labelType = isRegProc ? Types.DOUBLE : in.getColTypes()[TableUtil
                 .findColIndexWithAssertAndHint(in.getColNames(), params.get(LinearTrainParams.LABEL_COL))];
 
         // Transform data to Tuple3 format <weight, label, feature vector>.
         DataSet<Tuple3<Double, Object, Vector>> initData = transform(in, params, isRegProc, standardization);
 
-        DataSet<Tuple3<DenseVector[], Object[], Integer>> utilInfo = getUtilInfo(initData, standardization,
+        DataSet<Tuple3<DenseVector[], Object[], Integer[]>> utilInfo = getUtilInfo(initData, standardization,
                 isRegProc);
 
         DataSet<DenseVector[]> meanVar = utilInfo.map(
-                new MapFunction<Tuple3<DenseVector[], Object[], Integer>, DenseVector[]>() {
+                new MapFunction<Tuple3<DenseVector[], Object[], Integer[]>, DenseVector[]>() {
                     private static final long serialVersionUID = 7127767376687624403L;
 
                     @Override
-                    public DenseVector[] map(Tuple3<DenseVector[], Object[], Integer> value)
+                    public DenseVector[] map(Tuple3<DenseVector[], Object[], Integer[]> value)
                             throws Exception {
                         return value.f0;
                     }
                 });
 
         DataSet<Integer> featSize = utilInfo.map(
-                new MapFunction<Tuple3<DenseVector[], Object[], Integer>, Integer>() {
+                new MapFunction<Tuple3<DenseVector[], Object[], Integer[]>, Integer>() {
                     private static final long serialVersionUID = 2773811388068064638L;
 
                     @Override
-                    public Integer map(Tuple3<DenseVector[], Object[], Integer> value)
+                    public Integer map(Tuple3<DenseVector[], Object[], Integer[]> value)
                             throws Exception {
-                        return value.f2;
+                        return value.f2[0];
                     }
                 });
 
         DataSet<Object[]> labelValues = utilInfo.flatMap(
-                new FlatMapFunction<Tuple3<DenseVector[], Object[], Integer>, Object[]>() {
+                new FlatMapFunction<Tuple3<DenseVector[], Object[], Integer[]>, Object[]>() {
 
                     private static final long serialVersionUID = 5375954526931728363L;
 
                     @Override
-                    public void flatMap(Tuple3<DenseVector[], Object[], Integer> value,
+                    public void flatMap(Tuple3<DenseVector[], Object[], Integer[]> value,
                                         Collector<Object[]> out)
                             throws Exception {
                         if (!isRegProc) {
@@ -174,7 +178,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
         return (T) this;
     }
 
-    public static DataSet<Tuple3<DenseVector[], Object[], Integer>> getUtilInfo(
+    public static DataSet<Tuple3<DenseVector[], Object[], Integer[]>> getUtilInfo(
             DataSet<Tuple3<Double, Object, Vector>> initData,
             boolean standardization,
             boolean isRegProc) {
@@ -184,20 +188,16 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 
                     @Override
                     public boolean filter(Tuple3<Double, Object, Vector> value) throws Exception {
-                        if (value.f0 < 0.0) {
-                            return true;
-                        } else {
-                            return false;
-                        }
+                        return value.f0 < 0.0;
                     }
                 }).reduceGroup(
                 new GroupReduceFunction<Tuple3<Double, Object, Vector>, Tuple3<DenseVector[], Object[],
-                        Integer>>() {
+                        Integer[]>>() {
                     private static final long serialVersionUID = -4819473589070441623L;
 
                     @Override
                     public void reduce(Iterable<Tuple3<Double, Object, Vector>> values,
-                                       Collector<Tuple3<DenseVector[], Object[], Integer>> out) {
+                                       Collector<Tuple3<DenseVector[], Object[], Integer[]>> out) {
                         int sparseSize = -1;
                         int denseSize = -1;
                         Set<Object> labelValues = new HashSet<>();
@@ -210,6 +210,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 
                         List<Tuple3<Double, Object, Vector>> denseList = new ArrayList<>();
                         List<Tuple3<Double, Object, Vector>> sparseList = new ArrayList<>();
+                        int cnt = 0;
                         for (Tuple3<Double, Object, Vector> value : values) {
                             if (value.f0 == -1) {
                                 sparseList.add(value);
@@ -218,17 +219,16 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                                 denseList.add(value);
                                 hasDenseVector = true;
                             }
+                            cnt += value.f2.get(value.f2.size()-1);
                         }
                         if (hasSparseVector) {
                             for (Tuple3<Double, Object, Vector> value : sparseList) {
                                 Tuple2<Integer, Object[]>
                                         labelVals = (Tuple2<Integer, Object[]>) value.f1;
-                                for (int i = 0; i < labelVals.f1.length; ++i) {
-                                    labelValues.add(labelVals.f1[i]);
-                                }
+                                Collections.addAll(labelValues, labelVals.f1);
                                 if (sparseMeanVar == null) {
                                     sparseMeanVar = (DenseVector) value.f2;
-                                    calcSparseMeanVar = (sparseMeanVar != null && sparseMeanVar.size() != 0);
+                                    calcSparseMeanVar = (sparseMeanVar != null && sparseMeanVar.size() > 1);
                                     sparseSize = labelVals.f0;
                                 } else if (labelVals.f0 == sparseSize) {
                                     if (calcSparseMeanVar) {
@@ -250,7 +250,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                                                         sparseMeanVar.get(i)));
                                             }
                                             sparseMeanVar = (DenseVector) value.f2;
-                                            sparseSize = labelVals.f0.intValue();
+                                            sparseSize = labelVals.f0;
                                         }
                                     }
                                 }
@@ -261,12 +261,10 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                             for (Tuple3<Double, Object, Vector> value : denseList) {
                                 Tuple2<Integer, Object[]>
                                         labelVals = (Tuple2<Integer, Object[]>) value.f1;
-                                for (int i = 0; i < labelVals.f1.length; ++i) {
-                                    labelValues.add(labelVals.f1[i]);
-                                }
+                                labelValues.addAll(Arrays.asList(labelVals.f1));
                                 if (denseMeanVar == null) {
                                     denseMeanVar = (DenseVector) value.f2;
-                                    calcDenseMeanVar = (denseMeanVar != null && denseMeanVar.size() != 0);
+                                    calcDenseMeanVar = (denseMeanVar != null && denseMeanVar.size() > 1);
                                     denseSize = labelVals.f0;
                                 } else if (labelVals.f0 == denseSize) {
                                     if (calcDenseMeanVar) {
@@ -332,7 +330,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                                     sparseMeanVar = newMeanVar;
                                 }
                             }
-                        } else if (hasDenseVector && (!hasSparseVector)) {
+                        } else if (hasDenseVector) {
                             sparseMeanVar = denseMeanVar;
                         }
 
@@ -347,7 +345,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                             if (hasSparseVector) {
                                 meanAndVar[1] = sparseMeanVar;
                                 modifyMeanVar(standardization, meanAndVar);
-                            } else if (hasDenseVector) {
+                            } else {
                                 for (int i = 0; i < size; ++i) {
                                     meanAndVar[0].set(i, sparseMeanVar.get(i) / sparseMeanVar.get(3 * size));
                                     meanAndVar[1].set(i, sparseMeanVar.get(size + i) - sparseMeanVar.get(3
@@ -362,7 +360,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                             }
                         }
 
-                        out.collect(Tuple3.of(meanAndVar, labelssort, size));
+                        out.collect(Tuple3.of(meanAndVar, labelssort,
+                            new Integer[]{size, cnt}));
                     }
                 });
     }
@@ -478,7 +477,6 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                     private DenseVector coefVec;
                     private LinearModelData model;
                     private double[] cinfo;
-                    private String[] colNames;
 
                     @Override
                     public void open(Configuration parameters) throws Exception {
@@ -493,6 +491,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                                         Collector<Tuple5<String, String[], double[], double[], double[]>> out)
                             throws Exception {
                         double[] importance;
+                        String[] colNames;
                         if (featureNames == null) {
                             colNames = new String[coefVec.size() - (hasInterception ? 1 : 0)];
                             for (int i = 0; i < colNames.length; ++i) {
@@ -541,7 +540,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                             importanceVals = r.f3;
                         }
 
-                        for (int i = 0; i < colNames.length; ++i) {
+                        for (int i = 0; i < Objects.requireNonNull(colNames).length; ++i) {
                             out.collect(Row.of(colNames[i], importanceVals[i]));
                         }
                     }
@@ -559,6 +558,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                             colNames = r.f1;
                             weights = r.f2;
                         }
+                        assert weights != null;
                         if (weights.length == colNames.length) {
                             for (int i = 0; i < colNames.length; ++i) {
                                 out.collect(Row.of(colNames[i], weights[i]));
@@ -706,6 +706,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                         }
                     });
         } else {
+            assert featureColNames != null;
             coefficientDim = session.getExecutionEnvironment().fromElements(featureColNames.length
                     + (hasInterceptItem ? 1 : 0) + (modelType.equals(LinearModelType.AFT) ? 1 : 0));
         }
@@ -767,7 +768,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
      * @param isRegProc is regression process or not.
      * @return Tuple3 format train data <weight, label, vector></>.
      */
-    public static DataSet<Tuple3<Double, Object, Vector>> transform(BatchOperator in,
+    public static DataSet<Tuple3<Double, Object, Vector>> transform(BatchOperator<?> in,
                                                                     Params params,
                                                                     boolean isRegProc,
                                                                     boolean calcMeanVar) {
@@ -788,7 +789,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
             for (int i = 0; i < featureColNames.length; ++i) {
                 int idx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), featureColNames[i]);
                 featureIndices[i] = idx;
-                TypeInformation type = in.getSchema().getFieldTypes()[idx];
+                TypeInformation<?> type = in.getSchema().getFieldTypes()[idx];
 
                 Preconditions.checkState(TableUtil.isSupportedNumericType(type),
                         "linear algorithm only support numerical data type. type is : " + type);
@@ -811,12 +812,12 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
      * @param featureColNames feature column names.
      * @return feature types.
      */
-    protected static String[] getFeatureTypes(BatchOperator in, String[] featureColNames) {
+    protected static String[] getFeatureTypes(BatchOperator<?> in, String[] featureColNames) {
         if (featureColNames != null) {
             String[] featureColTypes = new String[featureColNames.length];
             for (int i = 0; i < featureColNames.length; ++i) {
                 int idx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), featureColNames[i]);
-                TypeInformation type = in.getSchema().getFieldTypes()[idx];
+                TypeInformation<?> type = in.getSchema().getFieldTypes()[idx];
                 if (type.equals(Types.DOUBLE)) {
                     featureColTypes[i] = "double";
                 } else if (type.equals(Types.FLOAT)) {
@@ -882,7 +883,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                             Vector aVector = value.f2;
 
                             if (value.f0 > 0) {
-                                Double label = isRegProc ? Double.valueOf(value.f1.toString())
+                                Double label = isRegProc ? Double.parseDouble(value.f1.toString())
                                         : (value.f1.equals(labelValues[0]) ? 1.0 : -1.0);
                                 if (aVector instanceof DenseVector) {
                                     if (aVector.size() < featureSize) {
@@ -982,7 +983,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
      */
     public static LinearModelData buildLinearModelData(Params meta,
                                                        String[] featureNames,
-                                                       TypeInformation labelType,
+                                                       TypeInformation<?> labelType,
                                                        DenseVector[] meanVar,
                                                        boolean hasIntercept,
                                                        boolean standardization,
@@ -992,7 +993,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
         }
         meta.set(ModelParamName.VECTOR_SIZE, coefVector.f0.size()
                 - (meta.get(ModelParamName.HAS_INTERCEPT_ITEM) ? 1 : 0)
-                - (LinearModelType.AFT.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE).toString()) ? 1 : 0));
+                - (LinearModelType.AFT.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE)) ? 1 : 0));
         if (!(LinearModelType.AFT.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE)))) {
             if (standardization) {
                 int n = meanVar[0].size();
@@ -1024,11 +1025,11 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
      */
     public static class CreateMeta implements MapPartitionFunction<Object[], Params> {
         private static final long serialVersionUID = 536971312646228170L;
-        private String modelName;
-        private LinearModelType modelType;
-        private boolean hasInterceptItem;
-        private String vectorColName;
-        private String labelName;
+        private final String modelName;
+        private final LinearModelType modelType;
+        private final boolean hasInterceptItem;
+        private final String vectorColName;
+        private final String labelName;
 
         public CreateMeta(String modelName, LinearModelType modelType, Params params) {
             this.modelName = modelName;
@@ -1062,17 +1063,17 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
     private static class Transform extends RichMapPartitionFunction<Row, Tuple3<Double, Object, Vector>> {
 
         private static final long serialVersionUID = 4360321564414289067L;
-        private boolean isRegProc;
-        private int weightIdx;
-        private int vecIdx;
-        private int labelIdx;
-        private int[] featureIndices;
-        private boolean hasIntercept;
-        private boolean calcMeanVar;
+        private final boolean isRegProc;
+        private final int weightIdx;
+        private final int vecIdx;
+        private final int labelIdx;
+        private final int[] featureIndices;
+        private final boolean hasIntercept;
+        private final boolean calcMeanVar;
         private boolean hasSparseVector = false;
         private boolean hasDenseVector = false;
         private boolean hasNull = false;
-        private Map<Integer, double[]> meanVarMap = new HashMap<>();
+        private final Map<Integer, double[]> meanVarMap = new HashMap<>();
 
         public Transform(boolean isRegProc, int weightIdx, int vecIdx,
                          int[] featureIndices, int labelIdx, boolean hasIntercept, boolean calcMeanVar) {
@@ -1100,17 +1101,18 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 
             Set<Object> labelValues = new HashSet<>();
             int size = -1;
-
-            Vector meanVar = null;
+            double cnt = 0.0;
+            Vector meanVar;
             DenseVector tmpMeanVar = null;
             if (featureIndices != null) {
                 size = hasIntercept ? featureIndices.length + 1 : featureIndices.length;
-                meanVar = calcMeanVar ? new DenseVector(3 * size + 1) : new DenseVector(0);
+                meanVar = calcMeanVar ? new DenseVector(3 * size + 1) : new DenseVector(1);
             } else {
-                meanVar = calcMeanVar ? null : new DenseVector(0);
+                meanVar = calcMeanVar ? null : new DenseVector(1);
             }
 
             for (Row row : values) {
+                cnt += 1.0;
                 Double weight = weightIdx != -1 ? ((Number) row.getField(weightIdx)).doubleValue() : 1.0;
                 Object val = row.getField(labelIdx);
 
@@ -1242,13 +1244,13 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
             }
             if (meanVar == null) {
                 if (hasSparseVector && (!hasDenseVector)) {
-                    meanVar = new DenseVector(size);
+                    meanVar = new DenseVector(size + 1);
                     for (Integer idx : meanVarMap.keySet()) {
                         double[] mv = meanVarMap.get(idx);
                         meanVar.set(idx, mv[0]);
                     }
-                } else if (hasSparseVector && hasDenseVector) {
-                    meanVar = new DenseVector(size);
+                } else if (hasSparseVector) {
+                    meanVar = new DenseVector(size + 1);
                     for (Integer idx : meanVarMap.keySet()) {
                         double[] mv = meanVarMap.get(idx);
                         meanVar.set(idx, mv[0]);
@@ -1261,9 +1263,11 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
                 }
             }
             if (hasSparseVector) {
+                meanVar.set(meanVar.size()-1, cnt);
                 out.collect(
                         Tuple3.of(-1.0, Tuple2.of(size, labelValues.toArray()), meanVar));
             } else if (hasDenseVector || featureIndices != null) {
+                meanVar.set(meanVar.size()-1, cnt);
                 out.collect(
                         Tuple3.of(-2.0, Tuple2.of(size, labelValues.toArray()), meanVar));
             }
@@ -1277,14 +1281,14 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
             MapPartitionFunction<Tuple2<DenseVector, double[]>, Row> {
         private static final long serialVersionUID = -8526938457839413291L;
         private Params meta;
-        private String[] featureNames;
-        private String[] featureColTypes;
-        private TypeInformation labelType;
+        private final String[] featureNames;
+        private final String[] featureColTypes;
+        private final TypeInformation<?> labelType;
         private DenseVector[] meanVar;
-        private boolean hasIntercept;
-        private boolean standardization;
+        private final boolean hasIntercept;
+        private final boolean standardization;
 
-        public BuildModelFromCoefs(TypeInformation labelType, String[] featureNames,
+        public BuildModelFromCoefs(TypeInformation<?> labelType, String[] featureNames,
                                    boolean standardization,
                                    boolean hasIntercept,
                                    String[] featureColTypes) {

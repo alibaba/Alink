@@ -1,8 +1,6 @@
 package com.alibaba.alink.common.io.plugin;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.configuration.ConfigConstants;
-import org.apache.flink.configuration.Configuration;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -27,12 +25,12 @@ public class ClassLoaderContainer {
 		return INSTANCE;
 	}
 
-	private PluginManager pluginManager;
+	private JarsPluginManager pluginManager;
 	private final Map <RegisterKey, ClassLoader> registeredClassLoaders = new HashMap <>();
 
 	public static Map <String, String> createPluginContextOnClient() {
-		return ImmutableMap.<String, String>builder()
-			.put(ConfigConstants.ENV_FLINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir())
+		return ImmutableMap. <String, String>builder()
+			.put(PluginConfig.ENV_FLINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir())
 			.build();
 	}
 
@@ -119,7 +117,7 @@ public class ClassLoaderContainer {
 
 		// from plugin
 		if (pluginManager == null) {
-			pluginManager = PluginUtils.createPluginManagerFromRootFolder(readPluginConf(context));
+			pluginManager = PluginUtils.createJarsPluginManagerFromRootFolder(PluginUtils.readPluginConf(context));
 		}
 
 		try {
@@ -139,22 +137,4 @@ public class ClassLoaderContainer {
 		}
 	}
 
-	private static Configuration readPluginConf(Map <String, String> context) {
-
-		Configuration configuration;
-
-		if (context.isEmpty()) {
-			// Run in flink console, user should set the plugin follow the configuration of flink.
-			configuration = org.apache.flink.configuration.GlobalConfiguration.loadConfiguration().clone();
-		} else {
-			// Run in Local and RemoteEnv in PyAlink
-			configuration = new Configuration();
-
-			for (Map.Entry<String, String> entry : context.entrySet()) {
-				configuration.setString(entry.getKey(), entry.getValue());
-			}
-		}
-
-		return configuration;
-	}
 }

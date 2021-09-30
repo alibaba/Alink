@@ -196,6 +196,55 @@
             <type>pom</type>
         </dependency>
 
+        <dependency>
+            <groupId>net.sf.py4j</groupId>
+            <artifactId>py4j</artifactId>
+            <version>0.10.8.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>ndarray</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+
+        <!-- flink-ai-extended-tf2 -->
+        <dependency>
+            <groupId>com.alibaba.alink.shaded</groupId>
+            <artifactId>alink-shaded-flink-ai-extended-tf2</artifactId>
+            <version>0.3.0-0.06-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.alink.shaded</groupId>
+            <artifactId>alink-shaded-tensorflow-core-api</artifactId>
+            <version>0.2.0-0.01-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
+            <version>2.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.48</version>
+        </dependency>
+
         <!-- unit test dependency -->
         <dependency>
             <groupId>org.apache.flink</groupId>

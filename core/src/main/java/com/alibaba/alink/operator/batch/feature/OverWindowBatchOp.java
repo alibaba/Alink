@@ -138,7 +138,7 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 				if (featureClauses[i].op.equals(FeatureClauseOperator.LAST_DISTINCT)) {
 					resColTypes[featureIndex] = inputColTypes[TableUtil.findColIndex(inputColNames,
 						(String) featureClauses[i].inputParams[0])];
-				} else {
+				}  else {
 					resColTypes[featureIndex] = inputColTypes[TableUtil.findColIndex(inputColNames, featureClauses[i].inColName)];
 				}
 			} else {

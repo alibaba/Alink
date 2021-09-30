@@ -42,7 +42,6 @@ public class QuantileDiscretizerTrainBatchOpTest extends AlinkTestBase {
 			.setSelectedCols(new String[] {colnames[1], colnames[2]});
 
 		qop.lazyPrint(-1);
-		;
 
 		qpop.linkFrom(qop, sourceBatchOp).print();
 	}

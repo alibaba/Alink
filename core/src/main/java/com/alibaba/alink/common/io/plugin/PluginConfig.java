@@ -18,7 +18,6 @@
 
 package com.alibaba.alink.common.io.plugin;
 
-import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
 
@@ -37,16 +36,16 @@ import java.util.Optional;
 public class PluginConfig {
 	private static final Logger LOG = LoggerFactory.getLogger(PluginConfig.class);
 
-	private final Optional<Path> pluginsPath;
+	private final Optional <Path> pluginsPath;
 
 	private final String[] alwaysParentFirstPatterns;
 
-	private PluginConfig(Optional<Path> pluginsPath, String[] alwaysParentFirstPatterns) {
+	private PluginConfig(Optional <Path> pluginsPath, String[] alwaysParentFirstPatterns) {
 		this.pluginsPath = pluginsPath;
 		this.alwaysParentFirstPatterns = alwaysParentFirstPatterns;
 	}
 
-	public Optional<Path> getPluginsPath() {
+	public Optional <Path> getPluginsPath() {
 		return pluginsPath;
 	}
 
@@ -61,27 +60,28 @@ public class PluginConfig {
 	}
 
 	public static final String DEFAULT_FLINK_PLUGINS_DIRS = "plugins";
+	public static final String ENV_FLINK_PLUGINS_DIR = "FLINK_PLUGINS_DIR";
 
-	private static Optional<Path> getPluginsDirPath(Configuration configuration) {
+	private static Optional <Path> getPluginsDirPath(Configuration configuration) {
 		Map <String, String> env = System.getenv();
 
-		String pluginsDir = env.getOrDefault(ConfigConstants.ENV_FLINK_PLUGINS_DIR, DEFAULT_FLINK_PLUGINS_DIRS);
+		String pluginsDir = env.getOrDefault(ENV_FLINK_PLUGINS_DIR, DEFAULT_FLINK_PLUGINS_DIRS);
 
-		if (!env.containsKey(ConfigConstants.ENV_FLINK_PLUGINS_DIR)
-			&& configuration.containsKey(ConfigConstants.ENV_FLINK_PLUGINS_DIR)) {
+		if (!env.containsKey(ENV_FLINK_PLUGINS_DIR)
+			&& configuration.containsKey(ENV_FLINK_PLUGINS_DIR)) {
 
-			pluginsDir = configuration.getString(ConfigConstants.ENV_FLINK_PLUGINS_DIR, null);
+			pluginsDir = configuration.getString(ENV_FLINK_PLUGINS_DIR, null);
 		}
 
 		if (pluginsDir == null) {
-			LOG.info("Environment variable [{}] is not set", ConfigConstants.ENV_FLINK_PLUGINS_DIR);
+			LOG.info("Environment variable [{}] is not set", ENV_FLINK_PLUGINS_DIR);
 			return Optional.empty();
 		}
 
 		File pluginsDirFile = new File(pluginsDir);
 		if (!pluginsDirFile.isDirectory()) {
 			LOG.warn("Environment variable [{}] is set to [{}] but the directory doesn't exist",
-				ConfigConstants.ENV_FLINK_PLUGINS_DIR,
+				ENV_FLINK_PLUGINS_DIR,
 				pluginsDir);
 			return Optional.empty();
 		}

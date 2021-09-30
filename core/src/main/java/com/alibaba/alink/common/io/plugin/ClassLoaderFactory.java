@@ -1,7 +1,5 @@
 package com.alibaba.alink.common.io.plugin;
 
-import org.apache.flink.util.TemporaryClassLoaderContext;
-
 import java.io.Serializable;
 import java.security.PrivilegedExceptionAction;
 import java.util.Map;

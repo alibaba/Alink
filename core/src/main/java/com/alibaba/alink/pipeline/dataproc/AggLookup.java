@@ -1,7 +1,10 @@
 package com.alibaba.alink.pipeline.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.util.function.TriFunction;
 
+import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.AggLookupModelMapper;
 import com.alibaba.alink.params.dataproc.AggLookupParams;

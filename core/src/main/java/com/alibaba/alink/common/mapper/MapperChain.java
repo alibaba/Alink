@@ -4,6 +4,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.utils.TableUtil;
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,23 +43,38 @@ public class MapperChain {
 	}
 
 	public void open() {
-		for(Mapper mapper: mappers) {
+		for (Mapper mapper : mappers) {
 			mapper.open();
 		}
 	}
 
 	public void close() {
-		for(Mapper mapper: mappers) {
+		for (Mapper mapper : mappers) {
 			mapper.close();
 		}
 	}
 
 	public TableSchema getOutTableSchema() {
-		return this.mappers[this.mappers.length -1 ].getOutputSchema();
+		return this.mappers[this.mappers.length - 1].getOutputSchema();
 	}
 
 	public Row map(Row row) throws Exception {
-		if (isOneMapper) {
+		boolean isModelStream = false;
+		for (Mapper mapper : this.mappers) {
+			if (mapper instanceof ComboModelMapper) {
+				if (ModelStreamModelMapperAdapt.useModelStreamFile((ModelMapper) mapper)) {
+					isModelStream = true;
+					break;
+				}
+			}
+		}
+		if (isModelStream) {
+			Row out = row;
+			for (int i = 0; i < mappers.length; i++) {
+				out = mappers[i].map(out);
+			}
+			return Row.project(out, this.outputColIndices);
+		} else if (isOneMapper) {
 			return mappers[0].map(row);
 		} else {
 			Row out = this.threadBufferRow.get();
@@ -87,7 +103,7 @@ public class MapperChain {
 	}
 
 	private void getInOutIndices() {
-		if(this.mappers.length > 0) {
+		if (this.mappers.length > 0) {
 			String[] bufferRowColNames = mergeCols();
 			this.bufferRowColNum = bufferRowColNames.length;
 			this.mapperSelectedColIndices = new ArrayList <>();
@@ -108,8 +124,9 @@ public class MapperChain {
 
 	private static void expandMappers(Mapper[] mappers, List <Mapper> flattened) {
 		for (Mapper mapper : mappers) {
-			if (mapper instanceof ComboModelMapper) {
-				if(((ComboModelMapper) mapper).mapperList != null) {
+			if (mapper instanceof ComboModelMapper && !ModelStreamModelMapperAdapt.useModelStreamFile(
+				(ModelMapper) mapper)) {
+				if (((ComboModelMapper) mapper).mapperList != null) {
 					Mapper[] innerMappers = ((ComboModelMapper) mapper).mapperList.mappers;
 					if (innerMappers != null) {
 						expandMappers(innerMappers, flattened);
@@ -118,7 +135,7 @@ public class MapperChain {
 			} else {
 				if (mapper instanceof ModelMapper
 					&& ModelStreamModelMapperAdapt.useModelStreamFile((ModelMapper) mapper)) {
-					mapper =  new ModelStreamModelMapperAdapt((ModelMapper) mapper);
+					mapper = new ModelStreamModelMapperAdapt((ModelMapper) mapper);
 				}
 				flattened.add(mapper);
 			}

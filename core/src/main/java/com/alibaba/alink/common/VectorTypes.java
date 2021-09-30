@@ -23,6 +23,7 @@ public class VectorTypes {
 	 * <code>SparseVector</code> type information.
 	 */
 	public static final TypeInformation <SparseVector> SPARSE_VECTOR = TypeInformation.of(SparseVector.class);
+
 	/**
 	 * <code>Vector</code> type information.
 	 * For efficiency, use type information of sub-class <code>DenseVector</code> and <code>SparseVector</code>

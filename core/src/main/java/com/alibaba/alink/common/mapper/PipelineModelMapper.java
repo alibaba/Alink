@@ -42,7 +42,7 @@ public class PipelineModelMapper extends ComboModelMapper {
 																						   TableSchema dataSchema,
 																						   Params params) {
 		if (isExtendModel(params)) {
-			Tuple2 <String[], TypeInformation[]> tuple2 = getExtendModelSchema(modelSchema);
+			Tuple2 <String[], TypeInformation <?>[]> tuple2 = getExtendModelSchema(modelSchema);
 			return Tuple4.of(this.getDataSchema().getFieldNames(), tuple2.f0, tuple2.f1, new String[] {});
 		} else {
 			return Tuple4.of(this.getDataSchema().getFieldNames(),
@@ -57,17 +57,16 @@ public class PipelineModelMapper extends ComboModelMapper {
 		TableSchema modelSchema = this.getModelSchema();
 		if (isExtendModel(this.params)) {
 			String[] modelColNames = this.getModelSchema().getFieldNames();
-			TypeInformation[] modelColTypes = this.getModelSchema().getFieldTypes();
-			Tuple2 <String[], TypeInformation[]> tuple2 = getExtendModelSchema(this.getModelSchema());
+			TypeInformation <?>[] modelColTypes = this.getModelSchema().getFieldTypes();
+			Tuple2 <String[], TypeInformation <?>[]> tuple2 = getExtendModelSchema(this.getModelSchema());
 
 			int fromIdx = 0;
 			int toIdx = modelColNames.length - 1 - tuple2.f0.length;
 
 			String[] colNames = Arrays.copyOfRange(modelColNames, fromIdx, toIdx);
-			TypeInformation[] colTypes = Arrays.copyOfRange(modelColTypes, fromIdx, toIdx);
+			TypeInformation <?>[] colTypes = Arrays.copyOfRange(modelColTypes, fromIdx, toIdx);
 			modelSchema = new TableSchema(colNames, colTypes);
 		}
-
 		mapperList = ModelExporterUtils.loadMapperListFromStages(modelRows, modelSchema, getDataSchema());
 	}
 
@@ -96,7 +95,7 @@ public class PipelineModelMapper extends ComboModelMapper {
 
 	public static TableSchema getExtendModelSchema(TableSchema modelSchema,
 												   String[] extendedColNames,
-												   TypeInformation[] extendedColTypes) {
+												   TypeInformation <?>[] extendedColTypes) {
 		String[] originCols = modelSchema.getFieldNames();
 		TypeInformation <?>[] originTypes = modelSchema.getFieldTypes();
 
@@ -118,7 +117,7 @@ public class PipelineModelMapper extends ComboModelMapper {
 		return new TableSchema(newCols, newTypes);
 	}
 
-	public static Tuple2 <String[], TypeInformation[]> getExtendModelSchema(
+	public static Tuple2 <String[], TypeInformation <?>[]> getExtendModelSchema(
 		TableSchema extendedModelSchema) {
 
 		String[] modelCols = extendedModelSchema.getFieldNames();
@@ -133,7 +132,7 @@ public class PipelineModelMapper extends ComboModelMapper {
 		int selectColStartIndex = splitColIndex + 1;
 
 		String[] extendedColNames = new String[modelCols.length - selectColStartIndex];
-		TypeInformation[] extendedColTypes = new TypeInformation[extendedColNames.length];
+		TypeInformation <?>[] extendedColTypes = new TypeInformation[extendedColNames.length];
 
 		for (int i = 0; i < extendedColNames.length; i++) {
 			extendedColNames[i] = modelCols[selectColStartIndex + i].substring(9);

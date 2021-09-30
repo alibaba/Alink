@@ -7,11 +7,11 @@ import org.apache.flink.core.fs.FileSystemFactory;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.FileUtils;
-import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory.HadoopFileSystemClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.params.io.HadoopFileSystemParams;
 import org.apache.commons.io.IOUtils;
 

@@ -1,15 +1,5 @@
 package com.alibaba.alink.operator.batch.recommendation;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.HugeMultiStringIndexerPredictBatchOp;
-import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerTrainBatchOp;
-import com.alibaba.alink.operator.common.recommendation.SwingRecommModelConverter;
-import com.alibaba.alink.operator.common.recommendation.SwingResData;
-import com.alibaba.alink.params.recommendation.SwingTrainParams;
-import com.alibaba.alink.pipeline.dataproc.StringIndexer;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichGroupReduceFunction;
@@ -18,14 +8,26 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.utils.DataSetUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import java.util.*;
+import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.recommendation.SwingRecommModelConverter;
+import com.alibaba.alink.operator.common.recommendation.SwingResData;
+import com.alibaba.alink.params.recommendation.SwingTrainParams;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Swing is an item recall model. The topology of user-item graph usually can be described as
@@ -48,6 +50,10 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
         String userCol = getUserCol();
         String itemCol = getItemCol();
         String rateCol = getRateCol();
+        Integer maxUserItems = getMaxUserItems();
+        Integer minUserItems = getMinUserItems();
+        Integer maxItemNumber = getMaxItemNumber();
+        boolean normalize = getResultNormalize();
         boolean hasRateCol = rateCol != null;
         String[] selectedCols;
         if (hasRateCol) {
@@ -61,15 +67,6 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
         long mlEnvId = getMLEnvironmentId();
 
         TypeInformation itemType = TableUtil.findColType(in.getSchema(), itemCol);
-
-        MultiStringIndexerTrainBatchOp stringIndexerModel = new MultiStringIndexerTrainBatchOp()
-            .setMLEnvironmentId(mlEnvId)
-            .setSelectedCols(userCol)
-            .linkFrom(in);
-
-        in = new HugeMultiStringIndexerPredictBatchOp()
-            .setSelectedCols(userCol)
-            .linkFrom(stringIndexerModel, in);
 
         DataSet<Row> distinctItem = in.select(itemCol)
             .getDataSet()
@@ -92,20 +89,16 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
             .withBroadcastSet(indexAndItem, "indexAndItem")
             .name("map_item_data");
 
-        DataSet<Row> itemCount = inputData
-            .groupBy(new RowKeySelector(1))
-            .reduceGroup(new CountItem(hasRateCol))
-            .name("count_item");
-
-        DataSet<Tuple3<Long, Tuple2<long[], float[]>, Float>> mainItemData = itemCount
+        //存储item ID，同用户其他item ID
+        DataSet<Tuple2<Long, Long[]>> mainItemData = inputData
             .groupBy(new RowKeySelector(0))
-            .reduceGroup(new BuildSwingData())
+            .reduceGroup(new BuildSwingData(maxUserItems, minUserItems))
             .name("build_main_item_data");
 
         DataSet<Row> itemSimilarity = mainItemData
             .groupBy(0)
-            .reduceGroup(new CalcSimilarity(getAlpha(), getUserAlpha(), getUserBeta()))
-            .name("reduce_operation");
+            .reduceGroup(new CalcSimilarity(getAlpha(), maxItemNumber, getUserAlpha(), getUserBeta(), normalize))
+            .name("compute_similarity");
 
         DataSet<Row> modelData = itemSimilarity
             .mapPartition(new BuildModelData(itemCol))
@@ -164,15 +157,11 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
     private static class CountItem implements GroupReduceFunction<Row, Row> {
         private static final long serialVersionUID = -7426335460720352495L;
 
-        boolean hasRateCol;
-
-        CountItem(boolean hasRateCol) {
-            this.hasRateCol = hasRateCol;
-        }
+        CountItem() {}
 
         @Override
         public void reduce(Iterable<Row> values, Collector<Row> out) throws Exception {
-            float number = 0;
+            int number = 0;
             List<Row> valueSave = new ArrayList<>();
             for (Row value : values) {
                 ++number;
@@ -193,138 +182,123 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
      * group by user col.
      */
     private static class BuildSwingData
-        implements GroupReduceFunction<Row, Tuple3<Long, Tuple2<long[], float[]>, Float>> {
+        implements GroupReduceFunction<Row, Tuple2<Long, Long[]>> {
         private static final long serialVersionUID = 6417591701594465880L;
+
+        int maxUserItems;
+        int minUserItems;
+
+        BuildSwingData(int maxUserItems, int minUserItems) {
+            this.maxUserItems = maxUserItems;
+            this.minUserItems = minUserItems;
+        }
 
         @Override
         public void reduce(Iterable<Row> values,
-                           Collector<Tuple3<Long, Tuple2<long[], float[]>, Float>> out) throws Exception {
-            ArrayList<Number[]> itemAndRateNum = new ArrayList<>();
+                           Collector<Tuple2<Long, Long[]>> out) throws Exception {
+            ArrayList<Long> userItemList = new ArrayList<>();
             for (Row value : values) {
-                itemAndRateNum.add(new Number[]{(long) value.getField(1), (float) value.getField(2)});
+                userItemList.add((Long) value.getField(1));
             }
-            int localItemSize = itemAndRateNum.size();
-            Tuple2<long[], float[]> otherItems = new Tuple2<>();
-            otherItems.f0 = new long[localItemSize - 1];
-            otherItems.f1 = new float[localItemSize - 1];
-            for (int i = 0; i < localItemSize; i++) {
-                long mainItem = (long) itemAndRateNum.get(i)[0];
-                float mainItemRateNum = (float) itemAndRateNum.get(i)[1];
-                int count = -1;
-                for (int j = 0; j < localItemSize; j++) {
-                    if (i == j) {
-                        continue;
-                    }
-                    ++count;
-                    otherItems.f0[count] = (long) itemAndRateNum.get(j)[0];
-                    otherItems.f1[count] = (float) itemAndRateNum.get(j)[1];
-                }
-                out.collect(Tuple3.of(mainItem, otherItems, mainItemRateNum));
+            if (userItemList.size() < this.minUserItems || userItemList.size() > this.maxUserItems) {
+                return;
+            }
+            Long[] userItemIDs = new Long[userItemList.size()];
+            for (int i = 0; i < userItemList.size(); i++) {
+                userItemIDs[i] = userItemList.get(i);
+            }
+            for (int i = 0; i < userItemIDs.length; i++) {
+                out.collect(Tuple2.of(userItemIDs[i], userItemIDs));
             }
         }
     }
 
     private static class CalcSimilarity
-        extends RichGroupReduceFunction<Tuple3<Long, Tuple2<long[], float[]>, Float>, Row> {
+        extends RichGroupReduceFunction<Tuple2<Long, Long[]>, Row> {
         private static final long serialVersionUID = -2438120820385058339L;
 
         private final float alpha;
-        private final float userAlpha;
-        private final float userBeta;
+        int maxItemNumber;
+        float userAlpha;
+        float userBeta;
+        boolean normalize;
 
-        CalcSimilarity(float alpha, float userAlpha, float userBeta) {
+        CalcSimilarity(float alpha, int maxItemNumber, float userAlpha, float userBeta, boolean normalize) {
             this.alpha = alpha;
             this.userAlpha = userAlpha;
             this.userBeta = userBeta;
+            this.maxItemNumber = maxItemNumber;
+            this.normalize = normalize;
+        }
+
+        private float computeUserWeight(int size) {
+            return (float)(1.0 / Math.pow(userAlpha + size, userBeta));
         }
 
         @Override
-        public void reduce(Iterable<Tuple3<Long, Tuple2<long[], float[]>, Float>> values,
+        public void reduce(Iterable<Tuple2<Long, Long[]>> values,
                            Collector<Row> out) throws Exception {
-            long mainItem = 0;
-            List<Tuple2<HashSet<Long>, Float>> itemNeighborList = new ArrayList<>();
-            for (Tuple3<Long, Tuple2<long[], float[]>, Float> value : values) {
-                float thisUserRateNum = 0;
+            Long mainItem = null;
+            ArrayList<Long[]> dataList = new ArrayList <>();
+            for (Tuple2<Long, Long[]> value : values) {
                 mainItem = value.f0;
-                int size = value.f1.f0.length;
-                HashSet<Long> thisItems = new HashSet<>(size);
-                Tuple2<long[], float[]> otherItems = value.f1;
-                for (int i = 0; i < size; i++) {
-                    long itemId = otherItems.f0[i];
-                    thisItems.add(itemId);
-                }
-                thisUserRateNum += value.f2;
-                itemNeighborList.add(Tuple2.of(thisItems, thisUserRateNum));
-            }
-
-            Tuple2<long[], float[]> itemsAndSimilarity = calcSimilarity(itemNeighborList, alpha);
-            if (itemsAndSimilarity != null) {
-                out.collect(Row.of(mainItem, itemsAndSimilarity.f0, itemsAndSimilarity.f1));
-                if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-                    System.out.println("here in the " + getRuntimeContext().getIndexOfThisSubtask()
-                        + "th task, main item " + mainItem + " ends reduce.");
+                if (dataList.size() == this.maxItemNumber) {
+                    int randomIndex = (int)(Math.random() * (this.maxItemNumber + 1));
+                    if (randomIndex < this.maxItemNumber) {
+                        dataList.set(randomIndex, value.f1);
+                    }
+                } else {
+                    dataList.add(value.f1);
                 }
             }
-        }
-
-        private double calcUserWeight(double clk) {
-            return Math.pow(userAlpha + clk, userBeta);
-        }
-
-        private Tuple2<long[], float[]> calcSimilarity(List<Tuple2<HashSet<Long>, Float>> itemNeighborList,
-                                                       float alpha) {
-            if (itemNeighborList.isEmpty()) {
-                return null;
+            ArrayList <HashSet <Long>> itemSetList = new ArrayList <>(dataList.size());
+            Float[] userWeights = new Float[dataList.size()];
+            int weightIndex = 0;
+            for (Long[] value : dataList) {
+                HashSet <Long> itemSet = new HashSet <>(value.length);
+                itemSet.addAll(Arrays.asList(value));
+                itemSetList.add(itemSet);
+                userWeights[weightIndex++] = computeUserWeight(value.length);
             }
-            int size = itemNeighborList.size();
-            HashMap<Long, Float> id2swing = new HashMap<>();
-            for (int i = 0; i < size; i++) {
-                double wi = calcUserWeight(itemNeighborList.get(i).f1);
-                for (int j = i + 1; j < size; j++) {
-                    double userWeight = wi * calcUserWeight(itemNeighborList.get(j).f1);
-                    HashSet<Long> interaction = (HashSet<Long>) itemNeighborList.get(i).f0.clone();
-                    interaction.retainAll(itemNeighborList.get(j).f0);
-                    float interactionParam = interaction.size() + alpha;
+
+            //双重遍历，计算swing权重
+            HashMap <Long, Float> id2swing = new HashMap <>();
+            for (int i = 0; i < itemSetList.size(); i++) {
+                for (int j = i + 1; j < itemSetList.size(); j++) {
+                    HashSet <Long> interaction = (HashSet <Long>) itemSetList.get(i).clone();
+                    interaction.retainAll(itemSetList.get(j));
+                    if (interaction.size() == 0) {
+                        continue;
+                    }
+                    float similarity = userWeights[i] * userWeights[j] / (alpha + interaction.size());
                     for (Long id : interaction) {
-                        float similarity = 0;
-                        if (id2swing.containsKey(id)) {
-                            similarity = id2swing.get(id);
+                        if (id.equals(mainItem)) {
+                            continue;
                         }
-                        similarity += userWeight / interactionParam;
-                        id2swing.put(id, similarity);
+                        float itemSimilarity = id2swing.getOrDefault(id, (float) 0) + similarity;
+                        id2swing.put(id, itemSimilarity);
                     }
                 }
             }
+            ArrayList<Tuple2<Long, Float>> itemAndScore = new ArrayList<>();
+            id2swing.forEach(
+                (key, value) -> itemAndScore.add(Tuple2.of(key, value))
+            );
 
-            long[] resItems;
-            float[] resSimilarity;
-            int id2swingSize = id2swing.size();
-            if (id2swingSize == 0) {
-                return null;
-            }
-            int cnt = 0;
-            resItems = new long[id2swingSize];
-            resSimilarity = new float[id2swingSize];
-            Number[][] resData = new Number[id2swingSize][2];
-            for (Map.Entry<Long, Float> entry : id2swing.entrySet()) {
-                Number[] entryData = new Number[2];
-                entryData[0] = entry.getKey();
-                entryData[1] = entry.getValue();
-                resData[cnt] = entryData;
-                ++cnt;
-            }
-            Arrays.sort(resData, new Comparator<Number[]>() {
+            itemAndScore.sort(new Comparator <Tuple2 <Long, Float>>() {
                 @Override
-                public int compare(Number[] o1, Number[] o2) {
-                    return ((Float) o2[1]).compareTo((Float) o1[1]);
+                public int compare(Tuple2 <Long, Float> o1, Tuple2 <Long, Float> o2) {
+                    return 0 - Float.compare(o1.f1, o2.f1);
                 }
             });
-
-            for (int i = 0; i < id2swingSize; i++) {
-                resItems[i] = (long) resData[i][0];
-                resSimilarity[i] = (float) resData[i][1];
+            long[] itemIds = new long[itemAndScore.size()];
+            float[] itemScores = new float[itemAndScore.size()];
+            float maxScore = this.normalize ? itemAndScore.get(0).f1 : 1.0f;
+            for (int i = 0; i < itemAndScore.size(); i++) {
+                itemIds[i] = itemAndScore.get(i).f0;
+                itemScores[i] = itemAndScore.get(i).f1 / maxScore;
             }
-            return Tuple2.of(resItems, resSimilarity);
+            out.collect(Row.of(mainItem, itemIds, itemScores));
         }
     }
 

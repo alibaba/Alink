@@ -3,7 +3,34 @@ package com.alibaba.alink.operator.common.feature.featurebuilder;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 
-import com.alibaba.alink.common.sql.builtin.agg.*;
+import com.alibaba.alink.common.MTableTypes;
+import com.alibaba.alink.common.sql.builtin.agg.AvgUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.BaseUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.CountUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.DenseRankUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.FreqUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.IsExistUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.LagUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.LastDistinctValueUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.LastTimeUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.LastValueUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.ListAggUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.MTableAgg;
+import com.alibaba.alink.common.sql.builtin.agg.MaxUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.MedianUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.MinUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.ModeUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.RankUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.RowNumberUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.SkewnessUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.SquareSumUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.StddevPopUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.StddevSampUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.SumLastUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.SumUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.TimeSeriesAgg;
+import com.alibaba.alink.common.sql.builtin.agg.VarPopUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.VarSampUdaf;
 import com.alibaba.alink.common.utils.JsonConverter;
 
 import static com.alibaba.alink.operator.common.feature.featurebuilder.WindowResColType.RES_TYPE;
@@ -109,8 +136,15 @@ public enum FeatureClauseOperator {
 
 	ROW_NUMBER(Types.LONG, new RowNumberUdaf()),
 
-	CONCAT(Types.STRING, null);
+	CONCAT(Types.STRING, null),
 
+	TIMESERIES_AGG(Types.STRING, new TimeSeriesAgg(false)),
+
+	TIMESERIES_AGG_PRECEDING(Types.STRING, new TimeSeriesAgg(true)),
+
+	MTABLE_AGG_PRECEDING(MTableTypes.M_TABLE, new MTableAgg()),
+
+	MTABLE_AGG(MTableTypes.M_TABLE, new MTableAgg());
 
 	private final TypeInformation resType;
 	private final BaseUdaf calc;
@@ -124,10 +158,8 @@ public enum FeatureClauseOperator {
 		return resType;
 	}
 
-	public BaseUdaf getCalc()  {
+	public BaseUdaf getCalc() {
 		return JsonConverter.fromJson(JsonConverter.toJson(calc), calc.getClass());
 	}
 
-
-
-}
+	}

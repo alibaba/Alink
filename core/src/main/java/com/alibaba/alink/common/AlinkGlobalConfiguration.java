@@ -12,6 +12,8 @@ public final class AlinkGlobalConfiguration {
 
 	private static final PluginDownloader pluginDownloader = new PluginDownloader();
 
+	//private static String pythonPath;
+
 	public synchronized static boolean isPrintProcessInfo() {
 		return printProcessInfo;
 	}
@@ -39,7 +41,16 @@ public final class AlinkGlobalConfiguration {
 		return String.format("flink-%s", flinkVersion.substring(0, lastDotIndex));
 	}
 
-	public static PluginDownloader getPluginDownloader(){
+	public static PluginDownloader getPluginDownloader() {
 		return pluginDownloader;
 	}
+
+	//public static void setPythonPath(String pythonPath) {
+	//	AlinkGlobalConfiguration.pythonPath = pythonPath;
+	//}
+	//
+	//public static String getPythonPath() {
+	//	return AlinkGlobalConfiguration.pythonPath;
+	//}
+
 }

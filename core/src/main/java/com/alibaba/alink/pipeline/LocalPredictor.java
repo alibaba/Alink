@@ -64,10 +64,9 @@ public class LocalPredictor {
 
 		this.mappers.addAll(Arrays.asList(mappers));
 
-		this.mappers.forEach(Mapper::open);
-
 		this.mapperList = new MapperChain(this.mappers.toArray(new Mapper[0]));
 
+		this.mapperList.open();
 	}
 
 	public void merge(LocalPredictor otherPredictor) {
@@ -99,7 +98,8 @@ public class LocalPredictor {
 	}
 
 	public void close() {
-		this.mappers.forEach(Mapper::close);
+		this.mapperList.close();
+		//this.mappers.forEach(Mapper::close);
 	}
 
 }

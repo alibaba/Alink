@@ -39,7 +39,7 @@ import java.nio.charset.Charset;
  */
 public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSplit> {
 
-	private static final int LINE_LENGTH_LIMIT = 1024 * 1024;
+	private static final int LINE_LENGTH_LIMIT = 1024 * 1024 * 1024;
 	private static final int BUFFER_SIZE = 1024 * 1024;
 	private static final long serialVersionUID = -7327585548493815210L;
 	private final boolean ignoreFirstLine;

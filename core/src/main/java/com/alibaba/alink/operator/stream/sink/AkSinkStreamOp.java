@@ -10,6 +10,9 @@ import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.utils.MTableSerializeStreamOp;
+import com.alibaba.alink.operator.stream.utils.TensorSerializeStreamOp;
+import com.alibaba.alink.operator.stream.utils.VectorSerializeStreamOp;
 import com.alibaba.alink.params.io.AkSinkParams;
 
 /**
@@ -27,6 +30,11 @@ public final class AkSinkStreamOp extends BaseSinkStreamOp <AkSinkStreamOp>
 
 	public AkSinkStreamOp(Params params) {
 		super(AnnotationUtils.annotatedName(AkSinkStreamOp.class), params);
+	}
+
+	@Override
+	public AkSinkStreamOp linkFrom(StreamOperator <?>... inputs) {
+		return sinkFrom(checkAndGetFirst(inputs));
 	}
 
 	@Override

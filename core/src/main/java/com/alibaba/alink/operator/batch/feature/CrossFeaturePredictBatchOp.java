@@ -6,6 +6,9 @@ import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.feature.CrossFeatureModelMapper;
 import com.alibaba.alink.params.feature.CrossFeaturePredictParams;
 
+/**
+ * Cross selected columns to build new vector type data.
+ */
 public class CrossFeaturePredictBatchOp extends ModelMapBatchOp<CrossFeaturePredictBatchOp>
 	implements CrossFeaturePredictParams <CrossFeaturePredictBatchOp> {
 

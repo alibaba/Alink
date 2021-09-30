@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.batch.huge.impl;
 
+import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -9,6 +10,7 @@ import com.alibaba.alink.operator.common.aps.ApsCheckpoint;
 import com.alibaba.alink.operator.common.graph.GraphEmbedding;
 import com.alibaba.alink.params.nlp.Node2VecParams;
 
+@Internal
 public abstract class Node2VecImpl<T extends Node2VecImpl <T>> extends BatchOperator <T>
 	implements Node2VecParams <T> {
 	private static final long serialVersionUID = -2095797659216791404L;

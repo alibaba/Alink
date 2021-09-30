@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.batch.huge.impl;
 
+import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -9,6 +10,7 @@ import com.alibaba.alink.params.nlp.LabeledWord2VecParams;
 import java.util.ArrayList;
 import java.util.List;
 
+@Internal
 public class LabeledWord2VecImpl<T extends LabeledWord2VecImpl <T>> extends BatchOperator <T>
 	implements LabeledWord2VecParams <T> {
 	private static final long serialVersionUID = -451708256014323559L;
