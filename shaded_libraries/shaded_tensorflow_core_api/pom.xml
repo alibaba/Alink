@@ -16,7 +16,7 @@
 
     <groupId>com.alibaba.alink</groupId>
     <artifactId>shaded_tensorflow_core_api</artifactId>
-    <version>${tensorflow.core.api.version}-0.3-SNAPSHOT</version>
+    <version>${tensorflow.core.api.version}-0.3</version>
 
     <build>
         <plugins>
