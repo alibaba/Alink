@@ -1,7 +1,7 @@
 package com.alibaba.alink.common.io.catalog.plugin;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.table.descriptors.ModuleDescriptorValidator;
+import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
 import org.apache.flink.table.factories.TableFactory;
 
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
@@ -40,7 +40,7 @@ public class OdpsClassLoaderFactory extends ClassLoaderFactory implements Serial
 
 		@Override
 		public boolean test(TableFactory factory) {
-			String catalogType = factory.requiredContext().get(ModuleDescriptorValidator.MODULE_TYPE);
+			String catalogType = factory.requiredContext().get(CatalogDescriptorValidator.CATALOG_TYPE);
 
 			return catalogType != null
 				&& catalogType.equalsIgnoreCase(registerKey.getName());
