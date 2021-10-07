@@ -426,6 +426,6 @@ public class OdpsCatalog extends InputOutputFormatCatalog {
 
 		Context context = new DefaultCatalogContext(catalogName, properties, null, null);
 
-		return (InputOutputFormatCatalog) factory.createCatalog(context);
+		return (InputOutputFormatCatalog) factory.createCatalog(catalogName, properties);
 	}
 }
