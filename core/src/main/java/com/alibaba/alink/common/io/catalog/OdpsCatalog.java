@@ -207,7 +207,7 @@ public class OdpsCatalog extends InputOutputFormatCatalog {
 
 	@Override
 	public List <CatalogPartitionSpec> listPartitions(ObjectPath tablePath, CatalogPartitionSpec partitionSpec)
-		throws TableNotExistException, TableNotPartitionedException, PartitionSpecInvalidException, CatalogException {
+		throws TableNotExistException, TableNotPartitionedException, CatalogException {
 
 		return classLoaderFactory.doAsThrowRuntime(() -> loadCatalog().listPartitions(tablePath, partitionSpec));
 	}
