@@ -44,7 +44,7 @@ public class KeywordsExtractionBatchOpTest extends AlinkTestBase {
 				.setMethod("TEXT_RANK")
 				.setTopN(3);
 
-		String[] output = {"+I[基于 算法 建模, 1]"};
+		String[] output = {"基于 算法 建模,1"};
 		List <Row> res = evalOp.linkFrom(words).collect();
 		String[] results = new String[res.size()];
 		for (int i = 0; i < res.size(); i++) {
