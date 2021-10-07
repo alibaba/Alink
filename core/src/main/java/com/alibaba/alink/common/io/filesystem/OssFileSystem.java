@@ -5,11 +5,11 @@ import org.apache.flink.core.fs.FSDataOutputStream;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.FileSystemFactory;
 import org.apache.flink.core.fs.Path;
+import org.apache.flink.core.plugin.TemporaryClassLoaderContext;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
-import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.params.io.OssFileSystemParams;
 
 import java.io.IOException;
@@ -80,12 +80,12 @@ public final class OssFileSystem extends BaseFileSystem <OssFileSystem> {
 
 		try {
 			if (getParams().get(OssFileSystemParams.FS_URI) != null) {
-				try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(factory.getClassLoader())) {
+				try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(factory.getClassLoader())) {
 					loaded = factory.create(new Path(getParams().get(OssFileSystemParams.FS_URI)).toUri());
 				}
 				return loaded;
 			} else if (path != null) {
-				try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(factory.getClassLoader())) {
+				try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(factory.getClassLoader())) {
 					loaded = factory.create(path.toUri());
 				}
 				return loaded;
@@ -99,7 +99,7 @@ public final class OssFileSystem extends BaseFileSystem <OssFileSystem> {
 
 	@Override
 	public FSDataOutputStream create(Path f, WriteMode overwriteMode) throws IOException {
-		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(load(f).getClass()
+		try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(load(f).getClass()
 			.getClassLoader())) {
 			return super.create(f, overwriteMode);
 		}

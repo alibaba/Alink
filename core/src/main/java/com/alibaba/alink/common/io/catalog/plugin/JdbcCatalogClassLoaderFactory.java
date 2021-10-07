@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.io.catalog.plugin;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.core.plugin.TemporaryClassLoaderContext;
 import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
 import org.apache.flink.table.factories.TableFactory;
 
@@ -11,6 +12,8 @@ import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 
 import java.io.Serializable;
+import java.security.PrivilegedExceptionAction;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 

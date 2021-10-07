@@ -317,7 +317,7 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 	public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists)
 		throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
 
-		String partition = table.getOptions().get(OdpsSinkParams.PARTITION.getName());
+		String partition = table.getProperties().get(OdpsSinkParams.PARTITION.getName());
 		partition = checkAndConvertPartitionSpecFormat(partition);
 
 		if (!StringUtils.isNullOrWhitespaceOnly(partition) && tableExists(tablePath)) {
@@ -339,7 +339,7 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 			}
 		}
 
-		String lifeCycleStr = table.getOptions().get(OdpsSinkParams.LIFE_CYCLE.getName());
+		String lifeCycleStr = table.getProperties().get(OdpsSinkParams.LIFE_CYCLE.getName());
 
 		try {
 			if (lifeCycleStr == null || Long.parseLong(lifeCycleStr) <= 0) {
