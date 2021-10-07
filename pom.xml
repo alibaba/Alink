@@ -91,7 +91,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <alink.flink.major.version>1.13</alink.flink.major.version>
+        <alink.flink.major.version>1.12</alink.flink.major.version>
         <flink.version>1.13.0</flink.version>
         <alink.scala.major.version>2.11</alink.scala.major.version>
         <scala.version>2.11.11</scala.version>
