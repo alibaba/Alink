@@ -134,10 +134,9 @@ public class OdpsCatalog extends InputOutputFormatCatalog {
 	}
 
 	@Override
-	public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
+	public void dropDatabase(String name, boolean ignoreIfNotExists)
 		throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
-
-		classLoaderFactory.doAsThrowRuntime(() -> loadCatalog().dropDatabase(name, ignoreIfNotExists, cascade));
+		classLoaderFactory.doAsThrowRuntime(() -> loadCatalog().dropDatabase(name, ignoreIfNotExists));
 	}
 
 	@Override
@@ -210,13 +209,6 @@ public class OdpsCatalog extends InputOutputFormatCatalog {
 		throws TableNotExistException, TableNotPartitionedException, CatalogException {
 
 		return classLoaderFactory.doAsThrowRuntime(() -> loadCatalog().listPartitions(tablePath, partitionSpec));
-	}
-
-	@Override
-	public List <CatalogPartitionSpec> listPartitionsByFilter(ObjectPath tablePath, List <Expression> filters)
-		throws TableNotExistException, TableNotPartitionedException, CatalogException {
-
-		return classLoaderFactory.doAsThrowRuntime(() -> loadCatalog().listPartitionsByFilter(tablePath, filters));
 	}
 
 	@Override

@@ -70,9 +70,13 @@ public class EvalRegressionBatchOpTest extends AlinkTestBase {
 			op.print();
 			Assert.fail("Expected an IllegalStateException to be thrown");
 		} catch (JobExecutionException e) {
-			// pass
+			Assert.assertEquals(e.getCause().getMessage(),
+				"The user defined 'open()' method caused an exception: Please check the evaluation input! there is no "
+					+ "effective row!");
 		} catch (ProgramInvocationException e) {
-			// pass
+			Assert.assertEquals(e.getCause().getCause().getMessage(),
+				"The user defined 'open()' method caused an exception: Please check the evaluation input! there is no "
+					+ "effective row!");
 		}
 
 	}
