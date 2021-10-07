@@ -77,7 +77,7 @@ public class FastDistanceVectorData extends FastDistanceData {
 
 	public static FastDistanceVectorData fromString(String s) {
 		Params params = Params.fromJson(s);
-		Row row = parseRowCompatible(params);
+		Row row = params.getOrDefault("rows", Row.class, null);
 		String vector = params.get("vector", String.class);
 		DenseVector label = params.get("label", DenseVector.class);
 		FastDistanceVectorData vectorData = new FastDistanceVectorData(VectorUtil.getVector(vector), row);
