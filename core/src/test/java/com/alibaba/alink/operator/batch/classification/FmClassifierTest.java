@@ -17,6 +17,7 @@ import java.util.function.Consumer;
 public class FmClassifierTest extends AlinkTestBase {
 	@Test
 	public void testFm() throws Exception {
+		//MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
 		AlinkGlobalConfiguration.setPrintProcessInfo(true);
 		BatchOperator trainData = new MemSourceBatchOp(
 			new Object[][] {

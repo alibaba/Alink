@@ -27,6 +27,8 @@ public class LassoRegressionTest extends AlinkTestBase {
 		BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
 		//StreamOperator svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
 
+		//        MLEnvironmentFactory.getDefault().getExecutionEnvironment().getConfig().disableSysoutLogging();
+
 		String[] xVars = new String[] {"f0", "f1", "f2"};
 		String yVar = "label";
 		String vec = "vec";
