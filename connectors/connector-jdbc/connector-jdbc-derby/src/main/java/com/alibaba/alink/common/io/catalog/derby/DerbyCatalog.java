@@ -5,9 +5,9 @@ import org.apache.flink.api.common.io.RichInputFormat;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.io.jdbc.JDBCInputFormat;
 import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat;
+import org.apache.flink.api.java.io.jdbc.dialect.JDBCDialect;
+import org.apache.flink.api.java.io.jdbc.dialect.JDBCDialects;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
-import org.apache.flink.connector.jdbc.dialect.JdbcDialect;
-import org.apache.flink.connector.jdbc.dialect.JdbcDialects;
 import org.apache.flink.core.io.InputSplit;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.DataTypes;
@@ -62,7 +62,7 @@ import java.util.List;
 
 public class DerbyCatalog extends JdbcCatalog {
 
-	private static final JdbcDialect DERBY_DIALECT = JdbcDialects
+	private static final JDBCDialect DERBY_DIALECT = JDBCDialects
 		.get("jdbc:derby:")
 		.orElseThrow(
 			() -> new IllegalArgumentException("Could not find the derby dialect.")

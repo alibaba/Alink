@@ -6,10 +6,10 @@ import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.core.fs.Path;
+import org.apache.flink.core.plugin.TemporaryClassLoaderContext;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
 import org.apache.flink.table.factories.TableFactory;
-import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import com.alibaba.alink.common.io.catalog.HiveCatalog;
 import com.alibaba.alink.common.io.filesystem.FilePath;
@@ -50,7 +50,7 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 
 		ClassLoader classLoader = create();
 
-		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
+		try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(classLoader)) {
 			if (actionContext.get(HiveCatalogParams.KERBEROS_PRINCIPAL) == null
 				|| actionContext.get(HiveCatalogParams.KERBEROS_KEYTAB) == null) {
 
@@ -97,7 +97,7 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 
 	private void installSecurity(ClassLoader classLoader) {
 		if (installed == null || !installed) {
-			try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
+			try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(classLoader)) {
 
 				if (System.getProperties().containsKey("java.security.krb5.conf") &&
 					Files.exists(Paths.get(System.getProperty("java.security.krb5.conf")))) {
@@ -154,7 +154,7 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 			return null;
 		}
 
-		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
+		try (TemporaryClassLoaderContext context = new TemporaryClassLoaderContext(classLoader)) {
 
 			Class <?> initializer = Class.forName(
 				"com.alibaba.alink.common.io.catalog.hive.plugin.initializer.LoginUgi",

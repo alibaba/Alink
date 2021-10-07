@@ -3,8 +3,8 @@ package com.alibaba.alink.common.sql.builtin;
 import com.alibaba.alink.common.sql.builtin.agg.*;
 import com.alibaba.alink.common.sql.builtin.time.*;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 
 public class BuildInAggRegister {
     public static final String EXTEND = "_preceding";

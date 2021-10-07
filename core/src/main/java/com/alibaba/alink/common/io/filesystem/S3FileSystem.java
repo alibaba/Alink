@@ -5,10 +5,10 @@ import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.FileSystemFactory;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory.S3FileSystemClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.params.io.S3FileSystemParams;
 
 import java.io.IOException;
