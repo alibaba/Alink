@@ -181,7 +181,7 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 	}
 
 	@Override
-	public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
+	public void dropDatabase(String name, boolean ignoreIfNotExists)
 		throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
 
 		throw new UnsupportedOperationException();
@@ -456,13 +456,6 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 	}
 
 	@Override
-	public List <CatalogPartitionSpec> listPartitionsByFilter(ObjectPath tablePath, List <Expression> filters)
-		throws TableNotExistException, TableNotPartitionedException, CatalogException {
-
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public CatalogPartition getPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec)
 		throws PartitionNotExistException, CatalogException {
 		try {
@@ -540,7 +533,7 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 			.functions()
 			.get(functionPath.getDatabaseName(), functionPath.getObjectName());
 
-		return new CatalogFunctionImpl(odpsFunction.getClassPath());
+		return new CatalogFunctionImpl(odpsFunction.getClassPath(), new HashMap <>());
 	}
 
 	@Override
