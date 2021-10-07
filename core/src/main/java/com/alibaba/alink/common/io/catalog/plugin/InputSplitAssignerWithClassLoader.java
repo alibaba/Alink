@@ -2,11 +2,9 @@ package com.alibaba.alink.common.io.catalog.plugin;
 
 import org.apache.flink.core.io.InputSplit;
 import org.apache.flink.core.io.InputSplitAssigner;
-import org.apache.flink.util.InstantiationUtil;
 
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
