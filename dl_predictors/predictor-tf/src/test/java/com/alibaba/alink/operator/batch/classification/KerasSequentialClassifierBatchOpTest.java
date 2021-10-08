@@ -96,6 +96,7 @@ public class KerasSequentialClassifierBatchOpTest {
 		testConfig(3, 0, PythonFileUtils.createTempWorkDir("keras_sequential_train_"));
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testMultiWorkersPS() throws Exception {
 		testConfig(3, null, null);

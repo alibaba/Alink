@@ -7,10 +7,13 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
+import com.alibaba.alink.testutil.categories.DLTest;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class BertTextClassifierPredictStreamOpTest {
 
+	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
 		System.setProperty("direct.reader.policy",
