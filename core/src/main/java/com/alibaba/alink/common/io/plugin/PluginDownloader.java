@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class PluginDownloader {
 
-	private final static String MAIN_URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files-test";
+	private final static String MAIN_URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files";
 
 	private Map <String, PluginDownloaderConfig> jarsPluginConfigs;
 	private boolean isJarsPluginConfigLoaded = false;
