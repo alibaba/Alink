@@ -44,11 +44,11 @@ public class StringSimilarityPairwiseTest {
 		list.sort(Comparator.comparingLong(o -> (long) o.getField(0)));
 
 		String[] output = {
-			"+I[1, 北京, 北京, 1.0]",
-			"+I[2, 北京欢迎, 中国人民, 0.0]",
-			"+I[3, Beijing, Beijing, 1.0]",
-			"+I[4, Beijing, Chinese, 0.0]",
-			"+I[5, Good Morning!, Good Evening!, 0.4]"
+			"1,北京,北京,1.0",
+			"2,北京欢迎,中国人民,0.0",
+			"3,Beijing,Beijing,1.0",
+			"4,Beijing,Chinese,0.0",
+			"5,Good Morning!,Good Evening!,0.4"
 		};
 
 		String[] results = new String[list.size()];
