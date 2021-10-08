@@ -37,6 +37,64 @@
                 </executions>
             </plugin>
 
+            <!-- build alink_open_python_runner.tar.gz -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>Make Python</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="main">
+                                <mkdir dir="${project.build.directory}/tmp_py"/>
+                                <copy todir="${project.build.directory}/tmp_py" overwrite="true">
+                                    <fileset dir="${project.basedir}/src/main/python/python_runner" includes="**" />
+                                </copy>
+                                <tar destfile="${project.build.directory}/extra_resources/alink_open_python_runner.tar.gz"
+                                     compression="gzip">
+                                    <tarfileset dir="${project.build.directory}/tmp_py">
+                                        <include name="*.py"/>
+                                        <include name="**/*.py"/>
+                                    </tarfileset>
+                                    <tarfileset dir="${project.build.directory}/tmp_py"
+                                                filemode="755">
+                                        <include name="*.sh"/>
+                                        <include name="**/*.sh"/>
+                                    </tarfileset>
+                                </tar>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- add alink_open_python_runner.tar.gz to resources -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>Add_TO_RESOURCE</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/extra_resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
