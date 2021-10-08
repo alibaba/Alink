@@ -51,6 +51,7 @@ public class TensorFlow2StreamOpTest {
 		StreamOperator.execute();
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testAllReduce() throws Exception {
 		StreamOperator.setParallelism(3);
@@ -84,6 +85,7 @@ public class TensorFlow2StreamOpTest {
 		StreamOperator.execute();
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testWithAutoWorkersPSs() throws Exception {
 		StreamOperator.setParallelism(3);

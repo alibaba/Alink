@@ -43,31 +43,37 @@ public class BertTextClassifierTrainBatchOpTest {
 		BatchOperator.execute();
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testSingleWorker() throws Exception {
 		testConfig(1, null, null);
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testSingleWorkerModelDir() throws Exception {
 		testConfig(1, null, PythonFileUtils.createTempWorkDir("bert_text_classifier_train_"));
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testMultiWorkersAllReduce() throws Exception {
 		testConfig(3, 0, null);
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testMultiWorkersAllReduceModelDir() throws Exception {
 		testConfig(3, 0, PythonFileUtils.createTempWorkDir("bert_text_classifier_train_"));
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testMultiWorkersPS() throws Exception {
 		testConfig(3, null, null);
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testMultiWorkersPSModelDir() throws Exception {
 		testConfig(3, null, PythonFileUtils.createTempWorkDir("bert_text_classifier_train_"));
