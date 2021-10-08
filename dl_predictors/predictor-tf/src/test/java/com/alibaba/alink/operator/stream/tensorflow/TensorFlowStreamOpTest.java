@@ -50,6 +50,7 @@ public class TensorFlowStreamOpTest {
 		StreamOperator.execute();
 	}
 
+	@Category(DLTest.class)
 	@Test
 	public void testWithAutoWorkersPSs() throws Exception {
 		StreamOperator.setParallelism(3);
