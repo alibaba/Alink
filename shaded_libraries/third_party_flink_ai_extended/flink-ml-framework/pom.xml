@@ -12,6 +12,30 @@
     <artifactId>flink-ml-framework</artifactId>
     <name>${project.artifactId}</name>
     <packaging>jar</packaging>
+
+    <properties>
+        <protoc-artifact>com.google.protobuf:protoc:${protobuf.version}</protoc-artifact>
+        <protoc-gen-grpc-artifact>io.grpc:protoc-gen-grpc-java:${grpc.version}</protoc-gen-grpc-artifact>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>apple-sillion</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <protoc-command>protoc-${protobuf.version}-osx-x86_64.exe</protoc-command>
+                <protoc-artifact></protoc-artifact>
+                <protoc-gen-grpc-command>protoc-gen-grpc-java-${grpc.version}-osx-x86_64.exe</protoc-gen-grpc-command>
+                <protoc-gen-grpc-artifact></protoc-gen-grpc-artifact>
+            </properties>
+        </profile>
+    </profiles>
+    
     <dependencies>
         <dependency>
             <groupId>net.java.dev.jna</groupId>
@@ -236,7 +260,8 @@
                         </goals>
                         <configuration>
                             <includeMavenTypes>direct</includeMavenTypes>
-                            <protocArtifact>com.google.protobuf:protoc:${protobuf.version}</protocArtifact>
+                            <protocCommand>${protoc-command}</protocCommand>
+                            <protocArtifact>${protoc-artifact}</protocArtifact>
                             <inputDirectories>
                                 <include>src/proto/</include>
                             </inputDirectories>
@@ -246,7 +271,8 @@
                                 </outputTarget>
                                 <outputTarget>
                                     <type>grpc-java</type>
-                                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}</pluginArtifact>
+                                    <pluginPath>${protoc-gen-grpc-command}</pluginPath>
+                                    <pluginArtifact>${protoc-gen-grpc-artifact}</pluginArtifact>
                                 </outputTarget>
                             </outputTargets>
                         </configuration>
