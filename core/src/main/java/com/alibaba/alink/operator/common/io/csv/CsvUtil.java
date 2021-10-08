@@ -97,7 +97,15 @@ public class CsvUtil {
 		for (int i = 0; i < colNames.length; i++) {
 			String[] kv = fields[i].trim().split("\\s+", 2);
 			colNames[i] = kv[0];
-
+			if ((kv[1].toLowerCase()).equals("vector")) {
+				kv[1] = "VEC_TYPES_VECTOR";
+			}
+			if ((kv[1].toLowerCase()).equals("densevector")) {
+				kv[1] = "VEC_TYPES_DENSE_VECTOR";
+			}
+			if ((kv[1].toLowerCase()).equals("sparsevector")) {
+				kv[1] = "VEC_TYPES_SPARSE_VECTOR";
+			}
 			if (STRING_TYPE_MAP.containsKey(kv[1])) {
 				colTypes[i] = STRING_TYPE_MAP.get(kv[1]);
 			} else {

@@ -43,8 +43,8 @@ public class MTableTest extends AlinkTestBase {
 		MTable mTable = new MTable(
 			rows,
 			"col0 int, col1 string, label int, ts timestamp"
-				+ ", d_vec VEC_TYPES_DENSE_VECTOR"
-				+ ", s_vec VEC_TYPES_SPARSE_VECTOR"
+				+ ", d_vec densevector"
+				+ ", s_vec vector"
 				+ ", tensor TENSOR_TYPES_FLOAT_TENSOR");
 
 		System.out.println(mTable);
