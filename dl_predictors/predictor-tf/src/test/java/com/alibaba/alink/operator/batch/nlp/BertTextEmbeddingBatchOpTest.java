@@ -37,6 +37,7 @@ public class BertTextEmbeddingBatchOpTest {
         BatchOperator.execute();
     }
 
+    @Category(DLTest.class)
     @Test
     public void testLongSentence() throws Exception {
         Row[] rows1 = new Row[]{

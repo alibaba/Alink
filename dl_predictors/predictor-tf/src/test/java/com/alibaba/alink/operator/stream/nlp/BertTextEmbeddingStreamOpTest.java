@@ -1,13 +1,17 @@
 package com.alibaba.alink.operator.stream.nlp;
 
+import com.alibaba.alink.testutil.categories.DLTest;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.DLTestConstants;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class BertTextEmbeddingStreamOpTest {
+
+	@Category(DLTest.class)
 	@Test
 	public void linkFrom() throws Exception {
 		Row[] rows1 = new Row[] {
