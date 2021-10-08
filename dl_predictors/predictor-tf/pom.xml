@@ -37,9 +37,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.alibaba.alink.shaded</groupId>
-            <artifactId>alink-shaded-tensorflow-core-api</artifactId>
-            <version>0.2.0-0.01-SNAPSHOT</version>
+            <groupId>com.alibaba.alink</groupId>
+            <artifactId>shaded_tensorflow_core_api</artifactId>
+            <version>0.2.0-0.3</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
