@@ -1,0 +1,3 @@
+server/server-*.jar
+web/dist
+flink-with-alink-jar/alink_core_flink-*.jar
