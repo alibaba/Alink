@@ -7,14 +7,14 @@ git clone https://github.com/alibaba/Alink.git alink
 cd alink
 ```
 
-4. 下载 shade 后的 Alink 包到 webui/tools/server/
+4. 下载 shade 后的 Alink 包到 webui/tools/flink-with-alink-jar/
 ``` shell
-wget https://alink-release.oss-cn-beijing.aliyuncs.com/v1.5.0/alink_core_flink-1.9_2.11-1.5.0.jar -P webui/tools/server/
+wget https://alink-release.oss-cn-beijing.aliyuncs.com/v1.5.0/alink_core_flink-1.9_2.11-1.5.0.jar -P webui/tools/flink-with-alink-jar/
 ```
 注意：这里也可以使用 flink-1.9 版本的 Alink 代码分支进行编译：
 ``` shell
 mvn -Dmaven.test.skip=true clean package shade:shade
-cp core/target/alink_core_flink-1.9_2.11-[xxx].jar webui/tools/server/
+cp core/target/alink_core_flink-1.9_2.11-[xxx].jar webui/tools/flink-with-alink-jar/
 ```
 
 5. 进入到目录 webui/web/，执行 yarn：
