@@ -9,6 +9,7 @@ import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import com.alibaba.alink.params.io.IcebergCatalogParams;
+import com.alibaba.alink.params.io.IcebergCatalogParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.io.RichInputFormat;
@@ -79,6 +80,25 @@ public class IcebergCatalog extends BaseCatalog {
   private static final String CATALOG_TYPE = "catalog-type";
   private static final String CATALOG_DEFAULT_DATABASE = "default-database";
   private final IcebergClassLoaderFactory icebergClassLoaderFactory;
+
+
+  public IcebergCatalog(String catalogName, String defaultDatabase, String icebergVersion, String warehouse, String uri) {
+    this(catalogName, defaultDatabase, icebergVersion, null, "hive", warehouse, uri);
+  }
+
+  public IcebergCatalog(String catalogName, String defaultDatabase, String icebergVersion, FilePath hiveConfDir,
+                        String catalogType, String warehouse, String uri) {
+
+    this(new Params()
+        .set(IcebergCatalogParams.CATALOG_NAME, catalogName)
+        .set(IcebergCatalogParams.DEFAULT_DATABASE, defaultDatabase == null ? "default" : defaultDatabase)
+        .set(IcebergCatalogParams.HIVE_CONF_DIR, hiveConfDir.serialize())
+        .set(IcebergCatalogParams.PLUGIN_VERSION, icebergVersion)
+        .set(IcebergCatalogParams.CATALOG_TYPE, catalogType)
+        .set(IcebergCatalogParams.WAREHOUSE, warehouse)
+        .set(IcebergCatalogParams.HIVE_URI, uri)
+    );
+  }
 
   public IcebergCatalog(Params params) {
     super(params);
