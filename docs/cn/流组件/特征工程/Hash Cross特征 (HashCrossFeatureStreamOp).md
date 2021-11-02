@@ -1,0 +1,87 @@
+# Hash Cross特征 (HashCrossFeatureStreamOp)
+Java 类名：com.alibaba.alink.operator.stream.feature.HashCrossFeatureStreamOp
+
+Python 类名：HashCrossFeatureStreamOp
+
+
+## 功能介绍
+哈希特征列组合算法能够将选定的离散列组合成单列的向量类型的数据。
+
+## 参数说明
+
+
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
+| --- | --- | --- | --- | --- | --- |
+| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
+| numFeatures | 向量维度 | 生成向量长度 | Integer |  | 262144 |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+
+
+## 代码示例
+### Python 代码
+```python
+from pyalink.alink import *
+
+import pandas as pd
+
+useLocalEnv(1)
+
+df = pd.DataFrame([
+    ["1.0", "1.0", 1.0, 1],
+    ["1.0", "1.0", 0.0, 1],
+    ["1.0", "0.0", 1.0, 1],
+    ["1.0", "0.0", 1.0, 1],
+    ["2.0", "3.0", None, 0],
+    ["2.0", "3.0", 1.0, 0],
+    ["0.0", "1.0", 2.0, 0],
+    ["0.0", "1.0", 1.0, 0]])
+data = StreamOperator.fromDataframe(df, schemaStr="f0 string, f1 string, f2 double, label bigint")
+cross = HashCrossFeatureStreamOp().setSelectedCols(['f0', 'f1', 'f2']).setOutputCol('cross').setNumFeatures(4)
+cross.linkFrom(data).print()
+StreamOperator.execute()
+```
+### Java 代码
+```java
+import org.apache.flink.types.Row;
+
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.feature.HashCrossFeatureBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class HashCrossFeatureStreamOpTest {
+	@Test
+	public void testHashCrossFeatureStreamOp() throws Exception {
+		List <Row> df = Arrays.asList(
+			Row.of("1.0", "1.0", 1.0, 1),
+			Row.of("1.0", "1.0", 0.0, 1),
+			Row.of("1.0", "0.0", 1.0, 1),
+			Row.of("1.0", "0.0", 1.0, 1),
+			Row.of("2.0", "3.0", null, 0),
+			Row.of("2.0", "3.0", 1.0, 0),
+			Row.of("0.0", "1.0", 2.0, 0)
+		);
+		StreamOperator<?> data = new MemSourceStreamOp(df, "f0 string, f1 string, f2 double, label int");
+		StreamOperator <?> cross = new HashCrossFeatureStreamOp().setSelectedCols("f0", "f1", "f2").setOutputCol("cross")
+			.setNumFeatures(4);
+		cross.linkFrom(data).print();
+		StreamOperator.execute();
+	}
+}
+```
+
+### 脚本运行结果
+
+f0|f1|f2|label|cross
+---|---|---|-----|-----
+2.0|3.0|null|0|$4$
+1.0|0.0|1.0000|1|$4$1:1.0
+1.0|0.0|1.0000|1|$4$1:1.0
+0.0|1.0|2.0000|0|$4$1:1.0
+1.0|1.0|0.0000|1|$4$1:1.0
+1.0|1.0|1.0000|1|$4$3:1.0
+2.0|3.0|1.0000|0|$4$0:1.0
