@@ -81,6 +81,7 @@ public class Chap13 {
 				.link(
 					new AkSinkBatchOp().setFilePath(DATA_DIR + SPARSE_TRAIN_FILE)
 				);
+			BatchOperator.execute();
 			new MnistGzFileSourceBatchOp
 				(
 					DATA_DIR + "t10k-images-idx3-ubyte.gz",
@@ -90,6 +91,7 @@ public class Chap13 {
 				.link(
 					new AkSinkBatchOp().setFilePath(DATA_DIR + SPARSE_TEST_FILE)
 				);
+			BatchOperator.execute();
 			new MnistGzFileSourceBatchOp
 				(
 					DATA_DIR + "train-images-idx3-ubyte.gz",
@@ -99,6 +101,7 @@ public class Chap13 {
 				.link(
 					new AkSinkBatchOp().setFilePath(DATA_DIR + DENSE_TRAIN_FILE)
 				);
+			BatchOperator.execute();
 			new MnistGzFileSourceBatchOp
 				(
 					DATA_DIR + "t10k-images-idx3-ubyte.gz",

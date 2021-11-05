@@ -16,7 +16,7 @@ import java.io.File;
 
 public class Chap16 {
 
-	private static final String DATA_DIR = Utils.ROOT_DIR + "wine" + File.separator;
+	static final String DATA_DIR = Utils.ROOT_DIR + "wine" + File.separator;
 
 	private static final String ORIGIN_FILE = "winequality-white.csv";
 

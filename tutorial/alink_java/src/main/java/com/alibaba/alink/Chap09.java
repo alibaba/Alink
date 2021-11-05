@@ -62,14 +62,14 @@ public class Chap09 {
 
 		BatchOperator.setParallelism(1);
 
-		//c_2_5();
+		c_2_5();
 
-		//c_3();
-		//
-		//c_4_a();
-		//
-		//c_4_b();
-		//
+		c_3();
+
+		c_4_a();
+
+		c_4_b();
+
 		c_5();
 
 	}
