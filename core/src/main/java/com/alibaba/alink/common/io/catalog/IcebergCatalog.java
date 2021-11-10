@@ -3,19 +3,19 @@ package com.alibaba.alink.common.io.catalog;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.CatalogAnnotation;
 import com.alibaba.alink.common.io.catalog.plugin.IcebergClassLoaderFactory;
+import com.alibaba.alink.common.io.catalog.plugin.RichInputFormatWithClassLoader;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.filesystem.LocalFileSystem;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import com.alibaba.alink.params.io.IcebergCatalogParams;
-import com.alibaba.alink.params.io.IcebergCatalogParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.io.RichInputFormat;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.io.InputSplit;
@@ -34,16 +34,9 @@ import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotEmptyException;
-import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
 import org.apache.flink.table.catalog.exceptions.FunctionAlreadyExistException;
-import org.apache.flink.table.catalog.exceptions.FunctionNotExistException;
 import org.apache.flink.table.catalog.exceptions.PartitionAlreadyExistsException;
-import org.apache.flink.table.catalog.exceptions.PartitionNotExistException;
-import org.apache.flink.table.catalog.exceptions.PartitionSpecInvalidException;
 import org.apache.flink.table.catalog.exceptions.TableAlreadyExistException;
-import org.apache.flink.table.catalog.exceptions.TableNotExistException;
-import org.apache.flink.table.catalog.exceptions.TableNotPartitionedException;
-import org.apache.flink.table.catalog.exceptions.TablePartitionedException;
 import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
 import org.apache.flink.table.data.DecimalData;
@@ -92,7 +85,7 @@ public class IcebergCatalog extends BaseCatalog {
     this(new Params()
         .set(IcebergCatalogParams.CATALOG_NAME, catalogName)
         .set(IcebergCatalogParams.DEFAULT_DATABASE, defaultDatabase == null ? "default" : defaultDatabase)
-        .set(IcebergCatalogParams.HIVE_CONF_DIR, hiveConfDir.serialize())
+        .set(IcebergCatalogParams.HIVE_CONF_DIR, hiveConfDir == null ? null : hiveConfDir.serialize())
         .set(IcebergCatalogParams.PLUGIN_VERSION, icebergVersion)
         .set(IcebergCatalogParams.CATALOG_TYPE, catalogType)
         .set(IcebergCatalogParams.WAREHOUSE, warehouse)
@@ -108,24 +101,18 @@ public class IcebergCatalog extends BaseCatalog {
   @Override
   public Table sourceStream(ObjectPath objectPath, Params params, Long sessionId) {
     Catalog catalog = loadCatalog();
-    TableSchema schema = null;
-    try {
-      schema = catalog.getTable(objectPath).getSchema();
-    } catch (TableNotExistException e) {
-      LOG.error("get iceberg table schema error.", e);
-    }
 
-    Tuple2<TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>> tuple2
+    Tuple3<TableSchema, TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>> all
         = createInputFormat(MLEnvironmentFactory.get(sessionId).getStreamExecutionEnvironment(),
         objectPath, catalog, icebergClassLoaderFactory);
 
-    DataStream<Row> dataStream = MLEnvironmentFactory
+    DataStream <Row> dataStream = MLEnvironmentFactory
         .get(sessionId)
         .getStreamExecutionEnvironment()
-        .createInput(tuple2.f1, tuple2.f0)
-        .map(new RowDataToRow(schema.getFieldDataTypes()));
+        .createInput(all.f2, all.f1)
+        .map(new RowDataToRow(all.f0.getFieldDataTypes()));
 
-    return DataStreamConversionUtil.toTable(sessionId, dataStream, schema);
+    return DataStreamConversionUtil.toTable(sessionId, dataStream, all.f0);
   }
 
   @Override
@@ -135,25 +122,18 @@ public class IcebergCatalog extends BaseCatalog {
 
   @Override
   public Table sourceBatch(ObjectPath objectPath, Params params, Long sessionId) {
-
     Catalog catalog = loadCatalog();
-    TableSchema schema = null;
-    try {
-      schema = catalog.getTable(objectPath).getSchema();
-    } catch (TableNotExistException e) {
-      e.printStackTrace();
-    }
 
-    Tuple2<TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>> tuple2
+    Tuple3<TableSchema, TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>> all
         = createInputFormat(MLEnvironmentFactory.get(sessionId).getStreamExecutionEnvironment(),
         objectPath, catalog, icebergClassLoaderFactory);
 
     DataSet<Row> ds = MLEnvironmentFactory.get(sessionId)
         .getExecutionEnvironment()
-        .createInput(tuple2.f1, tuple2.f0)
-        .map(new IcebergCatalog.RowDataToRow(schema.getFieldDataTypes()));
+        .createInput(all.f2, all.f1)
+        .map(new IcebergCatalog.RowDataToRow(all.f0.getFieldDataTypes()));
 
-    return DataSetConversionUtil.toTable(sessionId, ds, schema);
+    return DataSetConversionUtil.toTable(sessionId, ds, all.f0);
   }
 
   private static class RowDataToRow implements MapFunction<RowData, Row> {
@@ -214,7 +194,7 @@ public class IcebergCatalog extends BaseCatalog {
   }
 
 
-  private Catalog createCatalog(Params params, ClassLoader classLoader) {
+  private Catalog createCatalog(Params params, ClassLoader classLoader) throws ClassNotFoundException {
     String catalogName = params.get(IcebergCatalogParams.CATALOG_NAME);
 
     CatalogFactory factory = createCatalogFactory(classLoader);
@@ -223,7 +203,7 @@ public class IcebergCatalog extends BaseCatalog {
     String catalogType = params.get(IcebergCatalogParams.CATALOG_TYPE);
     properties.put(CATALOG_TYPE, catalogType);
     if ("hive".equals(catalogType)) {
-      if (params.contains(IcebergCatalogParams.HIVE_CONF_DIR)) {
+      if (params.contains(IcebergCatalogParams.HIVE_CONF_DIR) && params.get(IcebergCatalogParams.HIVE_CONF_DIR) != null) {
         String localHiveConfDir;
         try {
           localHiveConfDir = downloadHiveConf(
@@ -310,7 +290,7 @@ public class IcebergCatalog extends BaseCatalog {
   public static CatalogFactory createCatalogFactory(ClassLoader classLoader) {
     try {
       return (CatalogFactory) classLoader
-          .loadClass("org.apache.iceberg.flink.FlinkCatalogFactory")
+          .loadClass("org.apache.flink.iceberg.FlinkCatalogFactory")
           .getConstructor()
           .newInstance();
     } catch (ClassNotFoundException | NoSuchMethodException
@@ -332,7 +312,7 @@ public class IcebergCatalog extends BaseCatalog {
   }
 
   @Override
-  public CatalogDatabase getDatabase(String databaseName) throws DatabaseNotExistException, CatalogException {
+  public CatalogDatabase getDatabase(String databaseName) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
@@ -349,27 +329,27 @@ public class IcebergCatalog extends BaseCatalog {
 
   @Override
   public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
-      throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
+      throws  DatabaseNotEmptyException, CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void alterDatabase(String name, CatalogDatabase newDatabase, boolean ignoreIfNotExists) throws DatabaseNotExistException, CatalogException {
+  public void alterDatabase(String name, CatalogDatabase newDatabase, boolean ignoreIfNotExists) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<String> listTables(String databaseName) throws DatabaseNotExistException, CatalogException {
+  public List<String> listTables(String databaseName) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<String> listViews(String databaseName) throws DatabaseNotExistException, CatalogException {
+  public List<String> listViews(String databaseName) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public CatalogBaseTable getTable(ObjectPath tablePath) throws TableNotExistException, CatalogException {
+  public CatalogBaseTable getTable(ObjectPath tablePath) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
@@ -379,43 +359,43 @@ public class IcebergCatalog extends BaseCatalog {
   }
 
   @Override
-  public void dropTable(ObjectPath tablePath, boolean ignoreIfNotExists) throws TableNotExistException, CatalogException {
+  public void dropTable(ObjectPath tablePath, boolean ignoreIfNotExists) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void renameTable(ObjectPath tablePath, String newTableName, boolean ignoreIfNotExists) throws TableNotExistException, TableAlreadyExistException, CatalogException {
+  public void renameTable(ObjectPath tablePath, String newTableName, boolean ignoreIfNotExists) throws  TableAlreadyExistException, CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists) throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
+  public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists) throws TableAlreadyExistException,  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void alterTable(ObjectPath tablePath, CatalogBaseTable newTable, boolean ignoreIfNotExists) throws TableNotExistException, CatalogException {
+  public void alterTable(ObjectPath tablePath, CatalogBaseTable newTable, boolean ignoreIfNotExists) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<CatalogPartitionSpec> listPartitions(ObjectPath tablePath) throws TableNotExistException, TableNotPartitionedException, CatalogException {
+  public List<CatalogPartitionSpec> listPartitions(ObjectPath tablePath) throws   CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public List<CatalogPartitionSpec> listPartitions(ObjectPath tablePath, CatalogPartitionSpec partitionSpec)
-      throws TableNotExistException, TableNotPartitionedException, PartitionSpecInvalidException, CatalogException {
+      throws    CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<CatalogPartitionSpec> listPartitionsByFilter(ObjectPath tablePath, List<Expression> filters) throws TableNotExistException, TableNotPartitionedException, CatalogException {
+  public List<CatalogPartitionSpec> listPartitionsByFilter(ObjectPath tablePath, List<Expression> filters) throws   CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public CatalogPartition getPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec) throws PartitionNotExistException, CatalogException {
+  public CatalogPartition getPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec) throws CatalogException {
     throw new UnsupportedOperationException();
   }
 
@@ -426,27 +406,27 @@ public class IcebergCatalog extends BaseCatalog {
 
   @Override
   public void createPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec, CatalogPartition partition, boolean ignoreIfExists)
-      throws TableNotExistException, TableNotPartitionedException, PartitionSpecInvalidException, PartitionAlreadyExistsException, CatalogException {
+      throws    PartitionAlreadyExistsException, CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void dropPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec, boolean ignoreIfNotExists) throws PartitionNotExistException, CatalogException {
+  public void dropPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec, boolean ignoreIfNotExists) throws CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void alterPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec, CatalogPartition newPartition, boolean ignoreIfNotExists) throws PartitionNotExistException, CatalogException {
+  public void alterPartition(ObjectPath tablePath, CatalogPartitionSpec partitionSpec, CatalogPartition newPartition, boolean ignoreIfNotExists) throws CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<String> listFunctions(String dbName) throws DatabaseNotExistException, CatalogException {
+  public List<String> listFunctions(String dbName) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public CatalogFunction getFunction(ObjectPath functionPath) throws FunctionNotExistException, CatalogException {
+  public CatalogFunction getFunction(ObjectPath functionPath) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
@@ -456,77 +436,78 @@ public class IcebergCatalog extends BaseCatalog {
   }
 
   @Override
-  public void createFunction(ObjectPath functionPath, CatalogFunction function, boolean ignoreIfExists) throws FunctionAlreadyExistException, DatabaseNotExistException, CatalogException {
+  public void createFunction(ObjectPath functionPath, CatalogFunction function, boolean ignoreIfExists) throws FunctionAlreadyExistException,  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void alterFunction(ObjectPath functionPath, CatalogFunction newFunction, boolean ignoreIfNotExists) throws FunctionNotExistException, CatalogException {
+  public void alterFunction(ObjectPath functionPath, CatalogFunction newFunction, boolean ignoreIfNotExists) throws CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void dropFunction(ObjectPath functionPath, boolean ignoreIfNotExists) throws FunctionNotExistException, CatalogException {
+  public void dropFunction(ObjectPath functionPath, boolean ignoreIfNotExists) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public CatalogTableStatistics getTableStatistics(ObjectPath tablePath) throws TableNotExistException, CatalogException {
+  public CatalogTableStatistics getTableStatistics(ObjectPath tablePath) throws CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public CatalogColumnStatistics getTableColumnStatistics(ObjectPath tablePath) throws TableNotExistException, CatalogException {
+  public CatalogColumnStatistics getTableColumnStatistics(ObjectPath tablePath) throws CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public CatalogTableStatistics getPartitionStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec) throws PartitionNotExistException, CatalogException {
+  public CatalogTableStatistics getPartitionStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec) throws CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public CatalogColumnStatistics getPartitionColumnStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec) throws PartitionNotExistException, CatalogException {
+  public CatalogColumnStatistics getPartitionColumnStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec) throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void alterTableStatistics(ObjectPath tablePath, CatalogTableStatistics tableStatistics, boolean ignoreIfNotExists) throws TableNotExistException, CatalogException {
+  public void alterTableStatistics(ObjectPath tablePath, CatalogTableStatistics tableStatistics, boolean ignoreIfNotExists) throws CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void alterTableColumnStatistics(ObjectPath tablePath, CatalogColumnStatistics columnStatistics, boolean ignoreIfNotExists)
-      throws TableNotExistException, CatalogException, TablePartitionedException {
+      throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void alterPartitionStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec, CatalogTableStatistics partitionStatistics, boolean ignoreIfNotExists)
-      throws PartitionNotExistException, CatalogException {
+      throws  CatalogException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void alterPartitionColumnStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec, CatalogColumnStatistics columnStatistics, boolean ignoreIfNotExists)
-      throws PartitionNotExistException, CatalogException {
+      throws CatalogException {
     throw new UnsupportedOperationException();
   }
 
-  private Tuple2<TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>> createInputFormat(
+  private Tuple3<TableSchema, TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>> createInputFormat(
       StreamExecutionEnvironment senv, ObjectPath objectPath, Catalog catalog, IcebergClassLoaderFactory factory) {
 
     return factory.doAsThrowRuntime(() -> {
       Class<?> inputOutputFormat = Class.forName(
-          "org.apache.iceberg.flink.InputOutputFormat",
+          "org.apache.flink.iceberg.InputOutputFormat",
           true, Thread.currentThread().getContextClassLoader()
       );
 
       Method method = inputOutputFormat.getMethod("createInputFormat", StreamExecutionEnvironment.class, Catalog.class, ObjectPath.class);
-      Tuple2<TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>> internalRet =
-          (Tuple2<TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>>) method.invoke(null, senv, catalog, objectPath);
+      Tuple3<TableSchema, TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>> internalRet =
+          (Tuple3<TableSchema, TypeInformation<RowData>, RichInputFormat<RowData, InputSplit>>) method.invoke(null, senv, catalog, objectPath);
 
-      return internalRet;
+      return Tuple3.of(internalRet.f0, internalRet.f1,
+          new RichInputFormatWithClassLoader<>(factory, internalRet.f2));
     });
   }
 }

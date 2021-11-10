@@ -4,9 +4,7 @@ import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.PluginDescriptor;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.factories.Factory;
 import org.apache.flink.util.TemporaryClassLoaderContext;
 import org.slf4j.Logger;
@@ -18,7 +16,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class IcebergClassLoaderFactory extends ClassLoaderFactory implements Serializable {
-  private static final long serialVersionUID = 1233515335175475984L;
+  private static final long serialVersionUID = 1233515335175475912L;
 
   private final static Logger LOG = LoggerFactory.getLogger(IcebergClassLoaderFactory.class);
   private static final String ICEBERG_DB_NAME = "iceberg";
@@ -54,10 +52,7 @@ public class IcebergClassLoaderFactory extends ClassLoaderFactory implements Ser
 
     @Override
     public boolean test(Factory factory) {
-      String catalogType = factory.factoryIdentifier();
-      return catalogType != null
-          && catalogType.equalsIgnoreCase("iceberg")
-          && factory.getClass().getName().contains("FlinkCatalogFactory");
+      return factory.getClass().getName().contains("FlinkCatalogFactory");
     }
   }
 
