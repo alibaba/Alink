@@ -31,12 +31,8 @@ public class ResourcesPluginManagerTest {
 
 	@Test
 	public void iterator() throws IOException {
-		String old = AlinkGlobalConfiguration.getPluginDir();
-
-		AlinkGlobalConfiguration.setPluginDir(folder.getRoot().getPath());
-
 		Configuration configuration = new Configuration();
-		configuration.setString(ConfigConstants.ENV_FLINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir());
+		configuration.setString(ConfigConstants.ENV_FLINK_PLUGINS_DIR, folder.getRoot().getPath());
 
 		ResourcesPluginManager pluginManager = PluginUtils.createResourcesPluginManagerFromRootFolder(configuration);
 
@@ -51,7 +47,5 @@ public class ResourcesPluginManagerTest {
 		} else {
 			Assert.fail();
 		}
-
-		AlinkGlobalConfiguration.setPluginDir(old);
 	}
 }
