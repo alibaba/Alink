@@ -78,9 +78,7 @@ public class PluginDownloaderTest extends AlinkTestBase {
 
 	@Before
 	public void setUp() throws Exception {
-		AlinkGlobalConfiguration.setPluginDir(folder.getRoot().getAbsolutePath());
-
-		pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+		pluginDownloader = new PluginDownloader(folder.getRoot().getPath());
 	}
 
 	@Test

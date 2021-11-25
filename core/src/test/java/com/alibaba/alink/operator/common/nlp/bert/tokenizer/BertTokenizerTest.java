@@ -10,6 +10,7 @@ import com.alibaba.alink.operator.common.nlp.bert.tokenizer.Kwargs;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.SingleEncoding;
 import com.alibaba.alink.common.dl.utils.ArchivesUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -171,6 +172,7 @@ public class BertTokenizerTest {
 	}
 
 	@Test
+	@Ignore
 	public void testSequenceBuilders() {
 		File workDir = PythonFileUtils.createTempDir(null);
 		workDir.deleteOnExit();
@@ -208,6 +210,7 @@ public class BertTokenizerTest {
 	}
 
 	@Test
+	@Ignore
 	public void testBatchSequenceBuilders() {
 		File workDir = PythonFileUtils.createTempDir(null);
 		workDir.deleteOnExit();
@@ -245,6 +248,7 @@ public class BertTokenizerTest {
 	}
 
 	@Test
+	@Ignore
 	public void testEncodePlus() {
 		File workDir = PythonFileUtils.createTempDir(null);
 		workDir.deleteOnExit();
