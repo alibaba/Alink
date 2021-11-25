@@ -1,8 +1,5 @@
 package com.alibaba.alink.common.pyrunner.bridge;
 
-import com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge;
-import com.alibaba.alink.common.pyrunner.bridge.DedicatedPythonBridge;
-import com.alibaba.alink.common.pyrunner.bridge.SharedPythonBridge;
 import com.alibaba.alink.common.pyrunner.PyMainHandle;
 import com.alibaba.alink.testutil.categories.PyTest;
 import org.junit.Assert;

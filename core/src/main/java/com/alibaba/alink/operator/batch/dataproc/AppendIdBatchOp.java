@@ -17,7 +17,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.dataproc.AppendIdParams;
+import com.alibaba.alink.params.dataproc.AppendIdBatchParams;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
@@ -27,7 +27,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * @see DataSetUtils#zipWithUniqueId
  */
 public final class AppendIdBatchOp extends BatchOperator <AppendIdBatchOp>
-	implements AppendIdParams <AppendIdBatchOp> {
+	implements AppendIdBatchParams <AppendIdBatchOp> {
 	public final static String appendIdColName = "append_id";
 	public final static TypeInformation appendIdColType = BasicTypeInfo.LONG_TYPE_INFO;
 	private static final long serialVersionUID = 1506253726488454655L;

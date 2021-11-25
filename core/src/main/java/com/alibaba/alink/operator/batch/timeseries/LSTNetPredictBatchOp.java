@@ -1,24 +1,19 @@
 package com.alibaba.alink.operator.batch.timeseries;
 
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.tensorflow.TFTableModelPredictBatchOp;
-import com.alibaba.alink.params.timeseries.LSTNetBatchPredictParams;
+import org.apache.flink.ml.api.misc.param.Params;
 
-public class LSTNetPredictBatchOp extends BatchOperator <LSTNetPredictBatchOp>
-	implements LSTNetBatchPredictParams <LSTNetPredictBatchOp> {
+import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.common.timeseries.LSTNetModelMapper;
+import com.alibaba.alink.params.timeseries.LSTNetPredictParams;
 
-	@Override
-	public LSTNetPredictBatchOp linkFrom(BatchOperator <?>... inputs) {
-		TFTableModelPredictBatchOp predict = new TFTableModelPredictBatchOp()
-			.setSelectedCols(new String[] {getSelectedCol()})
-			.setSignatureDefKey("serving_default")
-			.setInputSignatureDefs(new String[] {"tensor"})
-			.setOutputSchemaStr(getPredictionCol() + " TENSOR_TYPES_FLOAT_TENSOR")
-			.setOutputSignatureDefs(new String[] {"add"})
-			.setReservedCols(getReservedCols())
-			.setMLEnvironmentId(getMLEnvironmentId())
-			.linkFrom(inputs);
-		setOutputTable(predict.getOutputTable());
-		return this;
+public class LSTNetPredictBatchOp extends ModelMapBatchOp <LSTNetPredictBatchOp>
+	implements LSTNetPredictParams <LSTNetPredictBatchOp> {
+
+	public LSTNetPredictBatchOp() {
+		this(new Params());
+	}
+
+	public LSTNetPredictBatchOp(Params params) {
+		super(LSTNetModelMapper::new, params);
 	}
 }

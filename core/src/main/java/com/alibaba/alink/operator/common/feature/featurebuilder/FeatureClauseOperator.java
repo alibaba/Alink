@@ -142,19 +142,19 @@ public enum FeatureClauseOperator {
 
 	TIMESERIES_AGG_PRECEDING(Types.STRING, new TimeSeriesAgg(true)),
 
-	MTABLE_AGG_PRECEDING(MTableTypes.M_TABLE, new MTableAgg()),
+	MTABLE_AGG_PRECEDING(MTableTypes.M_TABLE, new MTableAgg(true)),
 
-	MTABLE_AGG(MTableTypes.M_TABLE, new MTableAgg());
+	MTABLE_AGG(MTableTypes.M_TABLE, new MTableAgg(false));
 
-	private final TypeInformation resType;
+	private final TypeInformation<?> resType;
 	private final BaseUdaf calc;
 
-	FeatureClauseOperator(TypeInformation resType, BaseUdaf calc) {
+	FeatureClauseOperator(TypeInformation<?> resType, BaseUdaf calc) {
 		this.resType = resType;
 		this.calc = calc;
 	}
 
-	public TypeInformation getResType() {
+	public TypeInformation<?> getResType() {
 		return resType;
 	}
 

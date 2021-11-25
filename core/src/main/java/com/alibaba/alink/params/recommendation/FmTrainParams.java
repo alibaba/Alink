@@ -20,6 +20,10 @@ public interface FmTrainParams<T> extends
         HasFeatureColsDefaultAsNull<T>,
         FmCommonTrainParams<T> {
 
+    /**
+     * @cn-name 迭代数据batch size
+     * @cn 数据batch size
+     */
     ParamInfo<Integer> MINIBATCH_SIZE = ParamInfoFactory
             .createParamInfo("minibatchSize", Integer.class)
             .setDescription("mini-batch size")

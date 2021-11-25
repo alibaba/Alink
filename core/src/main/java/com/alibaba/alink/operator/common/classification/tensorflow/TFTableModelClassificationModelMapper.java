@@ -5,7 +5,6 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.TensorTypes;
@@ -16,12 +15,12 @@ import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.model.LabeledModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.tensorflow.TFModelDataConverterUtils;
 import com.alibaba.alink.operator.common.tensorflow.TFTableModelPredictModelMapper;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.classification.TFTableModelClassificationPredictParams;
-import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
+import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
 import com.alibaba.alink.pipeline.ModelExporterUtils;
 import org.apache.commons.collections.CollectionUtils;
 
@@ -33,14 +32,12 @@ import java.util.Map;
 
 public class TFTableModelClassificationModelMapper extends RichModelMapper {
 
-	private TFTableModelPredictModelMapper tfModelMapper;
-
 	private final List <Mapper> mappers = new ArrayList <>();
-
-	private List <Object> sortedLabels;
-
-	private int predColId;
 	private final Map <Object, Double> predDetail = new HashMap <>();
+	private TFTableModelPredictModelMapper tfModelMapper;
+	private List <Object> sortedLabels;
+	private int predColId;
+	private boolean isOutputLogits = false;
 
 	public TFTableModelClassificationModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
@@ -60,32 +57,7 @@ public class TFTableModelClassificationModelMapper extends RichModelMapper {
 		}
 
 		FloatTensor tensor = (FloatTensor) output.getField(predColId);
-		Preconditions.checkArgument(tensor.shape().length <= 1,
-			"The prediction tensor must be rank-0 or rank-1");
-
-		// If the tensor has size 1, the model was trained for binary classification task,
-		// and only output the predication probability to be positive.
-		Object predLabel;
-		if (tensor.size() == 1) {
-			double p = (tensor.shape().length == 0)
-				? tensor.getFloat()
-				: tensor.getFloat(0);
-			Object negLabel = sortedLabels.get(0);
-			Object posLabel = sortedLabels.get(1);
-			predLabel = p >= 0.5 ? posLabel : negLabel;
-			predDetail.put(posLabel, p);
-			predDetail.put(negLabel, 1 - p);
-		} else {
-			int maxi = 0;
-			for (int i = 0; i < sortedLabels.size(); i += 1) {
-				double p = tensor.getFloat(i);
-				predDetail.put(sortedLabels.get(i), p);
-				if (p > tensor.getFloat(maxi)) {
-					maxi = i;
-				}
-			}
-			predLabel = sortedLabels.get(maxi);
-		}
+		Object predLabel = PredictionExtractUtils.extractFromTensor(tensor, sortedLabels, predDetail, isOutputLogits);
 		return Tuple2.of(predLabel, JsonConverter.toJson(predDetail));
 	}
 
@@ -131,12 +103,17 @@ public class TFTableModelClassificationModelMapper extends RichModelMapper {
 
 		tfModelMapper = new TFTableModelPredictModelMapper(modelDataConverter.getModelSchema(),
 			dataSchema, tfModelMapperParams);
-		tfModelMapper.loadModel(modelData.getTfModelRows());
+		if (null != modelData.getTfModelZipPath()) {
+			tfModelMapper.loadModelFromZipFile(modelData.getTfModelZipPath());
+		} else {
+			tfModelMapper.loadModel(modelData.getTfModelRows());
+		}
 		mappers.add(tfModelMapper);
 
 		predColId = TableUtil.findColIndex(tfModelMapper.getOutputSchema(), predCol);
 
 		sortedLabels = modelData.getSortedLabels();
+		isOutputLogits = meta.get(TFModelDataConverterUtils.IS_OUTPUT_LOGITS);
 	}
 
 	@Override

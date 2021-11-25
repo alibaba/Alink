@@ -248,7 +248,6 @@ abstract class BaseWindowStreamOp<T extends BaseWindowStreamOp <T>>
 
 		@Override
 		public Watermark checkAndGetNextWatermark(Row value, long extractedTimestamp) {
-			System.out.println("watermark: " + (currentMaxTimestamp-lateness));
 			return new Watermark(currentMaxTimestamp - lateness);
 		}
 	}

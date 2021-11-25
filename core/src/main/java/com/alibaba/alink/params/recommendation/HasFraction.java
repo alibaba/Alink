@@ -10,6 +10,10 @@ import com.alibaba.alink.params.validators.RangeValidator;
  * Params maxFraction.
  */
 public interface HasFraction<T> extends WithParams <T> {
+	/**
+	 * @cn-name 拆分到测试集最大数据比例
+	 * @cn 拆分到测试集最大数据比例
+	 */
 	ParamInfo <Double> FRACTION = ParamInfoFactory
 		.createParamInfo("fraction", Double.class)
 		.setDescription("Proportion of data allocated to right output after splitting")

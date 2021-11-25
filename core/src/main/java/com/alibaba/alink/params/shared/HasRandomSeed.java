@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasRandomSeed<T> extends WithParams <T> {
+	/**
+	 * @cn-name 随机数种子
+	 * @cn 随机数种子
+	 */
 	ParamInfo <Integer> RANDOM_SEED = ParamInfoFactory
 		.createParamInfo("randomSeed", Integer.class)
 		.setDescription("Random seed, it should be positive integer")

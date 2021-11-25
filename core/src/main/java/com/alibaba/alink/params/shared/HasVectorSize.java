@@ -6,6 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasVectorSize<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 向量长度
+	 * @cn 向量的长度
+	 */
 	ParamInfo <Integer> VECTOR_SIZE = ParamInfoFactory
 		.createParamInfo("vectorSize", Integer.class)
 		.setDescription("vector size of embedding")

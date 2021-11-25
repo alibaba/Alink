@@ -11,6 +11,10 @@ public interface SplitParams<T> extends
 	WithParams <T>,
 	HasRandomSeed <T> {
 
+	/**
+	 * @cn-name 拆分到左端的数据比例
+	 * @cn 拆分到左端的数据比例
+	 */
 	ParamInfo <Double> FRACTION = ParamInfoFactory
 		.createParamInfo("fraction", Double.class)
 		.setDescription("Proportion of data allocated to left output after splitting")

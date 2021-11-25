@@ -8,6 +8,9 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * vocabulary size.
  */
 public interface HasVocabularySize<T> extends WithParams <T> {
+	/**
+	 * @cn 文章的超参
+	 */
 	ParamInfo <Integer> VOCABULARY_SIZE = ParamInfoFactory
 		.createParamInfo("vocabularySize", Integer.class)
 		.setDescription("vocabulary Size.")

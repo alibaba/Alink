@@ -6,6 +6,7 @@ import org.apache.flink.table.factories.Factory;
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.PluginDescriptor;
+import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 
 import java.io.Serializable;
@@ -15,7 +16,7 @@ import java.util.function.Predicate;
 public class OdpsClassLoaderFactory extends ClassLoaderFactory implements Serializable {
 
 	public OdpsClassLoaderFactory(String version) {
-		super(new RegisterKey("odps", version), ClassLoaderContainer.createPluginContextOnClient());
+		super(new RegisterKey("odps", version), PluginDistributeCache.createDistributeCache("odps", version));
 	}
 
 	@Override
@@ -23,7 +24,7 @@ public class OdpsClassLoaderFactory extends ClassLoaderFactory implements Serial
 		return ClassLoaderContainer
 			.getInstance()
 			.create(
-				registerKey, registerContext, Factory.class,
+				registerKey, distributeCache, Factory.class,
 				new OdpsCatalogServiceFilter(registerKey),
 				new OdpsCatalogVersionGetter()
 			);

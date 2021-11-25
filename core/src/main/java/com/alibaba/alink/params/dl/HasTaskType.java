@@ -8,7 +8,10 @@ import com.alibaba.alink.common.dl.TaskType;
 
 public interface HasTaskType<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn 任务类型：回归	REGRESSION 或分类 CLASSIFICATION
+	 * @cn-name 任务类型
+	 */
 	ParamInfo <TaskType> TASK_TYPE = ParamInfoFactory
 		.createParamInfo("taskType", TaskType.class)
 		.setDescription("Task type")

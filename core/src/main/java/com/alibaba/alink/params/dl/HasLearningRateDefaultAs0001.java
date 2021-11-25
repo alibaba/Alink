@@ -5,7 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasLearningRateDefaultAs0001<T> extends WithParams <T> {
-
+	/**
+	 * @cn-name 学习率
+	 * @cn 学习率
+	 */
 	ParamInfo <Double> LEARNING_RATE = ParamInfoFactory
 		.createParamInfo("learningRate", Double.class)
 		.setDescription("learn rate")

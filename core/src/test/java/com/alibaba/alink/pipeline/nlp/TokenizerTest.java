@@ -19,6 +19,7 @@ import java.util.List;
 /**
  * Test for Tokenizer.
  */
+
 public class TokenizerTest extends AlinkTestBase {
 	@Test
 	public void testTokenize() throws Exception {

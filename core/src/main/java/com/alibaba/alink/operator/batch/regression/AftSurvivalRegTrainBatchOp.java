@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.batch.regression;
 
 import org.apache.flink.api.common.functions.AbstractRichFunction;
+import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -22,13 +23,16 @@ import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp;
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp.CreateMeta;
+import com.alibaba.alink.operator.common.linear.LinearModelData;
 import com.alibaba.alink.operator.common.linear.LinearModelDataConverter;
 import com.alibaba.alink.operator.common.linear.LinearModelTrainInfo;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
 import com.alibaba.alink.operator.common.linear.LinearRegressorModelInfo;
 import com.alibaba.alink.params.regression.AftRegTrainParams;
+import com.alibaba.alink.params.shared.linear.HasWithIntercept;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,7 +66,14 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 
 	@Override
 	public AftSurvivalRegTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
-		BatchOperator <?> in = checkAndGetFirst(inputs);
+		BatchOperator<?> in;
+		BatchOperator<?> initModel = null;
+		if (inputs.length == 1) {
+			in = checkAndGetFirst(inputs);
+		} else {
+			in = inputs[0];
+			initModel = inputs[1];
+		}
 		String[] featureColNames = this.getFeatureCols();
 
 		TypeInformation<?> labelType = Types.DOUBLE;
@@ -114,9 +125,27 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 			.mapPartition(new CreateMeta("AFTSurvivalRegTrainBatchOp", LinearModelType.AFT, getParams()))
 			.setParallelism(1);
 
+		DataSet <DenseVector> initModelDataSet = initModel == null ? null : initModel.getDataSet().reduceGroup(
+			new GroupReduceFunction <Row, DenseVector>() {
+				@Override
+				public void reduce(Iterable <Row> values, Collector <DenseVector> out) throws Exception {
+					List <Row> modelRows = new ArrayList <>(0);
+					for (Row row : values) {
+						modelRows.add(row);
+					}
+					LinearModelData model = new LinearModelDataConverter().load(modelRows);
+					try {
+						assert (model.hasInterceptItem == params.get(HasWithIntercept.WITH_INTERCEPT));
+					} catch (Exception e) {
+						throw new RuntimeException("initial model is not compatible with data and parameter setting.");
+					}
+					out.collect(model.coefVector);
+				}
+			});
+
 		DataSet <Tuple2 <DenseVector, double[]>>
 			coefVectorSet = BaseLinearModelTrainBatchOp.optimize(this.getParams(), vectorSize,
-			trainData, LinearModelType.AFT, MLEnvironmentFactory.get(getMLEnvironmentId()));
+			trainData, initModelDataSet, LinearModelType.AFT, MLEnvironmentFactory.get(getMLEnvironmentId()));
 
 		DataSet <Tuple2 <DenseVector, double[]>> coef = coefVectorSet
 			.map(new FormatCoef())

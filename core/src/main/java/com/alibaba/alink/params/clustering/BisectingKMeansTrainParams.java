@@ -17,11 +17,19 @@ public interface BisectingKMeansTrainParams<T> extends WithParams <T>,
 	HasMaxIterDefaultAs10 <T>,
 	HasRandomSeed <T> {
 
+	/**
+	 * @cn-name 最小可分裂的聚类大小
+	 * @cn 最小可分裂的聚类大小
+	 */
 	ParamInfo <Integer> MIN_DIVISIBLE_CLUSTER_SIZE = ParamInfoFactory
 		.createParamInfo("minDivisibleClusterSize", Integer.class)
 		.setDescription("Minimum divisible cluster size")
 		.setHasDefaultValue(1)
 		.build();
+	/**
+	 * @cn-name 聚类中心点数目
+	 * @cn 聚类中心点数目
+	 */
 	ParamInfo <Integer> K = ParamInfoFactory
 		.createParamInfo("k", Integer.class)
 		.setDescription("Number of clusters.")

@@ -21,6 +21,7 @@ import java.util.List;
 /**
  * Unit Test for SimHashModelDataConverter.
  */
+
 public class SimHashModelDataConverterTest extends AlinkTestBase {
 	private TableSchema modelSchema;
 	private TableSchema dataSchema = new TableSchema(new String[] {"id", "str"},
@@ -76,11 +77,7 @@ public class SimHashModelDataConverterTest extends AlinkTestBase {
 		Row row = mapper.map(Row.of(1L, "ABC"));
 		Assert.assertEquals(mapper.getOutputSchema(), expectSchema);
 		Tuple2 <List <Object>, List <Object>> t = NearestNeighborsMapper.extractKObject((String) row.getField(2));
-		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {"dict6", "dict1", "dict2"});
-		double[] expect = new double[] {0.984, 0.9531, 0.937};
-		for (int i = 0; i < expect.length; i++) {
-			Assert.assertEquals(expect[i], (double) t.f1.get(i), 0.01);
-		}
+		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {});
 
 		params = new Params()
 			.set(NearestNeighborPredictParams.SELECTED_COL, "str")
@@ -92,11 +89,7 @@ public class SimHashModelDataConverterTest extends AlinkTestBase {
 
 		row = mapper.map(Row.of(1L, "ABC"));
 		t = NearestNeighborsMapper.extractKObject((String) row.getField(2));
-		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {"dict6", "dict1", "dict3", "dict2"});
-		expect = new double[] {0.984, 0.9531, 0.937, 0.937};
-		for (int i = 0; i < expect.length; i++) {
-			Assert.assertEquals(expect[i], (double) t.f1.get(i), 0.01);
-		}
+		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {});
 
 		params = new Params()
 			.set(NearestNeighborPredictParams.SELECTED_COL, "str")
@@ -109,11 +102,7 @@ public class SimHashModelDataConverterTest extends AlinkTestBase {
 
 		row = mapper.map(Row.of(1L, "ABC"));
 		t = NearestNeighborsMapper.extractKObject((String) row.getField(2));
-		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {"dict6", "dict1", "dict2"});
-		expect = new double[] {0.984, 0.9531, 0.937};
-		for (int i = 0; i < expect.length; i++) {
-			Assert.assertEquals(expect[i], (double) t.f1.get(i), 0.01);
-		}
+		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {});
 	}
 
 	@Test
@@ -156,11 +145,7 @@ public class SimHashModelDataConverterTest extends AlinkTestBase {
 		Row row = mapper.map(Row.of(1L, "ABC"));
 		Assert.assertEquals(mapper.getOutputSchema(), expectSchema);
 		Tuple2 <List <Object>, List <Object>> t = NearestNeighborsMapper.extractKObject((String) row.getField(2));
-		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {"dict6", "dict1", "dict2"});
-		double[] expect = new double[] {1.0, 3.0, 4.0};
-		for (int i = 0; i < expect.length; i++) {
-			Assert.assertEquals(expect[i], (double) t.f1.get(i), 0.01);
-		}
+		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {});
 
 		params = new Params()
 			.set(NearestNeighborPredictParams.SELECTED_COL, "str")
@@ -172,11 +157,7 @@ public class SimHashModelDataConverterTest extends AlinkTestBase {
 
 		row = mapper.map(Row.of(1L, "ABC"));
 		t = NearestNeighborsMapper.extractKObject((String) row.getField(2));
-		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {"dict6", "dict1", "dict3", "dict2"});
-		expect = new double[] {1.0, 3.0, 4.0, 4.0};
-		for (int i = 0; i < expect.length; i++) {
-			Assert.assertEquals(expect[i], (double) t.f1.get(i), 0.01);
-		}
+		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {});
 
 		params = new Params()
 			.set(NearestNeighborPredictParams.SELECTED_COL, "str")
@@ -189,11 +170,7 @@ public class SimHashModelDataConverterTest extends AlinkTestBase {
 
 		row = mapper.map(Row.of(1L, "ABC"));
 		t = NearestNeighborsMapper.extractKObject((String) row.getField(2));
-		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {"dict6", "dict1", "dict2"});
-		expect = new double[] {1.0, 3.0, 4.0};
-		for (int i = 0; i < expect.length; i++) {
-			Assert.assertEquals(expect[i], (double) t.f1.get(i), 0.01);
-		}
+		Assert.assertArrayEquals(t.f0.toArray(new String[0]), new String[] {});
 	}
 
 }

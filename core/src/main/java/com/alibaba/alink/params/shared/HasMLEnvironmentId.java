@@ -11,6 +11,10 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
  */
 public interface HasMLEnvironmentId<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name ML环境ID
+	 * @cn ML环境ID
+	 */
 	ParamInfo <Long> ML_ENVIRONMENT_ID = ParamInfoFactory
 		.createParamInfo("MLEnvironmentId", Long.class)
 		.setDescription("ID of ML environment.")

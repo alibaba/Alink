@@ -7,6 +7,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 public interface SwingTrainParams<T> extends
     CommonSwingParams<T> {
 
+    /**
+     * @cn-name 用户alpha参数
+     * @cn 用户alpha参数，默认5.0, user weight = 1.0/(userAlpha + userClickCount)^userBeta
+     */
     ParamInfo<Float> USER_ALPHA = ParamInfoFactory
         .createParamInfo("userAlpha", Float.class)
         .setDescription("user alpha")
@@ -25,6 +29,10 @@ public interface SwingTrainParams<T> extends
         return set(USER_ALPHA, alpha.floatValue());
     }
 
+    /**
+     * @cn-name 用户beta参数
+     * @cn 用户beta参数，默认-0.35, user weight = 1.0/(userAlpha + userClickCount)^userBeta
+     */
     ParamInfo<Float> USER_BETA = ParamInfoFactory
         .createParamInfo("userBeta", Float.class)
         .setDescription("user beta")
@@ -43,6 +51,10 @@ public interface SwingTrainParams<T> extends
         return set(USER_BETA, alpha.floatValue());
     }
 
+    /**
+     * @cn-name 结果是否归一化
+     * @cn 是否归一化，默认False
+     */
     ParamInfo<Boolean> RESULT_NORMALIZE = ParamInfoFactory
         .createParamInfo("resultNormalize", Boolean.class)
         .setHasDefaultValue(false)
@@ -56,6 +68,10 @@ public interface SwingTrainParams<T> extends
         return set(RESULT_NORMALIZE, normalize);
     }
 
+    /**
+     * @cn-name item参与计算的人数最大值
+     * @cn 如果item出现次数大于该次数，会随机选择该次数的用户数据，默认1000
+     */
     ParamInfo<Integer> MAX_ITEM_NUMBER = ParamInfoFactory
         .createParamInfo("maxItemNumber", Integer.class)
         .setDescription("max item number")
@@ -70,6 +86,10 @@ public interface SwingTrainParams<T> extends
         return set(MAX_ITEM_NUMBER, item_frequency);
     }
 
+    /**
+     * @cn-name 用户互动的最小Item数量
+     * @cn 如果用户互动Item数量小于该次数，该用户数据不参与计算过程，默认10
+     */
     ParamInfo<Integer> MIN_USER_ITEMS = ParamInfoFactory
         .createParamInfo("minUserItems", Integer.class)
         .setDescription("min user items")
@@ -84,6 +104,10 @@ public interface SwingTrainParams<T> extends
         return set(MIN_USER_ITEMS, minUserItems);
     }
 
+    /**
+     * @cn-name 用户互动的最大Item数量
+     * @cn 如果用户互动Item数量大于该次数，该用户数据不参与计算过程，默认1000
+     */
     ParamInfo<Integer> MAX_USER_ITEMS = ParamInfoFactory
         .createParamInfo("maxUserItems", Integer.class)
         .setDescription("max user items")

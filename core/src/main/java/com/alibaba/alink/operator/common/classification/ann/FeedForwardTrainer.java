@@ -10,6 +10,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -62,7 +63,8 @@ public class FeedForwardTrainer implements Serializable {
 	 * @param optimizationParams Parameters for optimizations.
 	 * @return The model weights.
 	 */
-	public DataSet <DenseVector> train(DataSet <Tuple2 <Double, DenseVector>> data, Params optimizationParams) {
+	public DataSet <DenseVector> train(DataSet <Tuple2 <Double, DenseVector>> data, DataSet<DenseVector> initialModel,
+									   Params optimizationParams) {
 		final Topology topology = this.topology;
 		final int inputSize = this.inputSize;
 		final int outputSize = this.outputSize;
@@ -74,7 +76,7 @@ public class FeedForwardTrainer implements Serializable {
 			.setRequired()
 			.build();
 
-		DataSet <DenseVector> initCoef = initModel(data, this.topology);
+		DataSet <DenseVector> initCoef = initialModel != null ? initialModel : initModel(data, this.topology);
 		DataSet <Tuple3 <Double, Double, Vector>> trainData = stack(data, blockSize, inputSize, outputSize,
 			onehotLabel);
 		optimizationParams.set(NUM_SEARCH_STEP, 3);

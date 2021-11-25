@@ -2,8 +2,10 @@ package com.alibaba.alink.common.pyrunner;
 
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.DLEnvConfig;
 import com.alibaba.alink.common.dl.DLEnvConfig.Version;
+import com.alibaba.alink.common.dl.utils.ArchivesUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
@@ -14,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -30,8 +33,6 @@ public abstract class PyCalcRunner<IN, OUT, HANDLE extends PyObjHandle> {
 	protected final Map <String, String> config;
 	private final String pythonClassName;
 	private final BasePythonBridge bridge = DedicatedPythonBridge.inst();
-
-	static final Version[] REGISTER_KEY_VERSIONS = new Version[] {Version.TF115, Version.TF231};
 
 	protected HANDLE handle;
 
@@ -54,21 +55,42 @@ public abstract class PyCalcRunner<IN, OUT, HANDLE extends PyObjHandle> {
 	 * Start Python process if necessary and create the handle.
 	 */
 	public void open() {
-		for (Version version : REGISTER_KEY_VERSIONS) {
-			RegisterKey registerKey = DLEnvConfig.getRegisterKey(version);
-			FilePath pluginFilePath = ResourcePluginFactory.getResourcePluginPath(registerKey);
+		String pythonEnv = config.get(BasePythonBridge.PY_VIRTUAL_ENV_KEY);
+		if (null != pythonEnv) {
+			if (PythonFileUtils.isCompressedFile(pythonEnv)) {
+				String tempWorkDir = PythonFileUtils.createTempWorkDir("python_env_");
+				ArchivesUtils.downloadDecompressToDirectory(pythonEnv, new File(tempWorkDir));
+				pythonEnv = new File(tempWorkDir, PythonFileUtils.getCompressedFileName(pythonEnv)).getAbsolutePath();
+			} else {
+				if (PythonFileUtils.isLocalFile(pythonEnv)) {
+					pythonEnv = pythonEnv.substring("file://".length());
+				}
+			}
+		} else {
+			FilePath pluginFilePath = null;
+			RegisterKey tf1RegisterKey = DLEnvConfig.getRegisterKey(Version.TF115);
+			RegisterKey tf2RegisterKey = DLEnvConfig.getRegisterKey(Version.TF231);
+			try {
+				pluginFilePath = ResourcePluginFactory.getResourcePluginPath(tf1RegisterKey, tf2RegisterKey);
+			} catch (Exception e) {
+				String info = String.format("Cannot prepare plugin for %s-%s, and %s-%s, fallback to use system Python.",
+					tf1RegisterKey.getName(), tf1RegisterKey.getVersion(),
+					tf2RegisterKey.getName(), tf2RegisterKey.getVersion());
+				LOG.info(info, e);
+				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+					System.out.println(info + ": " + e);
+				}
+			}
 			if (null != pluginFilePath) {
 				File pluginDirectory = new File(pluginFilePath.getPath().getPath());
-				File virtualEnvDir;
 				File[] dirs = pluginDirectory.listFiles(File::isDirectory);
 				Preconditions.checkArgument(null != dirs && dirs.length == 1,
 					String.format("There should be only 1 directory in plugin directory: %s.", pluginDirectory));
-				virtualEnvDir = dirs[0];
-				config.put(BasePythonBridge.PY_VIRTUAL_ENV_KEY, virtualEnvDir.getAbsolutePath());
-				LOG.info("Use virtual env in {}", virtualEnvDir.getAbsolutePath());
-				break;
+				pythonEnv = dirs[0].getAbsolutePath();
+				LOG.info("Use virtual env in {}", pythonEnv);
 			}
 		}
+		config.put(BasePythonBridge.PY_VIRTUAL_ENV_KEY, pythonEnv);
 		bridge.open(getClass().getName(), config::getOrDefault, null);
 		this.handle = bridge.app().newobj(pythonClassName);
 	}

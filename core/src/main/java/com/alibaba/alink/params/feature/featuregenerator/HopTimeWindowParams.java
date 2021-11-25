@@ -7,7 +7,10 @@ public interface HopTimeWindowParams<T> extends
 	GroupTimeWindowParams <T>,
 	HasWindowTime <T> {
 
-	//the metric is second.
+	/**
+	 * @cn-name 滑动窗口大小
+	 * @cn 滑动窗口大小
+	 */
 	ParamInfo<Double> HOP_TIME = ParamInfoFactory
 		.createParamInfo("hopTime", Double.class)
 		.setDescription("hop time interval")

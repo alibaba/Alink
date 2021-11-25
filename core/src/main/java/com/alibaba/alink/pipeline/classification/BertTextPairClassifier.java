@@ -4,12 +4,15 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.BertTextPairClassifierTrainBatchOp;
-import com.alibaba.alink.params.tensorflow.bert.BaseEasyTransferTrainParams;
 import com.alibaba.alink.params.classification.TFTableModelClassificationPredictParams;
+import com.alibaba.alink.params.tensorflow.bert.BertTextPairTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
 
+/**
+ * Text pair classifier using Bert models.
+ */
 public class BertTextPairClassifier extends Trainer <BertTextPairClassifier, BertClassificationModel>
-	implements BaseEasyTransferTrainParams <BertTextPairClassifier>,
+	implements BertTextPairTrainParams <BertTextPairClassifier>,
 	TFTableModelClassificationPredictParams <BertTextPairClassifier> {
 
 	public BertTextPairClassifier() {this(null);}

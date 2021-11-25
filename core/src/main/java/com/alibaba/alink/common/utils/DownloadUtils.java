@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -74,9 +75,12 @@ public class DownloadUtils {
 				httpConnection.setConnectTimeout(5000);
 				httpConnection.setReadTimeout(60000);
 				httpConnection.connect();
-				System.out.println(String
-					.format("Retry %d: resumable download %s from %d to %d", retryCount,
-						remoteFilePath, existingFileSize, fileLength));
+				LOG.info("Retry {}: resumable download {} from {} to {}",
+					retryCount, remoteFilePath, existingFileSize, fileLength);
+				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+					System.out.println(String.format("Retry %d: resumable download %s from %d to %d",
+							retryCount, remoteFilePath, existingFileSize, fileLength));
+				}
 
 				InputStream in = httpConnection.getInputStream();
 				FileOutputStream fos = new FileOutputStream(outputFile, true);
@@ -182,7 +186,6 @@ public class DownloadUtils {
 		if (!file.getAbsolutePath().startsWith(userDir)) {
 			throw new RuntimeException("Trying to delete a file/dir outside of user directory.");
 		}
-
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {

@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasDelimiterDefaultAsBlank<T> extends WithParams <T> {
+	/**
+	 * @cn-name 分隔符
+	 * @cn 用来分割字符串
+	 */
 	ParamInfo <String> DELIMITER = ParamInfoFactory
 		.createParamInfo("delimiter", String.class)
 		.setDescription("delimiter")

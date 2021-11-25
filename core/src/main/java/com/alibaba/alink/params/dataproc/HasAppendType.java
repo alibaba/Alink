@@ -7,6 +7,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasAppendType<T> extends WithParams <T> {
+	/**
+	 * @cn-name append类型
+	 * @cn append类型，"UNIQUE"和"DENSE"，分别为稀疏和稠密，稀疏的为非连续唯一id，稠密的为连续唯一id
+	 */
 	ParamInfo <AppendType> APPEND_TYPE = ParamInfoFactory
 		.createParamInfo("appendType", AppendType.class)
 		.setDescription("append type. DENSE or UNIQUE")

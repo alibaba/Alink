@@ -13,6 +13,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasOutputColDefaultAsNull<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 输出结果列
+	 * @cn 输出结果列列名，可选，默认null
+	 */
 	ParamInfo <String> OUTPUT_COL = ParamInfoFactory
 		.createParamInfo("outputCol", String.class)
 		.setDescription("Name of the output column")

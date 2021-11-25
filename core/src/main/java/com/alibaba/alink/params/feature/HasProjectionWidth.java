@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Param: Projection length, used in bucket random projection LSH.
  */
 public interface HasProjectionWidth<T> extends WithParams <T> {
+	/**
+	 * @cn-name 桶的宽度
+	 * @cn 桶的宽度
+	 */
 	ParamInfo <Double> PROJECTION_WIDTH = ParamInfoFactory
 		.createParamInfo("projectionWidth", Double.class)
 		.setDescription("Bucket length, used in bucket random projection LSH.")

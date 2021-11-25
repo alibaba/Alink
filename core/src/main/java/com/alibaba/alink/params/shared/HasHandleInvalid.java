@@ -10,6 +10,10 @@ import com.alibaba.alink.params.ParamUtil;
  * method to deal with invalid situation.
  */
 public interface HasHandleInvalid<T> extends WithParams <T> {
+	/**
+	 * @cn-name 处理无效值的方法
+	 * @cn 处理无效值的方法，可取 error, skip
+	 */
 	ParamInfo <HandleInvalidMethod> HANDLE_INVALID = ParamInfoFactory
 		.createParamInfo("handleInvalidMethod", HandleInvalidMethod.class)
 		.setDescription("the handle method of invalid value. include： error, skip")

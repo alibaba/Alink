@@ -5,7 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasIdCol<T> extends WithParams <T> {
-
+	/**
+	 * @cn-name ID列名
+	 * @cn ID列对应的列名
+	 */
 	ParamInfo <String> ID_COL = ParamInfoFactory
 		.createParamInfo("idCol", String.class)
 		.setAlias(new String[] {"idColName"})

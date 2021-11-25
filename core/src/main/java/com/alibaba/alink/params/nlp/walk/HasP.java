@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasP<T> extends WithParams <T> {
+	/**
+	 * @cn-name p
+	 * @cn p越小越趋向于访问到已经访问的节点，反之则趋向于访问没有访问过的节点
+	 */
 	ParamInfo <Double> P = ParamInfoFactory
 		.createParamInfo("p", Double.class)
 		.setDescription(

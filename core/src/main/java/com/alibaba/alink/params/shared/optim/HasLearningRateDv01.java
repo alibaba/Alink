@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasLearningRateDv01<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 学习率
+	 * @cn 优化算法的学习率，默认0.1。
+	 */
 	ParamInfo <Double> LEARNING_RATE = ParamInfoFactory
 		.createParamInfo("learningRate", Double.class)
 		.setDescription("learning rate of optimization method. The default value is 0.1")

@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasOutputTableName<T> extends WithParams <T> {
+	/**
+	 * @cn-name 输出表名字
+	 * @cn 输出表名字
+	 */
 	ParamInfo <String> INPUT_TABLE_NAME = ParamInfoFactory
 		.createParamInfo("outputTableName", String.class)
 		.setDescription("output table name")

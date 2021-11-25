@@ -20,7 +20,6 @@ public class MFCC implements Serializable {
 	private int nFeature;
 	private Complex[] omega;
 	private double[][] filterBank;
-	private double[] lift;
 	private double[] hamming_function;
 
 	public int getnFeature() {
@@ -38,31 +37,7 @@ public class MFCC implements Serializable {
 		this.nFeature = outputFeatureNum;
 
 		// step 1: generate Mel scale
-		double[] mel_points = new double[nFilt + 2];
-		double[] hz_points = new double[nFilt + 2];
-		mel_points[0] = 0;
-		mel_points[nFilt + 1] = hzToMel(sampleRate / 2.0);
-		hz_points[nFilt + 1] = sampleRate / 2;
-		for (int i = 1; i <= nFilt; i++) {
-			// even distributions
-			mel_points[i] = i * mel_points[nFilt + 1] / (nFilt + 1);
-			hz_points[i] = melToHz(mel_points[i]);
-		}
-		int[] bin = new int[nFilt + 2];
-		for (int i = 0; i < nFilt + 2; i++) {
-			bin[i] = (int) Math.floor((nFFT + 1) * hz_points[i] / sampleRate);
-		}
-		// generate Mel filter
-		filterBank = new double[nFilt][nFFT / 2 + 1];
-		for (int i = 1; i <= nFilt; i++) {
-			Arrays.fill(filterBank[i - 1], 0.0);
-			for (int k = bin[i - 1]; k < bin[i]; k++) {
-				filterBank[i - 1][k] = (double) (k - bin[i - 1]) / (bin[i] - bin[i - 1]);
-			}
-			for (int k = bin[i]; k < bin[i + 1]; k++) {
-				filterBank[i - 1][k] = (double) (bin[i + 1] - k) / (bin[i + 1] - bin[i]);
-			}
-		}
+		generate_subtract_mel_scale();
 		// check filter bank
 		// 范围为0的滤波器会导致之后计算的对数计算出现NaN，用2e-16提高数值稳定性
 		boolean wrongFilter = false;
@@ -75,21 +50,82 @@ public class MFCC implements Serializable {
 			wrongFilter = wrongFilter || allZero;
 		}
 		if (wrongFilter) {
-			System.out.println("wrong number in MFCC filter, suggest to use fewer filter\n");
+			System.out.println("Empty filters detected in mel frequency basis. " +
+					"Try increasing your sampling rate (and fmax) or educing nmfcc.\n");
 		}
 
 		// step 2: generate FFT basis
 		omega = FFT.getOmega(nFFT);
 
-		// step 3: lift function
-		lift = new double[nFeature];
-		for (int i = 1; i <= nFeature; i++) {
-			lift[i - 1] = 1 + (nFeature / 2) * Math.sin(PI * i / nFeature);
-		}
 
 		hamming_function = new double[frameLength];
 		for (int i = 0; i < frameLength; i++) {
 			hamming_function[i] = (1 - HAMMING) - HAMMING * Math.cos((2.0 * PI * i) / frameLength);
+		}
+	}
+
+	private void generate_subtract_mel_scale() {
+		double[] hz_points = new double[nFilt + 2];
+		double[] enorm = new double[nFilt];
+		double[][] ramps = new double[nFilt + 2][nFFT / 2 + 1];
+		double mel_max = hzToMel(sampleRate / 2.0);
+		filterBank = new double[nFilt][nFFT / 2 + 1];
+
+		hz_points[0] = 0;
+		for (int i = 1; i <= nFilt; i++) {
+			hz_points[i] = melToHz(i * mel_max / (nFilt + 1));
+		}
+		double fftFreq = sampleRate / nFFT;
+		for (int i = 0; i < nFilt + 2; i++) {
+			for (int j = 0; j < nFFT / 2 + 1; j++) {
+				ramps[i][j] = hz_points[i] - fftFreq * j;
+			}
+		}
+		// Slaney-style mel is scaled to be approx constant energy per channel
+		for (int i = 0; i < nFilt; i++) {
+			enorm[i] = 2.0 / (hz_points[i + 2] - hz_points[i]);
+			double hz_diff_0 = hz_points[i + 1] - hz_points[i];
+			double hz_diff_1 = hz_points[i + 2] - hz_points[i + 1];
+			for (int j = 0; j < nFFT / 2 + 1; j++) {
+				double lower = -ramps[i][j] / hz_diff_0;
+				double upper = ramps[i + 2][j] / hz_diff_1;
+				filterBank[i][j] = Math.max(0, Math.min(lower, upper)) * enorm[i];
+			}
+		}
+	}
+
+	private void generate_eval_mel_scale() {
+		double[] mel_points = new double[nFilt + 2];
+		double[] hz_points = new double[nFilt + 2];
+		double[] enorm = new double[nFilt];
+		mel_points[0] = 0;
+		mel_points[nFilt + 1] = hzToMel(sampleRate / 2.0);
+		hz_points[nFilt + 1] = sampleRate / 2;
+		for (int i = 1; i <= nFilt; i++) {
+			// even distributions
+			mel_points[i] = i * mel_points[nFilt + 1] / (nFilt + 1);
+			hz_points[i] = melToHz(mel_points[i]);
+		}
+		// Slaney-style mel is scaled to be approx constant energy per channel
+		for (int i = 0; i < nFilt; i++) {
+			enorm[i] = 2.0 / (hz_points[i + 2] - hz_points[i]);
+		}
+		int[] bin = new int[nFilt + 2];
+		for (int i = 0; i < nFilt + 2; i++) {
+			bin[i] = (int) Math.floor((nFFT + 1) * hz_points[i] / sampleRate);
+		}
+		// generate Mel filter
+		filterBank = new double[nFilt][nFFT / 2 + 1];
+		for (int i = 1; i <= nFilt; i++) {
+			Arrays.fill(filterBank[i - 1], 0.0);
+			for (int k = bin[i - 1]; k < bin[i]; k++) {
+				filterBank[i - 1][k] = (double) (k - bin[i - 1]) / (bin[i] - bin[i - 1]);
+				filterBank[i - 1][k] *= enorm[i - 1];
+			}
+			for (int k = bin[i]; k < bin[i + 1]; k++) {
+				filterBank[i - 1][k] = (double) (bin[i + 1] - k) / (bin[i + 1] - bin[i]);
+				filterBank[i - 1][k] *= enorm[i - 1];
+			}
 		}
 	}
 
@@ -154,6 +190,7 @@ public class MFCC implements Serializable {
 //		DenseMatrix dmFilterBank = new DenseMatrix(filterBank);
 //		DenseMatrix dm = dmFilterBank.multiplies(dmFilterBank);
 
+		double amin = 1e-10;
 		double[] means = new double[num_frames];
 		for (int i = 0; i < num_frames; i++) {
 			for (int j = 0; j < nFilt; j++) {
@@ -161,9 +198,7 @@ public class MFCC implements Serializable {
 				for (int k = 0; k < nFFT / 2 + 1; k++) {
 					dotResult += frames[i][k] * filterBank[j][k];
 				}
-				if (dotResult != 0) {
-					dotResult = 10 * Math.log10(dotResult);
-				}
+				dotResult = 10 * Math.log10(Math.max(amin, dotResult));
 				mfccResult[i][j] = dotResult;
 				means[i] += dotResult;
 			}
@@ -188,10 +223,8 @@ public class MFCC implements Serializable {
 			double[] padding = new double[dctLength];
 			System.arraycopy(mfccResult[i], 0, padding, 0, nFilt);
 			double[] dctResult = dctFunc(mfccResult[i]);
-			/* step 6: lift, improve speech recognition in noisy signals*/
-			/* use mfccResult[1..nFeature] */
 			for (int j = 0; j < nFeature; j++) {
-				result[i][j] = dctResult[j + 1] * lift[j];
+				result[i][j] = dctResult[j + 1];
 			}
 		}
 		return doubleToFloat(result);

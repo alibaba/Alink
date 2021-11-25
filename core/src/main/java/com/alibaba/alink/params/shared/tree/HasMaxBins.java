@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasMaxBins<T> extends WithParams <T> {
+	/**
+	 * @cn-name 连续特征进行分箱的最大个数
+	 * @cn 连续特征进行分箱的最大个数。
+	 */
 	ParamInfo <Integer> MAX_BINS = ParamInfoFactory
 		.createParamInfo("maxBins", Integer.class)
 		.setDescription("MAX number of bins for continuous feature")

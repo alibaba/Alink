@@ -2,8 +2,6 @@ package com.alibaba.alink.common.pyrunner;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.pyrunner.PyMIMOCalcHandle;
-import com.alibaba.alink.common.pyrunner.PyMIMOCalcRunner;
 import com.alibaba.alink.testutil.categories.PyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

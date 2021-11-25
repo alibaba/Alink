@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasMaxDepthDefaultAs6<T> extends WithParams <T> {
+	/**
+	 * @cn-name 树的深度限制
+	 * @cn 树的深度限制
+	 */
 	ParamInfo <Integer> MAX_DEPTH = ParamInfoFactory
 		.createParamInfo("maxDepth", Integer.class)
 		.setDescription("depth of the tree")

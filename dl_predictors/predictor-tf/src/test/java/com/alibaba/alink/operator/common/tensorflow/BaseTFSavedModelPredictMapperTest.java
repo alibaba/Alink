@@ -6,7 +6,14 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
+import com.alibaba.alink.common.dl.utils.FileDownloadUtils;
+import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.dl.utils.ZipFileUtil;
+import com.alibaba.alink.common.io.plugin.PluginDownloader;
+import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.LongTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
@@ -14,13 +21,9 @@ import com.alibaba.alink.common.linalg.tensor.TensorTypes;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.common.dl.utils.PythonFileUtils;
-import com.alibaba.alink.common.dl.utils.FileDownloadUtils;
-import com.alibaba.alink.common.dl.utils.ZipFileUtil;
-import com.alibaba.alink.operator.common.tensorflow.BaseTFSavedModelPredictMapper;
 import com.alibaba.alink.params.dl.HasModelPath;
-import com.alibaba.alink.params.tensorflow.savedmodel.HasOutputSchemaStr;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
+import com.alibaba.alink.params.tensorflow.savedmodel.HasOutputSchemaStr;
 import com.alibaba.alink.testutil.categories.DLTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,6 +38,12 @@ public class BaseTFSavedModelPredictMapperTest {
 	@Category(DLTest.class)
 	@Test
 	public void testString() throws Exception {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+		RegisterKey registerKey = TFPredictorClassLoaderFactory.getRegisterKey();
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
 		MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(2);
 		String url = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/mnist_dense.csv";
 		String schema = "label bigint, image string";
@@ -79,6 +88,12 @@ public class BaseTFSavedModelPredictMapperTest {
 	@Category(DLTest.class)
 	@Test
 	public void testTensor() throws Exception {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+		RegisterKey registerKey = TFPredictorClassLoaderFactory.getRegisterKey();
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
 		MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(2);
 
 		int batchSize = 3;

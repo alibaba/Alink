@@ -8,6 +8,9 @@ import com.alibaba.alink.params.tensorflow.kerasequential.BaseKerasSequentialTra
 import com.alibaba.alink.params.classification.TFTableModelClassificationPredictParams;
 import com.alibaba.alink.pipeline.Trainer;
 
+/**
+ * Classifier using Keras Sequential model.
+ */
 public class KerasSequentialClassifier extends Trainer <KerasSequentialClassifier, KerasSequentialClassificationModel>
 	implements BaseKerasSequentialTrainParams <KerasSequentialClassifier>,
 	TFTableModelClassificationPredictParams <KerasSequentialClassifier> {

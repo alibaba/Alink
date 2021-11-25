@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasFeatureSubsamplingRatioDefaultAs1<T> extends WithParams <T> {
+	/**
+	 * @cn-name 每棵树特征采样的比例
+	 * @cn 每棵树特征采样的比例，范围为(0, 1]。
+	 */
 	ParamInfo <Double> FEATURE_SUBSAMPLING_RATIO = ParamInfoFactory
 		.createParamInfo("featureSubsamplingRatio", Double.class)
 		.setDescription("Ratio of the features used in each tree, in range (0, 1].")

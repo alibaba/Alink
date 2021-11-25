@@ -14,9 +14,9 @@ import java.util.function.Consumer;
 
 public class FmRegressionTest extends AlinkTestBase {
 	@Test
-	public void testFm() throws Exception {
+	public void testFm() {
 		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		BatchOperator trainData = new MemSourceBatchOp(
+		BatchOperator<?> trainData = new MemSourceBatchOp(
 			new Object[][] {
 				{"1.1 2.0", 1.0},
 				{"2.1 3.1", 1.0},
@@ -35,14 +35,14 @@ public class FmRegressionTest extends AlinkTestBase {
 			.linkFrom(trainData);
 		adagrad.lazyPrintModelInfo();
 		adagrad.lazyPrintTrainInfo();
-		BatchOperator result = new FmPredictBatchOp().setVectorCol("vec").setPredictionCol("pred")
+		new FmPredictBatchOp().setVectorCol("vec").setPredictionCol("pred")
 			.setPredictionDetailCol("details")
-			.linkFrom(adagrad, trainData).print();
+			.linkFrom(adagrad, trainData).collect();
 	}
 
 	@Test
-	public void testFmSparse() throws Exception {
-		BatchOperator trainData = new MemSourceBatchOp(
+	public void testFmSparse() {
+		BatchOperator<?> trainData = new MemSourceBatchOp(
 			new Object[][] {
 				{"1:1.1 3:2.0", 1.0},
 				{"2:2.1 10:3.1", 1.0},
@@ -60,27 +60,15 @@ public class FmRegressionTest extends AlinkTestBase {
 			.setEpsilon(0.0001)
 			.linkFrom(trainData);
 
-		adagrad.lazyCollectTrainInfo();
-		adagrad.lazyPrintModelInfo();
-		adagrad.lazyCollectModelInfo(new Consumer <FmRegressorModelInfo>() {
-			@Override
-			public void accept(FmRegressorModelInfo modelinfo) {
-				String[] names = modelinfo.getFeatureColNames();
-				String tast = modelinfo.getTask();
-				double[][] factors = modelinfo.getFactors();
-				int numFactor = modelinfo.getNumFactor();
-				int size = modelinfo.getNumFeature();
-			}
-		});
-
-		BatchOperator result = new FmPredictBatchOp().setVectorCol("vec").setPredictionCol("pred")
+		BatchOperator<?> result = new FmPredictBatchOp().setVectorCol("vec").setPredictionCol("pred")
 			.setPredictionDetailCol("details")
-			.linkFrom(adagrad, trainData).print();
+			.linkFrom(adagrad, trainData);
+		result.collect();
 	}
 
 	@Test
 	public void testPipelineFmSparse() throws Exception {
-		BatchOperator trainData = new MemSourceBatchOp(
+		BatchOperator<?> trainData = new MemSourceBatchOp(
 			new Object[][] {
 				{"0:1.1 1:2.0", 1.0},
 				{"0:2.1 1:3.1", 1.0},
@@ -99,8 +87,8 @@ public class FmRegressionTest extends AlinkTestBase {
 			.setPredictionCol("pred")
 			.enableLazyPrintModelInfo();
 
-		FmModel model = adagrad.fit(trainData);
-		BatchOperator result = model.transform(trainData);
+		FmModel<?> model = adagrad.fit(trainData);
+		BatchOperator<?> result = model.transform(trainData);
 
 		result.print();
 	}

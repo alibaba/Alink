@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasRecommCol<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 推荐结果列名
+	 * @cn 推荐结果列名
+	 */
 	ParamInfo <String> RECOMM_COL = ParamInfoFactory
 		.createParamInfo("recommCol", String.class)
 		.setDescription("Column name of recommend result.")

@@ -13,6 +13,7 @@ import org.junit.Test;
 /**
  * Unit test of IsotonicRegression algorithm.
  */
+
 public class IsotonicRegTrainBatchOpTest extends AlinkTestBase {
 	private Tuple4[] tuples = new Tuple4[] {
 		Tuple4.of(0.0, 0.3, 0.3, 1.0),

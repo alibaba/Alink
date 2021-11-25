@@ -13,7 +13,7 @@ import java.util.Collections;
  * Run TF2 scripts to train a model.
  * <p>
  * The model must be saved in SavedModel format and be exported in a given directory. The directory (named using
- * timestamps) is zipped and returned back to Alink side as a two-column Alink Model.
+ * timestamps) is zipped and returned to Alink side as a two-column Alink Model.
  */
 public class TF2TableModelTrainBatchOp
 	extends BaseDLTableModelTrainBatchOp <TF2TableModelTrainBatchOp> implements

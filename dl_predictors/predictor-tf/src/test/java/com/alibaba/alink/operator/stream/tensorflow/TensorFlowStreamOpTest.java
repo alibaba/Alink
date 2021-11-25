@@ -1,12 +1,15 @@
 package com.alibaba.alink.operator.stream.tensorflow;
 
-import com.alibaba.alink.DLTestConstants;
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.dl.DLEnvConfig;
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
+import com.alibaba.alink.common.dl.DLLauncherStreamOp;
+import com.alibaba.alink.common.io.plugin.PluginDownloader;
+import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.dataproc.TypeConvertStreamOp;
-import com.alibaba.alink.common.dl.DLLauncherStreamOp;
 import com.alibaba.alink.operator.stream.source.RandomTableSourceStreamOp;
-import com.alibaba.alink.operator.stream.tensorflow.TensorFlowStreamOp;
 import com.alibaba.alink.params.dataproc.HasTargetType.TargetType;
 import com.alibaba.alink.testutil.categories.DLTest;
 import org.junit.Test;
@@ -20,6 +23,12 @@ public class TensorFlowStreamOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF115);
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
 		StreamOperator.setParallelism(3);
 
 		StreamOperator<?> source = new RandomTableSourceStreamOp()
@@ -44,15 +53,19 @@ public class TensorFlowStreamOpTest {
 			.setNumWorkers(2)
 			.setNumPSs(1)
 			.setOutputSchemaStr("model_id long, model_info string")
-			.setPythonEnv(DLTestConstants.LOCAL_TF115_ENV)
 			.linkFrom(source);
 		tensorFlowStreamOp.print();
 		StreamOperator.execute();
 	}
 
-	@Category(DLTest.class)
 	@Test
 	public void testWithAutoWorkersPSs() throws Exception {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF115);
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
 		StreamOperator.setParallelism(3);
 		DLLauncherStreamOp.DL_CLUSTER_START_TIME = 30 * 1000;
 
@@ -76,7 +89,6 @@ public class TensorFlowStreamOpTest {
 			.setMainScriptFile("res:///tf_dnn_stream.py")
 			.setUserParams(JsonConverter.toJson(userParams))
 			.setOutputSchemaStr("model_id long, model_info string")
-			.setPythonEnv(DLTestConstants.LOCAL_TF115_ENV)
 			.linkFrom(source);
 		tensorFlowStreamOp.print();
 		StreamOperator.execute();

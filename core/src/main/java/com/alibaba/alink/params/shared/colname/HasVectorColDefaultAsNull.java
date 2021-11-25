@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasVectorColDefaultAsNull<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 向量列名
+	 * @cn 向量列对应的列名，默认值是null
+	 */
 	ParamInfo <String> VECTOR_COL = ParamInfoFactory
 		.createParamInfo("vectorCol", String.class)
 		.setDescription("Name of a vector column")

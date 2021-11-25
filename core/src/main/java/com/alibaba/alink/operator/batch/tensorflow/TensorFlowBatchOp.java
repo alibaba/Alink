@@ -9,6 +9,10 @@ import com.alibaba.alink.params.tensorflow.TensorFlowParams;
 
 import java.util.Collections;
 
+/**
+ * A general stream op to run custom TensorFlow (version 1.15) scripts for stream datasets.
+ * Any number of outputs are allowed from TF scripts, even no outputs.
+ */
 public class TensorFlowBatchOp extends BaseDLBatchOp <TensorFlowBatchOp> implements
 	TensorFlowParams <TensorFlowBatchOp> {
 

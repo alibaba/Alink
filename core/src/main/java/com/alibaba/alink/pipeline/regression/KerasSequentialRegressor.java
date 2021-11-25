@@ -8,6 +8,9 @@ import com.alibaba.alink.params.tensorflow.kerasequential.BaseKerasSequentialTra
 import com.alibaba.alink.params.regression.TFTableModelRegressionPredictParams;
 import com.alibaba.alink.pipeline.Trainer;
 
+/**
+ * Regressor using Keras Sequential model.
+ */
 public class KerasSequentialRegressor extends Trainer <KerasSequentialRegressor, KerasSequentialRegressionModel>
 	implements BaseKerasSequentialTrainParams <KerasSequentialRegressor>,
 	TFTableModelRegressionPredictParams <KerasSequentialRegressor> {

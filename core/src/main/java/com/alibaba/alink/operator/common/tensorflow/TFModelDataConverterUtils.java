@@ -5,9 +5,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.utils.JsonConverter;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Base64.Decoder;
 import java.util.Iterator;
 import java.util.List;
 
@@ -54,6 +61,12 @@ public class TFModelDataConverterUtils {
 		.setDescription("preprocessPipelineModelPartitionSize")
 		.build();
 
+	public static ParamInfo <Boolean> IS_OUTPUT_LOGITS = ParamInfoFactory
+		.createParamInfo("isOutputLogits", Boolean.class)
+		.setDescription("isOutputLogits")
+		.setHasDefaultValue(false)
+		.build();
+
 	public static long appendModelRows(List <Row> modelRows, List <String> toAppend) {
 		if (modelRows == null || modelRows.size() == 0) {
 			return 0;
@@ -85,5 +98,25 @@ public class TFModelDataConverterUtils {
 			modelRows.add(row);
 		}
 		return modelRows;
+	}
+
+	public static String writeModelRowsToFile(Iterator <String> iterator, long size) {
+		String workDir = PythonFileUtils.createTempWorkDir("saved_model_");
+		String s = iterator.next();
+		Object[] objects = JsonConverter.fromJson(s, Object[].class);
+		String zipFilename = (String) objects[1];
+		Path zipPath = Paths.get(workDir, zipFilename);
+
+		Decoder decoder = Base64.getDecoder();
+		try (FileOutputStream fos = new FileOutputStream(zipPath.toFile())) {
+			for (long k = 1; k < size; k += 1) {
+				s = iterator.next();
+				objects = JsonConverter.fromJson(s, Object[].class);
+				fos.write(decoder.decode((String) objects[1]));
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return zipPath.toFile().getAbsolutePath();
 	}
 }

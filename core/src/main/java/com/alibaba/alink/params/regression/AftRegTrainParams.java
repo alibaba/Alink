@@ -25,6 +25,10 @@ public interface AftRegTrainParams<T> extends
 	HasL1 <T>,
 	HasL2 <T> {
 
+	/**
+	 * @cn-name 生存列名
+	 * @cn 生存列名
+	 */
 	ParamInfo <String> CENSOR_COL = ParamInfoFactory
 		.createParamInfo("censorCol", String.class)
 		.setDescription(

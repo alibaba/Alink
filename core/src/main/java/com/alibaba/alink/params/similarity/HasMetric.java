@@ -8,6 +8,10 @@ import com.alibaba.alink.params.ParamUtil;
 
 public interface HasMetric<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 度量类型
+	 * @cn 计算距离时，可以取不同的度量
+	 */
 	ParamInfo <Metric> METRIC = ParamInfoFactory
 		.createParamInfo("metric", Metric.class)
 		.setDescription("Method to calculate calc or distance.")

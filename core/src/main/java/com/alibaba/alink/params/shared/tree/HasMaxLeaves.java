@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasMaxLeaves<T> extends WithParams <T> {
+	/**
+	 * @cn-name 叶节点的最多个数
+	 * @cn 叶节点的最多个数
+	 */
 	ParamInfo <Integer> MAX_LEAVES = ParamInfoFactory
 		.createParamInfo("maxLeaves", Integer.class)
 		.setDescription("max leaves of tree")

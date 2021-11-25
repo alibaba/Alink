@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasStartIndexDefaultAs1<T> extends WithParams <T> {
+	/**
+	 * @cn-name 起始索引
+	 * @cn 起始索引
+	 */
 	ParamInfo <Integer> START_INDEX = ParamInfoFactory
 		.createParamInfo("startIndex", Integer.class)
 		.setDescription("start index")

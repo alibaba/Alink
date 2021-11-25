@@ -6,6 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasIgnoreFirstLine<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 是否忽略第一行数据
+	 * @cn 是否忽略第一行数据
+	 */
 	ParamInfo <Boolean> IGNORE_FIRST_LINE = ParamInfoFactory
 		.createParamInfo("ignoreFirstLine", Boolean.class)
 		.setDescription("Whether to ignore first line of csv file.")

@@ -11,8 +11,9 @@ import org.junit.Test;
 /**
  * Test for LooSplit.
  */
+
 public class LeaveKOutForTestBatchOpTest extends AlinkTestBase {
-	private Row[] rows1 = new Row[] {
+	private final Row[] rows1 = new Row[] {
 		Row.of(1L, 1L, 0.7),
 		Row.of(1L, 2L, 0.1),
 		Row.of(1L, 3L, 0.6),
@@ -32,7 +33,7 @@ public class LeaveKOutForTestBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void leaveKOutsplit() throws Exception {
-		BatchOperator data = BatchOperator.fromTable(
+		BatchOperator <?> data = BatchOperator.fromTable(
 			MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[] {"user", "item", "rating"}));
 
 		BatchOperator <?> spliter = new LeaveKObjectOutBatchOp()
@@ -41,7 +42,7 @@ public class LeaveKOutForTestBatchOpTest extends AlinkTestBase {
 			.setObjectCol("item")
 			.setOutputCol("label");
 		BatchOperator <?> left = spliter.linkFrom(data);
-		BatchOperator right = spliter.getSideOutput(0);
+		BatchOperator <?> right = spliter.getSideOutput(0);
 
 		Assert.assertEquals(right.count(), 9);
 		Assert.assertEquals(left.count(), 3);
@@ -49,7 +50,7 @@ public class LeaveKOutForTestBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void leaveTopKOutsplit() throws Exception {
-		BatchOperator data = BatchOperator.fromTable(
+		BatchOperator <?> data = BatchOperator.fromTable(
 			MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[] {"user", "item", "rating"}));
 
 		BatchOperator <?> spliter = new LeaveTopKObjectOutBatchOp()
@@ -60,7 +61,7 @@ public class LeaveKOutForTestBatchOpTest extends AlinkTestBase {
 			.setOutputCol("label")
 			.setGroupCol("user");
 		BatchOperator <?> left = spliter.linkFrom(data);
-		BatchOperator right = spliter.getSideOutput(0);
+		BatchOperator <?> right = spliter.getSideOutput(0);
 		Assert.assertEquals(right.count(), 11);
 		Assert.assertEquals(left.count(), 3);
 	}

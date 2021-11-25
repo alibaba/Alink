@@ -17,6 +17,10 @@ public interface OssFileSystemParams<T> extends WithParams <T>,
 	HasEndPoint <T>,
 	HasPluginVersion<T> {
 
+	/**
+	 * @cn-name SecurityToken
+	 * @cn SecurityToken
+	 */
 	ParamInfo <String> SECURITY_TOKEN = ParamInfoFactory
 		.createParamInfo("securityToken", String.class)
 		.setDescription("security token")

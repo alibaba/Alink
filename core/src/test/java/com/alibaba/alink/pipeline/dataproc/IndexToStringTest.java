@@ -14,6 +14,7 @@ import java.util.List;
 /**
  * Test cases for {@link IndexToString}.
  */
+
 public class IndexToStringTest extends AlinkTestBase {
 	private static Row[] rows = new Row[] {
 		Row.of("football"),

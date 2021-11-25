@@ -8,6 +8,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -19,20 +20,35 @@ import com.alibaba.alink.operator.common.nlp.bert.tokenizer.EncodingKeys;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.operator.common.tensorflow.CommonUtils.ConstructModelFlatMapFunction;
 import com.alibaba.alink.operator.common.tensorflow.CommonUtils.SortLabelsReduceGroupFunction;
+import com.alibaba.alink.params.dl.HasBatchSizeDefaultAs32;
+import com.alibaba.alink.params.dl.HasCheckpointFilePathDefaultAsNull;
+import com.alibaba.alink.params.dl.HasIntraOpParallelism;
+import com.alibaba.alink.params.dl.HasLearningRateDefaultAs0001;
 import com.alibaba.alink.operator.common.classification.tensorflow.TFTableModelClassificationModelDataConverter;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.dl.HasModelPath;
+import com.alibaba.alink.params.dl.HasNumPssDefaultAsNull;
+import com.alibaba.alink.params.dl.HasNumWorkersDefaultAsNull;
+import com.alibaba.alink.params.dl.HasPythonEnv;
 import com.alibaba.alink.params.dl.HasTaskType;
 import com.alibaba.alink.params.dl.HasUserFiles;
-import com.alibaba.alink.params.tensorflow.bert.BaseEasyTransferTrainParams;
+import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import com.alibaba.alink.params.tensorflow.bert.HasBertModelName;
 import com.alibaba.alink.params.tensorflow.bert.HasCustomConfigJson;
+import com.alibaba.alink.params.tensorflow.bert.HasMaxSeqLength;
+import com.alibaba.alink.params.tensorflow.bert.HasMaxSeqLengthDefaultAsNull;
+import com.alibaba.alink.params.tensorflow.bert.HasNumEpochsDefaultAs001;
+import com.alibaba.alink.params.tensorflow.bert.HasNumFineTunedLayersDefaultAs1;
 import com.alibaba.alink.params.tensorflow.bert.HasTaskName;
+import com.alibaba.alink.params.tensorflow.bert.HasTextCol;
+import com.alibaba.alink.params.tensorflow.bert.HasTextPairCol;
 import com.alibaba.alink.pipeline.PipelineModel;
 import com.alibaba.alink.pipeline.nlp.BertTokenizer;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,8 +64,9 @@ import static com.alibaba.alink.operator.common.tensorflow.CommonUtils.SORTED_LA
 import static com.alibaba.alink.operator.common.tensorflow.CommonUtils.TF_MODEL_BC_NAME;
 
 @Internal
-public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp <T>> extends BatchOperator <T>
-	implements BaseEasyTransferTrainParams <T>, HasTaskName <T>, HasTaskType <T> {
+public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp <T>> extends BatchOperator <T> {
+
+	private static final Logger LOG = LoggerFactory.getLogger(BaseEasyTransferTrainBatchOp.class);
 
 	private static final String[] MODEL_INPUTS = new String[] {
 		EncodingKeys.INPUT_IDS_KEY.label,
@@ -71,10 +88,12 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 
 	public static Map <String, Object> getPreprocessConfig(Params params, boolean doTokenizer) {
 		Map <String, Object> config = new HashMap <>();
-		String textCol = params.get(BaseEasyTransferTrainParams.TEXT_COL);
-		String textPairCol = params.get(BaseEasyTransferTrainParams.TEXT_PAIR_COL);
-		String labelCol = params.get(BaseEasyTransferTrainParams.LABEL_COL);
-		int maxSeqLength = params.get(BaseEasyTransferTrainParams.MAX_SEQ_LENGTH);
+		String textCol = params.get(HasTextCol.TEXT_COL);
+		String textPairCol = params.contains(HasTextPairCol.TEXT_PAIR_COL)
+			? params.get(HasTextPairCol.TEXT_PAIR_COL)
+			: null;
+		String labelCol = params.get(HasLabelCol.LABEL_COL);
+		int maxSeqLength = params.get(HasMaxSeqLength.MAX_SEQ_LENGTH);
 		TaskType taskType = params.get(HasTaskType.TASK_TYPE);
 		String labelTypeStr = TaskType.CLASSIFICATION.equals(taskType) ? "int" : "float";
 
@@ -108,10 +127,9 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 
 	public static Map <String, Object> getModelConfig(Params params) {
 		Map <String, Object> config = new HashMap <>();
-		if (!params.contains(BaseEasyTransferTrainParams.MODEL_PATH) || (null == params.get(
-			BaseEasyTransferTrainParams.MODEL_PATH))) {
-			params.set(BaseEasyTransferTrainParams.MODEL_PATH,
-				BertResources.getBertModelCkpt(params.get(BaseEasyTransferTrainParams.BERT_MODEL_NAME)));
+		if (!params.contains(HasModelPath.MODEL_PATH) || (null == params.get(HasModelPath.MODEL_PATH))) {
+			params.set(HasModelPath.MODEL_PATH,
+				BertResources.getBertModelCkpt(params.get(HasBertModelName.BERT_MODEL_NAME)));
 		}
 
 		TaskType taskType = params.get(HasTaskType.TASK_TYPE);
@@ -120,7 +138,7 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		} else {
 			config.put("num_labels", 1);
 		}
-		int numFineTunedLayers = params.get(BaseEasyTransferTrainParams.NUM_FINE_TUNED_LAYERS);
+		int numFineTunedLayers = params.get(HasNumFineTunedLayersDefaultAs1.NUM_FINE_TUNED_LAYERS);
 		config.put("dropout_rate", 0.3);    // TODO
 		config.put("num_freezed_layers", Math.max(0, 12 - numFineTunedLayers));	// TODO: check 12
 		config.put("keep_checkpoint_max", 1);
@@ -129,19 +147,19 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 
 	public static Map <String, Object> getTrainConfig(Params params) {
 		Map <String, Object> config = new HashMap <>();
-		int batchSize = params.get(BaseEasyTransferTrainParams.BATCH_SIZE);
-		double numEpochs = params.get(BaseEasyTransferTrainParams.NUM_EPOCHS);
-		double learningRate = params.get(BaseEasyTransferTrainParams.LEARNING_RATE);
+		int batchSize = params.get(HasBatchSizeDefaultAs32.BATCH_SIZE);
+		double numEpochs = params.get(HasNumEpochsDefaultAs001.NUM_EPOCHS);
+		double learningRate = params.get(HasLearningRateDefaultAs0001.LEARNING_RATE);
 		config.put("train_batch_size", batchSize);
-		config.put("save_steps", 10);
+		config.put("save_steps", 100);
 		config.put("num_epochs", numEpochs);
 		config.put("optimizer_config", ImmutableMap.of("learning_rate", learningRate));
 		return config;
 	}
 
 	public static Map <String, Object> getExportConfig(Params params) {
-		String labelCol = params.get(BaseEasyTransferTrainParams.LABEL_COL);
-		int maxSeqLength = params.get(BaseEasyTransferTrainParams.MAX_SEQ_LENGTH);
+		String labelCol = params.get(HasLabelCol.LABEL_COL);
+		int maxSeqLength = params.get(HasMaxSeqLength.MAX_SEQ_LENGTH);
 		TaskType taskType = params.get(HasTaskType.TASK_TYPE);
 		String labelTypeStr = TaskType.CLASSIFICATION.equals(taskType) ? "int" : "float";
 		Map <String, Object> config = new HashMap <>();
@@ -216,12 +234,8 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		BatchOperator <?> in = inputs[0];
 		Params params = getParams();
 		TaskType taskType = params.get(HasTaskType.TASK_TYPE);
-		String labelCol = getLabelCol();
+		String labelCol = params.get(HasLabelCol.LABEL_COL);
 		TypeInformation <?> labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelCol);
-
-		if (null != getSelectedCols()) {
-			in = in.select(getSelectedCols());
-		}
 
 		DataSet <List <Object>> sortedLabels = null;
 		if (TaskType.CLASSIFICATION.equals(taskType)) {
@@ -230,7 +244,8 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 			in = mapLabelToIntIndex(in, labelCol, sortedLabels);
 		}
 
-		BertTokenizer bertTokenizer = new BertTokenizer(params.clone());
+		BertTokenizer bertTokenizer = new BertTokenizer(params.clone())
+			.set(HasMaxSeqLengthDefaultAsNull.MAX_SEQ_LENGTH, params.get(HasMaxSeqLength.MAX_SEQ_LENGTH));
 		PipelineModel preprocessPipelineMode = new PipelineModel(bertTokenizer);
 		in = preprocessPipelineMode.transform(in);
 		BatchOperator <?> preprocessPipelineModelOp = preprocessPipelineMode.save();
@@ -244,30 +259,42 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 			? params.get(HasModelPath.MODEL_PATH)
 			: BertResources.getBertModelCkpt(bertModelName);
 
-		if (!StringUtils.isNullOrWhitespaceOnly(getCheckpointFilePath())) {
-			userParams.put("model_dir", getCheckpointFilePath());
+		String checkpointFilePath = params.get(HasCheckpointFilePathDefaultAsNull.CHECKPOINT_FILE_PATH);
+		if (!StringUtils.isNullOrWhitespaceOnly(checkpointFilePath)) {
+			userParams.put("model_dir", checkpointFilePath);
 		}
 
 		ExternalFilesConfig externalFilesConfig = params.contains(HasUserFiles.USER_FILES)
 			? ExternalFilesConfig.fromJson(params.get(HasUserFiles.USER_FILES))
 			: new ExternalFilesConfig();
-		externalFilesConfig.addFilePaths(bertModelCkptPath);
-		userParams.put("pretrained_ckpt_path", PythonFileUtils.getCompressedFileName(bertModelCkptPath));
+
+		if (PythonFileUtils.isLocalFile(bertModelCkptPath)) {
+			// should be a directory
+			userParams.put("pretrained_ckpt_path", bertModelCkptPath.substring("file://".length()));
+		} else {
+			externalFilesConfig.addFilePaths(bertModelCkptPath);
+			userParams.put("pretrained_ckpt_path", PythonFileUtils.getCompressedFileName(bertModelCkptPath));
+		}
 
 		Map <String, Map <String, Object>> config = getConfig(getParams(), false);
 		String configJson = JsonConverter.toJson(config);
-		System.out.println("config : " + configJson);
-		userParams.put("app_name", getTaskName().name());
+
+		LOG.info("EasyTransfer config: {}", configJson);
+		if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+			System.out.println("EasyTransfer config: " + configJson);
+		}
+		BertTaskName taskName = params.get(HasTaskName.TASK_NAME);
+		userParams.put("app_name", taskName.name());
 
 		EasyTransferConfigTrainBatchOp trainBatchOp = new EasyTransferConfigTrainBatchOp()
 			.setSelectedCols(ArrayUtils.add(SAFE_MODEL_INPUTS, labelCol))
 			.setConfigJson(configJson)
 			.setUserFiles(externalFilesConfig)
-			.setNumWorkers(getNumWorkers())
-			.setNumPSs(getNumPSs())
 			.setUserParams(JsonConverter.toJson(userParams))
-			.setPythonEnv(getPythonEnv())
-			.setIntraOpParallelism(getIntraOpParallelism())
+			.setNumWorkers(params.get(HasNumWorkersDefaultAsNull.NUM_WORKERS))
+			.setNumPSs(params.get(HasNumPssDefaultAsNull.NUM_PSS))
+			.setPythonEnv(params.get(HasPythonEnv.PYTHON_ENV))
+			.setIntraOpParallelism(params.get(HasIntraOpParallelism.INTRA_OP_PARALLELISM))
 			.setMLEnvironmentId(getMLEnvironmentId());
 
 		BatchOperator <?>[] tfInputs;
@@ -281,7 +308,7 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		FlatMapOperator <Row, Row> constructModelFlatMapOperator = new NumSeqSourceBatchOp().setFrom(0).setTo(0)
 			.setMLEnvironmentId(getMLEnvironmentId())
 			.getDataSet()
-			.flatMap(new ConstructModelFlatMapFunction(params, SAFE_MODEL_INPUTS, new String[0],
+			.flatMap(new ConstructModelFlatMapFunction(params, SAFE_MODEL_INPUTS,
 				tfOutputSignatureDef, TF_OUTPUT_SIGNATURE_TYPE, preprocessPipelineModelSchemaStr))
 			.withBroadcastSet(preprocessPipelineModelOp.getDataSet(), PREPROCESS_PIPELINE_MODEL_BC_NAME)
 			.withBroadcastSet(tfModel.getDataSet(), TF_MODEL_BC_NAME);

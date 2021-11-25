@@ -8,7 +8,10 @@ import com.alibaba.alink.common.dl.BertTaskName;
 
 public interface HasTaskName<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn 任务名
+	 * @cn-name 任务名
+	 */
 	ParamInfo <BertTaskName> TASK_NAME = ParamInfoFactory
 		.createParamInfo("taskName", BertTaskName.class)
 		.setDescription("Task name")

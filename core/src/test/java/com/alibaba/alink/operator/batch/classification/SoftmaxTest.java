@@ -2,19 +2,16 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.JsonValueBatchOp;
 import com.alibaba.alink.operator.batch.evaluation.EvalMultiClassBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.common.linear.SoftmaxModelInfo;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class SoftmaxTest extends AlinkTestBase {
 
@@ -31,9 +28,8 @@ public class SoftmaxTest extends AlinkTestBase {
 	String[] veccolNames = new String[] {"svec", "vec", "f0", "f1", "f2", "label"};
 
 	@Test
-	public void batchTableTest() throws Exception {
-		BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
-		BatchOperator trainData = vecdata;
+	public void batchTableTest() {
+		BatchOperator<?> trainData = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
 		String labelColName = "label";
 		SoftmaxTrainBatchOp lr = new SoftmaxTrainBatchOp()
 			.setVectorCol("svec")
@@ -49,18 +45,6 @@ public class SoftmaxTest extends AlinkTestBase {
 
 		model.lazyPrintTrainInfo();
 		model.lazyPrintModelInfo();
-		model.lazyCollectModelInfo(new Consumer <SoftmaxModelInfo>() {
-			@Override
-			public void accept(SoftmaxModelInfo modelinfo) {
-				String[] names = modelinfo.getFeatureNames();
-				String vecName = modelinfo.getVectorColName();
-				DenseVector[] dvs = modelinfo.getWeights();
-				int size = modelinfo.getVectorSize();
-				String modelName = modelinfo.getModelName();
-				Object[] labelVals = modelinfo.getLabelValues();
-				boolean isHas = modelinfo.hasInterceptItem();
-			}
-		});
 
 		List <Row> acc = new SoftmaxPredictBatchOp()
 			.setPredictionCol("predLr")
@@ -71,19 +55,14 @@ public class SoftmaxTest extends AlinkTestBase {
 				.setSelectedCol("Data")
 				.setReservedCols(new String[] {"Statistics"})
 				.setOutputCols(new String[] {"Accuracy"})
-				.setJsonPath(new String[] {"$.Accuracy"}))
+				.setJsonPath("$.Accuracy"))
 			.collect();
-		Assert.assertEquals(Double.valueOf(acc.get(0).
-
-			getField(0).
-
-			toString()), 1.0, 0.001);
+		Assert.assertEquals(Double.parseDouble(acc.get(0).getField(0).toString()), 1.0, 0.001);
 	}
 
 	@Test
-	public void batchVectorTest() throws Exception {
-		BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
-		BatchOperator trainData = vecdata;
+	public void batchVectorTest() {
+		BatchOperator<?> trainData = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
 		String labelColName = "label";
 		SoftmaxTrainBatchOp lr = new SoftmaxTrainBatchOp()
 			.setVectorCol("svec")
@@ -96,9 +75,6 @@ public class SoftmaxTest extends AlinkTestBase {
 
 		SoftmaxTrainBatchOp model = lr.linkFrom(trainData);
 
-		model.lazyPrintTrainInfo();
-
-		model.lazyPrintModelInfo();
 		List <Row> acc = new SoftmaxPredictBatchOp()
 			.setPredictionCol("predLr").setVectorCol("svec")
 			.setPredictionDetailCol("predDetail")
@@ -108,8 +84,41 @@ public class SoftmaxTest extends AlinkTestBase {
 				.setSelectedCol("Data")
 				.setReservedCols(new String[] {"Statistics"})
 				.setOutputCols(new String[] {"Accuracy"})
-				.setJsonPath(new String[] {"$.Accuracy"}))
+				.setJsonPath("$.Accuracy"))
 			.collect();
-		Assert.assertEquals(Double.valueOf(acc.get(0).getField(0).toString()), 1.0, 0.001);
+		Assert.assertEquals(Double.parseDouble(acc.get(0).getField(0).toString()), 1.0, 0.001);
 	}
+
+	@Test
+	public void testIncrementalSoftmax() {
+		List <Row> df_data = Arrays.asList(
+			Row.of(2, 1, 1),
+			Row.of(3, 2, 1),
+			Row.of(4, 3, 2),
+			Row.of(2, 4, 1),
+			Row.of(2, 2, 1),
+			Row.of(4, 3, 2),
+			Row.of(1, 2, 1),
+			Row.of(5, 3, 3)
+		);
+		BatchOperator<?> batchData = new MemSourceBatchOp(df_data, "f0 int, f1 int, label int");
+
+		BatchOperator<?> softmax = new SoftmaxTrainBatchOp()
+			.setMaxIter(8).setFeatureCols("f0", "f1").setStandardization(true).setLabelCol("label");
+		BatchOperator<?> model = softmax.linkFrom(batchData);
+
+		BatchOperator<?> finalModel = new SoftmaxTrainBatchOp().setFeatureCols("f0", "f1").setMaxIter(8)
+			.setStandardization(false)
+			.setLabelCol("label").linkFrom(batchData, model);
+
+		List<Row> result = new SoftmaxPredictBatchOp()
+			.setPredictionCol("pred")
+			.setReservedCols("label")
+			.linkFrom(finalModel, batchData).collect();
+
+		for (Row row : result) {
+			assert (row.getField(0).equals(row.getField(1)));
+		}
+	}
+
 }

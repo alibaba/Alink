@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.optim;
 
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
@@ -45,10 +46,10 @@ public abstract class Optimizer {
 	public abstract DataSet <Tuple2 <DenseVector, double[]>> optimize();
 
 	/**
-	 * initialize coefficient with zero
+	 * check coefficient with data size.
 	 */
-	public void initCoefZeros() {
-		if (null != coefDim) {
+	public void checkInitCoef() {
+		if (null != coefDim && this.coefVec == null) {
 			this.coefVec = this.coefDim.map(new MapFunction <Integer, DenseVector>() {
 				private static final long serialVersionUID = -884105350593462660L;
 
@@ -62,7 +63,7 @@ public abstract class Optimizer {
 					return denseVector;
 				}
 			});
-		} else {
+		} else if (null == coefDim) {
 			throw new RuntimeException("Must input the coefficients dimension or initial coefficients!");
 		}
 	}

@@ -22,7 +22,7 @@ public abstract class ComboMapper extends Mapper {
 
 	public List <Mapper> getLoadedMapperList() {
 		List <Mapper> mapperList = new ArrayList <>();
-		if(this.mapperList == null || this.mapperList.getMappers() == null) {
+		if (this.mapperList == null || this.mapperList.getMappers() == null) {
 			return null;
 		}
 		Collections.addAll(mapperList, this.mapperList.getMappers());
@@ -38,7 +38,7 @@ public abstract class ComboMapper extends Mapper {
 	public void newMapperList() {
 		if (mapperList == null) {
 			List <Mapper> mapperList2 = getLoadedMapperList();
-			if(mapperList2 != null) {
+			if (mapperList2 != null) {
 				mapperList = new MapperChain(mapperList2.toArray(new Mapper[0]));
 			}
 		}

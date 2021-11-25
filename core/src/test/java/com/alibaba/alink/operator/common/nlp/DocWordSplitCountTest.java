@@ -15,6 +15,7 @@ import java.util.List;
 /**
  * Unit test for DocWordSplitCount.
  */
+
 public class DocWordSplitCountTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {

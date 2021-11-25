@@ -10,6 +10,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 public interface HasNumHashTablesDV10<T> extends
 	WithParams <T> {
 
+	/**
+	 * @cn-name 哈希表个数
+	 * @cn 哈希表的数目
+	 */
 	ParamInfo <Integer> NUM_HASH_TABLES = ParamInfoFactory
 		.createParamInfo("numHashTables", Integer.class)
 		.setDescription("The number of hash tables")

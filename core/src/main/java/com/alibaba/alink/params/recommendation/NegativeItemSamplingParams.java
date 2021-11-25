@@ -7,6 +7,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 public interface NegativeItemSamplingParams<T> extends
 	WithParams <T> {
 
+	/**
+	 * @cn-name 采样因子
+	 * @cn 采样因子
+	 */
 	ParamInfo <Integer> SAMPLING_FACTOR = ParamInfoFactory
 		.createParamInfo("samplingFactor", Integer.class)
 		.setDescription("")

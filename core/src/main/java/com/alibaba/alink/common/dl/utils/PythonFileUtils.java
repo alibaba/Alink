@@ -20,6 +20,7 @@ package com.alibaba.alink.common.dl.utils;
 
 import org.apache.flink.util.FileUtils;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.utils.DownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +44,18 @@ public class PythonFileUtils {
         ".zip", ".tar.gz", ".tgz"
     );
 
-    public static String createTempWorkDir(String prefix) throws Exception {
+    public static String createTempWorkDir(String prefix) {
         String dirname = FileUtils.getRandomFilename(prefix);
-        String fullPathName = DownloadUtils.createLocalDirectory(dirname);
-        System.out.println("The work dir is: " + fullPathName);
+        String fullPathName;
+        try {
+            fullPathName = DownloadUtils.createLocalDirectory(dirname);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create local directory.");
+        }
+        LOG.info("The work dir is: {}", fullPathName);
+        if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+            System.out.println("The work dir is: " + fullPathName);
+        }
         if (DELETE_TEMP_FILES_WHEN_EXIT) {
             DownloadUtils.setSafeDeleteFileOnExit(fullPathName);
         }
@@ -59,6 +68,10 @@ public class PythonFileUtils {
         } catch (IOException e) {
             throw new RuntimeException("Cannot create temporary directory:", e);
         }
+    }
+
+    public static boolean isLocalFile(String path) {
+        return path.startsWith("file://");
     }
 
     public static boolean isCompressedFile(String path) {
@@ -77,7 +90,11 @@ public class PythonFileUtils {
         if (path.contains("?")) {
             path = path.substring(0, path.indexOf('?'));
         }
-        return path.substring(path.lastIndexOf('/') + 1);
+        if (path.contains("\\")) {
+            return path.substring(path.lastIndexOf('\\') + 1);
+        } else {
+            return path.substring(path.lastIndexOf('/') + 1);
+        }
     }
 
     /**

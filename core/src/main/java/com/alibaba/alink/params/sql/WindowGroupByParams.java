@@ -10,16 +10,28 @@ import java.io.Serializable;
 
 public interface WindowGroupByParams<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name select语句
+	 * @cn select语句
+	 */
 	ParamInfo <String> SELECT_CLAUSE = ParamInfoFactory
 		.createParamInfo("selectClause", String.class)
 		.setDescription("Select clause")
 		.setRequired()
 		.build();
+	/**
+	 * @cn-name groupby语句
+	 * @cn groupby语句
+	 */
 	ParamInfo <String> GROUP_BY_CLAUSE = ParamInfoFactory
 		.createParamInfo("groupByClause", String.class)
 		.setDescription("Groupby clause")
 		.setHasDefaultValue(null)
 		.build();
+	/**
+	 * @cn-name 时间长度单位
+	 * @cn 时间长度单位
+	 */
 	ParamInfo <IntervalUnit> INTERVAL_UNIT = ParamInfoFactory
 		.createParamInfo("intervalUnit", IntervalUnit.class)
 		.setDescription("Interval unit, one of second, minute, hour, day or month")
@@ -46,6 +58,10 @@ public interface WindowGroupByParams<T> extends WithParams <T> {
 		MONTH
 	}
 
+	/**
+	 * @cn-name 窗口类型
+	 * @cn 窗口类型
+	 */
 	ParamInfo <WindowType> WINDOW_TYPE = ParamInfoFactory
 		.createParamInfo("windowType", WindowType.class)
 		.setDescription("Window type, one of \"tumble\", \"hop\", \"session\"")
@@ -70,17 +86,28 @@ public interface WindowGroupByParams<T> extends WithParams <T> {
 		SESSION
 	}
 
+	/**
+	 * @cn-name session间隔长度
+	 * @cn session间隔长度
+	 */
 	ParamInfo <Integer> SESSION_GAP = ParamInfoFactory
 		.createParamInfo("sessionGap", Integer.class)
 		.setDescription("Session gap")
 		.setRequired()
 		.build();
+	/**
+	 * @cn-name 滑动窗口滑动长度
+	 * @cn 滑动窗口滑动长度
+	 */
 	ParamInfo <Integer> SLIDING_LENGTH = ParamInfoFactory
 		.createParamInfo("slidingLength", Integer.class)
 		.setDescription("Sliding length")
 		.setRequired()
 		.build();
-
+	/**
+	 * @cn-name 窗口长度
+	 * @cn 窗口长度
+	 */
 	ParamInfo <Integer> WINDOW_LENGTH = ParamInfoFactory
 		.createParamInfo("windowLength", Integer.class)
 		.setDescription("Window length")

@@ -1,8 +1,8 @@
 package com.alibaba.alink.common.dl.utils;
 
-import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.dl.utils.tftensorconv.StringTFTensorConversionImpl;
 import com.alibaba.alink.common.dl.utils.tftensorconv.TensorTFTensorConversionImpl;
+import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.google.common.primitives.Floats;
 import org.junit.Assert;
 import org.junit.Test;

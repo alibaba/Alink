@@ -6,9 +6,15 @@ import com.alibaba.alink.common.dl.BaseEasyTransferTrainBatchOp;
 import com.alibaba.alink.common.dl.TaskType;
 import com.alibaba.alink.common.dl.BertTaskName;
 import com.alibaba.alink.params.dl.HasTaskType;
+import com.alibaba.alink.params.tensorflow.bert.BertTextTrainParams;
 import com.alibaba.alink.params.tensorflow.bert.HasTaskName;
 
-public class BertTextClassifierTrainBatchOp extends BaseEasyTransferTrainBatchOp <BertTextClassifierTrainBatchOp> {
+/**
+ * Train a text classifier using Bert models.
+ */
+public class BertTextClassifierTrainBatchOp extends BaseEasyTransferTrainBatchOp <BertTextClassifierTrainBatchOp>
+	implements BertTextTrainParams<BertTextClassifierTrainBatchOp> {
+
 	public BertTextClassifierTrainBatchOp() {
 		this(new Params());
 	}

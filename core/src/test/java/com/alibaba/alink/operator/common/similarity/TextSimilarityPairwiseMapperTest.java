@@ -101,7 +101,7 @@ public class TextSimilarityPairwiseMapperTest extends AlinkTestBase {
 		assertArrayEquals(cosine, res);
 
 		// SIMHASH_HAMMING
-		Double[] simHash = new Double[] {0.0, 25.0, 14.0, 11.0};
+		Double[] simHash = new Double[] {0.0, 29.0, 19.0, 15.0};
 		params.set(StringTextPairwiseParams.METRIC, HasMetric.Metric.SIMHASH_HAMMING).set(HasKDefaultAs2.K, 1);
 		mapper = new TextSimilarityPairwiseMapper(dataSchema, params);
 		for (int i = 0; i < array.length; i++) {
@@ -110,7 +110,7 @@ public class TextSimilarityPairwiseMapperTest extends AlinkTestBase {
 		assertArrayEquals(simHash, res);
 
 		// SIMHASH_HAMMING_SIM
-		Double[] simHashSim = new Double[] {1.0, 0.609375, 0.78125, 0.828125};
+		Double[] simHashSim = new Double[] {1.0, 0.546875, 0.703125, 0.765625};
 		params.set(StringTextPairwiseParams.METRIC, HasMetric.Metric.SIMHASH_HAMMING_SIM).set(HasKDefaultAs2.K, 1);
 		mapper = new TextSimilarityPairwiseMapper(dataSchema, params);
 		for (int i = 0; i < array.length; i++) {

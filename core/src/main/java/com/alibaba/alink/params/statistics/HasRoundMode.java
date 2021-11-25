@@ -13,6 +13,10 @@ import java.math.BigDecimal;
  * round mode.
  */
 public interface HasRoundMode<T> extends WithParams <T> {
+	/**
+	 * @cn 取整的模式。当q是组的个数，k 是第k个组，total是总的样本大小时，第k组的边界索引应为(1.0 / q) * (total - 1) * k。这个值应该为整数，所以需要取整，取整时用到这个参数。
+	 * @cn-name 取整的模式
+	 */
 	ParamInfo <RoundMode> ROUND_MODE = ParamInfoFactory
 		.createParamInfo("roundMode", RoundMode.class)
 		.setDescription("when q is the group size, k is the k-th group, total is the sample size, " +

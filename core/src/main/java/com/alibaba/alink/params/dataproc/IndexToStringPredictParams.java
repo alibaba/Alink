@@ -18,6 +18,10 @@ public interface IndexToStringPredictParams<T> extends
 	HasReservedColsDefaultAsNull <T>,
 	HasOutputColDefaultAsNull <T> {
 
+	/**
+	 * @cn-name 模型名字
+	 * @cn 模型名字
+	 */
 	ParamInfo <String> MODEL_NAME = ParamInfoFactory
 		.createParamInfo("modelName", String.class)
 		.setDescription("Name of the model")

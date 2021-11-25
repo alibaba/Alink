@@ -1,6 +1,5 @@
 package com.alibaba.alink.common.dl.utils;
 
-import com.alibaba.alink.testutil.categories.PyTest;
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.java.ExecutionEnvironment;
@@ -9,12 +8,8 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.dl.utils.DataSetDiskDownloader;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.common.dl.utils.PythonFileUtils;
-
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.util.Arrays;
@@ -24,7 +19,6 @@ import java.util.Map;
 
 public class DataSetDiskDownloaderTest {
 
-	@Category(PyTest.class)
 	@Test
 	public void test() throws Exception {
 		PythonFileUtils.DELETE_TEMP_FILES_WHEN_EXIT = false;
@@ -56,7 +50,6 @@ public class DataSetDiskDownloaderTest {
 			}).withBroadcastSet(paths.getDataSet(), "paths").print();
 	}
 
-	@Category(PyTest.class)
 	@Test
 	public void testDownloadFilesWithRename() throws Exception {
 		PythonFileUtils.DELETE_TEMP_FILES_WHEN_EXIT = false;

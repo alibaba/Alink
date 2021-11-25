@@ -5,10 +5,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasIntraOpParallelism<T> extends WithParams <T> {
-
+	/**
+	 * @cn Op 间并发度
+	 * @cn-name Op 间并发度
+	 */
 	ParamInfo<Integer> INTRA_OP_PARALLELISM = ParamInfoFactory
 		.createParamInfo("intraOpParallelism", Integer.class)
-		.setDescription("intraOpParallelism")
+		.setDescription("Intra-Op parallelism")
 		.setHasDefaultValue(4)
 		.build();
 

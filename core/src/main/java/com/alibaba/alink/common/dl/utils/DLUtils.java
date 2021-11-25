@@ -6,6 +6,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.linalg.tensor.TensorTypes;
 import com.alibaba.alink.common.dl.coding.ExampleCodingConfigV2;
 import com.alibaba.alink.common.dl.coding.ExampleCodingV2;
@@ -17,12 +18,17 @@ import com.alibaba.flink.ml.tensorflow2.client.DLConfig;
 import com.alibaba.flink.ml.tensorflow2.util.TFConstants;
 import com.alibaba.flink.ml.util.MLConstants;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DLUtils implements Serializable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DLUtils.class);
 
     private static final Map<TypeInformation<?>, DataTypesV2> TYPE_INFO_TO_DATA_TYPE = new HashMap <>();
 
@@ -36,6 +42,7 @@ public class DLUtils implements Serializable {
         TYPE_INFO_TO_DATA_TYPE.put(Types.BYTE, DataTypesV2.INT_8);
         TYPE_INFO_TO_DATA_TYPE.put(Types.BOOLEAN, DataTypesV2.BOOL);
 
+        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.TENSOR, DataTypesV2.TENSOR);
         TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.FLOAT_TENSOR, DataTypesV2.FLOAT_TENSOR);
         TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.DOUBLE_TENSOR, DataTypesV2.DOUBLE_TENSOR);
         TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.INT_TENSOR, DataTypesV2.INT_TENSOR);
@@ -79,7 +86,10 @@ public class DLUtils implements Serializable {
             String str = ExampleCodingConfigV2.createExampleConfigStr(names, types,
                 ExampleCodingConfigV2.ObjectType.ROW, Row.class);
             DLUtils.safePutProperties(config, TFConstants.INPUT_TF_EXAMPLE_CONFIG, str);
-            System.out.println("InputExampleConfigStr: " + str);
+            LOG.info("InputExampleConfigStr: {}", str);
+            if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+                System.out.println("InputExampleConfigStr: " + str);
+            }
         }
 
         if (outputSchema != null) {
@@ -91,7 +101,10 @@ public class DLUtils implements Serializable {
             String strOutput = ExampleCodingConfigV2.createExampleConfigStr(namesOutput, typesOutput,
                 ExampleCodingConfigV2.ObjectType.ROW, Row.class);
             DLUtils.safePutProperties(config, TFConstants.OUTPUT_TF_EXAMPLE_CONFIG, strOutput);
-            System.out.println("OutputExampleConfigStr: " + strOutput);
+            LOG.info("OutputExampleConfigStr: {}", strOutput);
+            if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+                System.out.println("OutputExampleConfigStr: " + strOutput);
+            }
         }
 
         DLUtils.safePutProperties(config, MLConstants.ENCODING_CLASS, ExampleCodingV2.class.getCanonicalName());

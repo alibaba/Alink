@@ -1,9 +1,10 @@
 package com.alibaba.alink.operator.stream.sink;
 
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.state.ListState;
+import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ValueState;
@@ -36,7 +37,9 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @IoOpAnnotation(name = "modelstream_file", ioType = IOType.SinkStream)
@@ -111,7 +114,8 @@ public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelSt
 			})
 			.keyBy(0, 2)
 			.flatMap(
-				new RichFlatMapFunction <Tuple4 <Timestamp, Integer, Long, Long>, Tuple4 <Timestamp, Integer, Long, Long>>() {
+				new RichFlatMapFunction <Tuple4 <Timestamp, Integer, Long, Long>, Tuple4 <Timestamp, Integer, Long,
+					Long>>() {
 
 					private transient MapState <Integer, Tuple4 <Timestamp, Integer, Long, Long>> latest;
 
@@ -144,7 +148,8 @@ public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelSt
 						if (total == sum) {
 							// done
 
-							for (Map.Entry <Integer, Tuple4 <Timestamp, Integer, Long, Long>> entry : latest.entries()) {
+							for (Map.Entry <Integer, Tuple4 <Timestamp, Integer, Long, Long>> entry :
+								latest.entries()) {
 								out.collect(entry.getValue());
 							}
 						}
@@ -214,7 +219,6 @@ public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelSt
 										return Tuple3.of(localFileModelStreamSink, 1L, null);
 									}
 								} else {
-
 									oldValue.f0.collect(value.f2);
 									++oldValue.f1;
 
@@ -231,7 +235,8 @@ public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelSt
 					}
 
 					@Override
-					public void flatMap2(Tuple4 <Timestamp, Integer, Long, Long> value, Collector <Tuple1 <Timestamp>> out) {
+					public void flatMap2(Tuple4 <Timestamp, Integer, Long, Long> value,
+										 Collector <Tuple1 <Timestamp>> out) {
 						writerContainer.compute(Tuple2.of(value.f0, value.f1),
 							(key, oldValue) -> {
 								if (oldValue == null) {
@@ -253,87 +258,127 @@ public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelSt
 			.connect(
 				count.keyBy(0)
 					.flatMap(
-						new RichFlatMapFunction <Tuple4 <Timestamp, Integer, Long, Long>, Tuple3 <Timestamp, Integer, Long>>() {
+						new RichFlatMapFunction <Tuple4 <Timestamp, Integer, Long, Long>, Tuple4 <Timestamp, Integer,
+							Integer, Long>>() {
 
-							private transient ValueState <Tuple2 <Integer, Long>> filesCounter;
+							private transient ListState <Tuple2 <Integer, Long>> filesCounter;
 
 							@Override
 							public void open(Configuration parameters) throws Exception {
 								super.open(parameters);
 
-								filesCounter = getRuntimeContext().getState(
-									new ValueStateDescriptor <>("filesCounter",
-										new TupleTypeInfo <>(Types.INT, Types.LONG))
+								filesCounter = getRuntimeContext().getListState(
+									new ListStateDescriptor <>(
+										"filesCounter",
+										new TupleTypeInfo <>(Types.INT, Types.LONG)
+									)
 								);
 							}
 
 							@Override
 							public void flatMap(Tuple4 <Timestamp, Integer, Long, Long> value,
-												Collector <Tuple3 <Timestamp, Integer, Long>> out)
+												Collector <Tuple4 <Timestamp, Integer, Integer, Long>> out)
 								throws Exception {
 
-								Tuple2 <Integer, Long> count = filesCounter.value();
+								Long sum = value.f3;
+								Integer fileCount = 1;
 
-								if (count == null) {
-									count = Tuple2.of(1, value.f3);
-								} else {
-									count = Tuple2.of(count.f0 + 1, count.f1 + value.f3);
+								List <Tuple2 <Integer, Long>> local = new ArrayList <>();
+								local.add(Tuple2.of(value.f1, value.f3));
+
+								for (Tuple2 <Integer, Long> count : filesCounter.get()) {
+									sum += count.f1;
+									fileCount++;
+									local.add(count);
 								}
 
-								if (count.f1.equals(value.f2)) {
-									out.collect(Tuple3.of(value.f0, count.f0, value.f2));
+								if (value.f2.equals(sum)) {
+									for (Tuple2 <Integer, Long> count : local) {
+										out.collect(Tuple4.of(value.f0, count.f0, fileCount, value.f2));
+									}
 								}
 
-								filesCounter.update(count);
+								filesCounter.add(Tuple2.of(value.f1, value.f3));
 							}
 						})
 					.keyBy(0)
 			)
-			.flatMap(new RichCoFlatMapFunction <Tuple1 <Timestamp>, Tuple3 <Timestamp, Integer, Long>, byte[]>() {
-				private transient ValueState <Integer> filesCounter;
-				private transient ValueState <Tuple2 <Integer, Long>> total;
+			.flatMap(
+				new RichCoFlatMapFunction <Tuple1 <Timestamp>, Tuple4 <Timestamp, Integer, Integer, Long>, byte[]>() {
+					private transient ValueState <Integer> filesCounter;
+					private transient ListState <Tuple3 <Integer, Integer, Long>> total;
 
-				@Override
-				public void open(Configuration parameters) throws Exception {
-					super.open(parameters);
+					@Override
+					public void open(Configuration parameters) throws Exception {
+						super.open(parameters);
 
-					filesCounter = getRuntimeContext().getState(
-						new ValueStateDescriptor <>("filesCounter", Types.INT));
+						filesCounter = getRuntimeContext().getState(
+							new ValueStateDescriptor <>("filesCounter", Types.INT));
 
-					total = getRuntimeContext().getState(
-						new ValueStateDescriptor <>("total", new TupleTypeInfo <>(Types.INT, Types.LONG))
-					);
-				}
-
-				@Override
-				public void flatMap1(Tuple1 <Timestamp> value, Collector <byte[]> out) throws Exception {
-					Integer count = filesCounter.value();
-
-					if (count == null) {
-						count = 1;
-					} else {
-						++count;
+						total = getRuntimeContext().getListState(
+							new ListStateDescriptor <>("total", new TupleTypeInfo <>(Types.INT, Types.LONG))
+						);
 					}
 
-					filesCounter.update(count);
+					@Override
+					public void flatMap1(Tuple1 <Timestamp> value, Collector <byte[]> out) throws Exception {
+						Integer count = filesCounter.value();
 
-					if (total.value() != null && count.equals(total.value().f0)) {
-						new FileModelStreamSink(path, dataSchemaStr)
-							.finalizeGlobal(value.f0, total.value().f1, total.value().f0,
-								numKeepModel);
+						if (count == null) {
+							count = 1;
+						} else {
+							++count;
+						}
+
+						List <Tuple3 <Integer, Integer, Long>> local = new ArrayList <>();
+
+						for (Tuple3 <Integer, Integer, Long> t : total.get()) {
+							local.add(t);
+						}
+
+						if (!local.isEmpty()
+							&& local.get(0).f1.equals(local.size())
+							&& local.get(0).f1.equals(count)) {
+
+							List <Integer> filesId = new ArrayList <>();
+
+							for (Tuple3 <Integer, Integer, Long> t : local) {
+								filesId.add(t.f0);
+							}
+
+							new FileModelStreamSink(path, dataSchemaStr)
+								.finalizeGlobal(value.f0, local.get(0).f2, filesId, numKeepModel);
+						}
+
+						filesCounter.update(count);
 					}
-				}
 
-				@Override
-				public void flatMap2(Tuple3 <Timestamp, Integer, Long> value, Collector <byte[]> out) throws Exception {
-					total.update(Tuple2.of(value.f1, value.f2));
+					@Override
+					public void flatMap2(Tuple4 <Timestamp, Integer, Integer, Long> value, Collector <byte[]> out)
+						throws Exception {
+						List <Tuple3 <Integer, Integer, Long>> local = new ArrayList <>();
+						local.add(Tuple3.of(value.f1, value.f2, value.f3));
 
-					if (filesCounter.value() != null && value.f1.equals(filesCounter.value())) {
-						new FileModelStreamSink(path, dataSchemaStr)
-							.finalizeGlobal(value.f0, value.f2, value.f1, numKeepModel);
+						for (Tuple3 <Integer, Integer, Long> t : total.get()) {
+							local.add(t);
+						}
+
+						if (local.get(0).f1.equals(local.size())
+							&& local.get(0).f1.equals(filesCounter.value())) {
+
+							List <Integer> filesId = new ArrayList <>();
+
+							for (Tuple3 <Integer, Integer, Long> t : local) {
+								filesId.add(t.f0);
+							}
+
+							new FileModelStreamSink(path, dataSchemaStr)
+								.finalizeGlobal(value.f0, local.get(0).f2, filesId, numKeepModel);
+						}
+
+						total.add(Tuple3.of(value.f1, value.f2, value.f3));
 					}
-				}
-			})
+				})
 			.writeUsingOutputFormat(new DummyOutputFormat <>());
 
 		return this;

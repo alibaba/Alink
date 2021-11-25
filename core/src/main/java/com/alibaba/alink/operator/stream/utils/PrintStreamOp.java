@@ -29,12 +29,21 @@ import java.util.concurrent.TimeUnit;
  */
 @IoOpAnnotation(name = "print", ioType = IOType.SinkStream)
 public class PrintStreamOp extends BaseSinkStreamOp <PrintStreamOp> {
+
+	/**
+	 * @cn-name 刷新间隔
+	 * @cn 输出的刷新间隔
+	 */
 	public static final ParamInfo <Integer> REFRESH_INTERVAL = ParamInfoFactory
 		.createParamInfo("refreshInterval", Integer.class)
 		.setDescription("refresh interval")
 		.setHasDefaultValue(-1)
 		.build();
 
+	/**
+	 * @cn-name 每个窗口内的最大输出条数
+	 * @cn 每个窗口内的最大输出条数
+	 */
 	public static final ParamInfo <Integer> MAX_LIMIT = ParamInfoFactory
 		.createParamInfo("maxLimit", Integer.class)
 		.setDescription("max limit")

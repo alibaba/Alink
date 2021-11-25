@@ -11,6 +11,10 @@ import com.alibaba.alink.params.shared.HasTimeIntervalDv3;
 public interface EvalBinaryClassStreamParams<T> extends
 	EvalBinaryClassParams <T>,
 	HasTimeIntervalDv3 <T> {
+	/**
+	 * @cn-name 预测结果列名
+	 * @cn 预测结果列名
+	 */
 	ParamInfo <String> PREDICTION_COL = ParamInfoFactory
 		.createParamInfo("predictionCol", String.class)
 		.setDescription("Column name of prediction.")

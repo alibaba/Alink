@@ -142,8 +142,11 @@ public class DLStreamCoFlatMapFunc extends RichCoFlatMapFunction <Row, Row, Row>
 			// Update external files-related properties according to workDir
 			{
 				String pythonEnv = properties.get(DLConstants.PYTHON_ENV);
-				properties.put(MLConstants.VIRTUAL_ENV_DIR, new File(workDir, pythonEnv).getAbsolutePath());
-
+				if (PythonFileUtils.isLocalFile(pythonEnv)) {
+					properties.put(MLConstants.VIRTUAL_ENV_DIR, pythonEnv.substring("file://".length()));
+				} else {
+					properties.put(MLConstants.VIRTUAL_ENV_DIR, new File(workDir, pythonEnv).getAbsolutePath());
+				}
 				String entryScriptFileName = PythonFileUtils.getFileName(properties.get(DLConstants.ENTRY_SCRIPT));
 				mlContext.setPythonDir(new File(workDir).toPath());
 				mlContext.setPythonFiles(new String[] {new File(workDir, entryScriptFileName).getAbsolutePath()});

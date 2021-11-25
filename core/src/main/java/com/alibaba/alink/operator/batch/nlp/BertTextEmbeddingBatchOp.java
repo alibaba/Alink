@@ -8,8 +8,6 @@ import com.alibaba.alink.params.tensorflow.bert.BertTextEmbeddingParams;
 
 /**
  * This operator extracts embeddings of sentences by feeding them to a BERT model.
- * <p>
- * TODO: support batch inference and intra op parallelism.
  */
 public class BertTextEmbeddingBatchOp extends MapBatchOp <BertTextEmbeddingBatchOp>
 	implements BertTextEmbeddingParams <BertTextEmbeddingBatchOp> {

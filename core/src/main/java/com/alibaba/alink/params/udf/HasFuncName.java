@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasFuncName<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 函数名
+	 * @cn 函数名
+	 */
 	ParamInfo <String> FUNC_NAME = ParamInfoFactory
 		.createParamInfo("funcName", String.class)
 		.setDescription("function name")

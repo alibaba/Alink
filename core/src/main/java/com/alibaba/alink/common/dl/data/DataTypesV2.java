@@ -47,6 +47,7 @@ public enum DataTypesV2 implements Serializable {
 	RESOURCE,
 	VARIANT,
 	// Tensor types
+	TENSOR,
 	FLOAT_TENSOR,
 	DOUBLE_TENSOR,
 	SHORT_TENSOR,

@@ -7,6 +7,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasStringOrderTypeDefaultAsRandom<T> extends WithParams <T> {
+	/**
+	 * @cn-name Token排序方法
+	 * @cn Token排序方法
+	 */
 	ParamInfo <StringOrderType> STRING_ORDER_TYPE = ParamInfoFactory
 		.createParamInfo("stringOrderType", StringOrderType.class)
 		.setDescription(

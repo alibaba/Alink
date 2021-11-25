@@ -132,6 +132,13 @@ public class MapperChain {
 						expandMappers(innerMappers, flattened);
 					}
 				}
+			} else if (mapper instanceof ComboMapper) {
+				if (((ComboMapper) mapper).mapperList != null) {
+					Mapper[] innerMappers = ((ComboMapper) mapper).mapperList.mappers;
+					if (innerMappers != null) {
+						expandMappers(innerMappers, flattened);
+					}
+				}
 			} else {
 				if (mapper instanceof ModelMapper
 					&& ModelStreamModelMapperAdapt.useModelStreamFile((ModelMapper) mapper)) {
@@ -140,7 +147,6 @@ public class MapperChain {
 				flattened.add(mapper);
 			}
 		}
-		//todo: deal with numThread and lazy
 	}
 
 }

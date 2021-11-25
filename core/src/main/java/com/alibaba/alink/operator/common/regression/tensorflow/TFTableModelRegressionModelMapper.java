@@ -124,7 +124,11 @@ public class TFTableModelRegressionModelMapper extends RichModelMapper {
 
 		tfModelMapper = new TFTableModelPredictModelMapper(modelDataConverter.getModelSchema(),
 			dataSchema, tfModelMapperParams);
-		tfModelMapper.loadModel(modelData.getTfModelRows());
+		if (null != modelData.getTfModelZipPath()) {
+			tfModelMapper.loadModelFromZipFile(modelData.getTfModelZipPath());
+		} else {
+			tfModelMapper.loadModel(modelData.getTfModelRows());
+		}
 		mappers.add(tfModelMapper);
 
 		predColId = TableUtil.findColIndex(tfModelMapper.getOutputSchema(), predCol);

@@ -11,6 +11,10 @@ import com.alibaba.alink.operator.batch.dataproc.AppendIdBatchOp;
  */
 public interface HasIdCol<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name ID列名
+	 * @cn ID列名
+	 */
 	ParamInfo <String> ID_COL = ParamInfoFactory
 		.createParamInfo("idCol", String.class)
 		.setDescription("Id column name")

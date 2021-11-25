@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasKvCol<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name KV列名
+	 * @cn KV列的列名
+	 */
 	ParamInfo <String> KV_COL = ParamInfoFactory
 		.createParamInfo("kvCol", String.class)
 		.setDescription("Name of the KV column")

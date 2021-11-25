@@ -7,7 +7,6 @@ import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -16,15 +15,28 @@ import java.util.List;
 public class MTableAgg extends BaseUdaf <MTable, List <Row>> {
 
 	private String schemaStr;
-	private boolean dropLast;
+	private final boolean dropLast;
 	private int sortColIdx;
 
-	public MTableAgg() {
+	public MTableAgg(boolean dropLast) {
+		this.dropLast = dropLast;
+	}
+
+	public MTableAgg(boolean dropLast, String schemaStr) {
+		this(dropLast, schemaStr, null);
+	}
+
+	public MTableAgg(boolean dropLast, String schemaStr, String sortCol) {
+		this.dropLast = dropLast;
+		this.schemaStr = schemaStr;
+		this.sortColIdx = sortCol == null ? -1
+			: TableUtil.findColIndex(CsvUtil.schemaStr2Schema(schemaStr), sortCol);
 	}
 
 	@Override
 	public MTable getValue(List <Row> values) {
 		MTable out = new MTable(new ArrayList <>(values), schemaStr);
+
 		if (sortColIdx >= 0) {
 			out.orderBy(sortColIdx);
 		}
@@ -37,29 +49,6 @@ public class MTableAgg extends BaseUdaf <MTable, List <Row>> {
 		}
 
 		return out;
-	}
-
-	/**
-	 *
-	 * @param dropLast
-	 * @return this
-	 */
-	public MTableAgg setDropLast(boolean dropLast) {
-		this.dropLast =  dropLast;
-		return this;
-	}
-
-	/**
-	 *
-	 * @param schemaStr: schema of output
-	 * @param sortCol: if need sort, set sortCol.
-	 * @return this
-	 */
-	public MTableAgg setSchemaStr(String schemaStr, String sortCol) {
-		this.schemaStr = schemaStr;
-		this.sortColIdx = sortCol == null ? -1
-			: TableUtil.findColIndex(CsvUtil.schemaStr2Schema(schemaStr), sortCol);
-		return this;
 	}
 
 	@Override

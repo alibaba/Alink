@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasTimeCol<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn-name 时间戳列(毫秒)
+	 * @cn 时间戳列(毫秒)
+	 */
 	ParamInfo <String> TIME_COL = ParamInfoFactory
 		.createParamInfo("timeCol", String.class)
 		.setAlias(new String[] {"timeColName"})

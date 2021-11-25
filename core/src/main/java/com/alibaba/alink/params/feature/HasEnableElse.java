@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasEnableElse<T> extends WithParams <T> {
+	/**
+	 * @cn-name 预测时是否考虑未出现的元素
+	 * @cn 预测时是否考虑未出现的元素，默认true
+	 */
 	ParamInfo <Boolean> ENABLE_ELSE = ParamInfoFactory
 		.createParamInfo("enableElse", Boolean.class)
 		.setDescription("enableElse")

@@ -16,12 +16,18 @@ public interface ReadAudioToTensorParams<T> extends
 	HasRootFilePath <T>,
 	HasOutputCol <T>,
 	HasReservedColsDefaultAsNull <T> {
-
+	/**
+	 * @cn-name 采样持续时间
+	 * @cn 采样持续时间
+	 */
 	ParamInfo <Double> DURATION = ParamInfoFactory
 		.createParamInfo("durationTime", Double.class)
 		.setDescription("only load up to this much audio (in seconds)")
 		.build();
-
+	/**
+	 * @cn-name 采样开始时刻
+	 * @cn 采样开始时刻
+	 */
 	ParamInfo <Double> OFFSET = ParamInfoFactory
 		.createParamInfo("startTime", Double.class)
 		.setDescription("start reading after this time (in seconds)")

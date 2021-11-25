@@ -2,9 +2,14 @@ package com.alibaba.alink.operator.batch.nlp;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.DLTestConstants;
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.dl.BertResources;
+import com.alibaba.alink.common.dl.BertResources.ModelName;
+import com.alibaba.alink.common.dl.BertResources.ResourceType;
+import com.alibaba.alink.common.io.plugin.PluginDownloader;
+import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.testutil.categories.DLTest;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
@@ -15,6 +20,12 @@ public class BertTextEmbeddingBatchOpTest {
     @Category(DLTest.class)
     @Test
     public void linkFrom() throws Exception {
+        AlinkGlobalConfiguration.setPrintProcessInfo(true);
+        PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+        RegisterKey registerKey = BertResources.getRegisterKey(ModelName.BASE_CHINESE, ResourceType.SAVED_MODEL);
+        pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
         Row[] rows1 = new Row[]{
             Row.of(1L, "An english sentence."),
             Row.of(2L, "这是一个中文句子"),
@@ -26,20 +37,25 @@ public class BertTextEmbeddingBatchOpTest {
         System.out.println("length = " + rows1.length);
 
         BatchOperator.setParallelism(2);
-        BatchOperator<?> data = new MemSourceBatchOp(rows1, new String[]{"sentence_id", "sentence_text"});
+        BatchOperator<?> data = BatchOperator.fromTable(
+            MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[]{"sentence_id", "sentence_text"}));
 
         BertTextEmbeddingBatchOp bertEmb = new BertTextEmbeddingBatchOp()
             .setSelectedCol("sentence_text").setOutputCol("embedding").setLayer(-2)
             .setDoLowerCase(true)
-            .setIntraOpParallelism(4)
-            .setModelPath(DLTestConstants.BERT_CHINESE_SAVED_MODEL_PATH);
+            .setIntraOpParallelism(4);
         data.link(bertEmb).lazyPrint(10);
         BatchOperator.execute();
     }
 
-    @Category(DLTest.class)
     @Test
     public void testLongSentence() throws Exception {
+        AlinkGlobalConfiguration.setPrintProcessInfo(true);
+        PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+        RegisterKey registerKey = BertResources.getRegisterKey(ModelName.BASE_CHINESE, ResourceType.SAVED_MODEL);
+        pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
         Row[] rows1 = new Row[]{
             Row.of(1L, "An english sentence."),
             Row.of(2L, "这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子这是一个中文句子"
@@ -64,13 +80,13 @@ public class BertTextEmbeddingBatchOpTest {
         System.out.println("length = " + rows1.length);
 
         BatchOperator.setParallelism(2);
-        BatchOperator<?> data = new MemSourceBatchOp(rows1, new String[]{"sentence_id", "sentence_text"});
+        BatchOperator<?> data = BatchOperator.fromTable(
+            MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[]{"sentence_id", "sentence_text"}));
 
         BertTextEmbeddingBatchOp bertEmb = new BertTextEmbeddingBatchOp()
             .setSelectedCol("sentence_text").setOutputCol("embedding").setLayer(-2)
             .setDoLowerCase(true)
-            .setIntraOpParallelism(4)
-            .setModelPath(DLTestConstants.BERT_CHINESE_SAVED_MODEL_PATH);
+            .setIntraOpParallelism(4);
         data.link(bertEmb).lazyPrint(10);
         BatchOperator.execute();
     }

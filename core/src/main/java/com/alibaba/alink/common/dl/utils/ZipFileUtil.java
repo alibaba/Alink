@@ -113,11 +113,10 @@ public class ZipFileUtil {
         try {
             code = pb.start().waitFor();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.warn("Failed to use unzip command to decompress file {}, fallback to use Java library.", srcZipFile, e);
             code = 1;
         }
         if (code != 0) {
-            LOG.warn("Failed to unzip file:{} use unzip command", srcZipFile);
             unzipStreamToDirectory(new FileInputStream(srcZipFile), dstDirName);
         }
     }

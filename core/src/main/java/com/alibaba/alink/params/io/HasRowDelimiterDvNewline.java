@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasRowDelimiterDvNewline<T> extends WithParams <T> {
+	/**
+	 * @cn-name 行分隔符
+	 * @cn 行分隔符
+	 */
 	ParamInfo <String> ROW_DELIMITER = ParamInfoFactory
 		.createParamInfo("rowDelimiter", String.class)
 		.setDescription("Row delimiter")

@@ -10,8 +10,10 @@ public interface BaseWindowParams <T> extends
 	HasTimeCol <T>,
 	HasClause <T> {
 
-	//The metric is second, and the minimum granularity is millisecond.
-	//Time less than 1 millisecond will be rounded.
+	/**
+	 * @cn-name 水位线的延迟
+	 * @cn 水位线的延迟，默认0.0
+	 */
 	ParamInfo <Double> LATENCY = ParamInfoFactory
 		.createParamInfo("latency", Double.class)
 		.setDescription("latency for watermark")
@@ -30,7 +32,10 @@ public interface BaseWindowParams <T> extends
 		return set(LATENCY, value.doubleValue());
 	}
 
-
+	/**
+	 * @cn-name 水位线的类别
+	 * @cn 水位线的类别
+	 */
 	ParamInfo <WatermarkType> WATERMARK_TYPE = ParamInfoFactory
 		.createParamInfo("watermarkType", WatermarkType.class)
 		.setDescription("watermark type : Period or Punctuated.")

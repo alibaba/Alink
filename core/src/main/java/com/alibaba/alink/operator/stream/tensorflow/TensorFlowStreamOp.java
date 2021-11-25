@@ -14,8 +14,9 @@ import java.util.Collections;
 import static com.alibaba.alink.common.dl.utils.DLLauncherUtils.adjustNumWorkersPSs;
 
 /**
- * A general stream op to run custom TF scripts for stream datasets. By default, the dataset can only be accesses once,
- * unless explicitly saved. Any number of outputs are allowed from TF scripts, even no outputs.
+ * A general stream op to run custom TensorFlow (version 1.15) scripts for stream datasets.
+ * By default, the dataset can only be accesses once, unless explicitly saved.
+ * Any number of outputs are allowed from TF scripts, even no outputs.
  */
 public class TensorFlowStreamOp extends BaseDLStreamOp <TensorFlowStreamOp>
 	implements TensorFlowParams <TensorFlowStreamOp> {

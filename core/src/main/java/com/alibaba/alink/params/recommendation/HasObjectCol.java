@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasObjectCol<T> extends WithParams <T> {
+	/**
+	 * @cn-name Object列列名
+	 * @cn Object列列名
+	 */
 	ParamInfo <String> OBJECT_COL = ParamInfoFactory
 		.createParamInfo("objectCol", String.class)
 		.setAlias(new String[] {"objectColName"})

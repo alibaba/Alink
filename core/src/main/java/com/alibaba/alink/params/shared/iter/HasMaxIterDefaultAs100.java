@@ -10,6 +10,10 @@ import com.alibaba.alink.params.validators.MinValidator;
  * An interface for classes with a parameter specifying the maximum iterations.
  */
 public interface HasMaxIterDefaultAs100<T> extends WithParams <T> {
+	/**
+	 * @cn-name 最大迭代步数
+	 * @cn 最大迭代步数，默认为 100
+	 */
 	ParamInfo <Integer> MAX_ITER = ParamInfoFactory
 		.createParamInfo("maxIter", Integer.class)
 		.setDescription("Maximum iterations, The default value is 100")

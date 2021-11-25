@@ -11,6 +11,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasNumProjectionsPerTable<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 每个哈希表中的哈希函数个数
+	 * @cn 每个哈希表中的哈希函数个数
+	 */
 	ParamInfo <Integer> NUM_PROJECTIONS_PER_TABLE = ParamInfoFactory
 		.createParamInfo("numProjectionsPerTable", Integer.class)
 		.setDescription("The number of hash functions within every hash table")

@@ -20,13 +20,15 @@ package com.alibaba.alink.common.dl;
 
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.io.plugin.OsType;
+import com.alibaba.alink.common.io.plugin.OsUtils;
 import com.alibaba.flink.ml.cluster.node.MLContext;
 import com.alibaba.flink.ml.cluster.node.runner.python.ProcessPythonRunner;
 import com.alibaba.flink.ml.util.MLConstants;
 import com.alibaba.flink.ml.util.MLException;
 import com.alibaba.flink.ml.util.ShellExec;
 import com.google.common.base.Joiner;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,7 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
     private volatile Process child = null;
 
     private static final String CALL_CONDA_UNPACK_SCRIPT = "/call_conda_pack.sh";
+    private static final String WIN_CALL_CONDA_UNPACK_SCRIPT = "/call_conda_pack.bat";
 
     public ProcessPythonRunnerV2(MLContext MLContext) {
         super(MLContext);
@@ -68,12 +71,18 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
 //		if (checkPythonEnvironment("which " + pythonExec) != 0){
 //			throw new RuntimeException("No this python environment");
 //		}
-        String virtualEnv = mlContext.getProperties()
-            .getOrDefault(MLConstants.VIRTUAL_ENV_DIR, "");
+        String pathEnv = System.getenv("PATH");
+        String virtualEnv = mlContext.getProperties().getOrDefault(MLConstants.VIRTUAL_ENV_DIR, "");
         if (!virtualEnv.isEmpty()) {
-            pythonExec = virtualEnv + "/bin/python";
-            callCondaUnpack(virtualEnv);
+            if (OsType.WINDOWS.equals(OsUtils.getSystemType())) {
+                pythonExec = virtualEnv + File.separator + "python";
+            } else {
+                pythonExec = virtualEnv + "/bin/python";
+                callCondaUnpack(virtualEnv);
+                pathEnv = virtualEnv + "/bin:" + pathEnv;
+            }
         }
+
         args.add(pythonExec);
         if (mlContext.startWithStartup()) {
             args.add(startupScript);
@@ -84,16 +93,19 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
         args.add(String.format("%s:%d", mlContext.getNodeServerIP(), mlContext.getNodeServerPort()));
         ProcessBuilder builder = new ProcessBuilder(args);
         builder.environment().clear();
-        String classPath = getClassPath();
+        String classPath = null;
+        if (!OsType.WINDOWS.equals(OsUtils.getSystemType())) {
+            classPath = getClassPath();
+        }
         if (classPath == null) {
             // can happen in UT
             LOG.warn("Cannot find proper classpath for the Python process.");
         } else {
             mlContext.putEnvProperty(MLConstants.CLASSPATH, classPath);
         }
-        if (StringUtils.isNoneEmpty(System.getenv("PATH"))) {
-            mlContext.putEnvProperty("PATH", System.getenv("PATH"));
-        }
+        mlContext.putEnvProperty("PATH", pathEnv);
+        // To avoid encoding problems in Python process
+        mlContext.putEnvProperty("PYTHONIOENCODING", "utf8");
         buildProcessBuilder(builder);
         LOG.info("{} Python cmd: {}", mlContext.getIdentity(), Joiner.on(" ").join(args));
         runProcess(builder);
@@ -112,20 +124,39 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
      * <p>
      */
     synchronized protected void callCondaUnpack(String virtualEnv) throws IOException {
-        if (!Files.exists(Paths.get(virtualEnv, "bin", "activate")) ||
+        if (OsType.WINDOWS.equals((OsUtils.getSystemType()))
+            && (!Files.exists(Paths.get(virtualEnv, "Scripts", "activate.bat"))
+            || !Files.exists(Paths.get(virtualEnv, "Scripts", "conda-unpack.exe")))
+        ) {
+            return;
+        } else if (!Files.exists(Paths.get(virtualEnv, "bin", "activate")) ||
             !Files.exists(Paths.get(virtualEnv, "bin", "conda-unpack"))) {
             return;
         }
-        InputStream is = this.getClass().getResourceAsStream(CALL_CONDA_UNPACK_SCRIPT);
-        Preconditions.checkNotNull(is, "Cannot get resource " + CALL_CONDA_UNPACK_SCRIPT);
-        Path filePath = Files.createTempFile("call_conda_pack", ".sh");
-        Files.copy(is, filePath, StandardCopyOption.REPLACE_EXISTING);
-        String[] args = new String[] {
-            "/bin/bash", filePath.toAbsolutePath().toString(), virtualEnv
-        };
+        InputStream is;
+        String[] args;
+        if (OsType.WINDOWS.equals(OsUtils.getSystemType())) {
+            is = this.getClass().getResourceAsStream(WIN_CALL_CONDA_UNPACK_SCRIPT);
+            Preconditions.checkNotNull(is, "Cannot get resource " + WIN_CALL_CONDA_UNPACK_SCRIPT);
+            Path filePath = Files.createTempFile("call_conda_pack", ".bat");
+            Files.copy(is, filePath, StandardCopyOption.REPLACE_EXISTING);
+            args = new String[]{
+                    "cmd.exe", filePath.toAbsolutePath().toString(), virtualEnv
+            };
+        } else {
+            is = this.getClass().getResourceAsStream(CALL_CONDA_UNPACK_SCRIPT);
+            Preconditions.checkNotNull(is, "Cannot get resource " + CALL_CONDA_UNPACK_SCRIPT);
+            Path filePath = Files.createTempFile("call_conda_pack", ".sh");
+            Files.copy(is, filePath, StandardCopyOption.REPLACE_EXISTING);
+            args = new String[]{
+                    "/bin/bash", filePath.toAbsolutePath().toString(), virtualEnv
+            };
+        }
 
         LOG.info("{} Python cmd: {}", mlContext.getIdentity(), Joiner.on(" ").join(args));
-        System.err.println("Python cmd: " + Joiner.on(" ").join(args));
+        if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+            System.out.println("Python cmd: " + Joiner.on(" ").join(args));
+        }
         ProcessBuilder builder = new ProcessBuilder()
             .command(args)
             .directory(new File(virtualEnv));
@@ -133,10 +164,14 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
             runProcess(builder);
         } catch (Exception e) {
             LOG.info("Call conda-unpack failed, ignore it: {}", e.toString());
-            System.err.println("Call conda-unpack failed, ignore it: " + e);
+            if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+                System.err.println("Call conda-unpack failed, ignore it: " + e);
+            }
         }
         LOG.info("Leave ProcessPythonRunnerV2.callCondaUnpack");
-        System.err.println("Leave ProcessPythonRunnerV2.callCondaUnpack");
+        if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+            System.err.println("Leave ProcessPythonRunnerV2.callCondaUnpack");
+        }
     }
 
     @Override
@@ -144,13 +179,17 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
         child = builder.start();
         Thread inLogger = new Thread(
             new ShellExec.ProcessLogger(child.getInputStream(), d -> {
-                System.out.println(d);
                 LOG.info("Python stdout: {}", d);
+                if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+                    System.out.println(d);
+                }
             }));
         Thread errLogger = new Thread(
             new ShellExec.ProcessLogger(child.getErrorStream(), d -> {
-                System.err.println(d);
                 LOG.info("Python stderr: {}", d);
+                if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+                    System.err.println(d);
+                }
             }));
         inLogger.setName(mlContext.getIdentity() + "-in-logger");
         inLogger.setDaemon(true);

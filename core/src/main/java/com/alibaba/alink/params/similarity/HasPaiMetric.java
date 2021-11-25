@@ -8,6 +8,10 @@ import com.alibaba.alink.operator.common.similarity.Metric;
 
 public interface HasPaiMetric<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 度量类型
+	 * @cn 计算距离时，可以取不同的度量
+	 */
 	ParamInfo <String> PAI_METRIC = ParamInfoFactory
 		.createParamInfo("paiMetric", String.class)
 		.setDescription("Method to calculate calc or distance.")

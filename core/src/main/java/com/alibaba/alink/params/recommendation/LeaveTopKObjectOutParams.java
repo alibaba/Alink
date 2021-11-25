@@ -7,6 +7,10 @@ public interface LeaveTopKObjectOutParams<T> extends
 	LeaveKObjectOutParams <T>,
 	HasRateCol <T> {
 
+	/**
+	 * @cn-name 打分阈值
+	 * @cn 打分阈值
+	 */
 	ParamInfo <Double> RATE_THRESHOLD = ParamInfoFactory
 		.createParamInfo("rateThreshold", Double.class)
 		.setDescription("rate threshold")

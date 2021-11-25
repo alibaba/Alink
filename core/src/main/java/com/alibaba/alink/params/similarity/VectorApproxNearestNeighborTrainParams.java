@@ -17,6 +17,10 @@ import java.io.Serializable;
 public interface VectorApproxNearestNeighborTrainParams<T> extends
 	NearestNeighborTrainParams <T>,
 	VectorLSHParams <T> {
+	/**
+	 * @cn-name 距离度量方式
+	 * @cn 距离类型
+	 */
 	ParamInfo <Metric> METRIC = ParamInfoFactory
 		.createParamInfo("metric", Metric.class)
 		.setDescription("Distance type for clustering")
@@ -57,6 +61,10 @@ public interface VectorApproxNearestNeighborTrainParams<T> extends
 
 	}
 
+	/**
+	 * @cn-name 近似方法
+	 * @cn 近似方法，包括KDTREE和LSH
+	 */
 	ParamInfo <Solver> SOLVER = ParamInfoFactory
 		.createParamInfo("solver", Solver.class)
 		.setDescription("Method to calc approx topN.")

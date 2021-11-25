@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasOutputNames<T> extends WithParams<T> {
 
-
+	/**
+	 * @cn-name signature中的输出名
+	 * @cn signature中的输出名，多个输出时用逗号分隔
+	 */
 	ParamInfo <String[]> OUTPUT_NAMES = ParamInfoFactory
 		.createParamInfo("outputNames", String[].class)
 		.setDescription("output names")

@@ -16,6 +16,10 @@ import java.io.Serializable;
  * Params: Distance type for clustering, support EUCLIDEAN, COSINE and CITYBLOCK.
  */
 public interface HasClusteringDistanceType<T> extends WithParams <T> {
+	/**
+	 * @cn-name 距离度量方式
+	 * @cn 距离类型
+	 */
 	ParamInfo <DistanceType> DISTANCE_TYPE = ParamInfoFactory
 		.createParamInfo("distanceType", DistanceType.class)
 		.setDescription("Distance type for clustering")

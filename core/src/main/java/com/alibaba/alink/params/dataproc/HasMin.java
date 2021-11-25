@@ -10,6 +10,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasMin<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 归一化的下界
+	 * @cn 归一化的下界
+	 */
 	ParamInfo <Double> MIN = ParamInfoFactory
 		.createParamInfo("min", Double.class)
 		.setDescription("Lower bound after transformation.")

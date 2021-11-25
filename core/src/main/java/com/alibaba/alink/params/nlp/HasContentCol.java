@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasContentCol<T> extends WithParams <T> {
+	/**
+	 * @cn-name 文本列
+	 * @cn 文本列名
+	 */
 	ParamInfo <String> CONTENT_COL = ParamInfoFactory
 		.createParamInfo("contentCol", String.class)
 		.setDescription("Name of the column indicating document content")

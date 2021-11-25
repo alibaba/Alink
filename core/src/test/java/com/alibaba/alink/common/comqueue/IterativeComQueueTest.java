@@ -31,6 +31,7 @@ import java.util.List;
 /**
  * Test cases for IterativeComQueue.
  */
+
 public class IterativeComQueueTest extends AlinkTestBase implements Serializable {
 
 	private static final String TRAIN_DATA = "trainData";

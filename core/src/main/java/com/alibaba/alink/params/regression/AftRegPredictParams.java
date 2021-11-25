@@ -14,6 +14,10 @@ public interface AftRegPredictParams<T> extends
 	HasVectorColDefaultAsNull <T>,
 	HasPredictionDetailCol <T> {
 
+	/**
+	 * @cn-name 分位数概率数组
+	 * @cn 分位数概率数组
+	 */
 	ParamInfo <double[]> QUANTILE_PROBABILITIES = ParamInfoFactory
 		.createParamInfo("quantileProbabilities", double[].class)
 		.setDescription("Array of quantile probabilities.")

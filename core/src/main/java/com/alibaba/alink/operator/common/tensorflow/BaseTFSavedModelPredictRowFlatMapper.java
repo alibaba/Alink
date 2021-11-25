@@ -7,6 +7,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -232,7 +233,7 @@ public class BaseTFSavedModelPredictRowFlatMapper extends FlatMapper implements 
 			for (int k = 0; k < outputs.size(); k += 1) {
 				List <?> values = outputs.get(k);
 				for (int i = 0; i < currentBatchSize; i += 1) {
-					predictions[i].setField(k, values.get(k));
+					predictions[i].setField(k, values.get(i));
 				}
 			}
 
@@ -242,8 +243,10 @@ public class BaseTFSavedModelPredictRowFlatMapper extends FlatMapper implements 
 				rowCollector.getRight().collect(output);
 			}
 			LOG.info("{} items cost {} ms.", currentBatchSize, System.currentTimeMillis() - startTime);
-			System.out.printf("%s items cost %s ms.%n", currentBatchSize,
-				System.currentTimeMillis() - startTime);
+			if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+				System.out.printf("%s items cost %s ms.%n", currentBatchSize,
+					System.currentTimeMillis() - startTime);
+			}
 		}
 	}
 }

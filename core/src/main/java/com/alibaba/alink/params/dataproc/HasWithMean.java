@@ -10,6 +10,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasWithMean<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 是否使用均值
+	 * @cn 是否使用均值，默认使用
+	 */
 	ParamInfo <Boolean> WITH_MEAN = ParamInfoFactory
 		.createParamInfo("withMean", Boolean.class)
 		.setDescription("Centers the data with mean before scaling.")

@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
 import com.alibaba.alink.common.io.plugin.PluginDescriptor;
@@ -19,7 +20,7 @@ public class TFPredictorClassLoaderFactory extends ClassLoaderFactory {
 
 	private static final String BASENAME = "tf_predictor_";
 
-	private static final String VERSION = "0.01";
+	private static final String VERSION = "0.02";
 
 	public TFPredictorClassLoaderFactory() {
 		this(OsUtils.getSystemType(), VERSION);
@@ -27,7 +28,11 @@ public class TFPredictorClassLoaderFactory extends ClassLoaderFactory {
 
 	protected TFPredictorClassLoaderFactory(OsType systemType, String version) {
 		super(new RegisterKey(BASENAME + systemType.toString().toLowerCase(), version),
-			ClassLoaderContainer.createPluginContextOnClient());
+			PluginDistributeCache.createDistributeCache(BASENAME + systemType.toString().toLowerCase(), version));
+	}
+
+	public static RegisterKey getRegisterKey() {
+		return new RegisterKey(BASENAME + OsUtils.getSystemType().toString().toLowerCase(), VERSION);
 	}
 
 	public static DLPredictorService create(TFPredictorClassLoaderFactory factory) {
@@ -48,7 +53,7 @@ public class TFPredictorClassLoaderFactory extends ClassLoaderFactory {
 	public ClassLoader create() {
 		return ClassLoaderContainer.getInstance().create(
 			registerKey,
-			registerContext,
+			distributeCache,
 			DLPredictorService.class,
 			new DLPredictorServiceFilter(registerKey),
 			new DLPredictorVersionGetter()

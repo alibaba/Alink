@@ -58,9 +58,9 @@ public class TFTableModelRegressionModelDataConverter extends
 		modelData.setPreprocessPipelineModelSchemaStr(meta.get(TFModelDataConverterUtils.PREPROCESS_PIPELINE_MODEL_SCHEMA_STR));
 
 		Iterator <String> iterator = data.iterator();
-		List <Row> tfModelSerialized = TFModelDataConverterUtils.extractModelRows(iterator,
+		String zipFilePath = TFModelDataConverterUtils.writeModelRowsToFile(iterator,
 			meta.get(TFModelDataConverterUtils.TF_MODEL_PARTITION_SIZE));
-		modelData.setTfModelRows(tfModelSerialized);
+		modelData.setTfModelZipPath(zipFilePath);
 
 		if (meta.contains(TFModelDataConverterUtils.PREPROCESS_PIPELINE_MODEL_PARTITION_SIZE)) {
 			List <Row> preprocessPipelineModelSerialized = TFModelDataConverterUtils.extractModelRows(iterator,

@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasPort<T> extends WithParams <T> {
+	/**
+	 * @cn-name 端口
+	 * @cn 端口
+	 */
 	ParamInfo <String> PORT = ParamInfoFactory
 		.createParamInfo("port", String.class)
 		.setDescription("port")

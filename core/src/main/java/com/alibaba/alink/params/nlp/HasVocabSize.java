@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * The maximum word number of the dictionary.
  */
 public interface HasVocabSize<T> extends WithParams <T> {
+	/**
+	 * @cn-name 字典库大小
+	 * @cn 字典库大小，如果总词数目大于这个值，那个文档频率低的词会被过滤掉。
+	 */
 	ParamInfo <Integer> VOCAB_SIZE = ParamInfoFactory
 		.createParamInfo("vocabSize", Integer.class)
 		.setDescription("The maximum word number of the dictionary. If the total numbers of words are above this "

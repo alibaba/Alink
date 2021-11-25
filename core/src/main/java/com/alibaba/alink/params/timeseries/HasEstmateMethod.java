@@ -8,7 +8,10 @@ import com.alibaba.alink.params.ParamUtil;
 
 public interface HasEstmateMethod<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn-name 估计方法
+	 * @cn 估计方法
+	 */
 	ParamInfo <EstMethod> EST_METHOD = ParamInfoFactory
 		.createParamInfo("estMethod", EstMethod.class)
 		.setDescription("arima garch method")

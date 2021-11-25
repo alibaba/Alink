@@ -89,12 +89,17 @@ public class FileDownloadUtils {
 				if (null != files) {
 					for (File file : files) {
 						Files.createSymbolicLink(dst.toPath().resolve(file.getName()), file.toPath());
+						if (Files.isSymbolicLink(dst.toPath())) {
+							System.out.printf("Symbol %s\n", dst.toString());
+						}
 					}
 				}
+				System.out.printf("Creating symbolic links {} to {} success.\n", src.getAbsolutePath(), dst.getAbsoluteFile());
 				return;
 			} catch (IOException e) {
 				LOG.info("Creating symbolic links for all files in {} to {} failed.", src.getAbsolutePath(), dst.getAbsoluteFile());
 			}
+			System.out.printf("Copying, Creating symbolic links {} to {} failed.\n", src.getAbsolutePath(), dst.getAbsoluteFile());
 			FileUtils.copyDirectory(src, dst);
 		}
 	}

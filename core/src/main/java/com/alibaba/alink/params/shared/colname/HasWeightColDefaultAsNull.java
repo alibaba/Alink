@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Trait for parameter weightColName.
  */
 public interface HasWeightColDefaultAsNull<T> extends WithParams <T> {
+	/**
+	 * @cn-name 权重列名
+	 * @cn 权重列对应的列名
+	 */
 	ParamInfo <String> WEIGHT_COL = ParamInfoFactory
 		.createParamInfo("weightCol", String.class)
 		.setDescription("Name of the column indicating weight")

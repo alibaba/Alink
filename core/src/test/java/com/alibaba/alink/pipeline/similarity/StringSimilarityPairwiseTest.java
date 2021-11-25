@@ -4,6 +4,8 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -56,5 +58,24 @@ public class StringSimilarityPairwiseTest {
 			results[i] = list.get(i).toString();
 		}
 		assertArrayEquals(output, results);
+	}
+
+	@Test
+	public void testStringSimilarityPairwise() throws Exception {
+		List <Row> df = Arrays.asList(
+			Row.of(0, "abcde", "aabce"),
+			Row.of(1, "aacedw", "aabbed"),
+			Row.of(2, "cdefa", "bbcefa"),
+			Row.of(3, "bdefh", "ddeac"),
+			Row.of(4, "acedm", "aeefbc")
+		);
+		BatchOperator <?> inOp1 = new MemSourceBatchOp(df, "id int, text1 string, text2 string");
+		StreamOperator <?> inOp2 = new MemSourceStreamOp(df, "id int, text1 string, text2 string");
+		StringSimilarityPairwise stringSimilarityPairwise = new StringSimilarityPairwise().setSelectedCols("text1", "text2").setMetric(
+			"LEVENSHTEIN").setOutputCol("output");
+		stringSimilarityPairwise.transform(inOp1).print();
+
+		stringSimilarityPairwise.transform(inOp2).print();
+		StreamOperator.execute();
 	}
 }

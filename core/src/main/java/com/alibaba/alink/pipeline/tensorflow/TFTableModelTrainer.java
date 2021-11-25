@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.tensorflow;
 
+import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -8,6 +9,7 @@ import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
 import com.alibaba.alink.params.tensorflow.TFTableModelTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
 
+@Internal
 public class TFTableModelTrainer extends Trainer <TFTableModelTrainer, TFTableModelPredictor>
 	implements TFTableModelTrainParams <TFTableModelTrainer>, TFTableModelPredictParams <TFTableModelTrainer> {
 

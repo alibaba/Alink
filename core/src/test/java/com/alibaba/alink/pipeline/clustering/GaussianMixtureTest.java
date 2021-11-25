@@ -26,6 +26,7 @@ import java.util.List;
 /**
  * Test cases for {@link GaussianMixture}.
  */
+
 public class GaussianMixtureTest extends AlinkTestBase {
 	private Row[] denseData1D = new Row[] {
 		Row.of("-5.1971"), Row.of("-2.5359"), Row.of("-3.8220"),

@@ -3,6 +3,10 @@ package com.alibaba.alink.common.linalg.tensor;
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class TensorTypes {
 
 	public static final TypeInformation <Tensor <?>> TENSOR = TypeInformation.of(new TypeHint <Tensor <?>>() {});
@@ -15,4 +19,14 @@ public class TensorTypes {
 	public static final TypeInformation <LongTensor> LONG_TENSOR = TypeInformation.of(LongTensor.class);
 	public static final TypeInformation <StringTensor> STRING_TENSOR = TypeInformation.of(StringTensor.class);
 
+	static final Set <TypeInformation <?>> ALL_TENSOR_TYPES = new HashSet <>(Arrays.asList(
+		TENSOR,
+		BOOL_TENSOR, BYTE_TENSOR, UBYTE_TENSOR,
+		DOUBLE_TENSOR, FLOAT_TENSOR, INT_TENSOR, LONG_TENSOR,
+		STRING_TENSOR
+	));
+
+	public static boolean isTensorType(TypeInformation <?> type) {
+		return ALL_TENSOR_TYPES.contains(type);
+	}
 }

@@ -35,7 +35,7 @@ import static com.alibaba.alink.operator.common.feature.featurebuilder.WindowRes
 /**
  * Batch over window feature builder.
  */
-public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
+public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 	implements OverWindowParams <OverWindowBatchOp> {
 
 	public OverWindowBatchOp() {
@@ -48,9 +48,9 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 
 	@Override
 	public OverWindowBatchOp linkFrom(BatchOperator <?>... inputs) {
-		BatchOperator in = checkAndGetFirst(inputs);
+		BatchOperator <?> in = checkAndGetFirst(inputs);
 		String[] inputColNames = in.getColNames();
-		TypeInformation[] inputColTypes = in.getColTypes();
+		TypeInformation <?>[] inputColTypes = in.getColTypes();
 		String[] partitionBys = getPartitionCols();
 		int[] partitionByIndices;
 		if (partitionBys == null) {
@@ -72,52 +72,56 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 		DataSet <Row> res;
 		if (partitionBys != null) {
 			int[] partitionIndices = TableUtil.findColIndices(inputColNames, partitionBys);
-			SortedGrouping sortedGrouping = in.getDataSet()
+			SortedGrouping <Row> sortedGrouping = in
+				.getDataSet()
 				.groupBy(partitionIndices)
 				.sortGroup(orderInfo.f0[0], orderInfo.f1[0]);
 			for (int i = 1; i < orderInfo.f0.length; i++) {
 				sortedGrouping = sortedGrouping
 					.sortGroup(orderInfo.f0[i], orderInfo.f1[i]);
 			}
-			res = sortedGrouping
-				.reduceGroup(new GroupOperation(featureClauses, orderInfo.f0,
-					partitionByIndices, reversedIndices, inputColNames));
+			res = sortedGrouping.reduceGroup(
+				new GroupOperation(featureClauses, orderInfo.f0, partitionByIndices, reversedIndices, inputColNames)
+			);
 		} else {
-			DataSet <Row> inWithGroup = in.getDataSet()
-				.mapPartition(new MapPartitionFunction <Row, Row>() {
-				@Override
-				public void mapPartition(Iterable <Row> values, Collector <Row> out) throws Exception {
-					Row res = null;
-					for (Row value : values) {
-						int index = value.getArity();
-						if (res == null) {
-							res = new Row(index + 1);
+			DataSet <Row> inWithGroup = in
+				.getDataSet()
+				.mapPartition(
+					new MapPartitionFunction <Row, Row>() {
+						@Override
+						public void mapPartition(Iterable <Row> values, Collector <Row> out) throws Exception {
+							Row res = null;
+							for (Row value : values) {
+								int index = value.getArity();
+								if (res == null) {
+									res = new Row(index + 1);
+								}
+								for (int i = 0; i < index; i++) {
+									res.setField(i, value.getField(i));
+								}
+								res.setField(index, 0);
+								out.collect(res);
+							}
 						}
-						for (int i = 0; i < index; i++) {
-							res.setField(i, value.getField(i));
-						}
-						res.setField(index, 0);
-						out.collect(res);
 					}
-				}
-			});
+				);
+
 			String[] newNames = new String[inputColNames.length + 1];
-			TypeInformation[] newTypes = new TypeInformation[inputColTypes.length + 1];
+			TypeInformation <?>[] newTypes = new TypeInformation[inputColTypes.length + 1];
 			System.arraycopy(inputColNames, 0, newNames, 0, inputColNames.length);
 			System.arraycopy(inputColTypes, 0, newTypes, 0, inputColTypes.length);
 			String tempGroupCol = inputColNames[0];
 			//build one no use group col.
-			while (true) {
+			do {
 				tempGroupCol = tempGroupCol + "1";
-				if (TableUtil.findColIndex(inputColNames, tempGroupCol) == -1) {
-					break;
-				}
-			}
+			} while (TableUtil.findColIndex(inputColNames, tempGroupCol) != -1);
+
 			newNames[inputColNames.length] = tempGroupCol;
 			newTypes[inputColTypes.length] = Types.INT;
-			BatchOperator ins = new TableSourceBatchOp(DataSetConversionUtil
+			BatchOperator <?> ins = new TableSourceBatchOp(DataSetConversionUtil
 				.toTable(getMLEnvironmentId(), inWithGroup, newNames, newTypes));
-			SortedGrouping sortedPartition = ins.getDataSet()
+			SortedGrouping <Row> sortedPartition = ins
+				.getDataSet()
 				.groupBy(inputColNames.length)
 				.sortGroup(orderInfo.f0[0], orderInfo.f1[0]);
 			for (int i = 1; i < orderInfo.f0.length; i++) {
@@ -130,7 +134,7 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 		}
 
 		String[] resColNames = new String[featureClauses.length + reversedCols.length];
-		TypeInformation[] resColTypes = new TypeInformation[featureClauses.length + reversedCols.length];
+		TypeInformation <?>[] resColTypes = new TypeInformation[featureClauses.length + reversedCols.length];
 		for (int i = 0; i < featureClauses.length; i++) {
 			int featureIndex = i + reversedCols.length;
 			resColNames[featureIndex] = featureClauses[i].outColName;
@@ -138,8 +142,9 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 				if (featureClauses[i].op.equals(FeatureClauseOperator.LAST_DISTINCT)) {
 					resColTypes[featureIndex] = inputColTypes[TableUtil.findColIndex(inputColNames,
 						(String) featureClauses[i].inputParams[0])];
-				}  else {
-					resColTypes[featureIndex] = inputColTypes[TableUtil.findColIndex(inputColNames, featureClauses[i].inColName)];
+				} else {
+					resColTypes[featureIndex] = inputColTypes[TableUtil.findColIndex(inputColNames,
+						featureClauses[i].inColName)];
 				}
 			} else {
 				resColTypes[featureIndex] = featureClauses[i].op.getResType();
@@ -155,7 +160,7 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 		return this;
 	}
 
-	private Tuple2<int[], Order[]> parseOrder(String orderClause, String[] inputColNames) {
+	private Tuple2 <int[], Order[]> parseOrder(String orderClause, String[] inputColNames) {
 		String[] orders = orderClause.split(",");
 		int[] orderIndices = new int[orders.length];
 		Order[] orderTypes = new Order[orders.length];
@@ -217,7 +222,7 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 					}
 				}
 
-				BaseUdaf[] calcs = (BaseUdaf[]) SessionSharedData.get(keys.toString(), sessionId);
+				BaseUdaf<?, ?>[] calcs = (BaseUdaf<?, ?>[]) SessionSharedData.get(keys.toString(), sessionId);
 				if (calcs == null) {
 					calcs = new BaseUdaf[featureClauses.length];
 					for (int i = 0; i < featureClauses.length; i++) {
@@ -225,7 +230,7 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 					}
 				}
 
-				Long index = (Long) SessionSharedData.get(keys.toString() + "_index", sessionId);
+				Long index = (Long) SessionSharedData.get(keys + "_index", sessionId);
 				if (index == null) {
 					index = 0L;
 				} else {
@@ -233,14 +238,13 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 				}
 				for (int i = 0; i < featureClauses.length; i++) {
 
-					/**
+					/*
+					  rank, dense_rank and row_time do not need additional selected cols.
+					  count has 'count(*)' and 'count(1)' usage.
 
-					 * rank, dense_rank and row_time do not need additional selected cols.
-					 * count has 'count(*)' and 'count(1)' usage.
-					 *
-					 * Beside, 'distinct' and 'all' are not supported.
+					  Beside, 'distinct' and 'all' are not supported.
 					 */
-					BaseUdaf udaf = calcs[i];
+					BaseUdaf<?, ?> udaf = calcs[i];
 					if (udaf instanceof LastValueUdaf || udaf instanceof LastDistinctValueUdaf ||
 						udaf instanceof LastTimeUdaf || udaf instanceof SumLastUdaf) {
 						int kLength = featureClauses[i].inputParams.length;
@@ -269,7 +273,7 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 							aggInputData[1] = Integer.parseInt((String) aggInputData[1]);
 						}
 						udaf.accumulateBatch(aggInputData);
-						SessionSharedData.put(keys.toString() + "_index", sessionId, index);
+						SessionSharedData.put(keys + "_index", sessionId, index);
 					} else if (udaf instanceof BaseRankUdaf) {
 						if (thisData == null) {
 							thisData = new Object[orderIndices.length];
@@ -281,9 +285,11 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 					} else if (udaf instanceof CountUdaf) {
 						udaf.accumulateBatch(0);
 					} else {
-						Object[] aggInputData = new Object[featureClauses[i].inputParams.length+1];
-						aggInputData[0] = value.getField(TableUtil.findColIndex(inputColNames, featureClauses[i].inColName));
-						System.arraycopy(featureClauses[i].inputParams, 0, aggInputData, 1, featureClauses[i].inputParams.length);
+						Object[] aggInputData = new Object[featureClauses[i].inputParams.length + 1];
+						aggInputData[0] = value.getField(
+							TableUtil.findColIndex(inputColNames, featureClauses[i].inColName));
+						System.arraycopy(featureClauses[i].inputParams, 0, aggInputData, 1,
+							featureClauses[i].inputParams.length);
 						//currently listAgg fills delimiter, lastDistinct fills col name, others fill int data.
 						if (!(udaf instanceof ListAggUdaf)) {
 							for (int i1 = 1; i1 < aggInputData.length; i1++) {
@@ -303,8 +309,6 @@ public class OverWindowBatchOp extends BatchOperator<OverWindowBatchOp>
 				out.collect(res);
 			}
 		}
-
-
 
 	}
 }

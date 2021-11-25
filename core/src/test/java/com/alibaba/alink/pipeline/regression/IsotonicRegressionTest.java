@@ -17,6 +17,7 @@ import java.util.List;
 /**
  * Test for IsotonicRegression.
  */
+
 public class IsotonicRegressionTest extends AlinkTestBase {
 	private Row[] rows = new Row[] {
 		Row.of(0, 0.35, 1),

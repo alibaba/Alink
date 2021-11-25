@@ -17,6 +17,10 @@ public interface NaiveBayesTrainParams<T> extends
 	HasFeatureCols <T>,
 	HasLabelCol <T>,
 	HasWeightColDefaultAsNull <T> {
+	/**
+	 * @cn-name 算法参数
+	 * @cn 光滑因子，默认为0.0
+	 */
 	ParamInfo <Double> SMOOTHING = ParamInfoFactory
 		.createParamInfo("smoothing", Double.class)
 		.setDescription("the smoothing factor")

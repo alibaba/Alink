@@ -13,6 +13,7 @@ import java.util.List;
 /**
  * Unit test of LinkedData.
  */
+
 public class IsoRegLinkedDataTest extends AlinkTestBase {
 
 	private List <Tuple3 <Double, Double, Double>> listData = new ArrayList <>();

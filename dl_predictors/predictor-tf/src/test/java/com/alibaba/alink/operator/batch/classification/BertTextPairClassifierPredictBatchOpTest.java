@@ -1,7 +1,10 @@
 package com.alibaba.alink.operator.batch.classification;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.PluginDownloader;
+import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.BertTextPairClassifierPredictBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.testutil.categories.DLTest;
 import org.junit.Test;
@@ -12,6 +15,12 @@ public class BertTextPairClassifierPredictBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+		RegisterKey registerKey = TFPredictorClassLoaderFactory.getRegisterKey();
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
 		BatchOperator.setParallelism(1);
 		String url = "http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/data/MRPC/train.tsv";
 		String schemaStr = "f_quality bigint, f_id_1 string, f_id_2 string, f_string_1 string, f_string_2 string";

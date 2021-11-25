@@ -11,6 +11,10 @@ import com.alibaba.alink.params.nlp.HasWindowSize_2;
  */
 public interface StringTextExactParams<T> extends
 	HasWindowSize_2 <T> {
+	/**
+	 * @cn-name 匹配字符权重
+	 * @cn 匹配字符权重，SSK中使用
+	 */
 	ParamInfo <Double> LAMBDA = ParamInfoFactory
 		.createParamInfo("lambda", Double.class)
 		.setDescription("punish factor.")

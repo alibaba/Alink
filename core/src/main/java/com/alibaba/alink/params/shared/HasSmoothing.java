@@ -11,6 +11,10 @@ import com.alibaba.alink.params.validators.MinValidator;
  */
 public interface HasSmoothing<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 算法参数
+	 * @cn 光滑因子，默认为1.0
+	 */
 	ParamInfo <Double> SMOOTHING = ParamInfoFactory
 		.createParamInfo("smoothing", Double.class)
 		.setDescription("the smoothing factor")

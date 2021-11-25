@@ -7,9 +7,9 @@ import com.alibaba.alink.params.dl.HasIntraOpParallelism;
 import com.alibaba.alink.params.dl.HasNumPssDefaultAsNull;
 import com.alibaba.alink.params.dl.HasNumWorkersDefaultAsNull;
 import com.alibaba.alink.params.dl.HasPythonEnv;
+import com.alibaba.alink.params.dl.HasTaskType;
 import com.alibaba.alink.params.dl.HasUserFiles;
 import com.alibaba.alink.params.dl.HasUserParams;
-import com.alibaba.alink.params.dl.HasTaskType;
 import com.alibaba.alink.params.shared.colname.HasSelectedColsDefaultAsNull;
 
 public interface EasyTransferConfigTrainParams<T> extends
@@ -18,8 +18,10 @@ public interface EasyTransferConfigTrainParams<T> extends
 	HasPythonEnv <T>, HasIntraOpParallelism <T>,
 	HasNumWorkersDefaultAsNull <T>, HasNumPssDefaultAsNull <T> {
 
-
-
+	/**
+	 * @cn-name EasyTransfer 接收的 JSON 配置
+	 * @cn EasyTransfer 接收的 JSON 配置
+	 */
 	ParamInfo <String> CONFIG_JSON = ParamInfoFactory
 		.createParamInfo("configJson", String.class)
 		.setDescription("config in JSON format")

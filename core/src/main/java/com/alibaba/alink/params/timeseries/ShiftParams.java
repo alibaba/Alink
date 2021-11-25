@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 public interface ShiftParams<T> extends
 	TimeSeriesPredictParams <T> {
 
-
+	/**
+	 * @cn-name shift个数
+	 * @cn shift个数
+	 */
 	ParamInfo <Integer> SHIFT_NUM = ParamInfoFactory
 		.createParamInfo("shiftNum", Integer.class)
 		.setDescription("shift number")

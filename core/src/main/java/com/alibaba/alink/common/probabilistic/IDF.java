@@ -4,7 +4,9 @@ import com.alibaba.alink.common.utils.XMath;
 import com.alibaba.alink.operator.common.statistics.DistributionFuncName;
 
 /**
- * Inverse cumulative Distribution Function
+ * 累积分布函数的反函数(Inverse cumulative Distribution Function, 缩写为IDF)
+ *
+ * @author yangxu
  */
 public class IDF {
 
@@ -18,10 +20,24 @@ public class IDF {
 		}
 	}
 
+	/***
+	 * 标准正态分布的反函数
+	 *
+	 * @param p 自变量值
+	 * @return 反函数的值
+	 */
 	public static double stdNormal(double p) {
 		return Math.sqrt(2.0) * XMath.erfInverse(2 * p - 1);
 	}
 
+	/***
+	 * 正态分布的反函数
+	 *
+	 * @param p         自变量值
+	 * @param mu        均值
+	 * @param sigma2    方差
+	 * @return 反函数的值
+	 */
 	public static double normal(double p, double mu, double sigma2) {
 		if ((p < 0) || (p > 1) || (sigma2 < 0)) {
 			throw new RuntimeException("Input parameter out of range!");
@@ -29,6 +45,14 @@ public class IDF {
 		return stdNormal(p) * Math.sqrt(sigma2) + mu;
 	}
 
+	/***
+	 * Gamma分布的反函数
+	 *
+	 * @param p         自变量值
+	 * @param alpha     参数
+	 * @param lambda    参数
+	 * @return 反函数的值
+	 */
 	public static double gamma(double p, double alpha, double lambda) {
 		if ((alpha <= 0) || (lambda <= 0) || (p > 1) && (p < 0)) {
 			throw new RuntimeException("Input parameter out of range!");
@@ -57,6 +81,14 @@ public class IDF {
 		return x / lambda;
 	}
 
+	/***
+	 * Beta分布的反函数
+	 *
+	 * @param p         自变量值
+	 * @param a         参数
+	 * @param b         参数
+	 * @return 反函数的值
+	 */
 	public static double beta(double p, double a, double b) {
 		if ((p < 0) || (p > 1) || (a <= 0) || (b <= 0)) {
 			throw new RuntimeException("Input parameter out of range!");
@@ -83,10 +115,24 @@ public class IDF {
 		return x;
 	}
 
+	/***
+	 * 卡方分布的反函数
+	 *
+	 * @param p         自变量值
+	 * @param df        自由度
+	 * @return 反函数的值
+	 */
 	public static double chi2(double p, double df) {
 		return (gamma(p, df / 2.0, 0.5));
 	}
 
+	/***
+	 * 学生T分布的反函数
+	 *
+	 * @param p         自变量值
+	 * @param df        自由度
+	 * @return 反函数的值
+	 */
 	public static double studentT(double p, double df) {
 		if ((p <= 0) || (p >= 1) || (df <= 0)) {
 			throw new RuntimeException("Input parameter out of range!");
@@ -100,6 +146,14 @@ public class IDF {
 		return Math.signum(q) * Math.sqrt(df * b / z);
 	}
 
+	/***
+	 * F分布的反函数
+	 *
+	 * @param p         自变量值
+	 * @param df1       自由度1
+	 * @param df2       自由度2
+	 * @return 反函数的值
+	 */
 	public static double F(double p, double df1, double df2) {
 		if ((p < 0) || (p >= 1) || (df1 <= 0) || (df2 <= 0)) {
 			throw new RuntimeException("Input parameter out of range!");
@@ -114,6 +168,14 @@ public class IDF {
 		return x;
 	}
 
+	/***
+	 * 均匀分布
+	 *
+	 * @param p             自变量值
+	 * @param lowerBound    均匀分布的下界
+	 * @param upperBound    均匀分布的上界
+	 * @return 反函数的值
+	 */
 	public static double uniform(double p, double lowerBound, double upperBound) {
 		if (lowerBound >= upperBound) {
 			throw new RuntimeException("Wrong input parameters: the lower bound should be less than the upper bound!");
@@ -124,6 +186,15 @@ public class IDF {
 		return Math.min(p * (upperBound - lowerBound) + lowerBound, upperBound);
 	}
 
+	/***
+	 * 指数分布
+	 * 当x>=0时，概率密度函数 f(x) = lambda * exp( -lambda * x) ；否则f(x)=0
+	 * 其中 lambda>0
+	 *
+	 * @param p     自变量值
+	 * @param lamda 指数分布参数
+	 * @return 反函数的值
+	 */
 	public static double exponential(double p, double lambda) {
 		if ((lambda <= 0) || (p < 0)) {
 			throw new RuntimeException("Input parameter out of range!");

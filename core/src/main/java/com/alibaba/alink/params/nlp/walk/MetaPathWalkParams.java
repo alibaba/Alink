@@ -4,5 +4,6 @@ public interface MetaPathWalkParams<T> extends
 	BaseWalkParams <T>,
 	HasMetaPath <T>,
 	HasTypeCol <T>,
-	HasVertexCol <T> {
+	HasVertexCol <T>,
+	HasSamplingMethod <T> {
 }

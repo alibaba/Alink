@@ -6,6 +6,9 @@ import com.alibaba.alink.common.dl.BaseKerasSequentialTrainBatchOp;
 import com.alibaba.alink.common.dl.TaskType;
 import com.alibaba.alink.params.dl.HasTaskType;
 
+/**
+ * Train a classifier using a Keras Sequential model.
+ */
 public class KerasSequentialClassifierTrainBatchOp extends
 	BaseKerasSequentialTrainBatchOp <KerasSequentialClassifierTrainBatchOp> {
 	public KerasSequentialClassifierTrainBatchOp() {

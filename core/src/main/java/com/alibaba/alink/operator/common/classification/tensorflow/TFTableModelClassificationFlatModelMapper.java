@@ -6,7 +6,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.TensorTypes;
@@ -32,14 +31,13 @@ import java.util.Map;
 public class TFTableModelClassificationFlatModelMapper extends CachedRichModelMapper {
 
 	private final TypeInformation <?> labelType;
+	private final String predCol;
+	private final Map <Object, Double> predDetail = new HashMap <>();
 	private List <Object> sortedLabels;
-
 	private LocalPredictor preprocessLocalPredictor = null;
 	private TFTableModelPredictFlatModelMapper tfFlatModelMapper;
-
-	private final String predCol;
 	private int predColId;
-	private final Map <Object, Double> predDetail = new HashMap <>();
+	private boolean isOutputLogits = false;
 
 	public TFTableModelClassificationFlatModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
@@ -100,11 +98,16 @@ public class TFTableModelClassificationFlatModelMapper extends CachedRichModelMa
 
 		tfFlatModelMapper = new TFTableModelPredictFlatModelMapper(modelDataConverter.getModelSchema(),
 			dataSchema, tfModelMapperParams);
-		tfFlatModelMapper.loadModel(modelData.getTfModelRows());
+		if (null != modelData.getTfModelZipPath()) {
+			tfFlatModelMapper.loadModelFromZipFile(modelData.getTfModelZipPath());
+		} else {
+			tfFlatModelMapper.loadModel(modelData.getTfModelRows());
+		}
 
 		predColId = TableUtil.findColIndex(tfFlatModelMapper.getOutputSchema(), predCol);
 
 		sortedLabels = modelData.getSortedLabels();
+		isOutputLogits = meta.get(TFModelDataConverterUtils.IS_OUTPUT_LOGITS);
 	}
 
 	@Override
@@ -130,32 +133,7 @@ public class TFTableModelClassificationFlatModelMapper extends CachedRichModelMa
 	@Override
 	protected Tuple2 <Object, String> extractPredictResultDetail(Row output) throws Exception {
 		FloatTensor tensor = (FloatTensor) output.getField(predColId);
-		Preconditions.checkArgument(tensor.shape().length <= 1,
-			"The prediction tensor must be rank-0 or rank-1");
-
-		// If the tensor has size 1, the model was trained for binary classification task,
-		// and only output the predication probability to be positive.
-		Object predLabel;
-		if (tensor.size() == 1) {
-			double p = (tensor.shape().length == 0)
-				? tensor.getFloat()
-				: tensor.getFloat(0);
-			Object negLabel = sortedLabels.get(0);
-			Object posLabel = sortedLabels.get(1);
-			predLabel = p >= 0.5 ? posLabel : negLabel;
-			predDetail.put(posLabel, p);
-			predDetail.put(negLabel, 1 - p);
-		} else {
-			int maxi = 0;
-			for (int i = 0; i < sortedLabels.size(); i += 1) {
-				double p = tensor.getFloat(i);
-				predDetail.put(sortedLabels.get(i), p);
-				if (p > tensor.getFloat(maxi)) {
-					maxi = i;
-				}
-			}
-			predLabel = sortedLabels.get(maxi);
-		}
+		Object predLabel = PredictionExtractUtils.extractFromTensor(tensor, sortedLabels, predDetail, isOutputLogits);
 		return Tuple2.of(predLabel, JsonConverter.toJson(predDetail));
 	}
 }

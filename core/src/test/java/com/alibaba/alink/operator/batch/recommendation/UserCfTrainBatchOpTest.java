@@ -18,8 +18,9 @@ import java.util.Map;
 /**
  * Test for UserCfRecommTrain.
  */
+
 public class UserCfTrainBatchOpTest extends AlinkTestBase {
-	private Row[] rows = new Row[] {
+	private final Row[] rows = new Row[] {
 		Row.of(1L, "item1", 4.0),
 		Row.of(1L, "item2", 3.0),
 		Row.of(1L, "item5", 5.0),
@@ -58,7 +59,7 @@ public class UserCfTrainBatchOpTest extends AlinkTestBase {
 			.linkFrom(op, data)
 			.collect();
 
-		List <Row> items = new UserCfItemsPerUserRecommBatchOp()
+		new UserCfItemsPerUserRecommBatchOp()
 			.setUserCol("user")
 			.setRecommCol("recomm")
 			.linkFrom(op, data)
@@ -71,7 +72,7 @@ public class UserCfTrainBatchOpTest extends AlinkTestBase {
 			.linkFrom(op, data)
 			.collect();
 
-		BatchOperator rate = new UserCfRateRecommBatchOp()
+		BatchOperator<?> rate = new UserCfRateRecommBatchOp()
 			.setItemCol("item")
 			.setUserCol("user")
 			.setRecommCol("recomm")
@@ -120,7 +121,7 @@ public class UserCfTrainBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void testLazyPrint() throws Exception {
-		BatchOperator data = BatchOperator.fromTable(
+		BatchOperator<?> data = BatchOperator.fromTable(
 			MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"user", "item", "rating"}));
 
 		UserCfTrainBatchOp op = new UserCfTrainBatchOp()

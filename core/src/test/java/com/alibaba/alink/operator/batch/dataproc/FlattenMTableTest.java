@@ -1,20 +1,17 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
-import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
-import com.alibaba.alink.common.MTableTypes;
-import com.alibaba.alink.common.MTableUtils;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.sink.CsvSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.dataproc.FlattenMTableStreamOp;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -29,7 +26,7 @@ import java.util.List;
 public class FlattenMTableTest extends AlinkTestBase {
 
 	@Test
-	public void linkFrom() throws Exception {
+	public void test1() throws Exception {
 		List <Row> rows = new ArrayList <>();
 
 		rows.add(Row.of(1, "2021-01-09 00:00:00", 0,
@@ -55,14 +52,61 @@ public class FlattenMTableTest extends AlinkTestBase {
 		List <Row> table = new ArrayList <>();
 		table.add(Row.of("id", mTable.toString()));
 
-		BatchOperator <?> op = new MemSourceBatchOp(table, new String[] {"id","mTable"});
+		BatchOperator <?> op = new MemSourceBatchOp(table, new String[] {"id", "mTable"});
 
 		String flattenSchemaStr = "col0 double, col1 timestamp, label timestamp"
 			+ ", d_vec VEC_TYPES_DENSE_VECTOR"
 			+ ", s_vec VEC_TYPES_SPARSE_VECTOR"
 			+ ", tensor TENSOR_TYPES_FLOAT_TENSOR";
-		BatchOperator out = op.link(new FlattenMTableBatchOp().setSchemaStr(flattenSchemaStr)
+		BatchOperator <?> out = op.link(new FlattenMTableBatchOp().setSchemaStr(flattenSchemaStr)
 			.setSelectedCol("mTable").setReservedCols("id").setHandleInvalidMethod(HandleInvalidMethod.SKIP));
 		out.print();
+	}
+
+	@Test
+	public void test2() throws Exception {
+		List <Row> rows = new ArrayList <>();
+		rows.add(Row.of("a1", "11L", 2.2));
+		rows.add(Row.of("a1", "12L", 2.0));
+		rows.add(Row.of("a2", "11L", 2.0));
+		rows.add(Row.of("a2", "12L", 2.0));
+		rows.add(Row.of("a3", "12L", 2.0));
+		rows.add(Row.of("a3", "13L", 2.0));
+		rows.add(Row.of("a4", "13L", 2.0));
+		rows.add(Row.of("a4", "14L", 2.0));
+		rows.add(Row.of("a5", "14L", 2.0));
+		rows.add(Row.of("a5", "15L", 2.0));
+		rows.add(Row.of("a6", "15L", 2.0));
+		rows.add(Row.of("a6", "16L", 2.0));
+
+		BatchOperator <?> input = new MemSourceBatchOp(rows, "id string, f0 string, f1 double");
+
+		GroupByBatchOp zip = new GroupByBatchOp()
+			.setGroupByPredicate("id")
+			.setSelectClause("id, mtable_agg(f0, f1) as m_table_col");
+
+		FlattenMTableBatchOp flatten = new FlattenMTableBatchOp()
+			.setReservedCols("id")
+			.setSelectedCol("m_table_col")
+			.setSchemaStr("f0 string, f1 int");
+
+		zip.linkFrom(input).link(flatten).print();
+	}
+
+	@Test
+	public void test3() throws Exception {
+		List <Row> rows = new ArrayList <>();
+		rows.add(Row.of("a1", "{\"data\":{\"f0\":[\"11L\",\"12L\"],\"f1\":[2.0,2.0]},\"schema\":\"f0 VARCHAR,f1 "
+			+ "DOUBLE\"}"));
+		rows.add(Row.of("a3", "{\"data\":{\"f0\":[\"13L\",\"14L\"],\"f1\":[2.0,2.0]},\"schema\":\"f0 VARCHAR,f1 "
+			+ "DOUBLE\"}"));
+		StreamOperator <?> input = new MemSourceStreamOp(rows, "id string, mt string");
+
+		FlattenMTableStreamOp flatten = new FlattenMTableStreamOp()
+			.setReservedCols("id")
+			.setSelectedCol("mt")
+			.setSchemaStr("f0 string, f1 int");
+		flatten.linkFrom(input).print();
+		StreamOperator.execute();
 	}
 }

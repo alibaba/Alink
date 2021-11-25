@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * positive label value with string format.
  */
 public interface HasPositiveLabelValueString<T> extends WithParams <T> {
+	/**
+	 * @cn-name 正样本
+	 * @cn 正样本对应的字符串格式。
+	 */
 	ParamInfo <String> POS_LABEL_VAL_STR = ParamInfoFactory
 		.createParamInfo("positiveLabelValueString", String.class)
 		.setDescription("positive label value with string format.")

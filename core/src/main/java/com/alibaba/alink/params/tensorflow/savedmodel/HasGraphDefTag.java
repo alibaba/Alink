@@ -5,7 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasGraphDefTag<T> extends WithParams <T> {
-
+	/**
+	 * @cn-name graph标签
+	 * @cn graph标签
+	 */
 	ParamInfo <String> GRAPH_DEF_TAG = ParamInfoFactory
 		.createParamInfo("graphDefTag", String.class)
 		.setDescription("graph def tag")

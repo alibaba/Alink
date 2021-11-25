@@ -38,6 +38,8 @@ public class DataSetDiskDownloader implements Serializable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DataSetDiskDownloader.class);
 
+	private static final String MARK_FILENAME = ".mark";
+
 	public static void unzipUserFileFromDisk(String[] fileList, String targetDir) throws IOException {
 		String zipFilePath = null;
 		for (String fileName : fileList) {
@@ -103,7 +105,9 @@ public class DataSetDiskDownloader implements Serializable {
 					// delete the file in task zero.
 					int taskId = getRuntimeContext().getIndexOfThisSubtask();
 					if (taskId == 0) {
-						targetFileName = uri.substring(uri.lastIndexOf('/') + 1);
+						targetFileName = uri.contains("\\")
+							? uri.substring(uri.lastIndexOf('\\') + 1)
+							: uri.substring(uri.lastIndexOf('/') + 1);
 						targetDir = PythonFileUtils.createTempWorkDir("temp_user_files_");
 						Path localPath = Paths.get(targetDir, targetFileName).toAbsolutePath();
 						File file = localPath.toFile();
@@ -157,7 +161,8 @@ public class DataSetDiskDownloader implements Serializable {
 
 				@Override
 				public void open(Configuration configuration) throws Exception {
-					targetFileName = uri.substring(uri.lastIndexOf('/') + 1);
+					targetFileName = uri.contains("\\") ? uri.substring(uri.lastIndexOf('\\') + 1):
+							uri.substring(uri.lastIndexOf('/') + 1);
 					targetDir = PythonFileUtils.createTempWorkDir("temp_user_files_");
 					Path localPath = Paths.get(targetDir, targetFileName).toAbsolutePath();
 					File file = localPath.toFile();
@@ -207,7 +212,7 @@ public class DataSetDiskDownloader implements Serializable {
 			int taskId = getRuntimeContext().getIndexOfThisSubtask();
 			int numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
 			if (taskId == 0) {
-				String targetDir = PythonFileUtils.createTempWorkDir(String.format("temp_user_files_%s_", taskId));
+				String targetDir = PythonFileUtils.createTempWorkDir(String.format("downloaded_files_%s_", taskId));
 				for (String path : paths) {
 					if (FileDownloadUtils.isLocalPath(path)) {
 						continue;
@@ -259,7 +264,7 @@ public class DataSetDiskDownloader implements Serializable {
 			Iterator <Tuple2 <Integer, byte[]>> iterator = values.iterator();
 
 			int taskId = getRuntimeContext().getIndexOfThisSubtask();
-			String targetDir = PythonFileUtils.createTempWorkDir(String.format("temp_user_files_%s_", taskId));
+			String targetDir = PythonFileUtils.createTempWorkDir(String.format("work_dir_%s_", taskId));
 			// The order of values are supposed to be unchanged.
 			for (String path : paths) {
 				boolean isCompressed = PythonFileUtils.isCompressedFile(path);
@@ -351,19 +356,34 @@ public class DataSetDiskDownloader implements Serializable {
 		return modelSource;
 	}
 
-	public static void moveFilesToWorkDir(String[] downloadPathCandidates, File targetDir) throws IOException {
+	static synchronized boolean markPath(File file) {
+		try {
+			return file.createNewFile();
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
+	public static synchronized String getDownloadPath(String[] downloadPathCandidates) {
 		String downloadPath = null;
 		for (String candidate : downloadPathCandidates) {
 			if (new File(candidate).exists()) {
-				downloadPath = candidate;
-				break;
+				File markFile = new File(candidate, MARK_FILENAME);
+				if (markPath(markFile)) {
+					downloadPath = candidate;
+					break;
+				}
 			}
 		}
 		if (downloadPath == null) {
 			throw new RuntimeException("Cannot get download path from candidates: " +
 				Arrays.toString(downloadPathCandidates));
 		}
+		return downloadPath;
+	}
 
+	public static void moveFilesToWorkDir(String[] downloadPathCandidates, File targetDir) throws IOException {
+		String downloadPath = getDownloadPath(downloadPathCandidates);
 		File[] files = new File(downloadPath).listFiles();
 		assert files != null;
 		for (File file : files) {

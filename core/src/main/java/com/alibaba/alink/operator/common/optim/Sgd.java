@@ -60,9 +60,7 @@ public class Sgd extends Optimizer {
 		double learnRate = params.get(SgdParams.LEARNING_RATE);
 		double miniBatchFraction = params.get(SgdParams.MINI_BATCH_FRACTION);
 		double epsilon = params.get(SgdParams.EPSILON);
-		if (null == this.coefVec) {
-			initCoefZeros();
-		}
+		checkInitCoef();
 
 		/**
 		 * solve problem using iteration.

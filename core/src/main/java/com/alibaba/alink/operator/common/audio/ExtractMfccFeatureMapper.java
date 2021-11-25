@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.audio;
 
+import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
@@ -41,17 +42,18 @@ public class ExtractMfccFeatureMapper extends SISOMapper {
 			if (shape.length == 2) {
 				// input shape is [channelNum,audioLength]
 				// return shape is [channelNum, audioLength/frameStep, n_mfcc]
-				FloatTensor[] tensors = Tensor.unstack(ft, 0, null);
-				int channel_num = (int) shape[0];
+				FloatTensor[] tensors = Tensor.unstack(ft, 1, null);
+				int channel_num = (int) shape[1];
 				int audio_len = (int) tensors[0].size();
 				int mfcc_len = (int) Math.ceil((audio_len - mfcc.frameLength + mfcc.frameStep) / mfcc.frameStep);
 				int n_mfcc = mfcc.getnFeature();
 				float[][][] tensorData = new float[mfcc_len][n_mfcc][channel_num];
 				for (int c = 0; c < channel_num; c++) {
-					double[] data = new double[audio_len];
-					for (int k = 0; k < audio_len; k++) {
-						data[k] = tensors[c].getFloat(k);
-					}
+//					double[] data = new double[audio_len];
+//					for (int k = 0; k < audio_len; k++) {
+//						data[k] = tensors[c].getFloat(k);
+//					}
+					double[] data = DoubleTensor.of(tensors[c]).toVector().getData();
 					float[][] result = mfcc.process(data);
 					for (int i = 0; i < mfcc_len; i++) {
 						for (int j = 0; j < n_mfcc; j++) {

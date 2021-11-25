@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasNumSearchStepDv4<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 搜索步数
+	 * @cn line search 中的loss计算步数
+	 */
 	ParamInfo <Integer> NUM_SEARCH_STEP = ParamInfoFactory
 		.createParamInfo("numSearchStep", Integer.class)
 		.setDescription("num search step")
