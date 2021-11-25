@@ -15,6 +15,10 @@ public class BaseTFTableModelData implements Serializable {
 	protected String tfOutputSignatureDef;
 	protected TypeInformation <?> tfOutputSignatureType;
 
+	// When loading model data, especially in stream predict operators, tfModelRows cost a lot of memory and sometimes
+	// lead to OOM. There model data are written to file directly to avoid memory occupation.
+	protected String tfModelZipPath;
+
 	public BaseTFTableModelData() {
 	}
 
@@ -50,6 +54,15 @@ public class BaseTFTableModelData implements Serializable {
 
 	public BaseTFTableModelData setTfModelRows(List <Row> tfModelRows) {
 		this.tfModelRows = tfModelRows;
+		return this;
+	}
+
+	public String getTfModelZipPath() {
+		return tfModelZipPath;
+	}
+
+	public BaseTFTableModelData setTfModelZipPath(String tfModelZipPath) {
+		this.tfModelZipPath = tfModelZipPath;
 		return this;
 	}
 

@@ -19,6 +19,7 @@
 package com.alibaba.alink.common.dl.coding;
 
 import com.alibaba.alink.common.linalg.tensor.BoolTensor;
+import com.alibaba.alink.common.linalg.tensor.ByteTensor;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.IntTensor;
@@ -64,6 +65,28 @@ public class TFExampleConversionV2 implements Serializable {
 		Feature.Builder featureBuilder = Feature.newBuilder();
 		FloatList.Builder floatListBuilder = FloatList.newBuilder();
 		Int64List.Builder int64ListBuilder = Int64List.newBuilder();
+
+		// When dt is TENSOR, find the exact type first.
+		if (DataTypesV2.TENSOR.equals(dt)) {
+			if (val instanceof FloatTensor) {
+				dt = DataTypesV2.FLOAT_TENSOR;
+			} else if (val instanceof DoubleTensor) {
+				dt = DataTypesV2.DOUBLE_TENSOR;
+			} else if (val instanceof IntTensor) {
+				dt = DataTypesV2.INT_TENSOR;
+			} else if (val instanceof LongTensor) {
+				dt = DataTypesV2.LONG_TENSOR;
+			} else if (val instanceof BoolTensor) {
+				dt = DataTypesV2.BOOLEAN_TENSOR;
+			} else if (val instanceof UByteTensor) {
+				dt = DataTypesV2.UBYTE_TENSOR;
+			} else if (val instanceof StringTensor) {
+				dt = DataTypesV2.STRING_TENSOR;
+			} else if (val instanceof ByteTensor) {
+				dt = DataTypesV2.BYTE_TENSOR;
+			}
+		}
+
 		switch (dt) {
 			case FLOAT_16:
 			case FLOAT_32:

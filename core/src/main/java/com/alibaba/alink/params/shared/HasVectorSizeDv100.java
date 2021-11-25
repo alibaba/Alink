@@ -7,6 +7,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasVectorSizeDv100<T> extends WithParams <T> {
+	/**
+	 * @cn-name embedding的向量长度
+	 * @cn embedding的向量长度
+	 */
 	ParamInfo <Integer> VECTOR_SIZE = ParamInfoFactory
 		.createParamInfo("vectorSize", Integer.class)
 		.setDescription("vector size of embedding")

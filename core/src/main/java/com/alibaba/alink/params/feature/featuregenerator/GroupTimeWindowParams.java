@@ -5,7 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 public interface GroupTimeWindowParams<T> extends
 	BaseWindowParams <T> {
-
+	/**
+	 * @cn-name 分组列名数组
+	 * @cn 分组列名，多列，可选，必选
+	 */
 	ParamInfo <String[]> PARTITION_COLS = ParamInfoFactory
 		.createParamInfo("partitionCols", String[].class)
 		.setDescription("partition col names")

@@ -26,6 +26,7 @@ import static com.alibaba.alink.operator.common.tree.parallelcart.BaseGbdtTrainB
 /**
  * Test cases for gbdt.
  */
+
 public class GbdtBatchOpTest extends AlinkTestBase {
 
 	@Test

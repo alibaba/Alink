@@ -10,7 +10,10 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
  * parameters of tensor to vector.
  */
 public interface TensorToVectorParams<T> extends SISOMapperParams<T>{
-
+	/**
+	 * @cn-name 转换方法
+	 * @cn 张量转换为向量的方法，可取 flatten, sum, mean, max, min.
+	 */
 	ParamInfo<ConvertMethod> CONVERT_METHOD = ParamInfoFactory
 		.createParamInfo("convertMethod", ConvertMethod.class)
 		.setDescription("the convert method of tensor to vector. include： flatten, sum, mean, max, min.")

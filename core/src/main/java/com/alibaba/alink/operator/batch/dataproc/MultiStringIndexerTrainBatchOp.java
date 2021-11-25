@@ -1,17 +1,21 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
+import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.typeutils.RowTypeInfo;
+import org.apache.flink.api.java.typeutils.TupleTypeInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.HugeStringIndexerUtil;
 import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelDataConverter;
-import com.alibaba.alink.operator.common.dataproc.StringIndexerUtil;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.dataproc.HasSelectedColTypes;
 import com.alibaba.alink.params.dataproc.HasStringOrderTypeDefaultAsRandom;
@@ -59,9 +63,22 @@ public final class MultiStringIndexerTrainBatchOp
 				TableUtil.findColTypeWithAssertAndHint(in.getSchema(), selectedColNames[i]));
 		}
 
-		DataSet <Row> inputRows = in.select(selectedColNames).getDataSet();
+		DataSet <Tuple2 <Integer, String>> inputRows = in.select(selectedColNames).getDataSet()
+			.flatMap(new FlatMapFunction <Row, Tuple2 <Integer, String>>() {
+				@Override
+				public void flatMap(Row row, Collector <Tuple2 <Integer, String>> collector) throws Exception {
+					for (int i = 0; i < selectedColNames.length; i++) {
+						Object o = row.getField(i);
+						if (null != o) {
+							collector.collect(Tuple2.of(i, String.valueOf(o)));
+						}
+					}
+				}
+			})
+			.returns(new TupleTypeInfo <>(Types.INT, Types.STRING));
+
 		DataSet <Tuple3 <Integer, String, Long>> indexedToken =
-			StringIndexerUtil.indexTokens(inputRows, orderType, 0L, true);
+			HugeStringIndexerUtil.indexTokens(inputRows, orderType, 0L);
 
 		DataSet <Row> values = indexedToken
 			.mapPartition(new RichMapPartitionFunction <Tuple3 <Integer, String, Long>, Row>() {
@@ -78,7 +95,8 @@ public final class MultiStringIndexerTrainBatchOp
 					new MultiStringIndexerModelDataConverter().save(Tuple2.of(meta, values), out);
 				}
 			})
-			.name("build_model");
+			.name("build_model")
+			.returns(new RowTypeInfo(new MultiStringIndexerModelDataConverter().getModelSchema().getFieldTypes()));
 
 		this.setOutput(values, new MultiStringIndexerModelDataConverter().getModelSchema());
 		return this;

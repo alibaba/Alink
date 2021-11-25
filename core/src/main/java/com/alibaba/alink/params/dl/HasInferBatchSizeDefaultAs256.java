@@ -5,7 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasInferBatchSizeDefaultAs256<T> extends WithParams <T> {
-
+	/**
+	 * @cn-name 推理数据批大小
+	 * @cn 推理数据批大小
+	 */
 	ParamInfo <Integer> INFER_BATCH_SIZE = ParamInfoFactory
 		.createParamInfo("inferBatchSize", Integer.class)
 		.setDescription("mini-batch size for inference")

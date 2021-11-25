@@ -10,6 +10,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.DLUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -114,7 +115,17 @@ public class DLFlatMapFunction implements Closeable, Serializable {
         int thisTaskIndex = runtimeContext.getIndexOfThisSubtask();
         Tuple2<BaseRole, Integer> roleAndIndex = DLRunner.getRoleAndIndex(thisTaskIndex, numWorkers);
 
-        String workDir = PythonFileUtils.createTempWorkDir(String.format("temp_%d_", runtimeContext.getIndexOfThisSubtask()));
+        String[] downloadPathCandidates = runtimeContext.getBroadcastVariable(DLConstants.BC_NAME_DOWNLOAD_PATHS)
+            .stream()
+            .map(d -> (String) ((Row) d).getField(0))
+            .toArray(String[]::new);
+        String workDir = DataSetDiskDownloader.getDownloadPath(downloadPathCandidates);
+        LOG.info("Worker {} uses download path: {}", runtimeContext.getIndexOfThisSubtask(), workDir);
+        if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+            System.out.println(String.format("worker %d use download path: %s",
+                runtimeContext.getIndexOfThisSubtask(), workDir));
+        }
+
         Map <String, String> properties = config.getProperties();
         properties.put(MLConstants.WORK_DIR, workDir);
         properties.put(DLConstants.WORK_DIR, workDir);
@@ -125,19 +136,14 @@ public class DLFlatMapFunction implements Closeable, Serializable {
         // Update external files-related properties according to workDir
         {
             String pythonEnv = properties.get(DLConstants.PYTHON_ENV);
-            properties.put(MLConstants.VIRTUAL_ENV_DIR, new File(workDir, pythonEnv).getAbsolutePath());
-
+            if (PythonFileUtils.isLocalFile(pythonEnv)) {
+                properties.put(MLConstants.VIRTUAL_ENV_DIR, pythonEnv.substring("file://".length()));
+            } else {
+                properties.put(MLConstants.VIRTUAL_ENV_DIR, new File(workDir, pythonEnv).getAbsolutePath());
+            }
             String entryScriptFileName = PythonFileUtils.getFileName(properties.get(DLConstants.ENTRY_SCRIPT));
             mlContext.setPythonDir(new File(workDir).toPath());
             mlContext.setPythonFiles(new String[] {new File(workDir, entryScriptFileName).getAbsolutePath()});
-        }
-
-        if (runtimeContext.hasBroadcastVariable(DLConstants.BC_NAME_DOWNLOAD_PATHS)) {
-            String[] downloadPathCandidates = runtimeContext.getBroadcastVariable(DLConstants.BC_NAME_DOWNLOAD_PATHS)
-                .stream()
-                .map(d -> (String) ((Row) d).getField(0))
-                .toArray(String[]::new);
-            DataSetDiskDownloader.moveFilesToWorkDir(downloadPathCandidates, new File(workDir));
         }
 
         if (runtimeContext.hasBroadcastVariable(DLConstants.BC_NAME_TENSOR_SHAPES)) {
@@ -182,7 +188,10 @@ public class DLFlatMapFunction implements Closeable, Serializable {
             LOG.error("Fail to start node service.", e);
             throw new IOException(e.getMessage());
         }
-        System.out.println("start:" + mlContext.getRoleName() + " index:" + mlContext.getIndex());
+        LOG.info("start: {}, index: {}", mlContext.getRoleName(), mlContext.getIndex());
+        if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+            System.out.println("start:" + mlContext.getRoleName() + " index:" + mlContext.getIndex());
+        }
     }
 
     /**

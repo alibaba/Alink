@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasWithIntercept<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 是否有常数项
+	 * @cn 是否有常数项，默认true
+	 */
 	ParamInfo <Boolean> WITH_INTERCEPT = ParamInfoFactory
 		.createParamInfo("withIntercept", Boolean.class)
 		.setDescription("Whether has intercept or not, default is true")

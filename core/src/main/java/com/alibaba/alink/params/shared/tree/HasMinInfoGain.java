@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasMinInfoGain<T> extends WithParams <T> {
+	/**
+	 * @cn-name 分裂的最小增益
+	 * @cn 分裂的最小增益
+	 */
 	ParamInfo <Double> MIN_INFO_GAIN = ParamInfoFactory
 		.createParamInfo("minInfoGain", Double.class)
 		.setDescription("minimum info gain when performing split")

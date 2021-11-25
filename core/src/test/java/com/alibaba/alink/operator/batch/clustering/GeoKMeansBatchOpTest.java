@@ -12,6 +12,7 @@ import java.util.Arrays;
 /**
  * Test
  */
+
 public class GeoKMeansBatchOpTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {

@@ -8,6 +8,9 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * doc parameter array.
  */
 public interface HasAlphaArray<T> extends WithParams <T> {
+	/**
+	 * @cn 文章的超参
+	 */
 	ParamInfo <double[]> ALPHA_ARRAY = ParamInfoFactory
 		.createParamInfo("alphaArray", double[].class)
 		.setDescription(

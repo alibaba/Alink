@@ -12,6 +12,7 @@ import java.util.List;
 public class TFTableModelClassificationModelData extends TFTableModelRegressionModelData {
 
 	protected List <Object> sortedLabels;
+	protected boolean isOutputLogits;
 
 	public TFTableModelClassificationModelData() {
 	}
@@ -20,10 +21,11 @@ public class TFTableModelClassificationModelData extends TFTableModelRegressionM
 											   String tfOutputSignatureDef, TypeInformation <?> tfOutputSignatureType,
 											   String preprocessPipelineModelSchemaStr,
 											   List <Row> preprocessPipelineModelRows,
-											   List <Object> sortedLabels) {
+											   List <Object> sortedLabels, boolean isOutputLogits) {
 		super(params, tfInputCols, tfModelRows, tfOutputSignatureDef, tfOutputSignatureType,
 			preprocessPipelineModelSchemaStr, preprocessPipelineModelRows);
 		this.sortedLabels = sortedLabels;
+		this.isOutputLogits = isOutputLogits;
 	}
 
 	public List <Object> getSortedLabels() {
@@ -36,5 +38,9 @@ public class TFTableModelClassificationModelData extends TFTableModelRegressionM
 			this.sortedLabels.add(sortedLabel);
 		}
 		return this;
+	}
+
+	public boolean getIsLogits() {
+		return isOutputLogits;
 	}
 }

@@ -18,6 +18,7 @@ import java.util.List;
 /**
  * Test cases for Word2Vec
  */
+
 public class Word2VecTest extends AlinkTestBase {
 
 	@Test

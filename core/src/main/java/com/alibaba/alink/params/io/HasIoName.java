@@ -8,6 +8,9 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * IO name.
  */
 public interface HasIoName<T> extends WithParams <T> {
+	/**
+	 * @cn IO名称.
+	 */
 	ParamInfo <String> IO_NAME = ParamInfoFactory
 		.createParamInfo("ioName", String.class)
 		.setDescription("io name")

@@ -12,6 +12,10 @@ import com.alibaba.alink.params.shared.colname.HasLabelCol;
 public interface BasedChisqSelectorParams<T> extends
 	HasLabelCol <T> {
 
+	/**
+	 * @cn-name 筛选类型
+	 * @cn 筛选类型，包含"NumTopFeatures","percentile", "fpr", "fdr", "fwe"五种。
+	 */
 	ParamInfo <SelectorType> SELECTOR_TYPE = ParamInfoFactory.createParamInfo("selectorType",
 		SelectorType.class)
 		.setDescription("The selector supports different selection methods: `NumTopFeatures`, `percentile`, `fpr`,\n" +
@@ -29,6 +33,10 @@ public interface BasedChisqSelectorParams<T> extends
 		.setOptional()
 		.setHasDefaultValue(SelectorType.NumTopFeatures)
 		.build();
+	/**
+	 * @cn-name 最大的p-value列个数
+	 * @cn 最大的p-value列个数, 默认值50
+	 */
 	ParamInfo <Integer> NUM_TOP_FEATURES = ParamInfoFactory.createParamInfo("numTopFeatures", Integer.class)
 		.setDescription("Number of features that selector will select, ordered by ascending p-value. If the" +
 			" number of features is < NumTopFeatures, then this will select all features." +
@@ -36,6 +44,10 @@ public interface BasedChisqSelectorParams<T> extends
 		.setOptional()
 		.setHasDefaultValue(50)
 		.build();
+	/**
+	 * @cn-name 筛选的百分比
+	 * @cn 筛选的百分比，默认值0.1
+	 */
 	ParamInfo <Double> PERCENTILE = ParamInfoFactory.createParamInfo("percentile", Double.class)
 		.setDescription(
 			"Percentile of features that selector will select, ordered by ascending p-value. It must be in range (0,1)"
@@ -44,16 +56,28 @@ public interface BasedChisqSelectorParams<T> extends
 		.setOptional()
 		.setHasDefaultValue(0.1)
 		.build();
+	/**
+	 * @cn-name p value的阈值
+	 * @cn p value的阈值，默认值0.05
+	 */
 	ParamInfo <Double> FPR = ParamInfoFactory.createParamInfo("fpr", Double.class)
 		.setDescription("The highest p-value for features to be kept. It must be in range (0,1)" +
 			"  By default, 0.05")
 		.setHasDefaultValue(0.05)
 		.build();
+	/**
+	 * @cn-name 发现阈值
+	 * @cn 发现阈值, 默认值0.05
+	 */
 	ParamInfo <Double> FDR = ParamInfoFactory.createParamInfo("fdr", Double.class)
 		.setDescription("The upper bound of the expected false discovery rate.It must be in range (0,1)" +
 			"  By default, 0.05")
 		.setHasDefaultValue(0.05)
 		.build();
+	/**
+	 * @cn-name 错误率阈值
+	 * @cn 错误率阈值, 默认值0.05
+	 */
 	ParamInfo <Double> FWE = ParamInfoFactory.createParamInfo("fwe", Double.class)
 		.setDescription("The upper bound of the expected family-wise error rate. rate.It must be in range (0,1)" +
 			"  By default, 0.05")

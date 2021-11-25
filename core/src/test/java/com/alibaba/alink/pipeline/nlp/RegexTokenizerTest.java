@@ -19,6 +19,7 @@ import java.util.List;
 /**
  * Test for RegexTokenizer.
  */
+
 public class RegexTokenizerTest extends AlinkTestBase {
 	@Test
 	public void testTokenize() throws Exception {

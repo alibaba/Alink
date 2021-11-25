@@ -234,6 +234,9 @@ public class AkUtils {
 		}
 	}
 
+	/**
+	 * The return value of fileReader indicate that the loop will continue or not.
+	 */
 	public static void getFromFolderForEach(FilePath filePath, FileProcFunction <FilePath, Boolean> fileReader)
 		throws IOException {
 
@@ -245,15 +248,9 @@ public class AkUtils {
 		} else {
 			List <Path> files = filePath.getFileSystem().listFiles(filePath.getPath());
 
-			if (files.isEmpty()) {
-				throw new IOException(
-					"Folder is empty. Could not determined content of op. folder: " + filePath.getPathStr()
-				);
-			} else {
-				for (Path path : files) {
-					if (!fileReader.apply(new FilePath(path, filePath.getFileSystem()))) {
-						break;
-					}
+			for (Path path : files) {
+				if (!fileReader.apply(new FilePath(path, filePath.getFileSystem()))) {
+					break;
 				}
 			}
 		}

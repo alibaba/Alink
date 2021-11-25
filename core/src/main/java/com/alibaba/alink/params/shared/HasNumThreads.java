@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasNumThreads<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 组件多线程线程个数
+	 * @cn 组件多线程线程个数
+	 */
 	ParamInfo <Integer> NUM_THREADS = ParamInfoFactory
 		.createParamInfo("numThreads", Integer.class)
 		.setDescription("Thread number of operator.")

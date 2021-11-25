@@ -12,6 +12,10 @@ public interface StringTextNearestNeighborTrainParams<T> extends
 	NearestNeighborTrainParams <T>,
 	StringTextExactParams <T> {
 
+	/**
+	 * @cn-name 距离类型
+	 * @cn 用于计算的距离类型
+	 */
 	ParamInfo <Metric> METRIC = ParamInfoFactory
 		.createParamInfo("metric", Metric.class)
 		.setDescription("Method to calculate calc or distance.")

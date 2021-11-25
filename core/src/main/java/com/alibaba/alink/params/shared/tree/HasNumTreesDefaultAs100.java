@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasNumTreesDefaultAs100<T> extends WithParams <T> {
+	/**
+	 * @cn-name 模型中树的棵数
+	 * @cn 模型中树的棵数
+	 */
 	ParamInfo <Integer> NUM_TREES = ParamInfoFactory
 		.createParamInfo("numTrees", Integer.class)
 		.setDescription("Number of decision trees.")

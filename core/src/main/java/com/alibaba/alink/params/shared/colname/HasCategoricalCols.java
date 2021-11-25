@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Param: columns whose type are string or boolean.
  */
 public interface HasCategoricalCols<T> extends WithParams <T> {
+	/**
+	 * @cn-name 离散特征列名
+	 * @cn 离散特征列名
+	 */
 	ParamInfo <String[]> CATEGORICAL_COLS = ParamInfoFactory
 		.createParamInfo("categoricalCols", String[].class)
 		.setDescription("Names of the categorical columns used for training in the input table")

@@ -9,6 +9,10 @@ import com.alibaba.alink.params.validators.MinValidator;
 public interface FirstNParams<T> extends
 	WithParams <T> {
 
+	/**
+	 * @cn-name 采样个数
+	 * @cn 采样个数
+	 */
 	ParamInfo <Integer> SIZE = ParamInfoFactory
 		.createParamInfo("size", Integer.class)
 		.setDescription("sampling size")

@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasPrecedingTime<T> extends WithParams<T> {
 
-    //the metric is second.
+    /**
+     * @cn-name 时间窗口大小
+     * @cn 时间窗口大小
+     */
     ParamInfo<Double> PRECEDING_TIME = ParamInfoFactory
         .createParamInfo("precedingTime", Double.class)
         .setDescription("time interval")

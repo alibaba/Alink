@@ -297,15 +297,15 @@ public class FeatureClauseUtil {
 	public static String registMTableAgg(String clause, String operatorFunc,
 										 MLEnvironment mlEnv, TableSchema tableSchema, String timeCol) {
 		String aggName = "mtable_agg_" + UUID.randomUUID().toString().replace("-", "");
-		MTableAgg agg = new MTableAgg();
-		agg.setSchemaStr(getMTableSchema(clause, tableSchema), timeCol);
+
 		if ("MTABLE_AGG".equals(operatorFunc)) {
-			agg.setDropLast(false);
+			mlEnv.getStreamTableEnvironment().registerFunction(aggName,
+				new MTableAgg(false, getMTableSchema(clause, tableSchema), timeCol));
 		} else {
-			agg.setDropLast(true);
+			mlEnv.getStreamTableEnvironment().registerFunction(aggName,
+				new MTableAgg(true, getMTableSchema(clause, tableSchema), timeCol));
 		}
 
-		mlEnv.getStreamTableEnvironment().registerFunction(aggName, agg);
 		return aggName + "(" + clause.split("\\(")[1];
 	}
 

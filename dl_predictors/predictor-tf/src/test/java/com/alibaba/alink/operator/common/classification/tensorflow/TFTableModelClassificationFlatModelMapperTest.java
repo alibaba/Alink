@@ -6,9 +6,12 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.PluginDownloader;
+import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
-import com.alibaba.alink.operator.common.classification.tensorflow.TFTableModelClassificationFlatModelMapper;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
@@ -32,6 +35,11 @@ public class TFTableModelClassificationFlatModelMapperTest {
 	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+		RegisterKey registerKey = TFPredictorClassLoaderFactory.getRegisterKey();
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
 		List <Row> baseData = Arrays.asList(
 			Row.of((float) 1.2, 3.4, 10, 3L, "bad"),
 			Row.of((float) 1.2, 3.4, 2, 5L, "good"),

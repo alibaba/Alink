@@ -4,12 +4,15 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.regression.BertTextPairRegressorTrainBatchOp;
-import com.alibaba.alink.params.tensorflow.bert.BaseEasyTransferTrainParams;
 import com.alibaba.alink.params.classification.TFTableModelClassificationPredictParams;
+import com.alibaba.alink.params.tensorflow.bert.BertTextPairTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
 
+/**
+ * Text pair regressor using Bert models.
+ */
 public class BertTextPairRegressor extends Trainer <BertTextPairRegressor, BertRegressionModel>
-	implements BaseEasyTransferTrainParams <BertTextPairRegressor>,
+	implements BertTextPairTrainParams <BertTextPairRegressor>,
 	TFTableModelClassificationPredictParams <BertTextPairRegressor> {
 
 	public BertTextPairRegressor() {this(null);}

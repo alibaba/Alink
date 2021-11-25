@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Param: The number of features. It will be the length of the output vector.
  */
 public interface HasNumFeatures<T> extends WithParams <T> {
+	/**
+	 * @cn-name 向量维度
+	 * @cn 生成向量长度
+	 */
 	ParamInfo <Integer> NUM_FEATURES = ParamInfoFactory
 		.createParamInfo("numFeatures", Integer.class)
 		.setDescription("The number of features. It will be the length of the output vector.")

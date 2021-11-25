@@ -10,6 +10,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasWithStd<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 是否使用标准差
+	 * @cn 是否使用标准差，默认使用
+	 */
 	ParamInfo <Boolean> WITH_STD = ParamInfoFactory
 		.createParamInfo("withStd", Boolean.class)
 		.setDescription("Scales the data to unit standard deviation. true by default")

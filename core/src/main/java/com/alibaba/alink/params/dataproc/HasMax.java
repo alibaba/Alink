@@ -10,6 +10,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasMax<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 归一化的上界
+	 * @cn 归一化的上界
+	 */
 	ParamInfo <Double> MAX = ParamInfoFactory
 		.createParamInfo("max", Double.class)
 		.setDescription("Upper bound after transformation.")

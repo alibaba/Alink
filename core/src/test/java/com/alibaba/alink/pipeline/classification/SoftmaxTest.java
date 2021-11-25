@@ -6,6 +6,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
@@ -27,18 +28,6 @@ public class SoftmaxTest extends AlinkTestBase {
 		Row.of("0:1.0 2:2.0 7:4.0", "1.0 2.0 4.0", 1.0, 2.0, 4.0, 1)
 	};
 	String[] veccolNames = new String[] {"svec", "vec", "f0", "f1", "f2", "label"};
-	Row[] vecmrows = new Row[] {
-		Row.of("0:1.0 2:7.0 15:9.0", "1.0 1.0 9.0", 1.0, 7.0, 9.0, 2),
-		Row.of("0:2.0 2:3.0 12:3.0", "1.0 2.0 3.0", 1.0, 3.0, 5.0, 3),
-		Row.of("0:3.0 2:2.0 10:4.0", "1.0 3.0 4.0", 1.0, 2.0, 6.0, 1),
-		Row.of("0:4.0 2:3.0 12:3.0", "1.0 4.0 3.0", 1.0, 3.0, 7.0, 4),
-		Row.of("0:5.0 2:2.0 10:4.0", "1.0 5.0 4.0", 1.0, 2.0, 40.0, 5),
-		Row.of("0:6.0 2:3.0 12:3.0", "1.0 6.0 3.0", 1.0, 3.0, 9.0, 6),
-		Row.of("0:7.0 2:2.0 10:4.0", "1.0 7.0 4.0", 1.0, 2.0, 0.0, 7),
-		Row.of("0:8.0 2:3.0 12:3.0", "1.0 8.0 3.0", 1.0, 3.0, 888.0, 8),
-		Row.of("0:9.0 2:2.0 10:4.0", "1.0 9.0 4.0", 1.0, 2.0, 77.0, 9),
-		Row.of("0:10.0 2:2.0 7:4.0", "1.0 12.0 4.0", 1.0, 2.0, 766.0, 1)
-	};
 
 	Softmax softmax;
 
@@ -91,16 +80,16 @@ public class SoftmaxTest extends AlinkTestBase {
 
 	@Test
 	public void pipelineTest() throws Exception {
-		BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
-		StreamOperator svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
+		BatchOperator<?> vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
+		StreamOperator<?> svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
 		Pipeline pl = new Pipeline().add(softmax).add(vsoftmax).add(svsoftmax).add(vssoftmax);
 
 		PipelineModel model = pl.fit(vecdata);
 
-		BatchOperator result = model.transform(vecdata).select(
+		BatchOperator<?> result = model.transform(vecdata).select(
 			new String[] {"label", "predLr", "vpredLr", "svpredLr"});
 
-		List <Row> data = result.collect();
+		List <Row> data = result.lazyPrint(100).collect();
 		for (Row row : data) {
 			for (int i = 1; i < 3; ++i) {
 				Assert.assertEquals(row.getField(0), row.getField(i));
@@ -108,18 +97,35 @@ public class SoftmaxTest extends AlinkTestBase {
 		}
 
 		// below is stream test code
-		model.transform(svecdata).print();
+
+		// below is stream test code.
+		CollectSinkStreamOp sop = model.transform(svecdata).select(
+			new String[] {"label", "predLr", "vpredLr", "svpredLr"}).link(new CollectSinkStreamOp());
 		StreamOperator.execute();
+
+		List <Row> rows = sop.getAndRemoveValues();
+
+		for (Row row : rows) {
+			for (int i = 1; i < 3; ++i) {
+				Assert.assertEquals(row.getField(0), row.getField(i));
+			}
+		}
 	}
 
 	@Test
-	public void pipelineTest1() throws Exception {
-		BatchOperator vecmdata = new MemSourceBatchOp(Arrays.asList(vecmrows), veccolNames);
+	public void pipelineTest1() {
+		BatchOperator<?> vecmdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
 
 		Pipeline pl = new Pipeline().add(softmax).add(vsoftmax).add(svsoftmax).add(vssoftmax);
 
 		PipelineModel modelm = pl.fit(vecmdata);
 
-		modelm.transform(vecmdata).select(new String[] {"label", "predLr", "vpredLr", "svpredLr"}).print();
+		List <Row> data = modelm.transform(vecmdata)
+			.select(new String[] {"label", "predLr", "vpredLr", "svpredLr"}).collect();
+		for (Row row : data) {
+			for (int i = 1; i < 3; ++i) {
+				Assert.assertEquals(row.getField(0), row.getField(i));
+			}
+		}
 	}
 }

@@ -1,34 +1,56 @@
 package com.alibaba.alink.operator.batch.graph;
 
-import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.CoGroupFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.functions.MapPartitionFunction;
-import org.apache.flink.api.common.functions.Partitioner;
-import org.apache.flink.api.common.functions.RichCoGroupFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
+import org.apache.flink.api.common.operators.Order;
+import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.functions.KeySelector;
+import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.operators.IterativeDataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.graph.Edge;
+import org.apache.flink.api.java.tuple.Tuple4;
+import org.apache.flink.api.java.tuple.Tuple5;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
+import org.apache.flink.util.NumberSequenceIterator;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.graph.RandomWalkBatchOp.RandomWalkCommunicationUnit;
+import com.alibaba.alink.operator.batch.graph.storage.GraphEdge;
+import com.alibaba.alink.operator.batch.graph.storage.HeteGraphEngine;
+import com.alibaba.alink.operator.batch.graph.utils.ComputeGraphStatistics;
+import com.alibaba.alink.operator.batch.graph.utils.ConstructHeteEdge;
+import com.alibaba.alink.operator.batch.graph.utils.EndWritingRandomWalks;
+import com.alibaba.alink.operator.batch.graph.utils.GraphPartition.GraphPartitionFunction;
+import com.alibaba.alink.operator.batch.graph.utils.GraphPartition.GraphPartitionHashFunction;
+import com.alibaba.alink.operator.batch.graph.utils.GraphPartition.GraphPartitioner;
+import com.alibaba.alink.operator.batch.graph.utils.GraphStatistics;
+import com.alibaba.alink.operator.batch.graph.utils.IDMappingUtils;
+import com.alibaba.alink.operator.batch.graph.utils.LongArrayToRow;
+import com.alibaba.alink.operator.batch.graph.utils.RandomWalkMemoryBuffer;
+import com.alibaba.alink.operator.batch.graph.utils.ParseGraphData;
+import com.alibaba.alink.operator.batch.graph.utils.ReadFromBufferAndRemoveStaticObject;
+import com.alibaba.alink.operator.batch.graph.utils.RecvRequestKeySelector;
+import com.alibaba.alink.operator.batch.graph.utils.SendRequestKeySelector;
+import com.alibaba.alink.operator.batch.graph.utils.HandleReceivedMessage;
+import com.alibaba.alink.operator.batch.graph.walkpath.MetaPathWalkPathEngine;
 import com.alibaba.alink.params.nlp.walk.MetaPathWalkParams;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * This algorithm realizes the metaPath Walk.
@@ -38,14 +60,16 @@ import java.util.Random;
  * If a walk terminals before reach the walk length, it won't continue and
  * we only need to return this short walk.
  */
-public final class MetaPathWalkBatchOp extends BatchOperator <MetaPathWalkBatchOp>
+
+public class MetaPathWalkBatchOp extends BatchOperator <MetaPathWalkBatchOp>
 	implements MetaPathWalkParams <MetaPathWalkBatchOp> {
 
 	public static final String PATH_COL_NAME = "path";
+	public static final String GRAPH_STATISTICS = "graphStatistics";
 	private static final long serialVersionUID = -4645013343119976771L;
 
 	public MetaPathWalkBatchOp() {
-		super(new Params());
+		this(new Params());
 	}
 
 	public MetaPathWalkBatchOp(Params params) {
@@ -70,652 +94,485 @@ public final class MetaPathWalkBatchOp extends BatchOperator <MetaPathWalkBatchO
 		int node1Idx = TableUtil.findColIndexWithAssertAndHint(in1.getColNames(), node1ColName);
 		int valueIdx = (valueColName == null) ? -1 : TableUtil.findColIndexWithAssertAndHint(in1.getColNames(),
 			valueColName);
+
 		String vertexColName = getVertexCol();
 		String typeColName = getTypeCol();
 		int vertexIdx = TableUtil.findColIndexWithAssertAndHint(in2.getColNames(), vertexColName);
 		int typeIdx = TableUtil.findColIndexWithAssertAndHint(in2.getColNames(), typeColName);
 		String metaPath = getMetaPath();
-		boolean isWeightedSampling = (valueColName == null || valueColName.isEmpty()) ? false : true;
+		boolean isWeightedSampling = valueColName != null && !valueColName.isEmpty();
 		String[] metaPaths = metaPath.split(",");
 		for (int i = 0; i < metaPaths.length; ++i) {
 			metaPaths[i] = metaPaths[i].trim();
 		}
 
-		DataSet <Edge <String, Double>>
-			edge = WalkUtils.buildEdge(in1.getDataSet(), node0Idx, node1Idx, valueIdx, isToUnDigraph);
-		DataSet <Tuple2 <String, Integer>> nodeMapping = WalkUtils.getStringIndexMapping(edge);
-		DataSet <Edge <Integer, Double>> initEdge = WalkUtils.string2Index(edge, nodeMapping);
+		List <char[]> metaPathList = new ArrayList <>(metaPaths.length);
+		for (int i = 0; i < metaPaths.length; i++) {
+			metaPathList.add(metaPaths[i].toCharArray());
+		}
 
-		/* construct node with type */
-		final DataSet <Tuple2 <Integer, Character>> node = in2.getDataSet().map(
-			new MapFunction <Row, Tuple2 <String, Character>>() {
-				private static final long serialVersionUID = 226753315032066559L;
+		// we should parse string to long first.
+		TypeInformation <?> node0Type = in1.getColTypes()[node0Idx];
+		TypeInformation <?> node1Type = in1.getColTypes()[node1Idx];
+		DataSet <Tuple2 <String, Long>> nodeMapping = null;
+		DataSet <Row> mappedDataSet = null;
+		DataSet <Row> mappedNodeTypes = null;
+		boolean needRemapping = !((node0Type == BasicTypeInfo.LONG_TYPE_INFO
+			&& node1Type == BasicTypeInfo.LONG_TYPE_INFO) || (node0Type == BasicTypeInfo.INT_TYPE_INFO
+			&& node1Type == BasicTypeInfo.INT_TYPE_INFO));
 
+		if (needRemapping) {
+			nodeMapping = IDMappingUtils.computeIdMapping(in1.getDataSet(), new int[] {node0Idx, node1Idx});
+			mappedDataSet = IDMappingUtils.mapDataSetWithIdMapping(in1.getDataSet(), nodeMapping,
+				new int[] {node0Idx, node1Idx});
+			mappedNodeTypes = IDMappingUtils.mapDataSetWithIdMapping(in2.getDataSet(), nodeMapping,
+				new int[] {vertexIdx});
+		} else {
+			mappedDataSet = in1.getDataSet();
+			mappedNodeTypes = in2.getDataSet();
+		}
+
+		GraphPartitionFunction graphPartitionFunction = new GraphPartitionHashFunction();
+		// do preprocessing
+		DataSet <Tuple3 <Long, Long, Double>> parsedEdge = mappedDataSet.flatMap(
+			new ParseGraphData(node0Idx, node1Idx, valueIdx, isToUnDigraph))
+			.name("parsedEdge");
+		DataSet <Tuple2 <Long, Character>> parsedVertexType = mappedNodeTypes.map(
+			new ParseNodeType(vertexIdx, typeIdx))
+			.name("parsedVertexType");
+
+		DataSet <Tuple4 <Long, Long, Double, Character>> edgeWithDstType = parsedEdge.coGroup(parsedVertexType)
+			.where(1).equalTo(0)
+			.with(new ConcatDstNodeType())
+			.name("edgeWithDstType");
+
+		DataSet <GraphEdge> parsedAndPartitionedAndSortedGraph =
+			edgeWithDstType.coGroup(parsedVertexType).where(0).equalTo(0)
+				.with(new ConcatSrcNodeType())
+				.partitionCustom(new GraphPartitioner(graphPartitionFunction), 0)
+				.sortPartition(0, Order.ASCENDING)
+				.sortPartition(4, Order.ASCENDING)
+				.map(new ConstructHeteEdge())
+			.name("parsedAndPartitionedAndSortedGraph");
+
+		DataSet <GraphStatistics> graphStatistics = parsedAndPartitionedAndSortedGraph.mapPartition(
+			new ComputeGraphStatistics())
+			.name("graphStatistics");
+		long graphStorageHandler = IterTaskObjKeeper.getNewHandle();
+		long randomWalkStorageHandler = IterTaskObjKeeper.getNewHandle();
+		long walkWriteBufferHandler = IterTaskObjKeeper.getNewHandle();
+		long walkReadBufferHandler = IterTaskObjKeeper.getNewHandle();
+		// walkWriteBufferHandler and walkReadBufferHandler points to the same object
+
+		final ExecutionEnvironment currentEnv = MLEnvironmentFactory.get(getMLEnvironmentId())
+			.getExecutionEnvironment();
+		DataSet <MetaPathCommunicationUnit> initData = currentEnv
+			.fromParallelCollection(new NumberSequenceIterator(1L, currentEnv.getParallelism()),
+				BasicTypeInfo.LONG_TYPE_INFO)
+			.map(new MapFunction <Long, MetaPathCommunicationUnit>() {
 				@Override
-				public Tuple2 <String, Character> map(Row row) throws Exception {
-					String vertex = row.getField(vertexIdx).toString();
-					Character type = ((String) row.getField(typeIdx)).charAt(0);
-					return Tuple2.of(vertex, type);
+				public MetaPathCommunicationUnit map(Long value) throws Exception {
+					return new MetaPathCommunicationUnit(1, 1, null, null, null);
 				}
-			}).coGroup(nodeMapping).where(0).equalTo(0).with(
-			new RichCoGroupFunction <Tuple2 <String, Character>, Tuple2 <String, Integer>, Tuple2 <Integer,
-				Character>>() {
-				private static final long serialVersionUID = -4731904120133947181L;
+			})
+			.name("initData");
+		IterativeDataSet <MetaPathCommunicationUnit> loop = initData.iterate(Integer.MAX_VALUE).name("loop");
 
+		DataSet <MetaPathCommunicationUnit> cachedGraphAndRandomWalk = parsedAndPartitionedAndSortedGraph.mapPartition(
+			new CacheGraphAndRandomWalk(graphStorageHandler, randomWalkStorageHandler, walkWriteBufferHandler,
+				walkReadBufferHandler, walkNum, walkLength, isWeightedSampling, getSamplingMethod(),
+				metaPathList, graphPartitionFunction))
+			.withBroadcastSet(graphStatistics, GRAPH_STATISTICS)
+			.withBroadcastSet(loop, "loop")
+			.name("cachedGraphAndRandomWalk");
+
+		// get neighbors for remote sampling
+		DataSet <MetaPathCommunicationUnit> sendCommunicationUnit = cachedGraphAndRandomWalk.mapPartition(
+			new GetMessageToSend(graphStorageHandler, randomWalkStorageHandler, walkWriteBufferHandler,
+				graphPartitionFunction)
+		).name("sendCommunicationUnit");
+
+		DataSet <MetaPathCommunicationUnit> recvCommunicationUnit = sendCommunicationUnit
+			.partitionCustom(new GraphPartitioner(graphPartitionFunction),
+				new SendRequestKeySelector <MetaPathCommunicationUnit>())
+			.mapPartition(new DoRemoteProcessing(graphStorageHandler))
+			.partitionCustom(new GraphPartitioner(graphPartitionFunction),
+				new RecvRequestKeySelector <MetaPathCommunicationUnit>())
+			.name("recvCommunicationUnit");
+
+		DataSet <MetaPathCommunicationUnit> finishedOneStep = recvCommunicationUnit.mapPartition(
+			new HandleReceivedMessage <MetaPathCommunicationUnit>(randomWalkStorageHandler)
+		).name("finishedOneStep");
+
+		DataSet <Object> termination = sendCommunicationUnit.map(
+			new MapFunction <MetaPathCommunicationUnit, Object>() {
 				@Override
-				public void coGroup(Iterable <Tuple2 <String, Character>> first,
-									Iterable <Tuple2 <String, Integer>> second,
-									Collector <Tuple2 <Integer, Character>> out) throws Exception {
-					Integer node = null;
-					for (Tuple2 <String, Integer> t2 : second) {
-						node = t2.f1;
-					}
-					if (node != null) {
-						for (Tuple2 <String, Character> e : first) {
-							out.collect(Tuple2.of(node, e.f1));
-						}
-					}
-				}
-			}).name("cogroup_node_string2int");
-
-		/* construct edge right with node type */
-		DataSet <Tuple3 <Integer, Tuple2 <Integer, Character>, Double>>
-			edge1WithType = initEdge.coGroup(node)
-			.where(1).equalTo(0).with(
-				new RichCoGroupFunction <Edge <Integer, Double>, Tuple2 <Integer, Character>, Tuple3 <Integer,
-					Tuple2 <Integer, Character>, Double>>() {
-					private static final long serialVersionUID = -5083781984737756019L;
-
-					@Override
-					public void coGroup(Iterable <Edge <Integer, Double>> edges,
-										Iterable <Tuple2 <Integer, Character>> nodes,
-										Collector <Tuple3 <Integer, Tuple2 <Integer, Character>, Double>> out)
-						throws Exception {
-						Character node = null;
-						for (Tuple2 <Integer, Character> t2 : nodes) {
-							node = t2.f1;
-						}
-						if (node != null) {
-							for (Edge <Integer, Double> edge : edges) {
-
-								out.collect(Tuple3.of(edge.f0, Tuple2.of(edge.f1, node), edge.f2));
-							}
-						}
-					}
-				});
-
-		/* construct edge left with node type */
-		DataSet <Tuple3 <Tuple2 <Integer, Character>, Integer, Double>>
-			edge0WithType = initEdge.coGroup(node).where(0).equalTo(0).with(
-			new RichCoGroupFunction <Edge <Integer, Double>, Tuple2 <Integer, Character>, Tuple3 <Tuple2 <Integer,
-				Character>,
-				Integer, Double>>() {
-				private static final long serialVersionUID = -6152308307872186565L;
-
-				@Override
-				public void coGroup(Iterable <Edge <Integer, Double>> edges,
-									Iterable <Tuple2 <Integer, Character>> nodes,
-									Collector <Tuple3 <Tuple2 <Integer, Character>, Integer, Double>> out)
+				public Object map(MetaPathCommunicationUnit value)
 					throws Exception {
-					Character node = null;
-					for (Tuple2 <Integer, Character> t2 : nodes) {
-						node = t2.f1;
-					}
-					if (node != null) {
-						for (Edge <Integer, Double> edge : edges) {
-
-							out.collect(Tuple3.of(Tuple2.of(edge.f0, node), edge.f1, edge.f2));
-						}
-					}
+					return new Object();
 				}
-			});
+			})
+			.name("termination");
 
-		/* random walk with metaPath */
-		DataSet <Integer[]> path =
-			isWeightedSampling ? weightedSampling(edge0WithType, edge1WithType, nodeMapping, walkNum, walkLength,
-				metaPaths) :
-				randomSampling(edge0WithType, edge1WithType, nodeMapping, walkNum, walkLength, metaPaths);
+		DataSet <MetaPathCommunicationUnit> output = loop.closeWith(finishedOneStep, termination);
+		DataSet <long[]> emptyOut = output.mapPartition(
+			new EndWritingRandomWalks <MetaPathCommunicationUnit>(walkWriteBufferHandler))
+			.name("emptyOut")
+			.withBroadcastSet(output, "output");
 
-		DataSet <String[]> out = WalkUtils.index2String(path, nodeMapping, walkLength);
-		setOutputTable(WalkUtils.transString(out, new String[] {PATH_COL_NAME}, delimiter, getMLEnvironmentId()));
+		DataSet <long[]> memoryOut = currentEnv
+			.fromParallelCollection(new NumberSequenceIterator(0L, currentEnv.getParallelism()), BasicTypeInfo.LONG_TYPE_INFO)
+			.mapPartition(new ReadFromBufferAndRemoveStaticObject <>(graphStorageHandler,
+				randomWalkStorageHandler, walkReadBufferHandler, delimiter))
+			.name("memoryOut");
+		DataSet <long[]> mergedOutput = memoryOut.union(emptyOut)
+			.name("mergedOutput");
+
+		DataSet <Row> finalOutput = null;
+		if (needRemapping) {
+			finalOutput = IDMappingUtils.mapWalkToStringWithIdMapping(mergedOutput, nodeMapping, walkLength,
+				delimiter);
+		} else {
+			finalOutput = mergedOutput.map(new LongArrayToRow(delimiter)).name("finalOutput");
+		}
+		setOutput(finalOutput, new TableSchema(new String[] {PATH_COL_NAME},
+			new TypeInformation[] {Types.STRING}));
+
 		return this;
 	}
 
-	private DataSet <Integer[]> randomSampling(
-		DataSet <Tuple3 <Tuple2 <Integer, Character>, Integer, Double>> edge0WithType,
-		DataSet <Tuple3 <Integer, Tuple2 <Integer, Character>, Double>> edge1WithType,
-		DataSet <Tuple2 <String, Integer>> nodeMapping,
-		int walkNum,
-		int walkLength,
-		final String[] metaPaths) {
+	static class CacheGraphAndRandomWalk extends RichMapPartitionFunction <GraphEdge, MetaPathCommunicationUnit> {
+		long graphStorageHandler;
+		long randomWalkStorageHandler;
+		long walkWriteBufferHandler;
+		long walkReadBufferHandler;
+		int numWalkPerVertex;
+		int walkLen;
+		boolean isWeighted;
+		String samplingMethod;
+		List <char[]> metaPaths;
+		GraphPartitionFunction graphPartitionFunction;
 
-		/* construct neighbors of every node */
-		DataSet <Tuple2 <Integer, Map <Character, List <Integer>>>>
-			neighbours = edge1WithType.groupBy(0).reduceGroup(
-			new GroupReduceFunction <Tuple3 <Integer, Tuple2 <Integer, Character>, Double>,
-				Tuple2 <Integer, Map <Character, List <Integer>>>>() {
-				private static final long serialVersionUID = 2156066724541299383L;
-
-				@Override
-				public void reduce(
-					Iterable <Tuple3 <Integer, Tuple2 <Integer, Character>, Double>> values,
-					Collector <Tuple2 <Integer, Map <Character, List <Integer>>>> out)
-					throws Exception {
-					Integer left = null;
-					Map <Character, List <Integer>> neighbours = new HashMap <>(0);
-					boolean first = true;
-					for (Tuple3 <Integer, Tuple2 <Integer, Character>, Double> e : values) {
-						if (first) {
-							left = e.f0;
-							first = false;
-						}
-						if (neighbours.containsKey(e.f1.f1)) {
-							neighbours.get(e.f1.f1).add(e.f1.f0);
-						} else {
-							List <Integer> neighbour = new ArrayList <>();
-							neighbour.add(e.f1.f0);
-							neighbours.put(e.f1.f1, neighbour);
-						}
-					}
-					out.collect(Tuple2.of(left, neighbours));
-				}
-			});
-
-		/**
-		 * then write the start point into the arrays.
-		 * Tuple3: StartNode, MetaPath, path
-		 */
-		DataSet <Tuple2 <String, Integer[]>> path = edge0WithType
-			.filter(
-				new FilterFunction <Tuple3 <Tuple2 <Integer, Character>, Integer, Double>>() {
-					private static final long serialVersionUID = 6034985627961192240L;
-
-					@Override
-					public boolean filter(Tuple3 <Tuple2 <Integer, Character>, Integer, Double> t3)
-						throws Exception {
-						for (int i = 0; i < metaPaths.length; ++i) {
-							if (t3.f0.f1 == metaPaths[i].charAt(0)) {
-								return true;
-							}
-						}
-						return false;
-					}
-				})
-			.distinct(0)
-			.mapPartition(new InitialMap(walkNum, walkLength, metaPaths));
-
-		DataSet <Integer> broadcastVar = nodeMapping.mapPartition(
-			new RichMapPartitionFunction <Tuple2 <String, Integer>, Integer>() {
-				private static final long serialVersionUID = -1160705555930115133L;
-
-				@Override
-				public void mapPartition(Iterable <Tuple2 <String, Integer>> values, Collector <Integer> out)
-					throws Exception {
-					if (getRuntimeContext().getIndexOfThisSubtask() == 0) {
-						out.collect(1);
-					}
-				}
-			});
-
-		/* construct state of iteration */
-		IterativeDataSet <Integer[]> state = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment()
-			.fromElements(1).map(new MapFunction <Integer, Integer[]>() {
-				private static final long serialVersionUID = -3466588946761656087L;
-
-				@Override
-				public Integer[] map(Integer value) throws Exception {
-					return new Integer[1];
-				}
-			}).withBroadcastSet(broadcastVar, "broadVar").iterate(walkLength);
-
-		final long stateHandler = IterTaskObjKeeper.getNewHandle();
-
-		/* Tuple4 : taskId, MetaPath, startNode, currentNode */
-		DataSet <Tuple3 <Integer, String, Integer>> localPath = getLocalPath(path, state, stateHandler);
-		/* Tuple4 : taskId, MetaPath, startNode, forwardNode */
-		DataSet <Tuple3 <Integer, String, Integer>> third = localPath.coGroup(neighbours)
-			.where(new SelectKeyFormer())
-			.equalTo(new SelectKeyLatterWithoutWeight())
-			.with(new RandomSampling()).name("iter_cogroup")
-			.partitionCustom(new Partitioner <Integer>() {
-				private static final long serialVersionUID = 4212110668677476836L;
-
-				@Override
-				public int partition(Integer key, int numPartitions) {
-					return key % numPartitions;
-				}
-			}, 0);
-
-		/* update new State by local path */
-		DataSet <Integer[]> newState = updateState(third, stateHandler, walkLength);
-
-		DataSet <Integer[]> out = state.closeWith(newState);
-		IterTaskObjKeeper.clear(stateHandler);
-		return out;
-	}
-
-	private DataSet <Integer[]> weightedSampling(
-		DataSet <Tuple3 <Tuple2 <Integer, Character>, Integer, Double>> edge0WithType,
-		DataSet <Tuple3 <Integer, Tuple2 <Integer, Character>, Double>> edge1WithType,
-		DataSet <Tuple2 <String, Integer>> nodeMapping,
-		int walkNum,
-		int walkLength,
-		final String[] metaPaths) {
-		/* construct neighbors of every node */
-		DataSet <Tuple2 <Integer, Tuple2 <Character, Tuple2 <Integer, Double>[]>>>
-			neighbours = edge1WithType.groupBy(0).reduceGroup(
-			new GroupReduceFunction <Tuple3 <Integer, Tuple2 <Integer, Character>, Double>,
-				Tuple2 <Integer, Map <Character, List <Tuple2 <Integer, Double>>>>>() {
-
-				private static final long serialVersionUID = -2366618719301937344L;
-
-				@Override
-				public void reduce(Iterable <Tuple3 <Integer, Tuple2 <Integer, Character>, Double>> values,
-								   Collector <Tuple2 <Integer, Map <Character, List <Tuple2 <Integer, Double>>>>> out)
-					throws Exception {
-					List <Tuple3 <Integer, Tuple2 <Integer, Character>, Double>> ret = new ArrayList <>(0);
-					Map <Character, double[]> sums = new HashMap <>(0);
-					for (Tuple3 <Integer, Tuple2 <Integer, Character>, Double> ele : values) {
-						if (sums.containsKey(ele.f1.f1)) {
-							sums.get(ele.f1.f1)[0] += ele.f2;
-						} else {
-							sums.put(ele.f1.f1, new double[] {ele.f2});
-						}
-						ele.f2 = sums.get(ele.f1.f1)[0];
-						ret.add(ele);
-					}
-
-					for (Tuple3 <Integer, Tuple2 <Integer, Character>, Double> ele : ret) {
-						ele.f2 /= sums.get(ele.f1.f1)[0];
-					}
-
-					Integer left = null;
-					Map <Character, List <Tuple2 <Integer, Double>>> neighbours = new HashMap <>(0);
-					boolean first = true;
-					for (Tuple3 <Integer, Tuple2 <Integer, Character>, Double> e : ret) {
-						if (first) {
-							left = e.f0;
-							first = false;
-						}
-						if (neighbours.containsKey(e.f1.f1)) {
-							neighbours.get(e.f1.f1).add(Tuple2.of(e.f1.f0, e.f2));
-						} else {
-							List <Tuple2 <Integer, Double>> neighbour = new ArrayList <>();
-							neighbour.add(Tuple2.of(e.f1.f0, e.f2));
-							neighbours.put(e.f1.f1, neighbour);
-						}
-					}
-					out.collect(Tuple2.of(left, neighbours));
-				}
-			}).flatMap(
-			new FlatMapFunction <Tuple2 <Integer, Map <Character, List <Tuple2 <Integer, Double>>>>, Tuple2 <Integer,
-				Tuple2 <Character, Tuple2 <Integer, Double>[]>>>() {
-				private static final long serialVersionUID = -723668678350346753L;
-
-				@Override
-				public void flatMap(Tuple2 <Integer, Map <Character, List <Tuple2 <Integer, Double>>>> value,
-									Collector <Tuple2 <Integer, Tuple2 <Character, Tuple2 <Integer, Double>[]>>> out)
-					throws Exception {
-					final int SIZE = 20000;
-					for (Character chara : value.f1.keySet()) {
-						List <Tuple2 <Integer, Double>> list = value.f1.get(chara);
-						if (list.size() > SIZE) {
-							int collectSize = list.size() / SIZE;
-							for (int i = 0; i < collectSize; ++i) {
-								Tuple2 <Integer, Double>[] neighbors = new Tuple2[SIZE];
-								for (int j = 0; j < SIZE; ++j) {
-									neighbors[j] = list.get(i * SIZE + j);
-								}
-								out.collect(Tuple2.of(value.f0, Tuple2.of(chara, neighbors)));
-							}
-							int leftSize = list.size() % SIZE;
-							Tuple2 <Integer, Double>[] neighbors = new Tuple2[leftSize];
-							for (int j = 0; j < leftSize; ++j) {
-								neighbors[j] = list.get(collectSize * SIZE + j);
-							}
-							out.collect(Tuple2.of(value.f0, Tuple2.of(chara, neighbors)));
-						} else {
-							Tuple2 <Integer, Double>[] neighbors = new Tuple2[list.size()];
-							for (int i = 0; i < neighbors.length; ++i) {
-								neighbors[i] = list.get(i);
-							}
-							out.collect(Tuple2.of(value.f0, Tuple2.of(chara, neighbors)));
-						}
-					}
-				}
-			});
-
-		/**
-		 * then write the start point into the arrays.
-		 * Tuple3: StartNode, MetaPath, path
-		 */
-		DataSet <Tuple2 <String, Integer[]>> path = edge0WithType
-			.filter(
-				new FilterFunction <Tuple3 <Tuple2 <Integer, Character>, Integer, Double>>() {
-					private static final long serialVersionUID = -2839052759232259899L;
-
-					@Override
-					public boolean filter(Tuple3 <Tuple2 <Integer, Character>, Integer, Double> t3)
-						throws Exception {
-						for (int i = 0; i < metaPaths.length; ++i) {
-							if (t3.f0.f1 == metaPaths[i].charAt(0)) {
-								return true;
-							}
-						}
-						return false;
-					}
-				})
-			.distinct(0)
-			.mapPartition(new InitialMap(walkNum, walkLength, metaPaths));
-
-		DataSet <Integer> broadcastVar = nodeMapping.mapPartition(
-			new RichMapPartitionFunction <Tuple2 <String, Integer>, Integer>() {
-				private static final long serialVersionUID = 8351561691743725167L;
-
-				@Override
-				public void mapPartition(Iterable <Tuple2 <String, Integer>> values, Collector <Integer> out)
-					throws Exception {
-					if (getRuntimeContext().getIndexOfThisSubtask() == 0) {
-						out.collect(1);
-					}
-				}
-			});
-
-		IterativeDataSet <Integer[]> state = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment()
-			.fromElements(1).map(new MapFunction <Integer, Integer[]>() {
-				private static final long serialVersionUID = 4182523518453372899L;
-
-				@Override
-				public Integer[] map(Integer value) throws Exception {
-					return new Integer[1];
-				}
-			}).withBroadcastSet(broadcastVar, "broadVar").iterate(walkLength);
-
-		final long stateHandler = IterTaskObjKeeper.getNewHandle();
-
-		/* Tuple4 : taskId, MetaPath, startNode, currentNode */
-		DataSet <Tuple3 <Integer, String, Integer>> localPath = getLocalPath(path, state, stateHandler);
-		/* Tuple4 : taskId, MetaPath, startNode, forwardNode */
-		DataSet <Tuple3 <Integer, String, Integer>> third = localPath.coGroup(neighbours)
-			.where(new SelectKeyFormer())
-			.equalTo(new SelectKeyLatterWithWeight())
-			.with(new WeightedSampling()).name("iter_cogroup")
-			.partitionCustom(new Partitioner <Integer>() {
-				private static final long serialVersionUID = 2926197091531494593L;
-
-				@Override
-				public int partition(Integer key, int numPartitions) {
-					return key % numPartitions;
-				}
-			}, 0);
-
-		DataSet <Integer[]> newState = updateState(third, stateHandler, walkLength);
-		DataSet <Integer[]> out = state.closeWith(newState);
-		IterTaskObjKeeper.clear(stateHandler);
-		return out;
-	}
-
-	DataSet <Tuple3 <Integer, String, Integer>> getLocalPath(DataSet <Tuple2 <String, Integer[]>> path,
-															 IterativeDataSet <Integer[]> state,
-															 final long stateHandler) {
-		DataSet <Tuple3 <Integer, String, Integer>> localPath = path
-			.mapPartition(
-				new RichMapPartitionFunction <Tuple2 <String, Integer[]>, Tuple3 <Integer, String,
-					Integer>>() {
-					private static final long serialVersionUID = -6216487264288311779L;
-
-					@Override
-					public void mapPartition(Iterable <Tuple2 <String, Integer[]>> values,
-											 Collector <Tuple3 <Integer, String, Integer>> out)
-						throws Exception {
-						int taskId = getRuntimeContext().getIndexOfThisSubtask();
-						if (getIterationRuntimeContext().getSuperstepNumber() == 1) {
-							List <Tuple2 <String, Integer[]>> localState = new ArrayList <>();
-							for (Tuple2 <String, Integer[]> t2 : values) {
-								localState.add(t2);
-								out.collect(
-									Tuple3.of(getRuntimeContext().getIndexOfThisSubtask(), t2.f0, t2.f1[0]));
-							}
-							IterTaskObjKeeper.put(stateHandler, taskId, localState);
-						} else {
-							List <Tuple2 <String, Integer[]>> localState = IterTaskObjKeeper.get(stateHandler,
-								taskId);
-							for (Tuple2 <String, Integer[]> t3 : localState) {
-								int idx = getIterationRuntimeContext().getSuperstepNumber() - 1;
-
-								out.collect(Tuple3.of(getRuntimeContext().getIndexOfThisSubtask(), t3.f0,
-									(t3.f1[idx] != null) ? t3.f1[idx] : -1));
-							}
-						}
-					}
-				}).withBroadcastSet(state, "state");
-		return localPath;
-	}
-
-	DataSet <Integer[]> updateState(DataSet <Tuple3 <Integer, String, Integer>> third, final long stateHandler,
-									final int walkLength) {
-		return third.mapPartition(
-			new RichMapPartitionFunction <Tuple3 <Integer, String, Integer>, Integer[]>() {
-				private static final long serialVersionUID = 5659302167710724581L;
-
-				@Override
-				public void mapPartition(Iterable <Tuple3 <Integer, String, Integer>> values,
-										 Collector <Integer[]> out)
-					throws Exception {
-					int taskId = getRuntimeContext().getIndexOfThisSubtask();
-					List <Tuple2 <String, Integer[]>> localState = IterTaskObjKeeper.get(stateHandler,
-						taskId);
-					if (getIterationRuntimeContext().getSuperstepNumber() < walkLength) {
-						// update path
-						Map <String, Integer> nodeMap = new HashMap <>(0);
-						for (Tuple3 <Integer, String, Integer> t2 : values) {
-							nodeMap.put(t2.f1, t2.f2);
-						}
-						for (Tuple2 <String, Integer[]> t2 : localState) {
-							Integer node = nodeMap.get(t2.f0);
-							if (node != -1) {
-								t2.f1[getIterationRuntimeContext().getSuperstepNumber()] = node;
-							}
-						}
-						out.collect(new Integer[1]);
-					} else {
-
-						for (Tuple2 <String, Integer[]> t2 : localState) {
-							out.collect(t2.f1);
-						}
-					}
-				}
-			});
-
-	}
-
-	protected static class WeightedSampling extends
-		RichCoGroupFunction <Tuple3 <Integer, String, Integer>,
-			Tuple2 <Integer, Tuple2 <Character, Tuple2 <Integer, Double>[]>>, Tuple3 <Integer, String, Integer>> {
-
-		private static final long serialVersionUID = 1882571426241944564L;
-		private Random rand;
-
-		public WeightedSampling() {
-			rand = new Random(2019);
-
-		}
-
-		/**
-		 * in the coGroup step, we need to get all the neighbors from the iterable second and then sort it.
-		 */
-		@Override
-		public void coGroup(Iterable <Tuple3 <Integer, String, Integer>> first,
-							Iterable <Tuple2 <Integer, Tuple2 <Character, Tuple2 <Integer, Double>[]>>> second,
-							Collector <Tuple3 <Integer, String, Integer>> out) throws Exception {
-			//look for all the neighbors.
-			int step = getIterationRuntimeContext().getSuperstepNumber();
-			Map <Character, List <Tuple2 <Integer, Double>[]>> tmpNeighbours = new HashMap <>();
-			Map <Character, Tuple2 <Integer, Double>[]> neighbours = new HashMap <>();
-			for (Tuple2 <Integer, Tuple2 <Character, Tuple2 <Integer, Double>[]>> ele : second) {
-				if (tmpNeighbours.containsKey(ele.f1.f0)) {
-					tmpNeighbours.get(ele.f1.f0).add(ele.f1.f1);
-				} else {
-					List <Tuple2 <Integer, Double>[]> list = new ArrayList <>();
-					list.add(ele.f1.f1);
-					tmpNeighbours.put(ele.f1.f0, list);
-				}
-			}
-
-			for (Character key : tmpNeighbours.keySet()) {
-				List <Tuple2 <Integer, Double>[]> list = tmpNeighbours.get(key);
-				int size = 0;
-				for (Tuple2 <Integer, Double>[] ele : list) {
-					size += ele.length;
-				}
-				Tuple2 <Integer, Double>[] neis = new Tuple2[size];
-				int iter = 0;
-				for (Tuple2 <Integer, Double>[] ele : list) {
-					for (int i = 0; i < ele.length; ++i) {
-						neis[iter++] = ele[i];
-					}
-				}
-				neighbours.put(key, neis);
-			}
-
-			if (neighbours == null) {
-				for (Tuple3 <Integer, String, Integer> t2 : first) {
-					t2.f2 = -1;
-					out.collect(t2);
-				}
-			} else {
-				for (Tuple3 <Integer, String, Integer> t2 : first) {
-					if (t2.f2 != -1) {
-						int pos = t2.f1.indexOf("$");
-						String metaPath = t2.f1.substring(pos + 1, t2.f1.length());
-						char currentType = metaPath.charAt((step - 1) % metaPath.length());
-
-						Tuple2 <Integer, Double>[] aNeighbours = neighbours.get(currentType);
-						if (aNeighbours == null) {
-							t2.f2 = -1;
-							out.collect(t2);
-						} else {
-							t2.f2 = WalkUtils.weightSample(aNeighbours, rand);
-						}
-					}
-					out.collect(t2);
-				}
-			}
-		}
-	}
-
-	protected static class InitialMap
-		implements
-		MapPartitionFunction <Tuple3 <Tuple2 <Integer, Character>, Integer, Double>, Tuple2 <String, Integer[]>> {
-		private static final long serialVersionUID = -5512217778019957179L;
-		private Integer walkNum;
-		private int walkLength;
-		private String[] metaPaths;
-
-		private InitialMap(Integer walkNum, int walkLength, String[] metaPaths) {
-			this.walkNum = walkNum;
-			this.walkLength = walkLength;
+		public CacheGraphAndRandomWalk(long graphStorageHandler, long randomWalkStorageHandler,
+									   long walkWriteBufferHandler,
+									   long walkReadBufferHandler,
+									   int numWalkPerVertex, int walkLen, boolean isWeighted, String samplingMethod,
+									   List <char[]> metaPaths, GraphPartitionFunction graphPartitionFunction) {
+			this.graphStorageHandler = graphStorageHandler;
+			this.randomWalkStorageHandler = randomWalkStorageHandler;
+			this.walkWriteBufferHandler = walkWriteBufferHandler;
+			this.walkReadBufferHandler = walkReadBufferHandler;
+			this.numWalkPerVertex = numWalkPerVertex;
+			this.walkLen = walkLen;
+			this.isWeighted = isWeighted;
+			this.samplingMethod = samplingMethod;
 			this.metaPaths = metaPaths;
+			this.graphPartitionFunction = graphPartitionFunction;
 		}
 
 		@Override
-		public void mapPartition(
-			Iterable <Tuple3 <Tuple2 <Integer, Character>, Integer, Double>> values,
-			Collector <Tuple2 <String, Integer[]>> out) throws Exception {
-			for (Tuple3 <Tuple2 <Integer, Character>, Integer, Double> edge : values) {
-				for (int i = 0; i < walkNum; i++) {
-					Integer[] temp = new Integer[walkLength];
-					for (int j = 0; j < walkLength; j++) {
-						temp[j] = null;
-					}
-					temp[0] = edge.f0.f0;
-					for (int m = 0; m < metaPaths.length; ++m) {
-						if (metaPaths[m].charAt(0) == edge.f0.f1) {
-							out.collect(Tuple2.of(edge.f0.f0 + "_" + i + "$" + metaPaths[m].substring(1), temp));
-						}
+		public void mapPartition(Iterable <GraphEdge> values, Collector <MetaPathCommunicationUnit> out)
+			throws Exception {
+			int superStep = getIterationRuntimeContext().getSuperstepNumber();
+			int partitionId = getRuntimeContext().getIndexOfThisSubtask();
+			int numPartitions = getRuntimeContext().getNumberOfParallelSubtasks();
+
+			if (superStep == 1) {
+				// in step 1, we cache the graph and collect workers' {logicalID -- physicalId} map.
+				List <GraphStatistics> graphStatistics = getRuntimeContext().getBroadcastVariable(GRAPH_STATISTICS);
+				GraphStatistics myStatistics = null;
+				for (GraphStatistics statistics : graphStatistics) {
+					if (statistics.getPartitionId() == partitionId) {
+						myStatistics = statistics;
+						break;
 					}
 				}
-			}
-		}
-	}
+				boolean useAlias = false;
+				final String ALIAS_NAME = "ALIAS";
+				if (samplingMethod.equalsIgnoreCase(ALIAS_NAME)) {
+					useAlias = true;
+				}
+				HeteGraphEngine heteGraphEngine = new HeteGraphEngine(values, myStatistics.getVertexNum(),
+					myStatistics.getEdgeNum(), myStatistics.getNodeTypes(), isWeighted, useAlias);
+				IterTaskObjKeeper.put(graphStorageHandler, partitionId, heteGraphEngine);
+				Iterator <Tuple2 <Long, Character>> allSrcVertices = heteGraphEngine.getAllSrcVerticesWithTypes();
+				int randomWalkStorageSizePerVertex = this.numWalkPerVertex * this.walkLen;
+				// we store at most 128MB in walks[] by default.
+				int localBatchSize = (128 * 1024 * 1024) / 8
+					/ randomWalkStorageSizePerVertex;
+				localBatchSize = Math.min(localBatchSize, myStatistics.getVertexNum());
 
-	protected static class SelectKeyFormer implements KeySelector <Tuple3 <Integer, String, Integer>, Integer> {
-		private static final long serialVersionUID = 2760025979971105302L;
+				MetaPathWalkPathEngine heteWalkPath = new MetaPathWalkPathEngine(localBatchSize, numWalkPerVertex,
+					walkLen, allSrcVertices, metaPaths);
+				IterTaskObjKeeper.put(randomWalkStorageHandler, partitionId, heteWalkPath);
 
-		@Override
-		public Integer getKey(Tuple3 <Integer, String, Integer> value) throws Exception {
-			return value.f2;
-		}
-	}
+				// 64MB as the buffer size
+				int bufferSize = 64 * 1024 * 1024 / (walkLen * 8 + 16);
+				RandomWalkMemoryBuffer randomWalkMemoryBuffer = new RandomWalkMemoryBuffer(bufferSize);
+				IterTaskObjKeeper.put(walkWriteBufferHandler, partitionId, randomWalkMemoryBuffer);
+				IterTaskObjKeeper.put(walkReadBufferHandler, partitionId, randomWalkMemoryBuffer);
 
-	protected static class SelectKeyLatterWithoutWeight
-		implements KeySelector <Tuple2 <Integer, Map <Character, List <Integer>>>, Integer> {
-		private static final long serialVersionUID = 6114619244203151268L;
+				Iterator <Long> tmpAllSrcVertices = heteGraphEngine.getAllSrcVertices();
+				if (tmpAllSrcVertices.hasNext()) {
+					long oneVertexId = tmpAllSrcVertices.next();
+					int hashKey = graphPartitionFunction.apply(oneVertexId, numPartitions);
+					out.collect(new MetaPathCommunicationUnit(hashKey, partitionId, null, null, null));
+				}
 
-		@Override
-		public Integer getKey(Tuple2 <Integer, Map <Character, List <Integer>>> value) throws Exception {
-			return value.f0;
-		}
-	}
-
-	protected static class SelectKeyLatterWithWeight
-		implements KeySelector <Tuple2 <Integer, Tuple2 <Character, Tuple2 <Integer, Double>[]>>, Integer> {
-		private static final long serialVersionUID = 8098370537479008223L;
-
-		@Override
-		public Integer getKey(Tuple2 <Integer, Tuple2 <Character, Tuple2 <Integer, Double>[]>> value) throws
-			Exception {
-			return value.f0;
-		}
-	}
-
-	protected static class RandomSampling
-		extends
-		RichCoGroupFunction <Tuple3 <Integer, String, Integer>, Tuple2 <Integer, Map <Character, List <Integer>>>,
-			Tuple3 <Integer, String, Integer>> {
-		private static final long serialVersionUID = -1358623098559450730L;
-		private Random randSrc;
-
-		public RandomSampling() {
-			randSrc = new Random();
-		}
-
-		@Override
-		public void coGroup(Iterable <Tuple3 <Integer, String, Integer>> first,
-							Iterable <Tuple2 <Integer, Map <Character, List <Integer>>>> second,
-							Collector <Tuple3 <Integer, String, Integer>> out) {
-			//look for all the neighbors.
-			int step = getIterationRuntimeContext().getSuperstepNumber();
-
-			Map <Character, List <Integer>> neighbours = null;
-			for (Tuple2 <Integer, Map <Character, List <Integer>>> t2 : second) {
-				neighbours = t2.f1;
+			} else if (superStep == 2) {
+				// we store the hashKeyToPartitionMap in the second step
+				List <MetaPathCommunicationUnit> workerIdMappingList = getRuntimeContext().getBroadcastVariable(
+					"loop");
+				Map <Integer, Integer> workerIdMapping = new HashMap <>(workerIdMappingList.size());
+				for (MetaPathCommunicationUnit logical2physical : workerIdMappingList) {
+					workerIdMapping.put(logical2physical.getSrcPartitionId(),
+						logical2physical.getDstPartitionId());
+				}
+				HeteGraphEngine heteGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
+				assert null != heteGraphEngine;
+				heteGraphEngine.setLogicalWorkerIdToPhysicalWorkerId(workerIdMapping);
+			} else {
+				// do nothing here.
 			}
 
-			if (neighbours == null) {
-				for (Tuple3 <Integer, String, Integer> t2 : first) {
-					t2.f2 = -1;
-					out.collect(t2);
+		}
+	}
+
+	/**
+	 * Get message to send over the network. 1. mapping from logical worker id to physical worker id 2. metapath
+	 * communication unit.
+	 */
+	static class GetMessageToSend
+		extends RichMapPartitionFunction <MetaPathCommunicationUnit, MetaPathCommunicationUnit> {
+		long graphStorageHandler;
+		long randomWalkStorageHandler;
+		long walkWriteBufferHandler;
+		GraphPartitionFunction graphPartitionFunction;
+
+		public GetMessageToSend(long graphStorageHandler, long randomWalkStorageHandler,
+								long walkWriteBufferHandler, GraphPartitionFunction graphPartitionFunction) {
+			this.graphStorageHandler = graphStorageHandler;
+			this.randomWalkStorageHandler = randomWalkStorageHandler;
+			this.walkWriteBufferHandler = walkWriteBufferHandler;
+			this.graphPartitionFunction = graphPartitionFunction;
+		}
+
+		@Override
+		public void mapPartition(Iterable <MetaPathCommunicationUnit> values,
+								 Collector <MetaPathCommunicationUnit> out)
+			throws Exception {
+			final int partitionId = getRuntimeContext().getIndexOfThisSubtask();
+			final int superStep = getIterationRuntimeContext().getSuperstepNumber();
+			if (superStep == 1) {
+				// pass the {hashkey --> partitionId} map to next step.
+				for (MetaPathCommunicationUnit val : values) {
+					out.collect(val);
 				}
 			} else {
+				for (MetaPathCommunicationUnit val : values) {
+					// blocking the Flink JOB EDGE and force the upside finish its job.
+				}
+				HeteGraphEngine heteGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
+				MetaPathWalkPathEngine heteWalkPath = IterTaskObjKeeper.get(randomWalkStorageHandler, partitionId);
+				RandomWalkMemoryBuffer randomWalkMemoryBuffer = IterTaskObjKeeper.get(walkWriteBufferHandler,
+					partitionId);
+				assert null != heteGraphEngine;
+				assert null != heteWalkPath;
+				assert null != randomWalkMemoryBuffer;
+				Tuple2 <long[], Character[]> nextBatchOfVerticesToSampleFrom =
+					heteWalkPath.getNextBatchOfVerticesToSampleFrom();
 
-				for (Tuple3 <Integer, String, Integer> t2 : first) {
-					if (t2.f2 != -1) {
-						int pos = t2.f1.indexOf("$");
-						String metaPath = t2.f1.substring(pos + 1, t2.f1.length());
+				for (int walkId = 0; walkId < nextBatchOfVerticesToSampleFrom.f0.length; walkId++) {
 
-						char currentType = metaPath.charAt((step - 1) % metaPath.length());
-						List <Integer> aNeighbours = neighbours.get(currentType);
-						if (aNeighbours == null) {
-							t2.f2 = -1;
-							out.collect(t2);
+					// output the finished random walks by remote sampling.
+					if (heteWalkPath.canOutput(walkId)) {
+						long[] finishedRandomWalk = heteWalkPath.getOneWalkAndAddNewWalk(walkId);
+						Tuple2 <Long, Character> newVertexToSampleFrom =
+							heteWalkPath.getNextVertexToSampleFrom(walkId);
+						if (null == newVertexToSampleFrom) {
+							nextBatchOfVerticesToSampleFrom.f0[walkId] = -1L;
+							nextBatchOfVerticesToSampleFrom.f1[walkId] = null;
 						} else {
-							int dicCnt = aNeighbours.size();
-							t2.f2 = aNeighbours.get(randSrc.nextInt(dicCnt));
+							nextBatchOfVerticesToSampleFrom.f0[walkId] = newVertexToSampleFrom.f0;
+							nextBatchOfVerticesToSampleFrom.f1[walkId] = newVertexToSampleFrom.f1;
+						}
+						randomWalkMemoryBuffer.writeOneWalk(finishedRandomWalk);
+					}
+
+					long vertexToSample = nextBatchOfVerticesToSampleFrom.f0[walkId];
+					Character typeToSample = nextBatchOfVerticesToSampleFrom.f1[walkId];
+					// do local sampling when possible for efficiency.
+					while (heteGraphEngine.containsVertex(vertexToSample)) {
+						vertexToSample = heteGraphEngine.sampleOneNeighbor(vertexToSample, typeToSample);
+						heteWalkPath.updatePath(walkId, vertexToSample);
+						boolean canOutput = heteWalkPath.canOutput(walkId);
+						if (canOutput) {
+							long[] finishedRandomWalk = heteWalkPath.getOneWalkAndAddNewWalk(walkId);
+							randomWalkMemoryBuffer.writeOneWalk(finishedRandomWalk);
+						}
+						// update typeToSample and vertexToSample
+						Tuple2 <Long, Character> nextToSample = heteWalkPath.getNextVertexToSampleFrom(walkId);
+						if (null != nextToSample) {
+							vertexToSample = nextToSample.f0;
+							typeToSample = nextToSample.f1;
+						} else {
+							vertexToSample = -1;
+							typeToSample = null;
 						}
 					}
-					out.collect(t2);
+					nextBatchOfVerticesToSampleFrom.f0[walkId] = vertexToSample;
+					nextBatchOfVerticesToSampleFrom.f1[walkId] = typeToSample;
 				}
+
+				// partition these request to other workers
+				int numPartitions = getRuntimeContext().getNumberOfParallelSubtasks();
+				List <Long>[] vertexSplitPieces = new ArrayList[numPartitions];
+				List <Character>[] typesSplitPieces = new ArrayList[numPartitions];
+				List <Integer>[] walkIdSplitPieces = new ArrayList[numPartitions];
+				for (int p = 0; p < numPartitions; p++) {
+					vertexSplitPieces[p] = new ArrayList <>();
+					typesSplitPieces[p] = new ArrayList <>();
+					walkIdSplitPieces[p] = new ArrayList <>();
+				}
+
+				for (int walkId = 0; walkId < nextBatchOfVerticesToSampleFrom.f0.length; walkId++) {
+					if (nextBatchOfVerticesToSampleFrom.f0[walkId] == -1) {
+						// we don't have much node to sample by now --- the buffer is not full.
+						continue;
+					}
+					int logicalId = graphPartitionFunction.apply(
+						nextBatchOfVerticesToSampleFrom.f0[walkId], numPartitions);
+					int physicalId = heteGraphEngine.getPhysicalWorkerIdByLogicalWorkerId(logicalId);
+					vertexSplitPieces[physicalId].add(nextBatchOfVerticesToSampleFrom.f0[walkId]);
+					typesSplitPieces[physicalId].add(nextBatchOfVerticesToSampleFrom.f1[walkId]);
+					walkIdSplitPieces[physicalId].add(walkId);
+				}
+
+				for (int dstPid = 0; dstPid < numPartitions; dstPid++) {
+					if (walkIdSplitPieces[dstPid].size() != 0) {
+						out.collect(new MetaPathCommunicationUnit(partitionId, dstPid,
+							walkIdSplitPieces[dstPid].toArray(new Integer[0]),
+							vertexSplitPieces[dstPid].toArray(new Long[0]),
+							typesSplitPieces[dstPid].toArray(new Character[0])));
+					}
+				}
+
+			}
+		}
+	}
+
+	static class DoRemoteProcessing
+		extends RichMapPartitionFunction <MetaPathCommunicationUnit, MetaPathCommunicationUnit> {
+
+		long graphStorageHandler;
+
+		public DoRemoteProcessing(long graphStorageHandler) {
+			this.graphStorageHandler = graphStorageHandler;
+		}
+
+		@Override
+		public void mapPartition(Iterable <MetaPathCommunicationUnit> values,
+								 Collector <MetaPathCommunicationUnit> out)
+			throws Exception {
+			// we could further do sampling here if the sampled vertex is here. But it will introduce complex
+			// data structure here. we leave it as future work.
+			final int partitionId = getRuntimeContext().getIndexOfThisSubtask();
+			if (getIterationRuntimeContext().getSuperstepNumber() == 1) {
+				// pass the {hashkey --> partitionId} map to next step.
+				for (MetaPathCommunicationUnit communicationUnit : values) {
+					out.collect(communicationUnit);
+				}
+			} else {
+				HeteGraphEngine heteGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
+				assert null != heteGraphEngine;
+				for (MetaPathCommunicationUnit metaPathCommunicationUnit : values) {
+					assert metaPathCommunicationUnit.getDstPartitionId() == partitionId;
+					Long[] verticesToSample = metaPathCommunicationUnit.getRequestedVertexIds();
+					Character[] typesToSample = metaPathCommunicationUnit.getVertexTypes();
+					for (int vertexCnt = 0; vertexCnt < verticesToSample.length; vertexCnt++) {
+						if (heteGraphEngine.containsVertex(verticesToSample[vertexCnt])) {
+							verticesToSample[vertexCnt] = heteGraphEngine.sampleOneNeighbor(
+								verticesToSample[vertexCnt], typesToSample[vertexCnt]);
+
+						} else {
+							// if this vertex should be partitioned to this worker via GraphPartition function, but it
+							// has no output neighbors.
+							verticesToSample[vertexCnt] = -1L;
+						}
+					}
+					// ${vertexTypes} is useless for the update process, so set is as null reduce network traffic.
+					metaPathCommunicationUnit.deleteVertexTypes();
+					out.collect(metaPathCommunicationUnit);
+				}
+			}
+		}
+	}
+
+	static class MetaPathCommunicationUnit extends RandomWalkCommunicationUnit implements Serializable {
+		/**
+		 * used in hete
+		 */
+		Character[] vertexTypes;
+
+		public MetaPathCommunicationUnit(int srcPartitionId, int dstPartitionId, Integer[] walkIds,
+										 Long[] requestedVertexIds,
+										 Character[] vertexTypes) {
+			super(srcPartitionId, dstPartitionId, walkIds, requestedVertexIds);
+			this.vertexTypes = vertexTypes;
+		}
+
+		public Character[] getVertexTypes() {
+			return vertexTypes;
+		}
+
+		public void deleteVertexTypes() {
+			this.vertexTypes = null;
+		}
+	}
+
+	static class ParseNodeType implements MapFunction <Row, Tuple2 <Long, Character>> {
+		int vertexIdx, typeIdx;
+
+		public ParseNodeType(int vertexIdx, int typeIdx) {
+			this.vertexIdx = vertexIdx;
+			this.typeIdx = typeIdx;
+		}
+
+		@Override
+		public Tuple2 <Long, Character> map(Row value) throws Exception {
+			long vertexId = ((Number) value.getField(vertexIdx)).longValue();
+			Character vertexType = ((String) value.getField(typeIdx)).charAt(0);
+			return Tuple2.of(vertexId, vertexType);
+		}
+	}
+
+	static class ConcatDstNodeType implements CoGroupFunction <Tuple3 <Long, Long, Double>, Tuple2 <Long, Character>,
+		Tuple4 <Long, Long, Double, Character>> {
+		@Override
+		public void coGroup(Iterable <Tuple3 <Long, Long, Double>> first,
+							Iterable <Tuple2 <Long, Character>> second,
+							Collector <Tuple4 <Long, Long, Double, Character>> out)
+			throws Exception {
+			Tuple2 <Long, Character> vertexIdAndType = second.iterator().next();
+			for (Tuple3 <Long, Long, Double> edge : first) {
+				out.collect(Tuple4.of(edge.f0, edge.f1, edge.f2, vertexIdAndType.f1));
+			}
+		}
+	}
+
+	static class ConcatSrcNodeType
+		implements CoGroupFunction <Tuple4 <Long, Long, Double, Character>, Tuple2 <Long, Character>,
+		Tuple5 <Long, Long, Double, Character, Character>> {
+		@Override
+		public void coGroup(Iterable <Tuple4 <Long, Long, Double, Character>> first,
+							Iterable <Tuple2 <Long, Character>> second,
+							Collector <Tuple5 <Long, Long, Double, Character, Character>> out)
+			throws Exception {
+			Tuple2 <Long, Character> vertexIdAndType = second.iterator().next();
+			for (Tuple4 <Long, Long, Double, Character> edge : first) {
+				// we do not collect GraphEdge here because KeySelector cannot be chained.
+				out.collect(
+					Tuple5.of(edge.f0, edge.f1, edge.f2, vertexIdAndType.f1, edge.f3));
 			}
 		}
 	}

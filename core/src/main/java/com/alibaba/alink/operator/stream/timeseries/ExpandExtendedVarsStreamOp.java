@@ -1,11 +1,13 @@
 package com.alibaba.alink.operator.stream.timeseries;
 
+import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.timeseries.ExpandExtendedVarsMapper;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
 import com.alibaba.alink.params.timeseries.ExpandExtendedVarsParams;
 
+@Internal
 public class ExpandExtendedVarsStreamOp extends MapStreamOp <ExpandExtendedVarsStreamOp>
 	implements ExpandExtendedVarsParams <ExpandExtendedVarsStreamOp> {
 

@@ -10,6 +10,10 @@ import com.alibaba.alink.common.io.filesystem.FilePath;
  */
 public interface ModelMapperParams<T> extends MapperParams <T> {
 
+	/**
+	 * @cn-name 模型流的文件路径
+	 * @cn 模型流的文件路径
+	 */
 	ParamInfo <String> MODEL_STREAM_FILE_PATH = ParamInfoFactory
 		.createParamInfo("modelStreamFilePath", String.class)
 		.setDescription("File path with file system.")
@@ -28,6 +32,10 @@ public interface ModelMapperParams<T> extends MapperParams <T> {
 		return set(MODEL_STREAM_FILE_PATH, modelStreamFilePath.serialize());
 	}
 
+	/**
+	 * @cn-name 扫描模型路径的时间间隔
+	 * @cn 描模型路径的时间间隔，单位秒
+	 */
 	ParamInfo <Integer> MODEL_STREAM_SCAN_INTERVAL = ParamInfoFactory
 		.createParamInfo("modelStreamScanInterval", Integer.class)
 		.setDescription("scan time interval")
@@ -38,6 +46,10 @@ public interface ModelMapperParams<T> extends MapperParams <T> {
 
 	default T setModelStreamScanInterval(Integer value) {return set(MODEL_STREAM_SCAN_INTERVAL, value);}
 
+	/**
+	 * @cn-name 模型流的起始时间
+	 * @cn 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s)
+	 */
 	ParamInfo <String> MODEL_STREAM_START_TIME = ParamInfoFactory
 		.createParamInfo("modelStreamStartTime", String.class)
 		.setDescription("start time of model stream")

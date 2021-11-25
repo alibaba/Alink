@@ -10,6 +10,10 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
  */
 public interface VectorElementwiseProductParams<T> extends SISOMapperParams <T> {
 
+	/**
+	 * @cn-name 尺度变化向量。
+	 * @cn 尺度的变化向量。
+	 */
 	ParamInfo <String> SCALING_VECTOR = ParamInfoFactory
 		.createParamInfo("scalingVector", String.class)
 		.setDescription("scaling vector with str format")

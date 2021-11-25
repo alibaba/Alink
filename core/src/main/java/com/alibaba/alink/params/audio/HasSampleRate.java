@@ -5,7 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasSampleRate<T> extends WithParams <T> {
-
+	/**
+	 * @cn-name 采样率
+	 * @cn 采样率
+	 */
 	ParamInfo <Integer> SAMPLE_RATE = ParamInfoFactory
 		.createParamInfo("sampleRate", Integer.class)
 		.setDescription("sample rate of audio")

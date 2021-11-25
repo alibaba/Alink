@@ -40,6 +40,7 @@ import java.util.Random;
 /**
  * Test cases for RandomForest
  */
+
 public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 	MemSourceBatchOp input = null;
 	MemSourceStreamOp inputStream = null;

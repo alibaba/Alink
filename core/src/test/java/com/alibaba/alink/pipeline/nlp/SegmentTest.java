@@ -19,6 +19,7 @@ import java.util.List;
 /**
  * Test for Segment.
  */
+
 public class SegmentTest extends AlinkTestBase {
 	@Test
 	public void testSegment() throws Exception {

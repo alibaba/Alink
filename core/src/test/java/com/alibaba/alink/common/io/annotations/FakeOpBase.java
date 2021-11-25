@@ -9,6 +9,7 @@ import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;
 /**
  * An simple helper class to simplify creation of fake Operator.
  */
+
 public class FakeOpBase extends BaseSourceBatchOp <FakeOpBase> {
 
 	private static final long serialVersionUID = -1111600420333788431L;

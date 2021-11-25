@@ -1,5 +1,8 @@
 package com.alibaba.alink.common.pyrunner.bridge;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.io.plugin.OsType;
+import com.alibaba.alink.common.io.plugin.OsUtils;
 import com.alibaba.alink.common.pyrunner.PyMainHandle;
 import com.alibaba.alink.common.pyrunner.TarFileUtil;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
@@ -17,8 +20,10 @@ import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
@@ -37,7 +42,7 @@ public abstract class BasePythonBridge {
     public static final String PY_READ_TIMEOUT_KEY = "py_read_timeout";
     public static final String PY_TURN_ON_LOGGING_KEY = "py_turn_on_logging";
     public static final String PY_VIRTUAL_ENV_KEY = "py_virtual_env";
-    public static final String PY_DEBUG_CMD_KEY = "py_debug_cmd";
+    public static final String PYTHON_RUNNER_SOURCE_PATH = "python_runner_source_path";
 
     private final static String ALINK_RUNNER_RESOURCE_NAME = "/alink_open_python_runner.tar.gz";
     private final static String ALINK_RUNNER_DIR = "alink_workspace";
@@ -56,8 +61,9 @@ public abstract class BasePythonBridge {
     volatile String pyCmd;
     volatile BiFunction <String, String, String> getParamFn;
     volatile Function <String, File> getCacheFileFn;
-    volatile String debugPyCmd; // set for running in tests
     volatile String virtualEnv;
+
+    volatile String pythonRunnerSourcePath; // use python_runner in the source
 
     private static Thread inheritIO(final InputStream src, final Consumer<String> consumer) {
         Thread t = new Thread(new Runnable() {
@@ -74,21 +80,58 @@ public abstract class BasePythonBridge {
         return t;
     }
 
+    List<String> wrapCmdForWin(List <String> args) {
+        if (null == virtualEnv) {
+            return args;
+        }
+        if (OsType.WINDOWS.equals(OsUtils.getSystemType())) {
+            List <String> newArgs = new ArrayList <>();
+            newArgs.add("cmd");
+            newArgs.add("/c");
+            String cmd = String.format("%s\\Scripts\\activate & %s\\Scripts\\conda-unpack & %s",
+                virtualEnv, virtualEnv,
+                String.join(" ", args));
+//            newArgs.add("\"" + cmd + "\"");
+            newArgs.add(cmd);
+            return newArgs;
+        } else {
+            return args;
+            //List <String> newArgs = new ArrayList <>();
+            //newArgs.add("/bin/bash");
+            //newArgs.add("-c");
+            //String cmd = String.format("source %s/bin/activate & %s/bin/conda-unpack & %s",
+            //    virtualEnv, virtualEnv,
+            //    String.join(" ", args));
+            //newArgs.add("\"" + cmd + "\"");
+            //return newArgs;
+        }
+    }
+
     void startProcess(String cmd) {
         prepareEnv();
         cmd = getPythonCmd(cmd);
         LOG.info("begin to start PythonProcess {} -j {} -p {}", cmd, jvmPort, pythonPort);
-        ProcessBuilder pb = new ProcessBuilder(
-            cmd,
-            "-c",
-            "from alink.py4j_gateway import main;main()",
+
+        String pyStmt = "from alink.py4j_gateway import main;main()";
+        if (OsType.WINDOWS.equals(OsUtils.getSystemType())) {
+            pyStmt = "\"" + pyStmt + "\"";
+        }
+
+        List <String> args = Arrays.asList(
+            cmd, "-c", pyStmt,
             "-j", Integer.toString(jvmPort),
             "-p", Integer.toString(pythonPort)
         );
+        List <String> newArgs = wrapCmdForWin(args);
+        ProcessBuilder pb = new ProcessBuilder(newArgs);
         LOG.info("the command is: " + String.join(" ", pb.command()));
+        if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+            System.out.println("the command is: " + String.join(" ", pb.command()));
+        }
 
         final Map<String, String> env = pb.environment();
         env.remove("LD_PRELOAD");
+        env.put("PYTHONIOENCODING", "utf8");
         updateEnv(env, extraEnv);
 
         pb.redirectErrorStream(true);
@@ -190,7 +233,7 @@ public abstract class BasePythonBridge {
             Process process = processBuilder.start();
             InputStream inputStream = process.getInputStream();
             String output = IOUtils.toString(inputStream);
-            System.out.println("python3 -V has output " + output);
+            LOG.info("python3 -V has output " + output);
             hasPython3 = (output.startsWith("Python 3."));
         } catch (IOException e) {
             LOG.info("Cannot execute python3 -V", e);
@@ -225,8 +268,15 @@ public abstract class BasePythonBridge {
             return;
         }
         if (null != virtualEnv) {
-            pyCmd = Paths.get(virtualEnv, "bin", "python").toFile().getAbsolutePath();
+            if (OsType.WINDOWS.equals((OsUtils.getSystemType()))) {
+                pyCmd = Paths.get(virtualEnv, "python").toFile().getAbsolutePath();
+            } else {
+                pyCmd = Paths.get(virtualEnv, "bin", "python").toFile().getAbsolutePath();
+            }
             LOG.info(String.format("Use Python cmd %s", pyCmd));
+            if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+                System.out.println("Use Python cmd " + pyCmd);
+            }
         } else {
             LOG.info("No VirtualEnv found, use system Python.");
         }
@@ -276,21 +326,8 @@ public abstract class BasePythonBridge {
     }
 
     private void setupPythonRunner() {
-        // for test
-        if (debugPyCmd != null && !debugPyCmd.isEmpty()) {
-            String pythonPath;
-            try {
-                pythonPath = new File(new File(this.getClass().getResource("/").getPath())
-                    .getParentFile()
-                    .getParentFile()
-                    .getParent()
-                    ,
-                    "alink_open/src/main/python").getAbsolutePath();
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-
-            appendPathToEnv("PYTHONPATH", pythonPath);
+        if (null != pythonRunnerSourcePath) {
+            appendPathToEnv("PYTHONPATH", pythonRunnerSourcePath);
             return;
         }
         String stateName = ".alink_open_python_runner__";
@@ -336,7 +373,7 @@ public abstract class BasePythonBridge {
             this.jvmPort = (rawJvmPort > 0) ? rawJvmPort : findRandomOpenPortOnAllLocalInterfaces();
             this.pythonPort = (rawPyPort > 0) ? rawPyPort : findRandomOpenPortOnAllLocalInterfaces();
             this.virtualEnv = getParamFn.apply(PY_VIRTUAL_ENV_KEY, null);
-            this.debugPyCmd = this.getParamFn.apply(PY_DEBUG_CMD_KEY, null);
+            this.pythonRunnerSourcePath = this.getParamFn.apply(PYTHON_RUNNER_SOURCE_PATH, null);
 
             final String rawCmd = getParamFn.apply(PY_CMD_KEY, "");
 

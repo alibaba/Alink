@@ -7,7 +7,10 @@ public interface AutoArimaParams<T> extends
 	TimeSeriesPredictParams <T>,
 	AutoArimaAlgoParams <T> {
 
-
+	/**
+	 * @cn-name d
+	 * @cn d
+	 */
 	ParamInfo<Integer> D = ParamInfoFactory
 		.createParamInfo("d", Integer.class)
 		.setDescription("d")

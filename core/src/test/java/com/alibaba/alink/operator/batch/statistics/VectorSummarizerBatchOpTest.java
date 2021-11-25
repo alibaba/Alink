@@ -46,5 +46,4 @@ public class VectorSummarizerBatchOpTest extends AlinkTestBase {
 		Assert.assertEquals(srt.normL2(0), 4.242640687119285, 10e-4);
 	}
 
-
 }

@@ -20,6 +20,8 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.io.plugin.OsType;
+import com.alibaba.alink.common.io.plugin.OsUtils;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
 import com.alibaba.alink.common.utils.DataSetUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -70,9 +72,9 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 		DLUtils.setExampleCodingType(config, inputSchema, outputSchema);
 
 		DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, getPythonEnv());
-		DLUtils.safePutProperties(config, DLConstants.ENTRY_SCRIPT, getScript());
+		DLUtils.safePutProperties(config, DLConstants.ENTRY_SCRIPT, getMainScriptFile());
 		DLUtils.safePutProperties(config, DLConstants.ENTRY_FUNC, getEntryFunc());
-		DLUtils.safePutProperties(config, DLConstants.USER_DEFINED_PARAMS, getUserDefinedParams());
+		DLUtils.safePutProperties(config, DLConstants.USER_DEFINED_PARAMS, getUserParams());
 		DLUtils.safePutProperties(config, DLConstants.NUM_WORKERS, String.valueOf(numWorkers));
 		DLUtils.safePutProperties(config, DLConstants.NUM_PSS, String.valueOf(numPSs));
 		DLUtils.safePutProperties(config, MLConstants.NODE_IDLE_TIMEOUT, String.valueOf(5 * 1000));
@@ -164,9 +166,16 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 		Map <String, String> scriptRenameMap = externalFiles.getFileRenameMap();
 
 		String pythonEnv = getPythonEnv();
+		String dirName;
 		if (!StringUtils.isNullOrWhitespaceOnly(pythonEnv)) {
-			filePaths.add(pythonEnv);
-			String dirName = PythonFileUtils.getCompressedFileName(pythonEnv);
+			if (PythonFileUtils.isLocalFile(pythonEnv)) {
+				// should be a directory
+				dirName = pythonEnv;
+			} else {
+				filePaths.add(pythonEnv);
+				dirName = PythonFileUtils.getCompressedFileName(pythonEnv);
+				DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, dirName);
+			}
 			DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, dirName);
 		}
 
@@ -224,9 +233,16 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 			@Override
 			public void mapPartition(Iterable <Row> values, Collector <Object> out) throws Exception {
 				LOG.info("killing DL tasks------");
-				String shStr = "ps -ef | grep " + "\"temp_[0-9*]_.*/startup.py\""
-					+ " | awk '{print $2}' | xargs kill -9";
-				Runtime.getRuntime().exec(new String[] {"/bin/bash", "-c", shStr}, null, null);
+				if (OsType.WINDOWS.equals(OsUtils.getSystemType())) {
+					String winStr ="for /f \"skip=1 tokens=1,2 delims=, \" %a in ('tasklist /fi \" " +
+							"IMAGENAME eq python.exe\" /FO csv ')  do (  wmic process where processid" +
+							"=%b get commandline | findstr startup.py | taskkill /pid %b -f )";
+					Runtime.getRuntime().exec(new String[] {"cmd.exe", winStr}, null, null);
+				} else {
+					String shStr = "ps -ef | grep " + "\"temp_[0-9*]_.*/startup.py\""
+							+ " | awk '{print $2}' | xargs kill -9";
+					Runtime.getRuntime().exec(new String[] {"/bin/bash", "-c", shStr}, null, null);
+				}
 			}
 		});
 

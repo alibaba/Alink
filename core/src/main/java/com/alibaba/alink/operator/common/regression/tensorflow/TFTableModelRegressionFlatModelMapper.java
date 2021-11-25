@@ -93,8 +93,11 @@ public class TFTableModelRegressionFlatModelMapper extends CachedRichModelMapper
 
 		tfFlatModelMapper = new TFTableModelPredictFlatModelMapper(modelDataConverter.getModelSchema(),
 			dataSchema, tfModelMapperParams);
-		tfFlatModelMapper.loadModel(modelData.getTfModelRows());
-
+		if (null != modelData.getTfModelZipPath()) {
+			tfFlatModelMapper.loadModelFromZipFile(modelData.getTfModelZipPath());
+		} else {
+			tfFlatModelMapper.loadModel(modelData.getTfModelRows());
+		}
 		predColId = TableUtil.findColIndex(tfFlatModelMapper.getOutputSchema(), predCol);
 	}
 

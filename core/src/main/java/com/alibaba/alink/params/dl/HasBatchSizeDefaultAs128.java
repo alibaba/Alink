@@ -5,7 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasBatchSizeDefaultAs128<T> extends WithParams <T> {
-
+	/**
+	 * @cn-name 数据批大小
+	 * @cn 数据批大小
+	 */
 	ParamInfo <Integer> BATCH_SIZE = ParamInfoFactory
 		.createParamInfo("batchSize", Integer.class)
 		.setDescription("mini-batch size")

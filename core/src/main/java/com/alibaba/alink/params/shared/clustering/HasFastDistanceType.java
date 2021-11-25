@@ -13,6 +13,10 @@ import java.io.Serializable;
  * Params: Distance type for calculating the distance of vector.
  */
 public interface HasFastDistanceType<T> extends WithParams <T> {
+	/**
+	 * @cn-name 距离度量方式
+	 * @cn 聚类使用的距离类型
+	 */
 	ParamInfo <DistanceType> DISTANCE_TYPE = ParamInfoFactory
 		.createParamInfo("distanceType", DistanceType.class)
 		.setDescription("Distance type for clustering")

@@ -11,6 +11,10 @@ import com.alibaba.alink.params.validators.MinValidator;
  */
 public interface HasEpsilonDv0000001<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 收敛阈值
+	 * @cn 迭代方法的终止判断阈值，默认值为 1.0e-6
+	 */
 	ParamInfo <Double> EPSILON = ParamInfoFactory
 		.createParamInfo("epsilon", Double.class)
 		.setDescription("Convergence tolerance for iterative algorithms (>= 0), The default value is 1.0e-06")

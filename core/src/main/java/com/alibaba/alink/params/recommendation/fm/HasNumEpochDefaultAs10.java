@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * number of epoch.
  */
 public interface HasNumEpochDefaultAs10<T> extends WithParams <T> {
+	/**
+	 * @cn-name epoch数
+	 * @cn epoch数
+	 */
 	ParamInfo <Integer> NUM_EPOCHS = ParamInfoFactory
 			.createParamInfo("numEpochs", Integer.class)
 			.setDescription("num epochs")

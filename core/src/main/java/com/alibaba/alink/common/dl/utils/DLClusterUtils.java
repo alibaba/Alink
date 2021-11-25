@@ -5,6 +5,7 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.DLConstants;
 import com.alibaba.alink.common.dl.DLRunner;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -72,7 +73,10 @@ public class DLClusterUtils {
 		t.setDaemon(true);
 		t.setName("NodeServer_" + mlContext.getIdentity());
 		t.start();
-		System.out.println("start:" + mlContext.getRoleName() + " index:" + mlContext.getIndex());
+		LOG.info("start: {}, index: {}", mlContext.getRoleName(), mlContext.getIndex());
+		if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+			System.out.println("start:" + mlContext.getRoleName() + " index:" + mlContext.getIndex());
+		}
 		return Tuple3.of(dataExchange, serverFuture, t);
 	}
 

@@ -55,9 +55,7 @@ public class Lbfgs extends Optimizer {
 		//get parameters.
 		int maxIter = params.get(LinearTrainParams.MAX_ITER);
 		int numSearchStep = params.get(HasNumSearchStepDv4.NUM_SEARCH_STEP);
-		if (null == this.coefVec) {
-			initCoefZeros();
-		}
+		checkInitCoef();
 
 		/**
 		 * solving problem using iteration.

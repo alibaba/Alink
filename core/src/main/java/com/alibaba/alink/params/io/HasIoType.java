@@ -10,6 +10,9 @@ import com.alibaba.alink.common.io.annotations.IOType;
  * IO type.
  */
 public interface HasIoType<T> extends WithParams <T> {
+	/**
+	 * @cn IO类型.
+	 */
 	ParamInfo <IOType> IO_TYPE = ParamInfoFactory
 		.createParamInfo("ioType", IOType.class)
 		.setDescription("io type")

@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.util.Map;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.flink.ml.cluster.master.meta.AMMeta;
 import com.alibaba.flink.ml.cluster.master.meta.AMMetaImpl;
@@ -61,7 +62,8 @@ public class DLRunner implements MLRunner, Serializable {
     public static final String IPS = "Alink:dl_ips";
     public static final String PORTS = "Alink:dl_ports";
 
-    private static Logger LOG = LoggerFactory.getLogger(DLRunner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DLRunner.class);
+
     protected long version = 0;
     protected String localIp;
     protected NodeServer server;
@@ -197,8 +199,9 @@ public class DLRunner implements MLRunner, Serializable {
     public void resetMLContext() {
         String clusterStr = ProtoUtil.protoToJson(mlClusterDef);
         LOG.info("java cluster:" + clusterStr);
-        System.out.println("java cluster:" + clusterStr);
-        System.out.println("node server port:" + server.getPort());
+        if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+            System.out.println("java cluster:" + clusterStr);
+        }
         mlContext.getProperties().put(MLConstants.CONFIG_CLUSTER_PATH, clusterStr);
         mlContext.setNodeServerIP(localIp);
         mlContext.setNodeServerPort(server.getPort());

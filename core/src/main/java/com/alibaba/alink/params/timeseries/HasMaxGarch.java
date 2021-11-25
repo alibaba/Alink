@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasMaxGarch<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn-name 最大garch阶数
+	 * @cn 最大garch阶数
+	 */
 	ParamInfo <Integer> MAX_GARCH = ParamInfoFactory
 		.createParamInfo("maxGARCH", Integer.class)
 		.setDescription("max garch")

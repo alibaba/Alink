@@ -11,6 +11,10 @@ import com.alibaba.alink.params.ParamUtil;
  */
 public interface HasMethod<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 方法
+	 * @cn 方法：包含"PEARSON"和"SPEARMAN"两种，PEARSON。
+	 */
 	ParamInfo <Method> METHOD = ParamInfoFactory
 		.createParamInfo("method", Method.class)
 		.setDescription("method: PEARSON, SPEARMAN. default PEARSON")

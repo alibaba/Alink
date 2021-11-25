@@ -15,6 +15,7 @@ import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.PluginDescriptor;
+import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.params.io.HiveCatalogParams;
 import org.slf4j.Logger;
@@ -40,7 +41,10 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 	private transient MapFunction <PrivilegedExceptionAction <Object>, Object> internal;
 
 	public HiveClassLoaderFactory(String version, Params actionContext) {
-		super(new RegisterKey(HIVE_DB_NAME, version), ClassLoaderContainer.createPluginContextOnClient());
+		super(
+			new RegisterKey(HIVE_DB_NAME, version),
+			PluginDistributeCache.createDistributeCache(HIVE_DB_NAME, version)
+		);
 		this.actionContext = actionContext;
 	}
 
@@ -81,7 +85,7 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 		ClassLoader classLoader = ClassLoaderContainer
 			.getInstance()
 			.create(
-				registerKey, registerContext, Factory.class,
+				registerKey, distributeCache, Factory.class,
 				new HiveServiceFilter(), new HiveVersionGetter()
 			);
 

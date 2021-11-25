@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasMaxArima<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn-name 最大arima阶数
+	 * @cn 最大arima阶数
+	 */
 	ParamInfo <Integer> MAX_ARIMA = ParamInfoFactory
 		.createParamInfo("maxARIMA", Integer.class)
 		.setDescription("max arima")

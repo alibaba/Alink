@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasMaxOrder<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn-name 模型(p, q)上限
+	 * @cn 模型(p, q)上限
+	 */
 	ParamInfo <Integer> MAX_ORDER = ParamInfoFactory
 		.createParamInfo("maxOrder", Integer.class)
 		.setDescription("max order of p, q")

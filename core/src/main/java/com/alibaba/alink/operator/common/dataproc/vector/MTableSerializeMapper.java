@@ -8,8 +8,6 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.MTableTypes;
-import com.alibaba.alink.common.VectorTypes;
-import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.mapper.Mapper;
 
 import java.util.ArrayList;

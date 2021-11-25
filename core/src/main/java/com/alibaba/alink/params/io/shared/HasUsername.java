@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasUsername<T> extends WithParams <T> {
+	/**
+	 * @cn-name 用户名
+	 * @cn 用户名
+	 */
 	ParamInfo <String> USERNAME = ParamInfoFactory
 		.createParamInfo("username", String.class)
 		.setDescription("username")

@@ -21,6 +21,7 @@ import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils.FileProcFunction;
 import com.alibaba.alink.common.io.filesystem.FilePath;
+import com.alibaba.alink.common.mapper.ComboMapper;
 import com.alibaba.alink.common.mapper.ComboModelMapper;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperChain;
@@ -782,6 +783,10 @@ public class ModelExporterUtils {
 			throw new IllegalArgumentException(e);
 		}
 
+		if (metaReader.getMeta() == null || metaReader.getSchema() == null) {
+			throw new IllegalArgumentException(String.format("Count not get meta from %s.", filePath.getPathStr()));
+		}
+
 		return Tuple2.of(metaReader.getSchema(), metaReader.getMeta());
 	}
 
@@ -939,14 +944,16 @@ public class ModelExporterUtils {
 			throw new RuntimeException("not support yet.");
 		}
 
-		if(mapper instanceof ComboModelMapper) {
+		if (mapper instanceof ComboModelMapper) {
 			((ComboModelMapper) mapper).newMapperList();
 		}
 
+
+		if (mapper instanceof ComboMapper) {
+			((ComboMapper) mapper).newMapperList();
+		}
 		return mapper;
 	}
-
-
 
 	static LocalPredictor loadLocalPredictorFromPipelineModel(
 		FilePath filePath, TableSchema inputSchema) throws Exception {

@@ -7,7 +7,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasStride<T> extends WithParams <T> {
-
+	/**
+	 * @cn-name horizon大小
+	 * @cn horizon大小
+	 */
 	ParamInfo <Integer> STRIDE = ParamInfoFactory
 		.createParamInfo("stride", Integer.class)
 		.setDescription("stride")

@@ -22,7 +22,7 @@ public class FmRecommTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 
-		BatchOperator data = new MemSourceBatchOp(rows, new String[] {"user_id", "item_id", "rating"});
+		BatchOperator<?> data = new MemSourceBatchOp(rows, new String[] {"user_id", "item_id", "rating"});
 
 		FmRecommTrainBatchOp fmTrain = new FmRecommTrainBatchOp()
 			.setUserCol("user_id").setItemCol("item_id")
@@ -46,7 +46,7 @@ public class FmRecommTest extends AlinkTestBase {
 
 	@Test
 	public void testFMPred() throws Exception {
-		BatchOperator data = new MemSourceBatchOp(rows, new String[] {"user_id", "item_id", "rating"});
+		BatchOperator<?> data = new MemSourceBatchOp(rows, new String[] {"user_id", "item_id", "rating"});
 
 		FmRecommTrainBatchOp fmTrain = new FmRecommTrainBatchOp()
 			.setUserCol("user_id").setItemCol("item_id")

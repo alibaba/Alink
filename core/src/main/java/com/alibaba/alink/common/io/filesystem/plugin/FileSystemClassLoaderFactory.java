@@ -5,6 +5,7 @@ import org.apache.flink.core.fs.FileSystemFactory;
 
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.PluginDescriptor;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 
@@ -16,21 +17,21 @@ public class FileSystemClassLoaderFactory extends ClassLoaderFactory {
 	private static final long serialVersionUID = 6388056534023187796L;
 
 	public FileSystemClassLoaderFactory(String name, String version) {
-		super(new RegisterKey(name, version), ClassLoaderContainer.createPluginContextOnClient());
+		super(new RegisterKey(name, version), PluginDistributeCache.createDistributeCache(name, version));
 	}
 
 	@Override
 	public ClassLoader create() {
 		return ClassLoaderContainer.getInstance().create(
 			registerKey,
-			registerContext,
+			distributeCache,
 			FileSystemFactory.class,
 			new FileSystemServiceFilter(registerKey),
 			new FileSystemVersionGetter()
 		);
 	}
 
-	private static class FileSystemServiceFilter implements Predicate <FileSystemFactory> {
+	private static class FileSystemServiceFilter implements Predicate<FileSystemFactory> {
 		private final RegisterKey registerKey;
 
 		public FileSystemServiceFilter(RegisterKey registerKey) {
@@ -43,10 +44,9 @@ public class FileSystemClassLoaderFactory extends ClassLoaderFactory {
 		}
 	}
 
-	private static class FileSystemVersionGetter
-		implements Function <Tuple2 <FileSystemFactory, PluginDescriptor>, String> {
+	private static class FileSystemVersionGetter implements Function<Tuple2<FileSystemFactory, PluginDescriptor>, String> {
 		@Override
-		public String apply(Tuple2 <FileSystemFactory, PluginDescriptor> factory) {
+		public String apply(Tuple2<FileSystemFactory, PluginDescriptor> factory) {
 			return factory.f1.getVersion();
 		}
 	}
@@ -63,7 +63,7 @@ public class FileSystemClassLoaderFactory extends ClassLoaderFactory {
 		public ClassLoader create() {
 			return ClassLoaderContainer.getInstance().create(
 				registerKey,
-				registerContext,
+				distributeCache,
 				FileSystemFactory.class,
 				new HadoopFileSystemServiceFilter(),
 				new FileSystemVersionGetter()
@@ -71,7 +71,7 @@ public class FileSystemClassLoaderFactory extends ClassLoaderFactory {
 		}
 	}
 
-	private static class HadoopFileSystemServiceFilter implements Predicate <FileSystemFactory> {
+	private static class HadoopFileSystemServiceFilter implements Predicate<FileSystemFactory> {
 		public HadoopFileSystemServiceFilter() {
 		}
 
@@ -93,7 +93,7 @@ public class FileSystemClassLoaderFactory extends ClassLoaderFactory {
 		public ClassLoader create() {
 			return ClassLoaderContainer.getInstance().create(
 				registerKey,
-				registerContext,
+				distributeCache,
 				FileSystemFactory.class,
 				new S3FileSystemServiceFilter(),
 				new FileSystemVersionGetter()

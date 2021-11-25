@@ -1,22 +1,25 @@
 package com.alibaba.alink.operator.batch.recommendation;
 
 import org.apache.flink.api.common.functions.GroupReduceFunction;
-import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.utils.DataSetUtils;
-import org.apache.flink.configuration.Configuration;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.HugeIndexerStringPredictBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.HugeStringIndexerPredictBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.StringIndexerTrainBatchOp;
 import com.alibaba.alink.operator.common.recommendation.SwingRecommModelConverter;
 import com.alibaba.alink.operator.common.recommendation.SwingResData;
 import com.alibaba.alink.params.recommendation.SwingTrainParams;
@@ -26,8 +29,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Swing is an item recall model. The topology of user-item graph usually can be described as
@@ -36,6 +38,7 @@ import java.util.Map;
 public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
     implements SwingTrainParams<SwingTrainBatchOp> {
     private static final long serialVersionUID = 6094224433980263495L;
+    private static final String ITEM_ID_COLNAME = "alink_itemID_in_swing";
 
     public SwingTrainBatchOp(Params params) {
         super(params);
@@ -55,86 +58,53 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
         Integer maxItemNumber = getMaxItemNumber();
         boolean normalize = getResultNormalize();
         boolean hasRateCol = rateCol != null;
-        String[] selectedCols;
-        if (hasRateCol) {
-            selectedCols = new String[]{userCol, itemCol, rateCol};
-        } else {
-            selectedCols = new String[]{userCol, itemCol};
-        }
+        String[] selectedCols = new String[]{userCol, itemCol};
 
         BatchOperator in = checkAndGetFirst(inputs)
             .select(selectedCols);
         long mlEnvId = getMLEnvironmentId();
 
+        StringIndexerTrainBatchOp model = new StringIndexerTrainBatchOp()
+            .setSelectedCol(itemCol)
+            .setMLEnvironmentId(mlEnvId)
+            .setStringOrderType("random")
+            .linkFrom(in);
+
+        HugeStringIndexerPredictBatchOp stringIndexerPredict = new HugeStringIndexerPredictBatchOp()
+            .setSelectedCols(itemCol)
+            .setOutputCols(ITEM_ID_COLNAME)
+            .setMLEnvironmentId(mlEnvId)
+            .linkFrom(model, in);
+
         TypeInformation itemType = TableUtil.findColType(in.getSchema(), itemCol);
 
-        DataSet<Row> distinctItem = in.select(itemCol)
-            .getDataSet()
-            .distinct(new RowKeySelector(0))
-            .rebalance();
-
-        DataSet<Tuple2<Long, Comparable>> indexAndItem = DataSetUtils.zipWithIndex(distinctItem)
-            .mapPartition(new MapPartitionFunction <Tuple2 <Long, Row>, Tuple2 <Long, Comparable>>() {
-                @Override
-                public void mapPartition(Iterable <Tuple2 <Long, Row>> values,
-                                         Collector <Tuple2 <Long, Comparable>> out) throws Exception {
-                    values.forEach(x -> out.collect(Tuple2.of(x.f0, (Comparable) x.f1.getField(0))));
-                }
-            });
-
-        int itemIndex = TableUtil.findColIndexWithAssertAndHint(in.getSchema(), itemCol);
-
-        DataSet<Row> inputData = in.getDataSet()
-            .mapPartition(new Item2Index(itemIndex))
-            .withBroadcastSet(indexAndItem, "indexAndItem")
-            .name("map_item_data");
-
         //存储item ID，同用户其他item ID
-        DataSet<Tuple2<Long, Long[]>> mainItemData = inputData
+        DataSet<Tuple3 <Comparable, Long, Long[]>> mainItemData = stringIndexerPredict.getDataSet()
             .groupBy(new RowKeySelector(0))
             .reduceGroup(new BuildSwingData(maxUserItems, minUserItems))
             .name("build_main_item_data");
 
         DataSet<Row> itemSimilarity = mainItemData
-            .groupBy(0)
+            .groupBy(1)
             .reduceGroup(new CalcSimilarity(getAlpha(), maxItemNumber, getUserAlpha(), getUserBeta(), normalize))
             .name("compute_similarity");
 
-        DataSet<Row> modelData = itemSimilarity
+        BatchOperator<?> itemResult = BatchOperator.fromTable(DataSetConversionUtil.toTable(getMLEnvironmentId(), itemSimilarity,
+                new String[]{itemCol, "swing_items", "swing_scores"},
+                new TypeInformation[]{itemType, Types.OBJECT_ARRAY(Types.LONG), Types.OBJECT_ARRAY(Types.FLOAT)}
+            ));
+
+        HugeIndexerStringPredictBatchOp indexerPredict = new HugeIndexerStringPredictBatchOp()
+            .setSelectedCols("swing_items")
+            .setMLEnvironmentId(mlEnvId)
+            .linkFrom(model, itemResult);
+
+        DataSet<Row> modelData = indexerPredict.getDataSet()
             .mapPartition(new BuildModelData(itemCol))
-            .withBroadcastSet(indexAndItem, "indexAndItem")
             .name("build_model_data");
 
         this.setOutput(modelData, new SwingRecommModelConverter(itemType).getModelSchema());
         return this;
-    }
-
-    private static class Item2Index extends RichMapPartitionFunction<Row, Row> {
-        int itemIndex;
-        private Map<Comparable, Long> itemIndexMap;
-
-        Item2Index(int itemIndex) {
-            this.itemIndex = itemIndex;
-        }
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            super.open(parameters);
-            List<Tuple2<Long, Comparable>> indexAndItem = getRuntimeContext()
-                .getBroadcastVariable("indexAndItem");
-            itemIndexMap = new HashMap<>(indexAndItem.size());
-            for (Tuple2<Long, Comparable> tuple2 : indexAndItem) {
-                itemIndexMap.put(tuple2.f1, tuple2.f0);
-            }
-        }
-
-        @Override
-        public void mapPartition(Iterable<Row> values, Collector<Row> out) throws Exception {
-            for (Row value : values) {
-                value.setField(itemIndex, itemIndexMap.get(value.getField(itemIndex)));
-                out.collect(value);
-            }
-        }
     }
 
     public static class RowKeySelector implements KeySelector<Row, Comparable> {
@@ -152,37 +122,10 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
     }
 
     /**
-     * Count the total number of each item.
-     */
-    private static class CountItem implements GroupReduceFunction<Row, Row> {
-        private static final long serialVersionUID = -7426335460720352495L;
-
-        CountItem() {}
-
-        @Override
-        public void reduce(Iterable<Row> values, Collector<Row> out) throws Exception {
-            int number = 0;
-            List<Row> valueSave = new ArrayList<>();
-            for (Row value : values) {
-                ++number;
-                valueSave.add(value);
-            }
-
-            Row res = new Row(3);
-            for (Row value : valueSave) {
-                res.setField(0, value.getField(0));
-                res.setField(1, value.getField(1));
-                res.setField(2, number);
-                out.collect(res);
-            }
-        }
-    }
-
-    /**
      * group by user col.
      */
     private static class BuildSwingData
-        implements GroupReduceFunction<Row, Tuple2<Long, Long[]>> {
+        implements GroupReduceFunction<Row, Tuple3 <Comparable, Long, Long[]>> {
         private static final long serialVersionUID = 6417591701594465880L;
 
         int maxUserItems;
@@ -195,26 +138,27 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
 
         @Override
         public void reduce(Iterable<Row> values,
-                           Collector<Tuple2<Long, Long[]>> out) throws Exception {
-            ArrayList<Long> userItemList = new ArrayList<>();
+                           Collector<Tuple3 <Comparable, Long, Long[]>> out) throws Exception {
+            HashMap<Long, Comparable> userItemMap = new HashMap <>();
             for (Row value : values) {
-                userItemList.add((Long) value.getField(1));
+                userItemMap.put((Long) value.getField(2), (Comparable) value.getField(1));
             }
-            if (userItemList.size() < this.minUserItems || userItemList.size() > this.maxUserItems) {
+            if (userItemMap.size() < this.minUserItems || userItemMap.size() > this.maxUserItems) {
                 return;
             }
-            Long[] userItemIDs = new Long[userItemList.size()];
-            for (int i = 0; i < userItemList.size(); i++) {
-                userItemIDs[i] = userItemList.get(i);
+            Long[] userItemIDs = new Long[userItemMap.size()];
+            int index = 0;
+            for (Entry <Long, Comparable> pair : userItemMap.entrySet()) {
+                userItemIDs[index++] = pair.getKey();
             }
             for (int i = 0; i < userItemIDs.length; i++) {
-                out.collect(Tuple2.of(userItemIDs[i], userItemIDs));
+                out.collect(Tuple3.of(userItemMap.get(userItemIDs[i]), userItemIDs[i], userItemIDs));
             }
         }
     }
 
     private static class CalcSimilarity
-        extends RichGroupReduceFunction<Tuple2<Long, Long[]>, Row> {
+        extends RichGroupReduceFunction<Tuple3<Comparable, Long, Long[]>, Row> {
         private static final long serialVersionUID = -2438120820385058339L;
 
         private final float alpha;
@@ -236,23 +180,25 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
         }
 
         @Override
-        public void reduce(Iterable<Tuple2<Long, Long[]>> values,
+        public void reduce(Iterable<Tuple3<Comparable, Long, Long[]>> values,
                            Collector<Row> out) throws Exception {
+            Comparable item = null;
             Long mainItem = null;
             ArrayList<Long[]> dataList = new ArrayList <>();
-            for (Tuple2<Long, Long[]> value : values) {
-                mainItem = value.f0;
+            for (Tuple3<Comparable, Long, Long[]> value : values) {
+                item = value.f0;
+                mainItem = value.f1;
                 if (dataList.size() == this.maxItemNumber) {
                     int randomIndex = (int)(Math.random() * (this.maxItemNumber + 1));
                     if (randomIndex < this.maxItemNumber) {
-                        dataList.set(randomIndex, value.f1);
+                        dataList.set(randomIndex, value.f2);
                     }
                 } else {
-                    dataList.add(value.f1);
+                    dataList.add(value.f2);
                 }
             }
             ArrayList <HashSet <Long>> itemSetList = new ArrayList <>(dataList.size());
-            Float[] userWeights = new Float[dataList.size()];
+            float[] userWeights = new float[dataList.size()];
             int weightIndex = 0;
             for (Long[] value : dataList) {
                 HashSet <Long> itemSet = new HashSet <>(value.length);
@@ -291,48 +237,33 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
                     return 0 - Float.compare(o1.f1, o2.f1);
                 }
             });
-            long[] itemIds = new long[itemAndScore.size()];
-            float[] itemScores = new float[itemAndScore.size()];
+            if (itemAndScore.size() == 0) {
+                return;
+            }
+            Long[] itemIds = new Long[itemAndScore.size()];
+            Float[] itemScores = new Float[itemAndScore.size()];
             float maxScore = this.normalize ? itemAndScore.get(0).f1 : 1.0f;
             for (int i = 0; i < itemAndScore.size(); i++) {
                 itemIds[i] = itemAndScore.get(i).f0;
                 itemScores[i] = itemAndScore.get(i).f1 / maxScore;
             }
-            out.collect(Row.of(mainItem, itemIds, itemScores));
+            out.collect(Row.of(item, itemIds, itemScores));
         }
     }
 
     private static class BuildModelData extends RichMapPartitionFunction<Row, Row> {
-        private Comparable[] originalItems;
         private final String itemCol;
         BuildModelData(String itemCol) {
             this.itemCol = itemCol;
         }
 
         @Override
-        public void open(Configuration parameters) throws Exception {
-            super.open(parameters);
-            List<Tuple2<Long, Comparable>> indexAndItem =
-                getRuntimeContext().getBroadcastVariable("indexAndItem");
-            int itemNumber = indexAndItem.size();
-            originalItems = new Comparable[itemNumber];
-            for (Tuple2<Long, Comparable> tuple2 : indexAndItem) {
-                originalItems[tuple2.f0.intValue()] = tuple2.f1;
-            }
-        }
-
-        @Override
         public void mapPartition(Iterable<Row> values, Collector<Row> out) throws Exception {
             for (Row value : values) {
-                long mainItemIndex = (long) value.getField(0);
-                Comparable originMainItem = originalItems[(int) mainItemIndex];
-                long[] items = (long[]) value.getField(1);
-                float[] similarity = (float[]) value.getField(2);
-                Comparable[] originItems = new Comparable[items.length];
-                for (int i = 0; i < items.length; i++) {
-                    originItems[i] = originalItems[(int) items[i]];
-                }
-                SwingResData resData = new SwingResData(originItems, similarity, itemCol);
+                Comparable originMainItem = (Comparable) value.getField(0);
+                String[] items = ((String) value.getField(1)).split(",");
+                Float[] similarity = (Float[]) value.getField(2);
+                SwingResData resData = new SwingResData(items, similarity, itemCol);
                 out.collect(Row.of(
                     originMainItem,
                     JsonConverter.toJson(resData)));

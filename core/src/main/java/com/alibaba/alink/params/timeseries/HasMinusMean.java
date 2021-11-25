@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasMinusMean<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn-name 是否减去均值
+	 * @cn 是否减去均值
+	 */
 	ParamInfo <Boolean> MINUS_MEAN = ParamInfoFactory
 		.createParamInfo("minusMean", Boolean.class)
 		.setDescription("minusMean")

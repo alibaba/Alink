@@ -2,9 +2,8 @@ package com.alibaba.alink.operator.batch.timeseries;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.operator.batch.dataproc.GroupDataBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-
+import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
 import org.junit.Test;
 
 import java.sql.Timestamp;
@@ -32,10 +31,9 @@ public class ShiftBatchOpTest {
 
 		source
 			.link(
-				new GroupDataBatchOp()
-					.setGroupCols("id")
-					.setSelectedCols("ts", "val")
-					.setOutputCol("data")
+				new GroupByBatchOp()
+					.setGroupByPredicate("id")
+					.setSelectClause("mtable_agg(ts, val) as data")
 			)
 			.link(
 				new ShiftBatchOp()

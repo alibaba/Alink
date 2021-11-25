@@ -21,16 +21,28 @@ public interface MultilayerPerceptronTrainParams<T> extends
 	HasL1 <T>,
 	HasL2 <T> {
 
+	/**
+	 * @cn-name 神经网络层大小
+	 * @cn 神经网络层大小
+	 */
 	ParamInfo <int[]> LAYERS = ParamInfoFactory
 		.createParamInfo("layers", int[].class)
 		.setDescription("Size of each neural network layers.")
 		.setRequired()
 		.build();
+	/**
+	 * @cn-name 数据分块大小，默认值64
+	 * @cn 数据分块大小，默认值64
+	 */
 	ParamInfo <Integer> BLOCK_SIZE = ParamInfoFactory
 		.createParamInfo("blockSize", Integer.class)
 		.setDescription("Size for stacking training samples, the default value is 64.")
 		.setHasDefaultValue(64)
 		.build();
+	/**
+	 * @cn-name 初始权重值
+	 * @cn 初始权重值
+	 */
 	ParamInfo <DenseVector> INITIAL_WEIGHTS = ParamInfoFactory
 		.createParamInfo("initialWeights", DenseVector.class)
 		.setDescription("Initial weights.")

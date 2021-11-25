@@ -5,6 +5,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
@@ -26,8 +27,8 @@ public class LinearRegressionTest extends AlinkTestBase {
 
 	@Test
 	public void regressionPipelineTest() throws Exception {
-		BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
-		StreamOperator svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
+		BatchOperator<?> vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
+		StreamOperator<?> svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
 
 		String[] xVars = new String[] {"f0", "f1", "f2"};
 		String yVar = "label";
@@ -57,7 +58,7 @@ public class LinearRegressionTest extends AlinkTestBase {
 		Pipeline pl = new Pipeline().add(linear).add(vlinear).add(svlinear);
 		PipelineModel model = pl.fit(vecdata);
 
-		BatchOperator result = model.transform(vecdata).select(
+		BatchOperator<?> result = model.transform(vecdata).select(
 			new String[] {"label", "linpred", "vlinpred", "svlinpred"});
 
 		List <Row> data = result.collect();
@@ -74,8 +75,22 @@ public class LinearRegressionTest extends AlinkTestBase {
 		}
 
 		// below is stream test code
-		// model.transform(svecdata).print();
-		// StreamOperator.execute();
+		CollectSinkStreamOp sop = model.transform(svecdata).select(
+			new String[] {"label", "linpred", "vlinpred", "svlinpred"})
+			.link(new CollectSinkStreamOp());
+		StreamOperator.execute();
+		List<Row> rows = sop.getAndRemoveValues();
+		for (Row row : rows) {
+			if ((double) row.getField(0) == 16.8000) {
+				Assert.assertEquals((double) row.getField(1), 16.814789059973744, 0.01);
+				Assert.assertEquals((double) row.getField(2), 16.814789059973744, 0.01);
+				Assert.assertEquals((double) row.getField(3), 16.814788687904162, 0.01);
+			} else if ((double) row.getField(0) == 6.7000) {
+				Assert.assertEquals((double) row.getField(1), 6.773942836224718, 0.01);
+				Assert.assertEquals((double) row.getField(2), 6.773942836224718, 0.01);
+				Assert.assertEquals((double) row.getField(3), 6.773943529327923, 0.01);
+			}
+		}
 	}
 
 }

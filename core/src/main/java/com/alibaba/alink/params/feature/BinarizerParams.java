@@ -10,6 +10,10 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
  */
 public interface BinarizerParams<T> extends SISOMapperParams <T> {
 
+	/**
+	 * @cn-name 二值化阈值
+	 * @cn 二值化阈值
+	 */
 	ParamInfo <Double> THRESHOLD = ParamInfoFactory
 		.createParamInfo("threshold", Double.class)
 		.setDescription(

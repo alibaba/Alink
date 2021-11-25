@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasModelPath<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn-name 模型的URL路径
+	 * @cn 模型的URL路径
+	 */
 	ParamInfo <String> MODEL_PATH = ParamInfoFactory
 		.createParamInfo("modelPath", String.class)
 		.setDescription("model path")

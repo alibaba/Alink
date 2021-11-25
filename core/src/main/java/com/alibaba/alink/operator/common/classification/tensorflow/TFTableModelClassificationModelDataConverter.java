@@ -46,6 +46,8 @@ public class TFTableModelClassificationModelDataConverter
 		meta.set(TFModelDataConverterUtils.PREPROCESS_PIPELINE_MODEL_PARTITION_SIZE, pSize);
 		pStart += pSize;
 
+		meta.set(TFModelDataConverterUtils.IS_OUTPUT_LOGITS, modelData.getIsLogits());
+
 		Iterable <Object> labels = modelData.getSortedLabels();
 		return Tuple3.of(meta, data, labels);
 	}
@@ -59,9 +61,9 @@ public class TFTableModelClassificationModelDataConverter
 		modelData.setPreprocessPipelineModelSchemaStr(meta.get(TFModelDataConverterUtils.PREPROCESS_PIPELINE_MODEL_SCHEMA_STR));
 
 		Iterator <String> iterator = data.iterator();
-		List <Row> tfModelSerialized = TFModelDataConverterUtils.extractModelRows(iterator,
+		String zipFilePath = TFModelDataConverterUtils.writeModelRowsToFile(iterator,
 			meta.get(TFModelDataConverterUtils.TF_MODEL_PARTITION_SIZE));
-		modelData.setTfModelRows(tfModelSerialized);
+		modelData.setTfModelZipPath(zipFilePath);
 
 		if (meta.contains(TFModelDataConverterUtils.PREPROCESS_PIPELINE_MODEL_PARTITION_SIZE)) {
 			List <Row> preprocessPipelineModelSerialized = TFModelDataConverterUtils.extractModelRows(iterator,

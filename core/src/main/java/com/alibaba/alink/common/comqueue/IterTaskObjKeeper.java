@@ -150,7 +150,13 @@ public class IterTaskObjKeeper implements Serializable {
 	public static <T> T containsAndRemoves(long handler, int taskId) {
 		rwlock.writeLock().lock();
 		try {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("taskId: {}, containsAndRemoves handle: {}", taskId, handle);
+			}
 			if (states.containsKey(Tuple2.of(handler, taskId))) {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("taskId: {}, containsAndRemoves handle succeeded: {}", taskId, handle);
+				}
 				return (T) states.remove(Tuple2.of(handler, taskId));
 			}
 			else {

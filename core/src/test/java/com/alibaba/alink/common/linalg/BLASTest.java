@@ -9,6 +9,7 @@ import org.junit.rules.ExpectedException;
 /**
  * The test cases for {@link BLAS}.
  */
+
 public class BLASTest extends AlinkTestBase {
 	private static final double TOL = 1.0e-8;
 	private DenseMatrix mat = new DenseMatrix(2, 3, new double[] {1, 4, 2, 5, 3, 6});

@@ -77,8 +77,8 @@ public abstract class BaseDLBatchOp<T extends BaseDLBatchOp<T>> extends BatchOpe
 			.setEntryFunc(entryFuncName)
 			.setPythonEnv(getPythonEnv())
 			.setUserFiles(externalFilesConfig.toJson())
-			.setScript(mainScriptFileName)
-			.setUserDefinedParams(JsonConverter.toJson(algoParams))
+			.setMainScriptFile(mainScriptFileName)
+			.setUserParams(JsonConverter.toJson(algoParams))
 			.setIntraOpParallelism(getIntraOpParallelism())
 			.setMLEnvironmentId(getMLEnvironmentId());
 

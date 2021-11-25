@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasMinSampleRatioPerChild<T> extends WithParams <T> {
+	/**
+	 * @cn-name 子节点占父节点的最小样本比例
+	 * @cn 子节点占父节点的最小样本比例
+	 */
 	ParamInfo <Double> MIN_SAMPLE_RATIO_PERCHILD = ParamInfoFactory
 		.createParamInfo("minSampleRatioPerChild", Double.class)
 		.setDescription("Minimal value of: (num of samples in child)/(num of samples in its parent).")

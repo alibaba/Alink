@@ -25,7 +25,7 @@ public class FmRecommImplicitTest extends AlinkTestBase {
 		Row.of("3L", "1")
 	};
 
-	private static void eval(BatchOperator pred) {
+	private static void eval(BatchOperator<?> pred) {
 		pred = pred.select(
 			"label, concat('{\"0\":', cast((1-p) as varchar), ',\"1\":', cast(p as varchar), '}') as p_detail");
 
@@ -40,8 +40,8 @@ public class FmRecommImplicitTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {
-		BatchOperator trainData = new MemSourceBatchOp(rows, new String[] {"user", "item", "label"});
-		BatchOperator itemFeatures = new MemSourceBatchOp(itemfeat, new String[] {"item", "features"});
+		BatchOperator<?> trainData = new MemSourceBatchOp(rows, new String[] {"user", "item", "label"});
+		BatchOperator<?> itemFeatures = new MemSourceBatchOp(itemfeat, new String[] {"item", "features"});
 
 		FmRecommBinaryImplicitTrainBatchOp fmTrain = new FmRecommBinaryImplicitTrainBatchOp()
 			.setUserCol("user")
@@ -62,7 +62,7 @@ public class FmRecommImplicitTest extends AlinkTestBase {
 			.setUserCol("user").setItemCol("item")
 			.setRecommCol("p");
 
-		BatchOperator pred = predictor.linkFrom(fmTrain, trainData);
+		BatchOperator<?> pred = predictor.linkFrom(fmTrain, trainData);
 		eval(pred);
 	}
 }

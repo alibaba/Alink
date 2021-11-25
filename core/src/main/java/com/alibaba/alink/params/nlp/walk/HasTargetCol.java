@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasTargetCol<T> extends WithParams <T> {
+	/**
+	 * @cn-name 中止点点列名
+	 * @cn 用来指定中止点列
+	 */
 	ParamInfo <String> TARGET_COL = ParamInfoFactory
 		.createParamInfo("targetCol", String.class)
 		.setDescription("target col name")

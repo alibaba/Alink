@@ -37,6 +37,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${apache.common.io.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba.alink</groupId>
             <artifactId>shaded_tensorflow_core_api</artifactId>
             <version>0.2.0-0.3</version>

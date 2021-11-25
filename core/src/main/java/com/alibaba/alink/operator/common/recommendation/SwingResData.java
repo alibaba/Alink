@@ -9,12 +9,12 @@ import java.util.List;
 
 public class SwingResData implements AlinkSerializable {
     private Object[] object;
-    private float[] score;
+    private Float[] score;
     private String itemCol;
     public SwingResData() {
     }
 
-    public SwingResData(Object[] object, float[] score, String itemCol) {
+    public SwingResData(Object[] object, Float[] score, String itemCol) {
         this.object = object;
         this.score = score;
         this.itemCol = itemCol;
@@ -24,7 +24,7 @@ public class SwingResData implements AlinkSerializable {
         this.object = object;
     }
 
-    public void setScore(float[] score) {
+    public void setScore(Float[] score) {
         this.score = score;
     }
 
@@ -32,7 +32,7 @@ public class SwingResData implements AlinkSerializable {
         return object;
     }
 
-    public float[] getScore() {
+    public Float[] getScore() {
         return score;
     }
 

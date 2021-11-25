@@ -7,6 +7,10 @@ public interface CommonSwingParams<T> extends
     HasUserCol<T>,
     HasItemCol<T> {
 
+    /**
+     * @cn-name alpha参数
+     * @cn alpha参数，默认1.0
+     */
     ParamInfo<Float> ALPHA = ParamInfoFactory
         .createParamInfo("alpha", Float.class)
         .setDescription("Alpha.")
@@ -25,6 +29,10 @@ public interface CommonSwingParams<T> extends
         return set(ALPHA, alpha.floatValue());
     }
 
+    /**
+     * @cn-name 打分列列名
+     * @cn 打分列列名
+     */
     ParamInfo <String> RATE_COL = ParamInfoFactory
         .createParamInfo("rateCol", String.class)
         .setAlias(new String[] {"rateColName"})

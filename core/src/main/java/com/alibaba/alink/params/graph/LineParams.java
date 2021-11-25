@@ -27,6 +27,10 @@ public interface LineParams<T> extends
 	HasNumThreads <T>,
 	HasBatchSize <T> {
 
+	/**
+	 * @cn-name 阶数
+	 * @cn 选择一阶优化或是二阶优化
+	 */
 	ParamInfo <Order> ORDER = ParamInfoFactory
 		.createParamInfo("order", Order.class)
 		.setDescription("the order, choose from 1 or 2")
@@ -55,6 +59,10 @@ public interface LineParams<T> extends
 		}
 	}
 
+	/**
+	 * @cn-name 学习率
+	 * @cn 学习率
+	 */
 	ParamInfo <Double> RHO = ParamInfoFactory
 		.createParamInfo("rho", Double.class)
 		.setDescription("the learning rate")
@@ -66,6 +74,10 @@ public interface LineParams<T> extends
 
 	default T setRho(Double value) {return set(RHO, value);}
 
+	/**
+	 * @cn-name 采样率
+	 * @cn 每轮迭代在每个partition上采样样本的比率
+	 */
 	ParamInfo <Double> SAMPLE_RATIO_PER_PARTITION = ParamInfoFactory
 		.createParamInfo("sampleRatioPerPartition", Double.class)
 		.setDescription("sampleRatioPerPartition")
@@ -77,6 +89,10 @@ public interface LineParams<T> extends
 
 	default T setSampleRatioPerPartition(Double value) {return set(SAMPLE_RATIO_PER_PARTITION, value);}
 
+	/**
+	 * @cn-name 最小学习率的比例
+	 * @cn 最小学习率的比例
+	 */
 	ParamInfo <Double> MIN_RHO_RATE = ParamInfoFactory
 		.createParamInfo("minRhoRate", Double.class)
 		.setDescription("min rho rate")

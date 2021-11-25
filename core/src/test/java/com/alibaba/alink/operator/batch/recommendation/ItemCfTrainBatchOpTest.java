@@ -27,7 +27,7 @@ import java.util.Map;
  */
 
 public class ItemCfTrainBatchOpTest extends AlinkTestBase {
-	private Row[] rows1 = new Row[] {
+	private final Row[] rows1 = new Row[] {
 		Row.of(1L, 1L, 0.7),
 		Row.of(1L, 2L, 0.1),
 		Row.of(1L, 3L, 0.6),
@@ -45,7 +45,7 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 		Row.of(3L, 3L, 0.1),
 	};
 
-	private Row[] rows = new Row[] {
+	private final Row[] rows = new Row[] {
 		Row.of(0L, "a", 1.0),
 		Row.of(0L, "b", 3.0),
 		Row.of(0L, "c", 2.0),
@@ -57,8 +57,8 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 	};
 
 	@Test
-	public void testCosine() throws Exception {
-		BatchOperator emptyRate = BatchOperator.fromTable(
+	public void testCosine() {
+		BatchOperator<?> emptyRate = BatchOperator.fromTable(
 			MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"user", "item", "rate"}));
 
 		ItemCfTrainBatchOp trainBatchOp = new ItemCfTrainBatchOp()
@@ -96,11 +96,6 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 			.collectMetrics();
 		Assert.assertEquals(metrics.getRmse(), 1.544, 0.01);
 		Assert.assertEquals(metrics.getMae(), 1.381, 0.01);
-
-		ItemCfUsersPerItemRecommBatchOp recommUsers = new ItemCfUsersPerItemRecommBatchOp()
-			.setItemCol("item")
-			.setRecommCol("recomm")
-			.linkFrom(trainBatchOp, zipItem).lazyPrint(-1);
 
 		List <Row> recommendItems = new ItemCfItemsPerUserRecommBatchOp()
 			.setUserCol("user")
@@ -142,19 +137,19 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void testPearson() throws Exception {
-		BatchOperator emptyRate = BatchOperator.fromTable(
+	public void testPearson() {
+		BatchOperator<?> emptyRate = BatchOperator.fromTable(
 			MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"user", "item", "rate"}));
 
-		BatchOperator spliter = new LeaveTopKObjectOutBatchOp()
+		BatchOperator<?> spliter = new LeaveTopKObjectOutBatchOp()
 			.setK(2)
 			.setObjectCol("item")
 			.setRateCol("rate")
 			.setOutputCol("label")
 			.setGroupCol("user");
 
-		BatchOperator test = spliter.linkFrom(emptyRate);
-		BatchOperator train = spliter.getSideOutput(0);
+		BatchOperator<?> test = spliter.linkFrom(emptyRate);
+		BatchOperator<?> train = spliter.getSideOutput(0);
 
 		ItemCfTrainBatchOp trainBatchOp = new ItemCfTrainBatchOp()
 			.setSimilarityType("PEARSON")
@@ -177,7 +172,7 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void testLazyPrint() throws Exception {
-		BatchOperator emptyRate = BatchOperator.fromTable(
+		BatchOperator<?> emptyRate = BatchOperator.fromTable(
 			MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"user", "item", "rate"}));
 
 		ItemCfTrainBatchOp trainBatchOp = new ItemCfTrainBatchOp()
@@ -193,7 +188,7 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void testLocalPredictor() throws Exception {
-		BatchOperator data = BatchOperator.fromTable(
+		BatchOperator<?> data = BatchOperator.fromTable(
 			MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[] {"user", "item", "rate"}));
 
 		ItemCfTrainBatchOp trainBatchOp = new ItemCfTrainBatchOp()

@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasIfGARCH11<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn-name 是否用garch11
+	 * @cn 是否用garch11
+	 */
 	ParamInfo <Boolean> IF_GARCH11 = ParamInfoFactory
 		.createParamInfo("ifGARCH11", Boolean.class)
 		.setDescription("ifGARCH11")

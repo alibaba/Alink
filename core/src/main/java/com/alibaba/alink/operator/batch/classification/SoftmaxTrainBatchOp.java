@@ -5,6 +5,7 @@ import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
+import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -38,10 +39,12 @@ import com.alibaba.alink.operator.common.linear.LinearModelTrainInfo;
 import com.alibaba.alink.operator.common.linear.SoftmaxModelInfo;
 import com.alibaba.alink.operator.common.linear.SoftmaxObjFunc;
 import com.alibaba.alink.operator.common.optim.Lbfgs;
+import com.alibaba.alink.operator.common.optim.Optimizer;
 import com.alibaba.alink.operator.common.optim.OptimizerFactory;
 import com.alibaba.alink.operator.common.optim.Owlqn;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
 import com.alibaba.alink.params.classification.SoftmaxTrainParams;
+import com.alibaba.alink.params.shared.linear.HasL1;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 import java.util.ArrayList;
@@ -67,14 +70,21 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 
 	@Override
 	public SoftmaxTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
-		BatchOperator <?> in = checkAndGetFirst(inputs);
+		BatchOperator <?> in;
+		BatchOperator <?> initModel = null;
+		if (inputs.length == 1) {
+			in = checkAndGetFirst(inputs);
+		} else {
+			in = inputs[0];
+			initModel = inputs[1];
+		}
 		String modelName = "softmax";
 
 		/*
 		 * get parameters
 		 */
-		boolean hasInterceptItem = getWithIntercept();
-		final boolean standardization = getParams().get(LinearTrainParams.STANDARDIZATION);
+		final boolean hasInterceptItem = getWithIntercept();
+		final boolean standardization = getStandardization();
 		String[] featureColNames = getFeatureCols();
 		String labelName = getLabelCol();
 		TypeInformation <?> labelType;
@@ -151,9 +161,52 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 			.withBroadcastSet(labelIds, "labelIDs")
 			.withBroadcastSet(meanVar, "meanVar");
 
+		DataSet <DenseVector> initModelDataSet = initModel == null ? null : initModel.getDataSet().reduceGroup(
+			new RichGroupReduceFunction <Row, DenseVector>() {
+				@Override
+				public void reduce(Iterable <Row> values, Collector <DenseVector> out) throws Exception {
+					List <Row> modelRows = new ArrayList <>(0);
+					DenseVector[]
+						meanVar = (DenseVector[]) getRuntimeContext().getBroadcastVariable("meanVar").get(0);
+					int featSize = (int)getRuntimeContext().getBroadcastVariable("featSize").get(0);
+					for (Row row : values) {
+						modelRows.add(row);
+					}
+					LinearModelData model = new LinearModelDataConverter(labelType).load(modelRows);
+
+					boolean judge = (model.hasInterceptItem == hasInterceptItem)
+						&& (model.vectorSize + (model.hasInterceptItem ? 1 : 0) == featSize);
+					if (!judge) {
+						throw new RuntimeException("initial softmax model not compatible with parameter setting.");
+					}
+
+					int labelSize = model.labelValues.length;
+					int n = meanVar[0].size();
+					if (model.hasInterceptItem) {
+						for (int i = 0; i < labelSize - 1; ++i) {
+							double sum = 0.0;
+							for (int j = 1; j < n; ++j) {
+								int idx = i * n + j;
+								sum += model.coefVector.get(idx) * meanVar[0].get(j);
+								model.coefVector.set(idx, model.coefVector.get(idx) * meanVar[1].get(j));
+							}
+							model.coefVector.set(i * n, model.coefVector.get(i * n) + sum);
+						}
+					} else {
+						for (int i = 0; i < model.coefVector.size(); ++i) {
+							int idx = i % meanVar[1].size();
+							model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(idx));
+						}
+					}
+					out.collect(model.coefVector);
+				}
+			})
+			.withBroadcastSet(featSize, "featSize")
+			.withBroadcastSet(meanVar, "meanVar");
+
 		// construct a new function to do the solver opt and get a coef result. not a model.
 		DataSet <Tuple2 <DenseVector, double[]>> coefs
-			= optimize(this.getParams(), featSize, trainData, hasInterceptItem, labelIds);
+			= optimize(this.getParams(), featSize, trainData, initModelDataSet, hasInterceptItem, labelIds);
 
 		DataSet <Params> meta = labelIds
 			.mapPartition(
@@ -174,6 +227,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 
 	private DataSet <Tuple2 <DenseVector, double[]>> optimize(Params params, DataSet <Integer> sFeatureDim,
 															  DataSet <Tuple3 <Double, Double, Vector>> trainData,
+															  DataSet <DenseVector> initModel,
 															  boolean hasInterceptItem,
 															  DataSet <Row> labelIds) {
 		final double l1 = getL1();
@@ -249,16 +303,17 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 			}
 		});
 
-		// solve the opt problem.
+		Optimizer optimizer;
 		if (params.contains(LinearTrainParams.OPTIM_METHOD)) {
-			OptimMethod method = params.get(LinearTrainParams.OPTIM_METHOD);
-			return OptimizerFactory.create(objFunc, trainData, coefDim, params, method)
-				.optimize();
-		} else if (params.get(SoftmaxTrainParams.L_1) > 0) {
-			return new Owlqn(objFunc, trainData, coefDim, params).optimize();
+			LinearTrainParams.OptimMethod method = params.get(LinearTrainParams.OPTIM_METHOD);
+			optimizer = OptimizerFactory.create(objFunc, trainData, coefDim, params, method);
+		} else if (params.get(HasL1.L_1) > 0) {
+			optimizer = new Owlqn(objFunc, trainData, coefDim, params);
 		} else {
-			return new Lbfgs(objFunc, trainData, coefDim, params).optimize();
+			optimizer = new Lbfgs(objFunc, trainData, coefDim, params);
 		}
+		optimizer.initCoefWith(initModel);
+		return optimizer.optimize();
 	}
 
 	/**

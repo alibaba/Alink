@@ -70,12 +70,12 @@ public class StringNearestNeighborTest extends AlinkTestBase {
 		List <Row> res = neareastNeighbor.collect();
 
 		Map <Object, Double[]> score = new HashMap <>();
-		score.put(1, new Double[] {0.984375, 0.953125, 0.9375});
-		score.put(2, new Double[] {0.984375, 0.953125, 0.9375});
-		score.put(3, new Double[] {0.921875, 0.875, 0.875});
-		score.put(4, new Double[] {0.9375, 0.890625, 0.8125});
-		score.put(5, new Double[] {0.890625, 0.84375, 0.8125});
-		score.put(6, new Double[] {0.9375, 0.890625, 0.8125});
+		score.put(1, new Double[] {0.953125, 0.9375, 0.921875});
+		score.put(2, new Double[] {0.953125, 0.9375, 0.921875});
+		score.put(3, new Double[] {0.9375, 0.921875, 0.90625});
+		score.put(4, new Double[] {0.96875, 0.90625, 0.890625});
+		score.put(5, new Double[] {0.9375, 0.921875, 0.90625});
+		score.put(6, new Double[] {0.96875, 0.90625, 0.890625});
 
 		for (Row row : res) {
 			Double[] actual = extractScore((String) row.getField(2));
@@ -138,12 +138,12 @@ public class StringNearestNeighborTest extends AlinkTestBase {
 		List <Row> res = neareastNeighbor.collect();
 
 		Map <Object, Double[]> score = new HashMap <>();
-		score.put(1, new Double[] {0.984375, 0.953125, 0.9375});
-		score.put(2, new Double[] {0.984375, 0.953125, 0.9375});
-		score.put(3, new Double[] {0.921875, 0.875, 0.875});
-		score.put(4, new Double[] {0.9375, 0.890625, 0.8125});
-		score.put(5, new Double[] {0.890625, 0.84375, 0.8125});
-		score.put(6, new Double[] {0.9375, 0.890625, 0.8125});
+		score.put(1, new Double[] {0.953125, 0.9375, 0.921875});
+		score.put(2, new Double[] {0.953125, 0.9375, 0.921875});
+		score.put(3, new Double[] {0.9375, 0.921875, 0.90625});
+		score.put(4, new Double[] {0.96875, 0.90625, 0.890625});
+		score.put(5, new Double[] {0.9375, 0.921875, 0.90625});
+		score.put(6, new Double[] {0.96875, 0.90625, 0.890625});
 
 		for (Row row : res) {
 			Double[] actual = StringNearestNeighborBatchOpTest.extractScore((String) row.getField(2));

@@ -7,10 +7,16 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.common.dl.ExternalFilesConfig;
 
 public interface HasUserFiles<T> extends WithParams <T> {
+
+	/**
+	 * @cn 所有自定义脚本文件的路径
+	 * @cn-name 所有自定义脚本文件的路径
+	 */
 	ParamInfo <String> USER_FILES = ParamInfoFactory
 		.createParamInfo("userFiles", String.class)
 		.setAlias(new String[] {"userFile", "scriptFiles"})
-		.setDescription("userFiles")
+		.setDescription("Paths for all user-provided files")
+		.setRequired()
 		.build();
 
 	default ExternalFilesConfig getUserFiles() {

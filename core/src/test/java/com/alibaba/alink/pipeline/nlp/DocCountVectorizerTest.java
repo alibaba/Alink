@@ -26,6 +26,7 @@ import java.util.List;
 /**
  * Test for DocCountVectorizer.
  */
+
 public class DocCountVectorizerTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();

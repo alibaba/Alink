@@ -6,10 +6,13 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasLayer<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn 输出第几层 encoder layer 的结果， -1 表示最后一层，-2 表示倒数第2层，以此类推
+	 * @cn-name 输出第几层 encoder layer 的结果
+	 */
 	ParamInfo <Integer> LAYER = ParamInfoFactory
 		.createParamInfo("layer", Integer.class)
-		.setDescription("layer")
+		.setDescription("Which encoder layer to use")
 		.setHasDefaultValue(-1)
 		.build();
 

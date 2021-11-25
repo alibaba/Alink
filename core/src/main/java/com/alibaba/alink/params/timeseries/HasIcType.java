@@ -8,7 +8,10 @@ import com.alibaba.alink.params.ParamUtil;
 
 public interface HasIcType<T> extends WithParams <T> {
 
-
+	/**
+	 * @cn-name 评价指标
+	 * @cn 评价指标
+	 */
 	ParamInfo <IcType> IC_TYPE = ParamInfoFactory
 		.createParamInfo("icType", IcType.class)
 		.setDescription("ic type")

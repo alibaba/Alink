@@ -2,10 +2,8 @@ package com.alibaba.alink.operator.stream.timeseries;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MTable;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.batch.timeseries.LookupVectorInTimeSeriesBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.feature.OverCountWindowStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import org.junit.Test;
 
@@ -17,7 +15,7 @@ public class LookupVectorInTimeSeriesStreamOpTest {
 	@Test
 	public void test() throws Exception {
 
-		List<Row> mTableData = Arrays.asList(
+		List <Row> mTableData = Arrays.asList(
 			Row.of(new Timestamp(1), "10.0 21.0"),
 			Row.of(new Timestamp(2), "11.0 22.0"),
 			Row.of(new Timestamp(3), "12.0 23.0"),
@@ -30,21 +28,26 @@ public class LookupVectorInTimeSeriesStreamOpTest {
 			Row.of(new Timestamp(10), "19.0 30.0")
 		);
 
-		MTable mtable = new MTable(mTableData, "ts timestamp, val string");
+		MemSourceStreamOp source = new MemSourceStreamOp(mTableData, new String[] {"ts", "val"});
 
-		MemSourceStreamOp source = new MemSourceStreamOp(
-			new Object[][] {
-				{1, new Timestamp(5), mtable}
-			},
-			new String[] {"id", "ts", "data"});
-
-		source
-			.link(new LookupVectorInTimeSeriesStreamOp()
+		source.link(
+			new OverCountWindowStreamOp()
 				.setTimeCol("ts")
-				.setTimeSeriesCol("data")
+				.setPrecedingRows(5)
+				.setClause("mtable_agg(ts, val) as data")
+		).link(
+			new ShiftStreamOp()
+				.setValueCol("data")
+				.setShiftNum(7)
+				.setPredictNum(12)
+				.setPredictionCol("predict")
+		).link(
+			new LookupVectorInTimeSeriesStreamOp()
+				.setTimeCol("ts")
+				.setTimeSeriesCol("predict")
 				.setOutputCol("out")
-			)
-			.print();
+				.setReservedCols("ts")
+		).print();
 
 		StreamOperator.execute();
 	}

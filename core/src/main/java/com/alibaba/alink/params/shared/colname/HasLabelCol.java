@@ -10,6 +10,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * @param <T>
  */
 public interface HasLabelCol<T> extends WithParams <T> {
+	/**
+	 * @cn-name 标签列名
+	 * @cn 输入表中的标签列名
+	 */
 	ParamInfo <String> LABEL_COL = ParamInfoFactory
 		.createParamInfo("labelCol", String.class)
 		.setDescription("Name of the label column in the input table")

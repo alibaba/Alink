@@ -28,29 +28,49 @@ public interface GbdtTrainParams<T> extends
 	HasNewtonStep <T>,
 	HasFeatureImportanceType <T> {
 
+	/**
+	 * @cn-name 学习率
+	 * @cn 学习率（默认为0.3）
+	 */
 	ParamInfo <Double> LEARNING_RATE = ParamInfoFactory
 		.createParamInfo("learningRate", Double.class)
 		.setDescription("learning rate for gbdt training(default 0.3)")
 		.setHasDefaultValue(0.3)
 		.build();
+	/**
+	 * @cn-name 叶子节点最小Hessian值
+	 * @cn 叶子节点最小Hessian值（默认为0）
+	 */
 	ParamInfo <Double> MIN_SUM_HESSIAN_PER_LEAF = ParamInfoFactory
 		.createParamInfo("minSumHessianPerLeaf", Double.class)
 		.setDescription("minimum sum hessian for each leaf")
 		.setHasDefaultValue(0.0)
 		.build();
 
+	/**
+	 * @cn-name xgboost中的l1正则项
+	 * @cn xgboost中的l1正则项
+	 */
 	ParamInfo <Double> LAMBDA = ParamInfoFactory
 		.createParamInfo("lambda", Double.class)
 		.setDescription("l1 reg in xgboost gain.")
 		.setHasDefaultValue(0.0)
 		.build();
 
+	/**
+	 * @cn-name xgboost中的l2正则项
+	 * @cn xgboost中的l2正则项
+	 */
 	ParamInfo <Double> GAMMA = ParamInfoFactory
 		.createParamInfo("gamma", Double.class)
 		.setDescription("l2 reg in xgboost gain.")
 		.setHasDefaultValue(0.0)
 		.build();
 
+	/**
+	 * @cn-name 树分裂的策略
+	 * @cn 树分裂的策略，可以为PAI, XGBOOST
+	 */
 	ParamInfo <CriteriaType> CRITERIA = ParamInfoFactory
 		.createParamInfo("criteriaType", CriteriaType.class)
 		.setHasDefaultValue(CriteriaType.PAI)

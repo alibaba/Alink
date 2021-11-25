@@ -2,9 +2,6 @@ package com.alibaba.alink.operator.stream.timeseries;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.operator.batch.dataproc.GroupDataBatchOp;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.batch.timeseries.AutoGarchBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.OverCountWindowStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;

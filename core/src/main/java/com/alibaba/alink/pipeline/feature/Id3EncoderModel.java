@@ -3,6 +3,7 @@ package com.alibaba.alink.pipeline.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.tree.predictors.TreeModelEncoderModelMapper;
+import com.alibaba.alink.params.feature.C45EncoderParams;
 import com.alibaba.alink.params.feature.Id3EncoderParams;
 import com.alibaba.alink.pipeline.MapModel;
 

@@ -151,4 +151,7 @@ public class OneHotTest extends AlinkTestBase {
 		s = new OneHotPredictStreamOp(b, new Params());
 		Assert.assertEquals(s.getParams().size(), 0);
 	}
+
+
+
 }

@@ -9,6 +9,7 @@ import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
  * This is a dataset for association rules mining.
  * see: http://fimi.uantwerpen.be/data/
  */
+
 public class Accidents {
 
 	final static String URL = "http://pai-cj.cn-hangzhou.oss.aliyun-inc.com/csv/accidents.csv";

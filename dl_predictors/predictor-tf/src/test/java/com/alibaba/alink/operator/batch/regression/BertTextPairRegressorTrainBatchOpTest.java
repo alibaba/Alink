@@ -1,10 +1,16 @@
 package com.alibaba.alink.operator.batch.regression;
 
-import com.alibaba.alink.DLTestConstants;
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.dl.BertResources;
+import com.alibaba.alink.common.dl.BertResources.ModelName;
+import com.alibaba.alink.common.dl.BertResources.ResourceType;
+import com.alibaba.alink.common.dl.DLEnvConfig;
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
+import com.alibaba.alink.common.io.plugin.PluginDownloader;
+import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.ShuffleBatchOp;
-import com.alibaba.alink.operator.batch.regression.BertTextPairRegressorTrainBatchOp;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.testutil.categories.DLTest;
@@ -20,6 +26,15 @@ public class BertTextPairRegressorTrainBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF115);
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
+		registerKey = BertResources.getRegisterKey(ModelName.BASE_CHINESE, ResourceType.CKPT);
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
 		BatchOperator.setParallelism(1);
 		String url = "http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/data/MRPC/train.tsv";
 		String schemaStr = "f_quality double, f_id_1 string, f_id_2 string, f_string_1 string, f_string_2 string";
@@ -41,8 +56,6 @@ public class BertTextPairRegressorTrainBatchOpTest {
 			.setNumFineTunedLayers(1)
 			.setCustomJsonJson(JsonConverter.toJson(customConfig))
 			.setBertModelName("Base-Uncased")
-			.setModelPath(DLTestConstants.BERT_CHINESE_DIR)
-			.setPythonEnv(DLTestConstants.LOCAL_TF115_ENV)
 			.linkFrom(data);
 
 		new AkSinkBatchOp()

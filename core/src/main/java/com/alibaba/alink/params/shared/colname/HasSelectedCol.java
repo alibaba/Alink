@@ -13,6 +13,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasSelectedCol<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 选中的列名
+	 * @cn 计算列对应的列名
+	 */
 	ParamInfo <String> SELECTED_COL = ParamInfoFactory
 		.createParamInfo("selectedCol", String.class)
 		.setDescription("Name of the selected column used for processing")

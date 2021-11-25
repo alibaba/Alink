@@ -2,13 +2,17 @@ package com.alibaba.alink.common.dl;
 
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +25,8 @@ import static com.alibaba.alink.common.dl.BertResources.ResourceType.SAVED_MODEL
 import static com.alibaba.alink.common.dl.BertResources.ResourceType.VOCAB;
 
 public class BertResources {
+
+	private static final Logger LOG = LoggerFactory.getLogger(BertResources.class);
 
 	private static final Map <Pair <ModelName, ResourceType>, String> BERT_RESOURCE_PATH_MAP = new HashMap <>();
 	static String REGISTER_KEY_TEMPLATE = "%s_%s";
@@ -55,7 +61,7 @@ public class BertResources {
 			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/base_cased_ckpt-0.01/cased_L-12_H-768_A-12.zip");
 	}
 
-	static RegisterKey getRegisterKey(ModelName modelName, ResourceType type) {
+	public static RegisterKey getRegisterKey(ModelName modelName, ResourceType type) {
 		return new RegisterKey(
 			String.format(REGISTER_KEY_TEMPLATE, modelName.name().toLowerCase(), type.name().toLowerCase()),
 			PLUGIN_VERSION
@@ -65,7 +71,13 @@ public class BertResources {
 	static String getBertResource(ModelName modelName, ResourceType type) {
 		String remotePath = BERT_RESOURCE_PATH_MAP.get(Pair.of(modelName, type));
 		RegisterKey registerKey = getRegisterKey(modelName, type);
-		FilePath pluginFilePath = ResourcePluginFactory.getResourcePluginPath(registerKey);
+		FilePath pluginFilePath = null;
+		try {
+			pluginFilePath = ResourcePluginFactory.getResourcePluginPath(registerKey);
+		} catch (IOException e) {
+			// pass
+			LOG.info("Could not find the plugin", e);
+		}
 		if (null != pluginFilePath) {
 			String directoryName = PythonFileUtils.getCompressedFileName(remotePath);
 			File file = new File(pluginFilePath.getPath().toString(), directoryName);
@@ -80,7 +92,10 @@ public class BertResources {
 			throw new RuntimeException(String.format("Default resource path for %s %s not specified.",
 				modelName.name(), type.name()));
 		}
-		System.out.println(String.format("Use plugin resource:%s", remotePath));
+		LOG.info("Use plugin resource: {}", remotePath);
+		if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+			System.out.println(String.format("Use plugin resource:%s", remotePath));
+		}
 		return remotePath;
 	}
 

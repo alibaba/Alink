@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.dataproc;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.JoinFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichGroupReduceFunction;
@@ -11,6 +12,8 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.typeutils.RowTypeInfo;
+import org.apache.flink.api.java.typeutils.TupleTypeInfo;
 import org.apache.flink.api.java.utils.DataSetUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -56,7 +59,7 @@ public final class HugeMultiStringIndexerPredictBatchOp
 	 * @param model The model fitted by {@link MultiStringIndexerTrainBatchOp}.
 	 * @return A DataSet of only one record, which is the meta string of the model.
 	 */
-	private static DataSet <String> getModelMeta(BatchOperator model) {
+	private DataSet <String> getModelMeta(BatchOperator model) {
 		DataSet <Row> modelRows = model.getDataSet();
 		return modelRows
 			.flatMap(new RichFlatMapFunction <Row, String>() {
@@ -71,7 +74,8 @@ public final class HugeMultiStringIndexerPredictBatchOp
 
 				}
 			})
-			.name("get_model_meta");
+			.name("get_model_meta")
+			.returns(Types.STRING);
 	}
 
 	/**
@@ -83,7 +87,7 @@ public final class HugeMultiStringIndexerPredictBatchOp
 	 * @param selectedCols The selected columns in prediction data.
 	 * @return A DataSet of tuples of column index, token, token index.
 	 */
-	private static DataSet <Tuple3 <Integer, String, Long>> getModelData(BatchOperator model,
+	private DataSet <Tuple3 <Integer, String, Long>> getModelData(BatchOperator model,
 																		 DataSet <String> modelMeta,
 																		 final String[] selectedCols) {
 		DataSet <Row> modelRows = model.getDataSet();
@@ -126,7 +130,8 @@ public final class HugeMultiStringIndexerPredictBatchOp
 				}
 			})
 			.withBroadcastSet(modelMeta, "modelMeta")
-			.name("get_model_data");
+			.name("get_model_data")
+			.returns(new TupleTypeInfo <>(Types.INT, Types.STRING, Types.LONG));
 	}
 
 	@Override
@@ -160,6 +165,17 @@ public final class HugeMultiStringIndexerPredictBatchOp
 		// tuple: column index, default token id
 		DataSet <Tuple2 <Integer, Long>> defaultIndex = modelData
 			. <Tuple2 <Integer, Long>>project(0, 2)
+			.mapPartition(new MapPartitionFunction <Tuple2<Integer, Long>, Tuple2<Integer, Long>>() {
+				@Override
+				public void mapPartition(Iterable <Tuple2 <Integer, Long>> iterable, Collector <Tuple2<Integer, Long>> collector)
+					throws Exception {
+					HashMap<Integer, Long> map = new HashMap <>();
+					for (Tuple2 <Integer, Long> value : iterable) {
+						map.put(value.f0, Math.max(map.getOrDefault(value.f0, 0L), value.f1));
+					}
+					map.forEach((key, value) -> collector.collect(Tuple2.of(key, value)));
+				}
+			})
 			.groupBy(0)
 			.reduce(new ReduceFunction <Tuple2 <Integer, Long>>() {
 				private static final long serialVersionUID = 5053931294560858595L;
@@ -178,7 +194,8 @@ public final class HugeMultiStringIndexerPredictBatchOp
 					return Tuple2.of(value.f0, value.f1 + 1L);
 				}
 			})
-			.name("get_default_index");
+			.name("get_default_index")
+			.returns(new TupleTypeInfo <>(Types.INT, Types.LONG));
 
 		// tuple: record id, column index, token
 		DataSet <Tuple3 <Long, Integer, String>> flattened = dataWithId
@@ -196,12 +213,13 @@ public final class HugeMultiStringIndexerPredictBatchOp
 					}
 				}
 			})
-			.name("flatten_pred_data");
+			.name("flatten_pred_data")
+			.returns(new TupleTypeInfo <>(Types.LONG, Types.INT, Types.STRING));
 
 		// tuple: record id, column index, token id
 		DataSet <Tuple3 <Long, Integer, Long>> indexedNulTokens = dataWithId
 			.flatMap(new FlatMapFunction <Tuple2 <Long, Row>, Tuple3 <Long, Integer, Long>>() {
-				private static final long serialVersionUID = -3736683516197146026L;
+				private static final long serialVersionUID = 4078100010408649546L;
 
 				@Override
 				public void flatMap(Tuple2 <Long, Row> value, Collector <Tuple3 <Long, Integer, Long>> out)
@@ -216,7 +234,8 @@ public final class HugeMultiStringIndexerPredictBatchOp
 					}
 				}
 			})
-			.name("map_null_token_to_index");
+			.name("map_null_token_to_index")
+			.returns(new TupleTypeInfo <>(Types.LONG, Types.INT, Types.LONG));
 
 		// record id, column index, token index
 		DataSet <Tuple3 <Long, Integer, Long>> indexed = flattened
@@ -237,7 +256,8 @@ public final class HugeMultiStringIndexerPredictBatchOp
 						}
 					}
 				})
-			.name("map_token_to_index");
+			.name("map_token_to_index")
+			.returns(new TupleTypeInfo <>(Types.LONG, Types.INT, Types.LONG));
 
 		// tuple: record id, prediction result
 		DataSet <Tuple2 <Long, Row>> aggregateResult = indexed
@@ -291,7 +311,8 @@ public final class HugeMultiStringIndexerPredictBatchOp
 				}
 			})
 			.withBroadcastSet(defaultIndex, "defaultIndex")
-			.name("aggregate_result");
+			.name("aggregate_result")
+			.returns(new TupleTypeInfo <>(Types.LONG, new RowTypeInfo(outputColTypes)));
 
 		DataSet <Row> output = dataWithId
 			.join(aggregateResult)
@@ -303,7 +324,9 @@ public final class HugeMultiStringIndexerPredictBatchOp
 				public Row join(Tuple2 <Long, Row> first, Tuple2 <Long, Row> second) throws Exception {
 					return outputColsHelper.getResultRow(first.f1, second.f1);
 				}
-			});
+			})
+			.name("merge_result")
+			.returns(new RowTypeInfo(outputColsHelper.getResultSchema().getFieldTypes()));
 
 		this.setOutput(output, outputColsHelper.getResultSchema());
 		return this;

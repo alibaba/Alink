@@ -47,42 +47,72 @@ public class TimeSpan {
 		return r + m_milliseconds + " milliseconds.";
 	}
 
+	/**
+	 * @return 用天数计算的TimeSpan值
+	 */
 	public long days() {
 		return m_days;
 	}
 
+	/**
+	 * @return 用小时计算的TimeSpan值
+	 */
 	public int hours() {
 		return m_hours;
 	}
 
+	/**
+	 * @return 用分钟计算的TimeSpan值
+	 */
 	public int minutes() {
 		return m_minutes;
 	}
 
+	/**
+	 * @return 用秒计算的TimeSpan值
+	 */
 	public int seconds() {
 		return m_seconds;
 	}
 
+	/**
+	 * @return 用毫秒计算的TimeSpan值
+	 */
 	public double milliseconds() {
 		return m_milliseconds;
 	}
 
+	/**
+	 * @return TimeSpan值表示的天数
+	 */
 	public double totalDays() {
 		return m_TotalMilliseconds / (3600 * 24 * 1000);
 	}
 
+	/**
+	 * @return TimeSpan值表示的小时数
+	 */
 	public double totalHours() {
 		return m_TotalMilliseconds / (3600 * 1000);
 	}
 
+	/**
+	 * @return TimeSpan值表示的分钟数
+	 */
 	public double totalMinutes() {
 		return m_TotalMilliseconds / (60 * 1000);
 	}
 
+	/**
+	 * @return TimeSpan值表示的秒数
+	 */
 	public double totalSeconds() {
 		return m_TotalMilliseconds / 1000;
 	}
 
+	/**
+	 * @return TimeSpan值表示的毫秒数
+	 */
 	public double totalMilliseconds() {
 		return m_TotalMilliseconds;
 	}

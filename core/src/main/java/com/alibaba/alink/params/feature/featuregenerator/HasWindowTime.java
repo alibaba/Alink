@@ -6,7 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasWindowTime<T> extends WithParams<T> {
 
-    //the metric is second.
+    /**
+     * @cn-name 窗口大小
+     * @cn 窗口大小
+     */
     ParamInfo<Double> WINDOW_TIME = ParamInfoFactory
         .createParamInfo("windowTime", Double.class)
         .setDescription("window time interval")

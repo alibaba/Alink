@@ -13,17 +13,29 @@ import com.alibaba.alink.params.dataproc.HasClause;
  */
 public interface OrderByParams<T> extends WithParams <T>, HasClause <T> {
 
+	/**
+	 * @cn-name fetch的record数目
+	 * @cn fetch的record数目
+	 */
 	ParamInfo <Integer> FETCH = ParamInfoFactory
 		.createParamInfo("fetch", Integer.class)
 		.setDescription("Number of records to fetch")
 		.setOptional()
 		.build();
+	/**
+	 * @cn-name record的limit数
+	 * @cn record的limit数
+	 */
 	ParamInfo <Integer> LIMIT = ParamInfoFactory
 		.createParamInfo("limit", Integer.class)
 		.setDescription("Number of records limited")
 		.setOptional()
 		.build();
 
+	/**
+	 * @cn-name fetch的偏移值
+	 * @cn fetch的偏移值
+	 */
 	ParamInfo <Integer> OFFSET = ParamInfoFactory
 		.createParamInfo("offset", Integer.class)
 		.setDescription("Offset when fetching records")
@@ -54,6 +66,10 @@ public interface OrderByParams<T> extends WithParams <T>, HasClause <T> {
 		return set(OFFSET, value);
 	}
 
+	/**
+	 * @cn-name 排序方法
+	 * @cn 排序方法
+	 */
 	ParamInfo <String> ORDER = ParamInfoFactory
 		.createParamInfo("order", String.class)
 		.setDescription("asc or desc")

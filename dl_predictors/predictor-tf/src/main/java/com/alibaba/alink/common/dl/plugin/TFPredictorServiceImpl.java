@@ -2,11 +2,15 @@ package com.alibaba.alink.common.dl.plugin;
 
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.dl.utils.TF2TensorUtils;
 import com.alibaba.alink.common.dl.utils.tftensorconv.StringTFTensorConversionImpl;
 import com.alibaba.alink.common.dl.utils.tftensorconv.TensorTFTensorConversionImpl;
+import org.apache.commons.io.output.NullOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
@@ -16,6 +20,7 @@ import org.tensorflow.proto.framework.MetaGraphDef;
 import org.tensorflow.proto.framework.SignatureDef;
 import org.tensorflow.proto.framework.TensorInfo;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +39,8 @@ import static com.alibaba.alink.operator.common.tensorflow.TFSavedModelConstants
 
 public class TFPredictorServiceImpl implements DLPredictorService {
 
+	private static final Logger LOG = LoggerFactory.getLogger(TFPredictorServiceImpl.class);
+
 	private Class <?>[] outputTypeClasses;
 	private SavedModelBundle model;
 	private String[] inputOpNames;
@@ -42,6 +49,11 @@ public class TFPredictorServiceImpl implements DLPredictorService {
 
 	// Indicate batch dimensions indices of the output tensors.
 	private int[] outputBatchAxes;
+
+	static {
+		// To avoid java.lang.OutOfMemoryError: Physical memory usage is too high: physicalBytes (xxxM) > maxPhysicalBytes (xxxM)
+		System.setProperty("org.bytedeco.javacpp.maxPhysicalBytes", "0");
+	}
 
 	/**
 	 * Normalize value so {@link TF2TensorUtils#parseTensor} or {@link TF2TensorUtils#parseBatchTensors} can apply
@@ -119,10 +131,17 @@ public class TFPredictorServiceImpl implements DLPredictorService {
 			configProtoBuilder.setInterOpParallelismThreads(interOpParallelism);
 		}
 
+		final PrintStream saveErr = System.err;
+		if (!AlinkGlobalConfiguration.isPrintProcessInfo()) {
+			System.setErr(new PrintStream(new NullOutputStream()));
+		}
+
 		model = SavedModelBundle.loader(modelPath)
 			.withTags(graphDefTag)
 			.withConfigProto(configProtoBuilder.build())
 			.load();
+
+		System.setErr(saveErr);
 
 		MetaGraphDef m = model.metaGraphDef();
 		SignatureDef sig = m.getSignatureDefOrThrow(signatureDefKey);
@@ -130,11 +149,19 @@ public class TFPredictorServiceImpl implements DLPredictorService {
 		Map <String, TensorInfo> outputsMap = sig.getOutputsMap();
 
 		inputsMap.forEach((k, v) ->
-			System.out.println(k + " ---- " + v.getName() + ", " + v.getDtype() + ", " +
+			LOG.info("Input " + k + ": " + v.getName() + ", " + v.getDtype() + ", " +
 				Arrays.toString(TF2TensorUtils.getTensorShape(v))));
 		outputsMap.forEach((k, v) ->
-			System.out.println(k + " ---- " + v.getName() + ", " + v.getDtype() + ", " +
+			LOG.info("Output " + k + ": " + v.getName() + ", " + v.getDtype() + ", " +
 				Arrays.toString(TF2TensorUtils.getTensorShape(v))));
+		if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+			inputsMap.forEach((k, v) ->
+				System.out.println("Input " + k + ": " + v.getName() + ", " + v.getDtype() + ", " +
+					Arrays.toString(TF2TensorUtils.getTensorShape(v))));
+			outputsMap.forEach((k, v) ->
+				System.out.println("Output " + k + ": " + v.getName() + ", " + v.getDtype() + ", " +
+					Arrays.toString(TF2TensorUtils.getTensorShape(v))));
+		}
 
 		Preconditions.checkArgument(inputsMap.size() == inputNames.length, "Incorrect number of inputs");
 		inputOpNames = new String[inputNames.length];
@@ -146,16 +173,12 @@ public class TFPredictorServiceImpl implements DLPredictorService {
 			inputTensorInfos[i] = inputsMap.get(inputNames[i]);
 			Preconditions.checkArgument(inputTensorInfos[i] != null, "Input name not exist: " + inputNames[i]);
 			inputOpNames[i] = inputTensorInfos[i].getName();
-			System.out.println("shape of " + inputNames[i] + ": " +
-				Arrays.toString(TF2TensorUtils.getTensorShape(inputTensorInfos[i])));
 		}
 
 		for (int i = 0; i < outputNames.length; i++) {
 			outputTensorInfos[i] = outputsMap.get(outputNames[i]);
 			Preconditions.checkArgument(outputTensorInfos[i] != null, "Output name not exist: " + outputNames[i]);
 			outputOpNames[i] = outputTensorInfos[i].getName();
-			System.out.println("shape of " + outputNames[i] + ": " +
-				Arrays.toString(TF2TensorUtils.getTensorShape(outputTensorInfos[i])));
 		}
 	}
 

@@ -9,15 +9,14 @@ public abstract class ClassLoaderFactory implements Serializable {
 	private static final long serialVersionUID = -7228535414098842970L;
 
 	protected final RegisterKey registerKey;
-	protected final Map <String, String> registerContext;
+	protected final DistributeCache distributeCache;
 
 	protected final static Object EMPTY_RETURN = null;
 
 	public ClassLoaderFactory(RegisterKey registerKey,
-							  Map <String, String> registerContext) {
-
+							  DistributeCache distributeCache) {
 		this.registerKey = registerKey;
-		this.registerContext = registerContext;
+		this.distributeCache = distributeCache;
 	}
 
 	public void doAs(PrivilegedExceptionActionWithoutReturn action) throws Exception {

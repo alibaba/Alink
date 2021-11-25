@@ -8,6 +8,9 @@ public interface RandomTableSourceBatchParams<T> extends WithParams <T> {
 
 	/**
 	 * Param "idColName"
+	 *
+	 * @cn-name id 列名
+	 * @cn 列名，若列名非空，表示输出表中包含一个整形序列id列，否则无该列
 	 */
 	ParamInfo <String> ID_COL = ParamInfoFactory
 		.createParamInfo("idCol", String.class)
@@ -17,6 +20,9 @@ public interface RandomTableSourceBatchParams<T> extends WithParams <T> {
 		.build();
 	/**
 	 * Param "outputColConfs"
+	 *
+	 * @cn-name 列配置信息
+	 * @cn 表示每一列的数据分布配置信息
 	 */
 	ParamInfo <String> OUTPUT_COL_CONFS = ParamInfoFactory
 		.createParamInfo("outputColConfs", String.class)
@@ -25,6 +31,9 @@ public interface RandomTableSourceBatchParams<T> extends WithParams <T> {
 		.build();
 	/**
 	 * Param "outputColNames"
+	 *
+	 * @cn-name 输出列名数组
+	 * @cn 字符串数组，当参数不设置时，算法自动生成
 	 */
 	ParamInfo <String[]> OUTPUT_COLS = ParamInfoFactory
 		.createParamInfo("outputCols", String[].class)
@@ -34,6 +43,9 @@ public interface RandomTableSourceBatchParams<T> extends WithParams <T> {
 		.build();
 	/**
 	 * Param "numCols"
+	 *
+	 * @cn-name 输出表列数目
+	 * @cn 输出表中列的数目，整型
 	 */
 	ParamInfo <Integer> NUM_COLS = ParamInfoFactory
 		.createParamInfo("numCols", Integer.class)
@@ -42,6 +54,9 @@ public interface RandomTableSourceBatchParams<T> extends WithParams <T> {
 		.build();
 	/**
 	 * Param "numRows"
+	 *
+	 * @cn-name 输出表行数目
+	 * @cn 输出表中行的数目，整型
 	 */
 	ParamInfo <Long> NUM_ROWS = ParamInfoFactory
 		.createParamInfo("numRows", Long.class)

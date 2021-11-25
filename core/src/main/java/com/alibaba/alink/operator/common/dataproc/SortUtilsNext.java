@@ -76,29 +76,45 @@ public final class SortUtilsNext {
 
 				@Override
 				public void mapPartition(Iterable <T> values, Collector <T> out) throws Exception {
+					LOG.info("{} map partition start.", getRuntimeContext().getTaskName());
+					LOG.info("{} map partition start.", cnt);
+
 					ArrayList <T> all = new ArrayList <>(cnt);
+
+					LOG.info("{} map sort all.", getRuntimeContext().getTaskName());
 
 					for (T val : values) {
 						all.add(val);
 					}
 
+					LOG.info("{} map sort start.", getRuntimeContext().getTaskName());
+
 					all.sort(Comparator.naturalOrder());
+
+					LOG.info("{} map sort end.", getRuntimeContext().getTaskName());
 
 					for (T val : all) {
 						out.collect(val);
 					}
+
+					LOG.info("{} map partition end.", getRuntimeContext().getTaskName());
+
 				}
 			})
+			.name("sorted")
 			.withBroadcastSet(cnt, "cnt")
 			.returns(input.getType());
 
 		DataSet <Tuple2 <Object, Integer>> splitPoints = sorted
 			.mapPartition(new SampleSplitPoint <>())
+			.name("SampleSplitPoint")
 			.withBroadcastSet(cnt, "cnt")
-			.reduceGroup(new SplitPointReducer());
+			.reduceGroup(new SplitPointReducer())
+			.name("SplitPointReducer");
 
 		DataSet <Tuple2 <Integer, T>> splitData = sorted
 			.mapPartition(new SplitData <>())
+			.name("SplitData")
 			.withBroadcastSet(splitPoints, "splitPoints")
 			.returns(new TupleTypeInfo <>(Types.INT, input.getType()));
 
@@ -111,6 +127,7 @@ public final class SortUtilsNext {
 					return key % numPartitions;
 				}
 			}, 0)
+			.name("partitionCustom")
 			.map(new MapFunction <Tuple2 <Integer, T>, T>() {
 				private static final long serialVersionUID = -7579866556587630212L;
 
@@ -119,6 +136,7 @@ public final class SortUtilsNext {
 					return value.f1;
 				}
 			})
+			.name("partitioned")
 			.returns(input.getType());
 
 		DataSet <Tuple2 <Integer, Long>> partitionedCnt = DataSetUtils.countElementsPerPartition(partitioned);
@@ -163,6 +181,8 @@ public final class SortUtilsNext {
 					break;
 				}
 			}
+
+			LOG.info("{} open end.", getRuntimeContext().getTaskName());
 		}
 
 		@Override
@@ -174,6 +194,7 @@ public final class SortUtilsNext {
 
 		@Override
 		public void mapPartition(Iterable <T> values, Collector <Tuple2 <Object, Integer>> out) throws Exception {
+			LOG.info("{} mapPartition start.", getRuntimeContext().getTaskName());
 
 			if (cnt <= 0) {
 				out.collect(new Tuple2(
@@ -184,8 +205,8 @@ public final class SortUtilsNext {
 
 			int localSplitPointSize = Math.min(SPLIT_POINT_SIZE, cnt - 1);
 
-			ArrayList <Tuple2 <Object, Integer>> splitPoints
-				= new ArrayList <>(localSplitPointSize);
+			//ArrayList <Tuple2 <Object, Integer>> splitPoints
+			//	= new ArrayList <>(localSplitPointSize);
 
 			int dataIndex = 0;
 			int splitPointIdx = 0;
@@ -205,6 +226,8 @@ public final class SortUtilsNext {
 			out.collect(new Tuple2(
 				getRuntimeContext().getNumberOfParallelSubtasks(),
 				-taskId - 1));
+
+			LOG.info("{} mapPartition end.", getRuntimeContext().getTaskName());
 		}
 	}
 
@@ -232,6 +255,8 @@ public final class SortUtilsNext {
 		public void reduce(
 			Iterable <Tuple2 <Object, Integer>> values,
 			Collector <Tuple2 <Object, Integer>> out) throws Exception {
+			LOG.info("{} reduce start.", getRuntimeContext().getTaskName());
+
 			ArrayList <Tuple2 <Object, Integer>> all = new ArrayList <>();
 			int instanceCount = -1;
 
@@ -267,6 +292,8 @@ public final class SortUtilsNext {
 			for (Tuple2 <Object, Integer> sSplit : split) {
 				out.collect(sSplit);
 			}
+
+			LOG.info("{} reduce end.", getRuntimeContext().getTaskName());
 		}
 	}
 

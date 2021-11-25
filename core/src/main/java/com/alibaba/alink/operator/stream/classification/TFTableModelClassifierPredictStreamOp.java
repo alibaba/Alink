@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.stream.classification;
 
+import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -7,6 +8,7 @@ import com.alibaba.alink.operator.common.classification.tensorflow.TFTableModelC
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.classification.TFTableModelClassificationPredictParams;
 
+@Internal
 public class TFTableModelClassifierPredictStreamOp<T extends TFTableModelClassifierPredictStreamOp <T>>
 	extends ModelMapStreamOp <T> implements TFTableModelClassificationPredictParams <T> {
 

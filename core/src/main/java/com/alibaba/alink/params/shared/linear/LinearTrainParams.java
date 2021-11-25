@@ -23,6 +23,10 @@ public interface LinearTrainParams<T> extends
 	HasVectorColDefaultAsNull <T>,
 	HasStandardization <T> {
 
+	/**
+	 * @cn-name 优化方法
+	 * @cn 优化问题求解时选择的优化方法
+	 */
 	ParamInfo <OptimMethod> OPTIM_METHOD = ParamInfoFactory
 		.createParamInfo("optimMethod", OptimMethod.class)
 		.setDescription("optimization method")

@@ -5,13 +5,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.dl.BertResources;
+import com.alibaba.alink.common.dl.utils.ArchivesUtils;
+import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.BertTokenizerImpl;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.EncodingKeys;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.Kwargs;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.PreTrainedTokenizer.PaddingStrategy;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.PreTrainedTokenizer.TruncationStrategy;
-import com.alibaba.alink.common.dl.utils.PythonFileUtils;
-import com.alibaba.alink.common.dl.utils.ArchivesUtils;
 import com.alibaba.alink.params.tensorflow.bert.HasBertModelName;
 import com.alibaba.alink.params.tensorflow.bert.HasDoLowerCaseDefaultAsNull;
 import com.alibaba.alink.params.tensorflow.bert.HasMaxSeqLengthDefaultAsNull;
@@ -30,9 +30,14 @@ public class BertTokenizerMapper extends PreTrainedTokenizerMapper {
 		String modelName = params.get(HasBertModelName.BERT_MODEL_NAME);
 		String vocabPath = BertResources.getBertModelVocab(modelName);
 
-		File localModelDir = PythonFileUtils.createTempDir(null);
-		ArchivesUtils.downloadDecompressToDirectory(vocabPath, localModelDir);
-		localModelDir.deleteOnExit();
+		File localModelDir;
+		if (vocabPath.startsWith("file://")) {	// from plugin
+			localModelDir = new File(vocabPath.substring("file://".length()));
+		} else {
+			localModelDir = PythonFileUtils.createTempDir(null);
+			ArchivesUtils.downloadDecompressToDirectory(vocabPath, localModelDir);
+			localModelDir.deleteOnExit();
+		}
 
 		Kwargs kwargs = Kwargs.empty();
 		if (null != params.get(HasDoLowerCaseDefaultAsNull.DO_LOWER_CASE)) {

@@ -11,14 +11,15 @@ import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.pyrunner.PythonMIMOUdaf;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.params.dl.HasPythonEnv;
 import com.alibaba.alink.params.timeseries.ProphetTrainParams;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_CMD_KEY;
 import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_TURN_ON_LOGGING_KEY;
+import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_VIRTUAL_ENV_KEY;
 
 public class ProphetTrainBatchOp extends BatchOperator <ProphetTrainBatchOp>
 	implements ProphetTrainParams <ProphetTrainBatchOp> {
@@ -38,6 +39,9 @@ public class ProphetTrainBatchOp extends BatchOperator <ProphetTrainBatchOp>
 
 		Map <String, String> config = new HashMap <>();
 		config.put(PY_TURN_ON_LOGGING_KEY, String.valueOf(AlinkGlobalConfiguration.isPrintProcessInfo()));
+		if (getParams().contains(HasPythonEnv.PYTHON_ENV)) {
+			config.put(PY_VIRTUAL_ENV_KEY, getPythonEnv());
+		}
 
 		MLEnvironmentFactory.get(envId).getBatchTableEnvironment().registerFunction(
 			"prophet", new PythonMIMOUdaf <>("algo.prophet.PyProphetCalc", config)

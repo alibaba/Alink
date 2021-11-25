@@ -10,6 +10,10 @@ public interface BucketizerParams<T> extends
 	QuantileDiscretizerPredictParams <T>,
 	HasLeftOpen <T> {
 
+	/**
+	 * @cn-name 多列的切分点
+	 * @cn 多列的切分点
+	 */
 
 	ParamInfo <double[][]> CUTS_ARRAY = ParamInfoFactory
 		.createParamInfo("cutsArray", double[][].class)

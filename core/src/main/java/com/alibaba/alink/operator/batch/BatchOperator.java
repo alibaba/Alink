@@ -28,8 +28,10 @@ import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.dataproc.FirstNBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.RebalanceBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.SampleBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.SampleWithSizeBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.ShuffleBatchOp;
 import com.alibaba.alink.operator.batch.sink.BaseSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
@@ -239,6 +241,14 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	 */
 	public BatchOperator <?> groupBy(String groupByPredicate, String selectClause) {
 		return BatchSqlOperators.groupBy(this, groupByPredicate, selectClause);
+	}
+
+	public BatchOperator <?> rebalance() {
+		return new RebalanceBatchOp().linkFrom(this);
+	}
+
+	public BatchOperator <?> shuffle() {
+		return new ShuffleBatchOp().linkFrom(this);
 	}
 
 	/* open ends here */

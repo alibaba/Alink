@@ -13,6 +13,7 @@ import java.util.Arrays;
 /**
  * Test for BucketDiscretizerTrain
  */
+
 public class EqualWidthDiscretizerTrainBatchOpTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();

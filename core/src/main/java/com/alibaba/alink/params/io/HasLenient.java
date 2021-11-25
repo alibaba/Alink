@@ -6,6 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasLenient<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 是否容错
+	 * @cn 若为true，当解析失败时丢弃该数据；若为false，解析失败是抛异常
+	 */
 	ParamInfo <Boolean> LENIENT = ParamInfoFactory
 		.createParamInfo("lenient", Boolean.class)
 		.setDescription("lenient")

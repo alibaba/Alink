@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Params: Number of the recommended top objects.
  */
 public interface HasKDefaultAs10<T> extends WithParams <T> {
+	/**
+	 * @cn-name 推荐TOP数量
+	 * @cn 推荐TOP数量
+	 */
 	ParamInfo <Integer> K = ParamInfoFactory
 		.createParamInfo("k", Integer.class)
 		.setDescription("Number of the recommended top objects.")

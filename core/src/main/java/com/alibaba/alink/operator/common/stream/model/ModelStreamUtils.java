@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -56,6 +57,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ModelStreamUtils {
 
@@ -605,6 +607,17 @@ public class ModelStreamUtils {
 		}
 
 		public void finalizeGlobal(Timestamp modelId, long numRows, int numFiles, int numKeepModel) throws IOException {
+			List<Integer> filesId = new ArrayList <>();
+
+			for (int i = 0; i < numFiles; ++i) {
+				filesId.add(i);
+			}
+
+			finalizeGlobal(modelId, numRows, filesId, numKeepModel);
+		}
+
+		public void finalizeGlobal(Timestamp modelId, long numRows, List <Integer> filesId, int numKeepModel)
+			throws IOException {
 
 			BaseFileSystem <?> fileSystem = filePath.getFileSystem();
 
@@ -619,12 +632,23 @@ public class ModelStreamUtils {
 				fileSystem.mkdirs(modelPath);
 			}
 
-			for (int i = 0; i < numFiles; ++i) {
+			filesId.sort(Integer::compareTo);
+
+			for (int i = 0; i < filesId.size(); ++i) {
 				Path subInProgressModelFilePath = new Path(confDirPath,
-					String.format("%s_%d", ModelStreamUtils.toStringPresentation(modelId), i));
+					String.format("%s_%d", ModelStreamUtils.toStringPresentation(modelId), filesId.get(i)));
 				Path subToCommitModelFilePath = new Path(modelPath, String.valueOf(i));
 
-				fileSystem.rename(subInProgressModelFilePath, subToCommitModelFilePath);
+				if (!fileSystem.rename(subInProgressModelFilePath, subToCommitModelFilePath)) {
+					throw new IOException(
+						String.format(
+							"Submit sub-model %s to %s failed. Maybe folder %s exists.",
+							subInProgressModelFilePath,
+							subToCommitModelFilePath,
+							subToCommitModelFilePath
+						)
+					);
+				}
 			}
 
 			// if done, write redo log.
@@ -632,7 +656,7 @@ public class ModelStreamUtils {
 				String.format("%s.log", ModelStreamUtils.toStringPresentation(modelId)));
 
 			try (FSDataOutputStream outputStream = fileSystem.create(logPath, WriteMode.OVERWRITE)) {
-				outputStream.write(JsonConverter.toJson(new ModelStreamMeta(numRows, numFiles)).getBytes());
+				outputStream.write(JsonConverter.toJson(new ModelStreamMeta(numRows, filesId.size())).getBytes());
 			} catch (Exception ex) {
 				// if write fail, delete the redo log to make the model invalid.
 				fileSystem.delete(logPath, false);
@@ -641,7 +665,16 @@ public class ModelStreamUtils {
 
 			// if done, do commit.
 			Path finalModelPath = new Path(filePath.getPath(), ModelStreamUtils.toStringPresentation(modelId));
-			fileSystem.rename(modelPath, finalModelPath);
+			if (!fileSystem.rename(modelPath, finalModelPath)) {
+				throw new IOException(
+					String.format(
+						"Submit model %s to %s failed. Maybe folder %s exists.",
+						modelPath,
+						finalModelPath,
+						finalModelPath
+					)
+				);
+			}
 
 			// if done, do clean up
 			cleanUp(filePath, numKeepModel);
@@ -694,7 +727,7 @@ public class ModelStreamUtils {
 			}).partitionCustom(new Partitioner <Integer>() {
 
 				@Override
-				public int partition(Integer key, int numPartitions) { return key; }
+				public int partition(Integer key, int numPartitions) {return key;}
 			}, 0).map(new MapFunction <Tuple2 <Integer, Row>, Row>() {
 
 				@Override
@@ -850,7 +883,7 @@ public class ModelStreamUtils {
 				if (!Character.isDigit(nanosS.charAt(0))) {
 					throw new java.lang.IllegalArgumentException(formatError);
 				}
-				nanosS = nanosS + zeros.substring(0,9-nanosS.length());
+				nanosS = nanosS + zeros.substring(0, 9 - nanosS.length());
 				aNanos = Integer.parseInt(nanosS);
 			} else {
 				throw new java.lang.IllegalArgumentException(formatError);
@@ -862,7 +895,7 @@ public class ModelStreamUtils {
 		return new Timestamp(year - 1900, month - 1, day, hour, minute, second, aNanos);
 	}
 
-	private static String toStringInternal (Timestamp timestamp) {
+	private static String toStringInternal(Timestamp timestamp) {
 		int year = timestamp.getYear() + 1900;
 		int month = timestamp.getMonth() + 1;
 		int day = timestamp.getDate();
@@ -885,7 +918,7 @@ public class ModelStreamUtils {
 		if (year < 1000) {
 			// Add leading zeros
 			yearString = "" + year;
-			yearString = yearZeros.substring(0, (4-yearString.length())) +
+			yearString = yearZeros.substring(0, (4 - yearString.length())) +
 				yearString;
 		} else {
 			yearString = "" + year;
@@ -921,7 +954,7 @@ public class ModelStreamUtils {
 			nanosString = Integer.toString(nanos);
 
 			// Add leading zeros
-			nanosString = zeros.substring(0, (9-nanosString.length())) +
+			nanosString = zeros.substring(0, (9 - nanosString.length())) +
 				nanosString;
 
 			// Truncate trailing zeros
@@ -936,7 +969,7 @@ public class ModelStreamUtils {
 		}
 
 		// do a string buffer here instead.
-		timestampBuf = new StringBuffer(20+nanosString.length());
+		timestampBuf = new StringBuffer(20 + nanosString.length());
 		timestampBuf.append(yearString);
 		timestampBuf.append(monthString);
 		timestampBuf.append(dayString);

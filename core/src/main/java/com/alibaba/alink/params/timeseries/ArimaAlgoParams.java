@@ -9,7 +9,10 @@ public interface ArimaAlgoParams<T> extends
 	HasEstmateMethod <T>,
 	HasSeasonalPeriod <T> {
 
-
+	/**
+	 * @cn-name 模型(p, d, q)
+	 * @cn 模型(p, d, q)
+	 */
 	ParamInfo <int[]> ORDER = ParamInfoFactory
 		.createParamInfo("order", int[].class)
 		.setDescription("p,d,q")
@@ -24,7 +27,10 @@ public interface ArimaAlgoParams<T> extends
 		return set(ORDER, value);
 	}
 
-
+	/**
+	 * @cn-name 季节模型(p, d, q)
+	 * @cn 季节模型(p, d, q)
+	 */
 	ParamInfo <int[]> SEASONAL_ORDER = ParamInfoFactory
 		.createParamInfo("seasonalOrder", int[].class)
 		.setDescription("p,d,q")

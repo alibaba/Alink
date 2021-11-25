@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasTimeIntervalDv3<T> extends WithParams <T> {
 
+	/**
+	 * @cn 流式数据统计的时间间隔
+	 * @cn-name 时间间隔
+	 */
 	ParamInfo <Double> TIME_INTERVAL = ParamInfoFactory
 		.createParamInfo("timeInterval", Double.class)
 		.setDescription("Time interval of streaming windows, unit s.")

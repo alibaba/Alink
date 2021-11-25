@@ -16,9 +16,8 @@ import java.util.List;
 public class LinearRegTest extends AlinkTestBase {
 
 	@Test
-	public void batchDenseSparseVectorTest() throws Exception {
+	public void batchDenseSparseVectorTest() {
 		Row[] localRows = new Row[] {
-			//Row.of("0:1.0 2:7.0 4:9.0", "1.0 7.0 9.0", 1.0, 7.0, 9.0, 2),
 			Row.of(0, "1.0 0.0 7.0 0.0 9.0 .0 .0 .0 .0 .0 .0 .0 .0 .0 .0", "1.0 7.0 9.0", 1.0, 7.0, 9.0, 2),
 			Row.of(1, "0:1.0 2:3.0 4:3.0", "1.0 3.0 3.0", 1.0, 3.0, 3.0, 3),
 			Row.of(2, "0:1.0 2:2.0 4:4.0", "1.0 2.0 4.0", 1.0, 2.0, 4.0, 1),
@@ -30,8 +29,7 @@ public class LinearRegTest extends AlinkTestBase {
 		};
 		String[] veccolNames = new String[] {"id", "svec", "vec", "f0", "f1", "f2", "label"};
 
-		BatchOperator vecdata = new MemSourceBatchOp(Arrays.asList(localRows), veccolNames);
-		BatchOperator trainData = vecdata;
+		BatchOperator<?> trainData = new MemSourceBatchOp(Arrays.asList(localRows), veccolNames);
 		String labelColName = "label";
 		LinearRegTrainBatchOp lr = new LinearRegTrainBatchOp()
 			.setVectorCol("svec")
@@ -49,7 +47,7 @@ public class LinearRegTest extends AlinkTestBase {
 			.linkFrom(model, trainData).collect();
 		for (Row row : mixedResult) {
 			if ((int)row.getField(0) == 0) {
-				Assert.assertEquals(Double.valueOf(row.getField(1).toString()), 1.9404, 0.001);
+				Assert.assertEquals(Double.parseDouble(row.getField(1).toString()), 1.9404, 0.001);
 			}
 		}
 	}

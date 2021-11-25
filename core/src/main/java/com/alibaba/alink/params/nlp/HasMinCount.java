@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Minimum count of a word.
  */
 public interface HasMinCount<T> extends WithParams <T> {
+	/**
+	 * @cn-name 最小词频
+	 * @cn 最小词频
+	 */
 	ParamInfo <Integer> MIN_COUNT = ParamInfoFactory
 		.createParamInfo("minCount", Integer.class)
 		.setDescription("minimum count of word")

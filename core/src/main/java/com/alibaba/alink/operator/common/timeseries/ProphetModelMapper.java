@@ -8,9 +8,10 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.utils.CloseableThreadLocal;
-import com.alibaba.alink.common.pyrunner.PyMIMOCalcRunner;
 import com.alibaba.alink.common.pyrunner.PyMIMOCalcHandle;
+import com.alibaba.alink.common.pyrunner.PyMIMOCalcRunner;
+import com.alibaba.alink.common.utils.CloseableThreadLocal;
+import com.alibaba.alink.params.dl.HasPythonEnv;
 import com.alibaba.alink.params.timeseries.ProphetParams;
 import com.alibaba.alink.params.timeseries.ProphetPredictParams;
 
@@ -21,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_CMD_KEY;
 import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_TURN_ON_LOGGING_KEY;
+import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_VIRTUAL_ENV_KEY;
 
 public class ProphetModelMapper extends TimeSeriesModelMapper {
 
@@ -64,6 +65,9 @@ public class ProphetModelMapper extends TimeSeriesModelMapper {
 	private PyMIMOCalcRunner <PyMIMOCalcHandle> createPythonRunner() {
 		Map <String, String> config = new HashMap <>();
 		config.put(PY_TURN_ON_LOGGING_KEY, String.valueOf(AlinkGlobalConfiguration.isPrintProcessInfo()));
+		if (params.contains(HasPythonEnv.PYTHON_ENV)) {
+			config.put(PY_VIRTUAL_ENV_KEY, params.get(HasPythonEnv.PYTHON_ENV));
+		}
 
 		PyMIMOCalcRunner <PyMIMOCalcHandle> runner =
 			new PyMIMOCalcRunner <>("algo.prophet.PyProphetCalc2", config);

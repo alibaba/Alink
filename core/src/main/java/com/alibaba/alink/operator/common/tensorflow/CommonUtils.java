@@ -77,19 +77,32 @@ public class CommonUtils {
 		private final TypeInformation <?> tfOutputSignatureType;
 		private final String preprocessPipelineModelSchemaStr;
 
+		// Indicate the output tensor are logits or not; ignored in regression models.
+		private final boolean isOutputLogits;
+
 		private List <Row> preprocessPipelineModelRows;
 		private List <Row> tfModelRows;
 		private List <Object> sortedLabels;
 
-		public ConstructModelFlatMapFunction(Params params, String[] featureCols, String[] categoricalCols,
+		public ConstructModelFlatMapFunction(Params params, String[] featureCols,
 											 String tfOutputSignatureDef,
 											 TypeInformation <?> tfOutputSignatureType,
 											 String preprocessPipelineModelSchemaStr) {
+			this(params, featureCols, tfOutputSignatureDef, tfOutputSignatureType,
+				preprocessPipelineModelSchemaStr, false);
+		}
+
+		public ConstructModelFlatMapFunction(Params params, String[] featureCols,
+											 String tfOutputSignatureDef,
+											 TypeInformation <?> tfOutputSignatureType,
+											 String preprocessPipelineModelSchemaStr,
+											 boolean isOutputLogits) {
 			this.params = params;
 			this.featureCols = featureCols;
 			this.tfOutputSignatureDef = tfOutputSignatureDef;
 			this.tfOutputSignatureType = tfOutputSignatureType;
 			this.preprocessPipelineModelSchemaStr = preprocessPipelineModelSchemaStr;
+			this.isOutputLogits = isOutputLogits;
 		}
 
 		@Override
@@ -113,7 +126,7 @@ public class CommonUtils {
 					new TFTableModelClassificationModelData(params, featureCols, tfModelRows,
 						tfOutputSignatureDef, tfOutputSignatureType,
 						preprocessPipelineModelSchemaStr, preprocessPipelineModelRows,
-						sortedLabels);
+						sortedLabels, isOutputLogits);
 				new TFTableModelClassificationModelDataConverter().save(modelData, out);
 			} else {
 				TFTableModelRegressionModelData modelData =

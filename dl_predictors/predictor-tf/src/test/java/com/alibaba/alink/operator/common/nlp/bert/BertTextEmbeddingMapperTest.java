@@ -5,8 +5,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.DLTestConstants;
-import com.alibaba.alink.operator.common.nlp.bert.BertTextEmbeddingMapper;
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.dl.BertResources;
+import com.alibaba.alink.common.dl.BertResources.ModelName;
+import com.alibaba.alink.common.dl.BertResources.ResourceType;
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.PluginDownloader;
+import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.params.tensorflow.bert.BertTextEmbeddingParams;
 import com.alibaba.alink.testutil.categories.DLTest;
 import org.junit.Assert;
@@ -20,11 +25,19 @@ public class BertTextEmbeddingMapperTest {
 	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+		RegisterKey registerKey = BertResources.getRegisterKey(ModelName.BASE_CHINESE, ResourceType.SAVED_MODEL);
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
+		registerKey = TFPredictorClassLoaderFactory.getRegisterKey();
+		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
+
 		Params params = new Params();
 		params.set(BertTextEmbeddingParams.BERT_MODEL_NAME, "base-chinese");
 		params.set(BertTextEmbeddingParams.SELECTED_COL, "text_a");
 		params.set(BertTextEmbeddingParams.OUTPUT_COL, "embed");
-		params.set(BertTextEmbeddingParams.MODEL_PATH, DLTestConstants.BERT_CHINESE_SAVED_MODEL_PATH);
 		params.set(BertTextEmbeddingParams.RESERVED_COLS, new String[] {"text_b"});
 		params.set(BertTextEmbeddingParams.LAYER, -2);
 		params.set(BertTextEmbeddingParams.DO_LOWER_CASE, true);

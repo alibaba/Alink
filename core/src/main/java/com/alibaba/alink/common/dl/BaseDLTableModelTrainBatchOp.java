@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.ShuffleBatchOp;
 import com.alibaba.alink.params.dl.BaseDLTableModelTrainParams;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -56,6 +57,8 @@ public abstract class BaseDLTableModelTrainBatchOp<T extends BaseDLTableModelTra
 			input = input.select(getSelectedCols());
 		}
 
+		input = new ShuffleBatchOp().linkFrom(input);
+
 		ExternalFilesConfig externalFiles = getUserFiles()
 			.addFilePaths(resPyFiles)
 			.addRenameMap(getMainScriptFile(), userMainScriptRename);
@@ -75,8 +78,8 @@ public abstract class BaseDLTableModelTrainBatchOp<T extends BaseDLTableModelTra
 			.setEntryFunc(entryFuncName)
 			.setPythonEnv(getPythonEnv())
 			.setUserFiles(externalFiles)
-			.setScript(mainScriptFileName)
-			.setUserDefinedParams(JsonConverter.toJson(algoParams))
+			.setMainScriptFile(mainScriptFileName)
+			.setUserParams(JsonConverter.toJson(algoParams))
 			.setIntraOpParallelism(getIntraOpParallelism())
 			.setMLEnvironmentId(getMLEnvironmentId());
 

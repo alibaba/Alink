@@ -98,6 +98,7 @@
         <alink.mvn.apache-httpclient.version>4.5.3</alink.mvn.apache-httpclient.version>
         <alink.mvn.gson.version>2.8.2</alink.mvn.gson.version>
         <apache.common.lang3.version>3.3.2</apache.common.lang3.version>
+        <apache.common.io.version>2.4</apache.common.io.version>
         <breeze.version>0.13.1</breeze.version>
         <slf4j.version>1.7.15</slf4j.version>
         <log4j.version>2.12.1</log4j.version>

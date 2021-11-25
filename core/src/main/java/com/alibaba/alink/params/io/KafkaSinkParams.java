@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 public interface KafkaSinkParams<T> extends WithParams<T>,
     HasTopic<T>, HasDataFormat<T>, HasFieldDelimiterDvComma<T>, HasProperties<T> {
 
+    /**
+     * @cn-name bootstrapServers
+     * @cn bootstrapServers
+     */
     ParamInfo<String> BOOTSTRAP_SERVERS = ParamInfoFactory
         .createParamInfo("bootstrapServers", String.class)
         .setDescription("kafka bootstrap servers")

@@ -4,6 +4,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 
+/**
+ * Predict with a text pair classifier using Bert models.
+ */
 public class BertTextPairClassifierPredictStreamOp extends
 	TFTableModelClassifierPredictStreamOp <BertTextPairClassifierPredictStreamOp> {
 

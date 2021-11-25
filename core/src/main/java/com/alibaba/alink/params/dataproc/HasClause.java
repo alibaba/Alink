@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasClause<T> extends WithParams <T> {
+	/**
+	 * @cn-name 运算语句
+	 * @cn 运算语句
+	 */
 	ParamInfo <String> CLAUSE = ParamInfoFactory
 		.createParamInfo("clause", String.class)
 		.setDescription("Operation clause.")
