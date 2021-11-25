@@ -55,7 +55,7 @@ model = pca.fit(inOp)
 model.transform(inOp).print()
 
 # stream predict
-inStreamOp = StreamOperator.fromDataframe((df, schemaStr='x1 double, x2 double, x3 double')
+inStreamOp = StreamOperator.fromDataframe(df, schemaStr='x1 double, x2 double, x3 double')
 
 model.transform(inStreamOp).print()
 

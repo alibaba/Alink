@@ -38,9 +38,10 @@ df = pd.DataFrame([
 
 source = BatchOperator.fromDataframe(df, schemaStr='uid string, iid string, label double')
 
-filepath = '*'
+filepath = "/tmp/abc.tsv"
 tsvSink = TsvSinkBatchOp()\
-    .setFilePath(filepath)
+    .setFilePath(filepath)\
+    .setOverwriteSink(True)
 
 source.link(tsvSink)
 

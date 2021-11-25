@@ -51,26 +51,30 @@ data = pd.DataFrame([
 source = dataframeToOperator(data, schemaStr='id int, ts timestamp, val double', op_type='batch')
 
 source.link(
-		GroupDataBatchOp()\
-				.setGroupCols(["id"])\
-				.setSelectedCols(["ts", "val"])\
-				.setOutputCol("data")
-		).link(HoltWintersBatchOp()\
-			.setValueCol("data")\
-			.setPredictionCol("pred")\
-			.setPredictNum(12)
+        GroupByBatchOp()
+			.setGroupByPredicate("id")
+			.setSelectClause("id, mtable_agg(ts, val) as data")
+		).link(
+		AutoGarchBatchOp()
+				.setValueCol("data")
+				.setIcType("AIC")
+				.setPredictNum(10)
+				.setMaxOrder(4)
+				.setIfGARCH11(False)
+				.setMinusMean(False)
+				.setPredictionCol("pred")
 		).print()
 ```
 
+
 ### Java 代码
 ```java
-
 package com.alibaba.alink.operator.batch.timeseries;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.operator.batch.dataproc.GroupDataBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
@@ -98,10 +102,9 @@ public class AutoGarchBatchOpTest extends AlinkTestBase {
 		MemSourceBatchOp source = new MemSourceBatchOp(mTableData, new String[] {"id", "ts", "val"});
 
 		source.link(
-			new GroupDataBatchOp()
-				.setGroupCols("id")
-				.setSelectedCols("ts", "val")
-				.setOutputCol("data")
+			new GroupByBatchOp()
+				.setGroupByPredicate("id")
+				.setSelectClause("mtable_agg(ts, val) as data")
 		).link(
 			new AutoGarchBatchOp()
 				.setValueCol("data")

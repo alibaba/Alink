@@ -68,7 +68,7 @@ nodeType = pd.DataFrame([
     ["Karry", "B"]
 ])
 type = BatchOperator.fromDataframe(nodeType, schemaStr='node string, type string')
-metapathBatchOp = MetaPath2VecBatchOp() \
+metapathBatchOp = HugeMetaPath2VecTrainBatchOp() \
   .setSourceCol("start")            \
   .setTargetCol("end")              \
   .setWeightCol("value")            \

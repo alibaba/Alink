@@ -57,10 +57,9 @@ data = pd.DataFrame([
 source = dataframeToOperator(data, schemaStr='id int, ts timestamp, val double', op_type='batch')
 
 source.link(
-		GroupDataBatchOp()
-				.setGroupCols(["id"])
-				.setSelectedCols(["ts", "val"])
-				.setOutputCol("data")
+        GroupByBatchOp()
+			.setGroupByPredicate("id")
+			.setSelectClause("id, mtable_agg(ts, val) as data")
 		).link(HoltWintersBatchOp()
 			.setValueCol("data")
 			.setPredictionCol("pred")
@@ -73,15 +72,13 @@ package com.alibaba.alink.operator.batch.timeseries;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.operator.batch.dataproc.GroupDataBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
 import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class HoltWintersBatchOpTest {
 	@Test
@@ -102,10 +99,9 @@ public class HoltWintersBatchOpTest {
 		MemSourceBatchOp source = new MemSourceBatchOp(mTableData, new String[] {"id", "ts", "val"});
 
 		source.link(
-			new GroupDataBatchOp()
-				.setGroupCols("id")
-				.setSelectedCols("ts", "val")
-				.setOutputCol("data")
+			new GroupByBatchOp()
+				.setGroupByPredicate("id")
+				.setSelectClause("mtable_agg(ts, val) as data")
 		).link(new HoltWintersBatchOp()
 			.setValueCol("data")
 			.setPredictionCol("pred")

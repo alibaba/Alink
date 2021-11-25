@@ -54,7 +54,7 @@ df = pd.DataFrame([
 inOp1 = BatchOperator.fromDataframe(df, schemaStr='f0 long, f1 long')
 inOp2 = StreamOperator.fromDataframe(df, schemaStr='f0 long, f1 long')
 
-kmeans = KMeans4LongiLatitudeTrainBatchOp()\
+kmeans = GeoKMeansTrainBatchOp()\
                 .setLongitudeCol("f0")\
                 .setLatitudeCol("f1")\
                 .setK(2)\
@@ -62,12 +62,12 @@ kmeans = KMeans4LongiLatitudeTrainBatchOp()\
 
 kmeans.print()
 
-predict = KMeans4LongiLatitudePredictBatchOp()\
+predict = GeoKMeansPredictBatchOp()\
                 .setPredictionCol("pred")\
                 .linkFrom(kmeans, inOp1)
 predict.print()
 
-predict = KMeans4LongiLatitudePredictStreamOp(kmeans)\
+predict = GeoKMeansPredictStreamOp(kmeans)\
                 .setPredictionCol("pred")\
                 .linkFrom(inOp2)
 predict.print()
@@ -102,17 +102,17 @@ public class GeoKMeansTrainBatchOpTest {
 		);
 		BatchOperator <?> inOp1 = new MemSourceBatchOp(df, "f0 int, f1 int");
 		StreamOperator <?> inOp2 = new MemSourceStreamOp(df, "f0 int, f1 int");
-		BatchOperator <?> kmeans = new KMeans4LongiLatitudeTrainBatchOp()
+		BatchOperator <?> kmeans = new GeoKMeansTrainBatchOp()
 			.setLongitudeCol("f0")
 			.setLatitudeCol("f1")
 			.setK(2)
 			.linkFrom(inOp1);
 		kmeans.print();
-		BatchOperator <?> result = new KMeans4LongiLatitudePredictBatchOp()
+		BatchOperator <?> result = new GeoKMeansPredictBatchOp()
 			.setPredictionCol("pred")
 			.linkFrom(kmeans, inOp1);
 		result.print();
-		StreamOperator <?> predict = new KMeans4LongiLatitudePredictStreamOp(kmeans)
+		StreamOperator <?> predict = new GeoKMeansPredictStreamOp(kmeans)
 			.setPredictionCol("pred")
 			.linkFrom(inOp2);
 		predict.print();

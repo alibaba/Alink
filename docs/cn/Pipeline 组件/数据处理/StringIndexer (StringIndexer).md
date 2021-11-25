@@ -15,6 +15,7 @@ StringIndexer训练组件的作用是训练一个模型用于将单列字符串�
 | handleInvalid | 未知token处理策略 | 未知token处理策略。"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常 | String |  | "KEEP" |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
 | stringOrderType | Token排序方法 | Token排序方法 | String |  | "RANDOM" |
 | modelName | 模型名字 | 模型名字 | String |  |  |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
@@ -42,7 +43,7 @@ df_data = pd.DataFrame([
     ["tennis"],
 ])
 
-data = BatchOperator.fromDataframe(df_data, schemaStr='f0 string', op_type='batch')
+data = BatchOperator.fromDataframe(df_data, schemaStr='f0 string')
 
 stringindexer = StringIndexer() \
     .setSelectedCol("f0") \

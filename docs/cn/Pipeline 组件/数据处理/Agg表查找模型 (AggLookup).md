@@ -38,7 +38,7 @@ inOp = BatchOperator.fromDataframe(data_df, schemaStr='c0 string, c1 string, c2 
 model_df = pd.DataFrame([
     ["1", "1.0,2.0,3.0,4.0"], ["2", "2.0,3.0,4.0,5.0"], ["3", "3.0,2.0,3.0,4.0"],["4", "4.0,5.0,6.0,5.0"]
 ])
-modelOp = BatchOperator.fromDataframe(model_df, schemaStr="id string, vec string", op_type='batch')
+modelOp = BatchOperator.fromDataframe(model_df, schemaStr="id string, vec string")
 
 AggLookup()\
     .setModelData(modelOp) \

@@ -57,7 +57,7 @@ nodeType = pd.DataFrame([
 source = BatchOperator.fromDataframe(tokens, schemaStr='tokens string')
 typed = BatchOperator.fromDataframe(nodeType, schemaStr='node string, type string')
 
-labeledWord2vecBatchOp = HugeLabeledWord2VecBatchOp() \
+labeledWord2vecBatchOp = HugeLabeledWord2VecTrainBatchOp() \
   .setSelectedCol("tokens")         \
   .setVertexCol("node")             \
   .setTypeCol("type")               \

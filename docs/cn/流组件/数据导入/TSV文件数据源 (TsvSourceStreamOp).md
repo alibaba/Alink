@@ -38,9 +38,10 @@ df = pd.DataFrame([
 
 source = StreamOperator.fromDataframe(df, schemaStr='uid string, iid string, label double')
 
-filepath = '*'
+filepath = "/tmp/abc.tsv"
 tsvSink = TsvSinkStreamOp()\
-    .setFilePath(filepath)
+    .setFilePath(filepath)\
+    .setOverwriteSink(True)
 
 source.link(tsvSink)
 

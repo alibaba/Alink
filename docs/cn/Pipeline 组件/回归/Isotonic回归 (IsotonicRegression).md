@@ -49,7 +49,7 @@ df = pd.DataFrame([
     [0.2, 0],
     [0.9, 1]])
 
-data = BatchOperator.fromDataframe(df, schemaStr="label double, feature double",op_type="batch")
+data = BatchOperator.fromDataframe(df, schemaStr="label double, feature double")
 
 res = IsotonicRegression()\
             .setFeatureCol("feature")\

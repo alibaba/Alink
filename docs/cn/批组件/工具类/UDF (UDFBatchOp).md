@@ -1,16 +1,21 @@
+# UDF (UDFBatchOp)
+Java 类名：com.alibaba.alink.operator.batch.utils.UDFBatchOp
+
+Python 类名：UDFBatchOp
+
+
+## UDF/UDTF 定义
 
 PyAlink 提供了基于 Python 的 UDF/UDTF 支持，方便进行灵活的数据处理。
 PyAlink 所定义的 UDF/UDTF 即可以用于 PyAlink 提供的 UDF/UDTF 组件，也可以用于所提供的 `sqlQuery` 函数。
 
-## UDF/UDTF 定义
-
 我们提供了 `udf` 和 `udtf` 函数来帮助构造 UDF/UDTF。
 两个函数使用时都需要提供一个函数体、输入类型和返回类型。
-  - 函数体对于 UDF 而言，是直接用 `return` 返回值的 Python 函数，或者 lambda 函数；
+- 函数体对于 UDF 而言，是直接用 `return` 返回值的 Python 函数，或者 lambda 函数；
   对于 UDTF 而言，是用 `yield` 来多次返回值的 Python 函数。
-  - 输入类型均为 `DataType` 类型的 Python list。
-  - 输出类型，UDF 为单个 `DataType` 类型，UDTF为 `DataType` 类型的 Python list。
- 
+- 输入类型均为 `DataType` 类型的 Python list。
+- 输出类型，UDF 为单个 `DataType` 类型，UDTF为 `DataType` 类型的 Python list。
+
 `DataType` 类型可以直接用`DataTypes.DOUBLE()`等类似的函数得到。
 
 以下是定义 UDF/UDTF 的代码示例：

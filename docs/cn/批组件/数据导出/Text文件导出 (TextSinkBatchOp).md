@@ -29,7 +29,7 @@ SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, peta
 
 data = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR).select("category")
 
-sink = TextSinkBatchOp().setFilePath('/tmp/text.csv')
+sink = TextSinkBatchOp().setFilePath('/tmp/text.csv').setOverwriteSink(True)
 data.link(sink)
 BatchOperator.execute()
 ```

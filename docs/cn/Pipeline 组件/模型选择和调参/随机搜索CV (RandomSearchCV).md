@@ -137,11 +137,11 @@ def rf_grid_search_tv(featureCols, categoryFeatureCols, label, metric):
 
 
 def tuningcv(cv_estimator, input):
-    return cv_estimator.fit(input)
+    return cv_estimator.enableLazyPrintTrainInfo("CVTrainInfo").fit(input)
 
 
 def tuningtv(tv_estimator, input):
-    return tv_estimator.fit(input)
+    return tv_estimator.enableLazyPrintTrainInfo("TVTrainInfo").fit(input)
 
 
 def main():
@@ -151,9 +151,7 @@ def main():
                           adult_categorical_feature_strs(), 'label', 'AUC'),
         adult_train()
     )
-    
-    print(model.getReport())
-    
+
     print('rf tv tuning')
     model = tuningtv(
         rf_grid_search_tv(adult_features_strs(),
@@ -161,7 +159,6 @@ def main():
         adult_train()
     )
 
-    print(model.getReport())
 main()
 ```
 ### Java 代码

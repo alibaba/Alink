@@ -39,7 +39,7 @@ df = pd.DataFrame([
 ["0.0", "1.0", 1.0, 0]])
 data = BatchOperator.fromDataframe(df, schemaStr="f0 string, f1 string, f2 double, label bigint")
 train = CrossFeatureTrainBatchOp().setSelectedCols(['f0','f1','f2']).linkFrom(data)
-CrossFeaturePredictBatchOp().setOutputCol("cross").linkFrom(train, data).collectToDataFrame()
+CrossFeaturePredictBatchOp().setOutputCol("cross").linkFrom(train, data).collectToDataframe()
 ```
 ### Java 代码
 ```java

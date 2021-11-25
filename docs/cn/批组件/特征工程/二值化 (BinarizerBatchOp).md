@@ -34,8 +34,8 @@ df = pd.DataFrame([
     [2.2, True, "1", "A"]
 ])
 
-inOp1 = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string',op_type='batch')
-inOp2 = StreamOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string',op_type='stream')
+inOp1 = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
+inOp2 = StreamOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
 
 binarizer = BinarizerBatchOp().setSelectedCol("double").setThreshold(2.0)
 binarizer.linkFrom(inOp1).print()

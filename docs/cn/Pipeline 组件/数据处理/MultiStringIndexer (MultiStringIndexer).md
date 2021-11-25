@@ -41,7 +41,7 @@ df_data = pd.DataFrame([
     ["tennis"],
 ])
 
-data = BatchOperator.fromDataframe(df_data, schemaStr='f0 string', op_type='batch')
+data = BatchOperator.fromDataframe(df_data, schemaStr='f0 string')
 
 stringindexer = MultiStringIndexer() \
     .setSelectedCols(["f0"]) \
