@@ -11,7 +11,7 @@
 
 - Alink文档：https://www.yuque.com/pinshu/alink_doc
 - Alink使用指南：https://www.yuque.com/pinshu/alink_guide
-- Alink插件下载器：https://www.yuque.com/pinshu/alink_guide/czg4cx
+- Alink插件下载器：https://www.yuque.com/pinshu/alink_guide/plugin_downloader
 
 #### 开源算法列表
 
