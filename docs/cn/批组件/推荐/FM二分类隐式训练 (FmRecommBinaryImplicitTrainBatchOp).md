@@ -1,0 +1,111 @@
+# FM二分类隐式训练 (FmRecommBinaryImplicitTrainBatchOp)
+Java 类名：com.alibaba.alink.operator.batch.recommendation.FmRecommBinaryImplicitTrainBatchOp
+
+Python 类名：FmRecommBinaryImplicitTrainBatchOp
+
+
+## 功能介绍
+Fm 隐式推荐是使用Fm算法在推荐场景的一种扩展，用给定user-item pair 及user和item的特征信息，训练一个推荐专用的Fm模型，
+用于预测user对item的评分、对user推荐itemlist，或者对item推荐userlist。
+
+
+## 参数说明
+
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
+| --- | --- | --- | --- | --- | --- |
+| itemCol | Item列列名 | Item列列名 | String | ✓ |  |
+| userCol | User列列名 | User列列名 | String | ✓ |  |
+| userFeatureCols | Not available! | Not available! | String[] |  | [] |
+| userCategoricalFeatureCols | Not available! | Not available! | String[] |  | [] |
+| itemFeatureCols | Not available! | Not available! | String[] |  | [] |
+| itemCategoricalFeatureCols | Not available! | Not available! | String[] |  | [] |
+| initStdev | 初始化参数的标准差 | 初始化参数的标准差 | Double |  | 0.05 |
+| lambda0 | 常数项正则化系数 | 常数项正则化系数 | Double |  | 0.0 |
+| lambda1 | 线性项正则化系数 | 线性项正则化系数 | Double |  | 0.0 |
+| lambda2 | 二次项正则化系数 | 二次项正则化系数 | Double |  | 0.0 |
+| learnRate | 学习率 | 学习率 | Double |  | 0.01 |
+| withLinearItem | 是否含有线性项 | 是否含有线性项 | Boolean |  | true |
+| numEpochs | epoch数 | epoch数 | Integer |  | 10 |
+| numFactor | 因子数 | 因子数 | Integer |  | 10 |
+| rateCol | 打分列列名 | 打分列列名 | String |  | null |
+| withIntercept | 是否有常数项 | 是否有常数项，默认true | Boolean |  | true |
+
+## 代码示例
+### Python 代码
+```python
+from pyalink.alink import *
+
+import pandas as pd
+
+useLocalEnv(1)
+
+df_data = pd.DataFrame([
+    [1, 1, 0.6],
+    [2, 2, 0.8],
+    [2, 3, 0.6],
+    [4, 1, 0.6],
+    [4, 2, 0.3],
+    [4, 3, 0.4],
+])
+
+data = BatchOperator.fromDataframe(df_data, schemaStr='user bigint, item bigint, rating double')
+
+model = FmRecommBinaryImplicitTrainBatchOp()\
+    .setUserCol("user")\
+    .setItemCol("item")\
+    .setNumFactor(20).linkFrom(data);
+
+predictor = FmUsersPerItemRecommBatchOp()\
+    .setItemCol("user")\
+    .setK(2).setReservedCols(["item"])\
+    .setRecommCol("prediction_result");
+
+predictor.linkFrom(model, data).print()
+```
+### Java 代码
+```java
+import org.apache.flink.types.Row;
+
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.recommendation.FmRecommBinaryImplicitTrainBatchOp;
+import com.alibaba.alink.operator.batch.recommendation.FmUsersPerItemRecommBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class FmRecommBinaryImplicitTrainBatchOpTest {
+	@Test
+	public void testFmRecommBinaryImplicitTrainBatchOp() throws Exception {
+		List <Row> df_data = Arrays.asList(
+			Row.of(1, 1, 0.6),
+			Row.of(2, 2, 0.8),
+			Row.of(2, 3, 0.6),
+			Row.of(4, 1, 0.6),
+			Row.of(4, 2, 0.3),
+			Row.of(4, 3, 0.4)
+		);
+		BatchOperator <?> data = new MemSourceBatchOp(df_data, "user int, item int, rating double");
+		BatchOperator <?> model = new FmRecommBinaryImplicitTrainBatchOp()
+			.setUserCol("user")
+			.setItemCol("item")
+			.setNumFactor(20).linkFrom(data);
+		BatchOperator <?> predictor = new FmUsersPerItemRecommBatchOp()
+			.setItemCol("user")
+			.setK(2).setReservedCols("item")
+			.setRecommCol("prediction_result");
+		predictor.linkFrom(model, data).print();
+	}
+}
+```
+
+### 运行结果
+item|	prediction_result
+----|-----
+1|{"object":"[1]","rate":"[0.6802429556846619]"}
+2|{"object":"[2]","rate":"[0.6637783646583557]"}
+3|{"object":"[2]","rate":"[0.6637783646583557]"}
+1|	{"object":"[]","rate":"[]"}
+2|  {"object":"[]","rate":"[]"}
+3|	{"object":"[]","rate":"[]"}

@@ -22,6 +22,7 @@ import java.util.List;
 /**
  * Test for Bucketizer.
  */
+
 public class BucketizerTest extends AlinkTestBase {
 
 	private Row[] rows = new Row[] {

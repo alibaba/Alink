@@ -4,10 +4,13 @@ import org.apache.flink.api.java.tuple.Tuple2;
 
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.PluginDescriptor;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
+import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -15,19 +18,22 @@ public class KafkaClassLoaderFactory extends ClassLoaderFactory {
 	public final static String KAFKA_NAME = "kafka";
 
 	public KafkaClassLoaderFactory(String version) {
-		super(new RegisterKey(KAFKA_NAME, version), ClassLoaderContainer.createPluginContextOnClient());
+		super(new RegisterKey(KAFKA_NAME, version), PluginDistributeCache.createDistributeCache(KAFKA_NAME, version));
 	}
 
 	public static KafkaSourceSinkFactory create(KafkaClassLoaderFactory factory) {
-		try {
-			return (KafkaSourceSinkFactory) factory
-				.create()
-				.loadClass("com.alibaba.alink.common.io.kafka.plugin.KafkaSourceSinkInPluginFactory")
-				.getConstructor()
-				.newInstance();
-		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException |
-			ClassNotFoundException e) {
-			throw new RuntimeException(e);
+		ClassLoader classLoader = factory.create();
+
+		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
+			Iterator <KafkaSourceSinkFactory> iter = ServiceLoader
+				.load(KafkaSourceSinkFactory.class, classLoader)
+				.iterator();
+
+			if (iter.hasNext()) {
+				return iter.next();
+			} else {
+				throw new RuntimeException("Could not find the class factory in classloader.");
+			}
 		}
 	}
 
@@ -35,7 +41,7 @@ public class KafkaClassLoaderFactory extends ClassLoaderFactory {
 	public ClassLoader create() {
 		return ClassLoaderContainer.getInstance().create(
 			registerKey,
-			registerContext,
+			distributeCache,
 			KafkaSourceSinkFactory.class,
 			new KafkaServiceFilter(),
 			new KafkaVersionGetter()

@@ -8,6 +8,9 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * word parameter array.
  */
 public interface HasBetaArray<T> extends WithParams <T> {
+	/**
+	 * @cn 词的超参
+	 */
 	ParamInfo <double[]> BETA_ARRAY = ParamInfoFactory
 		.createParamInfo("betaArray", double[].class)
 		.setDescription(

@@ -11,6 +11,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface GroupByParams<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name groupby语句
+	 * @cn groupby语句
+	 */
 	ParamInfo <String> GROUP_BY_PREDICATE = ParamInfoFactory
 		.createParamInfo("groupByPredicate", String.class)
 		.setDescription("Group by clause.")
@@ -18,6 +22,10 @@ public interface GroupByParams<T> extends WithParams <T> {
 		.setAlias(new String[] {"groupByClause"})
 		.build();
 
+	/**
+	 * @cn-name select语句
+	 * @cn select语句
+	 */
 	ParamInfo <String> SELECT_CLAUSE = ParamInfoFactory
 		.createParamInfo("selectClause", String.class)
 		.setDescription("Select clause")

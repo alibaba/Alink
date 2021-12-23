@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * second order item regular number.
  */
 public interface HasLambda2DefaultAs0<T> extends WithParams <T> {
+	/**
+	 * @cn-name 二次项正则化系数
+	 * @cn 二次项正则化系数
+	 */
 	ParamInfo <Double> LAMBDA_2 = ParamInfoFactory
 			.createParamInfo("lambda2", Double.class)
 			.setDescription("lambda_2")

@@ -4,6 +4,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.pipeline.dataproc.AggLookup;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -31,12 +32,12 @@ public class AggLookupTest {
 	MemSourceBatchOp embedding = new MemSourceBatchOp(Arrays.asList(array2), new String[] {"id", "vec"});
 
 	@Test
-	public void testAggLookup() throws Exception {
+	public void testAggLookup() {
 
 		AggLookupBatchOp lookup = new AggLookupBatchOp()
-			.setClause("CONCAT(seq0,3) as e0, AVG(seq1) as e1, SUM(seq2) as e2,MAX(seq3) as e3,MIN(seq4) as e4")
+				.setClause("CONCAT(seq0,3) as e0, AVG(seq1) as e1, SUM(seq2) as e2,MAX(seq3) as e3,MIN(seq4) as e4")
 			.setDelimiter(",")
-			.setReservedCols(new String[] {});
+			.setReservedCols();
 		Row row = lookup.linkFrom(embedding, data).collect().get(0);
 
 		assert (row.getField(0).toString().equals("1.0 2.0 3.0 4.0 2.0 3.0 4.0 5.0 3.0 2.0 3.0 4.0"));
@@ -44,6 +45,16 @@ public class AggLookupTest {
 		assert (row.getField(2).toString().equals("10.0 12.0 16.0 18.0"));
 		assert (row.getField(3).toString().equals("4.0 5.0 6.0 5.0"));
 		assert (row.getField(4).toString().equals("1.0 2.0 3.0 4.0"));
+	}
+
+	@Test
+	public void testAggLookupPipe() throws Exception {
+
+		AggLookup lookup = new AggLookup().setModelData(embedding)
+			.setClause("CONCAT(seq0,3) as e0, AVG(seq1) as e1, SUM(seq2) as e2,MAX(seq3) as e3,MIN(seq4) as e4")
+			.setDelimiter(",")
+			.setReservedCols();
+		lookup.transform(data).print();
 	}
 
 	@Test

@@ -939,4 +939,72 @@ public class GraphUtilsWithString {
                 }
             });
     }
+
+    /**
+     * transform long to string.(SingleSourceShortestPath)
+     */
+    public DataSet<Row> long2StringSSSP(DataSet<Tuple4<Long, Long, Long, Double>> input) {
+
+        DataSet<Tuple2 <Object, Tuple4<Long, Long, Long, Double>>> stage1 =
+            input.map(new MapFunction <Tuple4 <Long, Long, Long, Double>, Tuple2 <Long, Tuple4<Long, Long, Long, Double>>>() {
+                @Override
+                public Tuple2 <Long, Tuple4<Long, Long, Long, Double>> map(Tuple4 <Long, Long, Long, Double> value)
+                    throws Exception {
+                    return Tuple2.of(value.f0, value);
+                }
+            }).leftOuterJoin(nodeMapping).where(0).equalTo(1).with(new Long2StringJoinFunction<>(type));
+
+        DataSet<Tuple2 <Object, Tuple4<Object, Long, Long, Double>>> stage2 =
+            stage1.map(
+                new MapFunction <Tuple2 <Object, Tuple4 <Long, Long, Long, Double>>, Tuple2 <Long, Tuple4 <Object, Long, Long, Double>>>() {
+                    @Override
+                    public Tuple2 <Long, Tuple4 <Object, Long, Long, Double>> map(
+                        Tuple2 <Object, Tuple4 <Long, Long, Long, Double>> value) throws Exception {
+                        return Tuple2.of(value.f1.f1, Tuple4.of(value.f0, value.f1.f1, value.f1.f2, value.f1.f3));
+                    }
+                })
+                .leftOuterJoin(nodeMapping).where(0).equalTo(1).with(new Long2StringJoinFunction <>(type));
+
+        DataSet<Tuple2 <Object, Tuple4 <Object, Object, Long, Double>>> stage3 = stage2.map(
+            new MapFunction <Tuple2 <Object, Tuple4<Object, Long, Long, Double>>, Tuple2 <Long, Tuple4 <Object, Object, Long, Double>>>() {
+
+                @Override
+                public Tuple2 <Long, Tuple4 <Object, Object, Long, Double>> map(
+                    Tuple2 <Object, Tuple4<Object, Long, Long, Double>> value) throws Exception {
+                    return Tuple2.of(value.f1.f2, Tuple4.of(value.f1.f0, value.f0, value.f1.f2, value.f1.f3));
+                }
+            })
+            .leftOuterJoin(nodeMapping).where(0).equalTo(1).with(new Long2StringJoinFunction<>(type));
+
+        return stage3.map(
+            new MapFunction <Tuple2 <Object, Tuple4 <Object, Object, Long, Double>>, Row>() {
+                @Override
+                public Row map(Tuple2 <Object, Tuple4 <Object, Object, Long, Double>> value) throws Exception {
+                    Row row = new Row(4);
+                    row.setField(0, value.f1.f0);
+                    row.setField(1, value.f1.f1);
+                    row.setField(2, value.f0);
+                    row.setField(3, value.f1.f3);
+                    return row;
+                }
+            });
+    }
+
+    private static class Long2StringJoinFunction<VALUE>
+        implements JoinFunction <Tuple2<Long, VALUE>, Tuple2 <String, Long>, Tuple2<Object, VALUE>> {
+        private static final long serialVersionUID = 3788131720307372418L;
+
+        TypeInformation type;
+
+        Long2StringJoinFunction(TypeInformation type) {
+            this.type = type;
+        }
+        @Override
+        public Tuple2<Object, VALUE> join(Tuple2<Long, VALUE> row, Tuple2 <String, Long> stringLongTuple2) throws Exception {
+            if (stringLongTuple2 == null) {
+                return Tuple2.of(null, row.f1);
+            }
+            return Tuple2.of(JsonConverter.fromJson(stringLongTuple2.f0, this.type.getTypeClass()), row.f1);
+        }
+    }
 }

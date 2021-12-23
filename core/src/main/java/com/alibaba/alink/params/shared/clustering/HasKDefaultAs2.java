@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Params: Number of clusters.
  */
 public interface HasKDefaultAs2<T> extends WithParams <T> {
+	/**
+	 * @cn-name 聚类中心点数量
+	 * @cn 聚类中心点数量
+	 */
 	ParamInfo <Integer> K = ParamInfoFactory
 		.createParamInfo("k", Integer.class)
 		.setDescription("Number of clusters.")

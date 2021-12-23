@@ -18,6 +18,10 @@ public interface NaiveBayesTextTrainParams<T> extends
 	HasVectorCol <T>,
 	HasSmoothing <T> {
 
+	/**
+	 * @cn-name 模型类型
+	 * @cn 取值为 Multinomial 或 Bernoulli
+	 */
 	ParamInfo <ModelType> MODEL_TYPE = ParamInfoFactory
 		.createParamInfo("modelType", ModelType.class)
 		.setDescription("model type : Multinomial or Bernoulli.")

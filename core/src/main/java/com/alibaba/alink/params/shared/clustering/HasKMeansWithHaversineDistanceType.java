@@ -16,6 +16,10 @@ import java.io.Serializable;
  * Params: Distance type for clustering, support EUCLIDEAN and COSINE.
  */
 public interface HasKMeansWithHaversineDistanceType<T> extends WithParams <T> {
+	/**
+	 * @cn-name 距离度量方式
+	 * @cn 聚类使用的距离类型
+	 */
 	ParamInfo <DistanceType> DISTANCE_TYPE = ParamInfoFactory
 		.createParamInfo("distanceType", DistanceType.class)
 		.setDescription("Distance type for clustering")

@@ -14,7 +14,7 @@ import org.junit.Test;
  */
 
 public class RecommTableToResultBatchOpTest extends AlinkTestBase {
-	private Row[] rows1 = new Row[] {
+	private final Row[] rows1 = new Row[] {
 		Row.of(1L, 1L, 0.6),
 		Row.of(2L, 2L, 0.8),
 		Row.of(2L, 3L, 0.6),
@@ -25,7 +25,7 @@ public class RecommTableToResultBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {
-		BatchOperator data = BatchOperator.fromTable(
+		BatchOperator<?> data = BatchOperator.fromTable(
 			MLEnvironmentFactory.getDefault().createBatchTable(rows1, new String[] {"user", "item", "rating"}));
 
 		Zipped2KObjectBatchOp op = new Zipped2KObjectBatchOp()

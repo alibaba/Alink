@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasInitRecommCol<T> extends WithParams <T> {
+	/**
+	 * @cn-name 初始推荐列列名
+	 * @cn 初始推荐列列名
+	 */
 	ParamInfo <String> INIT_RECOMM_COL = ParamInfoFactory
 		.createParamInfo("initRecommCol", String.class)
 		.setAlias(new String[] {"initRecommColName"})

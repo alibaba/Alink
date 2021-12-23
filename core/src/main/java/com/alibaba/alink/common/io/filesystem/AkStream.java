@@ -111,7 +111,7 @@ public class AkStream {
 					}
 					return true;
 				} catch (IOException e) {
-					throw new RuntimeException("Could not get the next read.", e);
+					throw new RuntimeException("Could not get the next reader.", e);
 				}
 			}
 
@@ -120,7 +120,7 @@ public class AkStream {
 				try {
 					return binaryRecordReader.getNextRecord();
 				} catch (IOException e) {
-					throw new RuntimeException("Could not get the next read.", e);
+					throw new RuntimeException("Could not get the next reader.", e);
 				}
 			}
 		}

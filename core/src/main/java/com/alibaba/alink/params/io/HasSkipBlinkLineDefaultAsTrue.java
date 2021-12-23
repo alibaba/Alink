@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasSkipBlinkLineDefaultAsTrue<T> extends WithParams <T> {
+	/**
+	 * @cn-name 是否忽略空行
+	 * @cn 是否忽略空行
+	 */
 	ParamInfo <Boolean> SKIP_BLANK_LINE = ParamInfoFactory
 		.createParamInfo("skipBlankLine", Boolean.class)
 		.setDescription("skipBlankLine")

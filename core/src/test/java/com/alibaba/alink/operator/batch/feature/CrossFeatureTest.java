@@ -53,7 +53,7 @@ public class CrossFeatureTest extends AlinkTestBase {
 		BatchOperator predData = new MemSourceBatchOp(predArray, predVecColNames);
 		CrossFeaturePredictBatchOp pred = new CrossFeaturePredictBatchOp()
 			.setOutputCol("cross")
-			.linkFrom(train, predData);
+			.linkFrom(train, data);
 		pred.lazyPrint(-1);
 		BatchOperator.execute();
 		//Assert.assertEquals(pred.collect().size(), 8);
@@ -63,7 +63,7 @@ public class CrossFeatureTest extends AlinkTestBase {
 	public void testHash() throws Exception {
 		StreamOperator data = new MemSourceStreamOp(Arrays.asList(array), vecColNames);
 		HashCrossFeatureStreamOp hashCross = new HashCrossFeatureStreamOp()
-			.setNumFeatures(4)
+			.setNumFeatures(36)
 			.setSelectedCols("f0", "f1", "f2")
 			.setOutputCol("res")
 			.linkFrom(data);

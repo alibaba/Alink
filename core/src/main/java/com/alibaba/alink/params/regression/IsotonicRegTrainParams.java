@@ -16,17 +16,29 @@ public interface IsotonicRegTrainParams<T> extends
 	HasWeightColDefaultAsNull <T>,
 	HasVectorColDefaultAsNull <T> {
 
+	/**
+	 * @cn-name 特征列名
+	 * @cn 特征列的名称
+	 */
 	ParamInfo <String> FEATURE_COL = ParamInfoFactory
 		.createParamInfo("featureCol", String.class)
 		.setDescription("Name of the feature column。")
 		.setAlias(new String[] {"featureColName"})
 		.setHasDefaultValue(null)
 		.build();
+	/**
+	 * @cn-name 输出序列是否
+	 * @cn 输出序列是否递增
+	 */
 	ParamInfo <Boolean> ISOTONIC = ParamInfoFactory
 		.createParamInfo("isotonic", Boolean.class)
 		.setDescription("If true, the output sequence should be increasing!")
 		.setHasDefaultValue(true)
 		.build();
+	/**
+	 * @cn-name 训练特征所在维度
+	 * @cn 训练特征在输入向量的维度索引
+	 */
 	ParamInfo <Integer> FEATURE_INDEX = ParamInfoFactory
 		.createParamInfo("featureIndex", Integer.class)
 		.setDescription("Feature index in the vector.")

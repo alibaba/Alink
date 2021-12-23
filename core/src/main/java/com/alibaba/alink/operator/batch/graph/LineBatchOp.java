@@ -21,7 +21,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.huge.line.ApsIteratorLine;
@@ -209,7 +209,7 @@ public class LineBatchOp extends BatchOperator <LineBatchOp>
 		DataSet <Row> res = map.mapLine(modelRes);
 
 		this.setOutput(res, new String[] {"vertexId", "vertexVector"},
-			new TypeInformation <?>[] {vertexType, TypeInformation.of(DenseVector.class)});
+			new TypeInformation <?>[] {vertexType, VectorTypes.DENSE_VECTOR});
 		return this;
 	}
 
@@ -315,5 +315,4 @@ public class LineBatchOp extends BatchOperator <LineBatchOp>
 			return (int) (key % numPartitions);
 		}
 	}
-
 }

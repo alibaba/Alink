@@ -67,6 +67,11 @@ public class ModelStreamModelMapperAdapt extends Mapper {
 	}
 
 	@Override
+	public Row map(Row row) throws Exception {
+		return internal.get().map(row);
+	}
+
+	@Override
 	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
 		TableSchema dataSchema, Params params) {
 

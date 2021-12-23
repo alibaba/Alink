@@ -19,6 +19,7 @@ import java.util.Map;
 /**
  * Test for ApproxStringSimilarityTopNBatchOp.
  */
+
 public class StringNearestNeighborBatchOpTest extends AlinkTestBase {
 
 	public static Row[] dictRows = new Row[] {

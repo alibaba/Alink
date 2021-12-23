@@ -2,7 +2,9 @@ package com.alibaba.alink.operator.stream.feature;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.common.feature.featurebuilder.DateUtil;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil.ClauseInfo;
@@ -17,7 +19,7 @@ import java.util.ArrayList;
  * This is the base stream feature builder for
  * tumble time window, hop time window and session time window.
  */
-abstract class BaseGroupTimeWindowStreamOp <T extends BaseGroupTimeWindowStreamOp <T>>
+abstract class BaseGroupTimeWindowStreamOp<T extends BaseGroupTimeWindowStreamOp <T>>
 	extends BaseWindowStreamOp <T> implements GroupTimeWindowParams <T> {
 
 	final GroupWindowType windowType;
@@ -28,8 +30,8 @@ abstract class BaseGroupTimeWindowStreamOp <T extends BaseGroupTimeWindowStreamO
 	}
 
 	@Override
-	Tuple2 <ClauseInfo, String> generateSqlInfo(String registerName) {
-		return extractSqlClause(registerName);
+	Tuple2 <ClauseInfo, String> generateSqlInfo(String registerName, TableSchema inputSchema) {
+		return extractSqlClause(registerName, inputSchema);
 	}
 
 	@Override
@@ -40,23 +42,23 @@ abstract class BaseGroupTimeWindowStreamOp <T extends BaseGroupTimeWindowStreamO
 		return clauseInfo.getGroupWindowTimeCol();
 	}
 
-	private Tuple2 <ClauseInfo, String> extractSqlClause(String registerName) {
+	private Tuple2 <ClauseInfo, String> extractSqlClause(String registerName, TableSchema inputSchema) {
 
 		String timeCol = getTimeCol();
 		String clauseInterval = null;
 		switch (this.windowType) {
 			case TUMBLE:
-				clauseInterval = timeCol + ", INTERVAL "
+				clauseInterval = ROW_TIME_COL_NAME + ", INTERVAL "
 					+ DateUtil.parseSecondTime(getParams().get(TumbleTimeWindowParams.WINDOW_TIME));
 				break;
 			case HOP:
-				clauseInterval = timeCol + ", INTERVAL "
+				clauseInterval = ROW_TIME_COL_NAME + ", INTERVAL "
 					+ DateUtil.parseSecondTime(getParams().get(HopTimeWindowParams.HOP_TIME))
 					+ ", INTERVAL "
 					+ DateUtil.parseSecondTime(getParams().get(HopTimeWindowParams.WINDOW_TIME));
 				break;
 			case SESSION:
-				clauseInterval = timeCol + ", INTERVAL "
+				clauseInterval = ROW_TIME_COL_NAME + ", INTERVAL "
 					+ DateUtil.parseSecondTime(getParams().get(SessionTimeWindowParams.SESSION_GAP_TIME));
 				break;
 			default:
@@ -89,7 +91,9 @@ abstract class BaseGroupTimeWindowStreamOp <T extends BaseGroupTimeWindowStreamO
 		for (int i = 0; i < clauseNum; i++) {
 			String[] localClause = clauses[i];
 			String operator = localClause[0].trim();
-			FeatureClauseUtil.buildOperatorClause(operatorFunc, operators, i, operator, timeCol, timeInterval);
+			FeatureClauseUtil.buildOperatorClause(operatorFunc, operators,
+				i, operator, ROW_TIME_COL_NAME, timeInterval,
+				inputSchema, MLEnvironmentFactory.get(this.getMLEnvironmentId()));
 			String operaFunc = operatorFunc[i];
 			switch (this.windowType) {
 				case TUMBLE:

@@ -9,7 +9,10 @@ import com.alibaba.alink.params.shared.colname.HasVectorColDefaultAsNull;
 public interface KnnPredictParams<T> extends
 	RichModelMapperParams <T>,
 	HasVectorColDefaultAsNull <T> {
-
+	/**
+	 * @cn-name topK
+	 * @cn topK
+	 */
 	ParamInfo <Integer> K = ParamInfoFactory
 		.createParamInfo("k", Integer.class)
 		.setDescription("k")

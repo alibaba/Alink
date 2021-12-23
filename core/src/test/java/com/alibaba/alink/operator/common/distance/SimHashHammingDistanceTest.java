@@ -29,8 +29,8 @@ public class SimHashHammingDistanceTest extends AlinkTestBase {
 
 	@Test
 	public void testString() {
-		Assert.assertEquals(distance.calc("abc", "abe"), 6.0, 0.1);
-		Assert.assertEquals(distance.calc(new String[] {"a", "b", "c"}, new String[] {"a", "b", "e"}), 6.0, 0.1);
+		Assert.assertEquals(distance.calc("abc", "abe"), 3.0, 0.1);
+		Assert.assertEquals(distance.calc(new String[] {"a", "b", "c"}, new String[] {"a", "b", "e"}), 3.0, 0.1);
 
 	}
 
@@ -38,7 +38,7 @@ public class SimHashHammingDistanceTest extends AlinkTestBase {
 	public void testSample() {
 		Sample sample = new Sample("abc", null);
 		distance.updateLabel(sample, "abc");
-		Assert.assertEquals(sample.getLabel(), new BigInteger("12399407586"));
+		Assert.assertEquals(sample.getLabel(), new BigInteger("12638189399578897828"));
 		Assert.assertEquals(distance.calc(sample, sample, false), 0.0, 0.01);
 	}
 }

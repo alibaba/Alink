@@ -11,6 +11,10 @@ import com.alibaba.alink.params.validators.MinValidator;
  */
 public interface HasL1<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name L1 正则化系数
+	 * @cn L1 正则化系数，默认为0。
+	 */
 	ParamInfo <Double> L_1 = ParamInfoFactory
 		.createParamInfo("l1", Double.class)
 		.setDescription("the L1-regularized parameter.")

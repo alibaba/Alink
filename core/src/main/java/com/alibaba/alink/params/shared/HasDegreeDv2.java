@@ -7,6 +7,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasDegreeDv2<T> extends WithParams <T> {
+	/**
+	 * @cn-name 多项式阶数
+	 * @cn 多项式的阶数，默认2
+	 */
 	ParamInfo <Integer> DEGREE = ParamInfoFactory
 		.createParamInfo("degree", Integer.class)
 		.setDescription("degree of polynomial expand.")

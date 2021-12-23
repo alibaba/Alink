@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
  */
 public interface GlmPredictParams<T> extends RegPredictParams <T> {
 
+	/**
+	 * @cn-name 连接函数结果的列名
+	 * @cn 连接函数结果的列名
+	 */
 	ParamInfo <String> LINK_PRED_RESULT_COL = ParamInfoFactory
 		.createParamInfo("linkPredResultCol", String.class)
 		.setDescription("link predict col name of output")

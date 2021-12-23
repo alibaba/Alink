@@ -11,6 +11,10 @@ import com.alibaba.alink.params.ParamUtil;
  * FeatureType.
  */
 public interface HasFeatureType<T> extends WithParams <T> {
+	/**
+	 * @cn-name 特征类型
+	 * @cn 生成特征向量的类型，支持IDF/WORD_COUNT/TF_IDF/Binary/TF
+	 */
 	ParamInfo <FeatureType> FEATURE_TYPE = ParamInfoFactory
 		.createParamInfo("featureType", FeatureType.class)
 		.setDescription("Feature type, support IDF/WORD_COUNT/TF_IDF/Binary/TF")

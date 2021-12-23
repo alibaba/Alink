@@ -8,6 +8,10 @@ import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasTopNDv10<T> extends
 	WithParams <T> {
+	/**
+	 * @cn-name 前N的数据
+	 * @cn 挑选最近的N个数据
+	 */
 	ParamInfo <Integer> TOP_N = ParamInfoFactory
 		.createParamInfo("topN", Integer.class)
 		.setDescription("top n")

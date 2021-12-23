@@ -36,6 +36,7 @@ public abstract class AggFunctionTestBase<I, R, ACC> {
 
 	protected boolean resetAcc = false;
 
+	//todo 以下两个方法需要重写，如果输入是array的话。，需要把最后的Object.class改成Object[].class
 	protected Method getAccumulateFunc() throws NoSuchMethodException {
 		AggregateFunction <R, ACC> agg = getAggregator();
 		if (ifMethodExistInFunction("accumulate", agg)) {

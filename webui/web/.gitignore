@@ -1,0 +1,5 @@
+node_modules
+src/.umi
+dist
+src/.umi-production
+yarn-error.log

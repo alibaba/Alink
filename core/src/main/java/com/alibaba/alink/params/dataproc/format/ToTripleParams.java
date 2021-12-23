@@ -6,6 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface ToTripleParams<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 三元组结构中列信息和数据信息的Schema
+	 * @cn 三元组结构中列信息和数据信息的Schema
+	 */
 	ParamInfo <String> TRIPLE_COLUMN_VALUE_SCHEMA_STR = ParamInfoFactory
 		.createParamInfo("tripleColumnValueSchemaStr", String.class)
 		.setDescription("Schema string of the triple's column and value column")
@@ -21,6 +25,10 @@ public interface ToTripleParams<T> extends WithParams <T> {
 		return set(TRIPLE_COLUMN_VALUE_SCHEMA_STR, colName);
 	}
 
+	/**
+	 * @cn-name 算法保留列名
+	 * @cn 算法保留列
+	 */
 	ParamInfo <String[]> RESERVED_COLS = ParamInfoFactory
 		.createParamInfo("reservedCols", String[].class)
 		.setDescription("Names of the columns to be retained in the output table")

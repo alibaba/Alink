@@ -8,6 +8,9 @@ import com.alibaba.alink.operator.common.feature.CrossFeatureModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.feature.CrossFeaturePredictParams;
 
+/**
+ * Cross selected columns to build new vector type data.
+ */
 public class CrossFeaturePredictStreamOp extends ModelMapStreamOp<CrossFeaturePredictStreamOp>
 	implements CrossFeaturePredictParams <CrossFeaturePredictStreamOp> {
 

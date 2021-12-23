@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasNumIterDefaultAs10<T> extends WithParams <T> {
+	/**
+	 * @cn-name 迭代次数
+	 * @cn 迭代次数，默认为10
+	 */
 	ParamInfo <Integer> NUM_ITER = ParamInfoFactory
 		.createParamInfo("numIter", Integer.class)
 		.setDescription("Number of iterations, The default value is 10")

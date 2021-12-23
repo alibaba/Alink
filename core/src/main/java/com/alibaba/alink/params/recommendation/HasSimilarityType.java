@@ -16,6 +16,10 @@ import java.io.Serializable;
  * Params: Distance type for clustering, support EUCLIDEAN and COSINE.
  */
 public interface HasSimilarityType<T> extends WithParams <T> {
+	/**
+	 * @cn-name 距离度量方式
+	 * @cn 聚类使用的距离类型
+	 */
 	ParamInfo <SimilarityType> SIMILARITY_TYPE = ParamInfoFactory
 		.createParamInfo("similarityType", SimilarityType.class)
 		.setDescription("similarity type for calculationg neighbor")

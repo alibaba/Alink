@@ -7,6 +7,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasK<T> extends WithParams <T> {
+	/**
+	 * @cn-name 降维后的维度
+	 * @cn 降维后的维度
+	 */
 	ParamInfo <Integer> K = ParamInfoFactory
 		.createParamInfo("k", Integer.class)
 		.setDescription("the value of K.")

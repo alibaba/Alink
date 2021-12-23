@@ -28,18 +28,10 @@ public class AlsTrainBatchOpTest extends AlinkTestBase {
 		Row.of("3L", "9L", 3.0),
 		Row.of("3L", "6L", 0.0),
 	};
-	Row[] rows2 = new Row[] {
-		Row.of(1L, 5L, 5.0),
-		Row.of(2L, 6L, 1.0),
-		Row.of(2L, 8L, 2.0),
-		Row.of(3L, 7L, 1.0),
-		Row.of(3L, 6L, 3.0),
-		Row.of(3L, 5L, 0.0),
-	};
 
-	private AlsTrainBatchOp train() throws Exception {
+	private AlsTrainBatchOp train() {
 		Long envId = MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID;
-		BatchOperator samples = new MemSourceBatchOp(rows1, new String[] {"uid", "iid", "label"}).setMLEnvironmentId(
+		BatchOperator<?> samples = new MemSourceBatchOp(rows1, new String[] {"uid", "iid", "label"}).setMLEnvironmentId(
 			envId);
 
 		AlsTrainBatchOp alsOp = new AlsTrainBatchOp()
@@ -48,15 +40,13 @@ public class AlsTrainBatchOpTest extends AlinkTestBase {
 			.setItemCol("iid")
 			.setRateCol("label");
 
-		AlsTrainBatchOp model = alsOp.linkFrom(samples);
-		return model;
+		return alsOp.linkFrom(samples);
 	}
 
 	@Test
 	public void testUserItemExtraction() throws Exception {
 		AlsTrainBatchOp model = train();
 		model.lazyPrintModelInfo();
-		//		model.print();
 		Params params = new Params();
 		AlsModelInfoBatchOp transformModel = new AlsModelInfoBatchOp(params).linkFrom(model);
 		transformModel.getUserEmbedding().print();
@@ -65,22 +55,19 @@ public class AlsTrainBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void testLazyPrint() throws Exception {
-		AlsTrainBatchOp als = (AlsTrainBatchOp) train();
+		AlsTrainBatchOp als = train();
 		als.print();
 		als.lazyPrintModelInfo("ALS");
 		BatchOperator.execute();
 	}
 
 	@Test
-	public void testPredict() throws Exception {
+	public void testPredict() {
 		Long envId = MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID;
-		BatchOperator samples = new MemSourceBatchOp(rows1, new String[] {"uid", "iid", "label"}).setMLEnvironmentId(
+		BatchOperator<?> samples = new MemSourceBatchOp(rows1, new String[] {"uid", "iid", "label"}).setMLEnvironmentId(
 			envId);
 
-		BatchOperator model = train();
-		AlsRateRecommBatchOp predictor1 = new AlsRateRecommBatchOp()
-			.setMLEnvironmentId(envId)
-			.setUserCol("uid").setItemCol("iid").setRecommCol("p");
+		BatchOperator<?> model = train();
 		AlsItemsPerUserRecommBatchOp predictor2 = new AlsItemsPerUserRecommBatchOp()
 			.setMLEnvironmentId(envId)
 			.setExcludeKnown(true)
@@ -94,11 +81,10 @@ public class AlsTrainBatchOpTest extends AlinkTestBase {
 		AlsSimilarItemsRecommBatchOp predictor5 = new AlsSimilarItemsRecommBatchOp()
 			.setMLEnvironmentId(envId)
 			.setItemCol("iid").setRecommCol("p");
-		BatchOperator result1 = predictor1.linkFrom(model, samples);
-		BatchOperator result2 = predictor2.linkFrom(model, samples);
-		BatchOperator result3 = predictor3.linkFrom(model, samples);
-		BatchOperator result4 = predictor4.linkFrom(model, samples);
-		BatchOperator result5 = predictor5.linkFrom(model, samples);
+		BatchOperator<?> result2 = predictor2.linkFrom(model, samples);
+		BatchOperator<?> result3 = predictor3.linkFrom(model, samples);
+		BatchOperator<?> result4 = predictor4.linkFrom(model, samples);
+		BatchOperator<?> result5 = predictor5.linkFrom(model, samples);
 
 		result2 = result2.select("*, 'AlsItemsPerUserRecommBatchOp' as rec_type");
 		result3 = result3.select("*, 'AlsUsersPerItemRecommBatchOp' as rec_type");
@@ -113,10 +99,10 @@ public class AlsTrainBatchOpTest extends AlinkTestBase {
 	@Test
 	public void testStreamPredict() throws Exception {
 		Long envId = MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID;
-		StreamOperator streamsamples = new MemSourceStreamOp(rows1, new String[] {"uid", "iid", "label"})
+		StreamOperator<?> streamsamples = new MemSourceStreamOp(rows1, new String[] {"uid", "iid", "label"})
 			.setMLEnvironmentId(envId);
 
-		BatchOperator model = train();
+		BatchOperator<?> model = train();
 		AlsRateRecommStreamOp predictor1 = new AlsRateRecommStreamOp(model)
 			.setUserCol("uid").setItemCol("iid").setRecommCol("p");
 		AlsItemsPerUserRecommStreamOp predictor2 = new AlsItemsPerUserRecommStreamOp(model)
@@ -127,11 +113,11 @@ public class AlsTrainBatchOpTest extends AlinkTestBase {
 			.setUserCol("uid").setRecommCol("p");
 		AlsSimilarItemsRecommStreamOp predictor5 = new AlsSimilarItemsRecommStreamOp(model)
 			.setItemCol("iid").setRecommCol("p");
-		StreamOperator result1 = predictor1.linkFrom(streamsamples);
-		StreamOperator result2 = predictor2.linkFrom(streamsamples);
-		StreamOperator result3 = predictor3.linkFrom(streamsamples);
-		StreamOperator result4 = predictor4.linkFrom(streamsamples);
-		StreamOperator result5 = predictor5.linkFrom(streamsamples);
+		StreamOperator<?> result1 = predictor1.linkFrom(streamsamples);
+		StreamOperator<?> result2 = predictor2.linkFrom(streamsamples);
+		StreamOperator<?> result3 = predictor3.linkFrom(streamsamples);
+		StreamOperator<?> result4 = predictor4.linkFrom(streamsamples);
+		StreamOperator<?> result5 = predictor5.linkFrom(streamsamples);
 
 		result2 = result2.select("*, 'AlsItemsPerUserRecommStreamOp' as rec_type");
 		result3 = result3.select("*, 'AlsUsersPerItemRecommStreamOp' as rec_type");

@@ -1,0 +1,2 @@
+global-exclude *.py[cod] __pycache__ .DS_Store
+recursive-exclude akdl/tests akdl/integration_tests *.py *.pyc

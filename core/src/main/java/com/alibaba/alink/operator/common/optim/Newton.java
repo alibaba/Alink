@@ -59,9 +59,7 @@ public class Newton extends Optimizer {
 		//get parameters.
 		int maxIter = params.get(LinearTrainParams.MAX_ITER);
 		double epsilon = params.get(LinearTrainParams.EPSILON);
-		if (null == this.coefVec) {
-			initCoefZeros();
-		}
+		checkInitCoef();
 
 		/**
 		 * solve problem using iteration.

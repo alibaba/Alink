@@ -11,6 +11,10 @@ import com.alibaba.alink.params.validators.MinValidator;
  */
 public interface NearestNeighborPredictParams<T> extends SISOMapperParams <T> {
 
+	/**
+	 * @cn-name radius值
+	 * @cn radius值
+	 */
 	ParamInfo <Double> RADIUS = ParamInfoFactory
 		.createParamInfo("radius", Double.class)
 		.setDescription("radius")
@@ -21,6 +25,10 @@ public interface NearestNeighborPredictParams<T> extends SISOMapperParams <T> {
 
 	default T setRadius(Double value) {return set(RADIUS, value);}
 
+	/**
+	 * @cn-name TopN的值
+	 * @cn TopN的值
+	 */
 	ParamInfo <Integer> TOP_N = ParamInfoFactory
 		.createParamInfo("topN", Integer.class)
 		.setDescription("top n")

@@ -101,7 +101,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 				public Long map(Tuple2 <Integer, Long> value) throws Exception {
 					return value.f1;
 				}
-			});
+			})
+			.name("calc_cnt");
 
 		/* missing count of columns */
 		DataSet <Tuple2 <Integer, Long>> missingCount = input
@@ -151,6 +152,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 						.forEach(out::collect);
 				}
 			})
+			.name("missingCount")
 			.groupBy(0)
 			.reduce(new RichReduceFunction <Tuple2 <Integer, Long>>() {
 				private static final long serialVersionUID = -4641176463754046550L;
@@ -172,7 +174,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 					throws Exception {
 					return Tuple2.of(value1.f0, value1.f1 + value2.f1);
 				}
-			});
+			})
+			.name("missingCount_reduce");
 
 		/* flatten dataset to 1d */
 		DataSet <PairComparable> flatten = input
@@ -210,7 +213,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 						}
 					}
 				}
-			});
+			}).name("flatten1D");
 
 		/* sort data */
 		Tuple2 <DataSet <PairComparable>, DataSet <Tuple2 <Integer, Long>>> sortedData
@@ -279,6 +282,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 
 		@Override
 		public void open(Configuration parameters) throws Exception {
+			LOG.info("{} open count.", getRuntimeContext().getTaskName());
 			this.counts = getRuntimeContext().getBroadcastVariableWithInitializer(
 				"counts",
 				new BroadcastVariableInitializer <Tuple2 <Integer, Long>, List <Tuple2 <Integer, Long>>>() {
@@ -296,6 +300,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 					}
 				});
 
+			LOG.info("{} open totalCnt.", getRuntimeContext().getTaskName());
 			this.totalCnt = getRuntimeContext().getBroadcastVariableWithInitializer("totalCnt",
 				new BroadcastVariableInitializer <Long, Long>() {
 					@Override
@@ -304,6 +309,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 					}
 				});
 
+			LOG.info("{} open missingCounts.", getRuntimeContext().getTaskName());
 			this.missingCounts = getRuntimeContext().getBroadcastVariableWithInitializer(
 				"missingCounts",
 				new BroadcastVariableInitializer <Tuple2 <Integer, Long>, List <Tuple2 <Integer, Long>>>() {
@@ -330,6 +336,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		@Override
 		public void mapPartition(Iterable <PairComparable> values, Collector <Tuple2 <Integer, Number>> out)
 			throws Exception {
+
+			LOG.info("{} mapPartition start.", getRuntimeContext().getTaskName());
 
 			long start = 0;
 			long end;
@@ -413,6 +421,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 
 				localStart += subEnd - subStart;
 			}
+
+			LOG.info("{} mapPartition end.", getRuntimeContext().getTaskName());
 		}
 	}
 
@@ -569,4 +579,5 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 
 		model.save(model, out);
 	}
+
 }

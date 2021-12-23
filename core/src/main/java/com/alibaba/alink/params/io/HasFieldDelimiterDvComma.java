@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasFieldDelimiterDvComma<T> extends WithParams <T> {
+	/**
+	 * @cn-name 字段分隔符
+	 * @cn 字段分隔符
+	 */
 	ParamInfo <String> FIELD_DELIMITER = ParamInfoFactory
 		.createParamInfo("fieldDelimiter", String.class)
 		.setDescription("Field delimiter")

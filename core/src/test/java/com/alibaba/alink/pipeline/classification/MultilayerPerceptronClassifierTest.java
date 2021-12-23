@@ -2,8 +2,11 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.utils.testhttpsrc.Iris;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.classification.MultilayerPerceptronPredictBatchOp;
+import com.alibaba.alink.operator.batch.classification.MultilayerPerceptronTrainBatchOp;
 import com.alibaba.alink.operator.batch.evaluation.EvalMultiClassBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.evaluation.MultiClassMetrics;
@@ -16,8 +19,8 @@ import java.util.Arrays;
 public class MultilayerPerceptronClassifierTest extends AlinkTestBase {
 
 	@Test
-	public void testMLPC() throws Exception {
-		BatchOperator data = Iris.getBatchData();
+	public void testMLPC() {
+		BatchOperator<?> data = Iris.getBatchData();
 
 		MultilayerPerceptronClassifier classifier = new MultilayerPerceptronClassifier()
 			.setFeatureCols(Iris.getFeatureColNames())
@@ -27,7 +30,7 @@ public class MultilayerPerceptronClassifierTest extends AlinkTestBase {
 			.setPredictionCol("pred_label")
 			.setPredictionDetailCol("pred_detail");
 
-		BatchOperator res = classifier.fit(data).transform(data);
+		BatchOperator<?> res = classifier.fit(data).transform(data);
 
 		MultiClassMetrics metrics = new EvalMultiClassBatchOp()
 			.setPredictionDetailCol("pred_detail")
@@ -41,7 +44,7 @@ public class MultilayerPerceptronClassifierTest extends AlinkTestBase {
 
 	@Test
 	public void testMLPCV1() throws Exception {
-		BatchOperator data = Iris.getBatchData();
+		BatchOperator<?> data = Iris.getBatchData();
 
 		MultilayerPerceptronClassifier classifier = new MultilayerPerceptronClassifier()
 			.setFeatureCols(Iris.getFeatureColNames())
@@ -56,21 +59,21 @@ public class MultilayerPerceptronClassifierTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void testDenseMLPC() throws Exception {
+	public void testDenseMLPC() {
 
 		Row[] array = new Row[] {
-			Row.of(new Object[] {"$31$01.0 11.0 21.0 301.0", "1.0 1.0 1.0 1.0", 1.0, 1.0, 1.0, 1.0, 1}),
-			Row.of(new Object[] {"$31$01.0 11.0 20.0 301.0", "1.0 1.0 0.0 1.0", 1.0, 1.0, 0.0, 1.0, 1}),
-			Row.of(new Object[] {"$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1}),
-			Row.of(new Object[] {"$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1}),
-			Row.of(new Object[] {"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0}),
-			Row.of(new Object[] {"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0}),
-			Row.of(new Object[] {"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0}),
-			Row.of(new Object[] {"$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0})
+			Row.of("$31$01.0 11.0 21.0 301.0", "1.0 1.0 1.0 1.0", 1.0, 1.0, 1.0, 1.0, 1),
+			Row.of("$31$01.0 11.0 20.0 301.0", "1.0 1.0 0.0 1.0", 1.0, 1.0, 0.0, 1.0, 1),
+			Row.of("$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1),
+			Row.of("$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1),
+			Row.of("$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0)
 		};
 		String[] veccolNames = new String[] {"svec", "vec", "f0", "f1", "f2", "f3", "label"};
 
-		BatchOperator data = new MemSourceBatchOp(Arrays.asList(array), veccolNames);
+		BatchOperator<?> data = new MemSourceBatchOp(Arrays.asList(array), veccolNames);
 
 		MultilayerPerceptronClassifier classifier = new MultilayerPerceptronClassifier()
 			.setVectorCol("vec")
@@ -80,7 +83,52 @@ public class MultilayerPerceptronClassifierTest extends AlinkTestBase {
 			.setPredictionCol("pred_label")
 			.setPredictionDetailCol("pred_detail");
 
-		BatchOperator res = classifier.fit(data).transform(data);
+		BatchOperator<?> res = classifier.fit(data).transform(data);
+
+		MultiClassMetrics metrics = new EvalMultiClassBatchOp()
+			.setPredictionDetailCol("pred_detail")
+			.setLabelCol("label")
+			.linkFrom(res)
+			.collectMetrics();
+
+		Assert.assertTrue(metrics.getAccuracy() > 0.9);
+
+	}
+
+	@Test
+	public void testIncrementalMLPC() {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		Row[] array = new Row[] {
+			Row.of("$31$01.0 11.0 21.0 301.0", "1.0 1.0 1.0 1.0", 1.0, 1.0, 1.0, 1.0, 1),
+			Row.of("$31$01.0 11.0 20.0 301.0", "1.0 1.0 0.0 1.0", 1.0, 1.0, 0.0, 1.0, 1),
+			Row.of("$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1),
+			Row.of("$31$01.0 10.0 21.0 301.0", "1.0 0.0 1.0 1.0", 1.0, 0.0, 1.0, 1.0, 1),
+			Row.of("$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$00.0 11.0 21.0 300.0", "0.0 1.0 1.0 0.0", 0.0, 1.0, 1.0, 0.0, 0)
+		};
+		String[] veccolNames = new String[] {"svec", "vec", "f0", "f1", "f2", "f3", "label"};
+
+		BatchOperator<?> data = new MemSourceBatchOp(Arrays.asList(array), veccolNames);
+
+		MultilayerPerceptronTrainBatchOp classifier = new MultilayerPerceptronTrainBatchOp()
+			.setVectorCol("vec")
+			.setLabelCol("label")
+			.setLayers(new int[] {4, 5, 2})
+			.setMaxIter(5);
+
+		BatchOperator<?> model = classifier.linkFrom(data);
+
+		BatchOperator finalModel = new MultilayerPerceptronTrainBatchOp()
+			.setVectorCol("vec")
+			.setLabelCol("label")
+			.setLayers(new int[] {4, 5, 2})
+			.setMaxIter(5).linkFrom(data, model);
+
+
+		BatchOperator<?> res = new MultilayerPerceptronPredictBatchOp().setPredictionDetailCol("pred_detail")
+			.setPredictionCol("pred").linkFrom(finalModel, data);
 
 		MultiClassMetrics metrics = new EvalMultiClassBatchOp()
 			.setPredictionDetailCol("pred_detail")

@@ -4,6 +4,7 @@ import com.alibaba.alink.operator.common.similarity.Sample;
 import com.alibaba.alink.operator.common.similarity.SimilarityUtil;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Calculate the simHashHamming distance between two str.
@@ -56,7 +57,7 @@ public class SimHashHammingDistance implements CategoricalDistance, FastCategori
 		// Count the word frequency.
 		int[] v = new int[this.bitLength];
 		for (String temp : words) {
-			BigInteger t = this.hash(temp);
+			BigInteger t = this.paiHash(temp);
 			for (int i = 0; i < this.bitLength; i++) {
 				BigInteger bitmask = BigInteger.ONE.shiftLeft(i);
 				if (t.and(bitmask).signum() != 0) {
@@ -68,11 +69,40 @@ public class SimHashHammingDistance implements CategoricalDistance, FastCategori
 		}
 		BigInteger fingerprint = BigInteger.ZERO;
 		for (int i = 0; i < this.bitLength; i++) {
-			if (v[i] >= 0) {
-				fingerprint = fingerprint.add(BigInteger.ONE.shiftLeft(i));
+			if (v[i] > 0) {
+				//fingerprint = fingerprint.add(BigInteger.ONE.shiftLeft(i));
+				fingerprint = fingerprint.or(BigInteger.ONE.shiftLeft(i));
 			}
 		}
 		return fingerprint;
+	}
+
+	/*
+	 * same hash function with c++ std::tr1::hash
+	 * static std::size_t hash(const char* first, std::size_t length)
+       { std::size_t result = static_cast<std::size_t>(14695981039346656037ULL);
+     		for (; length > 0; --length)
+       		{
+         		size_t value = (std::size_t)*first++;
+         		result ^= value;
+         		result *= 1099511628211ULL;
+       		}
+     	return result;
+       }
+	 */
+	private BigInteger paiHash(String source) {
+		if (null == source || source.length() == 0) {
+			return BigInteger.ZERO;
+		}
+		byte[] sourceArray = source.getBytes(StandardCharsets.UTF_8);
+		BigInteger result = new BigInteger("14695981039346656037");
+		BigInteger m = new BigInteger("1099511628211");
+		BigInteger unsignedLongLong = new BigInteger("ffffffffffffffff", 16);
+		for (int i = 0; i < sourceArray.length; i++) {
+			result = result.xor(BigInteger.valueOf(sourceArray[i]));
+			result = result.multiply(m);
+		}
+		return result.and(unsignedLongLong);
 	}
 
 	private BigInteger hash(String source) {

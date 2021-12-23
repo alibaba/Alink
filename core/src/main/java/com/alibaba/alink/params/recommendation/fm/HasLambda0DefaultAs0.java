@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Constant item regular number.
  */
 public interface HasLambda0DefaultAs0<T> extends WithParams <T> {
+	/**
+	 * @cn-name 常数项正则化系数
+	 * @cn 常数项正则化系数
+	 */
 	ParamInfo <Double> LAMBDA_0 = ParamInfoFactory
 			.createParamInfo("lambda0", Double.class)
 			.setDescription("lambda0")

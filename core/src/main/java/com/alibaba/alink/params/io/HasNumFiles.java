@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasNumFiles<T> extends WithParams <T> {
+	/**
+	 * @cn-name 文件数目
+	 * @cn 文件数目
+	 */
 	ParamInfo <Integer> NUM_FILES = ParamInfoFactory
 		.createParamInfo("numFiles", Integer.class)
 		.setDescription("Number of files")

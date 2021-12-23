@@ -106,10 +106,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 					BlockingQueue <Row> inputQueue = inputQueues.get(tid);
 					BlockingQueue <Row> outputQueue = outputQueues.get(tid);
 					boolean exitFlag = false;
-					while (true) {
-						if (exitFlag) {
-							break;
-						}
+					while (!exitFlag) {
 						List <Row> inputs = new ArrayList <>();
 						inputQueue.drainTo(inputs);
 						for (Row input : inputs) {
@@ -165,12 +162,15 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 		super.close();
 		for (int i = 0; i < numThreads; i++) {
 			//put the read & write in a loop to avoid dead lock between write queue and read queue.
-			boolean writeSuccess = false;
+			boolean writeSuccess;
 			do {
 				numOutputRecords += drainRead(outputQueues.get(i), false, null, collector);
 				// put an empty row to signal the end of input queue
 				writeSuccess = inputQueues.get(i).offer(new Row(0)); // non-blocking write
 				if (!writeSuccess) {
+					if (!threadException.compareAndSet(null, null)) {
+						throw new RuntimeException(threadException.get());
+					}
 					Thread.yield();
 				}
 			} while (!writeSuccess);

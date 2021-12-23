@@ -8,6 +8,10 @@ import com.alibaba.alink.params.ParamUtil;
 
 public interface HasFeatureImportanceType<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 特征重要性类型
+	 * @cn 特征重要性类型（默认为GAIN）
+	 */
 	ParamInfo <FeatureImportanceType> FEATURE_IMPORTANCE_TYPE = ParamInfoFactory
 		.createParamInfo("featureImportanceType", FeatureImportanceType.class)
 		.setHasDefaultValue(FeatureImportanceType.GAIN)

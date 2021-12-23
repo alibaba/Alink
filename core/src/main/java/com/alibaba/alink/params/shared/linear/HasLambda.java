@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasLambda<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 希腊字母：lambda
+	 * @cn 惩罚因子，必选
+	 */
 	ParamInfo <Double> LAMBDA = ParamInfoFactory
 		.createParamInfo("lambda", Double.class)
 		.setDescription("punish factor.")

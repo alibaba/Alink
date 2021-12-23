@@ -12,6 +12,11 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * @see HasSelectedColsDefaultAsNull
  */
 public interface HasSelectedJsonCol<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name 选中的Json列名
+	 * @cn 计算列对应的Json列名
+	 */
 	ParamInfo <String> SELECTED_JSON_COL = ParamInfoFactory
 		.createParamInfo("selectedJsonCol", String.class)
 		.setDescription("Name of the selected json column used for processing")

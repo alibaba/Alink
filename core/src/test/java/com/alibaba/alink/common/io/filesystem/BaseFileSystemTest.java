@@ -171,34 +171,19 @@ public class BaseFileSystemTest extends AlinkTestBase {
 		final String sign = "file_create";
 
 		FilePath file = new FilePath(new Path(folder.getRoot().toPath().toString(), sign));
-		OutputStream outputStream = null;
 
-		try {
-			outputStream = new BufferedOutputStream(
-				streamFunction.apply(file)
-			);
+		try (OutputStream outputStream = new BufferedOutputStream(
+			streamFunction.apply(file))) {
 
 			outputStream.write(sign.getBytes());
-		} finally {
-			if (outputStream != null) {
-				outputStream.close();
-			}
 		}
 
-		InputStream inputStream = null;
-
-		try {
-			inputStream = new BufferedInputStream(
-				file.getFileSystem().open(file.getPathStr())
-			);
+		try (InputStream inputStream = new BufferedInputStream(
+			file.getFileSystem().open(file.getPathStr()))) {
 
 			byte[] buffer = new byte[1024];
 			int len = inputStream.read(buffer);
 			Assert.assertEquals(new String(buffer, 0, len), sign);
-		} finally {
-			if (inputStream != null) {
-				inputStream.close();
-			}
 		}
 	}
 
@@ -283,14 +268,10 @@ public class BaseFileSystemTest extends AlinkTestBase {
 	}
 
 	private void writeFile(FilePath path, String content) throws IOException {
-		FSDataOutputStream outputStream = null;
-		try {
-			outputStream = path.getFileSystem().create(path.getPath(), FileSystem.WriteMode.OVERWRITE);
+		try (FSDataOutputStream outputStream = path.getFileSystem().create(path.getPath(),
+			FileSystem.WriteMode.OVERWRITE)) {
+
 			outputStream.write(content.getBytes());
-		} finally {
-			if (outputStream != null) {
-				outputStream.close();
-			}
 		}
 	}
 }

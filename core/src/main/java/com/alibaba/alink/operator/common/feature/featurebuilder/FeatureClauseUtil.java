@@ -1,13 +1,22 @@
 package com.alibaba.alink.operator.common.feature.featurebuilder;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.table.api.TableSchema;
+
+import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.sql.builtin.BuildInAggRegister;
 import com.alibaba.alink.common.sql.builtin.BuildInAggRegister.UdafName;
+import com.alibaba.alink.common.sql.builtin.agg.MTableAgg;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import org.apache.commons.lang3.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 public class FeatureClauseUtil {
 
@@ -89,7 +98,6 @@ public class FeatureClauseUtil {
 		}
 		return outStr;
 	}
-
 
 	public static HashSet <String> aggHideTimeCol = new HashSet <>();
 
@@ -207,10 +215,9 @@ public class FeatureClauseUtil {
 
 	}
 
-
 	public static String[][] splitClauseForMultiInput(String exprStr) {
 		String[] splitByAs = exprStr.split(",");
-		List<String[]> res = new ArrayList <>();
+		List <String[]> res = new ArrayList <>();
 		int splitSize = splitByAs.length;
 		int i = 0;
 
@@ -241,15 +248,15 @@ public class FeatureClauseUtil {
 
 	private static String[] splitInputParam(String exprStr) {
 		String[] result = exprStr.split(",");
-		List<String> res = new ArrayList <>();
+		List <String> res = new ArrayList <>();
 		int infoSize = result.length;
 		int index = 0;
 		while (index < infoSize) {
 			if (result[index].contains("'") || result[index].contains("\"") &&
 				index + 1 < infoSize && (
 				isSplitted(result[index], result[index + 1], "'") ||
-				isSplitted(result[index], result[index + 1], "\""))) {
-				res.add(result[index]+","+result[index+1]);
+					isSplitted(result[index], result[index + 1], "\""))) {
+				res.add(result[index] + "," + result[index + 1]);
 				++index;
 			} else {
 				res.add(result[index]);
@@ -265,7 +272,8 @@ public class FeatureClauseUtil {
 	}
 
 	public static void buildOperatorClause(String[] operatorFunc, String[] operators, int clauseIndex,
-										   String operator, String timeCol, double timeInterval) {
+										   String operator, String timeCol, double timeInterval,
+										   TableSchema tableSchema, MLEnvironment env) {
 		operatorFunc[clauseIndex] = operator.split("\\(")[0].trim().toUpperCase();
 		if (isLastTime(operatorFunc[clauseIndex])) {
 			String[] components = operator.split("\\)");
@@ -279,15 +287,40 @@ public class FeatureClauseUtil {
 			operators[clauseIndex] = components[0] + ", " + timeCol + ", " + timeInterval + ")";
 		} else if (isRankAggFunc(operatorFunc[clauseIndex])) {
 			operators[clauseIndex] = operatorFunc[clauseIndex] + "(unix_timestamp(" + timeCol + "))";
+		} else if (operatorFunc[clauseIndex].startsWith("MTABLE_AGG")) {
+			operators[clauseIndex] = registMTableAgg(operator, operatorFunc[clauseIndex], env, tableSchema, timeCol);
 		} else {
 			operators[clauseIndex] = operator;
 		}
 	}
 
+	public static String registMTableAgg(String clause, String operatorFunc,
+										 MLEnvironment mlEnv, TableSchema tableSchema, String timeCol) {
+		String aggName = "mtable_agg_" + UUID.randomUUID().toString().replace("-", "");
+
+		if ("MTABLE_AGG".equals(operatorFunc)) {
+			mlEnv.getStreamTableEnvironment().registerFunction(aggName,
+				new MTableAgg(false, getMTableSchema(clause, tableSchema), timeCol));
+		} else {
+			mlEnv.getStreamTableEnvironment().registerFunction(aggName,
+				new MTableAgg(true, getMTableSchema(clause, tableSchema), timeCol));
+		}
+
+		return aggName + "(" + clause.split("\\(")[1];
+	}
+
+	//mtable_agg(f1, f2, f3)
+	public static String getMTableSchema(String clause, TableSchema tableSchema) {
+		String[] colNames = clause.split("\\(")[1].split("\\)")[0].split(",");
+		Arrays.setAll(colNames, i -> colNames[i].trim());
+		TypeInformation[] newTypes = TableUtil.findColTypes(tableSchema, colNames);
+		return CsvUtil.schema2SchemaStr(new TableSchema(colNames, newTypes));
+	}
+
 	//considering "," may be used in operator param. When splitting, we have to consider this situation.
 	private static String[] extractClause(String clauseStr) {
 		String[] splittedClauses = clauseStr.split(",");
-		List<String> res = new ArrayList <>();
+		List <String> res = new ArrayList <>();
 		int lens = splittedClauses.length;
 		int index = 0;
 		while (index < lens) {

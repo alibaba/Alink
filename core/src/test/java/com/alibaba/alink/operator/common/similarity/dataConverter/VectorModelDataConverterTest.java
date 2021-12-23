@@ -21,6 +21,7 @@ import java.util.List;
 /**
  * Unit test for VectorModelDataConverter.
  */
+
 public class VectorModelDataConverterTest extends AlinkTestBase {
 	private TableSchema modelSchema;
 	private TableSchema dataSchema = new TableSchema(new String[] {"id", "str"},

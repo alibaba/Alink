@@ -19,6 +19,7 @@ import java.util.List;
 /**
  * Test for NGram.
  */
+
 public class NGramTest extends AlinkTestBase {
 	@Test
 	public void testNGram() throws Exception {

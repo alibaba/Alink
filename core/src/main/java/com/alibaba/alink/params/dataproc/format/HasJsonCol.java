@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasJsonCol<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name JSON列名
+	 * @cn JSON列的列名
+	 */
 	ParamInfo <String> JSON_COL = ParamInfoFactory
 		.createParamInfo("jsonCol", String.class)
 		.setDescription("Name of the CSV column")

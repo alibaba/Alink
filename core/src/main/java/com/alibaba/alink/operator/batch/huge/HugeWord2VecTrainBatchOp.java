@@ -10,12 +10,16 @@ public final class HugeWord2VecTrainBatchOp extends Word2VecImpl <HugeWord2VecTr
 	implements HasNumCheckpoint <HugeWord2VecTrainBatchOp> {
 	private static final long serialVersionUID = -1222790480709681729L;
 
-	public HugeWord2VecTrainBatchOp(ApsCheckpoint checkpoint) {
-		super(null, checkpoint);
+	public HugeWord2VecTrainBatchOp() {
+		this(new Params());
 	}
 
 	public HugeWord2VecTrainBatchOp(Params params) {
 		super(params);
+	}
+
+	public HugeWord2VecTrainBatchOp(ApsCheckpoint checkpoint) {
+		super(null, checkpoint);
 	}
 
 	public HugeWord2VecTrainBatchOp(Params params, ApsCheckpoint checkpoint) {

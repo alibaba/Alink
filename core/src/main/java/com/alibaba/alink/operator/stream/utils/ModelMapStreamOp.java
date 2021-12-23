@@ -8,6 +8,7 @@ import org.apache.flink.util.function.TriFunction;
 
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
+import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.ModelMapperAdapter;
 import com.alibaba.alink.common.mapper.ModelMapperAdapterMT;
@@ -59,7 +60,7 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 
 			if (ModelStreamUtils.useModelStreamFile(getParams())) {
 				StreamOperator <?> modelStreamOp = new ModelStreamFileSourceStreamOp()
-					.setFilePath(getParams().get(ModelMapperParams.MODEL_STREAM_FILE_PATH))
+					.setFilePath(FilePath.deserialize(getParams().get(ModelMapperParams.MODEL_STREAM_FILE_PATH)))
 					.setScanInterval(getParams().get(ModelMapperParams.MODEL_STREAM_SCAN_INTERVAL))
 					.setStartTime(getParams().get(ModelMapperParams.MODEL_STREAM_START_TIME))
 					.setSchemaStr(CsvUtil.schema2SchemaStr(modelSchema))

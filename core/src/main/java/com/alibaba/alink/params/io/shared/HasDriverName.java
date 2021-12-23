@@ -5,6 +5,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasDriverName<T> extends WithParams <T> {
+	/**
+	 * @cn Driver名称
+	 */
 	ParamInfo <String> DRIVER_NAME = ParamInfoFactory
 		.createParamInfo("driverName", String.class)
 		.setDescription("driver name")

@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Params n, the length of ngram.
  */
 public interface HasNDefaultAs2<T> extends WithParams <T> {
+	/**
+	 * @cn-name nGram长度
+	 * @cn nGram长度
+	 */
 	ParamInfo <Integer> N = ParamInfoFactory
 		.createParamInfo("n", Integer.class)
 		.setDescription("NGram length")

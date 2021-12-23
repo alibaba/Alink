@@ -17,7 +17,26 @@ public class FromUnixTime extends ScalarFunction {
 		return new Timestamp(utime * 1000L).toString();
 	}
 
+	public String eval(Integer utime) {
+		if (utime == null) {
+			return null;
+		}
+		return new Timestamp(utime * 1000L).toString();
+	}
+
 	public String eval(Long utime, String format) {
+		if (utime == null || format == null) {
+			return null;
+		}
+		try {
+			DateFormat sdf = new SimpleDateFormat(format);
+			return sdf.format(new Timestamp(utime * 1000L));
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public String eval(Integer utime, String format) {
 		if (utime == null || format == null) {
 			return null;
 		}

@@ -92,7 +92,6 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 	}
 
 	private static int[] getSplitInfo(int featureSize, boolean hasInterceptItem, int parallelism) {
-		assert (featureSize > parallelism);
 		int coefSize = (hasInterceptItem) ? featureSize + 1 : featureSize;
 		int subSize = coefSize / parallelism;
 		int[] poses = new int[parallelism + 1];
@@ -517,9 +516,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 				LinearModelData model = new LinearModelDataConverter().load(modelRows);
 				labelValues = model.labelValues;
 				int weightSize = vectorSize + (hasIntercept ? 1 : 0);
-				if (weightSize < numWorkers) {
-					throw new IllegalArgumentException("Online algo: feature Size is smaller than worker num.");
-				}
+
 				int localSize = weightSize / numWorkers;
 				localSize += (workerId < weightSize % numWorkers) ? 1 : 0;
 				kernel.setModelParams(params, localSize, labelValues);

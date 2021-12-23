@@ -1,0 +1,9 @@
+This directory is a copy and modification of the git repository:
+https://github.com/alibaba/flink-ai-extended
+
+We include codes into our git repo mainly for two-reasons:
+
+1. There are no recent publish of official jars to maven repository;
+2. We modify some codes for functionalities.
+
+To avoid conflicts with artifacts publish from original repository, we use a different group id of artifacts.

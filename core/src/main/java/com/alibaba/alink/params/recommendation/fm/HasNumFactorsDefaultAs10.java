@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * num factor.
  */
 public interface HasNumFactorsDefaultAs10<T> extends WithParams <T> {
+	/**
+	 * @cn-name 因子数
+	 * @cn 因子数
+	 */
 	ParamInfo <Integer> NUM_FACTOR = ParamInfoFactory
 			.createParamInfo("numFactor", Integer.class)
 			.setDescription("number of factor")

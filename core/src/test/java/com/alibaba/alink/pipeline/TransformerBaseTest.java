@@ -32,6 +32,7 @@ import org.junit.Test;
 /**
  * Unit test for {@link TransformerBase}.
  */
+
 public class TransformerBaseTest extends PipelineStageTestBase {
 
 	/**

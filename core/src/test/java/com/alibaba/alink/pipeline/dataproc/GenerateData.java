@@ -10,6 +10,7 @@ import java.util.Arrays;
 /**
  * GenerateData class for test.
  */
+
 public class GenerateData {
 
 	public static Table getBatchTable() {

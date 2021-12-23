@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasMiniBatchFractionDv01<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name mini-Batch比率
+	 * @cn SGD算法中mini-batch占总样本的比例
+	 */
 	ParamInfo <Double> MINI_BATCH_FRACTION = ParamInfoFactory
 		.createParamInfo("miniBatchFraction", Double.class)
 		.setDescription("fraction of each mini batch to use for update")

@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * learning rate of adagrad.
  */
 public interface HasLearnRateDefaultAs001<T> extends WithParams <T> {
+	/**
+	 * @cn-name 学习率
+	 * @cn 学习率
+	 */
 	ParamInfo <Double> LEARN_RATE = ParamInfoFactory
 			.createParamInfo("learnRate", Double.class)
 			.setDescription("learn rate")

@@ -53,9 +53,8 @@ public class Gd extends Optimizer {
 	public DataSet <Tuple2 <DenseVector, double[]>> optimize() {
 		//get parameters.
 		int maxIter = params.get(LinearTrainParams.MAX_ITER);
-		if (null == this.coefVec) {
-			initCoefZeros();
-		}
+		checkInitCoef();
+
 		int numSearchStep = params.get(HasNumSearchStepDv4.NUM_SEARCH_STEP);
 
 		/**

@@ -10,12 +10,16 @@ public final class HugeMetaPath2VecTrainBatchOp extends MetaPath2VecImpl <HugeMe
 	implements HasNumCheckpoint <HugeMetaPath2VecTrainBatchOp> {
 	private static final long serialVersionUID = -8398787630956847264L;
 
-	public HugeMetaPath2VecTrainBatchOp(ApsCheckpoint checkpoint) {
-		this(null, checkpoint);
+	public HugeMetaPath2VecTrainBatchOp() {
+		this(new Params());
 	}
 
 	public HugeMetaPath2VecTrainBatchOp(Params params) {
 		this(params, null);
+	}
+
+	public HugeMetaPath2VecTrainBatchOp(ApsCheckpoint checkpoint) {
+		this(null, checkpoint);
 	}
 
 	public HugeMetaPath2VecTrainBatchOp(Params params, ApsCheckpoint checkpoint) {

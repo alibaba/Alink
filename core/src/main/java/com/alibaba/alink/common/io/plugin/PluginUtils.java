@@ -20,7 +20,10 @@ package com.alibaba.alink.common.io.plugin;
 
 import org.apache.flink.configuration.Configuration;
 
+import com.alibaba.alink.common.io.filesystem.FilePath;
+
 import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  * Utility functions for the plugin mechanism.
@@ -31,20 +34,57 @@ public final class PluginUtils {
 		throw new AssertionError("Singleton class.");
 	}
 
-	public static PluginManager createPluginManagerFromRootFolder(Configuration configuration) {
-		return createPluginManagerFromRootFolder(PluginConfig.fromConfiguration(configuration));
+	public static JarsPluginManager createJarsPluginManagerFromRootFolder(Configuration configuration) {
+		return createJarsPluginManagerFromRootFolder(PluginConfig.fromConfiguration(configuration));
 	}
 
-	private static PluginManager createPluginManagerFromRootFolder(PluginConfig pluginConfig) {
+	private static JarsPluginManager createJarsPluginManagerFromRootFolder(PluginConfig pluginConfig) {
 		if (pluginConfig.getPluginsPath().isPresent()) {
-			return new PluginManager(
-				new PluginDirectory(pluginConfig.getPluginsPath().get()), pluginConfig.getAlwaysParentFirstPatterns()
+			return new JarsPluginManager(
+				new JarsPluginDirectory(pluginConfig.getPluginsPath().get()),
+				pluginConfig.getAlwaysParentFirstPatterns()
 			);
 		} else {
-			return new PluginManager(
-				new PluginDirectory(Paths.get(PluginConfig.DEFAULT_FLINK_PLUGINS_DIRS)),
+			return new JarsPluginManager(
+				new JarsPluginDirectory(Paths.get(PluginConfig.DEFAULT_FLINK_PLUGINS_DIRS)),
 				pluginConfig.getAlwaysParentFirstPatterns()
 			);
 		}
+	}
+
+	public static ResourcesPluginManager createResourcesPluginManagerFromRootFolder(Configuration configuration) {
+		return createResourcesPluginManagerFromRootFolder(PluginConfig.fromConfiguration(configuration));
+	}
+
+	private static ResourcesPluginManager createResourcesPluginManagerFromRootFolder(PluginConfig pluginConfig) {
+		if (pluginConfig.getPluginsPath().isPresent()) {
+			return new ResourcesPluginManager(
+				new ResourcesPluginDirectory(new FilePath(pluginConfig.getPluginsPath().get().toString()))
+			);
+		} else {
+			return new ResourcesPluginManager(
+				new ResourcesPluginDirectory(
+					new FilePath(Paths.get(PluginConfig.DEFAULT_FLINK_PLUGINS_DIRS).toString()))
+			);
+		}
+	}
+
+	public static Configuration readPluginConf(Map <String, String> context) {
+
+		Configuration configuration;
+
+		if (context.isEmpty()) {
+			// Run in flink console, user should set the plugin follow the configuration of flink.
+			configuration = org.apache.flink.configuration.GlobalConfiguration.loadConfiguration().clone();
+		} else {
+			// Run in Local and RemoteEnv in PyAlink
+			configuration = new Configuration();
+
+			for (Map.Entry <String, String> entry : context.entrySet()) {
+				configuration.setString(entry.getKey(), entry.getValue());
+			}
+		}
+
+		return configuration;
 	}
 }

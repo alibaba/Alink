@@ -49,37 +49,39 @@ public class DCTMapper extends SISOMapper {
 				newInput[index] = new Complex(input.get(2 * length - 2 * index - 1));
 			}
 
-			//perform fft
-			Complex[] fftResult;
-			int logl = (int) (Math.log(length + 0.01) / Math.log(2));
-			int nextLength = 1 << (logl + 2);
-
-			if ((1 << logl) == length) {
-				Complex[] omega = FFT.getOmega(length);
-				fftResult = FFT.fftRadix2CooleyTukey(newInput, false, omega);
-			} else {
-				Complex[] omega = FFT.getOmega(nextLength);
-				Complex[] omega2 = FFT.getOmega(length * 2);
-				fftResult = FFT.fftChirpZ(newInput, false, omega, omega2);
-			}
-
-			//transform output, take real part, and output
-			//notice: our DCT has a normalization factor (sqrt(2/length))
-			//as well as additional sqrt(2) on [0]
-			Complex unit4 = new Complex(Math.cos(Math.PI / length / 2.0),
-				Math.sin(Math.PI / length / 2.0));
-			Complex currentUnit = new Complex(1, 0);
-
-			DenseVector output = new DenseVector(length);
-			double norm_factor = Math.sqrt(2.0 / length);
-			for (int index = 0; index < length; index++) {
-				double currentReal = (fftResult[index].multiply(currentUnit.conjugate())).getReal() * norm_factor;
-				if (index == 0) {
-					currentReal /= Math.sqrt(2.0);
-				}
-				output.set(index, currentReal);
-				currentUnit = currentUnit.multiply(unit4);
-			}
+			double[] outputArray = performDct(newInput);
+			DenseVector output = new DenseVector(outputArray);
+//			//perform fft
+//			Complex[] fftResult;
+//			int logl = (int) (Math.log(length + 0.01) / Math.log(2));
+//			int nextLength = 1 << (logl + 2);
+//
+//			if ((1 << logl) == length) {
+//				Complex[] omega = FFT.getOmega(length);
+//				fftResult = FFT.fftRadix2CooleyTukey(newInput, false, omega);
+//			} else {
+//				Complex[] omega = FFT.getOmega(nextLength);
+//				Complex[] omega2 = FFT.getOmega(length * 2);
+//				fftResult = FFT.fftChirpZ(newInput, false, omega, omega2);
+//			}
+//
+//			//transform output, take real part, and output
+//			//notice: our DCT has a normalization factor (sqrt(2/length))
+//			//as well as additional sqrt(2) on [0]
+//			Complex unit4 = new Complex(Math.cos(Math.PI / length / 2.0),
+//				Math.sin(Math.PI / length / 2.0));
+//			Complex currentUnit = new Complex(1, 0);
+//
+//			DenseVector output = new DenseVector(length);
+//			double norm_factor = Math.sqrt(2.0 / length);
+//			for (int index = 0; index < length; index++) {
+//				double currentReal = (fftResult[index].multiply(currentUnit.conjugate())).getReal() * norm_factor;
+//				if (index == 0) {
+//					currentReal /= Math.sqrt(2.0);
+//				}
+//				output.set(index, currentReal);
+//				currentUnit = currentUnit.multiply(unit4);
+//			}
 			return VectorUtil.toString(output);
 		} else {
 			//inverse DCT
@@ -88,7 +90,7 @@ public class DCTMapper extends SISOMapper {
 			int length = input.size();
 
 			Complex unit4 = new Complex(Math.cos(Math.PI / length / 2.0),
-				Math.sin(Math.PI / length / 2.0));
+					Math.sin(Math.PI / length / 2.0));
 			Complex currentUnit = new Complex(1, 0);
 
 			Complex[] newInput = new Complex[length];
@@ -131,6 +133,41 @@ public class DCTMapper extends SISOMapper {
 			}
 			return VectorUtil.toString(output);
 		}
+	}
+
+	public static double[] performDct(Complex[] input) {
+		int length = input.length;
+		Complex[] fftResult;
+		int logl = (int) (Math.log(length + 0.01) / Math.log(2));
+		int nextLength = 1 << (logl + 2);
+
+		if ((1 << logl) == length) {
+			Complex[] omega = FFT.getOmega(length);
+			fftResult = FFT.fftRadix2CooleyTukey(input, false, omega);
+		} else {
+			Complex[] omega = FFT.getOmega(nextLength);
+			Complex[] omega2 = FFT.getOmega(length * 2);
+			fftResult = FFT.fftChirpZ(input, false, omega, omega2);
+		}
+
+		//transform output, take real part, and output
+		//notice: our DCT has a normalization factor (sqrt(2/length))
+		//as well as additional sqrt(2) on [0]
+		Complex unit4 = new Complex(Math.cos(Math.PI / length / 2.0),
+				Math.sin(Math.PI / length / 2.0));
+		Complex currentUnit = new Complex(1, 0);
+
+		double[] output = new double[length];
+		double norm_factor = Math.sqrt(2.0 / length);
+		for (int index = 0; index < length; index++) {
+			double currentReal = (fftResult[index].multiply(currentUnit.conjugate())).getReal() * norm_factor;
+			if (index == 0) {
+				currentReal /= Math.sqrt(2.0);
+			}
+			output[index] = currentReal;
+			currentUnit = currentUnit.multiply(unit4);
+		}
+		return output;
 	}
 
 }

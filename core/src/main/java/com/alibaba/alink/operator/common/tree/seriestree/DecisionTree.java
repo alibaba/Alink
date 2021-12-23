@@ -9,7 +9,6 @@ import com.alibaba.alink.operator.common.tree.FeatureMeta;
 import com.alibaba.alink.operator.common.tree.Node;
 import com.alibaba.alink.params.classification.RandomForestTrainParams;
 import com.alibaba.alink.params.shared.tree.HasSeed;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -19,15 +18,12 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class DecisionTree {
-	private DenseData data;
-	private Params params;
-	private Deque <Tuple2 <Node, SequentialFeatureSplitter[]>> queue = new ArrayDeque <>();
-	private Random random;
+	private final DenseData data;
+	private final Params params;
+	private final Deque <Tuple2 <Node, SequentialFeatureSplitter[]>> queue = new ArrayDeque <>();
+	private final Random random;
 
 	private static final int NUM_THREADS = 4;
 	private final SequentialPartition[] threadLocals;

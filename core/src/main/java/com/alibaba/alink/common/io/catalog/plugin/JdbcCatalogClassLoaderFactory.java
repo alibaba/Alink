@@ -6,6 +6,7 @@ import org.apache.flink.table.factories.Factory;
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.PluginDescriptor;
+import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 
 import java.io.Serializable;
@@ -17,7 +18,7 @@ public class JdbcCatalogClassLoaderFactory extends ClassLoaderFactory implements
 	private static final long serialVersionUID = -1012808895725991073L;
 
 	public JdbcCatalogClassLoaderFactory(String name, String version) {
-		super(new RegisterKey(name, version), ClassLoaderContainer.createPluginContextOnClient());
+		super(new RegisterKey(name, version), PluginDistributeCache.createDistributeCache(name, version));
 	}
 
 	@Override
@@ -25,7 +26,7 @@ public class JdbcCatalogClassLoaderFactory extends ClassLoaderFactory implements
 		return ClassLoaderContainer
 			.getInstance()
 			.create(
-				registerKey, registerContext, Factory.class,
+				registerKey, distributeCache, Factory.class,
 				new JdbcCatalogServiceFilter(registerKey),
 				new JdbcCatalogVersionGetter()
 			);

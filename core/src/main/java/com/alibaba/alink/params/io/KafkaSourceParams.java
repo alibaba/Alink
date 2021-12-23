@@ -11,7 +11,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 public interface KafkaSourceParams<T> extends WithParams<T>,
     HasTopicDefaultAsNull <T>, HasTopicPatternDefaultAsNull <T>, HasStartTimeDefaultAsNull <T>, HasProperties<T> {
 
-
+    /**
+     * @cn-name bootstrapServers
+     * @cn bootstrapServers
+     */
     ParamInfo<String> BOOTSTRAP_SERVERS = ParamInfoFactory
         .createParamInfo("bootstrapServers", String.class)
         .setDescription("kafka bootstrap servers")
@@ -27,7 +30,10 @@ public interface KafkaSourceParams<T> extends WithParams<T>,
         return set(BOOTSTRAP_SERVERS, value);
     }
 
-
+    /**
+     * @cn-name groupId
+     * @cn groupId
+     */
     ParamInfo<String> GROUP_ID = ParamInfoFactory
         .createParamInfo("groupId", String.class)
         .setDescription("group id")
@@ -43,7 +49,10 @@ public interface KafkaSourceParams<T> extends WithParams<T>,
         return set(GROUP_ID, value);
     }
 
-
+    /**
+     * @cn-name startupMode
+     * @cn startupMode
+     */
     ParamInfo<StartupMode> STARTUP_MODE = ParamInfoFactory
         .createParamInfo("startupMode", StartupMode.class)
         .setDescription("startupMode")

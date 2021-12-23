@@ -1,15 +1,14 @@
 package com.alibaba.alink.common.io.plugin;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.configuration.ConfigConstants;
-import org.apache.flink.configuration.Configuration;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.exceptions.PluginNotExistException;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,21 +26,15 @@ public class ClassLoaderContainer {
 		return INSTANCE;
 	}
 
-	private PluginManager pluginManager;
+	private JarsPluginManager pluginManager;
 	private final Map <RegisterKey, ClassLoader> registeredClassLoaders = new HashMap <>();
-
-	public static Map <String, String> createPluginContextOnClient() {
-		return ImmutableMap.<String, String>builder()
-			.put(ConfigConstants.ENV_FLINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir())
-			.build();
-	}
 
 	private ClassLoaderContainer() {
 	}
 
 	public synchronized <T> ClassLoader create(
 		RegisterKey key,
-		Map <String, String> context,
+		DistributeCache distributeCache,
 		Class <T> service,
 		Predicate <T> serviceFilter,
 		Function <Tuple2 <T, PluginDescriptor>, String> versionGetter) {
@@ -58,7 +51,12 @@ public class ClassLoaderContainer {
 			return hit;
 		}
 
-		hit = loadFromPlugin(key, context, service, serviceFilter, versionGetter);
+		try {
+			hit = loadFromPlugin(key, distributeCache, service, serviceFilter, versionGetter);
+		} catch (Exception e) {
+			// pass
+			LOG.warn("Could not find {} from plugin.", JsonConverter.toJson(key), e);
+		}
 
 		if (hit != null) {
 			return hit;
@@ -69,8 +67,10 @@ public class ClassLoaderContainer {
 		return Thread.currentThread().getContextClassLoader();
 	}
 
-	private <T> ClassLoader filterFromServices(RegisterKey key, List <Tuple2 <T, PluginDescriptor>> loadedServices,
-											   Function <Tuple2 <T, PluginDescriptor>, String> versionGetter) {
+	private <T> ClassLoader filterFromServices(
+		RegisterKey key, List <Tuple2 <T, PluginDescriptor>> loadedServices,
+		Function <Tuple2 <T, PluginDescriptor>, String> versionGetter) throws IOException {
+
 		if (!loadedServices.isEmpty()) {
 
 			ClassLoader hit = null;
@@ -105,56 +105,37 @@ public class ClassLoaderContainer {
 			return hit;
 		}
 
-		return null;
+		throw new PluginNotExistException(
+			String.format("Could not find the appropriate service. %s", JsonConverter.toJson(key))
+		);
 	}
 
 	private <T> ClassLoader loadFromPlugin(
 		RegisterKey key,
-		Map <String, String> context,
+		DistributeCache distributeCache,
 		Class <T> service,
 		Predicate <T> serviceFilter,
-		Function <Tuple2 <T, PluginDescriptor>, String> versionGetter) {
+		Function <Tuple2 <T, PluginDescriptor>, String> versionGetter) throws IOException {
 
 		final List <Tuple2 <T, PluginDescriptor>> loadedServices = new ArrayList <>();
 
 		// from plugin
 		if (pluginManager == null) {
-			pluginManager = PluginUtils.createPluginManagerFromRootFolder(readPluginConf(context));
+			distributeCache.distributeAsLocalFile();
+			pluginManager = PluginUtils.createJarsPluginManagerFromRootFolder(
+				PluginUtils.readPluginConf(distributeCache.context())
+			);
 		}
 
-		try {
-			pluginManager
-				.load(service, AlinkGlobalConfiguration.getFlinkVersion(), key.getName(), key.getVersion())
-				.forEachRemaining(t -> {
-					if (serviceFilter.test(t.f0)) {
-						loadedServices.add(t);
-					}
-				});
+		pluginManager
+			.load(service, AlinkGlobalConfiguration.getFlinkVersion(), key.getName(), key.getVersion())
+			.forEachRemaining(t -> {
+				if (serviceFilter.test(t.f0)) {
+					loadedServices.add(t);
+				}
+			});
 
-			return filterFromServices(key, loadedServices, versionGetter);
-		} catch (Exception e) {
-			LOG.warn("Could not find the {} from plugin. configure the plugin first. "
-				+ "see com.alibaba.alink.common.plugin.PluginResourceManager for help", service);
-			return null;
-		}
+		return filterFromServices(key, loadedServices, versionGetter);
 	}
 
-	private static Configuration readPluginConf(Map <String, String> context) {
-
-		Configuration configuration;
-
-		if (context.isEmpty()) {
-			// Run in flink console, user should set the plugin follow the configuration of flink.
-			configuration = org.apache.flink.configuration.GlobalConfiguration.loadConfiguration().clone();
-		} else {
-			// Run in Local and RemoteEnv in PyAlink
-			configuration = new Configuration();
-
-			for (Map.Entry<String, String> entry : context.entrySet()) {
-				configuration.setString(entry.getKey(), entry.getValue());
-			}
-		}
-
-		return configuration;
-	}
 }

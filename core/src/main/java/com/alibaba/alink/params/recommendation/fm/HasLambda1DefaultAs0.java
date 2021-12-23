@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * linear item regular number.
  */
 public interface HasLambda1DefaultAs0<T> extends WithParams <T> {
+	/**
+	 * @cn-name 线性项正则化系数
+	 * @cn 线性项正则化系数
+	 */
 	ParamInfo <Double> LAMBDA_1 = ParamInfoFactory
 			.createParamInfo("lambda1", Double.class)
 			.setDescription("lambda1")

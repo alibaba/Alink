@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasCsvCol<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name CSV列名
+	 * @cn CSV列的列名
+	 */
 	ParamInfo <String> CSV_COL = ParamInfoFactory
 		.createParamInfo("csvCol", String.class)
 		.setDescription("Name of the CSV column")

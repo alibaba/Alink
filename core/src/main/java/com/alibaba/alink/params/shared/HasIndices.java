@@ -6,6 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasIndices<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 需要被提取的索引数组
+	 * @cn 需要被提取的索引数组
+	 */
 	ParamInfo <int[]> INDICES = ParamInfoFactory
 		.createParamInfo("indices", int[].class)
 		.setDescription("indices of a vector to be sliced")

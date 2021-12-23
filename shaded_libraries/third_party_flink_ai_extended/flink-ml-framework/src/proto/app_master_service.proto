@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option java_outer_classname = "AppMasterServiceProtos";
+option java_multiple_files = true;
+option java_package = "com.alibaba.flink.ml.proto";
+import "app_master.proto";
+
+service AppMasterService {
+
+    rpc RegisterNode(RegisterNodeRequest) returns(SimpleResponse);
+
+    rpc HeartBeatNode(HeartBeatRequest) returns(SimpleResponse);
+
+    rpc NodeFinish(FinishNodeRequest) returns(SimpleResponse);
+
+    rpc GetClusterInfo(GetClusterInfoRequest) returns(GetClusterInfoResponse);
+
+    rpc GetVersion(GetVersionRequest) returns (GetVersionResponse);
+
+    rpc StopAllWorker(StopAllWorkerRequest) returns (SimpleResponse);
+
+    rpc GetAMStatus(GetAMStatusRequest) returns(AMStatusMessage);
+
+    rpc RegisterFailNode(RegisterFailedNodeRequest) returns(SimpleResponse);
+
+    rpc GetTaskIndex(GetTaskIndexRequest) returns(GetTaskIndexResponse);
+
+    rpc GetFinishedNode(GetFinishedNodeRequest) returns(GetFinishNodeResponse);
+
+}

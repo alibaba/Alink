@@ -17,17 +17,29 @@ public interface BaseKMeansTrainParams<T> extends WithParams <T>,
 	HasEpsilonDv00001 <T>,
 	HasRandomSeed <T> {
 
+	/**
+	 * @cn-name 最大迭代步数
+	 * @cn 最大迭代步数，默认为 50。
+	 */
 	ParamInfo <Integer> MAX_ITER = ParamInfoFactory
 		.createParamInfo("maxIter", Integer.class)
 		.setDescription("Maximum iterations, the default value is 20")
 		.setHasDefaultValue(50)
 		.setAlias(new String[] {"numIter"})
 		.build();
+	/**
+	 * @cn-name 中心点初始化方法
+	 * @cn 初始化中心点的方法，支持"K_MEANS_PARALLEL"和"RANDOM"
+	 */
 	ParamInfo <InitMode> INIT_MODE = ParamInfoFactory
 		.createParamInfo("initMode", InitMode.class)
 		.setDescription("Methods to get initial centers, support K_MEANS_PARALLEL and RANDOM!")
 		.setHasDefaultValue(InitMode.RANDOM)
 		.build();
+	/**
+	 * @cn-name k-means++初始化迭代步数
+	 * @cn k-means初始化中心点时迭代的步数
+	 */
 	ParamInfo <Integer> INIT_STEPS = ParamInfoFactory
 		.createParamInfo("initSteps", Integer.class)
 		.setDescription("When initMode is K_MEANS_PARALLEL, it defines the steps of iteration. The default value is "

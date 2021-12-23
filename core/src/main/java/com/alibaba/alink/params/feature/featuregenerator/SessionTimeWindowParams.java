@@ -9,7 +9,10 @@ public interface SessionTimeWindowParams<T> extends
 	GroupTimeWindowParams <T>,
 	HasClause <T> {
 
-	//the metric is second.
+	/**
+	 * @cn-name 会话窗口间隔大小
+	 * @cn 会话窗口间隔大小
+	 */
 	ParamInfo <Double> SESSION_GAP_TIME = ParamInfoFactory
 		.createParamInfo("sessionGapTime", Double.class)
 		.setDescription("session gap time")

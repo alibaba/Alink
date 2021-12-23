@@ -21,6 +21,7 @@ import java.util.List;
 /**
  * Test for FeatureHasher.
  */
+
 public class FeatureHasherTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {

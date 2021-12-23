@@ -8,6 +8,10 @@ import com.alibaba.alink.params.ParamUtil;
 
 public interface HasEncodeWithoutWoeDefaultAsIndex<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 编码方法
+	 * @cn 编码方法
+	 */
 	ParamInfo <HasEncodeWithoutWoe.Encode> ENCODE = ParamInfoFactory
 		.createParamInfo("encode", HasEncodeWithoutWoe.Encode.class)
 		.setDescription("encode type: INDEX, VECTOR, ASSEMBLED_VECTOR.")

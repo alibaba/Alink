@@ -10,6 +10,10 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
  */
 public interface SegmentParams<T> extends SISOMapperParams <T> {
 
+	/**
+	 * @cn-name 用户自定义字典
+	 * @cn 用户自定义字典
+	 */
 	ParamInfo <String[]> USER_DEFINED_DICT = ParamInfoFactory
 		.createParamInfo("userDefinedDict", String[].class)
 		.setDescription("User defined dict for segment.")

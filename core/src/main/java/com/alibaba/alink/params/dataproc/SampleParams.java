@@ -9,6 +9,10 @@ import com.alibaba.alink.params.validators.RangeValidator;
 public interface SampleParams<T> extends
 	WithParams <T> {
 
+	/**
+	 * @cn-name 采样比例
+	 * @cn 采样率，范围为[0, 1]
+	 */
 	ParamInfo <Double> RATIO = ParamInfoFactory
 		.createParamInfo("ratio", Double.class)
 		.setDescription("sampling ratio, it should be in range of [0, 1]")
@@ -17,6 +21,10 @@ public interface SampleParams<T> extends
 		.setValidator(new RangeValidator <>(0.0, 1.0))
 		.build();
 
+	/**
+	 * @cn-name 是否放回
+	 * @cn 是否有放回的采样，默认不放回
+	 */
 	ParamInfo <Boolean> WITH_REPLACEMENT = ParamInfoFactory
 		.createParamInfo("withReplacement", Boolean.class)
 		.setDescription("Indicates whether to enable sampling with replacement, default is without replcement")

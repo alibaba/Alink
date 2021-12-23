@@ -31,6 +31,11 @@ public final class AkSinkBatchOp extends BaseSinkBatchOp <AkSinkBatchOp>
 	}
 
 	@Override
+	public AkSinkBatchOp linkFrom(BatchOperator <?>... inputs) {
+		return sinkFrom(checkAndGetFirst(inputs));
+	}
+
+	@Override
 	public AkSinkBatchOp sinkFrom(BatchOperator<?> in) {
 		in.getDataSet()
 			.output(

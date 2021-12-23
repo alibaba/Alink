@@ -10,6 +10,10 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
  */
 public interface VectorNormalizeParams<T> extends SISOMapperParams <T> {
 
+	/**
+	 * @cn-name 范数的阶
+	 * @cn 范数的阶，默认2
+	 */
 	ParamInfo <Double> P = ParamInfoFactory
 		.createParamInfo("p", Double.class)
 		.setDescription("number of degree.")

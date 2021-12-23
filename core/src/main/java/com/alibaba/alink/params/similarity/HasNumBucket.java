@@ -6,6 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 
 public interface HasNumBucket<T> extends WithParams <T> {
+	/**
+	 * @cn-name 分桶个数
+	 * @cn 分桶个数
+	 */
 	ParamInfo <Integer> NUM_BUCKET = ParamInfoFactory
 		.createParamInfo("numBucket", Integer.class)
 		.setDescription("the number of bucket")

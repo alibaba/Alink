@@ -101,7 +101,7 @@ public final class MemSourceStreamOp extends BaseSourceStreamOp <MemSourceStream
 		DataStream <Row> dataStream = MLEnvironmentFactory.get(mlEnvironmentId)
 			.getStreamExecutionEnvironment()
 			.fromCollection(rows, new RowTypeInfo(colTypes))
-			.assignTimestampsAndWatermarks(WatermarkStrategy.forMonotonousTimestamps());;
+			.assignTimestampsAndWatermarks(WatermarkStrategy.forMonotonousTimestamps());
 		return DataStreamConversionUtil.toTable(mlEnvironmentId, dataStream, colNames, colTypes);
 	}
 

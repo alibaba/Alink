@@ -5,7 +5,7 @@
     <parent>
         <artifactId>alink</artifactId>
         <groupId>com.alibaba.alink</groupId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -37,6 +37,64 @@
                 </executions>
             </plugin>
 
+            <!-- build alink_open_python_runner.tar.gz -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>Make Python</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="main">
+                                <mkdir dir="${project.build.directory}/tmp_py"/>
+                                <copy todir="${project.build.directory}/tmp_py" overwrite="true">
+                                    <fileset dir="${project.basedir}/src/main/python/python_runner" includes="**" />
+                                </copy>
+                                <tar destfile="${project.build.directory}/extra_resources/alink_open_python_runner.tar.gz"
+                                     compression="gzip">
+                                    <tarfileset dir="${project.build.directory}/tmp_py">
+                                        <include name="*.py"/>
+                                        <include name="**/*.py"/>
+                                    </tarfileset>
+                                    <tarfileset dir="${project.build.directory}/tmp_py"
+                                                filemode="755">
+                                        <include name="*.sh"/>
+                                        <include name="**/*.sh"/>
+                                    </tarfileset>
+                                </tar>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- add alink_open_python_runner.tar.gz to resources -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>Add_TO_RESOURCE</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/extra_resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -146,7 +204,7 @@
         <dependency>
             <groupId>com.alibaba.alink</groupId>
             <artifactId>shaded_protobuf_java</artifactId>
-            <version>3.6.1-0.2</version>
+            <version>3.6.1-0.3</version>
         </dependency>
 
         <!-- lazy-api dependency -->
@@ -200,6 +258,55 @@
             <groupId>com.github.fommil.netlib</groupId>
             <artifactId>all</artifactId>
             <type>pom</type>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.py4j</groupId>
+            <artifactId>py4j</artifactId>
+            <version>0.10.8.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>ndarray</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+
+        <!-- flink-ai-extended-tf2 -->
+        <dependency>
+            <groupId>com.alibaba.alink</groupId>
+            <artifactId>shaded_flink_ai_extended_tf2</artifactId>
+            <version>0.3.0-SNAPSHOT-0.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.alink</groupId>
+            <artifactId>shaded_tensorflow_core_api</artifactId>
+            <version>0.2.0-0.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
+            <version>2.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.48</version>
         </dependency>
 
         <!-- unit test dependency -->

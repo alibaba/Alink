@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasOutputColTypesDefaultAsNull<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 输出结果列列类型数组
+	 * @cn 输出结果列类型数组，必选
+	 */
 	ParamInfo <String[]> OUTPUT_COL_TYPES = ParamInfoFactory
 		.createParamInfo("outputColTypes", String[].class)
 		.setDescription("Types of the output columns")

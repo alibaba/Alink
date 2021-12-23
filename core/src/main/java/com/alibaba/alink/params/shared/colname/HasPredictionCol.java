@@ -9,6 +9,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasPredictionCol<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 预测结果列名
+	 * @cn 预测结果列名
+	 */
 	ParamInfo <String> PREDICTION_COL = ParamInfoFactory
 		.createParamInfo("predictionCol", String.class)
 		.setDescription("Column name of prediction.")

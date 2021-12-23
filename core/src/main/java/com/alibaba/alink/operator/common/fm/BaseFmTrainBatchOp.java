@@ -32,6 +32,7 @@ import com.alibaba.alink.params.recommendation.FmTrainParams;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -45,8 +46,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
     public static final String LABEL_VALUES = "labelValues";
     public static final String VEC_SIZE = "vecSize";
     private static final long serialVersionUID = -5308557491809175331L;
-    private int[] dim;
-    protected TypeInformation labelType;
+    protected TypeInformation<?> labelType;
 
     /**
      * @param params parameters needed by training process.
@@ -96,7 +96,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
             final Params params,
             final int[] dim,
             boolean isRegProc,
-            TypeInformation labelType);
+            TypeInformation<?> labelType);
 
     /**
      * do the operation of this op.
@@ -110,7 +110,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         // Get parameters of this algorithm.
         Params params = getParams();
 
-        this.dim = new int[3];
+        int[] dim = new int[3];
         dim[0] = params.get(FmTrainParams.WITH_INTERCEPT) ? 1 : 0;
         dim[1] = params.get(FmTrainParams.WITH_LINEAR_ITEM) ? 1 : 0;
         dim[2] = params.get(FmTrainParams.NUM_FACTOR);
@@ -187,7 +187,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                         for (Tuple3<Double, Object, Vector> value : values) {
 
                             if (value.f0 > 0) {
-                                Double label = isRegProc ? Double.valueOf(value.f1.toString())
+                                Double label = isRegProc ? Double.parseDouble(value.f1.toString())
                                         : (value.f1.equals(labelValues[0]) ? 1.0 : 0.0);
                                 out.collect(Tuple3.of(value.f0, label, value.f2));
                             }
@@ -211,11 +211,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
 
                     @Override
                     public boolean filter(Tuple3<Double, Object, Vector> value) throws Exception {
-                        if (value.f0 < 0.0) {
-                            return true;
-                        } else {
-                            return false;
-                        }
+                        return value.f0 < 0.0;
                     }
                 }).reduceGroup(
                 new GroupReduceFunction<Tuple3<Double, Object, Vector>, Tuple2<Object[],
@@ -231,9 +227,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                         for (Tuple3<Double, Object, Vector> value : values) {
                             Tuple2<Integer, Object[]>
                                     labelVals = (Tuple2<Integer, Object[]>) value.f1;
-                            for (int i = 0; i < labelVals.f1.length; ++i) {
-                                labelValues.add(labelVals.f1[i]);
-                            }
+                            Collections.addAll(labelValues, labelVals.f1);
                             size = Math.max(size, labelVals.f0);
 
                         }
@@ -285,7 +279,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      * @param params train parameters.
      * @return Tuple3 format train data <weight, label, vector></>.
      */
-    private DataSet<Tuple3<Double, Object, Vector>> transform(BatchOperator in,
+    private DataSet<Tuple3<Double, Object, Vector>> transform(BatchOperator<?> in,
                                                               Params params,
                                                               boolean isRegProc) {
         String[] featureColNames = params.get(FmTrainParams.FEATURE_COLS);
@@ -321,11 +315,11 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      */
     private static class Transform extends RichMapPartitionFunction<Row, Tuple3<Double, Object, Vector>> {
         private static final long serialVersionUID = 5935792357245627952L;
-        private int vecIdx;
-        private int labelIdx;
-        private int weightIdx;
-        private boolean isRegProc;
-        private int[] featureIndices;
+        private final int vecIdx;
+        private final int labelIdx;
+        private final int weightIdx;
+        private final boolean isRegProc;
+        private final int[] featureIndices;
 
         public Transform(boolean isRegProc, int weightIndx, int vecIdx, int[] featureIndices, int labelIdx) {
             this.vecIdx = vecIdx;
@@ -363,14 +357,12 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                     vec = VectorUtil.getVector(row.getField(vecIdx));
                     if (vec instanceof SparseVector) {
                         int[] indices = ((SparseVector) vec).getIndices();
-                        for (int i = 0; i < indices.length; ++i) {
-                            size = (vec.size() > 0) ? vec.size() : Math.max(size, indices[i] + 1);
+                        for (int index : indices) {
+                            size = (vec.size() > 0) ? vec.size() : Math.max(size, index + 1);
                         }
                     } else {
                         size = ((DenseVector) vec).getData().length;
                     }
-                    Preconditions.checkState((vec != null),
-                            "vector for fm model train is null, please check your input data.");
                 }
                 out.collect(Tuple3.of(weight, label, vec));
             }
@@ -380,7 +372,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
 
     }
 
-    private Table[] getSideTablesOfCoefficient(DataSet<Row> modelRow, final TypeInformation labelType) {
+    private Table[] getSideTablesOfCoefficient(DataSet<Row> modelRow, final TypeInformation<?> labelType) {
         DataSet<FmModelData> model = modelRow.mapPartition(new MapPartitionFunction<Row, FmModelData>() {
             private static final long serialVersionUID = 2063366042018382802L;
 
@@ -461,8 +453,8 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      */
     public static class SquareLoss implements LossFunction {
         private static final long serialVersionUID = -3903508209287601504L;
-        private double maxTarget;
-        private double minTarget;
+        private final double maxTarget;
+        private final double minTarget;
 
         public SquareLoss(double maxTarget, double minTarget) {
             this.maxTarget = maxTarget;

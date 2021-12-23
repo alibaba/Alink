@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * Number of buckets.
  */
 public interface HasNumBuckets<T> extends WithParams <T> {
+	/**
+	 * @cn-name quantile个数
+	 * @cn quantile个数，对所有列有效。
+	 */
 	ParamInfo <Integer> NUM_BUCKETS = ParamInfoFactory
 		.createParamInfo("numBuckets", Integer.class)
 		.setDescription("number of buckets")

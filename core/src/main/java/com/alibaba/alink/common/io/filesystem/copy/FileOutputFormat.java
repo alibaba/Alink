@@ -29,10 +29,10 @@ import org.apache.flink.core.fs.FSDataOutputStream;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
-import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FileSystemUtils;
+import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

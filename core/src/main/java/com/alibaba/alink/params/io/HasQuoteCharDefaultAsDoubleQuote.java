@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasQuoteCharDefaultAsDoubleQuote<T> extends WithParams <T> {
+	/**
+	 * @cn-name 引号字符
+	 * @cn 引号字符
+	 */
 	ParamInfo <Character> QUOTE_CHAR = ParamInfoFactory
 		.createParamInfo("quoteChar", Character.class)
 		.setDescription("quote char")

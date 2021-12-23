@@ -4,6 +4,7 @@ import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
+import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.DataSet;
@@ -29,6 +30,7 @@ import com.alibaba.alink.operator.common.classification.ann.MlpcModelDataConvert
 import com.alibaba.alink.operator.common.classification.ann.Topology;
 import com.alibaba.alink.params.classification.MultilayerPerceptronTrainParams;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -253,7 +255,14 @@ public final class MultilayerPerceptronTrainBatchOp
 
     @Override
     public MultilayerPerceptronTrainBatchOp linkFrom(BatchOperator<?>... inputs) {
-        BatchOperator<?> in = checkAndGetFirst(inputs);
+        BatchOperator <?> in;
+        BatchOperator <?> initModel = null;
+        if (inputs.length == 1) {
+            in = checkAndGetFirst(inputs);
+        } else {
+            in = inputs[0];
+            initModel = inputs[1];
+        }
 
         final String labelColName = getLabelCol();
         final String vectorColName = getVectorCol();
@@ -278,7 +287,41 @@ public final class MultilayerPerceptronTrainBatchOp
         Topology topology = FeedForwardTopology.multiLayerPerceptron(layerSize, true);
         FeedForwardTrainer trainer = new FeedForwardTrainer(topology,
                 layerSize[0], layerSize[layerSize.length - 1], true, blockSize, initialWeights);
-        DataSet<DenseVector> weights = trainer.train(trainData, getParams());
+        DataSet<DenseVector> initialModel = initModel == null ? null : initModel.getDataSet().reduceGroup(
+            new RichGroupReduceFunction <Row, DenseVector>() {
+                @Override
+                public void reduce(Iterable <Row> values, Collector <DenseVector> out) throws Exception {
+                    DenseVector maxAbs = (DenseVector) getRuntimeContext().getBroadcastVariable("maxAbs").get(0);
+                    List <Row> modelRows = new ArrayList <>(0);
+                    for (Row row : values) {
+                        modelRows.add(row);
+                    }
+                    MlpcModelData model = new MlpcModelDataConverter().load(modelRows);
+
+                    int[] modelLayerSize = model.meta.get(MultilayerPerceptronTrainParams.LAYERS);
+					boolean judge = (model.meta.get(ModelParamName.IS_VECTOR_INPUT) == isVectorInput);
+					if (!judge) {
+						throw new RuntimeException("initial mlpc model not compatible with parameter setting: initial model need vector data.");
+					}
+					for (int i = 0; i < layerSize.length; ++i) {
+						judge = (modelLayerSize[i] == layerSize[i]);
+						if (!judge) {
+							throw new RuntimeException("initial mlpc model not compatible with parameter setting. layerSize not equal.");
+						}
+					}
+
+                    for (int i = 0; i < layerSize[0]; ++i) {
+                        for (int j = 0; j < layerSize[1]; ++j) {
+                            if (maxAbs.get(i) > 0) {
+                                model.weights.set(layerSize[1] * i + j,
+                                    model.weights.get(layerSize[1] * i + j) * maxAbs.get(i));
+                            }
+                        }
+                    }
+                    out.collect(model.weights);
+                }
+            }).withBroadcastSet(maxAbs, "maxAbs");
+        DataSet<DenseVector> weights = trainer.train(trainData, initialModel, getParams());
 
         // output model
         DataSet<Row> modelRows = weights

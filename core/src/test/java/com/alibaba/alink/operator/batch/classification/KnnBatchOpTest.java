@@ -61,7 +61,6 @@ public class KnnBatchOpTest extends AlinkTestBase {
 			.setK(4)
 			.setPredictionDetailCol("detail")
 			.linkFrom(knnModel, testDataOp);
-
 		MultiClassMetrics metrics = new EvalMultiClassBatchOp()
 			.setLabelCol("label")
 			.setPredictionDetailCol("detail")

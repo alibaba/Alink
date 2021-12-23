@@ -1,0 +1,128 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+# Refs: https://www.alinkalink.com/spring-boot-mysql-react-docker-compose-example/
+
+version: '3.7'
+
+# Define services
+services:
+  # App backend service
+  server:
+    image: alink_server:v0.1
+    ports:
+      - "8080:8080" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    restart: always
+    environment:
+      ALINK_REMOTE_CLUSTER_HOST: flink-jobmanager
+      ALINK_REMOTE_CLUSTER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/alink?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
+      SPRING_DATASOURCE_USERNAME: alinkalink
+      SPRING_DATASOURCE_PASSWORD: alinkalink
+    volumes:
+      - shared-data:/alink
+    depends_on:
+      - db # This service depends on mysql. Start that first.
+    networks: # Networks to join (Services on the same network can communicate with each other using their name)
+      - backend
+      - frontend
+
+  # Frontend Service
+  web:
+    image: alink_web:v0.1
+    ports:
+      - "9090:9090" # Map the exposed port 80 on the container to port 9090 on the host machine
+    restart: always
+    depends_on:
+      - server
+    networks:
+      - frontend
+
+  # Database Service (Mysql)
+  db:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    restart: always
+    environment:
+      MYSQL_DATABASE: alink
+      MYSQL_USER: alinkalink
+      MYSQL_PASSWORD: alinkalink
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - backend
+
+  flink-jobmanager:
+    image: flink_with_alink_jar:v0.1
+    ports:
+      - "8081:8081"
+    restart: always
+    networks:
+      - backend
+      - flink
+    environment:
+      FLINK_PROPERTIES: |-
+        jobmanager.rpc.address: flink-jobmanager
+        jobmanager.heap.size: 2048m
+        taskmanager.heap.size: 2048m
+        classloader.resolve-order: parent-first
+        taskmanager.memory.preallocate: true
+        taskmanager.memory.off-heap: true
+        taskmanager.memory.fraction: 0.3f
+        akka.ask.timeout: 60s
+        akka.client.timeout: 120s
+    volumes:
+      - shared-data:/alink
+    command: jobmanager
+
+  flink-taskmanager:
+    image: flink_with_alink_jar:v0.1
+    depends_on:
+      - flink-jobmanager
+    networks:
+      - flink
+    environment:
+      FLINK_PROPERTIES: |-
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 1
+        jobmanager.heap.size: 2048m
+        taskmanager.heap.size: 2048m
+        classloader.resolve-order: parent-first
+        taskmanager.memory.preallocate: true
+        taskmanager.memory.off-heap: true
+        taskmanager.memory.fraction: 0.3f
+        akka.ask.timeout: 60s
+        akka.client.timeout: 120s
+    volumes:
+      - shared-data:/alink    
+    command: taskmanager
+    deploy:
+      replicas: 2
+
+  notebook:
+    image: alink_notebook:v0.1
+    ports:
+      - "8888:8888"
+    networks:
+      - backend
+    volumes:
+      - notebook-data:/home/jovyan/
+      - shared-data:/alink
+    command: "start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''"
+
+# Volumes
+volumes:
+  db-data:
+  notebook-data:
+  shared-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: nfsvers=4,addr=localhost,rw
+      device: ":/"
+
+# Networks to be created to facilitate communication between containers
+networks:
+  backend:
+  frontend:
+  flink:

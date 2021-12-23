@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.batch.regression;
 
 import org.apache.flink.api.common.functions.AbstractRichFunction;
+import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -22,13 +23,16 @@ import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp;
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp.CreateMeta;
+import com.alibaba.alink.operator.common.linear.LinearModelData;
 import com.alibaba.alink.operator.common.linear.LinearModelDataConverter;
 import com.alibaba.alink.operator.common.linear.LinearModelTrainInfo;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
 import com.alibaba.alink.operator.common.linear.LinearRegressorModelInfo;
 import com.alibaba.alink.params.regression.AftRegTrainParams;
+import com.alibaba.alink.params.shared.linear.HasWithIntercept;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,10 +66,17 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 
 	@Override
 	public AftSurvivalRegTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
-		BatchOperator <?> in = checkAndGetFirst(inputs);
+		BatchOperator<?> in;
+		BatchOperator<?> initModel = null;
+		if (inputs.length == 1) {
+			in = checkAndGetFirst(inputs);
+		} else {
+			in = inputs[0];
+			initModel = inputs[1];
+		}
 		String[] featureColNames = this.getFeatureCols();
 
-		TypeInformation labelType = Types.DOUBLE;
+		TypeInformation<?> labelType = Types.DOUBLE;
 		DataSet <Object> labelValues = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment()
 			.fromElements(new Object());
 
@@ -73,28 +84,28 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 		params.set(LinearTrainParams.WEIGHT_COL, this.getCensorCol());
 		DataSet <Tuple3 <Double, Object, Vector>> initData = BaseLinearModelTrainBatchOp
 			.transform(in, params, true, true);
-		DataSet <Tuple3 <DenseVector[], Object[], Integer>> utilInfo = BaseLinearModelTrainBatchOp
+		DataSet <Tuple3 <DenseVector[], Object[], Integer[]>> utilInfo = BaseLinearModelTrainBatchOp
 			.getUtilInfo(initData, true, true);
 
 		DataSet <double[]> std = utilInfo.map(
-			new MapFunction <Tuple3 <DenseVector[], Object[], Integer>, double[]>() {
+			new MapFunction <Tuple3 <DenseVector[], Object[], Integer[]>, double[]>() {
 				private static final long serialVersionUID = -7070926092286155032L;
 
 				@Override
-				public double[] map(Tuple3 <DenseVector[], Object[], Integer> value)
+				public double[] map(Tuple3 <DenseVector[], Object[], Integer[]> value)
 					throws Exception {
 					return value.f0[1].getData();
 				}
 			});
 
 		DataSet <Integer> vectorSize = utilInfo.map(
-			new MapFunction <Tuple3 <DenseVector[], Object[], Integer>, Integer>() {
+			new MapFunction <Tuple3 <DenseVector[], Object[], Integer[]>, Integer>() {
 				private static final long serialVersionUID = 5463028282798602155L;
 
 				@Override
-				public Integer map(Tuple3 <DenseVector[], Object[], Integer> value)
+				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value)
 					throws Exception {
-					return value.f2;
+					return value.f2[0];
 				}
 			});
 
@@ -114,9 +125,27 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 			.mapPartition(new CreateMeta("AFTSurvivalRegTrainBatchOp", LinearModelType.AFT, getParams()))
 			.setParallelism(1);
 
+		DataSet <DenseVector> initModelDataSet = initModel == null ? null : initModel.getDataSet().reduceGroup(
+			new GroupReduceFunction <Row, DenseVector>() {
+				@Override
+				public void reduce(Iterable <Row> values, Collector <DenseVector> out) throws Exception {
+					List <Row> modelRows = new ArrayList <>(0);
+					for (Row row : values) {
+						modelRows.add(row);
+					}
+					LinearModelData model = new LinearModelDataConverter().load(modelRows);
+					try {
+						assert (model.hasInterceptItem == params.get(HasWithIntercept.WITH_INTERCEPT));
+					} catch (Exception e) {
+						throw new RuntimeException("initial model is not compatible with data and parameter setting.");
+					}
+					out.collect(model.coefVector);
+				}
+			});
+
 		DataSet <Tuple2 <DenseVector, double[]>>
 			coefVectorSet = BaseLinearModelTrainBatchOp.optimize(this.getParams(), vectorSize,
-			trainData, LinearModelType.AFT, MLEnvironmentFactory.get(getMLEnvironmentId()));
+			trainData, initModelDataSet, LinearModelType.AFT, MLEnvironmentFactory.get(getMLEnvironmentId()));
 
 		DataSet <Tuple2 <DenseVector, double[]>> coef = coefVectorSet
 			.map(new FormatCoef())
@@ -130,13 +159,13 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 
 		this.setOutput(modelRows, new LinearModelDataConverter(labelType).getModelSchema());
 		DataSet <Integer> featSize = utilInfo.map(
-			new MapFunction <Tuple3 <DenseVector[], Object[], Integer>, Integer>() {
+			new MapFunction <Tuple3 <DenseVector[], Object[], Integer[]>, Integer>() {
 				private static final long serialVersionUID = 2773811388068064638L;
 
 				@Override
-				public Integer map(Tuple3 <DenseVector[], Object[], Integer> value)
+				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value)
 					throws Exception {
-					return value.f2;
+					return value.f2[0];
 				}
 			});
 		this.setSideOutputTables(
@@ -170,7 +199,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 								 Collector <Tuple3 <Double, Double, Vector>> out)
 			throws Exception {
 			for (Tuple3 <Double, Object, Vector> row : rows) {
-				double weight = row.getField(0);
+				Double weight = row.getField(0);
 				if (Math.abs(weight + 1) < 1e-4 || Math.abs(weight + 2) < 1e-4) {
 					continue;
 				}
@@ -181,7 +210,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 					throw new IllegalArgumentException("Survival Time must be greater than 0!");
 				}
 				//judge whether the weight is legal or not.
-				if (weight != 0.0 && weight != 1.0) {
+				if (!weight.equals(0.0) && !weight.equals(1.0)) {
 					throw new IllegalArgumentException("Censor must be 1.0 or 0.0!");
 				}
 				Vector aVector;

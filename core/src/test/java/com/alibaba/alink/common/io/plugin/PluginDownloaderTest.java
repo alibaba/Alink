@@ -2,7 +2,10 @@ package com.alibaba.alink.common.io.plugin;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
 import java.util.List;
@@ -67,7 +70,16 @@ public class PluginDownloaderTest extends AlinkTestBase {
 		+ "    \"default-version\": \"2.0.1\"\n"
 		+ "  }\n"
 		+ "}\n";
-	PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
+
+	@Rule
+	public TemporaryFolder folder = new TemporaryFolder();
+
+	PluginDownloader pluginDownloader;
+
+	@Before
+	public void setUp() throws Exception {
+		pluginDownloader = new PluginDownloader(folder.getRoot().getPath());
+	}
 
 	@Test
 	public void testListAvailableVersions() throws IOException {
@@ -84,19 +96,4 @@ public class PluginDownloaderTest extends AlinkTestBase {
 		assertEquals(allPlugins.get(0), "oss");
 		assertEquals(allPlugins.get(1), "hive");
 	}
-
-	//@Test
-	//public void testDownloadPlugin() throws IOException {
-	//	pluginDownloader.downloadPlugin("hive", "2.0.1");
-	//}
-	//
-	//@Test
-	//public void downloadAll() throws IOException {
-	//	pluginDownloader.downloadAll();
-	//}
-	//
-	//@Test
-	//public void upgrade() throws IOException {
-	//	pluginDownloader.upgrade();
-	//}
 }

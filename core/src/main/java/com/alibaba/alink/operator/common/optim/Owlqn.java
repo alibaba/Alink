@@ -31,9 +31,8 @@ import com.alibaba.alink.params.shared.optim.HasNumSearchStepDv4;
 /**
  * The optimizer of owlqn.
  * <p>
- * If you want to know more thing about this algorithm, see paper:
- * Scalable training of L 1-regularized log-linear models. G Andrew, J Gao - Proceedings of the 24th international
- * conference on Machine learning Pages 33-40, 2007
+ * If you want to know more thing about this algorithm, see paper: Scalable training of L 1-regularized log-linear
+ * models. G Andrew, J Gao - Proceedings of the 24th international conference on Machine learning Pages 33-40, 2007
  */
 public class Owlqn extends Optimizer {
 
@@ -59,9 +58,7 @@ public class Owlqn extends Optimizer {
 	public DataSet <Tuple2 <DenseVector, double[]>> optimize() {
 		//get parameters.
 		int maxIter = params.get(LinearTrainParams.MAX_ITER);
-		if (null == this.coefVec) {
-			initCoefZeros();
-		}
+		checkInitCoef();
 
 		int numSearchStep = params.get(HasNumSearchStepDv4.NUM_SEARCH_STEP);
 

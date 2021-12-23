@@ -8,6 +8,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  * initial stdev.
  */
 public interface HasInitStdevDefaultAs005<T> extends WithParams <T> {
+	/**
+	 * @cn-name 初始化参数的标准差
+	 * @cn 初始化参数的标准差
+	 */
 	ParamInfo <Double> INIT_STDEV = ParamInfoFactory
 			.createParamInfo("initStdev", Double.class)
 			.setDescription("init stdev")

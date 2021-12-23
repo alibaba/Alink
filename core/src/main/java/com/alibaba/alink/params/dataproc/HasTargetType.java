@@ -8,6 +8,10 @@ import com.alibaba.alink.params.ParamUtil;
 
 public interface HasTargetType<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 目标类型
+	 * @cn 转换为的类型，类型应该为JDBC Type。
+	 */
 	ParamInfo <TargetType> TARGET_TYPE = ParamInfoFactory
 		.createParamInfo("targetType", TargetType.class)
 		.setDescription("The target type of numerical column cast function.")

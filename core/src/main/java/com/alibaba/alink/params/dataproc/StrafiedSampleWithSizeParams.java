@@ -6,6 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface StrafiedSampleWithSizeParams<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 分层列
+	 * @cn 分层列
+	 */
 	ParamInfo <String> STRATA_COL = ParamInfoFactory
 		.createParamInfo("strataCol", String.class)
 		.setDescription("strata col name.")
@@ -13,18 +17,30 @@ public interface StrafiedSampleWithSizeParams<T> extends WithParams <T> {
 		.setRequired()
 		.build();
 
+	/**
+	 * @cn-name 采样个数
+	 * @cn 采样个数
+	 */
 	ParamInfo <Integer> STRATA_SIZE = ParamInfoFactory
 		.createParamInfo("strataSize", Integer.class)
 		.setDescription("strata size.")
 		.setHasDefaultValue(-1)
 		.build();
 
+	/**
+	 * @cn-name 采样个数
+	 * @cn 采样个数, eg, a:10,b:30
+	 */
 	ParamInfo <String> STRATA_SIZES = ParamInfoFactory
 		.createParamInfo("strataSizes", String.class)
 		.setDescription("strata sizes. a:10,b:30")
 		.setRequired()
 		.build();
 
+	/**
+	 * @cn-name 是否放回
+	 * @cn 是否有放回的采样，默认不放回
+	 */
 	ParamInfo <Boolean> WITH_REPLACEMENT = ParamInfoFactory
 		.createParamInfo("withReplacement", Boolean.class)
 		.setDescription("Indicates whether to enable sampling with replacement, default is without replcement")

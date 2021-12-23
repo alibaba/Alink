@@ -25,6 +25,9 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
+/**
+ * Cross selected columns to build new vector type data.
+ */
 public class CrossFeatureTrainBatchOp extends BatchOperator <CrossFeatureTrainBatchOp>
 	implements CrossFeatureTrainParams <CrossFeatureTrainBatchOp> {
 
@@ -79,7 +82,7 @@ public class CrossFeatureTrainBatchOp extends BatchOperator <CrossFeatureTrainBa
 			new String[] {"index", "value"},
 			new TypeInformation[] {Types.INT, Types.STRING});
 		this.setSideOutputTables(new Table[] {sideModel});
-
+		;
 		return this;
 	}
 
@@ -111,7 +114,9 @@ public class CrossFeatureTrainBatchOp extends BatchOperator <CrossFeatureTrainBa
 			}
 
 			for (int i = 0; i < totalNumber; i++) {
+				//控制进位
 				carry(count, tokenSize);
+				//拼接
 				StringBuilder sbd = new StringBuilder();
 				for (int j = 0; j < featureNumber; j++) {
 					if (j != 0) {

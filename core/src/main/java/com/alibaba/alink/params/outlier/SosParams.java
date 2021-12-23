@@ -10,6 +10,10 @@ public interface SosParams<T> extends
 	HasVectorCol <T>,
 	HasPredictionCol <T> {
 
+	/**
+	 * @cn-name 邻近因子
+	 * @cn 邻近因子。它的近似含义是当某个点的近邻个数小于"邻近因子"个时，这个点的离群score会比较高。
+	 */
 	ParamInfo <Double> PERPLEXITY = ParamInfoFactory
 		.createParamInfo("perplexity", Double.class)
 		.setDescription("Perplexity")

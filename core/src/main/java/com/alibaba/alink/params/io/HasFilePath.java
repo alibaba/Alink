@@ -7,6 +7,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 
 public interface HasFilePath<T> extends WithParams <T> {
+	/**
+	 * @cn-name 文件路径
+	 * @cn 文件路径
+	 */
 	ParamInfo <String> FILE_PATH = ParamInfoFactory
 		.createParamInfo("filePath", String.class)
 		.setDescription("File path with file system.")

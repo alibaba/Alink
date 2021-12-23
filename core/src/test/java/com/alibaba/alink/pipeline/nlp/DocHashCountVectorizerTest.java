@@ -23,6 +23,7 @@ import java.util.List;
 /**
  * Test for DocHashIDFVectorizer.
  */
+
 public class DocHashCountVectorizerTest extends AlinkTestBase {
 	private static Row[] rows = new Row[] {
 		Row.of(0, "a b c d a a", 1),

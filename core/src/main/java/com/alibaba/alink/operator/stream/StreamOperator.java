@@ -135,17 +135,17 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 	}
 
 	@Override
-	public StreamOperator select(String fields) {
+	public StreamOperator<?> select(String fields) {
 		return StreamSqlOperators.select(this, fields);
 	}
 
 	@Override
-	public StreamOperator select(String[] fields) {
+	public StreamOperator<?> select(String[] fields) {
 		return select(TableUtil.columnsToSqlClause(fields));
 	}
 
 	@Override
-	public StreamOperator as(String fields) {
+	public StreamOperator<?> as(String fields) {
 		return StreamSqlOperators.as(this, fields);
 	}
 
@@ -162,12 +162,12 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 	}
 
 	@Override
-	public StreamOperator where(String clause) {
+	public StreamOperator<?> where(String clause) {
 		return StreamSqlOperators.where(this, clause);
 	}
 
 	@Override
-	public StreamOperator filter(String clause) {
+	public StreamOperator<?> filter(String clause) {
 		return StreamSqlOperators.filter(this, clause);
 	}
 
@@ -185,11 +185,11 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 	}
 
 	@Override
-	public StreamOperator print() {
+	public StreamOperator<?> print() {
 		return print(-1, 100);
 	}
 
-	public StreamOperator print(int refreshInterval, int maxLimit) {
+	public StreamOperator<?> print(int refreshInterval, int maxLimit) {
 		return linkTo(new PrintStreamOp(
 			new Params()
 				.set(PrintStreamOp.REFRESH_INTERVAL, refreshInterval)
@@ -265,7 +265,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 	 * @param name The name to register with.
 	 * @return This operator.
 	 */
-	public StreamOperator registerTableName(String name) {
+	public StreamOperator<?> registerTableName(String name) {
 		MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment().registerTable(name, getOutputTable
 			());
 		return this;
@@ -285,17 +285,17 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 	 * @param query The query to evaluate.
 	 * @return The evaluation result returned as a {@link StreamOperator}.
 	 */
-	public static StreamOperator sqlQuery(String query) {
+	public static StreamOperator<?> sqlQuery(String query) {
 		final MLEnvironment env = MLEnvironmentFactory.getDefault();
 		final Long sessionId = MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID;
 		return env.streamSQL(query).setMLEnvironmentId(sessionId);
 	}
 
-	public StreamOperator sample(double ratio) {
+	public StreamOperator<?> sample(double ratio) {
 		return linkTo(new SampleStreamOp(ratio).setMLEnvironmentId(getMLEnvironmentId()));
 	}
 
-	public StreamOperator getSideOutput(int idx) {
+	public StreamOperator<?> getSideOutput(int idx) {
 		if (null == this.getSideOutputTables()) {
 			throw new RuntimeException("There is no side output.");
 		} else if (idx < 0 && idx >= this.getSideOutputTables().length) {
@@ -309,7 +309,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		return null == this.getSideOutputTables() ? 0 : this.getSideOutputTables().length;
 	}
 
-	public StreamOperator udf(String selectedColName, String outputColName, ScalarFunction scalarFunction) {
+	public StreamOperator<?> udf(String selectedColName, String outputColName, ScalarFunction scalarFunction) {
 		return linkTo(
 			new UDFStreamOp()
 				.setSelectedCols(selectedColName)
@@ -319,7 +319,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		);
 	}
 
-	public StreamOperator udtf(String selectedColName, String[] outputColNames, TableFunction tableFunction) {
+	public StreamOperator<?> udtf(String selectedColName, String[] outputColNames, TableFunction tableFunction) {
 		return linkTo(
 			new UDTFStreamOp()
 				.setSelectedCols(selectedColName)
@@ -329,7 +329,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		);
 	}
 
-	public StreamOperator udf(String selectedColName, String outputColName, ScalarFunction scalarFunction,
+	public StreamOperator<?> udf(String selectedColName, String outputColName, ScalarFunction scalarFunction,
 							  String[] reservedColNames) {
 		return linkTo(
 			new UDFStreamOp()
@@ -341,7 +341,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		);
 	}
 
-	public StreamOperator udtf(String selectedColName, String[] outputColNames, TableFunction tableFunction,
+	public StreamOperator<?> udtf(String selectedColName, String[] outputColNames, TableFunction tableFunction,
 							   String[] reservedColNames) {
 		return linkTo(
 			new UDTFStreamOp()

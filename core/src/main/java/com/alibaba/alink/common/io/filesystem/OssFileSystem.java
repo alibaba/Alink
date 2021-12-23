@@ -6,10 +6,10 @@ import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.FileSystemFactory;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.TemporaryClassLoaderContext;
 
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.params.io.OssFileSystemParams;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ public final class OssFileSystem extends BaseFileSystem <OssFileSystem> {
 
 	public final static String OSS_FILE_SYSTEM_NAME = "oss";
 
-	private FileSystemClassLoaderFactory classLoaderFactory;
+	private transient FileSystemClassLoaderFactory classLoaderFactory;
 	private transient FileSystem loaded;
 
 	public OssFileSystem(Params params) {

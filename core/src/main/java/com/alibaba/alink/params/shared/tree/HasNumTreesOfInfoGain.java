@@ -5,6 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasNumTreesOfInfoGain<T> extends WithParams <T> {
+	/**
+	 * @cn-name 模型中Id3树的棵数
+	 * @cn 模型中Id3树的棵数
+	 */
 	ParamInfo <Integer> NUM_TREES_OF_INFO_GAIN = ParamInfoFactory
 		.createParamInfo("numTreesOfInfoGain", Integer.class)
 		.setDescription("Number of id3 trees.")

@@ -1,0 +1,26 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+# Refs: https://www.alinkalink.com/spring-boot-mysql-react-docker-compose-example/
+
+version: '3.7'
+
+# Define services
+services:
+  nfs-server:
+    image: alink_nfs:v0.1
+    ports:
+      - "2049:2049"
+    cap_add:
+      - SYS_ADMIN
+      - SETPCAP
+    environment:
+      SHARED_DIRECTORY: /shared
+    privileged: true
+    volumes:
+      - nfs-shared-data:/shared
+    entrypoint: 
+      - /bin/sh
+      - -c
+      - "echo 'start'&&chmod 777 /shared&&/usr/bin/nfsd.sh"
+
+volumes:
+  nfs-shared-data:

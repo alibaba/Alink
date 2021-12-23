@@ -43,7 +43,7 @@ public class FmRegressorTrainBatchOp extends FmTrainBatchOp <FmRegressorTrainBat
 	/**
 	 * get model info of this train process.
 	 *
-	 * @return
+	 * @return this
 	 */
 	@Override
 	public FmRegressorModelInfoBatchOp getModelInfoBatchOp() {

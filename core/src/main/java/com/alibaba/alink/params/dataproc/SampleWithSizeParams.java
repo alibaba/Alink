@@ -7,12 +7,20 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 public interface SampleWithSizeParams<T> extends
 	WithParams <T> {
 
+	/**
+	 * @cn-name 采样个数
+	 * @cn 采样个数
+	 */
 	ParamInfo <Integer> SIZE = ParamInfoFactory
 		.createParamInfo("size", Integer.class)
 		.setDescription("sampling size")
 		.setRequired()
 		.build();
 
+	/**
+	 * @cn-name 是否放回
+	 * @cn 是否有放回的采样，默认不放回
+	 */
 	ParamInfo <Boolean> WITH_REPLACEMENT = ParamInfoFactory
 		.createParamInfo("withReplacement", Boolean.class)
 		.setDescription("Indicates whether to enable sampling with replacement, default is without replcement")

@@ -10,8 +10,12 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.MTableTypes;
 import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.linalg.tensor.TensorTypes;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +30,24 @@ import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_P
 public class CsvUtil {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CsvUtil.class);
+
+	private static final BiMap <String, TypeInformation <?>> STRING_TYPE_MAP = HashBiMap.create();
+
+	static {
+		STRING_TYPE_MAP.put("VARBINARY", BYTE_PRIMITIVE_ARRAY_TYPE_INFO);
+		STRING_TYPE_MAP.put("VEC_TYPES_VECTOR", VectorTypes.VECTOR);
+		STRING_TYPE_MAP.put("VEC_TYPES_DENSE_VECTOR", VectorTypes.DENSE_VECTOR);
+		STRING_TYPE_MAP.put("VEC_TYPES_SPARSE_VECTOR", VectorTypes.SPARSE_VECTOR);
+		STRING_TYPE_MAP.put("TENSOR_TYPES_TENSOR", TensorTypes.TENSOR);
+		STRING_TYPE_MAP.put("TENSOR_TYPES_BOOL_TENSOR", TensorTypes.BOOL_TENSOR);
+		STRING_TYPE_MAP.put("TENSOR_TYPES_BYTE_TENSOR", TensorTypes.BYTE_TENSOR);
+		STRING_TYPE_MAP.put("TENSOR_TYPES_DOUBLE_TENSOR", TensorTypes.DOUBLE_TENSOR);
+		STRING_TYPE_MAP.put("TENSOR_TYPES_FLOAT_TENSOR", TensorTypes.FLOAT_TENSOR);
+		STRING_TYPE_MAP.put("TENSOR_TYPES_INT_TENSOR", TensorTypes.INT_TENSOR);
+		STRING_TYPE_MAP.put("TENSOR_TYPES_LONG_TENSOR", TensorTypes.LONG_TENSOR);
+		STRING_TYPE_MAP.put("TENSOR_TYPES_STRING_TENSOR", TensorTypes.STRING_TENSOR);
+		STRING_TYPE_MAP.put("MTABLE", MTableTypes.M_TABLE);
+	}
 
 	/**
 	 * Split a string by commas that are not inside parentheses or brackets.
@@ -75,15 +97,17 @@ public class CsvUtil {
 		for (int i = 0; i < colNames.length; i++) {
 			String[] kv = fields[i].trim().split("\\s+", 2);
 			colNames[i] = kv[0];
-
-			if (kv[1].equalsIgnoreCase("VARBINARY")) {
-				colTypes[i] = BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
-			} else if (kv[1].equalsIgnoreCase("VEC_TYPES_VECTOR")) {
-				colTypes[i] = VectorTypes.VECTOR;
-			} else if (kv[1].equalsIgnoreCase("VEC_TYPES_DENSE_VECTOR")) {
-				colTypes[i] = VectorTypes.DENSE_VECTOR;
-			} else if (kv[1].equalsIgnoreCase("VEC_TYPES_SPARSE_VECTOR")) {
-				colTypes[i] = VectorTypes.SPARSE_VECTOR;
+			if ((kv[1].toLowerCase()).equals("vector")) {
+				kv[1] = "VEC_TYPES_VECTOR";
+			}
+			if ((kv[1].toLowerCase()).equals("densevector")) {
+				kv[1] = "VEC_TYPES_DENSE_VECTOR";
+			}
+			if ((kv[1].toLowerCase()).equals("sparsevector")) {
+				kv[1] = "VEC_TYPES_SPARSE_VECTOR";
+			}
+			if (STRING_TYPE_MAP.containsKey(kv[1])) {
+				colTypes[i] = STRING_TYPE_MAP.get(kv[1]);
 			} else {
 				if (kv[1].contains("<") && kv[1].contains(">")) {
 					colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1]);
@@ -112,14 +136,8 @@ public class CsvUtil {
 				sbd.append(",");
 			}
 			String typeName;
-			if (colTypes[i].equals(BYTE_PRIMITIVE_ARRAY_TYPE_INFO)) {
-				typeName = "VARBINARY";
-			} else if (colTypes[i].equals(VectorTypes.VECTOR)) {
-				typeName = "VEC_TYPES_VECTOR";
-			} else if (colTypes[i].equals(VectorTypes.DENSE_VECTOR)) {
-				typeName = "VEC_TYPES_DENSE_VECTOR";
-			} else if (colTypes[i].equals(VectorTypes.SPARSE_VECTOR)) {
-				typeName = "VEC_TYPES_SPARSE_VECTOR";
+			if (STRING_TYPE_MAP.containsValue(colTypes[i])) {
+				typeName = STRING_TYPE_MAP.inverse().get(colTypes[i]);
 			} else {
 				typeName = FlinkTypeConverter.getTypeString(colTypes[i]);
 			}

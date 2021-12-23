@@ -1,9 +1,7 @@
 package com.alibaba.alink.operator.batch.huge.line;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-
 import com.alibaba.alink.common.utils.ExpTableArray;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +20,10 @@ public class LinePullAndTrainOperation {
 	public static long negativeSampling(Random random, Long[] bound) {
 		int start = 0;
 		int end = bound.length - 1;
-
 		double multi = random.nextDouble() * end;
 		double floor = Math.floor(multi);
 		double minus = multi - floor;
 		int pos = start + (int) floor;
-
 		return ((Math.round((bound[pos + 1] - bound[pos]) * minus) + bound[pos]));
 	}
 
@@ -63,10 +59,10 @@ public class LinePullAndTrainOperation {
 		}
 	}
 
-	public void train(int seed, double learningRate, double minRhoRate, boolean orderEqual1,
+	public void train(int seed, double learningRate, double minRhoRate, boolean isOrderOne,
 					  int vectorSize, double sampleRatioPerPartition,
 					  float[] valueBuffer, float[] contextBuffer,
-					  Map <Long, Integer> modelMapper, List <Number[]> trainData, int threadNum, int iterNum) {
+					  Map <Long, Integer> modelMapper, List <Number[]> trainData) {
 		Random random = new Random();
 		random.setSeed(seed);
 		int edgeSize = trainData.size();
@@ -78,14 +74,14 @@ public class LinePullAndTrainOperation {
 			edge[0] = (long) item[0];
 			edge[1] = (long) item[1];
 			edges[count] = edge;
-			weights[count] = Float.valueOf((float) item[2]).doubleValue();
+			weights[count] = item[2].doubleValue();
 			++count;
 		}
 		AliasSampling aliasEdge = new AliasSampling(weights, seed);
 		float[] vectorError = new float[vectorSize];
 		int runTime = (int) Math.round(sampleRatioPerPartition * edgeSize);
 		double[] loss = new double[] {0};
-		if (orderEqual1) {
+		if (isOrderOne) {
 			for (int i = 0; i < runTime; ++i) {
 				double curRate = learningRate * Math.max((1 - i * 1.0 / runTime), minRhoRate);
 				Arrays.fill(vectorError, 0);
@@ -179,6 +175,7 @@ public class LinePullAndTrainOperation {
 	}
 
 	public static class AliasSampling {
+
 		private final int[] alias;
 		private final double[] prob;
 		private final Random rand;
@@ -196,7 +193,6 @@ public class LinePullAndTrainOperation {
 			int num = weights.length;
 			int[] alias = new int[num];
 			double[] prob = new double[num];
-
 			double[] normProb = new double[num];
 			int[] largeBlock = new int[num];
 			int[] smallBlock = new int[num];
@@ -223,8 +219,7 @@ public class LinePullAndTrainOperation {
 				curLargeBlock = largeBlock[--numLargeBlock];
 				prob[curSmallBlock] = normProb[curSmallBlock];
 				alias[curSmallBlock] = curLargeBlock;
-				normProb[curLargeBlock] = normProb[curLargeBlock] + normProb[curSmallBlock]
-					- 1;
+				normProb[curLargeBlock] = normProb[curLargeBlock] + normProb[curSmallBlock] - 1;
 				if (normProb[curLargeBlock] < 1) {
 					smallBlock[numSmallBlock++] = curLargeBlock;
 				} else {
@@ -240,6 +235,5 @@ public class LinePullAndTrainOperation {
 			int k = (int) Math.floor(weightSize * rand.nextDouble());
 			return rand.nextDouble() < prob[k] ? k : alias[k];
 		}
-
 	}
 }

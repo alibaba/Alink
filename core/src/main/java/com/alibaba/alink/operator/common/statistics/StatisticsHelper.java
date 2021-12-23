@@ -22,6 +22,7 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.DenseVectorSu
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummarizer;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.VectorSummarizerUtil;
+import com.alibaba.alink.operator.common.tree.Preprocessing;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -254,7 +255,7 @@ public class StatisticsHelper {
 			throw new InvalidParameterException("selectedColNames must be set.");
 		}
 
-		in = in.select(selectedColNames);
+		in = Preprocessing.select(in, selectedColNames);
 
 		return summarizer(in.getDataSet(), calculateOuterProduct, getNumericalColIndices(in.getColTypes()),
 			selectedColNames);
