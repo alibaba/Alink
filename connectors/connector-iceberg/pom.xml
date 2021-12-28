@@ -1,26 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>alink</artifactId>
+        <artifactId>alink_connectors</artifactId>
         <groupId>com.alibaba.alink</groupId>
         <version>1.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>alink_connectors</artifactId>
-    <name>alink_connectors</name>
-
+    <artifactId>alink_connectors_iceberg</artifactId>
     <packaging>pom</packaging>
+    <name>alink-connector-iceberg</name>
 
     <modules>
-        <module>connector-kafka</module>
-        <module>connector-odps</module>
-        <module>connector-jdbc</module>
-        <module>connector-hive</module>
-        <module>connector-iceberg</module>
-        <module>filesystem</module>
+        <module>iceberg-bridge</module>
     </modules>
-
 </project>
