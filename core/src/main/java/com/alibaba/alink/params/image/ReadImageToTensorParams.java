@@ -12,6 +12,11 @@ public interface ReadImageToTensorParams<T>
 	HasOutputCol <T>,
 	HasRelativeFilePathCol <T>,
 	HasReservedColsDefaultAsNull <T> {
+
+	/**
+	 * @cn-name 图片宽度
+	 * @cn 图片宽度
+	 */
 	ParamInfo <Integer> IMAGE_WIDTH = ParamInfoFactory
 		.createParamInfo("imageWidth", Integer.class)
 		.setDescription("image width")
@@ -25,6 +30,10 @@ public interface ReadImageToTensorParams<T>
 		return set(IMAGE_WIDTH, width);
 	}
 
+	/**
+	 * @cn-name 图片高度
+	 * @cn 图片高度
+	 */
 	ParamInfo <Integer> IMAGE_HEIGHT = ParamInfoFactory
 		.createParamInfo("imageHeight", Integer.class)
 		.setDescription("image height")

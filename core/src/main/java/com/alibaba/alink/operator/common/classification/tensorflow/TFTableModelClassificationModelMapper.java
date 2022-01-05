@@ -6,8 +6,10 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.mapper.IterableModelLoader;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperChain;
 import com.alibaba.alink.common.mapper.ModelMapper;
@@ -30,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TFTableModelClassificationModelMapper extends RichModelMapper {
+public class TFTableModelClassificationModelMapper extends RichModelMapper implements IterableModelLoader {
 
 	private final List <Mapper> mappers = new ArrayList <>();
 	private final Map <Object, Double> predDetail = new HashMap <>();
@@ -38,9 +40,11 @@ public class TFTableModelClassificationModelMapper extends RichModelMapper {
 	private List <Object> sortedLabels;
 	private int predColId;
 	private boolean isOutputLogits = false;
+	private final TFPredictorClassLoaderFactory factory;
 
 	public TFTableModelClassificationModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
+		factory = new TFPredictorClassLoaderFactory();
 	}
 
 	@Override
@@ -64,11 +68,22 @@ public class TFTableModelClassificationModelMapper extends RichModelMapper {
 	@Override
 	public void loadModel(List <Row> modelRows) {
 		TypeInformation <?> labelType = LabeledModelDataConverter.extractLabelType(getModelSchema());
-
-		TFTableModelClassificationModelDataConverter
-			modelDataConverter = new TFTableModelClassificationModelDataConverter(
-			labelType);
+		TFTableModelClassificationModelDataConverter modelDataConverter =
+			new TFTableModelClassificationModelDataConverter(labelType);
 		TFTableModelClassificationModelData modelData = modelDataConverter.load(modelRows);
+		loadFromModelData(modelData, modelDataConverter.getModelSchema());
+	}
+
+	@Override
+	public void loadIterableModel(Iterable <Row> modelRowsIterable) {
+		TypeInformation <?> labelType = LabeledModelDataConverter.extractLabelType(getModelSchema());
+		TFTableModelClassificationModelDataConverter modelDataConverter =
+			new TFTableModelClassificationModelDataConverter(labelType);
+		TFTableModelClassificationModelData modelData = modelDataConverter.loadIterable(modelRowsIterable);
+		loadFromModelData(modelData, modelDataConverter.getModelSchema());
+	}
+
+	protected void loadFromModelData(TFTableModelClassificationModelData modelData, TableSchema modelSchema) {
 		Params meta = modelData.getMeta();
 
 		String tfOutputSignatureDef = meta.get(TFModelDataConverterUtils.TF_OUTPUT_SIGNATURE_DEF);
@@ -101,8 +116,8 @@ public class TFTableModelClassificationModelMapper extends RichModelMapper {
 		tfModelMapperParams.set(TFTableModelPredictParams.SELECTED_COLS, tfInputCols);
 		tfModelMapperParams.set(TFTableModelPredictParams.RESERVED_COLS, reservedCols);
 
-		tfModelMapper = new TFTableModelPredictModelMapper(modelDataConverter.getModelSchema(),
-			dataSchema, tfModelMapperParams);
+		tfModelMapper = new TFTableModelPredictModelMapper(modelSchema,
+			dataSchema, tfModelMapperParams, factory);
 		if (null != modelData.getTfModelZipPath()) {
 			tfModelMapper.loadModelFromZipFile(modelData.getTfModelZipPath());
 		} else {

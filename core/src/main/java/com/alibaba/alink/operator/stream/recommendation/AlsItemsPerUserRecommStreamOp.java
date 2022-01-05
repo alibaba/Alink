@@ -16,11 +16,11 @@ public class AlsItemsPerUserRecommStreamOp
 
 	private static final long serialVersionUID = -4991595915487178731L;
 
-	public AlsItemsPerUserRecommStreamOp(BatchOperator model) {
+	public AlsItemsPerUserRecommStreamOp(BatchOperator <?> model) {
 		this(model, null);
 	}
 
-	public AlsItemsPerUserRecommStreamOp(BatchOperator model, Params params) {
+	public AlsItemsPerUserRecommStreamOp(BatchOperator <?> model, Params params) {
 		super(model, AlsRecommKernel::new, RecommType.ITEMS_PER_USER, params);
 	}
 }

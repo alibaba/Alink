@@ -1,14 +1,13 @@
 package com.alibaba.alink.operator.stream.feature.aggfunc;
 
-
 import org.apache.flink.table.functions.AggregateFunction;
 
 import com.alibaba.alink.common.sql.builtin.agg.LagUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.LastValueTypeData.LagData;
-import com.alibaba.alink.common.sql.builtin.agg.LastValueTypeData.LastValueData;
 import org.junit.Before;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LagTest extends AggFunctionTestBase <Object[], Object, LagData> {
@@ -22,38 +21,26 @@ public class LagTest extends AggFunctionTestBase <Object[], Object, LagData> {
 	@Override
 	protected List <List <Object[]>> getInputValueSets() {
 		List <List <Object[]>> res = new ArrayList <>();
-		ArrayList <Object[]> data = new ArrayList <>();
-		data.add(new Object[] {1, 2});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {1, 2});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {3, 2});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {3, 2});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {4, 2});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {4, 2});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {2, 2});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {2, 2});
-		res.add((List <Object[]>) data.clone());
+
+		List <Object[]> data = Arrays.asList(new Object[] {1, 2}, new Object[] {1, 2},
+			new Object[] {3, 2}, new Object[] {3, 2}, new Object[] {4, 2},
+			new Object[] {4, 2}, new Object[] {2, 2}, new Object[] {2, 2});
+
+		res.add(data.subList(0, 1));
+		res.add(data.subList(0, 2));
+		res.add(data.subList(0, 3));
+		res.add(data.subList(0, 4));
+		res.add(data.subList(0, 5));
+		res.add(data.subList(0, 6));
+		res.add(data.subList(0, 7));
+		res.add(data.subList(0, 8));
+
 		return res;
 	}
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		List <Object> res = new ArrayList <>();
-		res.add(null);
-		res.add(null);
-		res.add(1);
-		res.add(1);
-		res.add(3);
-		res.add(3);
-		res.add(4);
-		res.add(4);
-		return res;
+		return Arrays.asList(null, null, 1, 1, 3, 3, 4, 4);
 	}
 
 	@Override

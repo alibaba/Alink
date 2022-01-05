@@ -19,6 +19,10 @@ public final class IntTensor extends NumericalTensor <Integer> {
 		this(NdArrays.ofInts(shape.toNdArrayShape()));
 	}
 
+	public IntTensor(int data) {
+		this(NdArrays.scalarOf(data));
+	}
+
 	public IntTensor(int[] data) {
 		this(StdArrays.ndCopyOf(data));
 	}

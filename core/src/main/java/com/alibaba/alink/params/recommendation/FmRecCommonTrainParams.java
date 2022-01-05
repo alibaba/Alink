@@ -8,24 +8,40 @@ public interface FmRecCommonTrainParams<T> extends
         HasItemCol<T>,
         FmCommonTrainParams<T> {
 
+    /**
+     * @cn-name 用户特征列名字数组
+     * @cn 用户特征列名字数组
+     */
     ParamInfo<String[]> USER_FEATURE_COLS = ParamInfoFactory
             .createParamInfo("userFeatureCols", String[].class)
             .setDescription("")
             .setHasDefaultValue(new String[0])
             .build();
 
+    /**
+     * @cn-name 用户离散值列名字数组
+     * @cn 用户离散值列名字数组
+     */
     ParamInfo<String[]> USER_CATEGORICAL_FEATURE_COLS = ParamInfoFactory
             .createParamInfo("userCategoricalFeatureCols", String[].class)
             .setDescription("")
             .setHasDefaultValue(new String[0])
             .build();
 
+    /**
+     * @cn-name item特征列名字数组
+     * @cn item特征列名字数组
+     */
     ParamInfo<String[]> ITEM_FEATURE_COLS = ParamInfoFactory
             .createParamInfo("itemFeatureCols", String[].class)
             .setDescription("")
             .setHasDefaultValue(new String[0])
             .build();
 
+    /**
+     * @cn-name item离散值列名字数组
+     * @cn item离散值列名字数组
+     */
     ParamInfo<String[]> ITEM_CATEGORICAL_FEATURE_COLS = ParamInfoFactory
             .createParamInfo("itemCategoricalFeatureCols", String[].class)
             .setDescription("")

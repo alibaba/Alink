@@ -15,7 +15,7 @@ import com.alibaba.alink.params.io.AkSourceParams;
 import java.io.IOException;
 
 /**
- * Read a ak file from file system.
+ * Read an ak file from file system.
  */
 @IoOpAnnotation(name = "ak", ioType = IOType.SourceBatch)
 public final class AkSourceBatchOp extends BaseSourceBatchOp <AkSourceBatchOp>

@@ -62,7 +62,7 @@ public abstract class BaseRecommender<T extends BaseRecommender <T>>
 	}
 
 	@Override
-	public LocalPredictor collectLocalPredictor(TableSchema inputSchema) throws Exception {
+	public LocalPredictor collectLocalPredictor(TableSchema inputSchema) {
 		List <Row> modelRows = this.modelData.collect();
 		ModelMapper mapper =
 			new RecommMapper(

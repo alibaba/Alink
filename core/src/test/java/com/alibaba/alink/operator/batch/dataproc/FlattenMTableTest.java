@@ -11,9 +11,11 @@ import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.dataproc.FlattenMTableStreamOp;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
 import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -45,9 +47,9 @@ public class FlattenMTableTest extends AlinkTestBase {
 			new FloatTensor(new float[] {3.0f})));
 
 		String schemaStr = "col0 int, col1 string, label long"
-			+ ", d_vec VEC_TYPES_DENSE_VECTOR"
-			+ ", s_vec VEC_TYPES_SPARSE_VECTOR"
-			+ ", tensor TENSOR_TYPES_FLOAT_TENSOR";
+			+ ", d_vec DENSE_VECTOR"
+			+ ", s_vec SPARSE_VECTOR"
+			+ ", tensor FLOAT_TENSOR";
 		MTable mTable = new MTable(rows, schemaStr);
 		List <Row> table = new ArrayList <>();
 		table.add(Row.of("id", mTable.toString()));
@@ -55,12 +57,15 @@ public class FlattenMTableTest extends AlinkTestBase {
 		BatchOperator <?> op = new MemSourceBatchOp(table, new String[] {"id", "mTable"});
 
 		String flattenSchemaStr = "col0 double, col1 timestamp, label timestamp"
-			+ ", d_vec VEC_TYPES_DENSE_VECTOR"
-			+ ", s_vec VEC_TYPES_SPARSE_VECTOR"
-			+ ", tensor TENSOR_TYPES_FLOAT_TENSOR";
+			+ ", d_vec DENSE_VECTOR"
+			+ ", s_vec SPARSE_VECTOR"
+			+ ", tensor FLOAT_TENSOR";
 		BatchOperator <?> out = op.link(new FlattenMTableBatchOp().setSchemaStr(flattenSchemaStr)
 			.setSelectedCol("mTable").setReservedCols("id").setHandleInvalidMethod(HandleInvalidMethod.SKIP));
-		out.print();
+		List <Row> res = out.collect();
+		for (Row row : res) {
+			Assert.assertEquals("id", row.getField(0));
+		}
 	}
 
 	@Test
@@ -90,7 +95,10 @@ public class FlattenMTableTest extends AlinkTestBase {
 			.setSelectedCol("m_table_col")
 			.setSchemaStr("f0 string, f1 int");
 
-		zip.linkFrom(input).link(flatten).print();
+		List <Row> res = zip.linkFrom(input).link(flatten).collect();
+		for (Row row : res) {
+			Assert.assertEquals(2, row.getField(2));
+		}
 	}
 
 	@Test
@@ -106,7 +114,12 @@ public class FlattenMTableTest extends AlinkTestBase {
 			.setReservedCols("id")
 			.setSelectedCol("mt")
 			.setSchemaStr("f0 string, f1 int");
-		flatten.linkFrom(input).print();
+
+		CollectSinkStreamOp sop = flatten.linkFrom(input).link(new CollectSinkStreamOp());
 		StreamOperator.execute();
+		List<Row> res = sop.getAndRemoveValues();
+		for (Row row : res) {
+			Assert.assertEquals(2, row.getField(2));
+		}
 	}
 }

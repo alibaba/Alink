@@ -150,7 +150,7 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 			.linkFrom(
 				decisionTreeRegTrainBatchOp.linkFrom(memSourceBatchOp),
 				memSourceBatchOp
-			).collect();
+			).lazyCollect();
 
 		EvalRegressionBatchOp eval = new EvalRegressionBatchOp()
 			.setLabelCol(colNames[2])
@@ -471,7 +471,7 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 			.setSubsamplingRatio(0.6)
 			.setNumSubsetFeatures(1);
 
-		cartRegBatchOp.linkFrom(memSourceBatchOp).collect();
+		cartRegBatchOp.linkFrom(memSourceBatchOp);
 
 		RandomForestPredictBatchOp predictBatchOp = new RandomForestPredictBatchOp()
 			.setPredictionCol("result")
@@ -558,11 +558,11 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 		BatchOperator <?> c45Model = input.linkTo(c45BatchOp);
 		BatchOperator <?> c45Pred = c45PredictBatchOp.linkFrom(c45Model, input);
 
-		c45Pred.collect();
+		c45Pred.lazyCollect();
 
 		BatchOperator <?> evalResult = evalClassificationBatchOp.linkFrom(c45Pred);
 
-		evalResult.collect();
+		evalResult.lazyCollect();
 
 		c45PredictStreamOp.linkFrom(inputStream);
 
@@ -600,11 +600,9 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 		BatchOperator <?> id3Model = input.linkTo(id3BatchOp);
 		BatchOperator <?> id3Pred = id3PredictBatchOp.linkFrom(id3Model, input);
 
-		id3Pred.collect();
-
 		BatchOperator <?> evalResult = evalClassificationBatchOp.linkFrom(id3Pred);
 
-		evalResult.collect();
+		evalResult.lazyCollect();
 
 		id3PredictStreamOp.linkFrom(inputStream);
 
@@ -751,11 +749,9 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 		BatchOperator <?> rfModel = input.linkTo(randomForestBatchOp);
 		BatchOperator <?> rfPred = randomForestPredictBatchOp.linkFrom(rfModel, input);
 
-		rfPred.collect();
-
 		BatchOperator <?> evalResult = evalClassificationBatchOp.linkFrom(rfPred);
 
-		evalResult.collect();
+		evalResult.lazyCollect();
 
 		randomForestPredictStreamOp.linkFrom(inputStream);
 

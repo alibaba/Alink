@@ -1,13 +1,18 @@
 package org.apache.flink.ml.api.misc.param;
 
+import org.apache.flink.types.Row;
+
 import com.alibaba.alink.params.ParamUtil;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,6 +56,36 @@ public class Params implements Serializable {
 		return params.isEmpty();
 	}
 
+	private Map<String, Object[]> rowToJsonMap(Row row) {
+		if (null == row) {
+			return null;
+		}
+		if (row.getArity() > 0) {
+			Object[] objects = new Object[row.getArity()];
+			for (int i = 0; i < objects.length; i++) {
+				objects[i] = row.getField(i);
+			}
+
+			Map<String, Object[]> jsonMap = new HashMap <>();
+			jsonMap.put("fields", objects);
+
+			return jsonMap;
+		}
+		return new HashMap <>();
+	}
+
+	private Row jsonMapToRow(Map<String, Object[]> jsonMap) {
+		if (null == jsonMap) {
+			return null;
+		}
+		Object[] objects = jsonMap.get("fields");
+		Row row = new Row(objects.length);
+		for (int i = 0; i < objects.length; i++) {
+			row.setField(i, objects[i]);
+		}
+		return row;
+	}
+
 	@Override
 	public Params clone() {
 		Params cloneParams = new Params();
@@ -82,7 +117,17 @@ public class Params implements Serializable {
 	public Params set(String paramName, Object paramValue) {
 		if (null == paramValue) {
 			this.params.put(paramName, null);
-		} else {
+		} else if (paramValue.getClass().equals(Row[].class)) {
+			Row[] rows = (Row[]) paramValue;
+			ArrayList <Map<String, Object[]>> jsonMapList = new ArrayList <>();
+			for (int i = 0; i < rows.length; i++) {
+				jsonMapList.add(rowToJsonMap(rows[i]));
+			}
+			this.params.put(paramName, pGson.toJson(jsonMapList));
+		} else if (paramValue.getClass().equals(Row.class)) {
+			this.params.put(paramName, pGson.toJson(rowToJsonMap((Row) paramValue)));
+		}
+		else {
 			this.params.put(paramName, pGson.toJson(paramValue));
 		}
 		return this;
@@ -179,6 +224,19 @@ public class Params implements Serializable {
 		if (classOfT.isEnum()) {
 			String value = get(paramName, String.class);
 			return (T) ParamUtil.searchEnum((Class) classOfT, value, paramName);
+		} else if (classOfT.equals(Row[].class)) {
+			List<Map<String, Object[]>> jsonMapList = get(paramName, new TypeToken<List <Map<String, Object[]>>>() {}.getType());
+			if (null == jsonMapList) {
+				return null;
+			}
+
+			Row[] rows = new Row[jsonMapList.size()];
+			for (int i = 0; i < jsonMapList.size(); i++) {
+				rows[i] = jsonMapToRow(jsonMapList.get(i));
+			}
+			return (T) rows;
+		} else if (classOfT.equals(Row.class)) {
+			return (T) jsonMapToRow(get(paramName, new TypeToken<Map<String, Object[]>>() {}.getType()));
 		} else {
 			return get(paramName, (Type) classOfT);
 		}

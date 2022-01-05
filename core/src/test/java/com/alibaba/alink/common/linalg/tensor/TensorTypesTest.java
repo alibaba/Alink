@@ -11,11 +11,12 @@ import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataSetUtil;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
 
-public class TensorTypesTest {
+public class TensorTypesTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 		Row[] tensors = new Row[] {
@@ -45,7 +46,7 @@ public class TensorTypesTest {
 				}
 			}),
 			new String[] {"col0"},
-			new TypeInformation<?>[] {TensorTypes.TENSOR}
+			new TypeInformation <?>[] {TensorTypes.TENSOR}
 		)).print();
 	}
 }

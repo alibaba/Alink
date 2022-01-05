@@ -16,11 +16,11 @@ public class UserCfUsersPerItemRecommStreamOp
 
 	private static final long serialVersionUID = -9193410181418869523L;
 
-	public UserCfUsersPerItemRecommStreamOp(BatchOperator model) {
+	public UserCfUsersPerItemRecommStreamOp(BatchOperator <?> model) {
 		this(model, null);
 	}
 
-	public UserCfUsersPerItemRecommStreamOp(BatchOperator model, Params params) {
+	public UserCfUsersPerItemRecommStreamOp(BatchOperator <?> model, Params params) {
 		super(model, UserCfRecommKernel::new, RecommType.USERS_PER_ITEM, params);
 	}
 }

@@ -72,7 +72,8 @@ public interface GbdtTrainParams<T> extends
 	 * @cn 树分裂的策略，可以为PAI, XGBOOST
 	 */
 	ParamInfo <CriteriaType> CRITERIA = ParamInfoFactory
-		.createParamInfo("criteriaType", CriteriaType.class)
+		.createParamInfo("criteria", CriteriaType.class)
+		.setAlias(new String[]{"criteriaType"})
 		.setHasDefaultValue(CriteriaType.PAI)
 		.build();
 

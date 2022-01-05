@@ -1,6 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
-import com.alibaba.alink.common.linalg.VectorUtil.VectorType;
+import com.alibaba.alink.common.linalg.VectorUtil.VectorSerialType;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -229,7 +229,7 @@ public class DenseVector extends Vector {
 		if (vec instanceof DenseVector) {
 			return BLAS.dot(this, (DenseVector) vec);
 		} else {
-			return ((SparseVector) vec).dot(this);
+			return vec.dot(this);
 		}
 	}
 
@@ -252,8 +252,8 @@ public class DenseVector extends Vector {
 		} else if (p == 2.0) {
 			norm = normL2();
 		} else {
-			for (int i = 0; i < data.length; i++) {
-				norm += Math.pow(Math.abs(data[i]), p);
+			for (double datum : data) {
+				norm += Math.pow(Math.abs(datum), p);
 			}
 			norm = Math.pow(norm, 1 / p);
 		}
@@ -297,8 +297,8 @@ public class DenseVector extends Vector {
 	 */
 	public SparseVector toSparseVector() {
 		int nnz = 0;
-		for (int i = 0; i < this.data.length; ++i) {
-			if (data[i] != 0) {
+		for (double datum : this.data) {
+			if (datum != 0) {
 				nnz++;
 			}
 		}
@@ -351,15 +351,15 @@ public class DenseVector extends Vector {
 	/**
 	 * encode this vector to a byte[]:
 	 * The format of the byte[] is: "vectorType value1 value2 value3..."
-	 * @return
+	 * @return byte array.
 	 */
 	@Override
 	public byte[] toBytes() {
 		byte[] bytes = new byte[data.length * 8 + 1];
 		ByteBuffer wrapper = ByteBuffer.wrap(bytes);
-		wrapper.put(VectorType.DENSE_VECTOR);
-		for (int i = 0; i < data.length; i ++) {
-			wrapper.putDouble(data[i]);
+		wrapper.put(VectorSerialType.DENSE_VECTOR);
+		for (double datum : data) {
+			wrapper.putDouble(datum);
 		}
 		return bytes;
 	}

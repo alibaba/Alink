@@ -60,7 +60,8 @@ public class HugeMfAlsImpl {
 
 	private static final Logger LOG = LoggerFactory.getLogger(HugeMfAlsImpl.class);
 
-	public static Tuple2 <BatchOperator, BatchOperator> factorize(BatchOperator data, Params params, boolean
+	public static Tuple2 <BatchOperator <?>, BatchOperator <?>> factorize(BatchOperator <?> data, Params params,
+																		  boolean
 		implicit) {
 		final Long envId = data.getMLEnvironmentId();
 		final String userColName = params.get(AlsTrainParams.USER_COL);
@@ -78,12 +79,12 @@ public class HugeMfAlsImpl {
 		final int itemColIdx = TableUtil.findColIndexWithAssert(data.getColNames(), itemColName);
 		final int rateColIdx = TableUtil.findColIndexWithAssert(data.getColNames(), rateColName);
 
-		TypeInformation userType = data.getColTypes()[userColIdx];
-		TypeInformation itemType = data.getColTypes()[itemColIdx];
+		TypeInformation <?> userType = data.getColTypes()[userColIdx];
+		TypeInformation <?> itemType = data.getColTypes()[itemColIdx];
 		boolean isLongTypeId = userType.equals(Types.LONG) && itemType.equals(Types.LONG);
 
-		BatchOperator distinctUsers = null;
-		BatchOperator distinctItems = null;
+		BatchOperator <?> distinctUsers = null;
+		BatchOperator <?> distinctItems = null;
 
 		if (!isLongTypeId) {
 			distinctUsers = data.select("`" + userColName + "`").distinct();
@@ -127,16 +128,16 @@ public class HugeMfAlsImpl {
 		AlsTrain als = new AlsTrain(rank, numIter, lambda, implicit, alpha, numMiniBatches, nonNegative);
 		DataSet <Tuple3 <Byte, Long, float[]>> factors = als.fit(alsInput);
 
-		BatchOperator userFactors = getFactors(envId, factors, userColName, (byte) 0);
-		BatchOperator itemFactors = getFactors(envId, factors, itemColName, (byte) 1);
+		BatchOperator <?> userFactors = getFactors(envId, factors, userColName, (byte) 0);
+		BatchOperator <?> itemFactors = getFactors(envId, factors, itemColName, (byte) 1);
 
 		if (!isLongTypeId) {
-			BatchOperator joinUser = new LeftOuterJoinBatchOp()
+			BatchOperator <?> joinUser = new LeftOuterJoinBatchOp()
 				.setMLEnvironmentId(envId)
 				.setJoinPredicate(String.format("a.`%s`=b.__user_index", userColName))
 				.setSelectClause(String.format("b.`%s`, a.`%s`", userColName, "factors"));
 			userFactors = joinUser.linkFrom(userFactors, distinctUsers);
-			BatchOperator joinItem = new LeftOuterJoinBatchOp()
+			BatchOperator <?> joinItem = new LeftOuterJoinBatchOp()
 				.setMLEnvironmentId(envId)
 				.setJoinPredicate(String.format("a.`%s`=b.__item_index", itemColName))
 				.setSelectClause(String.format("b.`%s`, a.`%s`", itemColName, "factors"));
@@ -146,10 +147,10 @@ public class HugeMfAlsImpl {
 		return Tuple2.of(userFactors, itemFactors);
 	}
 
-	public static Tuple4 <BatchOperator, BatchOperator, BatchOperator, BatchOperator> factorize(
-		BatchOperator userInitEmbedding,
-		BatchOperator itemInitEmbedding,
-		BatchOperator data,
+	public static Tuple4 <BatchOperator <?>, BatchOperator <?>, BatchOperator <?>, BatchOperator <?>> factorize(
+		BatchOperator <?> userInitEmbedding,
+		BatchOperator <?> itemInitEmbedding,
+		BatchOperator <?> data,
 		Params params, boolean implicit) {
 		final Long envId = data.getMLEnvironmentId();
 		final String userColName = params.get(AlsTrainParams.USER_COL);
@@ -167,12 +168,12 @@ public class HugeMfAlsImpl {
 		final int itemColIdx = TableUtil.findColIndexWithAssert(data.getColNames(), itemColName);
 		final int rateColIdx = TableUtil.findColIndexWithAssert(data.getColNames(), rateColName);
 
-		TypeInformation userType = data.getColTypes()[userColIdx];
-		TypeInformation itemType = data.getColTypes()[itemColIdx];
+		TypeInformation <?> userType = data.getColTypes()[userColIdx];
+		TypeInformation <?> itemType = data.getColTypes()[itemColIdx];
 		boolean isLongTypeId = userType.equals(Types.LONG) && itemType.equals(Types.LONG);
 
-		BatchOperator distinctUsers = null;
-		BatchOperator distinctItems = null;
+		BatchOperator <?> distinctUsers = null;
+		BatchOperator <?> distinctItems = null;
 
 		if (!isLongTypeId) {
 			distinctUsers = new UnionBatchOp().linkFrom(userInitEmbedding.select("`" + userColName + "`"),
@@ -199,7 +200,7 @@ public class HugeMfAlsImpl {
 				.setMLEnvironmentId(envId)
 				.setSelectedCols(userColName).linkFrom(userMsi, userInitEmbedding);
 
-			itemInitEmbedding =  new MultiStringIndexerPredictBatchOp()
+			itemInitEmbedding = new MultiStringIndexerPredictBatchOp()
 				.setMLEnvironmentId(envId)
 				.setSelectedCols(itemColName)
 				.linkFrom(itemMsi, itemInitEmbedding);
@@ -238,34 +239,34 @@ public class HugeMfAlsImpl {
 		DataSet <Tuple3 <Byte, Long, float[]>> factors = als.fit(userInitEmbedding.getDataSet(),
 			itemInitEmbedding.getDataSet(), alsInput);
 
-		BatchOperator userFactors = getFactors(envId, factors, userColName, (byte) 0);
-		BatchOperator itemFactors = getFactors(envId, factors, itemColName, (byte) 1);
+		BatchOperator <?> userFactors = getFactors(envId, factors, userColName, (byte) 0);
+		BatchOperator <?> itemFactors = getFactors(envId, factors, itemColName, (byte) 1);
 
 		if (!isLongTypeId) {
-			BatchOperator joinUser = new LeftOuterJoinBatchOp()
+			BatchOperator <?> joinUser = new LeftOuterJoinBatchOp()
 				.setMLEnvironmentId(envId)
 				.setJoinPredicate(String.format("a.`%s`=b.__user_index", userColName))
 				.setSelectClause(String.format("b.`%s`, a.`%s`", userColName, "factors"));
 			userFactors = joinUser.linkFrom(userFactors, distinctUsers);
-			BatchOperator joinInitUser = new LeftOuterJoinBatchOp()
+			BatchOperator <?> joinInitUser = new LeftOuterJoinBatchOp()
 				.setMLEnvironmentId(envId)
 				.setJoinPredicate(String.format("a.`%s`=b.__user_index", userColName))
 				.setSelectClause(String.format("b.`%s`, a.`%s`", userColName, "factors"));
 			userInitEmbedding = joinInitUser.linkFrom(userInitEmbedding, distinctUsers);
-			BatchOperator joinItem = new LeftOuterJoinBatchOp()
+			BatchOperator <?> joinItem = new LeftOuterJoinBatchOp()
 				.setMLEnvironmentId(envId)
 				.setJoinPredicate(String.format("a.`%s`=b.__item_index", itemColName))
 				.setSelectClause(String.format("b.`%s`, a.`%s`", itemColName, "factors"));
 			itemFactors = joinItem.linkFrom(itemFactors, distinctItems);
 
-			BatchOperator joinInitItem = new LeftOuterJoinBatchOp()
+			BatchOperator <?> joinInitItem = new LeftOuterJoinBatchOp()
 				.setMLEnvironmentId(envId)
 				.setJoinPredicate(String.format("a.`%s`=b.__item_index", itemColName))
 				.setSelectClause(String.format("b.`%s`, a.`%s`", itemColName, "factors"));
 			itemInitEmbedding = joinInitItem.linkFrom(itemInitEmbedding, distinctItems);
 		}
 
-		BatchOperator allUserFactors = new FullOuterJoinBatchOp()
+		BatchOperator <?> allUserFactors = new FullOuterJoinBatchOp()
 			.setJoinPredicate("a." + userColName + "=b." + userColName)
 			.setSelectClause(
 				"case when a." + userColName + " is null then b." + userColName + " when b." + userColName
@@ -274,7 +275,7 @@ public class HugeMfAlsImpl {
 					+ userColName + " is null then a.factors else b.factors end as factors")
 			.linkFrom(userInitEmbedding, userFactors);
 
-		BatchOperator allItemFactors = new FullOuterJoinBatchOp()
+		BatchOperator <?> allItemFactors = new FullOuterJoinBatchOp()
 			.setJoinPredicate("a." + itemColName + "=b." + itemColName)
 			.setSelectClause(
 				"case when a." + itemColName + " is null then b." + itemColName + " when b." + itemColName
@@ -286,14 +287,14 @@ public class HugeMfAlsImpl {
 		return Tuple4.of(allUserFactors, allItemFactors, userFactors, itemFactors);
 	}
 
-	private static BatchOperator getFactors(Long envId, DataSet <Tuple3 <Byte, Long, float[]>> factors,
-											String name, final byte userOrItem) {
+	private static BatchOperator <?> getFactors(Long envId, DataSet <Tuple3 <Byte, Long, float[]>> factors,
+												String name, final byte userOrItem) {
 		factors = factors
 			.filter(new FilterFunction <Tuple3 <Byte, Long, float[]>>() {
 				private static final long serialVersionUID = -2198675502442522328L;
 
 				@Override
-				public boolean filter(Tuple3 <Byte, Long, float[]> value) throws Exception {
+				public boolean filter(Tuple3 <Byte, Long, float[]> value) {
 					return value.f0 == userOrItem;
 				}
 			});
@@ -302,10 +303,10 @@ public class HugeMfAlsImpl {
 				private static final long serialVersionUID = 3477932515673402769L;
 
 				@Override
-				public Row map(Tuple3 <Byte, Long, float[]> value) throws Exception {
+				public Row map(Tuple3 <Byte, Long, float[]> value) {
 					double[] d = new double[value.f2.length];
 					for (int i = 0; i < d.length; i++) {
-						d[i] = (double) value.f2[i];
+						d[i] = value.f2[i];
 					}
 					return Row.of(value.f1, new DenseVector(d).toString());
 				}
@@ -413,7 +414,7 @@ public class HugeMfAlsImpl {
 				private static final long serialVersionUID = -8820639290497738048L;
 
 				@Override
-				public Tuple3 <Byte, Long, float[]> map(Factors value) throws Exception {
+				public Tuple3 <Byte, Long, float[]> map(Factors value) {
 					return Tuple3.of(value.identity, value.nodeId, value.factors);
 				}
 			});
@@ -443,7 +444,7 @@ public class HugeMfAlsImpl {
 				private static final long serialVersionUID = -8820639290497738048L;
 
 				@Override
-				public Tuple3 <Byte, Long, float[]> map(Factors value) throws Exception {
+				public Tuple3 <Byte, Long, float[]> map(Factors value) {
 					return Tuple3.of(value.identity, value.nodeId, value.factors);
 				}
 			});
@@ -455,13 +456,13 @@ public class HugeMfAlsImpl {
 		private DataSet <Ratings>
 		initGraph(DataSet <Tuple3 <Long, Long, Float>> ratings) {
 			return ratings
-				. <Tuple4 <Long, Long, Float, Byte>>flatMap(new FlatMapFunction <Tuple3 <Long, Long, Float>,
+				.flatMap(new FlatMapFunction <Tuple3 <Long, Long, Float>,
 					Tuple4 <Long, Long, Float, Byte>>() {
 					private static final long serialVersionUID = 3894371804771123007L;
 
 					@Override
 					public void flatMap(Tuple3 <Long, Long, Float> value,
-										Collector <Tuple4 <Long, Long, Float, Byte>> out) throws Exception {
+										Collector <Tuple4 <Long, Long, Float, Byte>> out) {
 						out.collect(Tuple4.of(value.f0, value.f1, value.f2, (byte) 0));
 						out.collect(Tuple4.of(value.f1, value.f0, value.f2, (byte) 1));
 					}
@@ -472,8 +473,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = 3391161187867934671L;
 
 					@Override
-					public void reduce(Iterable <Tuple4 <Long, Long, Float, Byte>> values, Collector <Ratings> out)
-						throws Exception {
+					public void reduce(Iterable <Tuple4 <Long, Long, Float, Byte>> values, Collector <Ratings> out) {
 						byte identity = -1;
 						long srcNodeId = -1L;
 						List <Long> neighbors = new ArrayList <>();
@@ -518,14 +518,14 @@ public class HugeMfAlsImpl {
 					transient Factors reusedFactors;
 
 					@Override
-					public void open(Configuration parameters) throws Exception {
+					public void open(Configuration parameters) {
 						random = new Random(getRuntimeContext().getIndexOfThisSubtask());
 						reusedFactors = new Factors();
 						reusedFactors.factors = new float[numFactors];
 					}
 
 					@Override
-					public Factors map(Ratings value) throws Exception {
+					public Factors map(Ratings value) {
 						reusedFactors.identity = value.identity;
 						reusedFactors.nodeId = value.nodeId;
 						for (int i = 0; i < numFactors; i++) {
@@ -555,14 +555,14 @@ public class HugeMfAlsImpl {
 				transient Factors reusedFactors;
 
 				@Override
-				public void open(Configuration parameters) throws Exception {
+				public void open(Configuration parameters) {
 					random = new Random(getRuntimeContext().getIndexOfThisSubtask());
 					reusedFactors = new Factors();
 					reusedFactors.factors = null;
 				}
 
 				@Override
-				public Tuple2 <String, Factors> map(Ratings value) throws Exception {
+				public Tuple2 <String, Factors> map(Ratings value) {
 					reusedFactors.identity = value.identity;
 					reusedFactors.nodeId = value.nodeId;
 					return Tuple2.of((value.identity + "_" + value.nodeId), reusedFactors);
@@ -571,40 +571,40 @@ public class HugeMfAlsImpl {
 
 			DataSet <Tuple2 <String, float[]>> userFactors
 				= userInitEmbedding.map(new RichMapFunction <Row, Tuple2 <String, float[]>>() {
-				private final byte identity = 0;
 				private float[] reusedArray;
 
 				@Override
-				public void open(Configuration parameters) throws Exception {
+				public void open(Configuration parameters) {
 					reusedArray = new float[numFactors];
 				}
 
 				@Override
-				public Tuple2 <String, float[]> map(Row value) throws Exception {
+				public Tuple2 <String, float[]> map(Row value) {
 					double[] arr = VectorUtil.getDenseVector(value.getField(1)).getData();
 					for (int i = 0; i < numFactors; i++) {
 						reusedArray[i] = (float) arr[i];
 					}
+					byte identity = 0;
 					return Tuple2.of(identity + "_" + value.getField(0), reusedArray);
 				}
 			});
 
 			DataSet <Tuple2 <String, float[]>> itemFactors
 				= itemInitEmbedding.map(new RichMapFunction <Row, Tuple2 <String, float[]>>() {
-				private final byte identity = 1;
 				private float[] reusedArray;
 
 				@Override
-				public void open(Configuration parameters) throws Exception {
+				public void open(Configuration parameters) {
 					reusedArray = new float[numFactors];
 				}
 
 				@Override
-				public Tuple2 <String, float[]> map(Row value) throws Exception {
+				public Tuple2 <String, float[]> map(Row value) {
 					double[] arr = VectorUtil.getDenseVector(value.getField(1)).getData();
 					for (int i = 0; i < numFactors; i++) {
 						reusedArray[i] = (float) arr[i];
 					}
+					byte identity = 1;
 					return Tuple2.of(identity + "_" + value.getField(0), reusedArray);
 				}
 			});
@@ -622,8 +622,7 @@ public class HugeMfAlsImpl {
 					}
 
 					@Override
-					public Factors join(Tuple2 <String, Factors> first, Tuple2 <String, float[]> second)
-						throws Exception {
+					public Factors join(Tuple2 <String, Factors> first, Tuple2 <String, float[]> second) {
 						if (second == null) {
 							first.f1.factors = new float[numFactors];
 							for (int i = 0; i < numFactors; i++) {
@@ -633,8 +632,8 @@ public class HugeMfAlsImpl {
 							Factors fac = new Factors();
 							fac.factors = second.f1;
 							String[] contents = second.f0.split("_");
-							fac.identity = Byte.valueOf(contents[0]);
-							fac.nodeId = Long.valueOf(contents[1]);
+							fac.identity = Byte.parseByte(contents[0]);
+							fac.nodeId = Long.parseLong(contents[1]);
 
 							first = Tuple2.of(second.f0, fac);
 
@@ -665,13 +664,13 @@ public class HugeMfAlsImpl {
 			}
 
 			void decideNumMiniBatches(int numFactors, int parallelism, int minBlocks) {
-				this.numUserBatches = decideUserMiniBatches(numSamples, numUsers, numItems, numFactors, parallelism,
+				this.numUserBatches = decideUserMiniBatches(numSamples, numItems, numFactors, parallelism,
 					minBlocks);
-				this.numItemBatches = decideUserMiniBatches(numSamples, numItems, numUsers, numFactors, parallelism,
+				this.numItemBatches = decideUserMiniBatches(numSamples, numUsers, numFactors, parallelism,
 					minBlocks);
 			}
 
-			static int decideUserMiniBatches(long numSamples, long numUsers, long numItems, int numFactors,
+			static int decideUserMiniBatches(long numSamples, long numItems, int numFactors,
 											 int parallelism, int minBlocks) {
 				final long TASK_CAPACITY = 2L /* nodes in million */ * 1024 * 1024 * 100 /* rank */;
 				long numBatches = 1L;
@@ -686,13 +685,13 @@ public class HugeMfAlsImpl {
 		private static DataSet <DataProfile> generateDataProfile(DataSet <Ratings> graphData, final int numFactors,
 																 final int minBlocks) {
 			return graphData
-				. <Tuple3 <Long, Long, Long>>mapPartition(
+				.mapPartition(
 					new MapPartitionFunction <Ratings, Tuple3 <Long, Long, Long>>() {
 						private static final long serialVersionUID = -3529850335007040435L;
 
 						@Override
-						public void mapPartition(Iterable <Ratings> values, Collector <Tuple3 <Long, Long, Long>> out)
-							throws Exception {
+						public void mapPartition(Iterable <Ratings> values,
+												 Collector <Tuple3 <Long, Long, Long>> out) {
 							long numUsers = 0L;
 							long numItems = 0L;
 							long numRatings = 0L;
@@ -712,7 +711,7 @@ public class HugeMfAlsImpl {
 
 					@Override
 					public Tuple3 <Long, Long, Long> reduce(Tuple3 <Long, Long, Long> value1,
-															Tuple3 <Long, Long, Long> value2) throws Exception {
+															Tuple3 <Long, Long, Long> value2) {
 						value1.f0 += value2.f0;
 						value1.f1 += value2.f1;
 						value1.f2 += value2.f2;
@@ -723,7 +722,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = -2224348217053561771L;
 
 					@Override
-					public DataProfile map(Tuple3 <Long, Long, Long> value) throws Exception {
+					public DataProfile map(Tuple3 <Long, Long, Long> value) {
 						int parallelism = getRuntimeContext().getMaxNumberOfParallelSubtasks();
 						DataProfile profile = new DataProfile();
 						profile.parallelism = parallelism;
@@ -762,7 +761,7 @@ public class HugeMfAlsImpl {
 				private static final long serialVersionUID = -4512655206561622474L;
 
 				@Override
-				public void flatMap(Factors factors, Collector <Factors> collector) throws Exception {
+				public void flatMap(Factors factors, Collector <Factors> collector) {
 				}
 			});
 
@@ -780,7 +779,7 @@ public class HugeMfAlsImpl {
 					private transient int numSubsteps;
 
 					@Override
-					public void open(Configuration parameters) throws Exception {
+					public void open(Configuration parameters) {
 						int stepNo = getIterationRuntimeContext().getSuperstepNumber();
 						if (stepNo == 1) {
 							profile = (DataProfile) getRuntimeContext().getBroadcastVariable("profile").get(0);
@@ -812,7 +811,7 @@ public class HugeMfAlsImpl {
 					}
 
 					@Override
-					public boolean filter(Ratings value) throws Exception {
+					public boolean filter(Ratings value) {
 						return alsStepNo < numIters && value.identity == userOrItem && Math.abs(value.nodeId)
 							% numSubsteps == subStepNo;
 					}
@@ -825,12 +824,12 @@ public class HugeMfAlsImpl {
 					transient int partitionId;
 
 					@Override
-					public void open(Configuration parameters) throws Exception {
+					public void open(Configuration parameters) {
 						this.partitionId = getRuntimeContext().getIndexOfThisSubtask();
 					}
 
 					@Override
-					public Tuple2 <Integer, Ratings> map(Ratings value) throws Exception {
+					public Tuple2 <Integer, Ratings> map(Ratings value) {
 						return Tuple2.of(partitionId, value);
 					}
 				});
@@ -843,7 +842,7 @@ public class HugeMfAlsImpl {
 
 					@Override
 					public void flatMap(Tuple2 <Integer, Ratings> value,
-										Collector <Tuple3 <Integer, Byte, Long>> out) throws Exception {
+										Collector <Tuple3 <Integer, Byte, Long>> out) {
 						int targetIdentity = 1 - value.f1.identity;
 						int srcPartitionId = value.f0;
 						long[] neighbors = value.f1.neighbors;
@@ -863,7 +862,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = 5984785442398189198L;
 
 					@Override
-					public Tuple2 <Byte, Long> getKey(Tuple3 <Integer, Byte, Long> value) throws Exception {
+					public Tuple2 <Byte, Long> getKey(Tuple3 <Integer, Byte, Long> value) {
 						return Tuple2.of(value.f1, value.f2);
 					}
 				})
@@ -871,7 +870,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = -7009936622357038623L;
 
 					@Override
-					public Tuple2 <Byte, Long> getKey(Factors value) throws Exception {
+					public Tuple2 <Byte, Long> getKey(Factors value) {
 						return Tuple2.of(value.identity, value.nodeId);
 					}
 				})
@@ -881,14 +880,14 @@ public class HugeMfAlsImpl {
 					private transient int[] partitionsIds = null;
 
 					@Override
-					public void open(Configuration parameters) throws Exception {
+					public void open(Configuration parameters) {
 						int numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
 						flag = new int[numTasks];
 						partitionsIds = new int[numTasks];
 					}
 
 					@Override
-					public void close() throws Exception {
+					public void close() {
 						flag = null;
 						partitionsIds = null;
 					}
@@ -896,7 +895,7 @@ public class HugeMfAlsImpl {
 					@Override
 					public void coGroup(Iterable <Tuple3 <Integer, Byte, Long>> request,
 										Iterable <Factors> factorsStore,
-										Collector <Tuple2 <Integer, Factors>> out) throws Exception {
+										Collector <Tuple2 <Integer, Factors>> out) {
 						if (request == null) {
 							return;
 						}
@@ -980,7 +979,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = -2656531711247296641L;
 
 					@Override
-					public Tuple2 <Byte, Long> getKey(Factors value) throws Exception {
+					public Tuple2 <Byte, Long> getKey(Factors value) {
 						return Tuple2.of(value.identity, value.nodeId);
 					}
 				})
@@ -988,7 +987,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = -3261052949977562238L;
 
 					@Override
-					public Tuple2 <Byte, Long> getKey(Factors value) throws Exception {
+					public Tuple2 <Byte, Long> getKey(Factors value) {
 						return Tuple2.of(value.identity, value.nodeId);
 					}
 				})
@@ -996,8 +995,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = -1806297671515688974L;
 
 					@Override
-					public void coGroup(Iterable <Factors> old, Iterable <Factors> updated, Collector <Factors> out)
-						throws Exception {
+					public void coGroup(Iterable <Factors> old, Iterable <Factors> updated, Collector <Factors> out) {
 
 						assert (old != null);
 						Iterator <Factors> iterator;
@@ -1023,7 +1021,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = 378571173957011355L;
 
 					@Override
-					public void flatMap(DataProfile pf, Collector <Integer> out) throws Exception {
+					public void flatMap(DataProfile pf, Collector <Integer> out) {
 						int stepNo = getIterationRuntimeContext().getSuperstepNumber();
 						if (stepNo < (pf.numUserBatches + pf.numItemBatches) * numIters) {
 							out.collect(0);
@@ -1072,7 +1070,7 @@ public class HugeMfAlsImpl {
 			}
 
 			@Override
-			public void open(Configuration parameters) throws Exception {
+			public void open(Configuration parameters) {
 				numNodes = 0;
 				numEdges = 0;
 				numNeighbors = 0L;
@@ -1082,7 +1080,7 @@ public class HugeMfAlsImpl {
 			}
 
 			@Override
-			public void close() throws Exception {
+			public void close() {
 				LOG.info("Updated factors, num nodes {}, num edges {}, recv neighbors {}",
 					numNodes, numEdges, numNeighbors);
 			}
@@ -1090,7 +1088,7 @@ public class HugeMfAlsImpl {
 			@Override
 			public void coGroup(Iterable <Tuple2 <Integer, Ratings>> rows,
 								Iterable <Tuple2 <Integer, Factors>> factors,
-								Collector <Factors> out) throws Exception {
+								Collector <Factors> out) {
 				assert (rows != null && factors != null);
 				List <Tuple2 <Integer, Factors>> cachedFactors = new ArrayList <>();
 				Map <Long, Integer> index2pos = new HashMap <>();
@@ -1164,7 +1162,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = 4337923793883497898L;
 
 					@Override
-					public void mapPartition(Iterable <Factors> values, Collector <double[]> out) throws Exception {
+					public void mapPartition(Iterable <Factors> values, Collector <double[]> out) {
 						int stepNo = getIterationRuntimeContext().getSuperstepNumber() - 1;
 						int identity = (stepNo / numMiniBatch) % 2; // updating 'Identity'
 						int dst = 1 - identity;
@@ -1191,7 +1189,7 @@ public class HugeMfAlsImpl {
 					private static final long serialVersionUID = 3534712378694892154L;
 
 					@Override
-					public double[] reduce(double[] value1, double[] value2) throws Exception {
+					public double[] reduce(double[] value1, double[] value2) {
 						int n2 = numFactors * numFactors;
 						double[] sum = new double[n2];
 						for (int i = 0; i < n2; i++) {

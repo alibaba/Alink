@@ -7,6 +7,8 @@ import com.alibaba.alink.common.sql.builtin.agg.ListAggUdaf.ListAggData;
 import org.junit.Before;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ListAggExcludeLastTest extends AggFunctionTestBase <Object[], String, ListAggData> {
@@ -18,29 +20,18 @@ public class ListAggExcludeLastTest extends AggFunctionTestBase <Object[], Strin
 
 	@Override
 	protected List <List <Object[]>> getInputValueSets() {
-		List <Object[]> data1 = new ArrayList <>();
-		data1.add(new Object[] {"q"});
-		data1.add(new Object[] {"w"});
-		data1.add(new Object[] {"e"});
-		List <Object[]> data2 = new ArrayList <>();
-		data2.add(new Object[] {"a"});
-		data2.add(new Object[] {"s"});
-		List <Object[]> data3 = new ArrayList <>();
-		data3.add(new Object[] {"a"});
 		List <List <Object[]>> res = new ArrayList <>();
-		res.add(data1);
-		res.add(data2);
-		res.add(data3);
+
+		res.add(Arrays.asList(new Object[] {"q"}, new Object[] {"w"}, new Object[] {"e"}));
+		res.add(Arrays.asList(new Object[] {"a"}, new Object[] {"s"}));
+		res.add(Collections.singletonList(new Object[] {"a"}));
+
 		return res;
 	}
 
 	@Override
 	protected List <String> getExpectedResults() {
-		List <String> res = new ArrayList <>();
-		res.add("q,w");
-		res.add("a");
-		res.add(null);
-		return res;
+		return Arrays.asList("q,w", "a", null);
 	}
 
 	@Override

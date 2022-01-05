@@ -5,11 +5,13 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.pipeline.dataproc.AggLookup;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
-public class AggLookupTest {
+public class AggLookupTest extends AlinkTestBase {
 
 	Row[] array1 = new Row[] {
 		Row.of("1,2,3,4", "1,2,3,4", "1,2,3,4", "1,2,3,4", "1,2,3,4")
@@ -35,7 +37,7 @@ public class AggLookupTest {
 	public void testAggLookup() {
 
 		AggLookupBatchOp lookup = new AggLookupBatchOp()
-				.setClause("CONCAT(seq0,3) as e0, AVG(seq1) as e1, SUM(seq2) as e2,MAX(seq3) as e3,MIN(seq4) as e4")
+			.setClause("CONCAT(seq0,3) as e0, AVG(seq1) as e1, SUM(seq2) as e2,MAX(seq3) as e3,MIN(seq4) as e4")
 			.setDelimiter(",")
 			.setReservedCols();
 		Row row = lookup.linkFrom(embedding, data).collect().get(0);
@@ -54,14 +56,20 @@ public class AggLookupTest {
 			.setClause("CONCAT(seq0,3) as e0, AVG(seq1) as e1, SUM(seq2) as e2,MAX(seq3) as e3,MIN(seq4) as e4")
 			.setDelimiter(",")
 			.setReservedCols();
-		lookup.transform(data).print();
+		Row row = lookup.transform(data).collect().get(0);
+		assert (row.getField(0).toString().equals("1.0 2.0 3.0 4.0 2.0 3.0 4.0 5.0 3.0 2.0 3.0 4.0"));
+		assert (row.getField(1).toString().equals("2.5 3.0 4.0 4.5"));
+		assert (row.getField(2).toString().equals("10.0 12.0 16.0 18.0"));
+		assert (row.getField(3).toString().equals("4.0 5.0 6.0 5.0"));
+		assert (row.getField(4).toString().equals("1.0 2.0 3.0 4.0"));
 	}
 
 	@Test
 	public void testAggLookup1() throws Exception {
 
 		new AggLookupBatchOp()
-			.setClause("CONCAT(seq0, 5) as e0, CONCAT(seq1) as e1, CONCAT(seq2) as e2,CONCAT(seq3) as e3,CONCAT(seq4) as e4")
+			.setClause(
+				"CONCAT(seq0, 5) as e0, CONCAT(seq1) as e1, CONCAT(seq2) as e2,CONCAT(seq3) as e3,CONCAT(seq4) as e4")
 			.setDelimiter(",")
 			.setReservedCols(new String[] {}).linkFrom(embedding, data1).lazyPrint(1);
 

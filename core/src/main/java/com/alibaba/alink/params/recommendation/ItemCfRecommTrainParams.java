@@ -13,6 +13,9 @@ public interface ItemCfRecommTrainParams<T> extends
 	/**
 	 * Number of similar items to store for each item. Default value is 64. Decreasing this decreases the amount of
 	 * memory required for the model, but may also decrease the accuracy.
+	 *
+	 * @cn-name 保存相似item的数目
+	 * @cn 保存相似item的数目，该参数设置后将降低内存使用量，同时可能会降低训练速度
 	 */
 	ParamInfo <Integer> MAX_NEIGHBOR_NUMBER = ParamInfoFactory
 		.createParamInfo("maxNeighborNumber", Integer.class)

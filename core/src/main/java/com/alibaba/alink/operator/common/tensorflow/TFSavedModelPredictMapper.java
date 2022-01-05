@@ -6,6 +6,7 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.tensorflow.savedmodel.HasInputNames;
@@ -31,6 +32,10 @@ public class TFSavedModelPredictMapper extends Mapper implements Serializable {
 	private final BaseTFSavedModelPredictMapper mapper;
 
 	public TFSavedModelPredictMapper(TableSchema dataSchema, Params params) {
+		this(dataSchema, params, new TFPredictorClassLoaderFactory());
+	}
+
+	public TFSavedModelPredictMapper(TableSchema dataSchema, Params params, TFPredictorClassLoaderFactory factory) {
 		super(dataSchema, params);
 
 		Params mapperParams = params.clone();
@@ -50,7 +55,7 @@ public class TFSavedModelPredictMapper extends Mapper implements Serializable {
 			mapperParams.set(TFSavedModelPredictParams.OUTPUT_SCHEMA_STR, CsvUtil.schema2SchemaStr(outputSchema));
 		}
 
-		mapper = new BaseTFSavedModelPredictMapper(dataSchema, mapperParams);
+		mapper = new BaseTFSavedModelPredictMapper(dataSchema, mapperParams, factory);
 	}
 
 	@Override

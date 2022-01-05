@@ -1,9 +1,6 @@
 package com.alibaba.alink.operator.stream.tensorflow;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
-import com.alibaba.alink.common.io.plugin.RegisterKey;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
 import com.alibaba.alink.testutil.categories.DLTest;
@@ -15,14 +12,9 @@ public class TFSavedModelPredictStreamOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void testMnist() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = TFPredictorClassLoaderFactory.getRegisterKey();
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedStreamParallelism = MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().getParallelism();
 		StreamOperator.setParallelism(2);
-		String url = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/mnist_dense.csv";
+		String url = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/mnist_dense.csv";
 		String schema = "label bigint, image string";
 
 		StreamOperator <?> data = new CsvSourceStreamOp().setFilePath(url).setSchemaStr(schema).setFieldDelimiter(";");
@@ -35,5 +27,6 @@ public class TFSavedModelPredictStreamOpTest {
 		data = predictor.linkFrom(data).select("label, classes, probabilities");
 		data.print();
 		StreamOperator.execute();
+		StreamOperator.setParallelism(savedStreamParallelism);
 	}
 }

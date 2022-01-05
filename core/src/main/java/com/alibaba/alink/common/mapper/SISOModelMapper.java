@@ -24,7 +24,7 @@ public abstract class SISOModelMapper extends ModelMapper {
 	 *
 	 * @return the outputColType.
 	 */
-	protected abstract TypeInformation initPredResultColType();
+	protected abstract TypeInformation<?> initPredResultColType();
 
 	/**
 	 * Predict the single input column <code>input</code> to a single output.

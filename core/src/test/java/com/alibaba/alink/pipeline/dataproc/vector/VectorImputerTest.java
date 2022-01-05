@@ -13,7 +13,9 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorImputerPredictBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorImputerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.dataproc.vector.VectorImputerTrainParams;
@@ -65,20 +67,26 @@ public class VectorImputerTest extends AlinkTestBase {
 		VectorImputerModel model = fillMissingValue.fit(batchData);
 
 		BatchOperator res = model.transform(batchData);
-		List rows = res.getDataSet().collect();
-		HashMap <String, Vector> map = new HashMap <String, Vector>();
-		map.put((String) ((Row) rows.get(0)).getField(0), VectorUtil.getVector(((Row) rows.get(0)).getField(1)));
-		map.put((String) ((Row) rows.get(1)).getField(0), VectorUtil.getVector(((Row) rows.get(1)).getField(1)));
-		map.put((String) ((Row) rows.get(2)).getField(0), VectorUtil.getVector(((Row) rows.get(2)).getField(1)));
-		assertEquals(map.get("0"),
+		List <Row> rows = res.getDataSet().collect();
+		rows.sort(new RowComparator(0));
+
+		assertEquals(VectorUtil.getVector(rows.get(0).getField(1)),
 			VectorUtil.getVector("1.0 3.0 -7.0"));
-		assertEquals(map.get("1"),
+		assertEquals(VectorUtil.getVector(rows.get(1).getField(1)),
 			VectorUtil.getVector("0:-1.0 1:-3.0"));
-		assertEquals(map.get("2"),
+		assertEquals(VectorUtil.getVector(rows.get(2).getField(1)),
 			VectorUtil.getVector("0:4.0 1:2.0"));
 
-		model.transform(streamData).print();
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp().linkFrom(model.transform(streamData));
 		StreamOperator.execute();
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		result.sort(new RowComparator(0));
+		assertEquals(VectorUtil.getVector(result.get(0).getField(1)),
+			VectorUtil.getVector("1.0 3.0 -7.0"));
+		assertEquals(VectorUtil.getVector(result.get(1).getField(1)),
+			VectorUtil.getVector("0:-1.0 1:-3.0"));
+		assertEquals(VectorUtil.getVector(result.get(2).getField(1)),
+			VectorUtil.getVector("0:4.0 1:2.0"));
 	}
 
 	@Test

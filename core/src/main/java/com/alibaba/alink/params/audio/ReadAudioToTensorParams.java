@@ -21,7 +21,7 @@ public interface ReadAudioToTensorParams<T> extends
 	 * @cn 采样持续时间
 	 */
 	ParamInfo <Double> DURATION = ParamInfoFactory
-		.createParamInfo("durationTime", Double.class)
+		.createParamInfo("duration", Double.class)
 		.setDescription("only load up to this much audio (in seconds)")
 		.build();
 	/**
@@ -29,7 +29,7 @@ public interface ReadAudioToTensorParams<T> extends
 	 * @cn 采样开始时刻
 	 */
 	ParamInfo <Double> OFFSET = ParamInfoFactory
-		.createParamInfo("startTime", Double.class)
+		.createParamInfo("offset", Double.class)
 		.setDescription("start reading after this time (in seconds)")
 		.setHasDefaultValue(0.0)
 		.build();

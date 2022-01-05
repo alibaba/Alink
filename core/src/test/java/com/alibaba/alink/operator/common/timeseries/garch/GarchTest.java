@@ -1,9 +1,10 @@
 package com.alibaba.alink.operator.common.timeseries.garch;
 
 import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
-public class GarchTest {
+public class GarchTest extends AlinkTestBase {
 
 	@Test
 	public void test() {

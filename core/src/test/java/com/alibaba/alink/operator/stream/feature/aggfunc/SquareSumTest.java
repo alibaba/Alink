@@ -7,6 +7,7 @@ import com.alibaba.alink.common.sql.builtin.agg.SquareSumUdaf;
 import org.junit.Before;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SquareSumTest extends AggFunctionTestBase <Object[], Object, SummaryData> {
@@ -19,23 +20,22 @@ public class SquareSumTest extends AggFunctionTestBase <Object[], Object, Summar
 	@Override
 	protected List <List <Object[]>> getInputValueSets() {
 		List <List <Object[]>> res = new ArrayList <>();
-		ArrayList <Object[]> data1 = new ArrayList <>();
-		data1.add(new Object[] {0});
-		res.add((List <Object[]>) data1.clone());
-		data1.add(new Object[] {1});
-		res.add((List <Object[]>) data1.clone());
-		data1.add(new Object[] {4});
-		res.add(data1);
+		List <Object[]> data = Arrays.asList(
+			new Object[] {0},
+			new Object[] {1},
+			new Object[] {4}
+		);
+
+		res.add(data.subList(0, 1));
+		res.add(data.subList(0, 2));
+		res.add(data.subList(0, 3));
+
 		return res;
 	}
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		List <Object> res = new ArrayList <>();
-		res.add(0.0);
-		res.add(1.0);
-		res.add(17.0);
-		return res;
+		return Arrays.asList(0.0, 1.0, 17.0);
 	}
 
 	@Override

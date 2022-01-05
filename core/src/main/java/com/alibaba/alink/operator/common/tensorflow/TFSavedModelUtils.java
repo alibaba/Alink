@@ -42,7 +42,7 @@ class TFSavedModelUtils {
 	 */
 	static String downloadSavedModel(String modelPath) {
 		String localModelPath;
-		File workDir = PythonFileUtils.createTempDir("temp_");
+		File workDir = PythonFileUtils.createTempDir("temp_").toFile();
 		if (PythonFileUtils.isCompressedFile(modelPath)) {
 			workDir.deleteOnExit();
 			ArchivesUtils.downloadDecompressToDirectory(modelPath, workDir);
@@ -65,7 +65,7 @@ class TFSavedModelUtils {
 	}
 
 	public static String loadSavedModelFromZipFile(String path) {
-		String workDir = PythonFileUtils.createTempWorkDir("extract_saved_model_");
+		String workDir = PythonFileUtils.createTempDir("extract_saved_model_").toString();
 		String dirName = PythonFileUtils.getCompressedFileName(path);
 		File dir = new File(workDir, dirName);
 		try {
@@ -76,9 +76,12 @@ class TFSavedModelUtils {
 		return dir.getAbsolutePath();
 	}
 
-	public static String loadSavedModelFromRows(List <Row> rows) {
-		String workDir = PythonFileUtils.createTempWorkDir("saved_model_zip_");
-		rows = new ArrayList <>(rows);
+	public static String loadSavedModelFromRows(Iterable <Row> iterable) {
+		String workDir = PythonFileUtils.createTempDir("saved_model_zip_").toString();
+		List <Row> rows = new ArrayList <>();
+		for (Row row : iterable) {
+			rows.add(row);
+		}
 		rows.sort(Comparator.comparingLong(d -> (Long) d.getField(0)));
 
 		String zipFilename = (String) rows.get(0).getField(1);

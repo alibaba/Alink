@@ -9,7 +9,10 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -62,30 +65,36 @@ public class StandardScalerTest extends AlinkTestBase {
 		StandardScalerModel model = scaler.fit(batchData);
 		BatchOperator res = model.transform(batchData);
 
-		List rows = res.getDataSet().collect();
-		HashMap <String, Tuple3 <Long, Integer, Double>> map = new HashMap <String, Tuple3 <Long, Integer, Double>>();
-		map.put((String) ((Row) rows.get(0)).getField(0), Tuple3.of(
-			(((Row) rows.get(0)).getField(2)) == null ? null : ((Double) ((Row) rows.get(0)).getField(2)).longValue(),
-			(((Row) rows.get(0)).getField(3)) == null ? null : ((Double) ((Row) rows.get(0)).getField(3)).intValue(),
-			(Double) ((Row) rows.get(0)).getField(4)));
-		map.put((String) ((Row) rows.get(1)).getField(0), Tuple3.of(
-			(((Row) rows.get(1)).getField(2)) == null ? null : ((Double) ((Row) rows.get(1)).getField(2)).longValue(),
-			(((Row) rows.get(1)).getField(3)) == null ? null : ((Double) ((Row) rows.get(1)).getField(3)).intValue(),
-			(Double) ((Row) rows.get(1)).getField(4)));
-		map.put((String) ((Row) rows.get(2)).getField(0), Tuple3.of(
-			(((Row) rows.get(2)).getField(2)) == null ? null : ((Double) ((Row) rows.get(2)).getField(2)).longValue(),
-			(((Row) rows.get(2)).getField(3)) == null ? null : ((Double) ((Row) rows.get(2)).getField(3)).intValue(),
-			(Double) ((Row) rows.get(2)).getField(4)));
-		map.put((String) ((Row) rows.get(3)).getField(0), Tuple3.of(
-			(((Row) rows.get(3)).getField(2)) == null ? null : ((Double) ((Row) rows.get(3)).getField(2)).longValue(),
-			(((Row) rows.get(3)).getField(3)) == null ? null : ((Double) ((Row) rows.get(3)).getField(3)).intValue(),
-			(Double) ((Row) rows.get(3)).getField(4)));
-		assertEquals(map.get("0"), new Tuple3 <>(0L, 0, 0.0));
-		assertEquals(map.get("1"), new Tuple3 <>(1L, 1, null));
-		assertEquals(map.get("2"), new Tuple3 <>(null, null, null));
-		assertEquals(map.get("3"), new Tuple3 <>(-1L, -1, null));
+		List <Row> rows = res.getDataSet().collect();
+		rows.sort(new RowComparator(0));
+		assertEquals(rows.get(0).getField(2), 0.0);
+		assertEquals(rows.get(0).getField(3), 0.0);
+		assertEquals(rows.get(0).getField(4), 0.0);
+		assertEquals(rows.get(1).getField(2), 1.0);
+		assertEquals(rows.get(1).getField(3), 1.0);
+		assertEquals(rows.get(1).getField(4), null);
+		assertEquals(rows.get(2).getField(2), null);
+		assertEquals(rows.get(2).getField(3), null);
+		assertEquals(rows.get(2).getField(4), null);
+		assertEquals(rows.get(3).getField(2), -1.0);
+		assertEquals(rows.get(3).getField(3), -1.0);
+		assertEquals(rows.get(3).getField(4), null);
 
-		model.transform(streamData).print();
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp().linkFrom(model.transform(streamData));
 		StreamOperator.execute();
+		rows = collectSinkStreamOp.getAndRemoveValues();
+		rows.sort(new RowComparator(0));
+		assertEquals(rows.get(0).getField(2), 0.0);
+		assertEquals(rows.get(0).getField(3), 0.0);
+		assertEquals(rows.get(0).getField(4), 0.0);
+		assertEquals(rows.get(1).getField(2), 1.0);
+		assertEquals(rows.get(1).getField(3), 1.0);
+		assertEquals(rows.get(1).getField(4), null);
+		assertEquals(rows.get(2).getField(2), null);
+		assertEquals(rows.get(2).getField(3), null);
+		assertEquals(rows.get(2).getField(4), null);
+		assertEquals(rows.get(3).getField(2), -1.0);
+		assertEquals(rows.get(3).getField(3), -1.0);
+		assertEquals(rows.get(3).getField(4), null);
 	}
 }

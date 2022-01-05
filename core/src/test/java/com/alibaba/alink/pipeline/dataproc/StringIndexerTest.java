@@ -4,6 +4,10 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -63,6 +67,13 @@ public class StringIndexerTest extends AlinkTestBase {
 
 		List <Row> prediction = stringIndexer.fit(data).transform(data).collect();
 		checkResult(prediction, new String[] {"tennis", "basketball", "football"});
+
+		StreamOperator streamData = new MemSourceStreamOp(Arrays.asList(rows), new String[] {"f0"});
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp()
+			.linkFrom(stringIndexer.fit(data).transform(streamData));
+		StreamOperator.execute();
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		checkResult(result, new String[] {"tennis", "basketball", "football"});
 	}
 
 	@Test
@@ -76,5 +87,12 @@ public class StringIndexerTest extends AlinkTestBase {
 
 		List <Row> prediction = stringIndexer.fit(data).transform(data).collect();
 		checkResult(prediction, new String[] {"tennis", "football", "basketball"});
+
+		StreamOperator streamData = new MemSourceStreamOp(Arrays.asList(rows), new String[] {"f0"});
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp()
+			.linkFrom(stringIndexer.fit(data).transform(streamData));
+		StreamOperator.execute();
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		checkResult(result, new String[] {"tennis", "football", "basketball"});
 	}
 }

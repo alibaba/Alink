@@ -128,6 +128,7 @@ public class DistinctTypeData {
 			super();
 		}
 
+		@Override
 		void addData(Object data) {
 			super.addData(data);
 		}
@@ -148,6 +149,7 @@ public class DistinctTypeData {
 			super();
 		}
 
+		@Override
 		void addData(Object data) {
 			super.addData(data);
 		}

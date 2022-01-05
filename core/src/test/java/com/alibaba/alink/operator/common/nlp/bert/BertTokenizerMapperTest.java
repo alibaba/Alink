@@ -11,10 +11,11 @@ import com.alibaba.alink.params.tensorflow.bert.HasBertModelName;
 import com.alibaba.alink.params.tensorflow.bert.HasMaxSeqLengthDefaultAsNull;
 import com.alibaba.alink.params.tensorflow.bert.HasTextCol;
 import com.alibaba.alink.params.tensorflow.bert.HasTextPairCol;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class BertTokenizerMapperTest {
+public class BertTokenizerMapperTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 		Params params = new Params();

@@ -5,6 +5,11 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasGamma<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name gamma
+	 * @cn gamma
+	 */
 	ParamInfo <Double> GAMMA = ParamInfoFactory
 		.createParamInfo("gamma", Double.class)
 		.setDescription("The gamma.")

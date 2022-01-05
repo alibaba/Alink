@@ -1,10 +1,22 @@
 package com.alibaba.alink.common.model;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -15,6 +27,8 @@ import java.util.List;
  * A utility class for converting model data to a collection of rows.
  */
 class ModelConverterUtils {
+
+	private static final Logger LOG = LoggerFactory.getLogger(ModelConverterUtils.class);
 
 	/**
 	 * The size of a string segment. When serializing model data to a table,
@@ -259,6 +273,182 @@ class ModelConverterUtils {
 		@Override
 		public Iterator <T> iterator() {
 			return iterator;
+		}
+	}
+
+	/**
+	 * Extract the model meta, model, auxiliary data from an iterable of rows.
+	 * <p>
+	 * Local disk is used to reduce memory usage. For each row, the content (Field 1) is written to the file. The id
+	 * (Field 0), offset in the file and size of content are recorded for later iteration.
+	 *
+	 * @param iterable Model rows.
+	 * @param isLabel  the auxiliary data is labels or not
+	 * @return A tuple of model meta, serialized model data, and auxiliary data
+	 */
+	static Tuple3 <Params, Iterable <String>, Iterable <Object>> extractModelMetaAndDataFromIterable(
+		Iterable <Row> iterable, boolean isLabel) {
+		List <Row> metaRows = new ArrayList <>();
+		List <Row> auxRows = new ArrayList <>();
+
+		Path path;
+		try {
+			path = Files.createTempFile("data_rows_", ".dat");
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to create temp file for data rows.", e);
+		}
+		LOG.info("Save data rows to {}", path);
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			try {
+				Files.deleteIfExists(path);
+			} catch (IOException e) {
+				LOG.info("Failed to delete {}.", path, e);
+			}
+		}));
+
+		List <Tuple3 <Long, Long, Integer>> dataRowIndices = new ArrayList <>();
+
+		long offset = 0;
+		try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+			for (Row row : iterable) {
+				long id = ((Number) row.getField(0)).longValue();
+				int currStringId = getStringIndex(id);
+				if (currStringId == 0) {
+					metaRows.add(row);
+				} else if (currStringId == Integer.MAX_VALUE) {
+					auxRows.add(row);
+				} else {
+					String segment = (String) row.getField(1);
+					writer.write(segment);
+					dataRowIndices.add(Tuple3.of(id, offset, segment.length()));
+					offset += segment.length();
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to write data rows to file.", e);
+		}
+
+		// process meta rows
+		metaRows.sort(Comparator.comparingLong(d -> ((Number) (d.getField(0))).longValue()));
+		List <String> metaSegments = new ArrayList <>();
+		for (Row row : metaRows) {
+			metaSegments.add((String) row.getField(1));
+		}
+		String metaStr = mergeString(metaSegments);
+		Params meta = Params.fromJson(metaStr);
+
+		// process auxiliary data
+		auxRows.sort(Comparator.comparingLong(d -> ((Number) (d.getField(0))).longValue()));
+		List <Object> auxData = new ArrayList <>();
+		for (Row row : auxRows) {
+			if (isLabel) {
+				auxData.add(row.getField(2));
+			} else {
+				Row sub = new Row(row.getArity() - 2);
+				for (int i = 0; i < sub.getArity(); i += 1) {
+					sub.setField(i, row.getField(2 + i));
+				}
+				auxData.add(sub);
+			}
+		}
+
+		// process data rows
+		dataRowIndices.sort(Comparator.comparingLong(d -> d.f0));
+		Iterable<String> data = new ExternalDataRowsIterable(path, dataRowIndices);
+		return Tuple3.of(meta, data, auxData);
+	}
+
+	private static class ExternalDataRowsIterable implements Iterable <String> {
+		private final Path path;
+		private final Iterator <Tuple3 <Long, Long, Integer>> indexIter;
+
+		private ExternalDataRowsIterable(Path path, List <Tuple3 <Long, Long, Integer>> indices) {
+			this.path = path;
+			indexIter = indices.iterator();
+		}
+
+		@Override
+		public Iterator <String> iterator() {
+			return new ExternalDataRowsIterator();
+		}
+
+		private class ExternalDataRowsIterator implements Iterator <String> {
+			private final SeekableByteChannel channel;
+			private final List <String> segments = new ArrayList <>();
+			private int lastStringId = -1;
+			private String curr;
+
+			public ExternalDataRowsIterator() {
+				try {
+					channel = Files.newByteChannel(path);
+				} catch (IOException e) {
+					throw new RuntimeException(String.format("Failed create BufferReader from %s", path), e);
+				}
+				getNextValue();
+			}
+
+			@Override
+			public boolean hasNext() {
+				return null != curr;
+			}
+
+			@Override
+			public String next() {
+				if (!hasNext()) {
+					throw new RuntimeException("DataRowsIterator have no more values.");
+				}
+				String ret = curr;
+				getNextValue();
+				return ret;
+			}
+
+			private int getNextValue() {
+				while (indexIter.hasNext()) {
+					Tuple3 <Long, Long, Integer> index = indexIter.next();
+					String segment;
+					try {
+						channel.position(index.f1);
+						ByteBuffer byteBuffer = ByteBuffer.allocate(index.f2);
+						channel.read(byteBuffer);
+						byteBuffer.rewind();
+						segment = StandardCharsets.UTF_8.decode(byteBuffer).toString();
+					} catch (IOException e) {
+						throw new RuntimeException(String.format("Failed to read %d bytes with offset %d from %s",
+							index.f2, index.f1, path));
+					}
+					if (segment.length() == 0) {
+						break;
+					}
+					int stringId = getStringIndex(index.f0);
+					if (-1 == lastStringId) {
+						lastStringId = stringId;
+					}
+					if (lastStringId != stringId) {
+						curr = mergeString(segments);
+						segments.clear();
+						segments.add(segment);
+						int ret = lastStringId;
+						lastStringId = stringId;
+						return ret;
+					} else {
+						segments.add(segment);
+					}
+				}
+				if (segments.size() > 0) {
+					curr = mergeString(segments);
+					segments.clear();
+					return lastStringId;
+				} else {
+					curr = null;
+					try {
+						channel.close();
+						Files.deleteIfExists(path);
+					} catch (IOException e) {
+						LOG.info("Failed to close channel or delete directory {}", path, e);
+					}
+					return -1;
+				}
+			}
 		}
 	}
 

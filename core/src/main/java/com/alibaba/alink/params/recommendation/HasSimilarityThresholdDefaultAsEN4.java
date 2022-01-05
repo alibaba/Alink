@@ -8,6 +8,9 @@ public interface HasSimilarityThresholdDefaultAsEN4<T> extends WithParams <T> {
 
 	/**
 	 * Predictions ignore items below this calc value.
+	 *
+	 * @cn-name 相似阈值
+	 * @cn 只有大于该阈值的Object才会被计算
 	 */
 	ParamInfo <Double> SIMILARITY_THRESHOLD = ParamInfoFactory
 		.createParamInfo("similarityThreshold", Double.class)

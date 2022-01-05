@@ -5,6 +5,11 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasSeasonalStart<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name seasonal初始值
+	 * @cn seasonal初始值
+	 */
 	ParamInfo <double[]> SEASONAL_START = ParamInfoFactory
 		.createParamInfo("seasonalStart", double[].class)
 		.setDescription("The seasonal start.")

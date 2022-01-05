@@ -5,6 +5,11 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasDoTrend<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name 时间是否具有趋势性
+	 * @cn 时间是否具有趋势性
+	 */
 	ParamInfo <Boolean> DO_TREND = ParamInfoFactory
 		.createParamInfo("doTrend", Boolean.class)
 		.setDescription("Whether time serial has trend or not.")

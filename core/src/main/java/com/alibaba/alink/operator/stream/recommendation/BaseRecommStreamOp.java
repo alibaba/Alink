@@ -28,7 +28,7 @@ import com.alibaba.alink.params.mapper.ModelMapperParams;
 public class BaseRecommStreamOp<T extends BaseRecommStreamOp <T>> extends StreamOperator <T> {
 
 	private static final long serialVersionUID = 5293170481337594373L;
-	private final BatchOperator model;
+	private final BatchOperator <?> model;
 
 	/**
 	 * (modelScheme, dataSchema, params) -> RecommKernel
@@ -37,7 +37,7 @@ public class BaseRecommStreamOp<T extends BaseRecommStreamOp <T>> extends Stream
 	private final RecommType recommType;
 
 	public BaseRecommStreamOp(
-		BatchOperator model,
+		BatchOperator <?> model,
 		FourFunction <TableSchema, TableSchema, Params, RecommType, RecommKernel> recommKernelBuilder,
 		RecommType recommType,
 		Params params) {

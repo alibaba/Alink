@@ -41,7 +41,7 @@ public class PipelineTest extends AlinkTestBase {
 		CsvSourceBatchOp source = new CsvSourceBatchOp()
 			.setSchemaStr(
 				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv");
 
 		String pipeline_model_filename = "/tmp/model123123123123.csv";
 		QuantileDiscretizerModel model1 = new QuantileDiscretizer()

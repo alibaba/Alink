@@ -2,9 +2,6 @@ package com.alibaba.alink.common;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 
-import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.linalg.Vector;
 import com.google.common.collect.HashBiMap;
 
 /**
@@ -41,5 +38,9 @@ public class MTableTypes {
 	 */
 	public static TypeInformation getTypeInformation(String name) {
 		return TYPES.get(name);
+	}
+
+	public static boolean isMTableType(TypeInformation <?> type) {
+		return type.equals(M_TABLE);
 	}
 }

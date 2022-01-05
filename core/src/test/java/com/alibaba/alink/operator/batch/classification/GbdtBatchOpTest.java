@@ -19,6 +19,8 @@ import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 
 import static com.alibaba.alink.operator.common.tree.parallelcart.BaseGbdtTrainBatchOp.USE_ONEHOT;
@@ -366,6 +368,56 @@ public class GbdtBatchOpTest extends AlinkTestBase {
 			.setMLEnvironmentId(mlEnvId);
 
 		Assert.assertEquals(testArray.length, predictBatchOp.linkFrom(model, memSourceBatchOp).collect().size());
+	}
+
+	@Test
+	public void linkFromWithMissingLabel() throws Exception {
+		try {
+			Long mlEnvId = MLEnvironmentFactory.getNewMLEnvironmentId();
+			Row[] testArray =
+				new Row[] {
+					Row.of(1, 2.0, null, null, null),
+					Row.of(1, 2.0, "A", null, 0),
+					Row.of(0, null, "B", null, 1),
+					Row.of(0, 2.0, "B", null, 0),
+					Row.of(1, 3.0, "A", null, 1),
+					Row.of(4, 3.0, "A", null, 1),
+					Row.of(4, 4.0, "B", null, 1),
+					Row.of(null, 3.0, "C", null, 0),
+					Row.of(5, 4.0, "A", null, 0),
+					Row.of(5, 2.0, "C", null, 1)
+				};
+
+			String[] colNames = new String[] {"col0", "col1", "col2", "col3", "label"};
+
+			MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(
+				Arrays.asList(testArray),
+				new TableSchema(colNames,
+					new TypeInformation[] {Types.INT, Types.DOUBLE, Types.STRING, Types.DOUBLE, Types.INT})
+			).setMLEnvironmentId(mlEnvId);
+
+			GbdtRegTrainBatchOp gbdtTrainBatchOp = new GbdtRegTrainBatchOp()
+				.setFeatureCols(colNames[0], colNames[1], colNames[2], colNames[3])
+				.setCategoricalCols(colNames[2])
+				.setLabelCol(colNames[4])
+				.setMinSamplesPerLeaf(1)
+				.setLearningRate(1.0)
+				.setNumTrees(10)
+				.setMLEnvironmentId(mlEnvId);
+
+			BatchOperator <?> model = gbdtTrainBatchOp.linkFrom(memSourceBatchOp);
+
+			GbdtRegPredictBatchOp predictBatchOp = new GbdtRegPredictBatchOp()
+				.setPredictionCol("pred")
+				.setMLEnvironmentId(mlEnvId);
+
+			predictBatchOp.linkFrom(model, memSourceBatchOp).collect();
+		} catch (Exception ex) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PrintStream ps = new PrintStream(baos);
+			ex.printStackTrace(ps);
+			Assert.assertTrue("label col has null value", baos.toString().contains("label col has null values."));
+		}
 	}
 
 	@Test

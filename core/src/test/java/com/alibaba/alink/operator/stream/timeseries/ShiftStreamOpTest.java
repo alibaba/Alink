@@ -2,16 +2,20 @@ package com.alibaba.alink.operator.stream.timeseries;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.OverCountWindowStreamOp;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
-public class ShiftStreamOpTest {
+public class ShiftStreamOpTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {
@@ -31,26 +35,37 @@ public class ShiftStreamOpTest {
 
 		MemSourceStreamOp source = new MemSourceStreamOp(mTableData, new String[] {"id", "ts", "val"});
 
-		source.link(
-			new OverCountWindowStreamOp()
-				.setPartitionCols("id")
-				.setTimeCol("ts")
-				.setPrecedingRows(5)
-				.setClause("mtable_agg(ts, val) as data")
-		).link(
-			new ShiftStreamOp()
-				.setValueCol("data")
-				.setShiftNum(7)
-				.setPredictNum(12)
-				.setPredictionCol("predict")
-		).link(
-			new LookupValueInTimeSeriesStreamOp()
-				.setTimeCol("ts")
-				.setTimeSeriesCol("predict")
-				.setOutputCol("out")
-		).print();
+		CollectSinkStreamOp resultOp =
+			source.link(
+					new OverCountWindowStreamOp()
+						.setPartitionCols("id")
+						.setTimeCol("ts")
+						.setPrecedingRows(5)
+						.setClause("mtable_agg_preceding(ts, val) as data")
+				).link(
+					new ShiftStreamOp()
+						.setValueCol("data")
+						.setShiftNum(7)
+						.setPredictNum(12)
+						.setPredictionCol("predict")
+				).link(
+					new LookupValueInTimeSeriesStreamOp()
+						.setTimeCol("ts")
+						.setTimeSeriesCol("predict")
+						.setOutputCol("out")
+						.setReservedCols("ts")
+				)
+				.link(
+					new CollectSinkStreamOp()
+				);
 
 		StreamOperator.execute();
-	}
 
+		List <Row> sResult = resultOp.getAndRemoveValues();
+		sResult.sort(new RowComparator(1));
+
+		Assert.assertEquals(10, sResult.size());
+		Assert.assertEquals("10.0", sResult.get(1).getField(1).toString());
+
+	}
 }

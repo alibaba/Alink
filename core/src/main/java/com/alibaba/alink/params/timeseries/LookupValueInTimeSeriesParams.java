@@ -14,6 +14,10 @@ public interface LookupValueInTimeSeriesParams<T> extends
 	HasOutputCol <T>,
 	HasReservedColsDefaultAsNull <T> {
 
+	/**
+	 * @cn-name 时间序列列
+	 * @cn 时间序列列，是特殊的MTable类型，一列是时间，一列是值
+	 */
 	ParamInfo <String> TIME_SERIES_COL = ParamInfoFactory
 		.createParamInfo("timeSeriesCol", String.class)
 		.setDescription("the time series column")

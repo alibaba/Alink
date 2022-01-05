@@ -17,7 +17,7 @@ public class IterableModelLoaderModelMapperAdapter extends RichMapFunction <Row,
 
 	private static final long serialVersionUID = 4280385934396641248L;
 	private ModelMapper iterableModelMapper;
-	private long handler;
+	private final long handler;
 
 	public IterableModelLoaderModelMapperAdapter(long handler) {
 		this.handler = handler;
@@ -26,8 +26,8 @@ public class IterableModelLoaderModelMapperAdapter extends RichMapFunction <Row,
 	@Override
 	public void open(Configuration parameters) throws Exception {
 		for (int i = 0; i < getRuntimeContext().getNumberOfParallelSubtasks(); ++i) {
-			if (IterTaskObjKeeper.contains(handler, i)) {
-				iterableModelMapper = IterTaskObjKeeper.get(handler, i);
+			iterableModelMapper = IterTaskObjKeeper.containsAndRemoves(handler, i);
+			if (null != iterableModelMapper) {
 				break;
 			}
 		}

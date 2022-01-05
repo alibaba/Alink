@@ -19,9 +19,9 @@ public class NearestNeighborModelData implements Serializable, Cloneable {
 	private static final long serialVersionUID = -6611164130651479716L;
 	protected Comparator <? super Tuple2 <Double, Object>> comparator;
 
-	private TypeInformation idType;
+	private TypeInformation<?> idType;
 
-	public void setIdType(TypeInformation idType) {
+	public void setIdType(TypeInformation<?> idType) {
 		this.idType = idType;
 	}
 

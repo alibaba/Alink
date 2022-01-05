@@ -16,11 +16,11 @@ public class UserCfRateRecommStreamOp
 
 	private static final long serialVersionUID = 7518888112460284808L;
 
-	public UserCfRateRecommStreamOp(BatchOperator model) {
+	public UserCfRateRecommStreamOp(BatchOperator <?> model) {
 		this(model, null);
 	}
 
-	public UserCfRateRecommStreamOp(BatchOperator model, Params params) {
+	public UserCfRateRecommStreamOp(BatchOperator <?> model, Params params) {
 		super(model, UserCfRecommKernel::new, RecommType.RATE, params);
 	}
 }

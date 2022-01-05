@@ -1,11 +1,8 @@
 package com.alibaba.alink.operator.stream.classification;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.directreader.DataBridgeGeneratorPolicy;
 import com.alibaba.alink.common.io.directreader.LocalFileDataBridgeGenerator;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
-import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
@@ -15,14 +12,10 @@ import org.junit.Test;
 public class BertTextPairClassifierPredictStreamOpTest {
 	@Test
 	public void test() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = TFPredictorClassLoaderFactory.getRegisterKey();
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
 		System.setProperty("direct.reader.policy",
 			LocalFileDataBridgeGenerator.class.getAnnotation(DataBridgeGeneratorPolicy.class).policy());
+		int savedBatchParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
+		int savedStreamParallelism = MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(1);
 		StreamOperator.setParallelism(1);
 		String url = "http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/data/MRPC/train.tsv";
@@ -43,5 +36,7 @@ public class BertTextPairClassifierPredictStreamOpTest {
 			.linkFrom(data);
 		predict.print();
 		StreamOperator.execute();
+		BatchOperator.setParallelism(savedBatchParallelism);
+		StreamOperator.setParallelism(savedStreamParallelism);
 	}
 }

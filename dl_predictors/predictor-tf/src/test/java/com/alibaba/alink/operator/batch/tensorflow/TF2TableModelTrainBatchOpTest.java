@@ -1,10 +1,6 @@
 package com.alibaba.alink.operator.batch.tensorflow;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.dl.DLEnvConfig;
-import com.alibaba.alink.common.dl.DLEnvConfig.Version;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
-import com.alibaba.alink.common.io.plugin.RegisterKey;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.RandomTableSourceBatchOp;
@@ -20,12 +16,7 @@ public class TF2TableModelTrainBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void testPs() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF231);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(3);
 		BatchOperator <?> source = new RandomTableSourceBatchOp()
 			.setNumRows(100L)
@@ -48,17 +39,13 @@ public class TF2TableModelTrainBatchOpTest {
 			.setNumPSs(1)
 			.linkFrom(source);
 		tf2TableModelTrainBatchOp.print();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 
 	@Category(DLTest.class)
 	@Test
 	public void testAllReduce() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF231);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(3);
 		BatchOperator <?> source = new RandomTableSourceBatchOp()
 			.setNumRows(100L)
@@ -81,5 +68,6 @@ public class TF2TableModelTrainBatchOpTest {
 			.setNumPSs(0)
 			.linkFrom(source);
 		tf2TableModelTrainBatchOp.print();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 }

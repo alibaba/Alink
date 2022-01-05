@@ -26,6 +26,10 @@ class BinaryAccuracy(FromLogitsMixin, tf.metrics.BinaryAccuracy):
     ...
 
 
+class SparseCategoricalAccuracy(FromLogitsMixin, tf.metrics.SparseCategoricalAccuracy):
+    ...
+
+
 class TruePositives(FromLogitsMixin, tf.metrics.TruePositives):
     ...
 

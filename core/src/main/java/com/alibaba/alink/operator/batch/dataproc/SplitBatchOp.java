@@ -16,6 +16,7 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dataproc.SplitParams;
 import org.slf4j.Logger;
@@ -71,7 +72,7 @@ public final class SplitBatchOp extends BatchOperator <SplitBatchOp>
 
 				@Override
 				public Tuple2 <Long, Row> map(Row value) throws Exception {
-					Long hashValue = hashFunc.hashUnencodedChars(value.toString()).asLong();
+					Long hashValue = hashFunc.hashUnencodedChars(RowUtil.rowToString(value)).asLong();
 					return Tuple2.of(hashValue, value);
 				}
 			}).partitionCustom(new Partitioner <Long>() {

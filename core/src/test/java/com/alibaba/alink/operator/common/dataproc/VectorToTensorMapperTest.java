@@ -6,6 +6,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.linalg.tensor.DataType;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
@@ -17,13 +18,14 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.VectorToTensorBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.params.dataproc.VectorToTensorParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-public class VectorToTensorMapperTest {
+public class VectorToTensorMapperTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 		final Mapper mapper = new VectorToTensorMapper(
@@ -71,7 +73,7 @@ public class VectorToTensorMapperTest {
 			new Params()
 				.set(VectorToTensorParams.SELECTED_COL, "vec")
 				.set(VectorToTensorParams.TENSOR_SHAPE, new Long[] {2L, 3L})
-				.set(VectorToTensorParams.TENSOR_DATA_TYPE, "float")
+				.set(VectorToTensorParams.TENSOR_DATA_TYPE, DataType.FLOAT)
 		);
 
 		Assert.assertEquals(TensorTypes.FLOAT_TENSOR, mapper.getOutputSchema().getFieldTypes()[0]);

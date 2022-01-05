@@ -39,8 +39,8 @@ public class EqualWidthDiscretizerTest extends AlinkTestBase {
 					.setNumBuckets(3)
 					.enableLazyPrintModelInfo()
 					.setSelectedCols("col0"));
-			numSeqSourceBatchOp.lazyPrint(-1);
-			pipeline.fit(numSeqSourceBatchOp).transform(numSeqSourceBatchOp).print();
+
+			pipeline.fit(numSeqSourceBatchOp).transform(numSeqSourceBatchOp).collect();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Assert.fail("Should not throw exception here.");
@@ -57,12 +57,13 @@ public class EqualWidthDiscretizerTest extends AlinkTestBase {
 			.setNumBucketsArray(5, 4)
 			.setSelectedCols("col0")
 			.linkFrom(numSeqSourceBatchOp);
-		op.print();
+		op.lazyPrintModelInfo();
 
 		op = new EqualWidthDiscretizerTrainBatchOp()
 			.setNumBucketsArray(5)
 			.setSelectedCols("col0")
 			.linkFrom(numSeqSourceBatchOp);
+
 		op.lazyCollect(new Consumer <List <Row>>() {
 			@Override
 			public void accept(List <Row> rows) {
@@ -81,7 +82,7 @@ public class EqualWidthDiscretizerTest extends AlinkTestBase {
 		EqualWidthDiscretizer op = new EqualWidthDiscretizer(new Params());
 		Assert.assertEquals(op.getParams().size(), 0);
 
-		BatchOperator b = new EqualWidthDiscretizerTrainBatchOp();
+		BatchOperator<?> b = new EqualWidthDiscretizerTrainBatchOp();
 		Assert.assertEquals(b.getParams().size(), 0);
 		b = new EqualWidthDiscretizerTrainBatchOp(new Params());
 		Assert.assertEquals(b.getParams().size(), 0);
@@ -91,7 +92,7 @@ public class EqualWidthDiscretizerTest extends AlinkTestBase {
 		b = new EqualWidthDiscretizerPredictBatchOp(new Params());
 		Assert.assertEquals(b.getParams().size(), 0);
 
-		StreamOperator s = new EqualWidthDiscretizerPredictStreamOp(b);
+		StreamOperator<?> s = new EqualWidthDiscretizerPredictStreamOp(b);
 		Assert.assertEquals(s.getParams().size(), 0);
 		s = new EqualWidthDiscretizerPredictStreamOp(b, new Params());
 		Assert.assertEquals(s.getParams().size(), 0);

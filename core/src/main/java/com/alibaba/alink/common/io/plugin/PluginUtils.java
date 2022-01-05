@@ -46,7 +46,7 @@ public final class PluginUtils {
 			);
 		} else {
 			return new JarsPluginManager(
-				new JarsPluginDirectory(Paths.get(PluginConfig.DEFAULT_FLINK_PLUGINS_DIRS)),
+				new JarsPluginDirectory(Paths.get(PluginConfig.DEFAULT_ALINK_PLUGINS_DIRS)),
 				pluginConfig.getAlwaysParentFirstPatterns()
 			);
 		}
@@ -64,7 +64,7 @@ public final class PluginUtils {
 		} else {
 			return new ResourcesPluginManager(
 				new ResourcesPluginDirectory(
-					new FilePath(Paths.get(PluginConfig.DEFAULT_FLINK_PLUGINS_DIRS).toString()))
+					new FilePath(Paths.get(PluginConfig.DEFAULT_ALINK_PLUGINS_DIRS).toString()))
 			);
 		}
 	}

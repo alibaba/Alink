@@ -6,7 +6,6 @@ import com.alibaba.alink.operator.common.statistics.DistributionFuncName;
 /**
  * 累积分布函数的反函数(Inverse cumulative Distribution Function, 缩写为IDF)
  *
- * @author yangxu
  */
 public class IDF {
 

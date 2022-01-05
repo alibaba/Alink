@@ -4,7 +4,6 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.utils.TableUtil;
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +61,7 @@ public class MapperChain {
 		boolean isModelStream = false;
 		for (Mapper mapper : this.mappers) {
 			if (mapper instanceof ComboModelMapper) {
-				if (ModelStreamModelMapperAdapt.useModelStreamFile((ModelMapper) mapper)) {
+				if (ModelStreamModelMapperAdapter.useModelStreamFile((ModelMapper) mapper)) {
 					isModelStream = true;
 					break;
 				}
@@ -124,7 +123,7 @@ public class MapperChain {
 
 	private static void expandMappers(Mapper[] mappers, List <Mapper> flattened) {
 		for (Mapper mapper : mappers) {
-			if (mapper instanceof ComboModelMapper && !ModelStreamModelMapperAdapt.useModelStreamFile(
+			if (mapper instanceof ComboModelMapper && !ModelStreamModelMapperAdapter.useModelStreamFile(
 				(ModelMapper) mapper)) {
 				if (((ComboModelMapper) mapper).mapperList != null) {
 					Mapper[] innerMappers = ((ComboModelMapper) mapper).mapperList.mappers;
@@ -141,8 +140,8 @@ public class MapperChain {
 				}
 			} else {
 				if (mapper instanceof ModelMapper
-					&& ModelStreamModelMapperAdapt.useModelStreamFile((ModelMapper) mapper)) {
-					mapper = new ModelStreamModelMapperAdapt((ModelMapper) mapper);
+					&& ModelStreamModelMapperAdapter.useModelStreamFile((ModelMapper) mapper)) {
+					mapper = new ModelStreamModelMapperAdapter((ModelMapper) mapper);
 				}
 				flattened.add(mapper);
 			}

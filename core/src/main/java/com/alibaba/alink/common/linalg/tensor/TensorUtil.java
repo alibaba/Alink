@@ -13,6 +13,24 @@ import java.util.Arrays;
 
 public class TensorUtil {
 
+	/**
+	 * Delimiter between elements.
+	 */
+	static final char ELEMENT_DELIMITER = ' ';
+	static final String ELEMENT_DELIMITER_STR = "" + ELEMENT_DELIMITER;
+	/**
+	 * Delimiter between vector size and vector data.
+	 */
+	static final char HEADER_DELIMITER = '#';
+	static final String HEADER_DELIMITER_STR = "" + HEADER_DELIMITER;
+	/**
+	 * Delimiter between shape dimensions.
+	 */
+	static final char SHAPE_DELIMITER = ',';
+	static final String SHAPE_DELIMITER_STR = "" + SHAPE_DELIMITER;
+
+	static final int NULL_STRING_LENGTH = -1;
+
 	public static Tensor <?> getTensor(Object obj) {
 		if (null == obj) {
 			return null;
@@ -26,23 +44,36 @@ public class TensorUtil {
 			if (isTensor(objStr)) {
 				return parseTensor(objStr);
 			} else {
-				return fromDenseVector(VectorUtil.getDenseVector(objStr));
+				try {
+					return fromDenseVector(VectorUtil.getDenseVector(objStr));
+				} catch (Exception ex) {
+					return new StringTensor(objStr);
+				}
 			}
 		} else if (obj instanceof Number) {
 			return fromDenseVector(new DenseVector(new double[] {((Number) obj).doubleValue()}));
 		} else {
-			throw new IllegalArgumentException("Can not get the tensor from " + obj.toString());
+			throw new IllegalArgumentException("Can not get the tensor from " + obj);
 		}
 	}
 
+	/**
+	 * Parse a tensor from s. See {@link TensorUtil#toString}.
+	 */
 	public static Tensor <?> parseTensor(String s) {
-		String[] split = StringUtils.split(s, TensorUtil.HEADER_DELIMITER);
+		String[] split = StringUtils.splitPreserveAllTokens(s, TensorUtil.HEADER_DELIMITER_STR, 3);
 		if (split.length != 3) {
 			throw new RuntimeException("Illegal tensor string: " + s);
 		}
 		DataType type = DataType.valueOf(split[0]);
 		Shape shape = TensorUtil.parseShapeStr(split[1]);
-		String[] valueStrs = split[2].split(TensorUtil.ELEMENT_DELIMITER_STR);
+
+		String[] valueStrs;
+		if (DataType.STRING.equals(type)) {
+			valueStrs = parseStringValueStr(split[2], Math.toIntExact(shape.size()));
+		} else {
+			valueStrs = split[2].split(TensorUtil.ELEMENT_DELIMITER_STR);
+		}
 		Tensor <?> tensor;
 		switch (type) {
 			case FLOAT:
@@ -66,13 +97,48 @@ public class TensorUtil {
 			case UBYTE:
 				tensor = new UByteTensor(shape);
 				break;
+			case STRING:
+				tensor = new StringTensor(shape);
+				break;
 			default:
-				throw new RuntimeException("Data type is not supported: " + type);
+				throw new IllegalArgumentException("Data type is not supported: " + type);
 		}
 		tensor.parseFromValueStrings(valueStrs);
 		return tensor;
 	}
 
+	private static String[] parseStringValueStr(String s, int size) {
+		String[] split = StringUtils.split(s, HEADER_DELIMITER_STR, 2);
+		int[] lengths = Arrays.stream(StringUtils.split(split[0], ELEMENT_DELIMITER))
+			.mapToInt(Integer::parseInt)
+			.toArray();
+		if (lengths.length != size) {
+			throw new IllegalArgumentException("Illegal lengths section in tensor string: " + s);
+		}
+		String content = (split.length > 1) ? split[1] : "";
+		String[] strs = new String[size];
+		int start = 0;
+		for (int i = 0; i < size; i += 1) {
+			if (NULL_STRING_LENGTH != lengths[i]) {
+				strs[i] = content.substring(start, start + lengths[i]);
+				start += lengths[i] + 1;
+			}
+		}
+		return strs;
+	}
+
+	/**
+	 * Convert a tensor to a string.
+	 * <p>
+	 * For tensors except StringTensor, the result includes 3 sections: tensor type, tensor shape, and tensor data,
+	 * which are separated by {@link TensorUtil#HEADER_DELIMITER}. The tensor data section stores the concatenation of
+	 * String representations of all values separated by {@link TensorUtil#ELEMENT_DELIMITER}. An example is:
+	 * "FLOAT_TENSOR#2,2#0.6 0.7 0.8 0.9 ".
+	 * <p>
+	 * As for {@link StringTensor}, an additional section is used to store the lengths of all data, i.e. strings. There
+	 * are also separated by {@link TensorUtil#ELEMENT_DELIMITER}. An example is : "STRING_TENSOR#2 2 #2 3 3 2#ab bcd
+	 * def fg ".
+	 */
 	public static String toString(Tensor <?> tensor) {
 		StringBuilder sbd = new StringBuilder();
 		sbd.append(tensor.type.name());
@@ -80,34 +146,25 @@ public class TensorUtil {
 		sbd.append(toString(Shape.fromNdArrayShape(tensor.data.shape())));
 		sbd.append(HEADER_DELIMITER);
 		String[] valueStrs = tensor.getValueStrings();
+		if (tensor instanceof StringTensor) {
+			for (String valueStr : valueStrs) {
+				int length = null != valueStr ? valueStr.length() : NULL_STRING_LENGTH;
+				sbd.append(length).append(TensorUtil.ELEMENT_DELIMITER);
+			}
+			sbd.append(HEADER_DELIMITER);
+		}
 		for (String valueStr : valueStrs) {
-			sbd.append(valueStr).append(TensorUtil.ELEMENT_DELIMITER);
+			if (null != valueStr) {
+				sbd.append(valueStr).append(TensorUtil.ELEMENT_DELIMITER);
+			}
 		}
 		return sbd.toString();
 	}
 
-	/**
-	 * Delimiter between elements.
-	 */
-	static final char ELEMENT_DELIMITER = ' ';
-
-	static final String ELEMENT_DELIMITER_STR = "" + ELEMENT_DELIMITER;
-
-	/**
-	 * Delimiter between vector size and vector data.
-	 */
-	static final char HEADER_DELIMITER = '#';
-
-	static final String HEADER_DELIMITER_STR = "" + HEADER_DELIMITER;
-
-	/**
-	 * Delimiter between shape dimensions.
-	 */
-	static final char SHAPE_DELIMITER = ',';
-
-	static final String SHAPE_DELIMITER_STR = "" + SHAPE_DELIMITER;
-
 	static Shape parseShapeStr(String s) {
+		if (s.isEmpty()) {
+			return new Shape();
+		}
 		long[] dimensions = Arrays.stream(s.split(SHAPE_DELIMITER_STR))
 			.mapToLong((Long::parseLong))
 			.toArray();
@@ -153,6 +210,14 @@ public class TensorUtil {
 	}
 
 	static long wrapDim(long dim, long nDims) {
+		if (nDims == 0) {
+			if (dim == 0) {
+				return dim;
+			} else {
+				throw new IllegalArgumentException("Dim is not 0 when nDims is 0.");
+			}
+		}
+
 		final long min = -nDims;
 		final long max = nDims - 1;
 

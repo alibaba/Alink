@@ -6,7 +6,9 @@ import com.alibaba.alink.common.sql.builtin.agg.LastValueTypeData.LastValueData;
 import com.alibaba.alink.common.sql.builtin.agg.LastValueUdaf;
 import org.junit.Before;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LastValueTest extends AggFunctionTestBase <Object[], Object, LastValueData> {
@@ -19,38 +21,32 @@ public class LastValueTest extends AggFunctionTestBase <Object[], Object, LastVa
 	@Override
 	protected List <List <Object[]>> getInputValueSets() {
 		List <List <Object[]>> res = new ArrayList <>();
-		ArrayList <Object[]> data = new ArrayList <>();
-		data.add(new Object[] {0, 1L, 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, 2L, 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, 3L, 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, 4L, 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, 5L, 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, 6L, 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, 7L, 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, 8L, 120});
-		res.add((List <Object[]>) data.clone());
+
+		List <Object[]> data = Arrays.asList(
+			new Object[] {0, new Timestamp(1L), 120},
+			new Object[] {0, new Timestamp(2L), 120},
+			new Object[] {0, new Timestamp(3L), 120},
+			new Object[] {0, new Timestamp(4L), 120},
+			new Object[] {0, new Timestamp(5L), 120},
+			new Object[] {0, new Timestamp(6L), 120},
+			new Object[] {0, new Timestamp(7L), 120},
+			new Object[] {0, new Timestamp(8L), 120});
+
+		res.add(data.subList(0, 1));
+		res.add(data.subList(0, 2));
+		res.add(data.subList(0, 3));
+		res.add(data.subList(0, 4));
+		res.add(data.subList(0, 5));
+		res.add(data.subList(0, 6));
+		res.add(data.subList(0, 7));
+		res.add(data.subList(0, 8));
+
 		return res;
 	}
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		List <Object> res = new ArrayList <>();
-		res.add(0L);
-		res.add(0L);
-		res.add(0L);
-		res.add(0L);
-		res.add(0L);
-		res.add(0L);
-		res.add(0L);
-		res.add(0L);
-		return res;
+		return Arrays.asList(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L);
 	}
 
 	@Override

@@ -34,7 +34,7 @@ public class BertTokenizerMapper extends PreTrainedTokenizerMapper {
 		if (vocabPath.startsWith("file://")) {	// from plugin
 			localModelDir = new File(vocabPath.substring("file://".length()));
 		} else {
-			localModelDir = PythonFileUtils.createTempDir(null);
+			localModelDir = PythonFileUtils.createTempDir("local_vocab_").toFile();
 			ArchivesUtils.downloadDecompressToDirectory(vocabPath, localModelDir);
 			localModelDir.deleteOnExit();
 		}

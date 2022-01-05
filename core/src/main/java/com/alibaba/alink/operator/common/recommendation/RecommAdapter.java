@@ -19,7 +19,6 @@ public class RecommAdapter extends RichMapFunction <Row, Row> implements Seriali
 
 	private static final long serialVersionUID = 1074780682017058609L;
 	private final RecommMapper recommMapper;
-	private transient long numInputRecords;
 
 	/**
 	 * Load model data from ModelSource when open().
@@ -35,7 +34,6 @@ public class RecommAdapter extends RichMapFunction <Row, Row> implements Seriali
 	public void open(Configuration parameters) throws Exception {
 		List <Row> modelRows = this.modelSource.getModelRows(getRuntimeContext());
 		this.recommMapper.loadModel(modelRows);
-		this.numInputRecords = 0L;
 	}
 
 	@Override
@@ -45,7 +43,6 @@ public class RecommAdapter extends RichMapFunction <Row, Row> implements Seriali
 
 	@Override
 	public Row map(Row row) throws Exception {
-		this.numInputRecords++;
-		return  recommMapper.map(row);
+		return recommMapper.map(row);
 	}
 }

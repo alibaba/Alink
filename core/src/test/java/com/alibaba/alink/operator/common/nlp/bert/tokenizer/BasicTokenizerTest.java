@@ -1,10 +1,10 @@
 package com.alibaba.alink.operator.common.nlp.bert.tokenizer;
 
-import com.alibaba.alink.operator.common.nlp.bert.tokenizer.BertTokenizerImpl;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class BasicTokenizerTest {
+public class BasicTokenizerTest extends AlinkTestBase {
 
 	@Test
 	public void tokenize() {

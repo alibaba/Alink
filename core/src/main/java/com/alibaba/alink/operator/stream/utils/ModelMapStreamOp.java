@@ -8,7 +8,6 @@ import org.apache.flink.util.function.TriFunction;
 
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
-import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.ModelMapperAdapter;
 import com.alibaba.alink.common.mapper.ModelMapperAdapterMT;
@@ -16,14 +15,17 @@ import com.alibaba.alink.common.model.DataBridgeModelSource;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.stream.model.PredictProcess;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
+import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.params.mapper.ModelMapperParams;
 
 /**
  * *
  */
-public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOperator <T> {
+public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOperator <T>
+	implements ModelStreamScanParams <T> {
 
 	private static final long serialVersionUID = -6591412871091394859L;
 	private final BatchOperator model;
@@ -60,9 +62,9 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 
 			if (ModelStreamUtils.useModelStreamFile(getParams())) {
 				StreamOperator <?> modelStreamOp = new ModelStreamFileSourceStreamOp()
-					.setFilePath(FilePath.deserialize(getParams().get(ModelMapperParams.MODEL_STREAM_FILE_PATH)))
-					.setScanInterval(getParams().get(ModelMapperParams.MODEL_STREAM_SCAN_INTERVAL))
-					.setStartTime(getParams().get(ModelMapperParams.MODEL_STREAM_START_TIME))
+					.setFilePath(getModelStreamFilePath())
+					.setScanInterval(getModelStreamScanInterval())
+					.setStartTime(getModelStreamStartTime())
 					.setSchemaStr(CsvUtil.schema2SchemaStr(modelSchema))
 					.setMLEnvironmentId(getMLEnvironmentId());
 				modelStreamSchema = modelStreamOp.getSchema();
@@ -86,7 +88,7 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 					.getDataStream()
 					.connect(ModelStreamUtils.broadcastStream(modelStream))
 					.flatMap(
-						new ModelStreamUtils.PredictProcess(
+						new PredictProcess(
 							modelSchema, in.getSchema(), getParams(), mapperBuilder, modelDataBridge,
 							ModelStreamUtils.findTimestampColIndexWithAssertAndHint(modelStreamSchema),
 							ModelStreamUtils.findCountColIndexWithAssertAndHint(modelStreamSchema)

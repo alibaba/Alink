@@ -19,6 +19,7 @@ import com.alibaba.alink.pipeline.dataproc.vector.VectorAssembler;
 import com.alibaba.alink.pipeline.feature.Binarizer;
 import com.alibaba.alink.pipeline.feature.OneHotEncoder;
 import com.alibaba.alink.pipeline.feature.QuantileDiscretizer;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,12 +31,12 @@ import java.util.List;
 import static com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo.LAZY_PRINT_TRANSFORM_DATA_ENABLED;
 import static com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo.LAZY_PRINT_TRANSFORM_STAT_ENABLED;
 
-public class PipelineModelTest {
+public class PipelineModelTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {
 		BatchOperator source = getTrainSource();
-		StreamOperator streamSource= getTrainStreamSource();
+		StreamOperator streamSource = getTrainStreamSource();
 
 		Pipeline pipeline = getPipeline();
 		PipelineModel pipelineModel = pipeline.fit(source);
@@ -84,14 +85,14 @@ public class PipelineModelTest {
 		return new CsvSourceBatchOp()
 			.setSchemaStr(
 				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv");
 	}
 
 	protected StreamOperator getTrainStreamSource() {
 		return new CsvSourceStreamOp()
 			.setSchemaStr(
 				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv");
 	}
 
 	@Test
@@ -172,13 +173,13 @@ public class PipelineModelTest {
 	@Test
 	public void testSplitModel() {
 		PipelineModel model = getPipelineModel();
-		List <PipelineModel>  splitModel = model.splitPipelineModel(true);
+		List <PipelineModel> splitModel = model.splitPipelineModel(true);
 		Assert.assertEquals(splitModel.size(), 1);
 
 		model.transformers[0].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, true);
 		model.transformers[3].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, true);
 
-		List <PipelineModel>  splitModel2 = model.splitPipelineModel(true);
+		List <PipelineModel> splitModel2 = model.splitPipelineModel(true);
 		Assert.assertEquals(3, splitModel2.size());
 		Assert.assertEquals(1, splitModel2.get(0).transformers.length);
 		Assert.assertEquals(3, splitModel2.get(1).transformers.length);
@@ -191,7 +192,7 @@ public class PipelineModelTest {
 		model.transformers[0].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, true);
 		model.transformers[3].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, true);
 
-		List <PipelineModel>  splitModel2 = model.splitPipelineModel(true);
+		List <PipelineModel> splitModel2 = model.splitPipelineModel(true);
 		Assert.assertEquals(3, splitModel2.size());
 		Assert.assertEquals(1, splitModel2.get(0).transformers.length);
 		Assert.assertEquals(3, splitModel2.get(1).transformers.length);
@@ -204,7 +205,7 @@ public class PipelineModelTest {
 		model.transformers[0].set(MapperParams.NUM_THREADS, 2);
 		model.transformers[3].set(MapperParams.NUM_THREADS, 2);
 
-		List <PipelineModel>  splitModel2 = model.splitPipelineModel(true);
+		List <PipelineModel> splitModel2 = model.splitPipelineModel(true);
 		Assert.assertEquals(1, splitModel2.size());
 		Assert.assertEquals(5, splitModel2.get(0).transformers.length);
 	}
@@ -215,7 +216,7 @@ public class PipelineModelTest {
 		model.transformers[0].set(MapperParams.NUM_THREADS, 2);
 		model.transformers[3].set(MapperParams.NUM_THREADS, 3);
 
-		List <PipelineModel>  splitModel2 = model.splitPipelineModel(true);
+		List <PipelineModel> splitModel2 = model.splitPipelineModel(true);
 		Assert.assertEquals(2, splitModel2.size());
 		Assert.assertEquals(3, splitModel2.get(0).transformers.length);
 		Assert.assertEquals(2, splitModel2.get(1).transformers.length);
@@ -227,7 +228,7 @@ public class PipelineModelTest {
 		model.transformers[0].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, true);
 		model.transformers[3].set(MapperParams.NUM_THREADS, 3);
 
-		List <PipelineModel>  splitModel2 = model.splitPipelineModel(true);
+		List <PipelineModel> splitModel2 = model.splitPipelineModel(true);
 		Assert.assertEquals(2, splitModel2.size());
 		Assert.assertEquals(1, splitModel2.get(0).transformers.length);
 		Assert.assertEquals(4, splitModel2.get(1).transformers.length);
@@ -239,7 +240,7 @@ public class PipelineModelTest {
 		model.transformers[0].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, true);
 		model.transformers[4].set(MapperParams.NUM_THREADS, 3);
 
-		List <PipelineModel>  splitModel2 = model.splitPipelineModel(true);
+		List <PipelineModel> splitModel2 = model.splitPipelineModel(true);
 		Assert.assertEquals(2, splitModel2.size());
 		Assert.assertEquals(1, splitModel2.get(0).transformers.length);
 		Assert.assertEquals(4, splitModel2.get(1).transformers.length);
@@ -288,29 +289,23 @@ public class PipelineModelTest {
 			Row.of(1L, "4", 2L, 3L),
 			Row.of(1L, "5", 2L, 4L)
 		};
-		List<Row> pipelineModelData = new ArrayList <>();
+		List <Row> pipelineModelData = new ArrayList <>();
 		Collections.addAll(pipelineModelData, rows);
 
 		TableSchema modelSchema = new TableSchema(
-			new String[]{"id", "p0", "p1", "p2"},
-			new TypeInformation[]{Types.LONG, Types.STRING, Types.LONG, Types.LONG}
+			new String[] {"id", "p0", "p1", "p2"},
+			new TypeInformation[] {Types.LONG, Types.STRING, Types.LONG, Types.LONG}
 		);
 
-
-		List <Tuple3<PipelineStageBase <?>, TableSchema, List <Row>>> stageList =
+		List <Tuple3 <PipelineStageBase <?>, TableSchema, List <Row>>> stageList =
 			ModelExporterUtils.loadStagesFromPipelineModel(pipelineModelData, modelSchema);
 
 		TransformerBase[] transformers = new TransformerBase[stageList.size()];
-		for(int i=0; i<stageList.size(); i++) {
-			transformers[i] = (TransformerBase)stageList.get(i).f0;
+		for (int i = 0; i < stageList.size(); i++) {
+			transformers[i] = (TransformerBase) stageList.get(i).f0;
 		}
 
 		return new PipelineModel(transformers);
 	}
 
-
-	@Test
-	public void test1() {
-
-	}
 }

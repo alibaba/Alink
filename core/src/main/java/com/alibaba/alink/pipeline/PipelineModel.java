@@ -21,8 +21,10 @@ import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
+import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.params.mapper.MapperParams;
-import com.alibaba.alink.params.mapper.ModelMapperParams;
+import com.alibaba.alink.params.shared.HasNumThreads;
+import com.alibaba.alink.pipeline.ModelExporterUtils.StageNode;
 import com.alibaba.alink.pipeline.recommendation.BaseRecommender;
 
 import java.util.ArrayList;
@@ -36,9 +38,6 @@ public final class PipelineModel extends ModelBase <PipelineModel> implements Lo
 
 	private static final long serialVersionUID = -7217216709192253383L;
 	TransformerBase <?>[] transformers;
-	private FilePath modelStreamFilePath = null;
-	private int modelStreamScanInterval = 10;
-	private String modelStreamStartTime = null;
 
 	public PipelineModel(Params params) {
 		super(params);
@@ -57,6 +56,10 @@ public final class PipelineModel extends ModelBase <PipelineModel> implements Lo
 			flattenTransformers(transformers, flattened);
 			this.transformers = flattened.toArray(new TransformerBase[0]);
 		}
+	}
+
+	public void setTransformers(TransformerBase <?>[] transformers) {
+		this.transformers = transformers;
 	}
 
 	public TransformerBase <?>[] getTransformers() {
@@ -138,40 +141,67 @@ public final class PipelineModel extends ModelBase <PipelineModel> implements Lo
 					.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_NAMES, outSchema.getFieldNames())
 					.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_TYPES,
 						FlinkTypeConverter.getTypeString(outSchema.getFieldTypes()));
-				input = (modelStreamFilePath == null) ? pipePredictOp.linkFrom(input) :
+				input = (params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH) == null) ?
+					pipePredictOp.linkFrom(input) :
 					pipePredictOp.linkFrom(input, new ModelStreamFileSourceStreamOp()
-						.setFilePath(modelStreamFilePath)
-						.setScanInterval(modelStreamScanInterval)
-						.setStartTime(modelStreamStartTime)
+						.setFilePath(FilePath.deserialize(params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH)))
+						.setScanInterval(params.get(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL))
+						.setStartTime(params.get(ModelStreamScanParams.MODEL_STREAM_START_TIME))
 						.setSchemaStr(CsvUtil.schema2SchemaStr(pipelineExpandModel.getSchema())));
 			}
 		}
 		return input;
 	}
 
-	public PipelineModel setModelStreamFilePath(FilePath filePath) {
-		this.modelStreamFilePath = filePath;
-		for (TransformerBase <?> t : transformers) {
-			if (t.params.contains(ModelMapperParams.MODEL_STREAM_FILE_PATH)) {
-				t.params.remove(ModelMapperParams.MODEL_STREAM_FILE_PATH);
-			}
-			if (t.params.contains(ModelMapperParams.MODEL_STREAM_SCAN_INTERVAL)) {
-				t.params.remove(ModelMapperParams.MODEL_STREAM_SCAN_INTERVAL);
-			}
-			if (t.params.contains(ModelMapperParams.MODEL_STREAM_START_TIME)) {
-				t.params.remove(ModelMapperParams.MODEL_STREAM_START_TIME);
+	public Integer getNumThreads() {
+		int numThreads = 1;
+		for (TransformerBase <?> transformer : transformers) {
+			if (transformer instanceof HasNumThreads)
+				numThreads = Math.max(((HasNumThreads) transformer).getNumThreads(), numThreads);
+		}
+		return numThreads;
+	}
+
+	public PipelineModel setNumThreads(Integer value) {
+		for (TransformerBase <?> transformer : transformers) {
+			if (transformer instanceof HasNumThreads) {
+				((HasNumThreads) transformer).setNumThreads(value);
 			}
 		}
 		return this;
 	}
 
-	public PipelineModel setModelStreamScanInterval(int scanInterval) {
-		this.modelStreamScanInterval = scanInterval;
+	public PipelineModel setModelStreamFilePath(String pathString) {
+		return setModelStreamFilePath(new FilePath(pathString));
+	}
+
+	public PipelineModel setModelStreamFilePath(FilePath filePath) {
+		for (TransformerBase <?> t : transformers) {
+			if (t.params.contains(ModelStreamScanParams.MODEL_STREAM_FILE_PATH)) {
+				t.params.remove(ModelStreamScanParams.MODEL_STREAM_FILE_PATH);
+			}
+		}
+		this.params.set(ModelStreamScanParams.MODEL_STREAM_FILE_PATH, filePath.serialize());
 		return this;
 	}
 
-	public PipelineModel setModelStreamStartTime(String modelStreamStartTime) {
-		this.modelStreamStartTime = modelStreamStartTime;
+	public PipelineModel setModelStreamScanInterval(int scanInterval) {
+		for (TransformerBase <?> t : transformers) {
+			if (t.params.contains(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL)) {
+				t.params.remove(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL);
+			}
+		}
+		this.params.set(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL, scanInterval);
+		return this;
+	}
+
+	public PipelineModel setModelStreamStartTime(String startTime) {
+		for (TransformerBase <?> t : transformers) {
+			if (t.params.contains(ModelStreamScanParams.MODEL_STREAM_START_TIME)) {
+				t.params.remove(ModelStreamScanParams.MODEL_STREAM_START_TIME);
+			}
+		}
+		this.params.set(ModelStreamScanParams.MODEL_STREAM_START_TIME, startTime);
 		return this;
 	}
 
@@ -192,10 +222,9 @@ public final class PipelineModel extends ModelBase <PipelineModel> implements Lo
 	}
 
 	/**
-	 * split by step
-	 * 1. if not MapModel,MapTransformer,BaseRecommender, it is split point.
-	 * 2. if batch transform, and lazy(print or stat), next transformer is split point.
-	 * 3. if num thread of transformer is set, will go to next split point.
+	 * split by step 1. if not MapModel,MapTransformer,BaseRecommender, it is split point. 2. if batch transform, and
+	 * lazy(print or stat), next transformer is split point. 3. if num thread of transformer is set, will go to next
+	 * split point.
 	 */
 	List <PipelineModel> splitPipelineModel(boolean isBatch) {
 		List <PipelineModel> models = new ArrayList <>();
@@ -247,8 +276,10 @@ public final class PipelineModel extends ModelBase <PipelineModel> implements Lo
 
 	@Override
 	public LocalPredictor collectLocalPredictor(TableSchema inputSchema) throws Exception {
-		if (modelStreamFilePath != null) {
-			BatchOperator <?> modelSave = ModelExporterUtils.serializePipelineStages(Arrays.asList(transformers));
+		if (params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH) != null) {
+			BatchOperator <?> modelSave = ModelExporterUtils.serializePipelineStages(Arrays.asList(transformers),
+				params);
+
 			TableSchema extendSchema = getOutSchema(this, inputSchema);
 			BatchOperator <?> model = new TableSourceBatchOp(DataSetConversionUtil
 				.toTable(modelSave.getMLEnvironmentId(),
@@ -260,14 +291,11 @@ public final class PipelineModel extends ModelBase <PipelineModel> implements Lo
 						extendSchema.getFieldTypes())));
 
 			List <Row> modelRows = model.collect();
-			Params params = new Params()
-				.set(ModelMapperParams.MODEL_STREAM_FILE_PATH, modelStreamFilePath.serialize())
-				.set(ModelMapperParams.MODEL_STREAM_START_TIME, modelStreamStartTime)
-				.set(ModelMapperParams.MODEL_STREAM_SCAN_INTERVAL, modelStreamScanInterval);
-			ModelMapper mapper = new PipelineModelMapper(model.getSchema(), inputSchema, params);
+			ModelMapper mapper = new PipelineModelMapper(model.getSchema(), inputSchema, this.params);
 			mapper.loadModel(modelRows);
 			return new LocalPredictor(mapper);
 		}
+
 		if (null == transformers || transformers.length == 0) {
 			throw new RuntimeException("PipelineModel is empty.");
 		}
@@ -368,7 +396,7 @@ public final class PipelineModel extends ModelBase <PipelineModel> implements Lo
 	 * Pack the pipeline model to a BatchOperator.
 	 */
 	public BatchOperator <?> save() {
-		return ModelExporterUtils.serializePipelineStages(Arrays.asList(transformers));
+		return ModelExporterUtils.serializePipelineStages(Arrays.asList(transformers), params);
 	}
 
 	private TableSchema getOutSchema(PipelineModel pipelineModel, TableSchema inputSchema) {
@@ -399,27 +427,32 @@ public final class PipelineModel extends ModelBase <PipelineModel> implements Lo
 	}
 
 	public static PipelineModel collectLoad(BatchOperator <?> batchOp) {
-		return new PipelineModel(
-			ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
-				batchOp,
-				ModelExporterUtils.collectMetaFromOp(batchOp),
-				batchOp.getSchema()
-			).toArray(new TransformerBase <?>[0]));
+		Tuple2 <StageNode[], Params> pipeData = ModelExporterUtils.collectMetaFromOp(batchOp);
+		PipelineModel pipelineModel = new PipelineModel(pipeData.f1);
+		pipelineModel.setTransformers(ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
+			batchOp,
+			pipeData.f0,
+			batchOp.getSchema()
+		).toArray(new TransformerBase <?>[0]));
+		return pipelineModel;
 	}
 
 	@Deprecated
 	public static PipelineModel load(FilePath filePath, Long mlEnvId) {
 		Tuple2 <TableSchema, Row> schemaAndMeta = ModelExporterUtils.loadMetaFromAkFile(filePath);
+		Tuple2 <StageNode[], Params> stagesAndParams
+			= ModelExporterUtils.deserializePipelineStagesAndParamsFromMeta(schemaAndMeta.f1, schemaAndMeta.f0);
 
-		return new PipelineModel(
-			ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
+		PipelineModel pipelineModel = new PipelineModel(stagesAndParams.f1);
+		pipelineModel.setTransformers(ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
 				new AkSourceBatchOp()
 					.setFilePath(filePath)
 					.setMLEnvironmentId(mlEnvId),
-				ModelExporterUtils.deserializePipelineStagesFromMeta(schemaAndMeta.f1, schemaAndMeta.f0),
+				stagesAndParams.f0,
 				schemaAndMeta.f0
 			).toArray(new TransformerBase <?>[0])
 		);
+		return pipelineModel;
 	}
 
 	static class PipelinePredictBatchOp extends ModelMapBatchOp <PipelinePredictBatchOp>

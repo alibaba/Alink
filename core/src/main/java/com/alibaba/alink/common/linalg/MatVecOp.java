@@ -17,6 +17,7 @@ public class MatVecOp {
 	 * compute vec1 + vec2 .
 	 */
 	public static Vector plus(Vector vec1, Vector vec2) {
+		Preconditions.checkArgument(vec1.size() == vec2.size());
 		return vec1.plus(vec2);
 	}
 
@@ -24,6 +25,7 @@ public class MatVecOp {
 	 * compute vec1 - vec2 .
 	 */
 	public static Vector minus(Vector vec1, Vector vec2) {
+		Preconditions.checkArgument(vec1.size() == vec2.size());
 		return vec1.minus(vec2);
 	}
 
@@ -31,7 +33,22 @@ public class MatVecOp {
 	 * Compute vec1 \cdot vec2 .
 	 */
 	public static double dot(Vector vec1, Vector vec2) {
+		Preconditions.checkArgument(vec1.size() == vec2.size());
 		return vec1.dot(vec2);
+	}
+
+	/**
+	 * Compute cosine of vec1 and vec2 .
+	 */
+	public static double cosine(Vector vec1, Vector vec2) {
+		return vec1.dot(vec2) / (vec1.normL2() * vec2.normL2());
+	}
+
+	/**
+	 * Compute euclid distance of vec1 and vec2.
+	 */
+	public static double euclidDistance(Vector vec1, Vector vec2) {
+		return MatVecOp.minus(vec1, vec2).normL2();
 	}
 
 	/**
@@ -69,6 +86,75 @@ public class MatVecOp {
 			} else {
 				return MatVecOp.applySum((SparseVector) vec1, (SparseVector) vec2, (a, b) -> (a - b) * (a - b));
 			}
+		}
+	}
+
+	/**
+	 * vec = [vec1, vec2]
+	 */
+	public static Vector mergeVector(Vector vec1, Vector vec2) {
+		if (vec1 instanceof DenseVector && vec2 instanceof DenseVector) {
+			DenseVector vec = new DenseVector(vec1.size() + vec2.size());
+			System.arraycopy(((DenseVector) vec1).getData(), 0, vec.getData(), 0, vec1.size());
+			System.arraycopy(((DenseVector) vec2).getData(), 0, vec.getData(), vec1.size(), vec2.size());
+			return vec;
+		} else if (vec1 instanceof SparseVector && vec2 instanceof SparseVector) {
+			int vec1Size = ((SparseVector) vec1).getIndices().length;
+			int vec2Size = ((SparseVector) vec2).getIndices().length;
+			double[] values = new double[vec1Size + vec2Size];
+			int[] indices = new int[values.length];
+			System.arraycopy(((SparseVector) vec1).getValues(), 0, values, 0, vec1Size);
+			System.arraycopy(((SparseVector) vec2).getValues(), 0, values, vec1Size, vec2Size);
+			System.arraycopy(((SparseVector) vec1).getIndices(), 0, indices, 0, vec1Size);
+			System.arraycopy(((SparseVector) vec2).getIndices(), 0, indices, vec1Size, vec2Size);
+			for (int i = 0; i < vec2Size; ++i) {
+				indices[vec1Size + i] += vec1.size();
+			}
+			return new SparseVector(vec1.size() + vec2.size(), indices, values);
+		} else if (vec1 instanceof SparseVector && vec2 instanceof DenseVector) {
+			int vec1Size = ((SparseVector) vec1).getIndices().length;
+			int vec2Size = vec2.size();
+			double[] values = new double[vec1Size + vec2Size];
+			int[] indices = new int[values.length];
+			System.arraycopy(((SparseVector) vec1).getValues(), 0, values, 0, vec1Size);
+			System.arraycopy(((DenseVector) vec2).getData(), 0, values, vec1Size, vec2Size);
+			System.arraycopy(((SparseVector) vec1).getIndices(), 0, indices, 0, vec1Size);
+			for (int i = 0; i < vec2Size; ++i) {
+				indices[vec1Size + i] = vec1.size() + i;
+			}
+			return new SparseVector(vec1.size() + vec2.size(), indices, values);
+		} else if (vec1 instanceof DenseVector && vec2 instanceof SparseVector) {
+			int vec1Size = vec1.size();
+			int vec2Size = ((SparseVector) vec2).getIndices().length;
+			double[] values = new double[vec1Size + vec2Size];
+			int[] indices = new int[values.length];
+			System.arraycopy(((DenseVector) vec1).getData(), 0, values, 0, vec1Size);
+			for (int i = 0; i < vec1Size; ++i) {
+				indices[i] = i;
+			}
+			System.arraycopy(((SparseVector) vec2).getValues(), 0, values, vec1Size, vec2Size);
+			System.arraycopy(((SparseVector) vec2).getIndices(), 0, indices, vec1Size, vec2Size);
+			for (int i = 0; i < vec2Size; ++i) {
+				indices[vec1Size + i] += vec1Size;
+			}
+
+			return new SparseVector(vec1.size() + vec2.size(), indices, values);
+		} else {
+			throw new RuntimeException("not support yet.");
+		}
+	}
+
+	public static Vector elementWiseMultiply(Vector vec1, Vector vec2) {
+		if (vec1 instanceof DenseVector && vec2 instanceof DenseVector) {
+			return MatVecOp.apply((DenseVector) vec1, (DenseVector) vec2, (a, b) -> (a * b));
+		} else if (vec1 instanceof SparseVector && vec2 instanceof SparseVector) {
+			return MatVecOp.apply((SparseVector) vec1, (SparseVector) vec2, (a, b) -> (a * b));
+		} else if (vec1 instanceof SparseVector && vec2 instanceof DenseVector) {
+			return MatVecOp.apply((SparseVector) vec1, (DenseVector) vec2, (a, b) -> (a * b));
+		} else if (vec1 instanceof DenseVector && vec2 instanceof SparseVector) {
+			return MatVecOp.apply((SparseVector) vec2, (DenseVector) vec1, (a, b) -> (a * b));
+		} else {
+			throw new RuntimeException("not support yet.");
 		}
 	}
 
@@ -119,6 +205,32 @@ public class MatVecOp {
 		for (int i = 0; i < y.data.length; i++) {
 			y.data[i] = func.apply(x1.data[i], x2.data[i]);
 		}
+	}
+
+	/**
+	 * ret = func(x1, x2).
+	 */
+	public static DenseVector apply(DenseVector x1, DenseVector x2,
+									BiFunction <Double, Double, Double> func) {
+		assert (x1.data.length == x2.data.length) : "x1 and x2 size mismatched.";
+		DenseVector ret = new DenseVector(x1.data.length);
+		for (int i = 0; i < x1.data.length; i++) {
+			ret.data[i] = func.apply(x1.data[i], x2.data[i]);
+		}
+		return ret;
+	}
+
+	/**
+	 * ret = func(x1, x2).
+	 */
+	public static DenseVector apply(SparseVector x1, DenseVector x2,
+									BiFunction <Double, Double, Double> func) {
+		assert (x1.size() == x2.size()) : "x1 and x2 size mismatched.";
+		DenseVector ret = new DenseVector(x1.size());
+		for (int i = 0; i < x1.getValues().length; i++) {
+			ret.data[i] = func.apply(x1.get(i), x2.data[i]);
+		}
+		return ret;
 	}
 
 	/**
@@ -177,7 +289,6 @@ public class MatVecOp {
 					r.values[pos] = func.apply(0.0, x2.values[p1]);
 					p1++;
 					pos++;
-					continue;
 				}
 			}
 		}

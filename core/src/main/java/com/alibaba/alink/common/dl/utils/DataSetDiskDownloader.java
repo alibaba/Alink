@@ -108,7 +108,7 @@ public class DataSetDiskDownloader implements Serializable {
 						targetFileName = uri.contains("\\")
 							? uri.substring(uri.lastIndexOf('\\') + 1)
 							: uri.substring(uri.lastIndexOf('/') + 1);
-						targetDir = PythonFileUtils.createTempWorkDir("temp_user_files_");
+						targetDir = PythonFileUtils.createTempDir("temp_user_files_").toString();
 						Path localPath = Paths.get(targetDir, targetFileName).toAbsolutePath();
 						File file = localPath.toFile();
 						if (file.exists()) {
@@ -163,7 +163,7 @@ public class DataSetDiskDownloader implements Serializable {
 				public void open(Configuration configuration) throws Exception {
 					targetFileName = uri.contains("\\") ? uri.substring(uri.lastIndexOf('\\') + 1):
 							uri.substring(uri.lastIndexOf('/') + 1);
-					targetDir = PythonFileUtils.createTempWorkDir("temp_user_files_");
+					targetDir = PythonFileUtils.createTempDir("temp_user_files_").toString();
 					Path localPath = Paths.get(targetDir, targetFileName).toAbsolutePath();
 					File file = localPath.toFile();
 					if (file.exists()) {
@@ -212,7 +212,7 @@ public class DataSetDiskDownloader implements Serializable {
 			int taskId = getRuntimeContext().getIndexOfThisSubtask();
 			int numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
 			if (taskId == 0) {
-				String targetDir = PythonFileUtils.createTempWorkDir(String.format("downloaded_files_%s_", taskId));
+				String targetDir = PythonFileUtils.createTempDir(String.format("downloaded_files_%s_", taskId)).toString();
 				for (String path : paths) {
 					if (FileDownloadUtils.isLocalPath(path)) {
 						continue;
@@ -264,7 +264,7 @@ public class DataSetDiskDownloader implements Serializable {
 			Iterator <Tuple2 <Integer, byte[]>> iterator = values.iterator();
 
 			int taskId = getRuntimeContext().getIndexOfThisSubtask();
-			String targetDir = PythonFileUtils.createTempWorkDir(String.format("work_dir_%s_", taskId));
+			String targetDir = PythonFileUtils.createTempDir(String.format("work_dir_%s_", taskId)).toString();
 			// The order of values are supposed to be unchanged.
 			for (String path : paths) {
 				boolean isCompressed = PythonFileUtils.isCompressedFile(path);

@@ -16,13 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Prediction utilities for {@link com.alibaba.alink.pipeline.recommendation.ALS}.
+ * Prediction utilities for ALS algorithm.
  */
 public class AlsPredict {
 
 	/**
-	 * Recommend for each user <code>topK</code> items. If some of the users have no factors,
-	 * then no recommendations will be generated for them.
+	 * Recommend for each user <code>topK</code> items. If some of the users have no factors, then no recommendations
+	 * will be generated for them.
 	 *
 	 * @param userFactors user factors
 	 * @param itemFactors item factors
@@ -91,7 +91,7 @@ public class AlsPredict {
 				private static final long serialVersionUID = -6833236444919564896L;
 
 				@Override
-				public Tuple2 <Long, String> map(Tuple3 <Long, long[], float[]> value) throws Exception {
+				public Tuple2 <Long, String> map(Tuple3 <Long, long[], float[]> value) {
 					StringBuilder sbd = new StringBuilder();
 					int n = value.f1.length;
 
@@ -107,8 +107,8 @@ public class AlsPredict {
 	}
 
 	/**
-	 * Predict ratings given each user-item pairs. If factors of user or item is missing,
-	 * then predict null value for them.
+	 * Predict ratings given each user-item pairs. If factors of user or item is missing, then predict null value for
+	 * them.
 	 *
 	 * @param userFactors user factors
 	 * @param itemFactors item factors
@@ -126,8 +126,7 @@ public class AlsPredict {
 				private static final long serialVersionUID = -6076060476197974236L;
 
 				@Override
-				public Tuple3 <Long, Long, float[]> join(Tuple2 <Long, Long> first, Tuple2 <Long, float[]> second)
-					throws Exception {
+				public Tuple3 <Long, Long, float[]> join(Tuple2 <Long, Long> first, Tuple2 <Long, float[]> second) {
 					if (second != null) {
 						return Tuple3.of(first.f0, first.f1, second.f1);
 					} else {
@@ -144,7 +143,7 @@ public class AlsPredict {
 
 					@Override
 					public Tuple4 <Long, Long, float[], float[]> join(Tuple3 <Long, Long, float[]> first,
-																	  Tuple2 <Long, float[]> second) throws Exception {
+																	  Tuple2 <Long, float[]> second) {
 						if (second != null) {
 							return Tuple4.of(first.f0, first.f1, first.f2, second.f1);
 						} else {
@@ -156,7 +155,7 @@ public class AlsPredict {
 				private static final long serialVersionUID = -3922368489832088064L;
 
 				@Override
-				public Tuple3 <Long, Long, Double> map(Tuple4 <Long, Long, float[], float[]> value) throws Exception {
+				public Tuple3 <Long, Long, Double> map(Tuple4 <Long, Long, float[], float[]> value) {
 					if (value.f2.length > 0 && value.f3.length > 0) {
 						double s = 0.;
 						for (int i = 0; i < value.f2.length; i++) {

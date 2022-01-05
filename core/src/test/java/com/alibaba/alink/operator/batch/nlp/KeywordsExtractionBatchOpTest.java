@@ -2,20 +2,16 @@ package com.alibaba.alink.operator.batch.nlp;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.nlp.KeywordsExtractionStreamOp;
-import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertArrayEquals;
-
 public class KeywordsExtractionBatchOpTest extends AlinkTestBase {
-	private String text =
+	private final String text =
 		"翼身融合 飞机 , . 是 未来 航空 领域 发展 一个 新 方向 国内外 诸多 研究 机构 已经 开展 对翼身融合 飞机 研究 而 其 全自动 外形 优化 算法 已 成为 新 研究 热点"
 			+ " 国内 外 现有 成果 基础 之上 分析 比较 常用 建模 求解 平台 使用 方式 及 特点 设计 编写 翼身融合 飞机 外形 优化 几何 建模 网格 划分 流场 求解 外形 优化 模块 比 较 不同 算法"
 			+ " 间 "
@@ -34,56 +30,29 @@ public class KeywordsExtractionBatchOpTest extends AlinkTestBase {
 			+ " 变形 网格 变形 算法 遗传算法 差分 进化 算法 飞机 表面积 计算 算法 基于 矩 积分 飞 机 体积 计算 算法 开发 基于 VTK 数据 可视化 格式 工具";
 
 	@Test
-	public void testGetKeyWordsTextRankBatch() {
+	public void testKeywordsExtractionByTextRankBatch() {
 		Row[] array = new Row[] {Row.of(1, text)};
 		MemSourceBatchOp words = new MemSourceBatchOp(Arrays.asList(array), new String[] {"ID", "text"});
-
-		KeywordsExtractionBatchOp evalOp =
-			new KeywordsExtractionBatchOp()
-				.setSelectedCol("text")
-				.setMethod("TEXT_RANK")
-				.setTopN(3);
-
-		String[] output = {"+I[基于 算法 建模, 1]"};
-		List <Row> res = evalOp.linkFrom(words).collect();
-		String[] results = new String[res.size()];
-		for (int i = 0; i < res.size(); i++) {
-			results[i] = res.get(i).toString();
-		}
-		assertArrayEquals(output, results);
+		KeywordsExtractionBatchOp op = new KeywordsExtractionBatchOp()
+			.setSelectedCol("text")
+			.setMethod("TEXT_RANK")
+			.setTopN(3)
+			.linkFrom(words);
+		List <Row> expected = Arrays.asList(Row.of("基于 算法 建模", 1));
+		assertListRowEqualWithoutOrder(expected, op.collect());
 	}
 
 	@Test
-	public void testGetKeyWordsTfIdfBatch() throws Exception {
+	public void testKeywordsExtractionByTfIdfBatch() throws Exception {
 		Row[] array = new Row[] {Row.of("1", text)};
 		MemSourceBatchOp words = new MemSourceBatchOp(Arrays.asList(array), new String[] {"ID", "text"});
 
-		KeywordsExtractionBatchOp evalOp =
-			new KeywordsExtractionBatchOp()
-				.setSelectedCol("text")
-				.setTopN(9)
-				.setMethod("TF_IDF")
-				.linkFrom(words);
-
-		evalOp.collect();
-	}
-
-	@Test
-	public void testGetKeyWordsStream() throws Exception {
-		Row[] array = new Row[] {
-			Row.of(1, text),
-			Row.of(1, text),
-			Row.of(1, text),
-			Row.of(1, text)};
-
-		MemSourceStreamOp words = new MemSourceStreamOp(Arrays.asList(array), new String[] {"ID", "text"});
-
-		KeywordsExtractionStreamOp evalOp =
-			new KeywordsExtractionStreamOp()
-				.setSelectedCol("text")
-				.setTopN(3);
-
-		evalOp.linkFrom(words).print();
-		StreamOperator.execute();
+		KeywordsExtractionBatchOp op = new KeywordsExtractionBatchOp()
+			.setSelectedCol("text")
+			.setTopN(9)
+			.setMethod("TF_IDF")
+			.linkFrom(words);
+		// TODO: there are lots of words having the same TF-IDF values, therefore the Top-N words are random.
+		op.collect();
 	}
 }

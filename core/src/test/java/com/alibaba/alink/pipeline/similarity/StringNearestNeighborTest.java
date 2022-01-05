@@ -6,6 +6,11 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.similarity.StringNearestNeighborBatchOpTest;
 import com.alibaba.alink.operator.batch.similarity.TextApproxNearestNeighborBatchOpTest;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,6 +39,43 @@ public class StringNearestNeighborTest extends AlinkTestBase {
 			.transform(query);
 
 		List <Row> res = neareastNeighbor.collect();
+
+		Map <Object, Double[]> score = new HashMap <>();
+		score.put(1, new Double[] {0.75, 0.667, 0.333});
+		score.put(2, new Double[] {0.667, 0.667, 0.5});
+		score.put(3, new Double[] {0.333, 0.333, 0.25});
+		score.put(4, new Double[] {0.75, 0.333, 0.333});
+		score.put(5, new Double[] {0.333, 0.25, 0.25});
+		score.put(6, new Double[] {0.333, 0.333, 0.333});
+
+		for (Row row : res) {
+			Double[] actual = StringNearestNeighborBatchOpTest.extractScore((String) row.getField(2));
+			Double[] expect = score.get(row.getField(0));
+			for (int i = 0; i < actual.length; i++) {
+				Assert.assertEquals(actual[i], expect[i], 0.01);
+			}
+		}
+	}
+
+	@Test
+	public void testStringStream() throws Exception {
+		BatchOperator dict = new MemSourceBatchOp(Arrays.asList(StringNearestNeighborBatchOpTest.dictRows),
+			new String[] {"id", "str"});
+		StreamOperator query = new MemSourceStreamOp(Arrays.asList(StringNearestNeighborBatchOpTest.queryRows),
+			new String[] {"id", "str"});
+
+		StringNearestNeighborModel model = new StringNearestNeighbor()
+			.setIdCol("id")
+			.setSelectedCol("str")
+			.setTopN(3)
+			.setOutputCol("output")
+			.fit(dict);
+
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp()
+			.linkFrom(model.transform(query));
+		StreamOperator.execute();
+
+		List <Row> res = collectSinkStreamOp.getAndRemoveValues();
 
 		Map <Object, Double[]> score = new HashMap <>();
 		score.put(1, new Double[] {0.75, 0.667, 0.333});
@@ -87,6 +129,42 @@ public class StringNearestNeighborTest extends AlinkTestBase {
 	}
 
 	@Test
+	public void testStringApproxStream() throws Exception {
+		BatchOperator dict = new MemSourceBatchOp(Arrays.asList(StringNearestNeighborBatchOpTest.dictRows),
+			new String[] {"id", "str"});
+		StreamOperator query = new MemSourceStreamOp(Arrays.asList(StringNearestNeighborBatchOpTest.queryRows),
+			new String[] {"id", "str"});
+
+		StringApproxNearestNeighborModel neareastNeighbor = new StringApproxNearestNeighbor()
+			.setIdCol("id")
+			.setSelectedCol("str")
+			.setTopN(3)
+			.setOutputCol("output")
+			.fit(dict);
+
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp()
+			.linkFrom(neareastNeighbor.transform(query));
+		StreamOperator.execute();
+		List <Row> res = collectSinkStreamOp.getAndRemoveValues();
+
+		Map <Object, Double[]> score = new HashMap <>();
+		score.put(1, new Double[] {0.953125, 0.9375, 0.921875});
+		score.put(2, new Double[] {0.953125, 0.9375, 0.921875});
+		score.put(3, new Double[] {0.9375, 0.921875, 0.90625});
+		score.put(4, new Double[] {0.96875, 0.90625, 0.890625});
+		score.put(5, new Double[] {0.9375, 0.921875, 0.90625});
+		score.put(6, new Double[] {0.96875, 0.90625, 0.890625});
+
+		for (Row row : res) {
+			Double[] actual = extractScore((String) row.getField(2));
+			Double[] expect = score.get(row.getField(0));
+			for (int i = 0; i < actual.length; i++) {
+				Assert.assertEquals(actual[i], expect[i], 0.01);
+			}
+		}
+	}
+
+	@Test
 	public void testText() {
 		BatchOperator dict = new MemSourceBatchOp(Arrays.asList(TextApproxNearestNeighborBatchOpTest.dictRows),
 			new String[] {"id", "str"});
@@ -110,6 +188,77 @@ public class StringNearestNeighborTest extends AlinkTestBase {
 		score.put(4, new Double[] {0.75, 0.333, 0.333});
 		score.put(5, new Double[] {0.333, 0.25, 0.25});
 		score.put(6, new Double[] {0.333, 0.333, 0.333});
+
+		for (Row row : res) {
+			Double[] actual = StringNearestNeighborBatchOpTest.extractScore((String) row.getField(2));
+			Double[] expect = score.get(row.getField(0));
+			for (int i = 0; i < actual.length; i++) {
+				Assert.assertEquals(actual[i], expect[i], 0.01);
+			}
+		}
+	}
+
+	@Test
+	public void testTextStream() throws Exception {
+		BatchOperator dict = new MemSourceBatchOp(Arrays.asList(TextApproxNearestNeighborBatchOpTest.dictRows),
+			new String[] {"id", "str"});
+		StreamOperator query = new MemSourceStreamOp(Arrays.asList(TextApproxNearestNeighborBatchOpTest.queryRows),
+			new String[] {"id", "str"});
+
+		TextNearestNeighborModel neareastNeighbor = new TextNearestNeighbor()
+			.setIdCol("id")
+			.setSelectedCol("str")
+			.setTopN(3)
+			.setOutputCol("output")
+			.fit(dict);
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp()
+			.linkFrom(neareastNeighbor.transform(query));
+		StreamOperator.execute();
+		List <Row> res = collectSinkStreamOp.getAndRemoveValues();
+
+		Map <Object, Double[]> score = new HashMap <>();
+		score.put(1, new Double[] {0.75, 0.667, 0.333});
+		score.put(2, new Double[] {0.667, 0.667, 0.5});
+		score.put(3, new Double[] {0.333, 0.333, 0.25});
+		score.put(4, new Double[] {0.75, 0.333, 0.333});
+		score.put(5, new Double[] {0.333, 0.25, 0.25});
+		score.put(6, new Double[] {0.333, 0.333, 0.333});
+
+		for (Row row : res) {
+			Double[] actual = StringNearestNeighborBatchOpTest.extractScore((String) row.getField(2));
+			Double[] expect = score.get(row.getField(0));
+			for (int i = 0; i < actual.length; i++) {
+				Assert.assertEquals(actual[i], expect[i], 0.01);
+			}
+		}
+	}
+
+	@Test
+	public void testTextApproxStream() throws Exception {
+		BatchOperator dict = new MemSourceBatchOp(Arrays.asList(TextApproxNearestNeighborBatchOpTest.dictRows),
+			new String[] {"id", "str"});
+		StreamOperator query = new MemSourceStreamOp(Arrays.asList(TextApproxNearestNeighborBatchOpTest.queryRows),
+			new String[] {"id", "str"});
+
+		StringApproxNearestNeighborModel neareastNeighbor = new TextApproxNearestNeighbor()
+			.setIdCol("id")
+			.setSelectedCol("str")
+			.setTopN(3)
+			.setOutputCol("output")
+			.fit(dict);
+
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp()
+			.linkFrom(neareastNeighbor.transform(query));
+		StreamOperator.execute();
+		List <Row> res = collectSinkStreamOp.getAndRemoveValues();
+
+		Map <Object, Double[]> score = new HashMap <>();
+		score.put(1, new Double[] {0.953125, 0.9375, 0.921875});
+		score.put(2, new Double[] {0.953125, 0.9375, 0.921875});
+		score.put(3, new Double[] {0.9375, 0.921875, 0.90625});
+		score.put(4, new Double[] {0.96875, 0.90625, 0.890625});
+		score.put(5, new Double[] {0.9375, 0.921875, 0.90625});
+		score.put(6, new Double[] {0.96875, 0.90625, 0.890625});
 
 		for (Row row : res) {
 			Double[] actual = StringNearestNeighborBatchOpTest.extractScore((String) row.getField(2));
@@ -204,6 +353,40 @@ public class StringNearestNeighborTest extends AlinkTestBase {
 	}
 
 	@Test
+	public void testVectorStream() throws Exception {
+		BatchOperator dict = new MemSourceBatchOp(Arrays.asList(dictRows), new String[] {"id", "vec"});
+		StreamOperator query = new MemSourceStreamOp(Arrays.asList(queryRows), new String[] {"id", "vec"});
+
+		VectorNearestNeighborModel neareastNeighbor = new VectorNearestNeighbor()
+			.setIdCol("id")
+			.setSelectedCol("vec")
+			.setTopN(3)
+			.setOutputCol("output")
+			.fit(dict);
+
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp()
+			.linkFrom(neareastNeighbor.transform(query));
+		StreamOperator.execute();
+		List <Row> res = collectSinkStreamOp.getAndRemoveValues();
+
+		Map <Object, Double[]> score = new HashMap <>();
+		score.put(1, new Double[] {0.0, 0.17320508075688776, 0.3464101615137755});
+		score.put(2, new Double[] {0.0, 0.17320508075688773, 0.17320508075688776});
+		score.put(3, new Double[] {0.0, 0.17320508075688776, 0.3464101615137755});
+		score.put(4, new Double[] {0.0, 0.17320508075680896, 0.346410161513782});
+		score.put(5, new Double[] {0.0, 0.17320508075680896, 0.17320508075680896});
+		score.put(6, new Double[] {0.0, 0.17320508075680896, 0.346410161513782});
+
+		for (Row row : res) {
+			Double[] actual = StringNearestNeighborBatchOpTest.extractScore((String) row.getField(2));
+			Double[] expect = score.get(row.getField(0));
+			for (int i = 0; i < actual.length; i++) {
+				Assert.assertEquals(actual[i], expect[i], 0.01);
+			}
+		}
+	}
+
+	@Test
 	public void testVectorApprox() {
 		BatchOperator dict = new MemSourceBatchOp(Arrays.asList(dictRows), new String[] {"id", "vec"});
 		BatchOperator query = new MemSourceBatchOp(Arrays.asList(queryRows), new String[] {"id", "vec"});
@@ -217,6 +400,40 @@ public class StringNearestNeighborTest extends AlinkTestBase {
 			.transform(query);
 
 		List <Row> res = neareastNeighbor.collect();
+
+		Map <Object, Double[]> score = new HashMap <>();
+		score.put(1, new Double[] {0.0, 0.17320508075688776, 0.3464101615137755});
+		score.put(2, new Double[] {0.0, 0.17320508075688773, 0.17320508075688776});
+		score.put(3, new Double[] {0.0, 0.17320508075688776, 0.3464101615137755});
+		score.put(4, new Double[] {0.0, 0.17320508075680896, 0.346410161513782});
+		score.put(5, new Double[] {0.0, 0.17320508075680896, 0.17320508075680896});
+		score.put(6, new Double[] {0.0, 0.17320508075680896, 0.346410161513782});
+
+		for (Row row : res) {
+			Double[] actual = StringNearestNeighborBatchOpTest.extractScore((String) row.getField(2));
+			Double[] expect = score.get(row.getField(0));
+			for (int i = 0; i < actual.length; i++) {
+				Assert.assertEquals(actual[i], expect[i], 0.01);
+			}
+		}
+	}
+
+	@Test
+	public void testVectorApproxStream() throws Exception {
+		BatchOperator dict = new MemSourceBatchOp(Arrays.asList(dictRows), new String[] {"id", "vec"});
+		StreamOperator query = new MemSourceStreamOp(Arrays.asList(queryRows), new String[] {"id", "vec"});
+
+		VectorApproxNearestNeighborModel neareastNeighbor = new VectorApproxNearestNeighbor()
+			.setIdCol("id")
+			.setSelectedCol("vec")
+			.setTopN(3)
+			.setOutputCol("output")
+			.fit(dict);
+
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp()
+			.linkFrom(neareastNeighbor.transform(query));
+		StreamOperator.execute();
+		List <Row> res = collectSinkStreamOp.getAndRemoveValues();
 
 		Map <Object, Double[]> score = new HashMap <>();
 		score.put(1, new Double[] {0.0, 0.17320508075688776, 0.3464101615137755});

@@ -7,6 +7,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.MTableTypes;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 import com.alibaba.alink.params.recommendation.BaseRateRecommParams;
@@ -28,13 +30,14 @@ public class RecommMapper extends ModelMapper {
 	 */
 	private final RecommKernel recommKernel;
 	private final String initRecommCol;
+
 	public RecommMapper(FourFunction <TableSchema, TableSchema, Params, RecommType, RecommKernel> recommKernelBuilder,
 						RecommType recommType,
 						TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 		this.recommKernel = recommKernelBuilder.apply(modelSchema, dataSchema, params, recommType);
 		this.initRecommCol = params.get(HasInitRecommCol.INIT_RECOMM_COL);
-		this.ioSchema = recommPrepareIoSchema(params, recommType, recommKernel);
+		this.ioSchema = recommPrepareIoSchema(params, recommType);
 
 		checkIoSchema();
 
@@ -49,12 +52,11 @@ public class RecommMapper extends ModelMapper {
 	@Override
 	protected final Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
 		TableSchema modelSchema, TableSchema dataSchema, Params params) {
-
-		return Tuple4.of(new String[] {}, new String[] {}, new TypeInformation[] {}, new String[] {});
+		return Tuple4.of(new String[] {}, new String[] {}, new TypeInformation <?>[] {}, new String[] {});
 	}
 
 	private Tuple4 <String[], String[], TypeInformation <?>[], String[]> recommPrepareIoSchema(
-		Params params, RecommType recommType, RecommKernel recommKernel) {
+		Params params, RecommType recommType) {
 		String[] selectedCols;
 		String[] outputCols = new String[] {params.get(BaseRecommParams.RECOMM_COL)};
 
@@ -72,13 +74,13 @@ public class RecommMapper extends ModelMapper {
 			case SIMILAR_ITEMS:
 				itemCol = params.get(BaseUsersPerItemRecommParams.ITEM_COL);
 				selectedCols = initRecommCol == null ? new String[] {itemCol} : new String[] {itemCol, initRecommCol};
-				outputTypes = new TypeInformation <?>[] {Types.STRING};
+				outputTypes = new TypeInformation <?>[] {MTableTypes.M_TABLE};
 				break;
 			case ITEMS_PER_USER:
 			case SIMILAR_USERS:
 				userCol = params.get(BaseItemsPerUserRecommParams.USER_COL);
 				selectedCols = initRecommCol == null ? new String[] {userCol} : new String[] {userCol, initRecommCol};
-				outputTypes = new TypeInformation <?>[] {Types.STRING};
+				outputTypes = new TypeInformation <?>[] {MTableTypes.M_TABLE};
 				break;
 			default:
 				throw new RuntimeException("not support yet.");
@@ -92,14 +94,13 @@ public class RecommMapper extends ModelMapper {
 			Object[] input = new Object[] {selection.get(0), selection.get(1)};
 			result.set(0, this.recommKernel.recommend(input));
 		} else {
+			Object[] input = new Object[] {selection.get(0)};
 			if (initRecommCol != null) {
-				Object[] input = new Object[] {selection.get(0)};
-				String recommJson = KObjectUtil.MergeRecommJson(recommKernel.getObjectName(),
-					(String) this.recommKernel.recommend(input), (String) selection.get(1));
-				result.set(0, recommJson);
+				MTable recomm = KObjectUtil.MergeRecommMTable(
+					(MTable) this.recommKernel.recommend(input), (MTable) selection.get(1));
+				result.set(0, recomm);
 
 			} else {
-				Object[] input = new Object[] {selection.get(0)};
 				result.set(0, this.recommKernel.recommend(input));
 			}
 		}

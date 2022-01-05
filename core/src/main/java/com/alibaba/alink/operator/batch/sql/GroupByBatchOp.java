@@ -9,6 +9,7 @@ import com.alibaba.alink.common.sql.builtin.agg.MTableAgg;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
 import com.alibaba.alink.params.sql.GroupByParams;
 import org.apache.commons.lang3.StringUtils;
 
@@ -60,7 +61,7 @@ public final class GroupByBatchOp extends BaseSqlApiBatchOp <GroupByBatchOp>
 			selectClause = modifyMTableClasuse(groupCols, selectClause, inputs[0].getSchema(), mTableAggNames);
 		}
 
-		this.setOutputTable(inputs[0].groupBy(groupClause, selectClause).getOutputTable());
+		this.setOutputTable(BatchSqlOperators.groupBy(inputs[0], groupClause, selectClause).getOutputTable());
 		return this;
 	}
 

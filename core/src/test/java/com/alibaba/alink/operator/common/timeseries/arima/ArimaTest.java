@@ -2,10 +2,11 @@ package com.alibaba.alink.operator.common.timeseries.arima;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.params.timeseries.HasEstmateMethod.EstMethod;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ArimaTest {
+public class ArimaTest  extends AlinkTestBase {
 	@Test
 	public void test() {
 		double[] data = new double[] {5.7, 5.5, 5.4, 5.3, 5.2, 5.2, 5.0, 5.0, 4.9, 4.9};

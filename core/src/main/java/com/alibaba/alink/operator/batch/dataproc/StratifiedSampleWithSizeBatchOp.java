@@ -86,7 +86,7 @@ public final class StratifiedSampleWithSizeBatchOp extends BatchOperator <Strati
 				Row first = (Row) iterator.getFirst();
 				if (null != first) {
 					Object key = first.getField(keyIndex);
-					numSample = sampleNumsMap.get(key);
+					numSample = sampleNumsMap.get(String.valueOf(key));
 					Preconditions.checkNotNull(numSample, key + "is not contained in map!");
 				} else {
 					return;

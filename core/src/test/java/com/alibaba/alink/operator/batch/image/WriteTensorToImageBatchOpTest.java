@@ -4,13 +4,17 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.params.image.HasImageType.ImageType;
+import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 
-public class WriteTensorToImageBatchOpTest {
+public class WriteTensorToImageBatchOpTest extends AlinkTestBase {
 
+	@Ignore
 	@Test
 	public void testWriteTensorToImageBatchOp() throws Exception {
 
@@ -31,7 +35,8 @@ public class WriteTensorToImageBatchOpTest {
 			.setImageType(ImageType.PNG)
 			.setRelativeFilePathCol("path");
 
-		memSourceBatchOp.link(readImageToTensorBatchOp).link(writeTensorToImageBatchOp).print();
+		List<Row> rows = memSourceBatchOp.link(readImageToTensorBatchOp).link(writeTensorToImageBatchOp).collect();
+		Assert.assertEquals(1, rows.size());
 	}
 
 }

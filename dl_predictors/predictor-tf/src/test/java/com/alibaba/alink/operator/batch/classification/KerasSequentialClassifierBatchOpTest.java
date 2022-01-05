@@ -2,17 +2,16 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.dl.DLEnvConfig;
-import com.alibaba.alink.common.dl.DLEnvConfig.Version;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
-import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
+import com.alibaba.alink.common.linalg.tensor.StringTensor;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.ToTensorBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.testutil.categories.DLTest;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -23,17 +22,18 @@ import java.util.Random;
 public class KerasSequentialClassifierBatchOpTest {
 
 	public void testConfig(Integer parallelism, Integer numPSs, String checkpointFilePath) throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF231);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(parallelism);
 
 		BatchOperator<?> source = new CsvSourceBatchOp()
 			.setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/random_tensor.csv")
 			.setSchemaStr("tensor string, label int");
+
+		ToTensorBatchOp toTensorBatchOp = new ToTensorBatchOp()
+			.setSelectedCol("tensor")
+			.setTensorDataType("DOUBLE")
+			.setTensorShape(200, 3)
+			.linkFrom(source);
 
 		KerasSequentialClassifierTrainBatchOp trainBatchOp = new KerasSequentialClassifierTrainBatchOp()
 			.setTensorCol("tensor")
@@ -51,7 +51,7 @@ public class KerasSequentialClassifierBatchOpTest {
 			.setNumPSs(numPSs)
 			.setCheckpointFilePath(checkpointFilePath)
 			.setNumEpochs(1)
-			.linkFrom(source);
+			.linkFrom(toTensorBatchOp);
 
 		KerasSequentialClassifierPredictBatchOp predictBatchOp = new KerasSequentialClassifierPredictBatchOp()
 			.setPredictionCol("pred")
@@ -60,6 +60,7 @@ public class KerasSequentialClassifierBatchOpTest {
 			.linkFrom(trainBatchOp, source);
 		predictBatchOp.lazyPrint(10);
 		BatchOperator.execute();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 
 	@Category(DLTest.class)
@@ -71,7 +72,7 @@ public class KerasSequentialClassifierBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void testSingleWorkerModelDir() throws Exception {
-		testConfig(1, null, PythonFileUtils.createTempWorkDir("keras_sequential_train_"));
+		testConfig(1, null, PythonFileUtils.createTempDir("keras_sequential_train_").toString());
 	}
 
 	@Category(DLTest.class)
@@ -83,7 +84,7 @@ public class KerasSequentialClassifierBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void testMultiWorkersAllReduceModelDir() throws Exception {
-		testConfig(3, 0, PythonFileUtils.createTempWorkDir("keras_sequential_train_"));
+		testConfig(3, 0, PythonFileUtils.createTempDir("keras_sequential_train_").toString());
 	}
 
 	@Test
@@ -94,18 +95,12 @@ public class KerasSequentialClassifierBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void testMultiWorkersPSModelDir() throws Exception {
-		testConfig(3, null, PythonFileUtils.createTempWorkDir("keras_sequential_train_"));
+		testConfig(3, null, PythonFileUtils.createTempDir("keras_sequential_train_").toString());
 	}
 
 	@Category(DLTest.class)
 	@Test
 	public void testInputWithTensorType() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF231);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
 		Random random = new Random();
 
 		int n = 1000;
@@ -125,8 +120,8 @@ public class KerasSequentialClassifierBatchOpTest {
 			rows.add(Row.of(x, label));
 		}
 
-		BatchOperator <?> source = new MemSourceBatchOp(rows,
-			"tensor TENSOR_TYPES_DOUBLE_TENSOR, label int");
+			BatchOperator <?> source = new MemSourceBatchOp(rows,
+				"tensor DOUBLE_TENSOR, label int");
 
 		KerasSequentialClassifierTrainBatchOp trainBatchOp = new KerasSequentialClassifierTrainBatchOp()
 			.setTensorCol("tensor")
@@ -156,6 +151,7 @@ public class KerasSequentialClassifierBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void testTFHubLayer() throws Exception {
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(1);
 
 		Random random = new Random();
@@ -180,7 +176,7 @@ public class KerasSequentialClassifierBatchOpTest {
 		}
 
 		BatchOperator <?> source = new MemSourceBatchOp(rows,
-			"tensor TENSOR_TYPES_DOUBLE_TENSOR, label int");
+			"tensor DOUBLE_TENSOR, label int");
 
 		KerasSequentialClassifierTrainBatchOp trainBatchOp = new KerasSequentialClassifierTrainBatchOp()
 			.setTensorCol("tensor")
@@ -191,7 +187,7 @@ public class KerasSequentialClassifierBatchOpTest {
 				// input_shape=(96,96,3))",
 				"hub.KerasLayer('https://hub.tensorflow.google.cn/tensorflow/efficientnet/b0/classification/1')",
 				"Flatten()")
-			.setCheckpointFilePath(PythonFileUtils.createTempWorkDir("keras_sequential_train_"))
+			.setCheckpointFilePath(PythonFileUtils.createTempDir("keras_sequential_train_").toString())
 			.setNumEpochs(1)
 			.linkFrom(source);
 
@@ -202,25 +198,63 @@ public class KerasSequentialClassifierBatchOpTest {
 			.linkFrom(trainBatchOp, source);
 		predictBatchOp.lazyPrint(10);
 		BatchOperator.execute();
+		BatchOperator.setParallelism(savedParallelism);
+	}
+
+	@Category(DLTest.class)
+	@Test
+	public void testTFHubLayerStringTensor() throws Exception {
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
+		BatchOperator.setParallelism(1);
+		Random random = new Random();
+		int n = 1000;
+		List <Row> rows = new ArrayList <>();
+		for (int i = 0; i < n; i += 1) {
+			int length = random.nextInt(8) + 1;
+			String arr = RandomStringUtils.randomAlphanumeric(length);
+			int label = random.nextInt(2);
+			rows.add(Row.of(new StringTensor(arr), label));
+		}
+
+		BatchOperator <?> source = new MemSourceBatchOp(rows, "tensor STRING_TENSOR, label int");
+
+		KerasSequentialClassifierTrainBatchOp trainBatchOp = new KerasSequentialClassifierTrainBatchOp()
+			.setTensorCol("tensor")
+			.setLabelCol("label")
+			.setLayers(
+				"hub.KerasLayer('https://tfhub.dev/google/nnlm-de-dim50/2', input_shape=[], dtype=tf.string)",
+				"Flatten()")
+			.setCheckpointFilePath(PythonFileUtils.createTempDir("keras_sequential_train_").toString())
+			.setNumEpochs(1)
+			.linkFrom(source);
+
+		KerasSequentialClassifierPredictBatchOp predictBatchOp = new KerasSequentialClassifierPredictBatchOp()
+			.setPredictionCol("pred")
+			.setPredictionDetailCol("pred_detail")
+			.setReservedCols("label")
+			.linkFrom(trainBatchOp, source);
+		predictBatchOp.lazyPrint(10);
+		BatchOperator.execute();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 
 	@Category(DLTest.class)
 	@Test
 	public void testValidation() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF231);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(1);
-		PythonFileUtils.DELETE_TEMP_FILES_WHEN_EXIT = false;
 
 		BatchOperator<?> source = new CsvSourceBatchOp()
 			.setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/random_tensor.csv")
 			.setSchemaStr("tensor string, label int");
 
 		source = source.sampleWithSize(1000, true);
+
+		ToTensorBatchOp toTensorBatchOp = new ToTensorBatchOp()
+			.setSelectedCol("tensor")
+			.setTensorDataType("DOUBLE")
+			.setTensorShape(200, 3)
+			.linkFrom(source);
 
 		KerasSequentialClassifierTrainBatchOp trainBatchOp = new KerasSequentialClassifierTrainBatchOp()
 			.setTensorCol("tensor")
@@ -241,8 +275,8 @@ public class KerasSequentialClassifierBatchOpTest {
 			.setSaveCheckpointsEpochs(0.5)
 			//.setSaveCheckpointsSecs(10.)
 			.setSaveBestOnly(true)
-			.setBestMetric("acc")
-			.linkFrom(source);
+			.setBestMetric("binary_accuracy")
+			.linkFrom(toTensorBatchOp);
 
 		KerasSequentialClassifierPredictBatchOp predictBatchOp = new KerasSequentialClassifierPredictBatchOp()
 			.setPredictionCol("pred")
@@ -251,5 +285,6 @@ public class KerasSequentialClassifierBatchOpTest {
 			.linkFrom(trainBatchOp, source);
 		predictBatchOp.lazyPrint(10);
 		BatchOperator.execute();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 }

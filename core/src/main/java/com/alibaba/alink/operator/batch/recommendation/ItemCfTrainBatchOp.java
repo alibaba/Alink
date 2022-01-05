@@ -44,9 +44,8 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 	WithModelInfoBatchOp <ItemCfModelInfo, ItemCfTrainBatchOp, ItemCfModelInfoBatchOp> {
 
 	private static final long serialVersionUID = -5873113492724718667L;
-	private static String USER_NUM = "userNum";
-	private static String[] COL_NAMES = new String[] {"itemId", "itemVector"};
-	private static String USER_ENCODE = "userEncode";
+	private static final String USER_NUM = "userNum";
+	private static final String[] COL_NAMES = new String[] {"itemId", "itemVector"};
 
 	public ItemCfTrainBatchOp() {
 		super(new Params());
@@ -62,7 +61,7 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 		final String userCol = getUserCol();
 		final String itemCol = getItemCol();
 		final String rateCol = getRateCol();
-		final TypeInformation userType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), userCol);
+		final TypeInformation <?> userType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), userCol);
 		final String itemType = FlinkTypeConverter.getTypeString(
 			TableUtil.findColTypeWithAssertAndHint(in.getSchema(), itemCol));
 
@@ -79,7 +78,8 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 			.setSelectedCols(userCol, itemCol)
 			.linkFrom(in);
 
-		BatchOperator userEncode = new OneHotPredictBatchOp()
+		String USER_ENCODE = "userEncode";
+		BatchOperator <?> userEncode = new OneHotPredictBatchOp()
 			.setSelectedCols(userCol, itemCol)
 			.setOutputCols(USER_ENCODE, itemCol)
 			.setEncode(HasEncodeWithoutWoe.Encode.INDEX)
@@ -102,16 +102,16 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 			.withBroadcastSet(oneHot.getSideOutput(0).getDataSet(), USER_NUM)
 			.name("GetUserItems");
 
-		BatchOperator items = new DataSetWrapperBatchOp(itemVector, COL_NAMES,
+		BatchOperator <?> items = new DataSetWrapperBatchOp(itemVector, COL_NAMES,
 			new TypeInformation[] {Types.LONG, VectorTypes.SPARSE_VECTOR});
 
-		BatchOperator train = new VectorNearestNeighborTrainBatchOp()
+		BatchOperator <?> train = new VectorNearestNeighborTrainBatchOp()
 			.setIdCol(COL_NAMES[0])
 			.setSelectedCol(COL_NAMES[1])
 			.setMetric(HasFastMetric.Metric.valueOf(this.getSimilarityType().name()))
 			.linkFrom(items);
 
-		BatchOperator op = new VectorNearestNeighborPredictBatchOp()
+		BatchOperator <?> op = new VectorNearestNeighborPredictBatchOp()
 			.setSelectedCol(COL_NAMES[1])
 			.setReservedCols(COL_NAMES[0])
 			.setTopN(this.getMaxNeighborNumber() + 1)
@@ -130,7 +130,7 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 				private static final long serialVersionUID = 7406134775433418651L;
 
 				@Override
-				public boolean filter(Row value) throws Exception {
+				public boolean filter(Row value) {
 					return !value.getField(0).equals(0L);
 				}
 			});
@@ -167,9 +167,9 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 		return this;
 	}
 
-	public class ItemSimilarityVectorGenerator extends RichMapPartitionFunction <Row, Row> {
+	public static class ItemSimilarityVectorGenerator extends RichMapPartitionFunction <Row, Row> {
 		private static final long serialVersionUID = 4250780052412233802L;
-		private String itemCol;
+		private final String itemCol;
 		private long itemNum;
 
 		public ItemSimilarityVectorGenerator(String itemCol) {
@@ -206,10 +206,10 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 		}
 	}
 
-	public class UserItemVectorGenerator extends RichGroupReduceFunction <Row, Row> {
+	public static class UserItemVectorGenerator extends RichGroupReduceFunction <Row, Row> {
 		private static final long serialVersionUID = 4250780052412233802L;
-		private String rateCol;
-		private String itemCol;
+		private final String rateCol;
+		private final String itemCol;
 		private long itemNum;
 
 		public UserItemVectorGenerator(String rateCol, String itemCol) {
@@ -248,10 +248,10 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 		}
 	}
 
-	public class ItemVectorGenerator extends RichGroupReduceFunction <Row, Row> {
+	public static class ItemVectorGenerator extends RichGroupReduceFunction <Row, Row> {
 		private static final long serialVersionUID = 1783010539701599910L;
-		private String rateCol;
-		private String userCol;
+		private final String rateCol;
+		private final String userCol;
 		private long userNum;
 
 		public ItemVectorGenerator(String rateCol, String userCol) {

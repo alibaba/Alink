@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import com.alibaba.alink.DLTestConstants;
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.dl.BertResources;
 import com.alibaba.alink.common.dl.BertResources.ModelName;
 import com.alibaba.alink.common.dl.BertResources.ResourceType;
@@ -30,6 +31,7 @@ public class BertTextClassifierTest {
 		registerKey = BertResources.getRegisterKey(ModelName.BASE_CHINESE, ResourceType.CKPT);
 		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
 
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(1);
 		String url = DLTestConstants.CHN_SENTI_CORP_HTL_PATH;
 
@@ -53,5 +55,6 @@ public class BertTextClassifierTest {
 		BertClassificationModel model = classifier.fit(data);
 		BatchOperator <?> predict = model.transform(data.firstN(300));
 		predict.print();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 }

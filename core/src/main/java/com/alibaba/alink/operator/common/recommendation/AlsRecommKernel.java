@@ -7,16 +7,16 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.common.utils.PackBatchOperatorUtil;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 import com.alibaba.alink.params.recommendation.BaseRateRecommParams;
 import com.alibaba.alink.params.recommendation.BaseUsersPerItemRecommParams;
-import com.google.common.collect.ImmutableMap;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +74,17 @@ public class AlsRecommKernel extends RecommKernel {
 					JsonConverter.fromJson((String) row.getField(1), Tuple2.class);
 				this.userColName = metaData.f0.get(2).get(0);
 				this.itemColName = metaData.f0.get(2).get(1);
+				int userIdx = metaData.f1.get(2).get(0);
+				int itemIdx = metaData.f1.get(2).get(1);
+				if (recommType == RecommType.ITEMS_PER_USER) {
+					recommObjType = getModelSchema().getFieldTypes()[itemIdx];
+				} else if (recommType == RecommType.USERS_PER_ITEM) {
+					recommObjType = getModelSchema().getFieldTypes()[userIdx];
+				} else if (recommType == RecommType.SIMILAR_USERS) {
+					recommObjType = getModelSchema().getFieldTypes()[userIdx];
+				} else if (recommType == RecommType.SIMILAR_ITEMS) {
+					recommObjType = getModelSchema().getFieldTypes()[itemIdx];
+				}
 			}
 		}
 		List <Row> userFactorsRows = PackBatchOperatorUtil.unpackRows(modelRows, 0);
@@ -82,13 +93,9 @@ public class AlsRecommKernel extends RecommKernel {
 		userFactors = new HashMap <>();
 		itemFactors = new HashMap <>();
 
-		userFactorsRows.forEach(row -> {
-			userFactors.put(row.getField(0), VectorUtil.getDenseVector(row.getField(1)));
-		});
+		userFactorsRows.forEach(row -> userFactors.put(row.getField(0), VectorUtil.getDenseVector(row.getField(1))));
 
-		itemFactorsRows.forEach(row -> {
-			itemFactors.put(row.getField(0), VectorUtil.getDenseVector(row.getField(1)));
-		});
+		itemFactorsRows.forEach(row -> itemFactors.put(row.getField(0), VectorUtil.getDenseVector(row.getField(1))));
 
 		if (excludeKnown) {
 			List <Row> history = PackBatchOperatorUtil.unpackRows(modelRows, 2);
@@ -116,12 +123,12 @@ public class AlsRecommKernel extends RecommKernel {
 	}
 
 	@Override
-	public Double rate(Object[] infoUserItem) throws Exception {
+	public Double rate(Object[] infoUserItem) {
 		return predictRating(infoUserItem);
 	}
 
 	@Override
-	public String recommendItemsPerUser(Object userId) throws Exception {
+	public MTable recommendItemsPerUser(Object userId) {
 		DenseVector userFea = userFactors.get(userId);
 		Set <Object> excludes = null;
 		if (excludeKnown) {
@@ -131,7 +138,7 @@ public class AlsRecommKernel extends RecommKernel {
 	}
 
 	@Override
-	public String recommendUsersPerItem(Object itemId) throws Exception {
+	public MTable recommendUsersPerItem(Object itemId) {
 		DenseVector itemFea = itemFactors.get(itemId);
 		Set <Object> excludes = null;
 		if (excludeKnown) {
@@ -141,7 +148,7 @@ public class AlsRecommKernel extends RecommKernel {
 	}
 
 	@Override
-	public String recommendSimilarItems(Object itemId) throws Exception {
+	public MTable recommendSimilarItems(Object itemId) {
 		DenseVector itemFea = itemFactors.get(itemId);
 		Set <Object> excludes = new HashSet <>();
 		excludes.add(itemId);
@@ -149,14 +156,14 @@ public class AlsRecommKernel extends RecommKernel {
 	}
 
 	@Override
-	public String recommendSimilarUsers(Object userId) throws Exception {
+	public MTable recommendSimilarUsers(Object userId) {
 		DenseVector userFea = userFactors.get(userId);
 		Set <Object> excludes = new HashSet <>();
 		excludes.add(userId);
 		return recommend(userColName, userFea, excludes, userFactors, KObjectUtil.SCORE_NAME);
 	}
 
-	private Double predictRating(Object[] ids) throws Exception {
+	private Double predictRating(Object[] ids) {
 		Object userId = ids[0];
 		Object itemId = ids[1];
 		DenseVector userFea = userFactors.get(userId);
@@ -168,7 +175,7 @@ public class AlsRecommKernel extends RecommKernel {
 		}
 	}
 
-	private String recommend(String objectColName, DenseVector userFea, Set <Object> excludes,
+	private MTable recommend(String objectColName, DenseVector userFea, Set <Object> excludes,
 							 Map <Object, DenseVector> itemFeatures, String resultName) {
 		RecommUtils.RecommPriorityQueue priorQueue = new RecommUtils.RecommPriorityQueue(topK);
 
@@ -180,13 +187,7 @@ public class AlsRecommKernel extends RecommKernel {
 				}
 			});
 		}
-
-		Tuple2 <List <Object>, List <Double>> itemsAndScores = priorQueue.getOrderedObjects();
-
-		return KObjectUtil.serializeRecomm(
-			objectColName,
-			itemsAndScores.f0,
-			ImmutableMap.of(resultName, itemsAndScores.f1)
-		);
+		List <Row> rows = priorQueue.getOrderedRows();
+		return new MTable(rows, objectColName + " " + FlinkTypeConverter.getTypeString(recommObjType) + "," + resultName + " DOUBLE");
 	}
 }

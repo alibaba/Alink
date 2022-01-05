@@ -221,7 +221,9 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 			result = result.withBroadcastSet(inputs[i].getDataSet(), DLConstants.BC_NAME_PREFIX + i);
 		}
 
-		result.withBroadcastSet(extractTensorShapes(in.getDataSet(), in.getColNames()), DLConstants.BC_NAME_TENSOR_SHAPES);
+		result
+			.withBroadcastSet(extractTensorShapes(in.getDataSet(), in.getColNames()), DLConstants.BC_NAME_TENSOR_SHAPES)
+			.withBroadcastSet(extractTensorTypes(in.getDataSet(), in.getColNames()), DLConstants.BC_NAME_TENSOR_TYPES);
 
 		BatchOperator <?> downloaderOp = DataSetDiskDownloader.downloadFilesWithRename(getMLEnvironmentId(),
 			filePaths,
@@ -265,6 +267,23 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 					for (int i = 0; i < colNames.length; i += 1) {
 						if (value.getField(i) instanceof Tensor) {
 							tensorShapeMap.put(colNames[i], ((Tensor <?>) value.getField(i)).shape());
+						}
+					}
+					out.collect(tensorShapeMap);
+				}
+			});
+	}
+
+	private DataSet <Map <String, String>> extractTensorTypes(DataSet <Row> dataSet, String[] colNames) {
+		return dataSet.first(1)
+			.flatMap(new FlatMapFunction <Row, Map <String, String>>() {
+				@Override
+				public void flatMap(Row value, Collector <Map <String, String>> out) {
+					Map <String, String> tensorShapeMap = new HashMap <>();
+					for (int i = 0; i < colNames.length; i += 1) {
+						if (value.getField(i) instanceof Tensor) {
+							tensorShapeMap.put(colNames[i],
+								((Tensor <?>) value.getField(i)).getType().name().toLowerCase());
 						}
 					}
 					out.collect(tensorShapeMap);

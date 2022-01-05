@@ -15,6 +15,10 @@ public interface TimeSeriesPredictParams<T> extends
 	HasPredictionDetailCol <T>,
 	HasReservedColsDefaultAsNull <T> {
 
+	/**
+	 * @cn-name 预测条数
+	 * @cn 预测条数
+	 */
 	ParamInfo <Integer> PREDICT_NUM = ParamInfoFactory
 		.createParamInfo("predictNum", Integer.class)
 		.setDescription("the predict num")

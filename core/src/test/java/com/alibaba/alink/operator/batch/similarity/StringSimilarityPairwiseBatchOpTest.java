@@ -54,18 +54,16 @@ public class StringSimilarityPairwiseBatchOpTest extends AlinkTestBase {
 			}
 		});
 
-		String[] output = {
-			"+I[1, 北京, 北京, 1.0]",
-			"+I[2, 北京欢迎, 中国人民, 0.0]",
-			"+I[3, Beijing, Beijing, 1.0]",
-			"+I[4, Beijing, Chinese, 0.0]",
-			"+I[5, Good Morning!, Good Evening!, 0.4]"
-		};
-		String[] results = new String[list.size()];
-		for (int i = 0; i < list.size(); i++) {
-			results[i] = list.get(i).toString();
-		}
-		assertArrayEquals(output, results);
+		Row[] output =
+			new Row[] {
+				Row.of(1L, "北京", "北京", 1.0),
+				Row.of(2L, "北京欢迎", "中国人民", 0.0),
+				Row.of(3L, "Beijing", "Beijing", 1.0),
+				Row.of(4L, "Beijing", "Chinese", 0.0),
+				Row.of(5L, "Good Morning!", "Good Evening!", 0.4),
+			};
+
+		assertListRowEqual(Arrays.asList(output), list, 0);
 	}
 
 	@Test

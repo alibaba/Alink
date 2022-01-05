@@ -8,6 +8,7 @@ import org.junit.Before;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LastTimeTest extends AggFunctionTestBase <Object[], Object, LastTimeData> {
@@ -21,40 +22,41 @@ public class LastTimeTest extends AggFunctionTestBase <Object[], Object, LastTim
 	@Override
 	protected List <List <Object[]>> getInputValueSets() {
 		List <List <Object[]>> res = new ArrayList <>();
-		ArrayList <Object[]> data = new ArrayList <>();
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, new Timestamp(1L), 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, new Timestamp(2L), 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, new Timestamp(3L), 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, new Timestamp(4L), 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, new Timestamp(5L), 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, new Timestamp(6L), 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, new Timestamp(7L), 120});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {0, new Timestamp(8L), 120});
-		res.add((List <Object[]>) data.clone());
+
+		List <Object[]> data = Arrays.asList(
+			new Object[] {0, new Timestamp(1L), 120},
+			new Object[] {0, new Timestamp(2L), 120},
+			new Object[] {0, new Timestamp(3L), 120},
+			new Object[] {0, new Timestamp(4L), 120},
+			new Object[] {0, new Timestamp(5L), 120},
+			new Object[] {0, new Timestamp(6L), 120},
+			new Object[] {0, new Timestamp(7L), 120},
+			new Object[] {0, new Timestamp(8L), 120});
+
+		res.add(new ArrayList <>());
+		res.add(data.subList(0, 1));
+		res.add(data.subList(0, 2));
+		res.add(data.subList(0, 3));
+		res.add(data.subList(0, 4));
+		res.add(data.subList(0, 5));
+		res.add(data.subList(0, 6));
+		res.add(data.subList(0, 7));
+		res.add(data.subList(0, 8));
+
 		return res;
 	}
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		List <Object> res = new ArrayList <>();
-		res.add(null);
-		res.add(new Timestamp(1L));
-		res.add(new Timestamp(2L));
-		res.add(new Timestamp(3L));
-		res.add(new Timestamp(4L));
-		res.add(new Timestamp(5L));
-		res.add(new Timestamp(6L));
-		res.add(new Timestamp(7L));
-		res.add(new Timestamp(8L));
-		return res;
+		return Arrays.asList(null,
+			new Timestamp(1L),
+			new Timestamp(2L),
+			new Timestamp(3L),
+			new Timestamp(4L),
+			new Timestamp(5L),
+			new Timestamp(6L),
+			new Timestamp(7L),
+			new Timestamp(8L));
 	}
 
 	@Override

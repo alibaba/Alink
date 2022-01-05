@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.stream.tensorflow;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.dl.DLEnvConfig;
 import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.common.dl.DLLauncherStreamOp;
@@ -23,12 +24,7 @@ public class TensorFlow2StreamOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void testPs() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF231);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedStreamParallelism = MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().getParallelism();
 		StreamOperator.setParallelism(3);
 		DLLauncherStreamOp.DL_CLUSTER_START_TIME = 30 * 1000;
 
@@ -57,10 +53,12 @@ public class TensorFlow2StreamOpTest {
 			.linkFrom(source);
 		tensorFlow2StreamOp.print();
 		StreamOperator.execute();
+		StreamOperator.setParallelism(savedStreamParallelism);
 	}
 
 	@Test
 	public void testAllReduce() throws Exception {
+		int savedStreamParallelism = MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().getParallelism();
 		AlinkGlobalConfiguration.setPrintProcessInfo(true);
 		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
 
@@ -95,6 +93,7 @@ public class TensorFlow2StreamOpTest {
 			.linkFrom(source);
 		tensorFlow2StreamOp.print();
 		StreamOperator.execute();
+		StreamOperator.setParallelism(savedStreamParallelism);
 	}
 
 	@Test
@@ -105,6 +104,7 @@ public class TensorFlow2StreamOpTest {
 		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF231);
 		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
 
+		int savedStreamParallelism = MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().getParallelism();
 		StreamOperator.setParallelism(3);
 		DLLauncherStreamOp.DL_CLUSTER_START_TIME = 30 * 1000;
 
@@ -131,5 +131,6 @@ public class TensorFlow2StreamOpTest {
 			.linkFrom(source);
 		tensorFlow2StreamOp.print();
 		StreamOperator.execute();
+		StreamOperator.setParallelism(savedStreamParallelism);
 	}
 }

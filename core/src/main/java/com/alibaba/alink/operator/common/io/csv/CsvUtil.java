@@ -20,7 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
 
@@ -32,21 +34,33 @@ public class CsvUtil {
 	private static final Logger LOG = LoggerFactory.getLogger(CsvUtil.class);
 
 	private static final BiMap <String, TypeInformation <?>> STRING_TYPE_MAP = HashBiMap.create();
-
+	private static final Set <String> STRING_TYPE_SET = new HashSet <>();
 	static {
 		STRING_TYPE_MAP.put("VARBINARY", BYTE_PRIMITIVE_ARRAY_TYPE_INFO);
-		STRING_TYPE_MAP.put("VEC_TYPES_VECTOR", VectorTypes.VECTOR);
-		STRING_TYPE_MAP.put("VEC_TYPES_DENSE_VECTOR", VectorTypes.DENSE_VECTOR);
-		STRING_TYPE_MAP.put("VEC_TYPES_SPARSE_VECTOR", VectorTypes.SPARSE_VECTOR);
-		STRING_TYPE_MAP.put("TENSOR_TYPES_TENSOR", TensorTypes.TENSOR);
-		STRING_TYPE_MAP.put("TENSOR_TYPES_BOOL_TENSOR", TensorTypes.BOOL_TENSOR);
-		STRING_TYPE_MAP.put("TENSOR_TYPES_BYTE_TENSOR", TensorTypes.BYTE_TENSOR);
-		STRING_TYPE_MAP.put("TENSOR_TYPES_DOUBLE_TENSOR", TensorTypes.DOUBLE_TENSOR);
-		STRING_TYPE_MAP.put("TENSOR_TYPES_FLOAT_TENSOR", TensorTypes.FLOAT_TENSOR);
-		STRING_TYPE_MAP.put("TENSOR_TYPES_INT_TENSOR", TensorTypes.INT_TENSOR);
-		STRING_TYPE_MAP.put("TENSOR_TYPES_LONG_TENSOR", TensorTypes.LONG_TENSOR);
-		STRING_TYPE_MAP.put("TENSOR_TYPES_STRING_TENSOR", TensorTypes.STRING_TENSOR);
+		STRING_TYPE_MAP.put("VECTOR", VectorTypes.VECTOR);
+		STRING_TYPE_MAP.put("DENSE_VECTOR", VectorTypes.DENSE_VECTOR);
+		STRING_TYPE_MAP.put("SPARSE_VECTOR", VectorTypes.SPARSE_VECTOR);
+		STRING_TYPE_MAP.put("TENSOR", TensorTypes.TENSOR);
+		STRING_TYPE_MAP.put("BOOL_TENSOR", TensorTypes.BOOL_TENSOR);
+		STRING_TYPE_MAP.put("BYTE_TENSOR", TensorTypes.BYTE_TENSOR);
+		STRING_TYPE_MAP.put("DOUBLE_TENSOR", TensorTypes.DOUBLE_TENSOR);
+		STRING_TYPE_MAP.put("FLOAT_TENSOR", TensorTypes.FLOAT_TENSOR);
+		STRING_TYPE_MAP.put("INT_TENSOR", TensorTypes.INT_TENSOR);
+		STRING_TYPE_MAP.put("LONG_TENSOR", TensorTypes.LONG_TENSOR);
+		STRING_TYPE_MAP.put("STRING_TENSOR", TensorTypes.STRING_TENSOR);
 		STRING_TYPE_MAP.put("MTABLE", MTableTypes.M_TABLE);
+
+		STRING_TYPE_SET.add("VEC_TYPES_VECTOR");
+		STRING_TYPE_SET.add("VEC_TYPES_DENSE_VECTOR");
+		STRING_TYPE_SET.add("VEC_TYPES_SPARSE_VECTOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_BOOL_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_BYTE_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_DOUBLE_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_FLOAT_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_INT_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_LONG_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_STRING_TENSOR");
 	}
 
 	/**
@@ -84,8 +98,9 @@ public class CsvUtil {
 	}
 
 	/**
-	 * Extract the TableSchema from a string. The format of the string is comma
-	 * separated colName-colType pairs, such as "f0 int,f1 bigint,f2 string".
+	 * Extract the TableSchema from a string. The format of the string is comma separated colName-colType pairs,
+	 * such as
+	 * "f0 int,f1 bigint,f2 string".
 	 *
 	 * @param schemaStr The formatted schema string.
 	 * @return TableSchema.
@@ -93,21 +108,19 @@ public class CsvUtil {
 	public static TableSchema schemaStr2Schema(String schemaStr) {
 		String[] fields = robustSpiltByComma(schemaStr);
 		String[] colNames = new String[fields.length];
-		TypeInformation[] colTypes = new TypeInformation[fields.length];
+		TypeInformation <?>[] colTypes = new TypeInformation[fields.length];
 		for (int i = 0; i < colNames.length; i++) {
 			String[] kv = fields[i].trim().split("\\s+", 2);
 			colNames[i] = kv[0];
-			if ((kv[1].toLowerCase()).equals("vector")) {
-				kv[1] = "VEC_TYPES_VECTOR";
+			if (STRING_TYPE_SET.contains(kv[1])) {
+				if (kv[1].startsWith("VEC_TYPES_")) {
+					kv[1] = kv[1].substring("VEC_TYPES_".length());
+				} else if (kv[1].startsWith("TENSOR_TYPES_")) {
+					kv[1] = kv[1].substring("TENSOR_TYPES_".length());
+				}
 			}
-			if ((kv[1].toLowerCase()).equals("densevector")) {
-				kv[1] = "VEC_TYPES_DENSE_VECTOR";
-			}
-			if ((kv[1].toLowerCase()).equals("sparsevector")) {
-				kv[1] = "VEC_TYPES_SPARSE_VECTOR";
-			}
-			if (STRING_TYPE_MAP.containsKey(kv[1])) {
-				colTypes[i] = STRING_TYPE_MAP.get(kv[1]);
+			if (STRING_TYPE_MAP.containsKey(kv[1].toUpperCase())) {
+				colTypes[i] = STRING_TYPE_MAP.get(kv[1].toUpperCase());
 			} else {
 				if (kv[1].contains("<") && kv[1].contains(">")) {
 					colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1]);
@@ -128,7 +141,7 @@ public class CsvUtil {
 	 */
 	public static String schema2SchemaStr(TableSchema schema) {
 		String[] colNames = schema.getFieldNames();
-		TypeInformation[] colTypes = schema.getFieldTypes();
+		TypeInformation <?>[] colTypes = schema.getFieldTypes();
 
 		StringBuilder sbd = new StringBuilder();
 		for (int i = 0; i < colNames.length; i++) {
@@ -151,15 +164,15 @@ public class CsvUtil {
 	 */
 	public static class ParseCsvFunc extends RichFlatMapFunction <Row, Row> {
 		private static final long serialVersionUID = -6692520343934146759L;
-		private TypeInformation[] colTypes;
-		private String fieldDelim;
-		private Character quoteChar;
-		private boolean skipBlankLine;
-		private boolean lenient;
+		private final TypeInformation <?>[] colTypes;
+		private final String fieldDelim;
+		private final Character quoteChar;
+		private final boolean skipBlankLine;
+		private final boolean lenient;
 		private transient CsvParser parser;
 		private Row emptyRow;
 
-		public ParseCsvFunc(TypeInformation[] colTypes, String fieldDelim, Character quoteChar,
+		public ParseCsvFunc(TypeInformation <?>[] colTypes, String fieldDelim, Character quoteChar,
 							boolean skipBlankLine, boolean lenient) {
 			this.colTypes = colTypes;
 			this.fieldDelim = fieldDelim;
@@ -201,12 +214,12 @@ public class CsvUtil {
 	 */
 	public static class FormatCsvFunc extends RichMapFunction <Row, Row> {
 		private static final long serialVersionUID = 3828700401508155398L;
-		private transient CsvFormatter formater;
-		private TypeInformation[] colTypes;
-		private String fieldDelim;
-		private Character quoteChar;
+		private transient CsvFormatter formatter;
+		private final TypeInformation <?>[] colTypes;
+		private final String fieldDelim;
+		private final Character quoteChar;
 
-		public FormatCsvFunc(TypeInformation[] colTypes, String fieldDelim, Character quoteChar) {
+		public FormatCsvFunc(TypeInformation <?>[] colTypes, String fieldDelim, Character quoteChar) {
 			this.colTypes = colTypes;
 			this.fieldDelim = fieldDelim;
 			this.quoteChar = quoteChar;
@@ -214,12 +227,12 @@ public class CsvUtil {
 
 		@Override
 		public void open(Configuration parameters) throws Exception {
-			this.formater = new CsvFormatter(colTypes, fieldDelim, quoteChar);
+			this.formatter = new CsvFormatter(colTypes, fieldDelim, quoteChar);
 		}
 
 		@Override
 		public Row map(Row row) throws Exception {
-			return Row.of(formater.format(row));
+			return Row.of(formatter.format(row));
 		}
 	}
 
@@ -239,7 +252,7 @@ public class CsvUtil {
 	 * @param schemaStr The formatted schema string.
 	 * @return An array of column types.
 	 */
-	public static TypeInformation<?>[] getColTypes(String schemaStr) {
+	public static TypeInformation <?>[] getColTypes(String schemaStr) {
 		return schemaStr2Schema(schemaStr).getFieldTypes();
 	}
 

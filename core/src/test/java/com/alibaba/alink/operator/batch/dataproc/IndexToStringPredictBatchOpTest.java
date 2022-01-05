@@ -5,12 +5,13 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.pipeline.dataproc.StringIndexer;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class IndexToStringPredictBatchOpTest {
+public class IndexToStringPredictBatchOpTest extends AlinkTestBase {
 	@Test
 	public void testIndexToStringPredictBatchOp() throws Exception {
 		List <Row> df = Arrays.asList(

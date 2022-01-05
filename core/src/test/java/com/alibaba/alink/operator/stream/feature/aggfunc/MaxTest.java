@@ -7,6 +7,7 @@ import com.alibaba.alink.common.sql.builtin.agg.MinUdaf;
 import org.junit.Before;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MaxTest extends AggFunctionTestBase <Object[], Object, MinUdaf.MinMaxData> {
@@ -19,29 +20,26 @@ public class MaxTest extends AggFunctionTestBase <Object[], Object, MinUdaf.MinM
 	@Override
 	protected List <List <Object[]>> getInputValueSets() {
 		List <List <Object[]>> res = new ArrayList <>();
-		ArrayList <Object[]> data = new ArrayList <>();
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {1});
-		data.add(new Object[] {3});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {2});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {4});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {3});
-		res.add((List <Object[]>) data.clone());
+		List <Object[]> data = Arrays.asList(
+			new Object[] {1},
+			new Object[] {3},
+			new Object[] {2},
+			new Object[] {4},
+			new Object[] {3}
+		);
+
+		res.add(new ArrayList <>());
+		res.add(data.subList(0, 2));
+		res.add(data.subList(0, 3));
+		res.add(data.subList(0, 4));
+		res.add(data.subList(0, 5));
+
 		return res;
 	}
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		List <Object> res = new ArrayList <>();
-		res.add(null);
-		res.add(3);
-		res.add(3);
-		res.add(4);
-		res.add(4);
-		return res;
+		return Arrays.asList(null, 3, 3, 4, 4);
 	}
 
 	@Override

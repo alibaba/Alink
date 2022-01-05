@@ -6,14 +6,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.dl.plugin.DLPredictorService;
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
+import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.dl.HasIntraOpParallelism;
 import com.alibaba.alink.params.dl.HasModelPath;
-import com.alibaba.alink.params.tensorflow.savedmodel.BaseTFSavedModelPredictParams;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
+import com.alibaba.alink.params.tensorflow.savedmodel.BaseTFSavedModelPredictParams;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,6 +42,8 @@ import static com.alibaba.alink.operator.common.tensorflow.TFSavedModelConstants
  */
 public class BaseTFSavedModelPredictMapper extends Mapper implements Serializable {
 
+	private final TFPredictorClassLoaderFactory factory;
+
 	protected final String[] tfOutputCols;
 	protected final Class <?>[] tfOutputColTypeClasses;
 	private final String graphDefTag;
@@ -53,7 +55,15 @@ public class BaseTFSavedModelPredictMapper extends Mapper implements Serializabl
 	private String modelPath;
 
 	public BaseTFSavedModelPredictMapper(TableSchema dataSchema, Params params) {
+		this(dataSchema, params, new TFPredictorClassLoaderFactory());
+	}
+
+	public BaseTFSavedModelPredictMapper(TableSchema dataSchema, Params params,
+										 TFPredictorClassLoaderFactory factory) {
 		super(dataSchema, params);
+
+		this.factory = factory;
+
 		graphDefTag = params.get(BaseTFSavedModelPredictParams.GRAPH_DEF_TAG);
 		signatureDefKey = params.get(BaseTFSavedModelPredictParams.SIGNATURE_DEF_KEY);
 
@@ -109,7 +119,6 @@ public class BaseTFSavedModelPredictMapper extends Mapper implements Serializabl
 	@Override
 	public void open() {
 		Preconditions.checkArgument(modelPath != null, "Model path is not set.");
-		TFPredictorClassLoaderFactory factory = new TFPredictorClassLoaderFactory();
 		predictor = TFPredictorClassLoaderFactory.create(factory);
 		predictor.open(getPredictorConfig());
 	}

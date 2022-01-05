@@ -1,6 +1,7 @@
 package com.alibaba.alink.pipeline.regression;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.dl.BertResources;
 import com.alibaba.alink.common.dl.BertResources.ModelName;
 import com.alibaba.alink.common.dl.BertResources.ResourceType;
@@ -29,6 +30,7 @@ public class BertTextPairRegressorTest {
 		registerKey = BertResources.getRegisterKey(ModelName.BASE_CHINESE, ResourceType.CKPT);
 		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
 
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(1);
 
 		String url = "http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/data/MRPC/train.tsv";
@@ -51,5 +53,6 @@ public class BertTextPairRegressorTest {
 		BertRegressionModel model = regressor.fit(data);
 		BatchOperator <?> predict = model.transform(data.firstN(300));
 		predict.print();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 }

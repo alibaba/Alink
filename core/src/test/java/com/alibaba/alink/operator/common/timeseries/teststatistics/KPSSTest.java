@@ -1,9 +1,10 @@
 package com.alibaba.alink.operator.common.timeseries.teststatistics;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KPSSTest {
+public class KPSSTest extends AlinkTestBase {
 	@Test
 	public void test() {
 		double[] vals = new double[] {12.4, 12.3, 12.2, 12.1, 11.9, 11.8, 11.7, 11.7, 11.6, 11.4};
@@ -16,7 +17,7 @@ public class KPSSTest {
 
 	@Test
 	public void test2() {
-		double[] vals = new double[] {18.6,22.2,19.4,19.7,18.5,18.0,22.3,19.5,18.6,21.3};
+		double[] vals = new double[] {18.6, 22.2, 19.4, 19.7, 18.5, 18.0, 22.3, 19.5, 18.6, 21.3};
 		KPSS kpss = new KPSS();
 		kpss.kpssTest(vals, 1, 1);
 

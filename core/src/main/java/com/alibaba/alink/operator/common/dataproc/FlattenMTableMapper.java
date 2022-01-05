@@ -27,7 +27,7 @@ public class FlattenMTableMapper extends FlatMapper {
     private final TypeInformation<?>[] outputColTypes;
     private boolean isTypeConvert = false;
     private TypeInformation<?>[] mTableTypes;
-    private HandleInvalidMethod handleInvalidMethod;
+    private final HandleInvalidMethod handleInvalidMethod;
 
     public FlattenMTableMapper(TableSchema dataSchema, Params params) {
         super(dataSchema, params);

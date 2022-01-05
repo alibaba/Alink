@@ -1,10 +1,7 @@
 package com.alibaba.alink.operator.batch.classification;
 
 import com.alibaba.alink.DLTestConstants;
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
-import com.alibaba.alink.common.io.plugin.RegisterKey;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.testutil.categories.DLTest;
@@ -16,13 +13,8 @@ public class BertTextClassifierPredictBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = TFPredictorClassLoaderFactory.getRegisterKey();
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
-		BatchOperator.setParallelism(1);
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
+		BatchOperator.setParallelism(2);
 		String url = DLTestConstants.CHN_SENTI_CORP_HTL_PATH;
 		String schema = "label bigint, review string";
 		BatchOperator <?> data = new CsvSourceBatchOp()
@@ -39,5 +31,6 @@ public class BertTextClassifierPredictBatchOpTest {
 			.setPredictionDetailCol("pred_detail")
 			.linkFrom(model, data);
 		predict.print();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 }

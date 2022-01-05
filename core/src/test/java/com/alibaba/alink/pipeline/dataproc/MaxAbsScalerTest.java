@@ -11,7 +11,10 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MaxAbsScalerPredictBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.MaxAbsScalerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -58,27 +61,29 @@ public class MaxAbsScalerTest extends AlinkTestBase {
 		MaxAbsScalerModel model = scaler3.fit(batchData);
 
 		BatchOperator res = model.transform(batchData);
-		List rows = res.getDataSet().collect();
-		HashMap <String, Tuple2 <Double, Double>> map = new HashMap <String, Tuple2 <Double, Double>>();
-		map.put((String) ((Row) rows.get(0)).getField(0), Tuple2.of(
-			(Double) ((Row) rows.get(0)).getField(1),
-			(Double) ((Row) rows.get(0)).getField(2)));
-		map.put((String) ((Row) rows.get(1)).getField(0), Tuple2.of(
-			(Double) ((Row) rows.get(1)).getField(1),
-			(Double) ((Row) rows.get(1)).getField(2)));
-		map.put((String) ((Row) rows.get(2)).getField(0), Tuple2.of(
-			(Double) ((Row) rows.get(2)).getField(1),
-			(Double) ((Row) rows.get(2)).getField(2)));
-		map.put((String) ((Row) rows.get(3)).getField(0), Tuple2.of(
-			(Double) ((Row) rows.get(3)).getField(1),
-			(Double) ((Row) rows.get(3)).getField(2)));
-		assertEquals(map.get("0"), new Tuple2 <>(0.25, 0.6666666666666666));
-		assertEquals(map.get("1"), new Tuple2 <>(-0.25, -1.0));
-		assertEquals(map.get("2"), new Tuple2 <>(1.0, 0.6666666666666666));
-		assertEquals(map.get("3"), new Tuple2 <>(null, null));
+		List <Row> rows = res.getDataSet().collect();
+		rows.sort(new RowComparator(0));
+		assertEquals(rows.get(0).getField(1), 0.25);
+		assertEquals(rows.get(0).getField(2), 0.6666666666666666);
+		assertEquals(rows.get(1).getField(1), -0.25);
+		assertEquals(rows.get(1).getField(2), -1.0);
+		assertEquals(rows.get(2).getField(1), 1.0);
+		assertEquals(rows.get(2).getField(2), 0.6666666666666666);
+		assertEquals(rows.get(3).getField(1), null);
+		assertEquals(rows.get(3).getField(2), null);
 
-		model.transform(streamData).print();
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp().linkFrom(model.transform(streamData));
 		StreamOperator.execute();
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		result.sort(new RowComparator(0));
+		assertEquals(rows.get(0).getField(1), 0.25);
+		assertEquals(rows.get(0).getField(2), 0.6666666666666666);
+		assertEquals(rows.get(1).getField(1), -0.25);
+		assertEquals(rows.get(1).getField(2), -1.0);
+		assertEquals(rows.get(2).getField(1), 1.0);
+		assertEquals(rows.get(2).getField(2), 0.6666666666666666);
+		assertEquals(rows.get(3).getField(1), null);
+		assertEquals(rows.get(3).getField(2), null);
 	}
 
 	@Test

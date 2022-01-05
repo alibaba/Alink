@@ -23,7 +23,7 @@ import com.alibaba.alink.common.mapper.IterableModelLoaderModelMapperAdapterMT;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.ModelMapperAdapter;
 import com.alibaba.alink.common.mapper.ModelMapperAdapterMT;
-import com.alibaba.alink.common.mapper.ModelStreamModelMapperAdapt;
+import com.alibaba.alink.common.mapper.ModelStreamModelMapperAdapter;
 import com.alibaba.alink.common.model.BroadcastVariableModelSource;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
@@ -129,7 +129,7 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 					resultRows = inputs[1]
 						.getDataSet()
 						.map(new RichMapFunction <Row, Row>() {
-							ModelStreamModelMapperAdapt modelStreamModelMapper;
+							ModelStreamModelMapperAdapter modelStreamModelMapper;
 
 							@Override
 							public void open(Configuration parameters) throws Exception {
@@ -138,7 +138,7 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 								mapper.loadModel(modelRows);
 								mapper.open();
 
-								modelStreamModelMapper = new ModelStreamModelMapperAdapt(mapper);
+								modelStreamModelMapper = new ModelStreamModelMapperAdapter(mapper);
 							}
 
 							@Override

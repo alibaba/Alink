@@ -35,6 +35,7 @@ import com.alibaba.alink.operator.batch.dataproc.ShuffleBatchOp;
 import com.alibaba.alink.operator.batch.sink.BaseSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
 import com.alibaba.alink.operator.batch.statistics.SummarizerBatchOp;
 import com.alibaba.alink.operator.batch.utils.UDFBatchOp;
 import com.alibaba.alink.operator.batch.utils.UDTFBatchOp;
@@ -240,7 +241,7 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	 * @return The resulted <code>BatchOperator</code> of the "groupBy" operation.
 	 */
 	public BatchOperator <?> groupBy(String groupByPredicate, String selectClause) {
-		return BatchSqlOperators.groupBy(this, groupByPredicate, selectClause);
+		return new GroupByBatchOp(groupByPredicate, selectClause).setMLEnvironmentId(this.getMLEnvironmentId()).linkFrom(this);
 	}
 
 	public BatchOperator <?> rebalance() {
@@ -488,7 +489,12 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		}
 
 		@Override
-		protected MemSinkBatchOp sinkFrom(BatchOperator<?> in) {
+		public MemSinkBatchOp linkFrom(BatchOperator <?>... inputs) {
+			return sinkFrom(checkAndGetFirst(inputs));
+		}
+
+		@Override
+		protected MemSinkBatchOp sinkFrom(BatchOperator <?> in) {
 			DataSet <Row> input = in.getDataSet();
 
 			serializer = input.getType().createSerializer(
@@ -620,7 +626,7 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		return lazyCollectStatistics(Arrays.asList(callbacks));
 	}
 
-	public T lazyCollectStatistics(List<Consumer <TableSummary>> callbacks) {
+	public T lazyCollectStatistics(List <Consumer <TableSummary>> callbacks) {
 		getStatisticsOp().lazyCollectSummary(callbacks);
 		return (T) this;
 	}

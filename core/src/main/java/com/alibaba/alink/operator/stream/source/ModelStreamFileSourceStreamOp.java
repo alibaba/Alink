@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.source;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.io.InputFormat;
 import org.apache.flink.api.common.io.statistics.BaseStatistics;
+import org.apache.flink.api.common.time.Time;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
@@ -22,14 +23,16 @@ import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.common.stream.model.ModelStreamFileScanner;
+import com.alibaba.alink.operator.common.stream.model.ModelStreamFileScanner.ScanTask;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils.ModelStreamFileIdScanner;
 import com.alibaba.alink.params.io.ModelStreamFileSourceParams;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @IoOpAnnotation(name = "modelstream_file", ioType = IOType.SourceStream)
 public final class ModelStreamFileSourceStreamOp extends BaseSourceStreamOp <ModelStreamFileSourceStreamOp>
@@ -56,8 +59,7 @@ public final class ModelStreamFileSourceStreamOp extends BaseSourceStreamOp <Mod
 				getMLEnvironmentId(),
 				filePath,
 				ModelStreamUtils.createStartTime(getStartTime()),
-				ModelStreamUtils.createScanIntervalMillis(getScanInterval())
-			)
+				ModelStreamUtils.createScanIntervalMillis(getScanInterval()))
 				.rebalance()
 				.flatMap(new RichFlatMapFunction <Timestamp, Tuple3 <Timestamp, Long, FilePath>>() {
 					@Override
@@ -76,7 +78,8 @@ public final class ModelStreamFileSourceStreamOp extends BaseSourceStreamOp <Mod
 				.rebalance()
 				.flatMap(new RichFlatMapFunction <Tuple3 <Timestamp, Long, FilePath>, Row>() {
 					@Override
-					public void flatMap(Tuple3 <Timestamp, Long, FilePath> value, Collector <Row> out) throws Exception {
+					public void flatMap(Tuple3 <Timestamp, Long, FilePath> value, Collector <Row> out)
+						throws Exception {
 						Tuple2 <TableSchema, List <Row>> rows = AkUtils.readFromPath(value.f2);
 
 						for (Row row : rows.f1) {
@@ -118,7 +121,7 @@ public final class ModelStreamFileSourceStreamOp extends BaseSourceStreamOp <Mod
 		private final Timestamp startTime;
 		private final long scanInterval;
 
-		private transient ModelStreamFileIdScanner streamSource;
+		private transient ModelStreamFileScanner fileScanner;
 		private transient Iterator <Timestamp> streamSourceIterator;
 
 		public FileModelStreamSourceMonitorInputFormat(FilePath filePath, Timestamp startTime, long scanInterval) {
@@ -159,11 +162,12 @@ public final class ModelStreamFileSourceStreamOp extends BaseSourceStreamOp <Mod
 
 		@Override
 		public void open(FileModelStreamSourceInputSplit split) throws IOException {
-			streamSource = new ModelStreamFileIdScanner(filePath, startTime, scanInterval);
-
-			streamSource.open();
-
-			streamSourceIterator = streamSource.iterator();
+			fileScanner = new ModelStreamFileScanner(1, 2);
+			fileScanner.open();
+			streamSourceIterator = fileScanner.scanToFile(
+				new ScanTask(filePath, startTime),
+				Time.of(scanInterval, TimeUnit.MILLISECONDS)
+			);
 		}
 
 		@Override
@@ -178,7 +182,9 @@ public final class ModelStreamFileSourceStreamOp extends BaseSourceStreamOp <Mod
 
 		@Override
 		public void close() throws IOException {
-			streamSource.close();
+			if (fileScanner != null) {
+				fileScanner.close();
+			}
 		}
 	}
 }

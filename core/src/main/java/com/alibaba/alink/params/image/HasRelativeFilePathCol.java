@@ -6,6 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasRelativeFilePathCol<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name 文件路径列
+	 * @cn 文件路径列
+	 */
 	ParamInfo <String> RELATIVE_FILE_PATH_COL = ParamInfoFactory
 		.createParamInfo("relativeFilePathCol", String.class)
 		.setDescription("relative file path column")

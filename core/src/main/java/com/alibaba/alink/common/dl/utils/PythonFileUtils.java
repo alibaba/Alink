@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
@@ -62,13 +63,65 @@ public class PythonFileUtils {
         return fullPathName;
     }
 
-    public static File createTempDir(String prefix) {
-        try {
-            return Files.createTempDirectory(prefix).toFile();
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot create temporary directory:", e);
-        }
-    }
+	/**
+	 * Create a temporary directory in the default temporary directory specified by the system property java.io.tmpdir,
+	 * and delete it on JVM shutdown if it still exists.
+	 * <p>
+	 * Note: for usage in long-run programs, the caller should not rely on the shutdown hooks to delete directories. It
+	 * is better to delete the directory immediately when it is no longer used.
+	 *
+	 * @param prefix
+	 * @return
+	 */
+	public static Path createTempDir(String prefix) {
+		try {
+			Path path = Files.createTempDirectory(prefix).toAbsolutePath();
+			if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+				System.out.println("Create temporary directory: " + path);
+			}
+			deleteFileOrDirectoryQuietlyOnExit(path);
+			return path;
+		} catch (IOException e) {
+			throw new RuntimeException("Cannot create temporary directory:", e);
+		}
+	}
+
+	/**
+	 * Create a temporary file in the default temporary directory specified by the system property java.io.tmpdir, and
+	 * delete it on JVM shutdown if it still exists.
+	 * <p>
+	 * Note: for usage in long-run programs, the caller should not rely on the shutdown hooks to delete files. It is
+	 * better to delete the file immediately when it is no longer used.
+	 *
+	 * @param prefix
+	 * @param suffix
+	 * @return
+	 */
+	public static Path createTempFile(String prefix, String suffix) {
+		try {
+			Path path = Files.createTempFile(prefix, suffix).toAbsolutePath();
+			if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+				System.out.println("Create temporary file: " + path);
+			}
+			deleteFileOrDirectoryQuietlyOnExit(path);
+			return path;
+		} catch (IOException e) {
+			throw new RuntimeException("Cannot create temporary directory:", e);
+		}
+	}
+
+	private static void deleteFileOrDirectoryQuietlyOnExit(Path path) {
+		if (!DELETE_TEMP_FILES_WHEN_EXIT) {
+			return;
+		}
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			try {
+				FileUtils.deleteFileOrDirectory(path.toFile());
+			} catch (IOException e) {
+				LOG.info("Failed to delete {}.", path.toFile().getAbsolutePath(), e);
+			}
+		}));
+	}
 
     public static boolean isLocalFile(String path) {
         return path.startsWith("file://");

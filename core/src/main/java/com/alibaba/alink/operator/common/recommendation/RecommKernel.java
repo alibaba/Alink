@@ -1,16 +1,15 @@
 package com.alibaba.alink.operator.common.recommendation;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.table.api.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.api.Types;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.utils.OutputColsHelper;
-import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 import com.alibaba.alink.params.recommendation.BaseRecommParams;
-import com.alibaba.alink.params.recommendation.BaseUsersPerItemRecommParams;
 
 import java.io.Serializable;
 import java.util.List;
@@ -45,7 +44,7 @@ public abstract class RecommKernel implements Serializable {
 
 	protected String userColName;
 	protected String itemColName;
-
+	protected TypeInformation<?> recommObjType;
 	private final OutputColsHelper outputColsHelper4Rate;
 	private final OutputColsHelper outputColsHelper4RecommObjs;
 
@@ -61,7 +60,7 @@ public abstract class RecommKernel implements Serializable {
 		this.outputColsHelper4Rate
 			= new OutputColsHelper(dataSchema, resultColName, Types.DOUBLE(), reservedColNames);
 		this.outputColsHelper4RecommObjs
-			= new OutputColsHelper(dataSchema, resultColName, Types.STRING(), reservedColNames);
+			= new OutputColsHelper(dataSchema, resultColName, Types.DOUBLE(), reservedColNames);
 	}
 
 	protected TableSchema getModelSchema() {
@@ -119,7 +118,7 @@ public abstract class RecommKernel implements Serializable {
 	 * @return Json string of the result values.
 	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	abstract String recommendItemsPerUser(Object infoUser) throws Exception;
+	abstract MTable recommendItemsPerUser(Object infoUser) throws Exception;
 
 	/**
 	 * Recommend users observed for the input item.
@@ -128,7 +127,7 @@ public abstract class RecommKernel implements Serializable {
 	 * @return Json string of the result values.
 	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	abstract String recommendUsersPerItem(Object infoItem) throws Exception;
+	abstract MTable recommendUsersPerItem(Object infoItem) throws Exception;
 
 	/**
 	 * Recommend the k most similar items for the input item.
@@ -137,7 +136,7 @@ public abstract class RecommKernel implements Serializable {
 	 * @return Json string of the result values.
 	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	abstract String recommendSimilarItems(Object infoItem) throws Exception;
+	abstract MTable recommendSimilarItems(Object infoItem) throws Exception;
 
 	/**
 	 * Recommend the k most similar users for the input user.
@@ -146,7 +145,7 @@ public abstract class RecommKernel implements Serializable {
 	 * @return Json string of the result values.
 	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the operation to fail.
 	 */
-	abstract String recommendSimilarUsers(Object infoUser) throws Exception;
+	abstract MTable recommendSimilarUsers(Object infoUser) throws Exception;
 
 	/**
 	 * Get the table schema(includes column names and types) of the calculation result.
@@ -160,30 +159,4 @@ public abstract class RecommKernel implements Serializable {
 			return outputColsHelper4RecommObjs.getResultSchema();
 		}
 	}
-
-	public String getObjectName() {
-		if (recommType == RecommType.ITEMS_PER_USER) {
-			return itemColName;
-		} else if (recommType == RecommType.USERS_PER_ITEM) {
-			return userColName;
-		} else if (recommType == RecommType.SIMILAR_USERS) {
-			return userColName;
-		} else if (recommType == RecommType.SIMILAR_ITEMS) {
-			return itemColName;
-		} else {
-			throw new RuntimeException("not support yet.");
-		}
-	}
-
-
-	/**
-	 * Return a copy of 'this' object that is used in multi-threaded prediction.
-	 * A rule of thumb is to share model data with the mirrored object, but not
-	 * to share runtime buffer.
-	 *
-	 * If the ReommKernel is thread-safe (no runtime buffer), then just return 'this' is enough.
-	 */
-	//protected RecommKernel mirror() {
-	//	return this;
-	//}
 }

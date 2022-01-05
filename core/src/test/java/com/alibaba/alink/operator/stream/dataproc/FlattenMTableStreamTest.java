@@ -6,12 +6,11 @@ import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.FlattenMTableBatchOp;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -43,16 +42,22 @@ public class FlattenMTableStreamTest extends AlinkTestBase {
 			new FloatTensor(new float[] {3.0f})));
 
 		String schemaStr = "col0 int, col1 string, label int"
-			+ ", d_vec VEC_TYPES_DENSE_VECTOR"
-			+ ", s_vec VEC_TYPES_SPARSE_VECTOR"
-			+ ", tensor TENSOR_TYPES_FLOAT_TENSOR";
+			+ ", d_vec DENSE_VECTOR"
+			+ ", s_vec SPARSE_VECTOR"
+			+ ", tensor FLOAT_TENSOR";
 		MTable mTable = new MTable(rows, schemaStr);
 		List <Row> table = new ArrayList <>();
 		table.add(Row.of("id", mTable.toString()));
 
 		StreamOperator <?> op = new MemSourceStreamOp(table, new String[] {"id","mTable"});
-		op.link(new FlattenMTableStreamOp().setSchemaStr(schemaStr)
-			.setSelectedCol("mTable").setReservedCols("id")).print();
+		StreamOperator <?> res = op.link(new FlattenMTableStreamOp().setSchemaStr(schemaStr)
+			.setSelectedCol("mTable").setReservedCols("id"));
+
+		CollectSinkStreamOp sop = res.link(new CollectSinkStreamOp());
 		StreamOperator.execute();
+		List<Row> list = sop.getAndRemoveValues();
+		for (Row row : list) {
+			Assert.assertEquals(row.getField(0), "id");
+		}
 	}
 }

@@ -26,19 +26,19 @@ public class VectorTypesTest extends AlinkTestBase {
 
 	@Test
 	public void testGetTypeName() {
-		Assert.assertEquals("VEC_TYPES_DENSE_VECTOR", VectorTypes.getTypeName(TypeInformation.of(DenseVector.class)));
-		Assert.assertEquals("VEC_TYPES_SPARSE_VECTOR", VectorTypes.getTypeName(TypeInformation.of(SparseVector
+		Assert.assertEquals("DENSE_VECTOR", VectorTypes.getTypeName(TypeInformation.of(DenseVector.class)));
+		Assert.assertEquals("SPARSE_VECTOR", VectorTypes.getTypeName(TypeInformation.of(SparseVector
 			.class)));
-		Assert.assertEquals("VEC_TYPES_VECTOR", VectorTypes.getTypeName(TypeInformation.of(Vector.class)));
+		Assert.assertEquals("VECTOR", VectorTypes.getTypeName(TypeInformation.of(Vector.class)));
 	}
 
 	@Test
 	public void testGetTypeInformation() {
-		Assert.assertEquals(VectorTypes.getTypeInformation("VEC_TYPES_DENSE_VECTOR"),
+		Assert.assertEquals(VectorTypes.getTypeInformation("DENSE_VECTOR"),
 			TypeInformation.of(DenseVector.class));
-		Assert.assertEquals(VectorTypes.getTypeInformation("VEC_TYPES_SPARSE_VECTOR"),
+		Assert.assertEquals(VectorTypes.getTypeInformation("SPARSE_VECTOR"),
 			TypeInformation.of(SparseVector.class));
-		Assert.assertEquals(VectorTypes.getTypeInformation("VEC_TYPES_VECTOR"), TypeInformation.of(Vector.class));
+		Assert.assertEquals(VectorTypes.getTypeInformation("VECTOR"), TypeInformation.of(Vector.class));
 	}
 
 	@SuppressWarnings("unchecked")

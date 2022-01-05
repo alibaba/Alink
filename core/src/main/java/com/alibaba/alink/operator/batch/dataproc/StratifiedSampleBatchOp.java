@@ -83,7 +83,7 @@ public final class StratifiedSampleBatchOp extends BatchOperator <StratifiedSamp
 				Row first = (Row) iterator.getFirst();
 				if (null != first) {
 					Object key = first.getField(index);
-					fraction = fractionMap.get(key);
+					fraction = fractionMap.get(String.valueOf(key));
 					Preconditions.checkNotNull(fraction, key + " is not contained in map!");
 				} else {
 					return;

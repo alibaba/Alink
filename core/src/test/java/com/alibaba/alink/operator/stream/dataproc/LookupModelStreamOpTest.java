@@ -13,12 +13,14 @@ import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 public class LookupModelStreamOpTest extends AlinkTestBase {
 
@@ -30,6 +32,7 @@ public class LookupModelStreamOpTest extends AlinkTestBase {
 				.getStreamExecutionEnvironment()
 				.fromElements(1)
 				.flatMap(new RichFlatMapFunction <Integer, Row>() {
+					private long time = 0;
 					@Override
 					public void flatMap(Integer value, Collector <Row> out) throws Exception {
 						while (true) {
@@ -39,6 +42,10 @@ public class LookupModelStreamOpTest extends AlinkTestBase {
 							out.collect(Row.of("ppk4", "res1", "v1"));
 							out.collect(Row.of("ppk5", "rsk555", "v1"));
 							Thread.sleep(1000 * 1L);
+							time += 1000L;
+							if (time > 5000L) {
+								break;
+							}
 						}
 					}
 				});
@@ -54,10 +61,8 @@ public class LookupModelStreamOpTest extends AlinkTestBase {
 		}
 	}
 
-	@Ignore
 	@Test
 	public void testLookUpModelStream() throws Exception {
-
 		Row[] modelRows = new Row[] {
 			Row.of(true, "ppk1", "res1", "rv1"),
 			Row.of(true, "ppk9", "res1", "rv11"),
@@ -86,13 +91,15 @@ public class LookupModelStreamOpTest extends AlinkTestBase {
 		StreamOperator <?> left = new MemSourceStreamOp(streamRows,
 			new String[] {"alinkmodelstreamtimestamp", "alinkmodelstreamcount", "_model_update_type_", "d", "e", "f"});
 		StreamOperator <?> data = new FakeStreamOperator(null);
-		new LookupStreamOp(model)
+		StreamOperator <?> out = new LookupStreamOp(model)
 			.setSelectedCols(new String[] {"a", "b"})
 			.setMapKeyCols(new String[] {"d", "e"})
 			.setMapValueCols("f")
-			.linkFrom(data, left)
-			.print();
+			.linkFrom(data, left);
 
+		CollectSinkStreamOp sop = out.link(new CollectSinkStreamOp());
 		StreamOperator.execute();
+		List <Row> res = sop.getAndRemoveValues();
+		Assert.assertEquals(30, res.size());
 	}
 }

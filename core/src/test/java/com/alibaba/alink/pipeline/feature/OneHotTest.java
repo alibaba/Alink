@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.AlgoOperator;
@@ -15,6 +16,7 @@ import com.alibaba.alink.operator.batch.feature.OneHotTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.OneHotPredictStreamOp;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
@@ -34,13 +36,13 @@ import static org.junit.Assert.assertEquals;
  */
 
 public class OneHotTest extends AlinkTestBase {
-	private TableSchema schema = new TableSchema(
+	private final TableSchema schema = new TableSchema(
 		new String[] {"id", "docid", "word", "cnt"},
 		new TypeInformation <?>[] {Types.STRING, Types.STRING, Types.STRING, Types.LONG}
 	);
-	private String[] binaryNames = new String[] {"docid", "word", "cnt"};
+	private final String[] binaryNames = new String[] {"docid", "word", "cnt"};
 
-	AlgoOperator getData(boolean isBatch) {
+	AlgoOperator <?> getData(boolean isBatch) {
 
 		Row[] array = new Row[] {
 			Row.of("0", "doc0", "天", 4L),
@@ -78,37 +80,44 @@ public class OneHotTest extends AlinkTestBase {
 
 		Pipeline pl = new Pipeline().add(oneHot).add(va);
 
-		PipelineModel model = pl.fit((BatchOperator) getData(true));
+		PipelineModel model = pl.fit((BatchOperator <?>) getData(true));
 		Row[] parray = new Row[] {
 			Row.of("0", "doc0", "天", 4L),
 			Row.of("1", "doc2", null, 3L)
 		};
 
+		List <Row> expectedRow = Arrays.asList(
+			Row.of("0", new SparseVector(19, new int[] {0, 3, 10, 16}, new double[] {4.0, 1.0, 1.0, 1.0})),
+			Row.of("1", new SparseVector(19, new int[] {0, 1, 12, 15}, new double[] {3.0, 1.0, 1.0, 1.0}))
+		);
+
 		// batch predict
 		MemSourceBatchOp predData = new MemSourceBatchOp(Arrays.asList(parray), schema);
-		BatchOperator result = model.transform(predData).select(new String[] {"docid", "outN"});
 
-		List <Row> rows = result.collect();
+		List <Row> rows = model
+			.transform(predData)
+			.select("id, outN")
+			.collect();
 
-		for (Row row : rows) {
-			if (row.getField(0).toString().equals("doc0")) {
-				Assert.assertEquals(VectorUtil.getVector(row.getField(1).toString()).size(), 19);
-			} else if (row.getField(0).toString().equals("doc2")) {
-				Assert.assertEquals(VectorUtil.getVector(row.getField(1).toString()).size(), 19);
-			}
-		}
+		assertListRowEqual(expectedRow, rows, 0);
 
 		// stream predict
 		MemSourceStreamOp predSData = new MemSourceStreamOp(Arrays.asList(parray), schema);
-		model.transform(predSData).print();
+		CollectSinkStreamOp sink = model
+			.transform(predSData)
+			.select("id, outN")
+			.link(new CollectSinkStreamOp());
 		StreamOperator.execute();
+
+		assertListRowEqual(expectedRow, sink.getAndRemoveValues(), 0);
+
 	}
 
 	@Test
 	public void batchTest() throws Exception {
 		OneHotTrainBatchOp op = new OneHotTrainBatchOp()
 			.setSelectedCols(binaryNames);
-		OneHotTrainBatchOp model = op.linkFrom((BatchOperator) getData(true));
+		OneHotTrainBatchOp model = op.linkFrom((BatchOperator <?>) getData(true));
 		OneHotPredictBatchOp predict = new OneHotPredictBatchOp().setOutputCols("results").setDropLast(false);
 		Row[] parray = new Row[] {
 			Row.of("0", "doc0", "天", 4L),
@@ -117,8 +126,9 @@ public class OneHotTest extends AlinkTestBase {
 		// batch predict
 		MemSourceBatchOp predData = new MemSourceBatchOp(Arrays.asList(parray), schema);
 
-		BatchOperator res = predict.linkFrom(model, predData);
-		List rows = res.getDataSet().collect();
+		BatchOperator <?> res = predict.linkFrom(model, predData);
+
+		List <Row> rows = res.getDataSet().collect();
 		HashMap <String, Vector> map = new HashMap <String, Vector>();
 		map.put((String) ((Row) rows.get(0)).getField(0), VectorUtil.getVector(((Row) rows.get(0)).getField(4)));
 		map.put((String) ((Row) rows.get(1)).getField(0), VectorUtil.getVector(((Row) rows.get(1)).getField(4)));
@@ -136,7 +146,7 @@ public class OneHotTest extends AlinkTestBase {
 		OneHotEncoder op = new OneHotEncoder(new Params());
 		Assert.assertEquals(op.getParams().size(), 0);
 
-		BatchOperator b = new OneHotTrainBatchOp();
+		BatchOperator <?> b = new OneHotTrainBatchOp();
 		Assert.assertEquals(b.getParams().size(), 0);
 		b = new OneHotTrainBatchOp(new Params());
 		Assert.assertEquals(b.getParams().size(), 0);
@@ -146,12 +156,10 @@ public class OneHotTest extends AlinkTestBase {
 		b = new OneHotPredictBatchOp(new Params());
 		Assert.assertEquals(b.getParams().size(), 0);
 
-		StreamOperator s = new OneHotPredictStreamOp(b);
+		StreamOperator <?> s = new OneHotPredictStreamOp(b);
 		Assert.assertEquals(s.getParams().size(), 0);
 		s = new OneHotPredictStreamOp(b, new Params());
 		Assert.assertEquals(s.getParams().size(), 0);
 	}
-
-
 
 }

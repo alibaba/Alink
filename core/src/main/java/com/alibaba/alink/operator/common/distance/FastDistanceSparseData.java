@@ -143,7 +143,7 @@ public class FastDistanceSparseData extends FastDistanceData {
 		double[][] values = params.get("values", double[][].class);
 
 		FastDistanceSparseData sparseData = new FastDistanceSparseData(indices, values,
-			params.get("vectorNum", int.class), parseRowArrayCompatible(params));
+			params.get("vectorNum", int.class), params.get("rows", Row[].class));
 		sparseData.label = params.get("label", DenseMatrix.class);
 
 		return sparseData;

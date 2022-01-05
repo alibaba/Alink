@@ -11,7 +11,7 @@ public class BaseTFTableModelData implements Serializable {
 
 	protected Params meta;
 	protected String[] tfInputCols;
-	protected List <Row> tfModelRows;
+	protected Iterable <Row> tfModelRows;
 	protected String tfOutputSignatureDef;
 	protected TypeInformation <?> tfOutputSignatureType;
 
@@ -22,7 +22,7 @@ public class BaseTFTableModelData implements Serializable {
 	public BaseTFTableModelData() {
 	}
 
-	public BaseTFTableModelData(Params meta, String[] tfInputCols, List <Row> tfModelRows, String tfOutputSignatureDef, TypeInformation<?> tfOutputSignatureType) {
+	public BaseTFTableModelData(Params meta, String[] tfInputCols, Iterable <Row> tfModelRows, String tfOutputSignatureDef, TypeInformation<?> tfOutputSignatureType) {
 		this.meta = meta;
 		this.tfInputCols = tfInputCols;
 		this.tfModelRows = tfModelRows;
@@ -48,7 +48,7 @@ public class BaseTFTableModelData implements Serializable {
 		return this;
 	}
 
-	public List <Row> getTfModelRows() {
+	public Iterable <Row> getTfModelRows() {
 		return tfModelRows;
 	}
 

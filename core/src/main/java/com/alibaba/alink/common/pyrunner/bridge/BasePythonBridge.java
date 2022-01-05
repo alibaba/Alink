@@ -49,8 +49,6 @@ public abstract class BasePythonBridge {
     private final static String TMP_FILE_DIR = "tmp";
     private final static String PATH_SEPARATOR = File.pathSeparator;    // system dependent
 
-    volatile int jvmPort = 0;
-    volatile int pythonPort = 0;
     volatile GatewayServer server;
     volatile Process process;
     volatile PyMainHandle app;
@@ -107,9 +105,9 @@ public abstract class BasePythonBridge {
         }
     }
 
-    void startProcess(String cmd) {
+    int startPyProcess(int jvmPort, int pythonPort) {
         prepareEnv();
-        cmd = getPythonCmd(cmd);
+        String cmd = getPythonCmd();
         LOG.info("begin to start PythonProcess {} -j {} -p {}", cmd, jvmPort, pythonPort);
 
         String pyStmt = "from alink.py4j_gateway import main;main()";
@@ -137,7 +135,7 @@ public abstract class BasePythonBridge {
         pb.redirectErrorStream(true);
         try {
             this.process = pb.start();
-            waitProcessStarted(this.process, "Started Listening On");
+            pythonPort = waitProcessStarted(this.process, "Started Listening On ");
             inheritIO(this.process.getInputStream(), line -> LOG.info("PYTHON: {}", line));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -152,6 +150,7 @@ public abstract class BasePythonBridge {
                 }
             });
         }
+        return pythonPort;
     }
 
     private void updateEnv(Map<String, String> env, Map<String, String> extra) {
@@ -165,7 +164,7 @@ public abstract class BasePythonBridge {
         }
     }
 
-    void waitProcessStarted(Process p, String targetString) throws IOException {
+    int waitProcessStarted(Process p, String targetString) throws IOException {
         StringBuilder sb = new StringBuilder();
         while (p.isAlive()) {
             sb.setLength(0);
@@ -181,9 +180,10 @@ public abstract class BasePythonBridge {
             String line = sb.toString();
             if (!line.isEmpty()) {
                 LOG.info("subprocess print: {}", line);
+                System.out.println("subprocess print: " + line);
                 if (line.startsWith(targetString)) {
                     LOG.info("subprocess is started");
-                    return;
+                    return Integer.parseInt(line.substring(targetString.length()));
                 }
             }
         }
@@ -214,10 +214,7 @@ public abstract class BasePythonBridge {
         return false;
     }
 
-    private String getPythonCmd(String cmd) {
-        if (StringUtils.isNotBlank(cmd)) {
-            return cmd;
-        }
+    private String getPythonCmd() {
         if (StringUtils.isNotBlank(pyCmd)) {
             return pyCmd;
         }
@@ -244,7 +241,7 @@ public abstract class BasePythonBridge {
     private void prepareEnv() {
         if (rootDir == null) {
             try {
-                rootDir = PythonFileUtils.createTempWorkDir("tmp_py_");
+                rootDir = PythonFileUtils.createTempDir("tmp_py_").toString();
             } catch (Exception e) {
                 throw new RuntimeException("Failed to create temporary directory");
             }
@@ -362,37 +359,39 @@ public abstract class BasePythonBridge {
                                   Function <String, File> getCacheFileFn) {
         LOG.info("open bridge with {}", name);
         if (!isRunning()) {
-            final int rawJvmPort = Integer.parseInt(getParamFn.apply(PY_JVM_PORT_KEY, "0"));
-            final int rawPyPort =  Integer.parseInt(getParamFn.apply(PY_PORT_KEY, "0"));
+            int jvmPort = Integer.parseInt(getParamFn.apply(PY_JVM_PORT_KEY, "0"));
+            int pythonPort =  Integer.parseInt(getParamFn.apply(PY_PORT_KEY, "0"));
             final int pyConnectTimeout = Integer.parseInt(getParamFn.apply(PY_CONNECT_TIMEOUT_KEY, "0"));
             final int pyReadTimeout = Integer.parseInt(getParamFn.apply(PY_READ_TIMEOUT_KEY, "0"));
             final boolean turnOnLogging = Boolean.parseBoolean(getParamFn.apply(PY_TURN_ON_LOGGING_KEY, "false"));
             this.getParamFn = getParamFn;
             this.getCacheFileFn = getCacheFileFn;
 
-            this.jvmPort = (rawJvmPort > 0) ? rawJvmPort : findRandomOpenPortOnAllLocalInterfaces();
-            this.pythonPort = (rawPyPort > 0) ? rawPyPort : findRandomOpenPortOnAllLocalInterfaces();
             this.virtualEnv = getParamFn.apply(PY_VIRTUAL_ENV_KEY, null);
             this.pythonRunnerSourcePath = this.getParamFn.apply(PYTHON_RUNNER_SOURCE_PATH, null);
 
-            final String rawCmd = getParamFn.apply(PY_CMD_KEY, "");
+            this.pyCmd = getParamFn.apply(PY_CMD_KEY, "");
 
-            startProcess(rawCmd);
-
-            GatewayServer.turnLoggingOn();
-            GatewayServer.turnAllLoggingOn();
-
-            // start gateway server
             if (turnOnLogging) {
                 GatewayServer.turnLoggingOn();
-                GatewayServer.turnAllLoggingOn();
             } else {
                 GatewayServer.turnLoggingOff();
             }
 
-            server = new GatewayServer(null, this.jvmPort, this.pythonPort,
-                pyConnectTimeout, pyReadTimeout, null);
+            // Start GatewayServer without CallbackClient, where JVM port could be 0
+            server = new GatewayServer(null, jvmPort, pyConnectTimeout, pyReadTimeout);
             server.start();
+            // Get the actual JVM port
+            jvmPort = server.getListeningPort();
+            // Start Python process, where Python port could be 0
+            pythonPort = startPyProcess(jvmPort, pythonPort);
+            // Start CallbackClient with the actual Python port
+            server.resetCallbackClient(GatewayServer.defaultAddress(), pythonPort);
+
+            LOG.info(String.format("JVM port %d, Python port %d", jvmPort, pythonPort));
+            if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+                System.out.printf("JVM port %d, Python port %d%n", jvmPort, pythonPort);
+            }
 
             app = (PyMainHandle) (server.getPythonServerEntryPoint(new Class[]{
                 PyMainHandle.class

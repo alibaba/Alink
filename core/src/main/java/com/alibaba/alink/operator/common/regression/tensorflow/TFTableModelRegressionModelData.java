@@ -16,7 +16,7 @@ public class TFTableModelRegressionModelData extends BaseTFTableModelData {
 	public TFTableModelRegressionModelData() {
 	}
 
-	public TFTableModelRegressionModelData(Params meta, String[] tfInputCols, List <Row> tfModelRows,
+	public TFTableModelRegressionModelData(Params meta, String[] tfInputCols, Iterable <Row> tfModelRows,
 										   String tfOutputSignatureDef, TypeInformation <?> tfOutputSignatureType,
 										   String preprocessPipelineModelSchemaStr,
 										   List <Row> preprocessPipelineModelRows) {

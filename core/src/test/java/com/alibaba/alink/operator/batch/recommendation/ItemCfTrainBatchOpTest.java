@@ -1,14 +1,13 @@
 package com.alibaba.alink.operator.batch.recommendation;
 
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.evaluation.EvalRegressionBatchOp;
 import com.alibaba.alink.operator.common.evaluation.RegressionMetrics;
-import com.alibaba.alink.operator.common.recommendation.KObjectUtil;
 import com.alibaba.alink.operator.common.recommendation.Zipped2KObjectBatchOp;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
@@ -17,7 +16,7 @@ import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +107,13 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 		score.put(1L, new Double[] {2.211538461538462, 1.7692307692307696, 1.0963225241337864, 0.3922322702763681});
 		score.put(2L, new Double[] {1.2579416330459492, 1.0406035275510874, 0.7808214813428701, 0.4118128641127321});
 		for (Row row : recommendItems) {
-			Double[] actual = extractScore((String) row.getField(2), "score");
+			List<Row> rows = ((MTable) row.getField(2)).getRows();
+
+			Double[] actual = new Double[rows.size()];
+			for (int i = 0; i < rows.size(); ++i) {
+				actual[i] = (double) rows.get(i).getField(1);
+			}
+
 			Double[] expect = score.get(row.getField(0));
 			for (int i = 0; i < actual.length; i++) {
 				Assert.assertEquals(actual[i], expect[i], 0.01);
@@ -128,7 +133,12 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 			.collect();
 
 		for (Row row : similarItems) {
-			Double[] actual = extractScore((String) row.getField(2), "similarities");
+			List<Row> rows = ((MTable) row.getField(2)).getRows();
+
+			Double[] actual = new Double[rows.size()];
+			for (int i = 0; i < rows.size(); ++i) {
+				actual[i] = (double) rows.get(i).getField(1);
+			}
 			Double[] expect = similarity.get(row.getField(0));
 			for (int i = 0; i < actual.length; i++) {
 				Assert.assertEquals(actual[i], expect[i], 0.01);
@@ -205,38 +215,12 @@ public class ItemCfTrainBatchOpTest extends AlinkTestBase {
 
 		Row res = recommender.collectLocalPredictor("user long, item long, rate double").map(rows1[0]);
 
-		List <Long> recomm = JsonConverter
-			.fromJson(
-				JsonConverter
-					. <Map <String, String>>fromJson(
-						(String) res.getField(3),
-						Map.class
-					)
-					.get("item"),
-				new TypeReference <List <Long>>() {
-				}.getType()
-			);
+		List<Row> rows = ((MTable) res.getField(3)).getRows();
 
-		List <String> recommGson =
-			JsonConverter
-				.gson
-				.fromJson(
-					(String) (JsonConverter
-						.gson
-						.fromJson((String) res.getField(3), Map.class)
-						.get("item")
-					),
-					new TypeReference <List <Long>>() {
-					}.getType()
-				);
-
+		List <Long> recomm = new ArrayList <>(rows.size());
+		for (Row row : rows) {
+			recomm.add((long)row.getField(0));
+		}
 		Assert.assertEquals(JsonConverter.toJson(recomm), "[2,1,3]");
-		Assert.assertEquals(JsonConverter.toJson(recommGson), "[2,1,3]");
-	}
-
-	public static Double[] extractScore(String res, String key) {
-		return KObjectUtil.deserializeKObject(
-			res, new String[] {key}, new Type[] {Double.class}
-		).get(key).toArray(new Double[0]);
 	}
 }

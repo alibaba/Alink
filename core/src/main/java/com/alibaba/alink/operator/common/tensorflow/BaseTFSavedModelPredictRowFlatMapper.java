@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -59,6 +60,8 @@ public class BaseTFSavedModelPredictRowFlatMapper extends FlatMapper implements 
 
 	private static final long QUEUE_OFFER_TIMEOUT_MS = 50;
 
+	private final TFPredictorClassLoaderFactory factory;
+
 	private final String graphDefTag;
 	private final String signatureDefKey;
 	private final int[] tfInputColIds;
@@ -77,7 +80,15 @@ public class BaseTFSavedModelPredictRowFlatMapper extends FlatMapper implements 
 	private DLPredictorService predictor;
 
 	public BaseTFSavedModelPredictRowFlatMapper(TableSchema dataSchema, Params params) {
+		this(dataSchema, params, new TFPredictorClassLoaderFactory());
+	}
+
+	public BaseTFSavedModelPredictRowFlatMapper(TableSchema dataSchema, Params params,
+												TFPredictorClassLoaderFactory factory) {
 		super(dataSchema, params);
+
+		this.factory = factory;
+
 		graphDefTag = params.get(BaseTFSavedModelPredictParams.GRAPH_DEF_TAG);
 		signatureDefKey = params.get(BaseTFSavedModelPredictParams.SIGNATURE_DEF_KEY);
 
@@ -135,8 +146,14 @@ public class BaseTFSavedModelPredictRowFlatMapper extends FlatMapper implements 
 			? params.get(HasIntraOpParallelism.INTRA_OP_PARALLELISM)
 			: null;
 
-		TFPredictorClassLoaderFactory factory = new TFPredictorClassLoaderFactory();
-		predictor = TFPredictorClassLoaderFactory.create(factory);
+		try {
+			predictor = (DLPredictorService) factory.create()
+				.loadClass("com.alibaba.alink.common.dl.plugin.TFPredictorServiceImpl")
+				.getConstructor()
+				.newInstance();
+		} catch (ClassNotFoundException | InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException ex) {
+			throw new RuntimeException(ex);
+		}
 
 		Map <String, Object> config = new HashMap <>();
 		config.put(MODEL_PATH_KEY, modelPath);

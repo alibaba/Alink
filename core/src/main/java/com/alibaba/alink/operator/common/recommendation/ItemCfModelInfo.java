@@ -15,22 +15,22 @@ public class ItemCfModelInfo extends RecommendationModelInfo {
 	/**
 	 * Distinct user number.
 	 */
-	private int userNum;
+	private final int userNum;
 
 	/**
 	 * Distinct item number.
 	 */
-	private int itemNum;
+	private final int itemNum;
 
 	/**
 	 * sample number.
 	 */
-	private int totalSamples;
+	private final int totalSamples;
 
 	/**
 	 * Params
 	 */
-	private Params meta;
+	private final Params meta;
 
 	public ItemCfModelInfo(List <Row> list) {
 		ItemCfRecommData data = new ItemCfRecommModelDataConverter(RecommType.ITEMS_PER_USER).load(list);

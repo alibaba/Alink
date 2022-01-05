@@ -7,6 +7,11 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasSeasonalType<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name 季节类型
+	 * @cn 季节类型
+	 */
 	ParamInfo <SeasonalType> SEASONAL_TYPE = ParamInfoFactory
 		.createParamInfo("seasonalType", SeasonalType.class)
 		.setDescription("Use additive or multiplicative. True is additive.")

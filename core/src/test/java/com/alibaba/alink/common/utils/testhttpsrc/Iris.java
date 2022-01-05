@@ -7,7 +7,8 @@ import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
 
 public class Iris {
 
-	final static String URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
+
+	final static String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
 	final static String SCHEMA_STR
 		= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 

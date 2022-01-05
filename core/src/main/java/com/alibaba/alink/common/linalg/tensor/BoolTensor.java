@@ -14,6 +14,10 @@ public final class BoolTensor extends Tensor <Boolean> {
 		this(NdArrays.ofBooleans(shape.toNdArrayShape()));
 	}
 
+	public BoolTensor(boolean data) {
+		this(NdArrays.scalarOf(data));
+	}
+
 	public BoolTensor(boolean[] data) {
 		this(StdArrays.ndCopyOf(data));
 	}

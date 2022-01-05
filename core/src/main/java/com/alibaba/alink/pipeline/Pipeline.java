@@ -249,7 +249,7 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 	 * Pack the pipeline to a BatchOperator.
 	 */
 	public BatchOperator <?> save() {
-		return ModelExporterUtils.serializePipelineStages(stages);
+		return ModelExporterUtils.serializePipelineStages(stages, params);
 	}
 
 	/**
@@ -267,7 +267,7 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 		return new Pipeline(
 			ModelExporterUtils.fillPipelineStages(
 				batchOp,
-				ModelExporterUtils.collectMetaFromOp(batchOp),
+				ModelExporterUtils.collectMetaFromOp(batchOp).f0,
 				batchOp.getSchema()
 			).toArray(new PipelineStageBase[0]));
 	}

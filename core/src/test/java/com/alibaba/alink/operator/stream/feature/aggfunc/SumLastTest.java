@@ -7,6 +7,7 @@ import com.alibaba.alink.common.sql.builtin.agg.SumLastUdaf;
 import org.junit.Before;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SumLastTest extends AggFunctionTestBase <Object[], Object, SumLastData> {
@@ -20,38 +21,32 @@ public class SumLastTest extends AggFunctionTestBase <Object[], Object, SumLastD
 	@Override
 	protected List <List <Object[]>> getInputValueSets() {
 		List <List <Object[]>> res = new ArrayList <>();
-		ArrayList <Object[]> data = new ArrayList <>();
-		data.add(new Object[] {1, 1L, 0.1});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {1, 2L, 0.1});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {3, 3L, 0.1});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {3, 4L, 0.1});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {4, 5L, 0.1});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {4, 6L, 0.1});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {2, 7L, 0.1});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {2, 8L, 0.1});
-		res.add((List <Object[]>) data.clone());
+		List <Object[]> data = Arrays.asList(
+			new Object[] {1, 1L, 0.1},
+			new Object[] {1, 2L, 0.1},
+			new Object[] {3, 3L, 0.1},
+			new Object[] {3, 4L, 0.1},
+			new Object[] {4, 5L, 0.1},
+			new Object[] {4, 6L, 0.1},
+			new Object[] {2, 7L, 0.1},
+			new Object[] {2, 8L, 0.1}
+		);
+
+		res.add(data.subList(0, 1));
+		res.add(data.subList(0, 2));
+		res.add(data.subList(0, 3));
+		res.add(data.subList(0, 4));
+		res.add(data.subList(0, 5));
+		res.add(data.subList(0, 6));
+		res.add(data.subList(0, 7));
+		res.add(data.subList(0, 8));
+
 		return res;
 	}
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		List <Object> res = new ArrayList <>();
-		res.add(1);
-		res.add(1);
-		res.add(3);
-		res.add(3);
-		res.add(4);
-		res.add(4);
-		res.add(2);
-		res.add(2);
-		return res;
+		return Arrays.asList(1, 1, 3, 3, 4, 4, 2, 2);
 	}
 
 	@Override

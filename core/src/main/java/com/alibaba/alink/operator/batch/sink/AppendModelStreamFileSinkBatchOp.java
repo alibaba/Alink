@@ -17,7 +17,7 @@ import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils.FileModelStreamSink;
+import com.alibaba.alink.operator.common.stream.model.FileModelStreamSink;
 import com.alibaba.alink.params.io.AppendModelStreamFileSinkParams;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class AppendModelStreamFileSinkBatchOp extends BaseSinkBatchOp <AppendMod
 		final int numKeepModel = getNumKeepModel();
 		final TableSchema schema = in.getSchema();
 
-		final ModelStreamUtils.FileModelStreamSink sink = new FileModelStreamSink(
+		final FileModelStreamSink sink = new FileModelStreamSink(
 			filePath, CsvUtil.schema2SchemaStr(schema)
 		);
 

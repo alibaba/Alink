@@ -10,7 +10,9 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -62,9 +64,19 @@ public class VectorNormalizeTest extends AlinkTestBase {
 
 	@Test
 	public void pipelineStreamTest() throws Exception {
-		new VectorNormalizer().setP(2.0)
-			.setOutputCol("pm")
-			.setSelectedCol("c0").transform((StreamOperator) getData(false)).print();
+		StreamOperator streamOperator =
+			new VectorNormalizer().setP(2.0)
+				.setOutputCol("pm")
+				.setSelectedCol("c0").transform((StreamOperator) getData(false));
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp().linkFrom(streamOperator);
 		StreamOperator.execute();
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		result.sort(new RowComparator(0));
+		assertEquals(VectorUtil.getVector(result.get(0).getField(4)),
+			VectorUtil.getVector("$6$1:0.35640489924669927 2:0.5346073488700489 5:0.7662705333804034"));
+		assertEquals(VectorUtil.getVector(result.get(1).getField(4)),
+			VectorUtil.getVector("$8$1:0.35640489924669927 2:0.5346073488700489 7:0.7662705333804034"));
+		assertEquals(VectorUtil.getVector(result.get(2).getField(4)),
+			VectorUtil.getVector("$8$1:0.35640489924669927 2:0.5346073488700489 7:0.7662705333804034"));
 	}
 }

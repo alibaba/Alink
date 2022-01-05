@@ -7,7 +7,7 @@ import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
 
 public class MovieLensRatings {
 
-	final static String URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/movielens_ratings.csv";
+	final static String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/movielens_ratings.csv";
 	final static String SCHEMA_STR = "userid bigint, movieid bigint, rating double, timestamp string";
 
 	public static BatchOperator getBatchData() {

@@ -11,7 +11,9 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -65,9 +67,20 @@ public class VectorAssemblerTest extends AlinkTestBase {
 
 	@Test
 	public void pipelineStreamTest() throws Exception {
-		new VectorAssembler()
+		StreamOperator streamOperator = new VectorAssembler()
 			.setSelectedCols(new String[] {"c0", "c1", "c2"})
-			.setOutputCol("table2vec").transform((StreamOperator) getData(false)).print();
+			.setOutputCol("table2vec").transform((StreamOperator) getData(false));
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp().linkFrom(streamOperator);
 		StreamOperator.execute();
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		result.sort(new RowComparator(0));
+		assertEquals(VectorUtil.getVector(result.get(0).getField(4)),
+			VectorUtil.getDenseVector("0.0 2.0 3.0 0.0 0.0 4.3 3.0 2.0 3.0 1.0 4.0 6.0 8.0"));
+		assertEquals(VectorUtil.getVector(result.get(1).getField(4)),
+			new SparseVector(15, new int[] {1, 2, 7, 8, 9, 10, 11, 12, 13, 14},
+				new double[] {2.0, 3.0, 4.3, 3.0, 2.0, 3.0, 1.0, 4.0, 6.0, 8.0}));
+		assertEquals(VectorUtil.getVector(result.get(2).getField(4)),
+			new SparseVector(14, new int[] {1, 2, 7, 8, 9, 10, 11, 12, 13},
+				new double[] {2.0, 3.0, 4.3, 2.0, 3.0, 1.0, 4.0, 6.0, 8.0}));
 	}
 }

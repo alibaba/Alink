@@ -20,7 +20,7 @@ public interface HasCustomConfigJson<T> extends WithParams <T> {
 		return get(CUSTOM_CONFIG_JSON);
 	}
 
-	default T setCustomJsonJson(String colName) {
+	default T setCustomConfigJson(String colName) {
 		return set(CUSTOM_CONFIG_JSON, colName);
 	}
 }

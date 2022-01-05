@@ -14,6 +14,10 @@ public final class ByteTensor extends Tensor <Byte> {
 		this(NdArrays.ofBytes(shape.toNdArrayShape()));
 	}
 
+	public ByteTensor(byte data) {
+		this(NdArrays.scalarOf(data));
+	}
+
 	public ByteTensor(byte[] data) {
 		this(StdArrays.ndCopyOf(data));
 	}

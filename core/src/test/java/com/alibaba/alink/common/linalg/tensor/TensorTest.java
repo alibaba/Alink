@@ -1,10 +1,11 @@
 package com.alibaba.alink.common.linalg.tensor;
 
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TensorTest {
+public class TensorTest extends AlinkTestBase {
 
 	private static final float FLOAT_EPS = 0.00001f;
 
@@ -63,6 +64,18 @@ public class TensorTest {
 	}
 
 	@Test
+	public void stackScalars() {
+		FloatTensor a = new FloatTensor(0.1f);
+		FloatTensor b = new FloatTensor(0.2f);
+		FloatTensor c = new FloatTensor(0.3f);
+		FloatTensor stacked = Tensor.stack(new FloatTensor[] {a, b, c}, 0, null);
+		Assert.assertArrayEquals(new long[] {3L}, stacked.shape());
+		Assert.assertEquals(a.getFloat(), stacked.getFloat(0), FLOAT_EPS);
+		Assert.assertEquals(b.getFloat(), stacked.getFloat(1), FLOAT_EPS);
+		Assert.assertEquals(c.getFloat(), stacked.getFloat(2), FLOAT_EPS);
+	}
+
+	@Test
 	public void stackActual() {
 
 		FloatTensor a = Tensor.stack(new FloatTensor[] {B, C}, 1, null);
@@ -90,6 +103,16 @@ public class TensorTest {
 		Assert.assertEquals(2, b.length);
 		Assert.assertArrayEquals(new long[] {4, 3, 4}, b[0].shape());
 		Assert.assertArrayEquals(new long[] {4, 3, 4}, b[1].shape());
+	}
+
+	@Test
+	public void unstackRank1() {
+		float[] arr = {0.1f, 0.2f, 0.3f};
+		FloatTensor stacked = new FloatTensor(arr);
+		FloatTensor[] tensors = Tensor.unstack(stacked, 0, null);
+		for (int i = 0; i < arr.length; i += 1) {
+			Assert.assertEquals(arr[i], tensors[i].getFloat(), FLOAT_EPS);
+		}
 	}
 
 	@Test

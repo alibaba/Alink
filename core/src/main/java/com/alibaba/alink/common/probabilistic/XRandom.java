@@ -3,9 +3,6 @@ package com.alibaba.alink.common.probabilistic;
 import java.util.HashMap;
 import java.util.Random;
 
-/**
- * @author yangxu
- */
 public class XRandom implements java.io.Serializable {
 
 	private static final long serialVersionUID = -3973714123611662398L;

@@ -110,6 +110,10 @@ public enum FeatureClauseOperator {
 
 	LISTAGG_PRECEDING(Types.STRING, new ListAggUdaf(true)),
 
+	CONCAT_AGG(Types.STRING, new ListAggUdaf()),
+
+	CONCAT_AGG_PRECEDING(Types.STRING, new ListAggUdaf(true)),
+
 	MODE(RES_TYPE, new ModeUdaf()),
 
 	MODE_PRECEDING(RES_TYPE, new ModeUdaf(true)),

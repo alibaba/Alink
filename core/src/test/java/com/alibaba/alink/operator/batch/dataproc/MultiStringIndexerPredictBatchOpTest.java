@@ -4,12 +4,13 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class MultiStringIndexerPredictBatchOpTest {
+public class MultiStringIndexerPredictBatchOpTest extends AlinkTestBase {
 	@Test
 	public void testMultiStringIndexerPredict() throws Exception {
 		List <Row> df = Arrays.asList(

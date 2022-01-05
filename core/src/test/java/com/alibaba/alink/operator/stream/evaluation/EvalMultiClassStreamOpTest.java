@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.evaluation;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.apache.commons.lang3.ArrayUtils;
@@ -13,7 +14,6 @@ import java.util.Arrays;
 public class EvalMultiClassStreamOpTest extends AlinkTestBase {
 	@Test
 	public void testDetailMulti() throws Exception {
-		StreamOperator.setParallelism(2);
 		Row[] detailMultiArray =
 			new Row[] {
 				Row.of("prefix0", "{\"prefix0\": 0.3, \"prefix1\": 0.2, \"prefix2\": 0.5}"),
@@ -41,15 +41,16 @@ public class EvalMultiClassStreamOpTest extends AlinkTestBase {
 		EvalMultiClassStreamOp op1 = new EvalMultiClassStreamOp()
 			.setTimeInterval(0.01)
 			.setLabelCol("label")
-			.setPredictionDetailCol("detailInput");
-
-		detailMultiTmp.link(op1).print();
+			.setPredictionDetailCol("detailInput")
+			.linkFrom(detailMultiTmp);
+		CollectSinkStreamOp sink = new CollectSinkStreamOp()
+			.linkFrom(op1);
 		StreamOperator.execute();
+		System.out.println(sink.getAndRemoveValues());
 	}
 
 	@Test
 	public void testPredMulti() throws Exception {
-		StreamOperator.setParallelism(2);
 		Row[] predMultiArray =
 			new Row[] {
 				Row.of("prefix1", "prefix1"),
@@ -116,10 +117,11 @@ public class EvalMultiClassStreamOpTest extends AlinkTestBase {
 		EvalMultiClassStreamOp op1 = new EvalMultiClassStreamOp()
 			.setTimeInterval(0.5)
 			.setLabelCol("label")
-			.setPredictionCol("pred");
-
-		predMultiTmp.link(op1).print();
-
+			.setPredictionCol("pred")
+			.linkFrom(predMultiTmp);
+		CollectSinkStreamOp sink = new CollectSinkStreamOp()
+			.linkFrom(op1);
 		StreamOperator.execute();
+		System.out.println(sink.getAndRemoveValues());
 	}
 }

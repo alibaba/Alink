@@ -15,11 +15,11 @@ public class AlsSimilarItemsRecommStreamOp extends BaseRecommStreamOp <AlsSimila
 
 	private static final long serialVersionUID = -5005943967509093904L;
 
-	public AlsSimilarItemsRecommStreamOp(BatchOperator model) {
+	public AlsSimilarItemsRecommStreamOp(BatchOperator <?> model) {
 		this(model, null);
 	}
 
-	public AlsSimilarItemsRecommStreamOp(BatchOperator model, Params params) {
+	public AlsSimilarItemsRecommStreamOp(BatchOperator <?> model, Params params) {
 		super(model, AlsRecommKernel::new, RecommType.SIMILAR_ITEMS, params);
 	}
 }

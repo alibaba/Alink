@@ -7,6 +7,11 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasFrequency<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name 时序频率
+	 * @cn 时序频率
+	 */
 	ParamInfo <Integer> FREQUENCY = ParamInfoFactory
 		.createParamInfo("frequency", Integer.class)
 		.setDescription("Defines the number of observations in a single period," +

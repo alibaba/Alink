@@ -3,8 +3,10 @@ package com.alibaba.alink.operator.batch.timeseries;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.operator.batch.dataproc.FlattenMTableBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Timestamp;
@@ -14,7 +16,7 @@ public class ProphetBatchOpTest {
 
 	@Test
 	public void testModel() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		//AlinkGlobalConfiguration.setPrintProcessInfo(true);
 		Row[] rowsData =
 			new Row[] {
 				Row.of("1", new Timestamp(117, 11, 1, 0, 0, 0, 0), 9.59076113897809),
@@ -123,7 +125,7 @@ public class ProphetBatchOpTest {
 				Row.of("2", new Timestamp(117, 12, 8, 0, 0, 0, 0), 8.38251828808963),
 				Row.of("2", new Timestamp(117, 12, 9, 0, 0, 0, 0), 8.06965530688617)
 			};
-		String[] colNames = new String[] {"id", "ds1", "y1"};
+		String[] colNames = new String[] {"id", "ts", "val"};
 
 		//train batch model.
 		MemSourceBatchOp source = new MemSourceBatchOp(Arrays.asList(rowsData), colNames);
@@ -134,11 +136,57 @@ public class ProphetBatchOpTest {
 			.setSelectClause("mtable_agg(ts, val) as data");
 
 		ProphetBatchOp prophetPredict = new ProphetBatchOp()
-			.setValueCol("ts")
+			.setValueCol("data")
 			.setPredictNum(4)
 			.setPredictionCol("pred");
 
 		prophetPredict.linkFrom(source.link(groupData)).print();
+	}
+
+	@Ignore
+	@Test
+	public void test2() throws Exception {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+		Row[] rowsData =
+			new Row[] {
+				Row.of("20210501", 0.1, "a1"),
+				Row.of("20210502", 0.2, "a1"),
+				Row.of("20210503", 0.3, "a1"),
+				Row.of("20210504", 0.4, "a1"),
+				Row.of("20210505", 0.5, "a1"),
+				Row.of("20210506", 0.6, "a1"),
+				Row.of("20210507", 0.7, "a1"),
+				Row.of("20210508", 0.8, "a1"),
+				Row.of("20210509", 0.9, "a1"),
+			};
+		String[] colNames = new String[] {"ds", "f1", "f2"};
+
+		//train batch model.
+		MemSourceBatchOp source = new MemSourceBatchOp(Arrays.asList(rowsData), colNames);
+
+		source.select("to_timestamp(ds, 'yyyyMMdd') as ds, f1 as val, f2 as id")
+			.link(
+				new GroupByBatchOp()
+					.setGroupByPredicate("id")
+					.setSelectClause("id, mtable_agg(ds, val) as data")
+			)
+			.link(
+				new ProphetBatchOp()
+					.setValueCol("data")
+					.setPredictionCol("pred")
+					.setPredictNum(12)
+					.setUncertaintySamples(0)
+					.setReservedCols("id")
+					.setPythonEnv("file:///Users/ning.cain/soft/miniforge3/envs/py39t/")
+			)
+			.link(
+				new FlattenMTableBatchOp()
+					.setReservedCols("id")
+					.setSelectedCol("pred")
+					.setSchemaStr("ds string, val double")
+			)
+			.print();
+
 	}
 
 }

@@ -26,6 +26,7 @@ import com.alibaba.alink.common.mapper.ComboModelMapper;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperChain;
 import com.alibaba.alink.common.mapper.ModelMapper;
+import com.alibaba.alink.common.mapper.PipelineModelMapper;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -33,6 +34,8 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.pipeline.recommendation.BaseRecommender;
 import com.alibaba.alink.pipeline.recommendation.RecommenderUtil;
 import org.apache.commons.lang3.ArrayUtils;
@@ -51,6 +54,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.alibaba.alink.common.mapper.PipelineModelMapper.getExtendModelSchema;
+
 /**
  * A utility class for exporting {@link PipelineModel}.
  */
@@ -59,6 +64,7 @@ public class ModelExporterUtils {
 	// meta col
 	private static final TypeInformation <?>[] PREFIX_TYPES = new TypeInformation <?>[] {Types.STRING};
 	private static final String MODEL_COL_PREFIX = "p";
+	private static final String META_DELIMITER = "__ALINK_META_ROW_DELIMITER__";
 	static final String ID_COL_NAME = "id";
 
 	private interface Node {
@@ -377,14 +383,14 @@ public class ModelExporterUtils {
 		return tree.toArray(new StageNode[0]);
 	}
 
-	private static Row serializeMeta(StageNode[] tree, int len) {
+	private static Row serializeMeta(StageNode[] tree, int len, Params params) {
 		Map <String, String> meta = new HashMap <>();
 		meta.put("stages", JsonConverter.toJson(tree));
 
 		Row metaRow = new Row(len);
 		metaRow.setField(0, -1L);
-		metaRow.setField(1, JsonConverter.toJson(meta));
 
+		metaRow.setField(1, JsonConverter.toJson(meta) + META_DELIMITER + params.toJson());
 		return metaRow;
 	}
 
@@ -447,7 +453,7 @@ public class ModelExporterUtils {
 		return localPacked[0];
 	}
 
-	static BatchOperator <?> serializePipelineStages(List <PipelineStageBase <?>> stages) {
+	static BatchOperator <?> serializePipelineStages(List <PipelineStageBase <?>> stages, Params params) {
 
 		StageNode[] stageNodes = preOrderConstructStages(stages);
 
@@ -459,7 +465,7 @@ public class ModelExporterUtils {
 			ArrayUtils.addAll(new TypeInformation[] {Types.LONG}, typesWithPrefix)
 		);
 
-		Row metaRow = serializeMeta(stageNodes, finalSchema.getFieldTypes().length);
+		Row metaRow = serializeMeta(stageNodes, finalSchema.getFieldTypes().length, params);
 
 		return preOrderSerialize(
 			stageNodes,
@@ -471,15 +477,16 @@ public class ModelExporterUtils {
 	}
 
 	// deserialize
-	private static StageNode[] deserializeMeta(Row metaRow, TableSchema schema, final int offset) {
-		Map <String, String> meta = JsonConverter.fromJson(
-			(String) metaRow.getField(1), new TypeReference <Map <String, String>>() {}.getType()
+	private static Tuple2 <StageNode[], Params> deserializeMeta(Row metaRow, TableSchema schema, final int offset) {
+		String[] metaAndParams = ((String) metaRow.getField(1)).split(META_DELIMITER);
+		Map <String, String> meta = JsonConverter.fromJson(metaAndParams[0]
+			, new TypeReference <Map <String, String>>() {}.getType()
 		);
-
+		Params pipeParams = metaAndParams.length == 2 ? Params.fromJson(metaAndParams[1]) : new Params();
 		StageNode[] stages = JsonConverter.fromJson(meta.get("stages"), StageNode[].class);
 
 		if (stages == null || stages.length == 0) {
-			return stages;
+			return Tuple2.of(stages, pipeParams);
 		}
 
 		TypeInformation <?>[] types = schema.getFieldTypes();
@@ -509,7 +516,7 @@ public class ModelExporterUtils {
 			}
 		}
 
-		return stages;
+		return Tuple2.of(stages, pipeParams);
 	}
 
 	private static <T extends PipelineStageBase <?>> List <T> postOrderDeserialize(
@@ -703,11 +710,11 @@ public class ModelExporterUtils {
 			ArrayUtils.addAll(new String[] {ID_COL_NAME}, appendPrefix(MODEL_COL_PREFIX, typesWithPrefix.length)),
 			ArrayUtils.addAll(new TypeInformation[] {Types.LONG}, typesWithPrefix)
 		);
-		Row metaRow = serializeMeta(stageNodes, finalSchema.getFieldTypes().length);
+		Row metaRow = serializeMeta(stageNodes, finalSchema.getFieldTypes().length, new Params());
 		return Tuple3.of(stageNodes, finalSchema, metaRow);
 	}
 
-	static StageNode[] collectMetaFromOp(BatchOperator <?> packed) {
+	static Tuple2 <StageNode[], Params> collectMetaFromOp(BatchOperator <?> packed) {
 		return deserializeMeta(
 			packed.filter(String.format("%s < 0", ID_COL_NAME)).collect().get(0),
 			packed.getSchema(), 1
@@ -715,6 +722,10 @@ public class ModelExporterUtils {
 	}
 
 	static StageNode[] deserializePipelineStagesFromMeta(Row metaRow, TableSchema schema) {
+		return deserializeMeta(metaRow, schema, 1).f0;
+	}
+
+	static Tuple2 <StageNode[], Params> deserializePipelineStagesAndParamsFromMeta(Row metaRow, TableSchema schema) {
 		return deserializeMeta(metaRow, schema, 1);
 	}
 
@@ -727,7 +738,7 @@ public class ModelExporterUtils {
 	public static <T extends PipelineStageBase <?>> List <T> constructPipelineStagesFromMeta(
 		Row metaRow, TableSchema schema) {
 
-		StageNode[] stages = deserializeMeta(metaRow, schema, 1);
+		StageNode[] stages = deserializeMeta(metaRow, schema, 1).f0;
 		return postOrderUnPackWithoutModelData(stages);
 	}
 
@@ -948,7 +959,6 @@ public class ModelExporterUtils {
 			((ComboModelMapper) mapper).newMapperList();
 		}
 
-
 		if (mapper instanceof ComboMapper) {
 			((ComboMapper) mapper).newMapperList();
 		}
@@ -957,10 +967,23 @@ public class ModelExporterUtils {
 
 	static LocalPredictor loadLocalPredictorFromPipelineModel(
 		FilePath filePath, TableSchema inputSchema) throws Exception {
-
 		Tuple2 <TableSchema, List <Row>> readed = AkUtils.readFromPath(filePath);
-
-		return new LocalPredictor(loadMapperListFromStages(readed.f1, readed.f0, inputSchema).getMappers());
+		Tuple2 <TableSchema, Row> schemaAndMeta = ModelExporterUtils.loadMetaFromAkFile(filePath);
+		Tuple2 <StageNode[], Params> stagesAndParams
+			= ModelExporterUtils.deserializePipelineStagesAndParamsFromMeta(schemaAndMeta.f1, schemaAndMeta.f0);
+		Mapper[] mappers = loadMapperListFromStages(readed.f1, readed.f0, inputSchema).getMappers();
+		Params params = stagesAndParams.f1;
+		if (params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH) != null) {
+			TableSchema extendSchema = mappers[mappers.length - 1].getOutputSchema();
+			params.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_NAMES, extendSchema.getFieldNames());
+			params.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_TYPES,
+				FlinkTypeConverter.getTypeString(extendSchema.getFieldTypes()));
+			PipelineModelMapper pipelineModelMapper
+				= new PipelineModelMapper(readed.f0, inputSchema, params);
+			pipelineModelMapper.loadModel(readed.f1);
+			return new LocalPredictor(pipelineModelMapper);
+		}
+		return new LocalPredictor(mappers);
 	}
 
 	private static int next(List <Row> all, Integer[] order, int cursor, int field) {

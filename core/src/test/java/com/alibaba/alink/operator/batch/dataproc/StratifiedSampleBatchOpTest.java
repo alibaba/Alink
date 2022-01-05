@@ -45,4 +45,13 @@ public class StratifiedSampleBatchOpTest extends AlinkTestBase {
 		long cnt = getSourceBatchOp().link(stratifiedSampleBatchOp).count();
 		assert cnt >= 0 && cnt <= 8;
 	}
+
+	@Test
+	public void testNonStringStrataRatios() throws Exception {
+		StratifiedSampleBatchOp stratifiedSampleBatchOp = new StratifiedSampleBatchOp()
+			.setStrataCol(colnames[2])
+			.setStrataRatios("1.1:0.5,0.9:0.5,-0.01:0.5,100.9:1.0");
+		long cnt = getSourceBatchOp().link(stratifiedSampleBatchOp).count();
+		assert cnt >= 0 && cnt <= 8;
+	}
 }

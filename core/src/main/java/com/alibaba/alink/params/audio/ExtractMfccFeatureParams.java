@@ -14,7 +14,7 @@ public interface ExtractMfccFeatureParams<T> extends
 	 * @cn 一个窗口的时间
 	 */
 	ParamInfo <Double> WINDOW_TIME = ParamInfoFactory
-		.createParamInfo("windowSecond", Double.class)
+		.createParamInfo("windowTime", Double.class)
 		.setDescription("frame length for windowing data, in second")
 		.setHasDefaultValue(0.128)
 		.build();
@@ -24,7 +24,7 @@ public interface ExtractMfccFeatureParams<T> extends
 	 * @cn 相邻窗口时间间隔
 	 */
 	ParamInfo <Double> HOP_TIME = ParamInfoFactory
-		.createParamInfo("hopSecond", Double.class)
+		.createParamInfo("hopTime", Double.class)
 		.setDescription("move appropriate seconds to next window")
 		.setHasDefaultValue(0.032)
 		.build();
@@ -33,7 +33,7 @@ public interface ExtractMfccFeatureParams<T> extends
 	 * @cn mfcc参数
 	 */
 	ParamInfo <Integer> NUM_MFCC = ParamInfoFactory
-		.createParamInfo("nMfcc", Integer.class)
+		.createParamInfo("numMfcc", Integer.class)
 		.setDescription("number of MFCCs to return")
 		.setHasDefaultValue(128)
 		.build();

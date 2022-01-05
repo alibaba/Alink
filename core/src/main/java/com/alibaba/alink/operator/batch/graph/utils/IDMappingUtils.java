@@ -13,6 +13,8 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import java.util.Iterator;
+
 public class IDMappingUtils {
 
 	/**
@@ -76,10 +78,13 @@ public class IDMappingUtils {
 				@Override
 				public void coGroup(Iterable <Row> first, Iterable <Tuple2 <String, Long>> second,
 									Collector <Row> out) throws Exception {
-					long idx = second.iterator().next().f1;
-					for (Row r : first) {
-						r.setField(colId, idx);
-						out.collect(r);
+					Iterator <Tuple2<String, Long>> iterator2 = second.iterator();
+					if (iterator2.hasNext()) {
+						long idx = iterator2.next().f1;
+						for (Row r : first) {
+							r.setField(colId, idx);
+							out.collect(r);
+						}
 					}
 				}
 			}).name("cogroup at " + colId);
@@ -126,9 +131,12 @@ public class IDMappingUtils {
 				public void coGroup(Iterable <Tuple3 <Long, Long, Long>> first,
 									Iterable <Tuple2 <String, Long>> second,
 									Collector <Tuple3 <Long, Long, String>> out) throws Exception {
-					String strVal = second.iterator().next().f0;
-					for (Tuple3 <Long, Long, Long> t3 : first) {
-						out.collect(Tuple3.of(t3.f0, t3.f1, strVal));
+					Iterator <Tuple2<String, Long>> iterator2 = second.iterator();
+					if (iterator2.hasNext()) {
+						String strVal = iterator2.next().f0;
+						for (Tuple3 <Long, Long, Long> t3 : first) {
+							out.collect(Tuple3.of(t3.f0, t3.f1, strVal));
+						}
 					}
 				}
 			}).name("int2string_cogroup")

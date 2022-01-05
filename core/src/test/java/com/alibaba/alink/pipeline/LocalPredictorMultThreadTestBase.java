@@ -4,13 +4,14 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.probabilistic.XRandom;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class LocalPredictorMultThreadTestBase {
+public abstract class LocalPredictorMultThreadTestBase extends AlinkTestBase {
 
 	protected List <Row> getInputRows() {
 		List <Row> rows = new ArrayList <>();

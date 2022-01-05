@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.evaluation;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -35,10 +36,12 @@ public class EvalBinaryClassStreamOpTest extends AlinkTestBase {
 			.setLabelCol("label")
 			.setPositiveLabelValueString("prefix0")
 			.setTimeInterval(0.001)
-			.setPredictionDetailCol("detailInput");
+			.setPredictionDetailCol("detailInput")
+			.linkFrom(detailBinaryTmp);
 
-		detailBinaryTmp.link(op1).print();
-
+		CollectSinkStreamOp sink = new CollectSinkStreamOp()
+			.linkFrom(op1);
 		StreamOperator.execute();
+		System.out.println(sink.getAndRemoveValues());
 	}
 }

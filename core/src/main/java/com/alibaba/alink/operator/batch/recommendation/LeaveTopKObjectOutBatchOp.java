@@ -54,7 +54,7 @@ public class LeaveTopKObjectOutBatchOp extends BatchOperator <LeaveTopKObjectOut
 			private static final long serialVersionUID = -2766287446658278413L;
 
 			@Override
-			public void flatMap(Tuple2 <Boolean, Row> value, Collector <Row> out) throws Exception {
+			public void flatMap(Tuple2 <Boolean, Row> value, Collector <Row> out) {
 				if (value.f0) {
 					out.collect(value.f1);
 				}
@@ -65,14 +65,14 @@ public class LeaveTopKObjectOutBatchOp extends BatchOperator <LeaveTopKObjectOut
 			private static final long serialVersionUID = 3051286291048876503L;
 
 			@Override
-			public void flatMap(Tuple2 <Boolean, Row> value, Collector <Row> out) throws Exception {
+			public void flatMap(Tuple2 <Boolean, Row> value, Collector <Row> out) {
 				if (!value.f0) {
 					out.collect(value.f1);
 				}
 			}
 		});
 
-		BatchOperator testOp =
+		BatchOperator <?> testOp =
 			new DataSetWrapperBatchOp(test, in.getColNames(), in.getColTypes())
 				.setMLEnvironmentId(getMLEnvironmentId());
 
@@ -89,10 +89,10 @@ public class LeaveTopKObjectOutBatchOp extends BatchOperator <LeaveTopKObjectOut
 
 	static class Split implements GroupReduceFunction <Row, Tuple2 <Boolean, Row>> {
 		private static final long serialVersionUID = 5727094306089631645L;
-		private Double testFraction;
-		private Integer testK;
-		private double threshold;
-		private int rateIdx;
+		private final Double testFraction;
+		private final Integer testK;
+		private final double threshold;
+		private final int rateIdx;
 
 		public Split(Double fraction, Integer k, double threshold, int rateIdx) {
 			this.testFraction = fraction;

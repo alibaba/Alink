@@ -19,7 +19,7 @@ public class IterableModelLoaderModelMapperAdapterMT extends RichFlatMapFunction
 
 	private static final long serialVersionUID = -727513055106586691L;
 	private ModelMapper iterableModelMapper;
-	private long handler;
+	private final long handler;
 	private final int numThreads;
 	private transient MapperMTWrapper wrapper;
 
@@ -31,8 +31,8 @@ public class IterableModelLoaderModelMapperAdapterMT extends RichFlatMapFunction
 	@Override
 	public void open(Configuration parameters) throws Exception {
 		for (int i = 0; i < getRuntimeContext().getNumberOfParallelSubtasks(); ++i) {
-			if(IterTaskObjKeeper.contains(handler, i)){
-				iterableModelMapper = IterTaskObjKeeper.get(handler, i);
+			iterableModelMapper = IterTaskObjKeeper.containsAndRemoves(handler, i);
+			if (null != iterableModelMapper) {
 				break;
 			}
 		}

@@ -1,11 +1,12 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
 
-public class LongTensorTest {
+public class LongTensorTest extends AlinkTestBase {
 
 	private static final Random random = new Random(0);
 
@@ -19,6 +20,13 @@ public class LongTensorTest {
 				Assert.assertEquals(0, tensor.getLong(i, j));
 			}
 		}
+	}
+
+	@Test
+	public void testFromScalar() {
+		long v = random.nextLong();
+		LongTensor tensor = new LongTensor(v);
+		Assert.assertEquals(v, tensor.getLong());
 	}
 
 	@Test
@@ -96,6 +104,17 @@ public class LongTensorTest {
 	}
 
 	@Test
+	public void testScalarSerDe() {
+		long v = random.nextLong();
+		LongTensor tensor = new LongTensor(v);
+		Assert.assertEquals("LONG##-4962768465676381896 ", tensor.toString());
+
+		LongTensor tensor2 = (LongTensor) TensorUtil.getTensor(tensor.toString());
+		System.out.println(tensor2.toString());
+		Assert.assertEquals(tensor.toString(), tensor2.toString());
+	}
+
+	@Test
 	public void testReshape() {
 		int n = 2;
 		int m = 6;
@@ -107,6 +126,14 @@ public class LongTensorTest {
 		}
 		LongTensor tensor = new LongTensor(arr);
 		LongTensor reshaped = tensor.reshape(new Shape(2, 3, 2));
+		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
+	}
+
+	@Test
+	public void testScalarReshape() {
+		long v = random.nextLong();
+		LongTensor tensor = new LongTensor(v);
+		LongTensor reshaped = tensor.reshape(new Shape(1, 1, 1, 1));
 		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
 	}
 }

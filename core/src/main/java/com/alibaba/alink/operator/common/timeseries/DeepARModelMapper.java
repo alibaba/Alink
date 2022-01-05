@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -40,7 +41,7 @@ public class DeepARModelMapper extends TimeSeriesModelMapper {
 			.set(TFTableModelPredictParams.SELECTED_COLS, TF_MODEL_MAPPER_INPUT_COL_NAMES)
 			.set(TFTableModelPredictParams.SIGNATURE_DEF_KEY, "serving_default")
 			.set(TFTableModelPredictParams.INPUT_SIGNATURE_DEFS, new String[] {"tensor"})
-			.set(TFTableModelPredictParams.OUTPUT_SCHEMA_STR, "pred TENSOR_TYPES_FLOAT_TENSOR")
+			.set(TFTableModelPredictParams.OUTPUT_SCHEMA_STR, "pred FLOAT_TENSOR")
 			.set(TFTableModelPredictParams.OUTPUT_SIGNATURE_DEFS, new String[] {"tf_op_layer_output"})
 			.set(TFTableModelPredictParams.RESERVED_COLS, new String[] {});
 	}
@@ -58,7 +59,8 @@ public class DeepARModelMapper extends TimeSeriesModelMapper {
 				TF_MODEL_MAPPER_INPUT_COL_NAMES,
 				TF_MODEL_MAPPER_INPUT_COL_TYPES
 			),
-			createTfModelMapperParams()
+			createTfModelMapperParams(),
+			new TFPredictorClassLoaderFactory()
 		);
 	}
 

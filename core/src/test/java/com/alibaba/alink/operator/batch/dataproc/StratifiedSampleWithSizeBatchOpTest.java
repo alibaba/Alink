@@ -35,6 +35,24 @@ public class StratifiedSampleWithSizeBatchOpTest extends AlinkTestBase {
 	}
 
 	@Test
+	public void testStratifiedSampleWithSizeOnNonStringStrataCol() throws Exception {
+		Random r = new Random();
+		int size = 50;
+		List <Row> data = new ArrayList <>();
+		for (int i = 0; i < size; i++) {
+			data.add(Row.of(1, r.nextInt()));
+		}
+		MemSourceBatchOp sourceOp = new MemSourceBatchOp(data, new String[] {"key", "val"});
+		StratifiedSampleWithSizeBatchOp sampleOp = new StratifiedSampleWithSizeBatchOp()
+			.setStrataCol("key")
+			.setStrataSizes("1:10")
+			.setWithReplacement(true);
+
+		long count = sourceOp.link(sampleOp).count();
+		Assert.assertEquals(10, count);
+	}
+
+	@Test
 	public void testStratifiedSampleWithSize1() throws Exception {
 		Random r = new Random();
 		int[] len = new int[] {200, 300, 400};

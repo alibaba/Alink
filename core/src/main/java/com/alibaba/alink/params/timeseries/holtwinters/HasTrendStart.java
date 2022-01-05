@@ -5,6 +5,11 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasTrendStart<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name trend初始值
+	 * @cn trend初始值
+	 */
 	ParamInfo <Double> TREND_START = ParamInfoFactory
 		.createParamInfo("trendStart", Double.class)
 		.setDescription("The trend start.")

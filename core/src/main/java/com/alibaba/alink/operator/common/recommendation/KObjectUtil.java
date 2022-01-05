@@ -1,16 +1,19 @@
 package com.alibaba.alink.operator.common.recommendation;
 
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.utils.JsonConverter;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.reflect.Type;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 public class KObjectUtil {
@@ -80,19 +83,16 @@ public class KObjectUtil {
 		List <Object> recommValue,
 		Map <String, List <Double>> others) {
 
-		Map <String, String> result = new TreeMap <>(new Comparator <String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				if (o1.equals(recommName) && o2.equals(recommName)) {
-					return 0;
-				} else if (o1.equals(recommName)) {
-					return -1;
-				} else if (o2.equals(recommName)) {
-					return 1;
-				}
-
-				return o1.compareTo(o2);
+		Map <String, String> result = new TreeMap <>((o1, o2) -> {
+			if (o1.equals(recommName) && o2.equals(recommName)) {
+				return 0;
+			} else if (o1.equals(recommName)) {
+				return -1;
+			} else if (o2.equals(recommName)) {
+				return 1;
 			}
+
+			return o1.compareTo(o2);
 		});
 
 		result.put(recommName, JsonConverter.toJson(recommValue));
@@ -106,61 +106,16 @@ public class KObjectUtil {
 		return JsonConverter.toJson(result);
 	}
 
-	public static String MergeRecommJson(String recommName, String recommJson, String initRecommJson) {
-		Map <String, String> initRecomm = JsonConverter.fromJson(
-			initRecommJson,
-			new TypeReference <Map <String, String>>() {
-			}.getType()
-		);
-		Map <String, String> recomm = JsonConverter.fromJson(
-			recommJson,
-			new TypeReference <Map <String, String>>() {
-			}.getType()
-		);
-		Map <String, String> result = new TreeMap <>();
-
-		List <Object> initRecommList = JsonConverter.fromJson(initRecomm.get(recommName), List.class);
-		List <Object> recommList = JsonConverter.fromJson(recomm.get(recommName), List.class);
-
-		for (Object obj : initRecommList) {
-			if (!recommList.contains(obj)) {
-				recommList.add(obj);
-			}
+	public static MTable MergeRecommMTable(MTable recommJson, MTable initRecommJson) {
+		List <Row> recommRows = recommJson.getRows();
+		List <Row> initRows = initRecommJson.getRows();
+		Set <Row> set = new HashSet <>(recommRows.size());
+		for (Row row : recommRows) {
+			set.add(Row.of(row.getField(0)));
 		}
-		result.put(recommName, JsonConverter.toJson(recommList));
-
-		return JsonConverter.toJson(result);
-
-	}
-
-	public static Tuple2 <List <Object>, Map <String, List <Double>>>
-	deserializeRecomm(
-		String recommJson, String recommKey, Type typeOfT) {
-
-		Map <String, String> recomm = JsonConverter.fromJson(
-			recommJson,
-			new TypeReference <Map <String, String>>() {
-			}.getType()
-		);
-
-		List <Object> recommVal = JsonConverter.fromJson(
-			recomm.remove(recommKey),
-			ParameterizedTypeImpl.make(List.class, new Type[] {typeOfT}, null)
-		);
-
-		Map <String, List <Double>> others = new HashMap <>();
-
-		for (Map.Entry <String, String> entry : recomm.entrySet()) {
-			others.put(
-				entry.getKey(),
-				JsonConverter.fromJson(
-					entry.getValue(),
-					new TypeReference <List <Double>>() {
-					}.getType()
-				)
-			);
+		for (Row row : initRows) {
+			set.add(Row.of(row.getField(0)));
 		}
-
-		return Tuple2.of(recommVal, others);
+		return new MTable(new ArrayList <>(set), recommJson.getSchemaStr().split(",")[0]);
 	}
 }

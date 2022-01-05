@@ -21,9 +21,49 @@ from tensorflow_hub.keras_layer import KerasLayer
 from akdl.engine.run_config import generate_run_config
 from akdl.engine.train import train_estimator, train_keras_model, train_estimator_one_worker
 from akdl.runner.config import TrainTaskConfig
+from akdl.engine.inputs import dtype_str_map
 from akdl.runner.io_helper import remove_checkpoint_files
-from akdl.models.tf.keras_sequential.metrics_from_logits import AUC, BinaryAccuracy, TruePositives, FalsePositives, TrueNegatives, FalseNegatives, Precision, Recall
-from typing import List
+from akdl.models.tf.keras_sequential.metrics_from_logits import AUC, BinaryAccuracy, TruePositives, FalsePositives, \
+    TrueNegatives, FalseNegatives, Precision, Recall, SparseCategoricalAccuracy
+from typing import List, Dict
+
+
+def get_info_info(task_config: TrainTaskConfig):
+    """
+    Get input_config from task_config.
+    :param task_config:
+    :return:
+    """
+    user_params = task_config.user_params
+    tensor_shapes: Dict[str, any] = json.load(open(os.path.join(task_config.work_dir, "tensor_shapes.txt"), "r"))
+    logging.info("tensor_shapes: {}".format(tensor_shapes))
+    tensor_types: Dict[str, str] = json.load(open(os.path.join(task_config.work_dir, "tensor_types.txt"), "r"))
+    logging.info("tensor_types: {}".format(tensor_types))
+    label_col = user_params['label_col']
+    logging.info("label_col: {}".format(label_col))
+    label_type_str = user_params['label_type']
+
+    if 'ALINK:bc_1' in user_params:
+        with open(user_params['ALINK:bc_1'], 'r') as f:
+            num_classes = int(f.readline().strip())
+    else:
+        num_classes = 1
+    logging.info("num_classes: {}".format(num_classes))
+
+    assert len(tensor_shapes) == len(tensor_types), "Tensor shapes and types have different sizes."
+    example_config = []
+    for name, shape in tensor_shapes.items():
+        example_config.append({
+            'name': name,
+            'shape': shape,
+            'dtype': tensor_types[name]
+        })
+    example_config.append({
+        'name': label_col,
+        'dtype': label_type_str,
+        'shape': []
+    })
+    return example_config, label_col, num_classes
 
 
 def main(task_config: TrainTaskConfig):
@@ -37,42 +77,21 @@ def main(task_config: TrainTaskConfig):
             # TODO: wait a few seconds for the chief work to remove files
             time.sleep(5)
 
-    tensor_shapes = json.load(open(os.path.join(task_config.work_dir, "tensor_shapes.txt"), "r"))
-    logging.info("tensor_shapes: {}".format(tensor_shapes))
-    tensor_col = json.loads(user_params['tensor_cols'])[0]
-    logging.info("tensor_col: {}".format(tensor_col))
-    label_col = user_params['label_col']
-    logging.info("label_col: {}".format(label_col))
-    label_type_str = user_params['label_type']
-
-    if 'ALINK:bc_1' in user_params:
-        with open(user_params['ALINK:bc_1'], 'r') as f:
-            num_classes = int(f.readline().strip())
-    else:
-        num_classes = 1
-    logging.info("num_classes: {}".format(num_classes))
+    example_config, label_col, num_classes = get_info_info(task_config)
+    input_config = {
+        'example_config': example_config,
+        'label_col': label_col,
+    }
+    logging.info("input_config = {}".format(input_config))
 
     model_config = json.loads(user_params['model_config'])
     layers_str = model_config['layers']
 
-    # input config
-    example_config = [
-        {
-            'name': tensor_col,
-            'dtype': 'double',
-            'shape': tensor_shapes[tensor_col],
-        },
-        {
-            'name': label_col,
-            'dtype': label_type_str,
-            'shape': []
-        }
-    ]
-    input_config = {
-        'example_config': example_config,
-        'label_col': label_col
-    }
-    logging.info("input_config = {}".format(input_config))
+    tensor_configs = [d for d in example_config if d['name'] != label_col]
+    assert len(tensor_configs) == 1, "Only support 1 tensor columns."
+    tensor_config = tensor_configs[0]
+    tensor_col = tensor_config['name']
+    logging.info("tensor_col: {}".format(tensor_col))
 
     # train config
     raw_dataset_fn = lambda: tf.data.TFRecordDataset(task_config.dataset_file)
@@ -97,7 +116,7 @@ def main(task_config: TrainTaskConfig):
         'raw_dataset_fn': raw_dataset_fn,
         'batch_size': batch_size,
         'num_epochs': num_epochs,
-        'log_step_count_steps': 1
+        'log_step_count_steps': 10
     }
     if valid_raw_dataset_fn is not None:
         train_config.update({
@@ -117,14 +136,11 @@ def main(task_config: TrainTaskConfig):
     save_best_only = user_params.get('save_best_only') == 'true'
     best_exporter_metric = user_params.get('best_exporter_metric', 'loss')
     metric_bigger = best_exporter_metric in [
-        'acc', 'auc', 'binary_accuracy', 'precision', 'recall', 'true_negatives', 'true_positives'
+        'acc', 'auc', 'binary_accuracy', 'precision', 'recall', 'true_negatives', 'true_positives',
+        'sparse_categorical_accuracy'
     ]
     export_config = {
-        'placeholders_config': [{
-            'name': tensor_col,
-            'dtype': 'double',
-            'shape': tensor_shapes[tensor_col],
-        }],
+        'placeholders_config': [tensor_config],
         'export_batch_dim': True,
         'exporter_type': 'best' if save_best_only else 'latest',
         'best_exporter_metric': best_exporter_metric,
@@ -132,7 +148,8 @@ def main(task_config: TrainTaskConfig):
     }
     logging.info("export_config = {}".format(export_config))
 
-    model = get_model(tensor_name=tensor_col, tensor_shape=tensor_shapes[tensor_col],
+    model = get_model(tensor_name=tensor_col, tensor_shape=tensor_config['shape'],
+                      tensor_dtype=dtype_str_map[tensor_config['dtype']],
                       layers_str=layers_str,
                       num_classes=num_classes)
     model.summary(print_fn=lambda d: logging.info(d))
@@ -142,8 +159,7 @@ def main(task_config: TrainTaskConfig):
         metrics = ['mse', tf.keras.metrics.RootMeanSquaredError(), 'mae', 'mape', 'msle']
     elif num_classes == 2:
         loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        metrics = ['accuracy',
-                   AUC(from_logits=True),
+        metrics = [AUC(from_logits=True),
                    BinaryAccuracy(from_logits=True),
                    TruePositives(from_logits=True),
                    FalsePositives(from_logits=True),
@@ -154,7 +170,7 @@ def main(task_config: TrainTaskConfig):
                    ]
     else:
         loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        metrics = ['accuracy']
+        metrics = [SparseCategoricalAccuracy(from_logits=True)]
 
     optimizer = eval(user_params.get('optimizer', 'Adam()'))
 
@@ -170,8 +186,8 @@ def main(task_config: TrainTaskConfig):
     # train_keras_model(model, input_config, train_config, task_config)
 
 
-def get_model(tensor_name, tensor_shape, layers_str: List[str], num_classes: int):
-    inputs = Input(shape=tensor_shape, name=tensor_name)
+def get_model(tensor_name, tensor_shape, tensor_dtype, layers_str: List[str], num_classes: int):
+    inputs = Input(shape=tensor_shape, name=tensor_name, dtype=tensor_dtype)
     x = inputs
     for layer_str in layers_str:
         x = eval(layer_str)(x)

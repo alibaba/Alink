@@ -21,10 +21,10 @@ import java.util.Map;
 
 public class FlattenKObjectMapper extends FlatMapper {
 	private static final long serialVersionUID = 5345439790133072507L;
-	private OutputColsHelper outputColsHelper;
-	private int selectIdx;
-	private String[] outputColNames;
-	private Type[] outputColJavaTypes;
+	private final OutputColsHelper outputColsHelper;
+	private final int selectIdx;
+	private final String[] outputColNames;
+	private final Type[] outputColJavaTypes;
 
 	public FlattenKObjectMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);

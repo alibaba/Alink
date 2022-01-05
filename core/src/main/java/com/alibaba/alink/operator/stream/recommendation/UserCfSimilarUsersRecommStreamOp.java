@@ -16,11 +16,11 @@ public class UserCfSimilarUsersRecommStreamOp
 
 	private static final long serialVersionUID = 8004151126780866021L;
 
-	public UserCfSimilarUsersRecommStreamOp(BatchOperator model) {
+	public UserCfSimilarUsersRecommStreamOp(BatchOperator <?> model) {
 		this(model, null);
 	}
 
-	public UserCfSimilarUsersRecommStreamOp(BatchOperator model, Params params) {
+	public UserCfSimilarUsersRecommStreamOp(BatchOperator <?> model, Params params) {
 		super(model, UserCfRecommKernel::new, RecommType.SIMILAR_USERS, params);
 	}
 }

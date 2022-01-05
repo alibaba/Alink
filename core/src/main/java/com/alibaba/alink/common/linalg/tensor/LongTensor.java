@@ -20,6 +20,10 @@ public final class LongTensor extends NumericalTensor <Long> {
 		this(NdArrays.ofLongs(shape.toNdArrayShape()));
 	}
 
+	public LongTensor(long data) {
+		this(NdArrays.scalarOf(data));
+	}
+
 	public LongTensor(long[] data) {
 		this(StdArrays.ndCopyOf(data));
 	}

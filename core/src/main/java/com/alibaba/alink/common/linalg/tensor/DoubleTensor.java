@@ -23,6 +23,10 @@ public final class DoubleTensor extends NumericalTensor <Double> {
 		this(NdArrays.ofDoubles(shape.toNdArrayShape()));
 	}
 
+	public DoubleTensor(double data) {
+		this(NdArrays.scalarOf(data));
+	}
+
 	public DoubleTensor(double[] data) {
 		this(StdArrays.ndCopyOf(data));
 	}

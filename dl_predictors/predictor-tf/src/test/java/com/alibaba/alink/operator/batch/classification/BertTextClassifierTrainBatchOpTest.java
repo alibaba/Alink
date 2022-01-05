@@ -1,19 +1,12 @@
 package com.alibaba.alink.operator.batch.classification;
 
 import com.alibaba.alink.DLTestConstants;
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.dl.BertResources;
-import com.alibaba.alink.common.dl.BertResources.ModelName;
-import com.alibaba.alink.common.dl.BertResources.ResourceType;
-import com.alibaba.alink.common.dl.DLEnvConfig;
-import com.alibaba.alink.common.dl.DLEnvConfig.Version;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
-import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.testutil.categories.DLTest;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -21,15 +14,7 @@ public class BertTextClassifierTrainBatchOpTest {
 
 	@Category(DLTest.class)
 	public void testConfig(Integer parallelism, Integer numPSs, String checkpointFilePath) throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF115);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
-		registerKey = BertResources.getRegisterKey(ModelName.BASE_CHINESE, ResourceType.CKPT);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(parallelism);
 		String url = DLTestConstants.CHN_SENTI_CORP_HTL_PATH;
 		String schema = "label bigint, review string";
@@ -49,12 +34,8 @@ public class BertTextClassifierTrainBatchOpTest {
 			.setNumPSs(numPSs)
 			.setCheckpointFilePath(checkpointFilePath)
 			.linkFrom(data);
-
-		new AkSinkBatchOp()
-			.setFilePath("/tmp/bert_text_classifier_model.ak")
-			.setOverwriteSink(true)
-			.linkFrom(train);
-		BatchOperator.execute();
+		Assert.assertTrue(train.count() > 1);
+		BatchOperator.setParallelism(savedParallelism);
 	}
 
 	@Test
@@ -64,7 +45,7 @@ public class BertTextClassifierTrainBatchOpTest {
 
 	@Test
 	public void testSingleWorkerModelDir() throws Exception {
-		testConfig(1, null, PythonFileUtils.createTempWorkDir("bert_text_classifier_train_"));
+		testConfig(1, null, PythonFileUtils.createTempDir("bert_text_classifier_train_").toString());
 	}
 
 	@Test
@@ -74,7 +55,7 @@ public class BertTextClassifierTrainBatchOpTest {
 
 	@Test
 	public void testMultiWorkersAllReduceModelDir() throws Exception {
-		testConfig(3, 0, PythonFileUtils.createTempWorkDir("bert_text_classifier_train_"));
+		testConfig(3, 0, PythonFileUtils.createTempDir("bert_text_classifier_train_").toString());
 	}
 
 	@Test
@@ -84,20 +65,12 @@ public class BertTextClassifierTrainBatchOpTest {
 
 	@Test
 	public void testMultiWorkersPSModelDir() throws Exception {
-		testConfig(3, null, PythonFileUtils.createTempWorkDir("bert_text_classifier_train_"));
+		testConfig(3, null, PythonFileUtils.createTempDir("bert_text_classifier_train_").toString());
 	}
 
 	@Test
 	public void testDefaultMaxSeqLength() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF115);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
-		registerKey = BertResources.getRegisterKey(ModelName.BASE_CHINESE, ResourceType.CKPT);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(1);
 		String url = DLTestConstants.CHN_SENTI_CORP_HTL_PATH;
 		String schema = "label bigint, review string";
@@ -114,11 +87,7 @@ public class BertTextClassifierTrainBatchOpTest {
 			.setNumFineTunedLayers(1)
 			.setBertModelName("Base-Chinese")
 			.linkFrom(data);
-
-		new AkSinkBatchOp()
-			.setFilePath("/tmp/bert_text_classifier_model.ak")
-			.setOverwriteSink(true)
-			.linkFrom(train);
-		BatchOperator.execute();
+		Assert.assertTrue(train.count() > 1);
+		BatchOperator.setParallelism(savedParallelism);
 	}
 }

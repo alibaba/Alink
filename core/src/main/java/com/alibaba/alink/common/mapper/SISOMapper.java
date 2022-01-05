@@ -30,7 +30,7 @@ public abstract class SISOMapper extends Mapper {
 	 *
 	 * @return the outputColType.
 	 */
-	protected abstract TypeInformation initOutputColType();
+	protected abstract TypeInformation<?> initOutputColType();
 
 	/**
 	 * Map the single input column <code>input</code> to a single output.

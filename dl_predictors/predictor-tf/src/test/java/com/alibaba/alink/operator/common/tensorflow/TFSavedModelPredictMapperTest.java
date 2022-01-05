@@ -40,7 +40,7 @@ public class TFSavedModelPredictMapperTest {
 		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
 
 		MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(2);
-		String url = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/mnist_dense.csv";
+		String url = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/mnist_dense.csv";
 		String schema = "label bigint, image string";
 
 		BatchOperator <?> data = new CsvSourceBatchOp().setFilePath(url).setSchemaStr(schema).setFieldDelimiter(";");
@@ -86,12 +86,12 @@ public class TFSavedModelPredictMapperTest {
 				new FloatTensor(new Shape(batchSize, 28, 28)));
 			rows.add(row);
 		}
-		BatchOperator <?> data = new MemSourceBatchOp(rows, "label TENSOR_TYPES_LONG_TENSOR, image TENSOR_TYPES_FLOAT_TENSOR");
+		BatchOperator <?> data = new MemSourceBatchOp(rows, "label LONG_TENSOR, image FLOAT_TENSOR");
 
 		Params params = new Params();
 		params.set(HasModelPath.MODEL_PATH, "http://alink-dataset.oss-cn-zhangjiakou.aliyuncs.com/tf/1551968314.zip");
 		params.set(HasSelectedCols.SELECTED_COLS, new String[] {"image"});
-		params.set(HasOutputSchemaStr.OUTPUT_SCHEMA_STR, "classes TENSOR_TYPES_LONG_TENSOR, probabilities TENSOR_TYPES_FLOAT_TENSOR");
+		params.set(HasOutputSchemaStr.OUTPUT_SCHEMA_STR, "classes LONG_TENSOR, probabilities FLOAT_TENSOR");
 		TFSavedModelPredictMapper tfSavedModelPredictMapper = new TFSavedModelPredictMapper(
 			data.getSchema(), params);
 		tfSavedModelPredictMapper.open();

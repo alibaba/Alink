@@ -6,6 +6,10 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasTensorCol<T> extends WithParams <T> {
 
+	/**
+	 * @cn-name tensor列
+	 * @cn tensor列
+	 */
 	ParamInfo <String> TENSOR_COL = ParamInfoFactory
 		.createParamInfo("tensorCol", String.class)
 		.setDescription("tensor column")

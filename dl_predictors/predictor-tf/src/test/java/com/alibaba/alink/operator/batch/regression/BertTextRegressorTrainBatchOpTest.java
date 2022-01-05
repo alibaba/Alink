@@ -1,18 +1,14 @@
 package com.alibaba.alink.operator.batch.regression;
 
 import com.alibaba.alink.DLTestConstants;
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.dl.DLEnvConfig;
-import com.alibaba.alink.common.dl.DLEnvConfig.Version;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
-import com.alibaba.alink.common.io.plugin.RegisterKey;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.ShuffleBatchOp;
-import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.testutil.categories.DLTest;
 import com.google.common.collect.ImmutableMap;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -24,13 +20,8 @@ public class BertTextRegressorTrainBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF115);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
-		BatchOperator.setParallelism(1);
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
+		BatchOperator.setParallelism(2);
 		String url = DLTestConstants.CHN_SENTI_CORP_HTL_PATH;
 		String schema = "label double, review string";
 		BatchOperator <?> data = new CsvSourceBatchOp()
@@ -50,14 +41,9 @@ public class BertTextRegressorTrainBatchOpTest {
 			.setNumFineTunedLayers(1)
 			.setMaxSeqLength(128)
 			.setBertModelName("Base-Chinese")
-			.setCustomJsonJson(JsonConverter.toJson(customConfig))
+			.setCustomConfigJson(JsonConverter.toJson(customConfig))
 			.linkFrom(data);
-
-		new AkSinkBatchOp()
-			.setFilePath("/tmp/bert_text_regressor_model.ak")
-			.setOverwriteSink(true)
-			.linkFrom(train);
-
-		BatchOperator.execute();
+		Assert.assertTrue(train.count() > 1);
+		BatchOperator.setParallelism(savedParallelism);
 	}
 }

@@ -23,7 +23,7 @@ public class PluginDistributeCache extends DistributeCache {
 	public void distributeAsLocalFile() throws IOException {
 		String name = context.get("name");
 		String version = context.get("version");
-		String pluginDir = context.get(PluginConfig.ENV_FLINK_PLUGINS_DIR);
+		String pluginDir = context.get(PluginConfig.ENV_ALINK_PLUGINS_DIR);
 
 		PluginDownloader downloader = new PluginDownloader(pluginDir);
 
@@ -48,7 +48,7 @@ public class PluginDistributeCache extends DistributeCache {
 			ImmutableMap. <String, String>builder()
 				.put("name", pluginName)
 				.put("version", pluginVersion)
-				.put(PluginConfig.ENV_FLINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir())
+				.put(PluginConfig.ENV_ALINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir())
 				.put("autoPluginDownload", Boolean.toString(AlinkGlobalConfiguration.getAutoPluginDownload()))
 				.build()
 		);

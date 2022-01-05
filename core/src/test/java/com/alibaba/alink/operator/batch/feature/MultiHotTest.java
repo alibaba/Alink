@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.feature;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorAssemblerBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -47,7 +48,7 @@ public class MultiHotTest extends AlinkTestBase {
 			.link(new VectorAssemblerBatchOp().setSelectedCols("kv1", "kv2").setOutputCol("kv")
 				.setReservedCols())
 			.collect().get(0);
-		Assert.assertEquals(result.getField(0), "$14$1:1.0 2:1.0 4:1.0 5:1.0 11:1.0");
+		Assert.assertEquals(result.getField(0), VectorUtil.getVector("$14$1:1.0 2:1.0 4:1.0 5:1.0 11:1.0"));
 	}
 
 	@Test
@@ -56,6 +57,6 @@ public class MultiHotTest extends AlinkTestBase {
 		MultiHotEncoderModel mh = new MultiHotEncoder().setSelectedCols(new String[] {"svec", "vec"}).setHandleInvalid(
 			HandleInvalid.SKIP)
 			.setDelimiter(" ").setOutputCols("kv").fit(vecdata);
-		mh.transform(vecdata).print();
+		mh.transform(vecdata).collect();
 	}
 }

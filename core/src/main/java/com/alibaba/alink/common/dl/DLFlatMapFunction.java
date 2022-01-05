@@ -23,6 +23,7 @@ import com.alibaba.flink.ml.cluster.rpc.NodeServer;
 import com.alibaba.flink.ml.data.DataExchange;
 import com.alibaba.flink.ml.util.IpHostUtil;
 import com.alibaba.flink.ml.util.MLConstants;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,17 +148,22 @@ public class DLFlatMapFunction implements Closeable, Serializable {
         }
 
         if (runtimeContext.hasBroadcastVariable(DLConstants.BC_NAME_TENSOR_SHAPES)) {
-            Map <String, long[]> tensorShapeMap =
+            @SuppressWarnings("unchecked")
+			Map <String, long[]> tensorShapeMap =
                 (Map <String, long[]>) (runtimeContext.getBroadcastVariable(DLConstants.BC_NAME_TENSOR_SHAPES)).get(0);
-            String fn = workDir + File.separator + "tensor_shapes.txt";
-            try (FileWriter writer = new FileWriter(fn);
-                 BufferedWriter bw = new BufferedWriter(writer)) {
-                bw.write(JsonConverter.toJson(tensorShapeMap));
-            } catch (IOException e) {
-                throw new RuntimeException("Fail to write tensor shape map to local disk.");
-            }
-            LOG.info("Succ in writing tensor shape map to {}", fn);
+            File fn = new File(workDir, "tensor_shapes.txt");
+			FileUtils.write(fn, JsonConverter.toJson(tensorShapeMap));
+            LOG.info("Succ in writing tensor shape map to {}", fn.getAbsolutePath());
         }
+
+		if (runtimeContext.hasBroadcastVariable(DLConstants.BC_NAME_TENSOR_TYPES)) {
+			@SuppressWarnings("unchecked")
+			Map <String, String> tensorTypeMap =
+				(Map <String, String>) (runtimeContext.getBroadcastVariable(DLConstants.BC_NAME_TENSOR_TYPES)).get(0);
+			File fn = new File(workDir, "tensor_types.txt");
+			FileUtils.write(fn, JsonConverter.toJson(tensorTypeMap));
+			LOG.info("Succ in writing tensor shape map to {}", fn.getAbsolutePath());
+		}
 
         prepareBroadcastData(workDir, runtimeContext, mlContext);
 

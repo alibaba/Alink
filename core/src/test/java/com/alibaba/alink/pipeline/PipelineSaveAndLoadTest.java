@@ -253,7 +253,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 		CsvSourceBatchOp source = new CsvSourceBatchOp()
 			.setSchemaStr(schemaStr)
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv");
 
 		String modelFilename = "/tmp/model123";
 
@@ -277,7 +277,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		CsvSourceBatchOp source = new CsvSourceBatchOp()
 			.setSchemaStr(
 				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv");
 
 		QuantileDiscretizerTrainBatchOp train = new QuantileDiscretizerTrainBatchOp().setNumBuckets(2).setSelectedCols(
 			"petal_length")
@@ -305,7 +305,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		CsvSourceBatchOp source = new CsvSourceBatchOp()
 			.setSchemaStr(
 				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv");
 
 		new QuantileDiscretizer().setNumBuckets(2).setSelectedCols("petal_length")
 			.fit(source)
@@ -325,7 +325,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		CsvSourceStreamOp streamSource = new CsvSourceStreamOp()
 			.setSchemaStr(
 				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv");
 
 		PipelineModel pipelineModel = new PipelineModel(model1, model2, model3);
 		pipelineModel = PipelineModel.collectLoad(pipelineModel.save());
@@ -338,7 +338,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 		CsvSourceBatchOp source = new CsvSourceBatchOp()
 			.setSchemaStr(
 				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv");
 
 		String pipeline_model_filename = "/tmp/model123.csv";
 		QuantileDiscretizerModel model1 = new QuantileDiscretizer()

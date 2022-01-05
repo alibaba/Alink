@@ -1,10 +1,6 @@
 package com.alibaba.alink.operator.batch.tensorflow;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.dl.DLEnvConfig;
-import com.alibaba.alink.common.dl.DLEnvConfig.Version;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
-import com.alibaba.alink.common.io.plugin.RegisterKey;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.RandomTableSourceBatchOp;
@@ -20,12 +16,7 @@ public class TensorFlowBatchOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = DLEnvConfig.getRegisterKey(Version.TF115);
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(3);
 
 		BatchOperator <?> source = new RandomTableSourceBatchOp()
@@ -51,11 +42,13 @@ public class TensorFlowBatchOpTest {
 			.setOutputSchemaStr("model_id long, model_info string")
 			.linkFrom(source);
 		tensorFlowBatchOp.print();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 
 	@Category(DLTest.class)
 	@Test
 	public void testWithAutoWorkersPSs() throws Exception {
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(3);
 
 		BatchOperator <?> source = new RandomTableSourceBatchOp()
@@ -79,5 +72,6 @@ public class TensorFlowBatchOpTest {
 			.setOutputSchemaStr("model_id long, model_info string")
 			.linkFrom(source);
 		tensorFlowBatchOp.print();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 }

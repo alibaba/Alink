@@ -77,8 +77,8 @@ public class GeneralizedLinearRegressionTest extends AlinkTestBase {
 
 		GeneralizedLinearRegressionModel model = glm.fit(source);
 
-		BatchOperator predict = model.transform(source);
-		BatchOperator eval = model.evaluate(source);
+		BatchOperator<?> predict = model.transform(source);
+		BatchOperator<?> eval = model.evaluate(source);
 		eval.lazyPrint(-1);
 
 		EvalRegressionBatchOp evaluation = new EvalRegressionBatchOp()
@@ -112,10 +112,10 @@ public class GeneralizedLinearRegressionTest extends AlinkTestBase {
 		}
 
 		String[] colNames = new String[] {"treatment", "outcome", "counts", "offset", "weights"};
-		TypeInformation[] colTypes = new TypeInformation[] {Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.DOUBLE,
+		TypeInformation<?>[] colTypes = new TypeInformation[] {Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.DOUBLE,
 			Types.DOUBLE};
 
-		BatchOperator source = new MemSourceBatchOp(dataRow,
+		BatchOperator<?> source = new MemSourceBatchOp(dataRow,
 			new TableSchema(colNames, colTypes));
 
 		String[] featureColNames = new String[] {"treatment", "outcome"};

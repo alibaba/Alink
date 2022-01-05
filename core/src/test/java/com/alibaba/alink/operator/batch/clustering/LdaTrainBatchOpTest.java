@@ -4,6 +4,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -34,9 +35,9 @@ public class LdaTrainBatchOpTest extends AlinkTestBase {
 	@Test
 	public void testTrainAndPredict() throws Exception {
 
-		BatchOperator data = new TableSourceBatchOp(MLEnvironmentFactory.getDefault().createBatchTable(
+		BatchOperator<?> data = new MemSourceBatchOp(
 			Arrays.asList(testArray),
-			new String[] {"id", "libsvm"}));
+			new String[] {"id", "libsvm"});
 
 		LdaTrainBatchOp online1 = new LdaTrainBatchOp()
 			.setSelectedCol("libsvm")
@@ -46,8 +47,8 @@ public class LdaTrainBatchOpTest extends AlinkTestBase {
 			.setOptimizeDocConcentration(true)
 			.setOnlineLearningOffset(1024.0)
 			.setLearningDecay(0.51)
-			.setVocabSize(1 << 18)
-			.setNumIter(50).linkFrom(data);
+			.setVocabSize(100)//262144(1 << 18)
+			.setNumIter(10).linkFrom(data);
 		online1.lazyCollect();
 		online1.getSideOutput(0).lazyCollect();
 
@@ -61,8 +62,8 @@ public class LdaTrainBatchOpTest extends AlinkTestBase {
 			.setLearningDecay(0.51)
 			.setAlpha(0.1)
 			.setBeta(0.1)
-			.setVocabSize(1 << 18)
-			.setNumIter(50);
+			.setVocabSize(100)// (1 << 18)
+			.setNumIter(10);
 
 		LdaTrainBatchOp model = lda.linkFrom(data);
 		model.getSideOutput(1).lazyCollect(new Consumer <List <Row>>() {
@@ -76,7 +77,7 @@ public class LdaTrainBatchOpTest extends AlinkTestBase {
 		LdaPredictBatchOp predictBatchOp = new LdaPredictBatchOp().setPredictionDetailCol("detail")
 			.setPredictionCol("pred").setSelectedCol("libsvm");
 
-		BatchOperator res = predictBatchOp.linkFrom(model, data);
+		BatchOperator<?> res = predictBatchOp.linkFrom(model, data);
 		res.lazyCollect();
 		BatchOperator.execute();
 	}
@@ -84,7 +85,7 @@ public class LdaTrainBatchOpTest extends AlinkTestBase {
 	@Test
 	public void testEm() throws Exception {
 
-		BatchOperator data = new TableSourceBatchOp(MLEnvironmentFactory.getDefault().createBatchTable(
+		BatchOperator<?> data = new TableSourceBatchOp(MLEnvironmentFactory.getDefault().createBatchTable(
 			Arrays.asList(testArray),
 			new String[] {"id", "libsvm"}));
 
@@ -94,8 +95,7 @@ public class LdaTrainBatchOpTest extends AlinkTestBase {
 			.setMethod("em")
 			.setSubsamplingRate(1.0)
 			.setOptimizeDocConcentration(true)
-			.setNumIter(50).linkFrom(data);
-		em1.print();
+			.setNumIter(10).linkFrom(data);
 		em1.getSideOutput(0).lazyCollect();
 
 		LdaTrainBatchOp em2 = new LdaTrainBatchOp()
@@ -106,7 +106,7 @@ public class LdaTrainBatchOpTest extends AlinkTestBase {
 			.setAlpha(0.1)
 			.setBeta(0.1)
 			.setOptimizeDocConcentration(true)
-			.setNumIter(50).linkFrom(data);
+			.setNumIter(10).linkFrom(data);
 		em2.lazyCollect();
 		em2.getSideOutput(0).lazyCollect();
 		LdaPredictBatchOp predictBatchOp = new LdaPredictBatchOp().setPredictionDetailCol("detail")

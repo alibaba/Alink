@@ -14,7 +14,7 @@ import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils.PredictProcess;
+import com.alibaba.alink.operator.common.stream.model.PredictProcess;
 import com.alibaba.alink.operator.stream.StreamOperator;
 
 /**

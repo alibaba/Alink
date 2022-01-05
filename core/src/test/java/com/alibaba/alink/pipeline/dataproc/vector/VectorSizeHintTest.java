@@ -11,7 +11,9 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -59,9 +61,17 @@ public class VectorSizeHintTest extends AlinkTestBase {
 
 	@Test
 	public void pipelineStreamTest() throws Exception {
-		new VectorSizeHint().setSelectedCol("c0")
-			.setOutputCol("filter_result")
-			.setSize(8).transform((StreamOperator) getData(false)).print();
+		StreamOperator streamOperator =
+			new VectorSizeHint().setSelectedCol("c0")
+				.setOutputCol("filter_result")
+				.setSize(8).transform((StreamOperator) getData(false));
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp().linkFrom(streamOperator);
 		StreamOperator.execute();
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		result.sort(new RowComparator(0));
+		assertEquals(VectorUtil.getSparseVector(result.get(0).getField(4)),
+			new SparseVector(8, new int[] {1, 2, 7}, new double[] {2.0, 3.0, 4.3}));
+		assertEquals(VectorUtil.getSparseVector(result.get(1).getField(4)),
+			new SparseVector(8, new int[] {1, 2, 7}, new double[] {2.0, 3.0, 4.3}));
 	}
 }

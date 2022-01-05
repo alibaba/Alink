@@ -14,14 +14,17 @@ import com.alibaba.alink.operator.common.timeseries.TimeSeriesMapper.TimeSeries;
 import java.sql.Timestamp;
 
 public abstract class TimeSeriesModelMapper extends ModelMapper {
-	private final TimeSeries<TimeSeriesModelMapper> timeSeries;
+	private TimeSeries <TimeSeriesModelMapper> timeSeries;
 
 	public TimeSeriesModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
+	}
 
+	@Override
+	public void open() {
 		this.timeSeries = new TimeSeries <>(
 			params,
-			new Predictor<>(
+			new Predictor <>(
 				this,
 				TimeSeriesModelMapper::predictSingleVar,
 				TimeSeriesModelMapper::predictMultiVar

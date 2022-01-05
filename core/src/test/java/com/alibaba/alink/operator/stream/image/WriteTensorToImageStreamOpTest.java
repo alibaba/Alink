@@ -3,14 +3,17 @@ package com.alibaba.alink.operator.stream.image;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.params.image.HasImageType.ImageType;
+import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 
-public class WriteTensorToImageStreamOpTest {
+public class WriteTensorToImageStreamOpTest extends AlinkTestBase {
 
 	@Test
 	public void testWriteTensorToImageStreamOp() throws Exception {
@@ -22,7 +25,7 @@ public class WriteTensorToImageStreamOpTest {
 		MemSourceStreamOp memSourceStreamOp = new MemSourceStreamOp(data, "path string");
 
 		ReadImageToTensorStreamOp readImageToTensorStreamOp = new ReadImageToTensorStreamOp()
-			.setRootFilePath("https://pytorch.org/vision/stable/_images/")
+			.setRootFilePath("http://alink-test-datatset.oss-cn-hangzhou-zmf.aliyuncs.com/images/")
 			.setRelativeFilePathCol("path")
 			.setOutputCol("tensor");
 
@@ -32,8 +35,14 @@ public class WriteTensorToImageStreamOpTest {
 			.setImageType(ImageType.PNG)
 			.setRelativeFilePathCol("path");
 
-		memSourceStreamOp.link(readImageToTensorStreamOp).link(writeTensorToImageStreamOp).print();
+		CollectSinkStreamOp collectSinkStreamOp = memSourceStreamOp
+			.link(readImageToTensorStreamOp)
+			.link(writeTensorToImageStreamOp)
+			.link(new CollectSinkStreamOp());
 
 		StreamOperator.execute();
+
+		List <Row> rows = collectSinkStreamOp.getAndRemoveValues();
+		Assert.assertEquals(1, rows.size());
 	}
 }

@@ -6,6 +6,7 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.tensorflow.savedmodel.HasInputNames;
 import com.alibaba.alink.params.tensorflow.savedmodel.HasOutputNames;
@@ -23,7 +24,11 @@ public class TFSavedModelPredictRowMapper extends BaseTFSavedModelPredictMapper 
 	private final BaseTFSavedModelPredictRowMapper mapper;
 
 	public TFSavedModelPredictRowMapper(TableSchema dataSchema, Params params) {
-		super(dataSchema, params);
+		this(dataSchema, params, new TFPredictorClassLoaderFactory());
+	}
+
+	public TFSavedModelPredictRowMapper(TableSchema dataSchema, Params params, TFPredictorClassLoaderFactory factory) {
+		super(dataSchema, params, factory);
 
 		Params mapperParams = params.clone();
 

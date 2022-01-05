@@ -30,7 +30,7 @@ import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.dummy.DummyOutputFormat;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils.FileModelStreamSink;
+import com.alibaba.alink.operator.common.stream.model.FileModelStreamSink;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.ModelStreamFileSinkParams;
 import org.apache.commons.lang3.ArrayUtils;
@@ -74,7 +74,7 @@ public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelSt
 		final FilePath path = getFilePath();
 		final int numKeepModel = getNumKeepModel();
 
-		final ModelStreamUtils.FileModelStreamSink fileModelStreamSink
+		final FileModelStreamSink fileModelStreamSink
 			= new FileModelStreamSink(path, dataSchemaStr);
 
 		try {

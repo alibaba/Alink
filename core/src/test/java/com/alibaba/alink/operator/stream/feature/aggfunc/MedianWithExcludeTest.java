@@ -7,6 +7,7 @@ import com.alibaba.alink.common.sql.builtin.agg.MedianUdaf.MedianData;
 import org.junit.Before;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MedianWithExcludeTest extends AggFunctionTestBase <Object[], Number, MedianData> {
@@ -19,27 +20,26 @@ public class MedianWithExcludeTest extends AggFunctionTestBase <Object[], Number
 	@Override
 	protected List <List <Object[]>> getInputValueSets() {
 		List <List <Object[]>> res = new ArrayList <>();
-		ArrayList <Object[]> data = new ArrayList <>();
-		data.add(new Object[] {2});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {1});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {3});
-		res.add((List <Object[]>) data.clone());
-		data.add(new Object[] {8});
-		data.add(new Object[] {5});
-		res.add((List <Object[]>) data.clone());
+
+		List <Object[]> data = Arrays.asList(
+			new Object[] {2},
+			new Object[] {1},
+			new Object[] {3},
+			new Object[] {8},
+			new Object[] {5}
+		);
+
+		res.add(data.subList(0, 1));
+		res.add(data.subList(0, 2));
+		res.add(data.subList(0, 3));
+		res.add(data.subList(0, 5));
+
 		return res;
 	}
 
 	@Override
 	protected List <Number> getExpectedResults() {
-		List <Number> res = new ArrayList <>();
-		res.add(0);
-		res.add(2);
-		res.add(1);
-		res.add(2);
-		return res;
+		return Arrays.asList(0, 2, 1, 2);
 	}
 
 	@Override

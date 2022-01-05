@@ -28,7 +28,7 @@ public class EvalRankingBatchOpTest extends AlinkTestBase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
-	private Row[] rows = new Row[] {
+	private final Row[] rows = new Row[] {
 		Row.of("{\"object\":\"[1, 6, 2, 7, 8, 3, 9, 10, 4, 5]\"}", "{\"object\":\"[1, 2, 3, 4, 5]\"}"),
 		Row.of("{\"object\":\"[4, 1, 5, 6, 2, 7, 3, 8, 9, 10]\"}", "{\"object\":\"[1, 2, 3]\"}"),
 		Row.of("{\"object\":\"[1, 2, 3, 4, 5]\"}", "{\"object\":\"[]\"}")
@@ -60,7 +60,7 @@ public class EvalRankingBatchOpTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void testObjectCol() throws Exception {
+	public void testObjectCol() {
 		Row[] rows = new Row[] {
 			Row.of("{\"ID\":\"[1, 6, 2, 7, 8, 3, 9, 10, 4, 5]\"}", "{\"ID\":\"[1]\"}"),
 			Row.of("{\"ID\":\"[1, 4, 5, 6, 2, 7, 3, 8, 9, 10]\"}", "{\"ID\":\"[1]\"}"),

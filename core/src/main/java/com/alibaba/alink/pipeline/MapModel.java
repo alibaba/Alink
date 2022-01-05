@@ -11,6 +11,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
+import com.alibaba.alink.params.ModelStreamScanParams;
 
 import java.util.List;
 
@@ -22,7 +23,8 @@ import java.util.List;
  * @param <T> class type of the {@link MapModel} implementation itself.
  */
 public abstract class MapModel<T extends MapModel <T>>
-	extends ModelBase <T> implements LocalPredictable {
+	extends ModelBase <T>
+	implements ModelStreamScanParams <T>, LocalPredictable {
 
 	private static final long serialVersionUID = 8333228095437207694L;
 	/**

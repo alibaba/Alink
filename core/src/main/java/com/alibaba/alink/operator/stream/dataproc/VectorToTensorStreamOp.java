@@ -9,6 +9,7 @@ import com.alibaba.alink.params.dataproc.VectorToTensorParams;
 /**
  * stream op for tensor to vector.
  */
+@Deprecated
 public class VectorToTensorStreamOp extends MapStreamOp <VectorToTensorStreamOp>
 	implements VectorToTensorParams <VectorToTensorStreamOp> {
 

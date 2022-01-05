@@ -5,6 +5,11 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasLevelStart<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name level初始值
+	 * @cn level初始值
+	 */
 	ParamInfo <Double> LEVEL_START = ParamInfoFactory
 		.createParamInfo("levelStart", Double.class)
 		.setDescription("The level start.")

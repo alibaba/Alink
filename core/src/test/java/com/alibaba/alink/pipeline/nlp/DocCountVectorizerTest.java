@@ -1,26 +1,22 @@
 package com.alibaba.alink.pipeline.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.nlp.DocCountVectorizerPredictBatchOp;
 import com.alibaba.alink.operator.batch.nlp.DocCountVectorizerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.nlp.DocCountVectorizerPredictStreamOp;
-import com.alibaba.alink.pipeline.Pipeline;
-import com.alibaba.alink.pipeline.PipelineModel;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,62 +24,43 @@ import java.util.List;
  */
 
 public class DocCountVectorizerTest extends AlinkTestBase {
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
-
-	private Row[] rows = new Row[] {
+	private final Row[] rows = new Row[] {
 		Row.of(0, "That is an English book", 1),
 		Row.of(1, "Have a good day", 1)
 	};
 
+	private final List <Row> expected = Arrays.asList(
+		Row.of(0, "That is an English book", 1, VectorUtil.getVector("$9$0:0.2 3:0.2 4:0.2 6:0.2 8:0.2")),
+		Row.of(1, "Have a good day", 1, VectorUtil.getVector("$9$1:0.25 2:0.25 5:0.25 7:0.25"))
+	);
+
 	@Test
 	public void testDefault() throws Exception {
-		Table data = MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"id", "sentence",
-			"label"});
-		Table dataStream = MLEnvironmentFactory.getDefault().createStreamTable(rows,
-			new String[] {"id", "sentence", "label"});
+		BatchOperator <?> data = new MemSourceBatchOp(rows, new String[] {"id", "sentence", "label"});
+		StreamOperator <?> dataStream = new MemSourceStreamOp(rows, new String[] {"id", "sentence", "label"});
 
 		DocCountVectorizer op = new DocCountVectorizer()
 			.setSelectedCol("sentence")
 			.setOutputCol("features")
 			.setFeatureType("TF");
+		DocCountVectorizerModel model = op.fit(data);
+		assertListRowEqual(expected, model.transform(data).collect(), 0);
 
-		PipelineModel model = new Pipeline().add(op).fit(data);
-
-		Table res = model.transform(data);
-
-		List <SparseVector> list = MLEnvironmentFactory.getDefault().getBatchTableEnvironment().toDataSet(
-			res.select("features"), SparseVector.class).collect();
-
-		Assert.assertEquals(list.size(), 2);
-		Assert.assertEquals(list.get(0).getValues().length, 5);
-		Assert.assertEquals(list.get(1).getValues().length, 4);
-
-		for (int i = 0; i < list.get(0).getValues().length; i++) {
-			Assert.assertEquals(list.get(0).getValues()[i], 0.2, 0.1);
-		}
-		for (int i = 0; i < list.get(1).getValues().length; i++) {
-			Assert.assertEquals(list.get(1).getValues()[i], 0.25, 0.1);
-		}
-		res = model.transform(dataStream);
-
-		DataStreamConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, res).print();
-
-		MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute();
+		CollectSinkStreamOp sink = new CollectSinkStreamOp()
+			.linkFrom(model.transform(dataStream));
+		StreamOperator.execute();
+		assertListRowEqual(expected, sink.getAndRemoveValues(), 0);
 	}
 
-	@Test
+	@Test(expected = RuntimeException.class)
 	public void testException() throws Exception {
-		BatchOperator data = new MemSourceBatchOp(rows, new String[] {"id", "sentence", "label"});
-
-		thrown.expect(RuntimeException.class);
+		BatchOperator <?> data = new MemSourceBatchOp(rows, new String[] {"id", "sentence", "label"});
 		DocCountVectorizerTrainBatchOp op = new DocCountVectorizerTrainBatchOp()
 			.setSelectedCol("sentence")
 			.setMinDF(2.)
 			.setMaxDF(1.)
 			.setFeatureType("TF")
 			.linkFrom(data);
-
 		op.collect();
 	}
 
@@ -95,7 +72,7 @@ public class DocCountVectorizerTest extends AlinkTestBase {
 		DocCountVectorizer op = new DocCountVectorizer(new Params());
 		Assert.assertEquals(op.getParams().size(), 0);
 
-		BatchOperator b = new DocCountVectorizerTrainBatchOp();
+		BatchOperator <?> b = new DocCountVectorizerTrainBatchOp();
 		Assert.assertEquals(b.getParams().size(), 0);
 		b = new DocCountVectorizerTrainBatchOp(new Params());
 		Assert.assertEquals(b.getParams().size(), 0);
@@ -105,7 +82,7 @@ public class DocCountVectorizerTest extends AlinkTestBase {
 		b = new DocCountVectorizerPredictBatchOp(new Params());
 		Assert.assertEquals(b.getParams().size(), 0);
 
-		StreamOperator s = new DocCountVectorizerPredictStreamOp(b);
+		StreamOperator <?> s = new DocCountVectorizerPredictStreamOp(b);
 		Assert.assertEquals(s.getParams().size(), 0);
 		s = new DocCountVectorizerPredictStreamOp(b, new Params());
 		Assert.assertEquals(s.getParams().size(), 0);

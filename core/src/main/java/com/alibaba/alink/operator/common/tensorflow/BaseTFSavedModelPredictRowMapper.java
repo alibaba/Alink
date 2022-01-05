@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.tensorflow;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.params.tensorflow.savedmodel.HasOutputBatchAxes;
 
 import java.util.ArrayList;
@@ -25,7 +26,12 @@ public class BaseTFSavedModelPredictRowMapper extends BaseTFSavedModelPredictMap
 	// TODO: support inputBatchAxes
 
 	public BaseTFSavedModelPredictRowMapper(TableSchema dataSchema, Params params) {
-		super(dataSchema, params);
+		this(dataSchema, params, new TFPredictorClassLoaderFactory());
+	}
+
+	public BaseTFSavedModelPredictRowMapper(TableSchema dataSchema, Params params,
+											TFPredictorClassLoaderFactory factory) {
+		super(dataSchema, params, factory);
 		outputBatchAxes = params.contains(HasOutputBatchAxes.OUTPUT_BATCH_AXES)
 			? params.get(HasOutputBatchAxes.OUTPUT_BATCH_AXES)
 			: new int[tfOutputCols.length];

@@ -20,6 +20,10 @@ public final class FloatTensor extends NumericalTensor <Float> {
 		this(NdArrays.ofFloats(shape.toNdArrayShape()));
 	}
 
+	public FloatTensor(float data) {
+		this(NdArrays.scalarOf(data));
+	}
+
 	public FloatTensor(float[] data) {
 		this(StdArrays.ndCopyOf(data));
 	}

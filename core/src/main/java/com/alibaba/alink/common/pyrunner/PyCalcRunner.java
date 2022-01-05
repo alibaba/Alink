@@ -45,7 +45,7 @@ public abstract class PyCalcRunner<IN, OUT, HANDLE extends PyObjHandle> {
 		File[] files = pluginDirectory.listFiles((dir, name) -> name.endsWith(".tar.gz"));
 		Preconditions.checkArgument(files != null && files.length == 1);
 		File envFile = files[0];
-		File dstDir = new File(PythonFileUtils.createTempWorkDir("python_env_"));
+		File dstDir = PythonFileUtils.createTempDir("python_env_").toFile();
 		TarFileUtil.unTar(envFile, dstDir);
 		File[] subdirs = dstDir.listFiles(File::isDirectory);
 		return null != subdirs && subdirs.length == 1 ? subdirs[0] : dstDir;
@@ -58,7 +58,7 @@ public abstract class PyCalcRunner<IN, OUT, HANDLE extends PyObjHandle> {
 		String pythonEnv = config.get(BasePythonBridge.PY_VIRTUAL_ENV_KEY);
 		if (null != pythonEnv) {
 			if (PythonFileUtils.isCompressedFile(pythonEnv)) {
-				String tempWorkDir = PythonFileUtils.createTempWorkDir("python_env_");
+				String tempWorkDir = PythonFileUtils.createTempDir("python_env_").toString();
 				ArchivesUtils.downloadDecompressToDirectory(pythonEnv, new File(tempWorkDir));
 				pythonEnv = new File(tempWorkDir, PythonFileUtils.getCompressedFileName(pythonEnv)).getAbsolutePath();
 			} else {

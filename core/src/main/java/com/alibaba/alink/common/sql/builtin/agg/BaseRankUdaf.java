@@ -44,7 +44,8 @@ public abstract class BaseRankUdaf extends BaseUdaf<Long, RankData> {
 	}
 
 	@Override
-	public void retract(RankData acc, Object... values) {}
+	public void retract(RankData acc, Object... values) {
+	}
 
 	@Override
 	public void merge(RankData acc, Iterable <RankData> it) {}

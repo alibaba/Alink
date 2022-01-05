@@ -63,7 +63,7 @@ public class AlsModelInfoBatchOp extends ExtractModelInfoBatchOp <AlsModelInfo, 
 			setOutputTable(op.getOutputTable());
 		}
 
-		TypeInformation type = op.getSchema().getFieldTypes()[op.getColNames().length - 1];
+		TypeInformation <?> type = op.getSchema().getFieldTypes()[op.getColNames().length - 1];
 		setSideOutputTables(new Table[] {
 			getEmbedding(op, 0, op.getMLEnvironmentId(), USER_NAME, type),
 			getEmbedding(op, 1, op.getMLEnvironmentId(), ITEM_NAME, type)
@@ -72,27 +72,27 @@ public class AlsModelInfoBatchOp extends ExtractModelInfoBatchOp <AlsModelInfo, 
 		return this;
 	}
 
-	public BatchOperator getUserEmbedding() {
+	public BatchOperator <?> getUserEmbedding() {
 		return getSideOutput(0);
 	}
 
-	public BatchOperator getItemEmbedding() {
+	public BatchOperator <?> getItemEmbedding() {
 		return getSideOutput(1);
 	}
 
-	private Table getEmbedding(BatchOperator model,
+	private Table getEmbedding(BatchOperator <?> model,
 							   final Integer idx,
 							   long envId,
 							   String name,
-							   TypeInformation type) {
+							   TypeInformation <?> type) {
 		DataSet <Row> embedding = model.getDataSet().filter(new FilterFunction <Row>() {
 			@Override
-			public boolean filter(Row value) throws Exception {
+			public boolean filter(Row value) {
 				return ((long) value.getField(0) == idx.longValue()) || (long) value.getField(0) == -1L;
 			}
 		}).reduceGroup(new GroupReduceFunction <Row, Row>() {
 			@Override
-			public void reduce(Iterable <Row> values, Collector <Row> out) throws Exception {
+			public void reduce(Iterable <Row> values, Collector <Row> out) {
 				List <Row> modelRows = new ArrayList <>();
 				for (Row r : values) {
 					modelRows.add(r);
@@ -104,6 +104,6 @@ public class AlsModelInfoBatchOp extends ExtractModelInfoBatchOp <AlsModelInfo, 
 			}
 		});
 		return DataSetConversionUtil.toTable(envId, embedding, new String[] {name, "factors"},
-			new TypeInformation[] {type, Types.STRING});
+			new TypeInformation <?>[] {type, Types.STRING});
 	}
 }

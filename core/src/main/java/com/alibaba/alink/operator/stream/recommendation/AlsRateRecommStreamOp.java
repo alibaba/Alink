@@ -16,11 +16,11 @@ public class AlsRateRecommStreamOp
 
 	private static final long serialVersionUID = 3930977882909580288L;
 
-	public AlsRateRecommStreamOp(BatchOperator model) {
+	public AlsRateRecommStreamOp(BatchOperator <?> model) {
 		this(model, null);
 	}
 
-	public AlsRateRecommStreamOp(BatchOperator model, Params params) {
+	public AlsRateRecommStreamOp(BatchOperator <?> model, Params params) {
 		super(model, AlsRecommKernel::new, RecommType.RATE, params);
 	}
 }

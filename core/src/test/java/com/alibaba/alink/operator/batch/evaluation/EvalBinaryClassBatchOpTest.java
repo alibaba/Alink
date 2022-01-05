@@ -88,5 +88,6 @@ public class EvalBinaryClassBatchOpTest extends AlinkTestBase {
 		} catch (JobExecutionException | ProgramInvocationException e) {
 			// pass
 		}
+
 	}
 }

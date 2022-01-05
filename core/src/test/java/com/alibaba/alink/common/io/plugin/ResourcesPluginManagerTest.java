@@ -4,9 +4,11 @@ import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -15,7 +17,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
-public class ResourcesPluginManagerTest {
+public class ResourcesPluginManagerTest extends AlinkTestBase {
 
 	@ClassRule
 	public static TemporaryFolder folder = new TemporaryFolder();
@@ -29,10 +31,15 @@ public class ResourcesPluginManagerTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void iterator() throws IOException {
+		String old = AlinkGlobalConfiguration.getPluginDir();
+
+		AlinkGlobalConfiguration.setPluginDir(folder.getRoot().getPath());
+
 		Configuration configuration = new Configuration();
-		configuration.setString(ConfigConstants.ENV_FLINK_PLUGINS_DIR, folder.getRoot().getPath());
+		configuration.setString(ConfigConstants.ENV_FLINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir());
 
 		ResourcesPluginManager pluginManager = PluginUtils.createResourcesPluginManagerFromRootFolder(configuration);
 
@@ -47,5 +54,7 @@ public class ResourcesPluginManagerTest {
 		} else {
 			Assert.fail();
 		}
+
+		AlinkGlobalConfiguration.setPluginDir(old);
 	}
 }

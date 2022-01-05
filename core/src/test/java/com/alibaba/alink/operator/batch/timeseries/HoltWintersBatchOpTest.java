@@ -4,13 +4,14 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
-public class HoltWintersBatchOpTest {
+public class HoltWintersBatchOpTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 		List<Row> mTableData = Arrays.asList(

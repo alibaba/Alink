@@ -34,7 +34,7 @@ public class VectorNormalizeMapper extends SISOMapper {
 	 * @return type of vector
 	 */
 	@Override
-	protected TypeInformation initOutputColType() {
+	protected TypeInformation <?> initOutputColType() {
 		return VectorTypes.VECTOR;
 	}
 

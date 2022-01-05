@@ -4,6 +4,7 @@ import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -131,6 +132,77 @@ public class CommonUtils {
 			} else {
 				TFTableModelRegressionModelData modelData =
 					new TFTableModelRegressionModelData(params, featureCols, tfModelRows,
+						tfOutputSignatureDef, tfOutputSignatureType,
+						preprocessPipelineModelSchemaStr, preprocessPipelineModelRows
+					);
+				new TFTableModelRegressionModelDataConverter().save(modelData, out);
+			}
+		}
+	}
+
+	public static class ConstructModelMapPartitionFunction extends RichMapPartitionFunction <Row, Row> {
+
+		private final Params params;
+		private final String[] featureCols;
+		private final String tfOutputSignatureDef;
+		private final TypeInformation <?> tfOutputSignatureType;
+		private final String preprocessPipelineModelSchemaStr;
+
+		// Indicate the output tensor are logits or not; ignored in regression models.
+		private final boolean isOutputLogits;
+
+		private List <Row> preprocessPipelineModelRows;
+		private List <Object> sortedLabels;
+
+		public ConstructModelMapPartitionFunction(Params params, String[] featureCols,
+												  String tfOutputSignatureDef,
+												  TypeInformation <?> tfOutputSignatureType,
+												  String preprocessPipelineModelSchemaStr) {
+			this(params, featureCols, tfOutputSignatureDef, tfOutputSignatureType,
+				preprocessPipelineModelSchemaStr, false);
+		}
+
+		public ConstructModelMapPartitionFunction(Params params, String[] featureCols,
+												  String tfOutputSignatureDef,
+												  TypeInformation <?> tfOutputSignatureType,
+												  String preprocessPipelineModelSchemaStr,
+												  boolean isOutputLogits) {
+			this.params = params;
+			this.featureCols = featureCols;
+			this.tfOutputSignatureDef = tfOutputSignatureDef;
+			this.tfOutputSignatureType = tfOutputSignatureType;
+			this.preprocessPipelineModelSchemaStr = preprocessPipelineModelSchemaStr;
+			this.isOutputLogits = isOutputLogits;
+		}
+
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			super.open(parameters);
+			RuntimeContext runtimeContext = getRuntimeContext();
+			sortedLabels = runtimeContext.hasBroadcastVariable(SORTED_LABELS_BC_NAME)
+				? runtimeContext. <List <Object>>getBroadcastVariable(SORTED_LABELS_BC_NAME).get(0)
+				: Collections.emptyList();
+
+			preprocessPipelineModelRows = runtimeContext.hasBroadcastVariable(PREPROCESS_PIPELINE_MODEL_BC_NAME)
+				? runtimeContext.getBroadcastVariable(PREPROCESS_PIPELINE_MODEL_BC_NAME)
+				: Collections.emptyList();
+		}
+
+		@Override
+		public void mapPartition(Iterable <Row> values, Collector <Row> out) throws Exception {
+			if (getRuntimeContext().getIndexOfThisSubtask() != 0) {
+				return;
+			}
+			if (sortedLabels.size() > 0) {
+				TFTableModelClassificationModelData modelData =
+					new TFTableModelClassificationModelData(params, featureCols, values,
+						tfOutputSignatureDef, tfOutputSignatureType,
+						preprocessPipelineModelSchemaStr, preprocessPipelineModelRows,
+						sortedLabels, isOutputLogits);
+				new TFTableModelClassificationModelDataConverter().save(modelData, out);
+			} else {
+				TFTableModelRegressionModelData modelData =
+					new TFTableModelRegressionModelData(params, featureCols, values,
 						tfOutputSignatureDef, tfOutputSignatureType,
 						preprocessPipelineModelSchemaStr, preprocessPipelineModelRows
 					);

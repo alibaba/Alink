@@ -2,10 +2,31 @@ package com.alibaba.alink.common.utils;
 
 import org.apache.flink.types.Row;
 
+import java.util.Arrays;
+
 /**
  * Utils for operations on {@link Row}.
  */
 public class RowUtil {
+
+	/*
+	 * same toString function as flink 1.9
+	 */
+	public static String rowToString(Row row) {
+		StringBuffer sb = new StringBuffer();
+		if (null == row) {
+			sb.append("null");
+		} else {
+			for (int i = 0; i < row.getArity(); i++) {
+				if (i > 0) {
+					sb.append(",");
+				}
+				final String arrayString = Arrays.deepToString(new Object[] {row.getField(i)});
+				sb.append(arrayString.substring(1, arrayString.length() - 1));
+			}
+		}
+		return sb.toString();
+	}
 
 	/**
 	 * remove idx value from row.

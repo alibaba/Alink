@@ -11,6 +11,7 @@ public class DLConstants {
     public static final String BC_NAME_PREFIX = "ALINK:bc_";
     public static final String BC_NAME_DOWNLOAD_PATHS = "ALINK:bc_download_path";
     public static final String BC_NAME_TENSOR_SHAPES = "ALINK:bc_tensor_shapes";
+	public static final String BC_NAME_TENSOR_TYPES = "ALINK:bc_tensor_types";
     public static final String EXTERNAL_FILE_CONFIG_JSON = "ALINK:external_file_config_json";
 	public static final String IP_PORT_BC_NAME = "bcIpPorts";
     public static final String REMOVE_CHECKPOINT_BEFORE_TRAINING = "ALINK:remove_checkpoint_before_training";

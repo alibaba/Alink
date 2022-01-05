@@ -9,6 +9,7 @@ import com.alibaba.alink.params.dataproc.VectorToTensorParams;
 /**
  * batch op for tensor to vector.
  */
+@Deprecated
 public class VectorToTensorBatchOp extends MapBatchOp <VectorToTensorBatchOp>
 	implements VectorToTensorParams <VectorToTensorBatchOp> {
 

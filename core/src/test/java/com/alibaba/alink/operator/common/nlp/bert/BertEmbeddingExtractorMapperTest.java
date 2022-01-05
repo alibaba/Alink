@@ -15,6 +15,7 @@ import com.alibaba.alink.params.tensorflow.bert.HasHiddenStatesCol;
 import com.alibaba.alink.params.tensorflow.bert.HasLengthCol;
 import com.alibaba.alink.params.shared.colname.HasOutputCol;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import com.google.common.primitives.Floats;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,7 +25,7 @@ import java.util.Random;
 
 import static com.alibaba.alink.operator.common.nlp.bert.BertEmbeddingExtractorMapper.SEP_CHAR;
 
-public class BertEmbeddingExtractorMapperTest {
+public class BertEmbeddingExtractorMapperTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 		int totalLayers = 13;

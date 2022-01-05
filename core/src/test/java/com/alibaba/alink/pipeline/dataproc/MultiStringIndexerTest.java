@@ -8,6 +8,9 @@ import com.alibaba.alink.operator.batch.dataproc.HugeMultiStringIndexerPredictBa
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerPredictBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +55,7 @@ public class MultiStringIndexerTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void testMultiStringIndexer() {
+	public void testMultiStringIndexer() throws Exception {
 		BatchOperator data = new MemSourceBatchOp(Arrays.asList(rows), new String[] {"f0", "f1"});
 
 		MultiStringIndexer stringIndexer = new MultiStringIndexer()
@@ -64,6 +67,20 @@ public class MultiStringIndexerTest extends AlinkTestBase {
 		data = stringIndexer.fit(data).transform(data);
 		Assert.assertEquals(data.getColNames().length, 4);
 		List <Row> result = data.collect();
+		Assert.assertEquals(result.size(), 4);
+
+		result.forEach(row -> {
+			String token1 = (String) row.getField(0);
+			Long token2 = (Long) row.getField(1);
+			Assert.assertEquals(map1.get(token1), row.getField(2));
+			Assert.assertEquals(map2.get(token2), row.getField(3));
+		});
+
+		StreamOperator streamData = new MemSourceStreamOp(Arrays.asList(rows), new String[] {"f0", "f1"});
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp()
+			.linkFrom(stringIndexer.fit(data).transform(streamData));
+		StreamOperator.execute();
+		result = collectSinkStreamOp.getAndRemoveValues();
 		Assert.assertEquals(result.size(), 4);
 
 		result.forEach(row -> {

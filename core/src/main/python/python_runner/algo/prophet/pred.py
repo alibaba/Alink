@@ -29,6 +29,7 @@ class PyProphetCalc2:
 
     #argv1: data, argv2: init model
     def calc(self, conf, argv1, argv2):
+        print("Entering Python calc", flush=True)
         try:
             growth = conf['growth']
             if growth is None:
@@ -87,6 +88,8 @@ class PyProphetCalc2:
         except BaseException as ex:
             print({}.format(ex), flush=True)
             raise ex
+        finally:
+            print("Leaving Python calc", flush=True)
 
     class Java:
         implements = ["com.alibaba.alink.common.pyrunner.PyMIMOCalcHandle"]

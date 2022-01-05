@@ -38,7 +38,7 @@ public class DLClusterUtils {
 		Tuple2 <BaseRole, Integer> roleAndIndex = DLRunner.getRoleAndIndex(subtaskId, numWorkers);
 		String workDir;
 		try {
-			workDir = PythonFileUtils.createTempWorkDir(String.format("temp_%d_", subtaskId));
+			workDir = PythonFileUtils.createTempDir(String.format("temp_%d_", subtaskId)).toString();
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed to crate temporary work dir: ", ex);
 		}

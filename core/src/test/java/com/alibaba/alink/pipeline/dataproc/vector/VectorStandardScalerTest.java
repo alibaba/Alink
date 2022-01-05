@@ -9,7 +9,9 @@ import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -44,20 +46,25 @@ public class VectorStandardScalerTest extends AlinkTestBase {
 
 		VectorStandardScalerModel denseModel = scaler.fit(batchData);
 		BatchOperator res = denseModel.transform(batchData);
-		List rows = res.getDataSet().collect();
-		HashMap <String, Vector> map = new HashMap <String, Vector>();
-		map.put((String) ((Row) rows.get(0)).getField(0), VectorUtil.getVector(((Row) rows.get(0)).getField(1)));
-		map.put((String) ((Row) rows.get(1)).getField(0), VectorUtil.getVector(((Row) rows.get(1)).getField(1)));
-		map.put((String) ((Row) rows.get(2)).getField(0), VectorUtil.getVector(((Row) rows.get(2)).getField(1)));
-		assertEquals(map.get("0"),
+		List <Row> rows = res.getDataSet().collect();
+		rows.sort(new RowComparator(0));
+		assertEquals(rows.get(0).getField(1),
 			VectorUtil.getVector("-0.13245323570650433 0.5773502691896257"));
-		assertEquals(map.get("1"),
+		assertEquals(rows.get(1).getField(1),
 			VectorUtil.getVector("-0.9271726499455304 -1.1547005383792515"));
-		assertEquals(map.get("2"),
+		assertEquals(rows.get(2).getField(1),
 			VectorUtil.getVector("1.059625885652035 0.5773502691896257"));
 
-		denseModel.transform(streamData).print();
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp().linkFrom(denseModel.transform(streamData));
 		StreamOperator.execute();
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		result.sort(new RowComparator(0));
+		assertEquals(VectorUtil.getVector(result.get(0).getField(1)),
+			VectorUtil.getVector("-0.13245323570650433 0.5773502691896257"));
+		assertEquals(VectorUtil.getVector(result.get(1).getField(1)),
+			VectorUtil.getVector("-0.9271726499455304 -1.1547005383792515"));
+		assertEquals(VectorUtil.getVector(result.get(2).getField(1)),
+			VectorUtil.getVector("1.059625885652035 0.5773502691896257"));
 	}
 
 	@Test

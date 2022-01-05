@@ -5,6 +5,11 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasValueCol<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name value列，类型为MTable
+	 * @cn value列，类型为MTable
+	 */
 	ParamInfo <String> VALUE_COL = ParamInfoFactory
 		.createParamInfo("valueCol", String.class)
 		.setDescription("The value col.")

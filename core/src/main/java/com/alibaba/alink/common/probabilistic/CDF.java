@@ -6,7 +6,6 @@ import com.alibaba.alink.operator.common.statistics.DistributionFuncName;
 /**
  * 累积分布函数(Cumulative Distribution Function, 缩写为CDF)
  *
- * @author yangxu
  */
 public class CDF {
 

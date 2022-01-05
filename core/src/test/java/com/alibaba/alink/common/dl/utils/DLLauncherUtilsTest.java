@@ -2,10 +2,11 @@ package com.alibaba.alink.common.dl.utils;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class DLLauncherUtilsTest {
+public class DLLauncherUtilsTest extends AlinkTestBase {
 
 	@Test(expected = RuntimeException.class)
 	public void testAdjustNumWorkersPSsNull_Null_Minus1() {

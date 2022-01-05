@@ -18,6 +18,8 @@ import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.Functional.SerializableQuadFunction;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.timeseries.TimeSeriesPredictParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -27,6 +29,9 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public abstract class TimeSeriesMapper extends Mapper {
+
+	private static final Logger LOG = LoggerFactory.getLogger(TimeSeriesMapper.class);
+
 	private TimeSeries <TimeSeriesMapper> timeSeries;
 
 	public TimeSeriesMapper(TableSchema dataSchema, Params params) {
@@ -196,6 +201,7 @@ public abstract class TimeSeriesMapper extends Mapper {
 						mapper, historyTimes, historyValues, predictNum
 					);
 				} catch (Throwable ex) {
+					LOG.info("Exception caught: ", ex);
 					if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
 						ex.printStackTrace();
 					}

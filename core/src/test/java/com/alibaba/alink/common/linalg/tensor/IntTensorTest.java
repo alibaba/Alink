@@ -1,11 +1,12 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
 
-public class IntTensorTest {
+public class IntTensorTest extends AlinkTestBase {
 
 	private static final Random random = new Random(0);
 
@@ -19,6 +20,13 @@ public class IntTensorTest {
 				Assert.assertEquals(0, tensor.getInt(i, j));
 			}
 		}
+	}
+
+	@Test
+	public void testFromScalar() {
+		int v = random.nextInt();
+		IntTensor tensor = new IntTensor(v);
+		Assert.assertEquals(v, tensor.getInt());
 	}
 
 	@Test
@@ -96,6 +104,17 @@ public class IntTensorTest {
 	}
 
 	@Test
+	public void testScalarSerDe() {
+		int v = random.nextInt();
+		IntTensor tensor = new IntTensor(v);
+		Assert.assertEquals("INT##-1155484576 ", tensor.toString());
+
+		IntTensor tensor2 = (IntTensor) TensorUtil.getTensor(tensor.toString());
+		System.out.println(tensor2.toString());
+		Assert.assertEquals(tensor.toString(), tensor2.toString());
+	}
+
+	@Test
 	public void testReshape() {
 		int n = 2;
 		int m = 6;
@@ -107,6 +126,14 @@ public class IntTensorTest {
 		}
 		IntTensor tensor = new IntTensor(arr);
 		IntTensor reshaped = tensor.reshape(new Shape(2, 3, 2));
+		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
+	}
+
+	@Test
+	public void testScalarReshape() {
+		int v = random.nextInt();
+		IntTensor tensor = new IntTensor(v);
+		IntTensor reshaped = tensor.reshape(new Shape(1, 1, 1, 1));
 		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
 	}
 }

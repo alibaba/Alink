@@ -11,6 +11,7 @@ import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.params.ModelStreamScanParams;
 
 import java.lang.reflect.ParameterizedType;
 
@@ -21,7 +22,7 @@ import static com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo.LAZY_PRINT_TRA
 
 /**
  * Abstract class for a trainer that train a machine learning model.
- *
+ * <p>
  * The different between {@link EstimatorBase} and {@link Trainer} is that
  * some of {@link EstimatorBase} have its own feature such as some ensemble algorithms,
  * some frequent item set mining algorithms, auto tuning, etc.
@@ -29,8 +30,9 @@ import static com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo.LAZY_PRINT_TRA
  * @param <T> The class type of the {@link Trainer} implementation itself
  * @param <M> class type of the {@link ModelBase} this Trainer produces.
  */
-public abstract class Trainer<T extends Trainer <T, M>, M extends ModelBase <M>>
-	extends EstimatorBase <T, M> implements HasLazyPrintTransformInfo <T> {
+public abstract class Trainer<T extends Trainer <T, M>, M extends MapModel <M>>
+	extends EstimatorBase <T, M>
+	implements ModelStreamScanParams <T>, HasLazyPrintTransformInfo <T> {
 
 	private static final long serialVersionUID = -3065228676122699535L;
 

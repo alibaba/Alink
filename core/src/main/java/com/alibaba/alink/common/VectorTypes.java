@@ -32,9 +32,9 @@ public class VectorTypes {
 	public static final TypeInformation <Vector> VECTOR = TypeInformation.of(Vector.class);
 
 	static {
-		TYPES.put("VEC_TYPES_DENSE_VECTOR", DENSE_VECTOR);
-		TYPES.put("VEC_TYPES_SPARSE_VECTOR", SPARSE_VECTOR);
-		TYPES.put("VEC_TYPES_VECTOR", VECTOR);
+		TYPES.put("DENSE_VECTOR", DENSE_VECTOR);
+		TYPES.put("SPARSE_VECTOR", SPARSE_VECTOR);
+		TYPES.put("VECTOR", VECTOR);
 	}
 
 	/**
@@ -55,5 +55,9 @@ public class VectorTypes {
 	 */
 	public static TypeInformation getTypeInformation(String name) {
 		return TYPES.get(name);
+	}
+
+	public static boolean isVectorType(TypeInformation <?> type) {
+		return type.equals(DENSE_VECTOR) || type.equals(SPARSE_VECTOR) || type.equals(VECTOR);
 	}
 }

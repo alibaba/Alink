@@ -1,17 +1,16 @@
 package com.alibaba.alink.operator.common.recommendation;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.shaded.guava18.com.google.common.collect.ImmutableMap;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
-import com.alibaba.alink.params.recommendation.BaseRateRecommParams;
 import com.alibaba.alink.params.recommendation.BaseSimilarItemsRecommParams;
-import com.alibaba.alink.params.recommendation.BaseUsersPerItemRecommParams;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,11 +36,13 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 		switch (recommType) {
 			case SIMILAR_ITEMS: {
 				this.topN = this.params.get(BaseSimilarItemsRecommParams.K);
+				this.recommObjType = modelSchema.getFieldTypes()[1];
 				break;
 			}
 			case ITEMS_PER_USER: {
 				this.topN = this.params.get(BaseItemsPerUserRecommParams.K);
 				this.excludeKnown = this.params.get(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN);
+				this.recommObjType = modelSchema.getFieldTypes()[1];
 				break;
 			}
 			case RATE: {
@@ -50,6 +51,7 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 			case USERS_PER_ITEM: {
 				this.topN = this.params.get(BaseItemsPerUserRecommParams.K);
 				this.excludeKnown = this.params.get(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN);
+				this.recommObjType = modelSchema.getFieldTypes()[0];
 				break;
 			}
 			default: {
@@ -77,25 +79,25 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 			if (map.size() < topN) {
 				map.add(new RecommItemTopKResult(obj, d));
 				head = map.peek().similarity;
-			} else {
-				if (d > head) {
-					RecommItemTopKResult peek = map.poll();
-					peek.similarity = d;
-					peek.item = obj;
-					map.add(peek);
-					head = map.peek().similarity;
-				}
+			} else if (d > head) {
+				RecommItemTopKResult peek = map.poll();
+				peek.similarity = d;
+				peek.item = obj;
+				map.add(peek);
+				head = map.peek().similarity;
 			}
+
 		}
 		return head;
 	}
 
-	static String recommendItems(Object userId,
+	static MTable recommendItems(Object userId,
 								 ItemCfRecommData model,
 								 int topN,
 								 boolean excludeKnown,
 								 double[] res,
-								 String objectName) {
+								 String objectName,
+								 TypeInformation <?> objType) {
 		Arrays.fill(res, 0.0);
 		PriorityQueue <RecommItemTopKResult> queue = new PriorityQueue <>(Comparator.comparing(o -> o.similarity));
 		SparseVector itemRate = model.userItemRates.get(userId);
@@ -120,14 +122,15 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 			head = updateQueue(queue, topN, res[i] / items.size(), model.items[i], head);
 		}
 
-		return serializeQueue(queue, KObjectUtil.SCORE_NAME, objectName);
+		return serializeQueue(queue, KObjectUtil.SCORE_NAME, objectName, objType);
 	}
 
-	static String recommendUsers(Object itemId,
+	static MTable recommendUsers(Object itemId,
 								 ItemCfRecommData model,
 								 int topN,
 								 boolean excludeKnown,
-								 String objectName) {
+								 String objectName,
+								 TypeInformation <?> objType) {
 		PriorityQueue <RecommItemTopKResult> queue = new PriorityQueue <>(Comparator.comparing(o -> o.similarity));
 		Integer itemIndex = model.itemMap.get(itemId);
 		if (null == itemIndex) {
@@ -153,13 +156,14 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 			head = updateQueue(queue, topN, entry.getValue() / users.size(), entry.getKey(), head);
 		}
 
-		return serializeQueue(queue, KObjectUtil.SCORE_NAME, objectName);
+		return serializeQueue(queue, KObjectUtil.SCORE_NAME, objectName, objType);
 	}
 
-	static String findSimilarItems(Object itemId,
+	static MTable findSimilarItems(Object itemId,
 								   ItemCfRecommData model,
 								   int topN,
-								   String objectname) {
+								   String objectname,
+								   TypeInformation <?> objType) {
 		PriorityQueue <RecommItemTopKResult> queue = new PriorityQueue <>(Comparator.comparing(o -> o.similarity));
 		Integer itemIndex = model.itemMap.get(itemId);
 		if (null == itemIndex) {
@@ -172,7 +176,7 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 		for (int i = 0; i < key.length; i++) {
 			head = updateQueue(queue, topN, value[i], model.items[key[i]], head);
 		}
-		return serializeQueue(queue, "similarities", objectname);
+		return serializeQueue(queue, "similarities", objectname, objType);
 	}
 
 	static Double rate(Object userId, Object itemId, ItemCfRecommData model) {
@@ -219,46 +223,40 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 	}
 
 	@Override
-	public Double rate(Object[] ids) throws Exception {
+	public Double rate(Object[] ids) {
 		Object userId = ids[0];
 		Object itemId = ids[1];
 		return rate(userId, itemId, model.get());
 	}
 
 	@Override
-	public String recommendItemsPerUser(Object userId) throws Exception {
-		return recommendItems(userId, model.get(), topN, excludeKnown, scores.get(), itemColName);
+	public MTable recommendItemsPerUser(Object userId) {
+		return recommendItems(userId, model.get(), topN, excludeKnown, scores.get(), itemColName, recommObjType);
 	}
 
 	@Override
-	public String recommendUsersPerItem(Object itemId) throws Exception {
-		return recommendUsers(itemId, model.get(), topN, excludeKnown, userColName);
+	public MTable recommendUsersPerItem(Object itemId) {
+		return recommendUsers(itemId, model.get(), topN, excludeKnown, userColName, recommObjType);
 	}
 
 	@Override
-	public String recommendSimilarItems(Object itemId) throws Exception {
-		return findSimilarItems(itemId, model.get(), topN, itemColName);
+	public MTable recommendSimilarItems(Object itemId) {
+		return findSimilarItems(itemId, model.get(), topN, itemColName, recommObjType);
 	}
 
-	private static String serializeQueue(Queue <RecommItemTopKResult> queue, String key, String objectName) {
-		List <Object> items = new ArrayList <>();
-		List <Double> similarity = new ArrayList <>();
+	private static MTable serializeQueue(Queue <RecommItemTopKResult> queue, String key, String objectName,
+										 TypeInformation <?> objType) {
+		List <Row> rows = new ArrayList <>();
 		while (!queue.isEmpty()) {
 			RecommItemTopKResult result = queue.poll();
-			items.add(result.item);
-			similarity.add(result.similarity);
+			rows.add(Row.of(result.item, result.similarity));
 		}
-		Collections.reverse(items);
-		Collections.reverse(similarity);
-		return KObjectUtil.serializeRecomm(
-			objectName,
-			items,
-			ImmutableMap.of(key, similarity)
-		);
+		Collections.reverse(rows);
+		return new MTable(rows, objectName + " " + FlinkTypeConverter.getTypeString(objType) + "," + key + " DOUBLE");
 	}
 
 	@Override
-	public String recommendSimilarUsers(Object userId) throws Exception {
+	public MTable recommendSimilarUsers(Object userId) {
 		throw new RuntimeException("ItemCf not support recommendSimilarUsers");
 	}
 }

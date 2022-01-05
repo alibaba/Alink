@@ -14,11 +14,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.alibaba.alink.operator.batch.recommendation.ItemCfTrainBatchOpTest.extractScore;
 
 /**
  * Unit test for ItemKnnRecommKernel.
@@ -92,24 +89,29 @@ public class ItemCfRecommKernelTest extends AlinkTestBase {
 
 		ItemCfRecommKernel kernel = new ItemCfRecommKernel(modelSchema, dataSchema, params, RecommType.ITEMS_PER_USER);
 		kernel.loadModel(cosine);
-		String res = kernel.recommendItemsPerUser(0L);
-		Assert.assertArrayEquals(KObjectUtil.deserializeKObject(
-			res, new String[] {"item_id"}, new Type[] {String.class}
-		).get("item_id").toArray(new String[0]), new String[] {"a", "d", "b", "c"});
+		List<Row> rows = kernel.recommendItemsPerUser(0L).getRows();
+		String[] items = new String[rows.size()];
+		double[] actual = new double[rows.size()];
+		for (int i = 0; i < rows.size(); ++i) {
+			items[i] = (String) rows.get(i).getField(0);
+			actual[i] = (double) rows.get(i).getField(1);
+		}
+		Assert.assertArrayEquals(items, new String[] {"a", "d", "b", "c"});
 		double[] expect = new double[] {0.94, 0.79, 0.58, 0.46};
-		Double[] actual = extractScore(res, "score");
 		Assert.assertEquals(expect.length, actual.length);
 		for (int i = 0; i < expect.length; i++) {
 			Assert.assertEquals(expect[i], actual[i], 0.01);
 		}
 
 		kernel.loadModel(jaccard);
-		res = kernel.recommendItemsPerUser(1L);
-		Assert.assertArrayEquals(KObjectUtil.deserializeKObject(
-			res, new String[] {"item_id"}, new Type[] {String.class}
-		).get("item_id").toArray(new String[0]), new String[] {"c", "a", "b", "d"});
+		rows = kernel.recommendItemsPerUser(1L).getRows();
+		items = new String[rows.size()];
+		for (int i = 0; i < rows.size(); ++i) {
+			items[i] = (String) rows.get(i).getField(0);
+			actual[i] = (double) rows.get(i).getField(1);
+		}
+		Assert.assertArrayEquals(items, new String[] {"c", "a", "b", "d"});
 		expect = new double[] {0.49, 0.33, 0.33, 0.16};
-		actual = extractScore(res, "score");
 		Assert.assertEquals(expect.length, actual.length);
 		for (int i = 0; i < expect.length; i++) {
 			Assert.assertEquals(expect[i], actual[i], 0.01);
@@ -126,12 +128,15 @@ public class ItemCfRecommKernelTest extends AlinkTestBase {
 
 		ItemCfRecommKernel kernel = new ItemCfRecommKernel(modelSchema, dataSchema, params, RecommType.ITEMS_PER_USER);
 		kernel.loadModel(cosine);
-		String res = kernel.recommendItemsPerUser(1L);
-		Assert.assertArrayEquals(KObjectUtil.deserializeKObject(
-			res, new String[] {"item_id"}, new Type[] {String.class}
-		).get("item_id").toArray(new String[0]), new String[] {"c", "d"});
+		List<Row> rows = kernel.recommendItemsPerUser(1L).getRows();
+		String[] items = new String[rows.size()];
+		double[] actual = new double[rows.size()];
+		for (int i = 0; i < rows.size(); ++i) {
+			items[i] = (String) rows.get(i).getField(0);
+			actual[i] = (double) rows.get(i).getField(1);
+		}
+		Assert.assertArrayEquals(items, new String[] {"c", "d"});
 		double[] expect = new double[] {1.09, 0.39};
-		Double[] actual = extractScore(res, "score");
 		Assert.assertEquals(expect.length, actual.length);
 		for (int i = 0; i < expect.length; i++) {
 			Assert.assertEquals(expect[i], actual[i], 0.01);
@@ -147,12 +152,15 @@ public class ItemCfRecommKernelTest extends AlinkTestBase {
 
 		ItemCfRecommKernel kernel = new ItemCfRecommKernel(modelSchema, dataSchema, params, RecommType.SIMILAR_ITEMS);
 		kernel.loadModel(cosine);
-		String res = kernel.recommendSimilarItems("d");
-		Assert.assertArrayEquals(KObjectUtil.deserializeKObject(
-			res, new String[] {"item_id"}, new Type[] {String.class}
-		).get("item_id").toArray(new String[0]), new String[] {"c", "b"});
+		List<Row> rows = kernel.recommendSimilarItems("d").getRows();
+		String[] items = new String[rows.size()];
+		double[] actual = new double[rows.size()];
+		for (int i = 0; i < rows.size(); ++i) {
+			items[i] = (String) rows.get(i).getField(0);
+			actual[i] = (double) rows.get(i).getField(1);
+		}
+		Assert.assertArrayEquals(items, new String[] {"c", "b"});
 		double[] expect = new double[] {0.89, 0.19};
-		Double[] actual = extractScore(res, "similarities");
 		Assert.assertEquals(expect.length, actual.length);
 		for (int i = 0; i < expect.length; i++) {
 			Assert.assertEquals(expect[i], actual[i], 0.01);
@@ -170,17 +178,23 @@ public class ItemCfRecommKernelTest extends AlinkTestBase {
 
 		ItemCfRecommKernel kernel = new ItemCfRecommKernel(modelSchema, dataSchema, params, RecommType.USERS_PER_ITEM);
 		kernel.loadModel(cosine);
-		String res = kernel.recommendUsersPerItem("d");
-		Assert.assertArrayEquals(KObjectUtil.deserializeKObject((res), new String[] {"user_id"}, new Type[] {Long.class}
-		).get("user_id").toArray(new Long[0]), new Long[] {2L, 0L, 1L});
+		List<Row> rows = kernel.recommendUsersPerItem("d").getRows();
+		long[] items = new long[rows.size()];
+		for (int i = 0; i < rows.size(); ++i) {
+			items[i] = (long) rows.get(i).getField(0);
+		}
+		Assert.assertArrayEquals(items, new long[] {2L, 0L, 1L});
 
 		params.set(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN, true);
 
 		kernel = new ItemCfRecommKernel(modelSchema, dataSchema, params, RecommType.USERS_PER_ITEM);
 		kernel.loadModel(cosine);
-		res = kernel.recommendUsersPerItem("d");
-		Assert.assertArrayEquals(KObjectUtil.deserializeKObject((res), new String[] {"user_id"}, new Type[] {Long.class}
-		).get("user_id").toArray(new Long[0]), new Long[] {0L, 1L});
+		rows = kernel.recommendUsersPerItem("d").getRows();
+		items = new long[rows.size()];
+		for (int i = 0; i < rows.size(); ++i) {
+			items[i] = (long) rows.get(i).getField(0);
+		}
+		Assert.assertArrayEquals(items, new long[] {0L, 1L});
 
 		Assert.assertNull(kernel.recommendUsersPerItem("f"));
 
@@ -206,11 +220,5 @@ public class ItemCfRecommKernelTest extends AlinkTestBase {
 
 		thrown.expect(RuntimeException.class);
 		UserCfRecommKernel kernel = new UserCfRecommKernel(modelSchema, dataSchema, params, RecommType.SIMILAR_ITEMS);
-	}
-
-	public static Double[] extractScore(String res, String key) {
-		return KObjectUtil.deserializeKObject(
-			res, new String[] {key}, new Type[] {Double.class}
-		).get(key).toArray(new Double[0]);
 	}
 }

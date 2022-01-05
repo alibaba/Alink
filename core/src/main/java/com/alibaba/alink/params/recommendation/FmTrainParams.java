@@ -25,8 +25,9 @@ public interface FmTrainParams<T> extends
      * @cn 数据batch size
      */
     ParamInfo<Integer> MINIBATCH_SIZE = ParamInfoFactory
-            .createParamInfo("minibatchSize", Integer.class)
+            .createParamInfo("batchSize", Integer.class)
             .setDescription("mini-batch size")
+			.setAlias(new String[]{"minibatchSize"})
             .setHasDefaultValue(-1)
             .build();
 

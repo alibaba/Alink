@@ -1,16 +1,11 @@
 package com.alibaba.alink.operator.common.nlp.bert.tokenizer;
 
-import com.alibaba.alink.common.dl.BertResources;
-import com.alibaba.alink.operator.common.nlp.bert.tokenizer.BertTokenizerImpl;
+import com.alibaba.alink.common.dl.utils.ArchivesUtils;
+import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.BertTokenizerImpl.BasicTokenizer;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.BertTokenizerImpl.WordpieceTokenizer;
-import com.alibaba.alink.common.dl.utils.PythonFileUtils;
-import com.alibaba.alink.operator.common.nlp.bert.tokenizer.EncodingKeys;
-import com.alibaba.alink.operator.common.nlp.bert.tokenizer.Kwargs;
-import com.alibaba.alink.operator.common.nlp.bert.tokenizer.SingleEncoding;
-import com.alibaba.alink.common.dl.utils.ArchivesUtils;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -22,7 +17,7 @@ import static com.alibaba.alink.operator.common.nlp.bert.tokenizer.TokenizationU
 import static com.alibaba.alink.operator.common.nlp.bert.tokenizer.TokenizationUtils.isPunctuation;
 import static com.alibaba.alink.operator.common.nlp.bert.tokenizer.TokenizationUtils.isWhitespace;
 
-public class BertTokenizerTest {
+public class BertTokenizerTest extends AlinkTestBase {
 
 	@Test
 	public void testChinese() {
@@ -172,12 +167,11 @@ public class BertTokenizerTest {
 	}
 
 	@Test
-	@Ignore
 	public void testSequenceBuilders() {
-		File workDir = PythonFileUtils.createTempDir(null);
+		File workDir = PythonFileUtils.createTempDir(null).toFile();
 		workDir.deleteOnExit();
 		ArchivesUtils.downloadDecompressToDirectory(
-			BertResources.getBertModelVocab("bert-base-uncased"),
+			"res:///tf_algos/bert/resources/bert-base-uncased-vocab.tar.gz",
 			workDir
 		);
 		BertTokenizerImpl tokenizer = BertTokenizerImpl.fromPretrained(workDir.getAbsolutePath());
@@ -210,12 +204,11 @@ public class BertTokenizerTest {
 	}
 
 	@Test
-	@Ignore
 	public void testBatchSequenceBuilders() {
-		File workDir = PythonFileUtils.createTempDir(null);
+		File workDir = PythonFileUtils.createTempDir(null).toFile();
 		workDir.deleteOnExit();
 		ArchivesUtils.downloadDecompressToDirectory(
-			BertResources.getBertModelVocab("bert-base-uncased"),
+			"res:///tf_algos/bert/resources/bert-base-uncased-vocab.tar.gz",
 			workDir
 		);
 		BertTokenizerImpl tokenizer = BertTokenizerImpl.fromPretrained(workDir.getAbsolutePath());
@@ -248,12 +241,11 @@ public class BertTokenizerTest {
 	}
 
 	@Test
-	@Ignore
 	public void testEncodePlus() {
-		File workDir = PythonFileUtils.createTempDir(null);
+		File workDir = PythonFileUtils.createTempDir(null).toFile();
 		workDir.deleteOnExit();
 		ArchivesUtils.downloadDecompressToDirectory(
-			BertResources.getBertModelVocab("bert-base-uncased"),
+			"res:///tf_algos/bert/resources/bert-base-uncased-vocab.tar.gz",
 			workDir
 		);
 		BertTokenizerImpl tokenizer = BertTokenizerImpl.fromPretrained(workDir.getAbsolutePath());

@@ -27,9 +27,9 @@ public class VectorMinMaxTest extends AlinkTestBase {
 			.setSelectedCol("vec")
 			.linkFrom(batchData);
 		List <Row> rows = new VectorMinMaxScalerPredictBatchOp().linkFrom(op, batchData).collect();
-		assertEquals(rows.get(0).getField(0), new DenseVector(new double[] {0.4, 1.0}).toString());
-		assertEquals(rows.get(1), Row.of(new DenseVector(new double[] {0., 0.0}).toString()));
-		assertEquals(rows.get(2), Row.of(new DenseVector(new double[] {1.0, 1.0}).toString()));
+		assertEquals(rows.get(0).getField(0), new DenseVector(new double[] {0.4, 1.0}));
+		assertEquals(rows.get(1), Row.of(new DenseVector(new double[] {0., 0.0})));
+		assertEquals(rows.get(2), Row.of(new DenseVector(new double[] {1.0, 1.0})));
 		new VectorMinMaxScalerPredictStreamOp(op).linkFrom(streamData).print();
 		StreamOperator.execute();
 	}

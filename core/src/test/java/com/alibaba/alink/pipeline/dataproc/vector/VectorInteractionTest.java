@@ -10,7 +10,9 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -65,9 +67,21 @@ public class VectorInteractionTest extends AlinkTestBase {
 
 	@Test
 	public void pipelineStreamTest() throws Exception {
-		new VectorInteraction().setSelectedCols(new String[] {"c1", "c2"})
-			.setOutputCol("product_result").transform((StreamOperator) getData(false)).print();
+		StreamOperator streamOperator = new VectorInteraction().setSelectedCols(new String[] {"c0", "c3"})
+			.setOutputCol("product_result").transform((StreamOperator) getData(false));
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp().linkFrom(streamOperator);
 		StreamOperator.execute();
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		result.sort(new RowComparator(0));
+		assertEquals(VectorUtil.getVector(result.get(0).getField(5)),
+			VectorUtil.getVector(
+				"$36$7:4.0 8:6.0 11:8.6 13:6.0 14:9.0 17:12.899999999999999 31:8.6 32:12.899999999999999 35:18.49"));
+		assertEquals(VectorUtil.getVector(result.get(1).getField(5)),
+			VectorUtil.getVector(
+				"$48$9:4.0 10:6.0 15:8.6 17:6.0 18:9.0 23:12.899999999999999 41:8.6 42:12.899999999999999 47:18.49"));
+		assertEquals(VectorUtil.getVector(result.get(2).getField(5)),
+			VectorUtil.getVector(
+				"$48$9:4.0 10:6.0 15:8.6 17:6.0 18:9.0 23:12.899999999999999 41:8.6 42:12.899999999999999 47:18.49"));
 	}
 
 }

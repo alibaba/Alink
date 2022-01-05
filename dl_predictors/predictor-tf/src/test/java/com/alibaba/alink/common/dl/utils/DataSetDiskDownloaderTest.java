@@ -25,6 +25,7 @@ public class DataSetDiskDownloaderTest {
 		String input
 			= "http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/alink_congzhou/DataSetDiskDownloaderTest.tar"
 			+ ".gz";
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(3);
 		ExecutionEnvironment env = MLEnvironmentFactory.getDefault().getExecutionEnvironment();
 
@@ -45,14 +46,16 @@ public class DataSetDiskDownloaderTest {
 					for (int i = 0; i < filePaths.length; i++) {
 						filePaths[i] = (String) bcpaths.get(i).getField(0);
 					}
-					DataSetDiskDownloader.unzipUserFileFromDisk(filePaths, PythonFileUtils.createTempWorkDir("temp_"));
+					DataSetDiskDownloader.unzipUserFileFromDisk(filePaths, PythonFileUtils.createTempDir("temp_").toString());
 				}
 			}).withBroadcastSet(paths.getDataSet(), "paths").print();
+		BatchOperator.setParallelism(savedParallelism);
 	}
 
 	@Test
 	public void testDownloadFilesWithRename() throws Exception {
 		PythonFileUtils.DELETE_TEMP_FILES_WHEN_EXIT = false;
+		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(3);
 		List<String> paths = Arrays.asList(
 			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/alink_congzhou/DataSetDiskDownloaderTest.tar.gz"
@@ -71,5 +74,6 @@ public class DataSetDiskDownloaderTest {
 			assert new File(targetDir, "rename").exists();
 			assert new File(targetDir, "rename/DataSetDiskDownloaderTest.txt").exists();
 		}
+		BatchOperator.setParallelism(savedParallelism);
 	}
 }

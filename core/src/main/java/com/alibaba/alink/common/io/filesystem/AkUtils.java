@@ -104,7 +104,7 @@ public class AkUtils {
 	}
 
 	public static Tuple2 <TableSchema, List <Row>> readFromPath(FilePath filePath) throws IOException {
-		FileForEachReaderIterator reader = new FileForEachReaderIterator();
+		FileForEachReaderIterable reader = new FileForEachReaderIterable();
 
 		getFromFolderForEach(filePath, reader);
 
@@ -121,7 +121,7 @@ public class AkUtils {
 		R apply(T t) throws IOException;
 	}
 
-	public static class FileForEachReaderIterator implements FileProcFunction <FilePath, Boolean>, Iterable <Row> {
+	public static class FileForEachReaderIterable implements FileProcFunction <FilePath, Boolean>, Iterable <Row> {
 		private final List <FilePath> files = new ArrayList <>();
 		private TableSchema schema;
 

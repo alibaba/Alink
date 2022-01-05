@@ -1,53 +1,52 @@
 package com.alibaba.alink.operator.common.recommendation;
 
-import com.alibaba.alink.common.utils.AlinkSerializable;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.types.Row;
 
-import com.google.common.collect.ImmutableMap;
+import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.utils.AlinkSerializable;
+import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SwingResData implements AlinkSerializable {
-    private Object[] object;
-    private Float[] score;
-    private String itemCol;
-    public SwingResData() {
-    }
+	private Object[] object;
+	private Float[] score;
+	private String itemCol;
 
-    public SwingResData(Object[] object, Float[] score, String itemCol) {
-        this.object = object;
-        this.score = score;
-        this.itemCol = itemCol;
-    }
+	public SwingResData() {
+	}
 
-    public void setObject(Object[] object) {
-        this.object = object;
-    }
+	public SwingResData(Object[] object, Float[] score, String itemCol) {
+		this.object = object;
+		this.score = score;
+		this.itemCol = itemCol;
+	}
 
-    public void setScore(Float[] score) {
-        this.score = score;
-    }
+	public void setObject(Object[] object) {
+		this.object = object;
+	}
 
-    public Object[] getObject() {
-        return object;
-    }
+	public void setScore(Float[] score) {
+		this.score = score;
+	}
 
-    public Float[] getScore() {
-        return score;
-    }
+	public Object[] getObject() {
+		return object;
+	}
 
-    public String returnTopNData(int topN) {
-        int thisSize = Math.min(object.length, topN);
-        List<Object> resItems = new ArrayList<>(thisSize);
-        List<Double> resSimilarity = new ArrayList<>(thisSize);
-        for (int i = 0; i < thisSize; i++) {
-            resItems.add(object[i]);
-            resSimilarity.add((double) score[i]);
-        }
+	public Float[] getScore() {
+		return score;
+	}
 
-        return KObjectUtil.serializeRecomm(
-            itemCol,
-            resItems,
-            ImmutableMap.of("score", resSimilarity));
-    }
+	public MTable returnTopNData(int topN, TypeInformation <?> objType) {
+		int thisSize = Math.min(object.length, topN);
+
+		List <Row> rows = new ArrayList <>(thisSize);
+		for (int i = 0; i < thisSize; i++) {
+			rows.add(Row.of(object[i], score[i]));
+		}
+		return new MTable(rows, itemCol + " " + FlinkTypeConverter.getTypeString(objType) + "," + "score DOUBLE");
+	}
 }

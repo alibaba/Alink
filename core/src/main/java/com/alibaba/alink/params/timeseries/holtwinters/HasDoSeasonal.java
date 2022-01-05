@@ -5,6 +5,11 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasDoSeasonal<T> extends WithParams <T> {
+
+	/**
+	 * @cn-name 时间是否具有季节性
+	 * @cn 时间是否具有季节性
+	 */
 	ParamInfo <Boolean> DO_SEASONAL = ParamInfoFactory
 		.createParamInfo("doSeasonal", Boolean.class)
 		.setDescription("Whether time serial has seasonal or not.")

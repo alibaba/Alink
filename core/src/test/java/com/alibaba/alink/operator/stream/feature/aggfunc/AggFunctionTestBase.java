@@ -36,7 +36,6 @@ public abstract class AggFunctionTestBase<I, R, ACC> {
 
 	protected boolean resetAcc = false;
 
-	//todo 以下两个方法需要重写，如果输入是array的话。，需要把最后的Object.class改成Object[].class
 	protected Method getAccumulateFunc() throws NoSuchMethodException {
 		AggregateFunction <R, ACC> agg = getAggregator();
 		if (ifMethodExistInFunction("accumulate", agg)) {
@@ -85,9 +84,6 @@ public abstract class AggFunctionTestBase<I, R, ACC> {
 
 			if (useRetract && ifMethodExistInFunction("retract", aggregator)) {
 				retractValues(acc, inputValues);
-				ACC expectedAcc = aggregator.createAccumulator();
-				// The two accumulators should be exactly same
-				//validateResult(expectedAcc, acc);
 			}
 		}
 	}
@@ -115,8 +111,7 @@ public abstract class AggFunctionTestBase<I, R, ACC> {
 			Preconditions.checkArgument(inputValueSets.size() == expectedResults.size());
 			int size = inputValueSets.size();
 			// iterate over input sets
-			for (int i = 0; i < size; ++i) {
-				List <I> inputValues = inputValueSets.get(i);
+			for (List <I> inputValues : inputValueSets) {
 				ACC acc = accumulateValues(inputValues);
 				resetAccFunc.invoke(aggregator, acc);
 				ACC expectedAcc = aggregator.createAccumulator();
@@ -148,7 +143,6 @@ public abstract class AggFunctionTestBase<I, R, ACC> {
 			} else if (accumulateFunc.getParameterCount() == 2) {
 				accumulateFunc.invoke(aggregator, accumulator, value);
 			} else {
-				//accumulateFunc.invoke(aggregator, accumulator, value);
 				throw new TableException("Unsupported now");
 			}
 		}
@@ -165,30 +159,9 @@ public abstract class AggFunctionTestBase<I, R, ACC> {
 			} else if (retractFunc.getParameterCount() == 2) {
 				retractFunc.invoke(aggregator, accumulator, value);
 			} else {
-				//retractFunc.invoke(aggregator, accumulator, value);
 				throw new TableException("Unsupported now");
 			}
 		}
 	}
 
-	//protected Tuple2 <List <I>, List <I>> splitValues(List <I> values) {
-	//	return splitValues(values, values.size() / 2);
-	//}
-	//
-	//protected Tuple2 <List <I>, List <I>> splitValues(List <I> values, int index) {
-	//	List <I> firstValues = new ArrayList <>();
-	//	List <I> secondValues = new ArrayList <>();
-	//	int i;
-	//	for (i = 0; i < values.size(); ++i) {
-	//		if (i < index) {
-	//			firstValues.add(values.get(i));
-	//		} else {
-	//			break;
-	//		}
-	//	}
-	//	if (i < values.size()) {
-	//		secondValues.addAll(values.subList(i, values.size()));
-	//	}
-	//	return new Tuple2 <>(firstValues, secondValues);
-	//}
 }

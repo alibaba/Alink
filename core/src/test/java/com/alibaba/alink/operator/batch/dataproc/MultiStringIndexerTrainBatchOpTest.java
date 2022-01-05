@@ -4,6 +4,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,7 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class MultiStringIndexerTrainBatchOpTest {
+public class MultiStringIndexerTrainBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void testFrequencyAsc() throws Exception {
@@ -40,7 +41,7 @@ public class MultiStringIndexerTrainBatchOpTest {
 		mapList[0] = new HashMap <>();
 		mapList[1] = new HashMap <>();
 		model.lazyPrint(10);
-		List<Row> list = model.collect();
+		List <Row> list = model.collect();
 		for (int i = 0; i < list.size(); i++) {
 			Row r = list.get(i);
 			Long index = (Long) r.getField(0);
@@ -84,7 +85,7 @@ public class MultiStringIndexerTrainBatchOpTest {
 		mapList[0] = new HashMap <>();
 		mapList[1] = new HashMap <>();
 		model.lazyPrint(10);
-		List<Row> list = model.collect();
+		List <Row> list = model.collect();
 		for (int i = 0; i < list.size(); i++) {
 			Row r = list.get(i);
 			Long index = (Long) r.getField(0);
@@ -146,7 +147,7 @@ public class MultiStringIndexerTrainBatchOpTest {
 		mapList[0] = new HashMap <>();
 		mapList[1] = new HashMap <>();
 		model.lazyPrint(10);
-		List<Row> list = model.collect();
+		List <Row> list = model.collect();
 		for (int i = 0; i < list.size(); i++) {
 			Row r = list.get(i);
 			Long index = (Long) r.getField(0);
@@ -186,7 +187,7 @@ public class MultiStringIndexerTrainBatchOpTest {
 		mapList[0] = new HashMap <>();
 		mapList[1] = new HashMap <>();
 		model.lazyPrint(10);
-		List<Row> list = model.collect();
+		List <Row> list = model.collect();
 		for (int i = 0; i < list.size(); i++) {
 			Row r = list.get(i);
 			Long index = (Long) r.getField(0);

@@ -1,10 +1,11 @@
 package com.alibaba.alink.operator.common.nlp.bert.tokenizer;
 
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.TokenizationUtils;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TokenizationUtilsTest {
+public class TokenizationUtilsTest extends AlinkTestBase {
 
 	@Test
 	public void isControl() {

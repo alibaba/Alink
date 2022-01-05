@@ -85,7 +85,7 @@ public class FastDistanceMatrixData extends FastDistanceData {
 
 	public static FastDistanceMatrixData fromString(String s) {
 		Params params = Params.fromJson(s);
-		Row[] row = parseRowArrayCompatible(params);
+		Row[] row = params.get("rows", Row[].class);
 		DenseMatrix vectors = params.get("vectors", DenseMatrix.class);
 		FastDistanceMatrixData matrixData = new FastDistanceMatrixData(vectors, row);
 		matrixData.label = params.get("label", DenseMatrix.class);

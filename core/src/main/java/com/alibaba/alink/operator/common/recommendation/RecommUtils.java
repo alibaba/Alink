@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.recommendation;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.types.Row;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,8 +15,8 @@ public class RecommUtils {
 	 * Priority queue used to track top k objects who have largest scores.
 	 */
 	public static class RecommPriorityQueue {
-		private int k;
-		private PriorityQueue <Tuple2 <Object, Double>> priorQueue;
+		private final int k;
+		private final PriorityQueue <Tuple2 <Object, Double>> priorQueue;
 		private Tuple2 <Object, Double> peekOfQueue;
 
 		public RecommPriorityQueue(int k) {
@@ -60,6 +61,16 @@ public class RecommUtils {
 			Collections.reverse(items);
 			Collections.reverse(scores);
 			return Tuple2.of(items, scores);
+		}
+
+		public List <Row> getOrderedRows() {
+			List <Row> rows = new ArrayList <>(priorQueue.size());
+			while (priorQueue.size() > 0) {
+				Tuple2 <Object, Double> target = priorQueue.poll();
+				rows.add(Row.of(target.f0, target.f1));
+			}
+			Collections.reverse(rows);
+			return rows;
 		}
 	}
 }

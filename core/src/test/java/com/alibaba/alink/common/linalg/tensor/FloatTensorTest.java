@@ -1,11 +1,12 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
 
-public class FloatTensorTest {
+public class FloatTensorTest extends AlinkTestBase {
 
 	private static final Random random = new Random(0);
 	private static final double eps = 1e-12;
@@ -20,6 +21,13 @@ public class FloatTensorTest {
 				Assert.assertEquals(0., tensor.getFloat(i, j), eps);
 			}
 		}
+	}
+
+	@Test
+	public void testFromScalar() {
+		float v = random.nextFloat();
+		FloatTensor tensor = new FloatTensor(v);
+		Assert.assertEquals(v, tensor.getFloat(), eps);
 	}
 
 	@Test
@@ -97,6 +105,17 @@ public class FloatTensorTest {
 	}
 
 	@Test
+	public void testScalarSerDe() {
+		float v = random.nextFloat();
+		FloatTensor tensor = new FloatTensor(v);
+		Assert.assertEquals("FLOAT##0.73096776 ", tensor.toString());
+
+		FloatTensor tensor2 = (FloatTensor) TensorUtil.getTensor(tensor.toString());
+		System.out.println(tensor2.toString());
+		Assert.assertEquals(tensor.toString(), tensor2.toString());
+	}
+
+	@Test
 	public void testReshape() {
 		int n = 2;
 		int m = 6;
@@ -108,6 +127,14 @@ public class FloatTensorTest {
 		}
 		FloatTensor tensor = new FloatTensor(arr);
 		FloatTensor reshaped = tensor.reshape(new Shape(2, 3, 2));
+		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
+	}
+
+	@Test
+	public void testScalarReshape() {
+		float v = random.nextFloat();
+		FloatTensor tensor = new FloatTensor(v);
+		FloatTensor reshaped = tensor.reshape(new Shape(1, 1, 1, 1));
 		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
 	}
 }

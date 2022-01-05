@@ -13,11 +13,14 @@ import com.alibaba.alink.operator.stream.recommendation.AlsRateRecommStreamOp;
 import com.alibaba.alink.operator.stream.recommendation.AlsSimilarItemsRecommStreamOp;
 import com.alibaba.alink.operator.stream.recommendation.AlsSimilarUsersRecommStreamOp;
 import com.alibaba.alink.operator.stream.recommendation.AlsUsersPerItemRecommStreamOp;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.operator.stream.sql.UnionAllStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.List;
 
 public class AlsTrainBatchOpTest extends AlinkTestBase {
 	Row[] rows1 = new Row[] {
@@ -46,11 +49,20 @@ public class AlsTrainBatchOpTest extends AlinkTestBase {
 	@Test
 	public void testUserItemExtraction() throws Exception {
 		AlsTrainBatchOp model = train();
-		model.lazyPrintModelInfo();
 		Params params = new Params();
 		AlsModelInfoBatchOp transformModel = new AlsModelInfoBatchOp(params).linkFrom(model);
-		transformModel.getUserEmbedding().print();
-		transformModel.getItemEmbedding().print();
+		List<Row> userEmbeddomg = transformModel.getUserEmbedding().collect();
+		for (Row row : userEmbeddomg) {
+			if (row.getField(0).equals(1L)) {
+				Assert.assertEquals(row.getField(1),"0.36496326327323914 0.2768574655056 0.4218851923942566 0.6714380383491516 1.0786648988723755 1.0764501094818115 0.9629398584365845 0.025280786678195 1.0309195518493652 0.19274161756038666");
+			}
+		}
+		List<Row> itemEmbeddomg = transformModel.getItemEmbedding().collect();
+		for (Row row : itemEmbeddomg) {
+			if (row.getField(0).equals(5L)) {
+				Assert.assertEquals(row.getField(1),"0.34503644704818726 0.26174119114875793 0.3988504707813263 0.634777843952179 1.0197702646255493 1.0176764726638794 0.9103637933731079 0.02390046790242195 0.9746318459510803 0.1822180151939392");
+			}
+		}
 	}
 
 	@Test
@@ -125,7 +137,11 @@ public class AlsTrainBatchOpTest extends AlinkTestBase {
 		result5 = result5.select("*, 'AlsSimilarItemsRecommStreamOp' as rec_type");
 
 		result1.print();
-		new UnionAllStreamOp().linkFrom(result2, result3, result4, result5).print();
+
+		CollectSinkStreamOp sop = new UnionAllStreamOp()
+			.linkFrom(result2, result3, result4, result5).link(new CollectSinkStreamOp());
 		StreamOperator.execute();
+		List<Row> res = sop.getAndRemoveValues();
+		Assert.assertEquals(res.size(), 24);
 	}
 }

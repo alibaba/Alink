@@ -5,10 +5,11 @@ import com.alibaba.alink.operator.common.timeseries.arima.Arima;
 import com.alibaba.alink.operator.common.timeseries.arima.ArimaModel;
 import com.alibaba.alink.params.timeseries.HasEstmateMethod.EstMethod;
 import com.alibaba.alink.params.timeseries.HasIcType.IcType;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SarimaTest {
+public class SarimaTest extends AlinkTestBase {
 
 	@Test
 	public void test() {

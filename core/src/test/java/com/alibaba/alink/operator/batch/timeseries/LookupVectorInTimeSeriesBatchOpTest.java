@@ -4,15 +4,14 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
-
-public class LookupVectorInTimeSeriesBatchOpTest {
+public class LookupVectorInTimeSeriesBatchOpTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 

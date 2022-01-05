@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
@@ -21,8 +22,13 @@ public class TFTableModelPredictModelMapper extends ModelMapper implements Seria
 	private final BaseTFSavedModelPredictRowMapper mapper;
 
 	public TFTableModelPredictModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
+		this(modelSchema, dataSchema, params, new TFPredictorClassLoaderFactory());
+	}
+
+	public TFTableModelPredictModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params,
+										  TFPredictorClassLoaderFactory factory) {
 		super(modelSchema, dataSchema, params);
-		mapper = new BaseTFSavedModelPredictRowMapper(dataSchema, params);
+		mapper = new BaseTFSavedModelPredictRowMapper(dataSchema, params, factory);
 	}
 
 	@Override
@@ -37,6 +43,11 @@ public class TFTableModelPredictModelMapper extends ModelMapper implements Seria
 
 	@Override
 	public void loadModel(List <Row> modelRows) {
+		String path = TFSavedModelUtils.loadSavedModelFromRows(modelRows);
+		mapper.setModelPath(path);
+	}
+
+	public void loadModel(Iterable <Row> modelRows) {
 		String path = TFSavedModelUtils.loadSavedModelFromRows(modelRows);
 		mapper.setModelPath(path);
 	}

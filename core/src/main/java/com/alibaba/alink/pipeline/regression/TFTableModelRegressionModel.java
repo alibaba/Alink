@@ -3,6 +3,9 @@ package com.alibaba.alink.pipeline.regression;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.utils.FlatModelMapBatchOp;
+import com.alibaba.alink.operator.common.regression.tensorflow.TFTableModelRegressionFlatModelMapper;
 import com.alibaba.alink.operator.common.regression.tensorflow.TFTableModelRegressionModelMapper;
 import com.alibaba.alink.params.regression.TFTableModelRegressionPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -15,5 +18,13 @@ public class TFTableModelRegressionModel<T extends TFTableModelRegressionModel <
 
 	public TFTableModelRegressionModel(Params params) {
 		super(TFTableModelRegressionModelMapper::new, params);
+	}
+
+	@Override
+	public BatchOperator <?> transform(BatchOperator <?> input) {
+		return postProcessTransformResult(new FlatModelMapBatchOp <>(
+			TFTableModelRegressionFlatModelMapper::new,
+			params
+		).linkFrom(this.getModelData(), input));
 	}
 }

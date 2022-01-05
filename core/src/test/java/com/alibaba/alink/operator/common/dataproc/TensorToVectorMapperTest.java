@@ -12,10 +12,11 @@ import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.params.dataproc.TensorToVectorParams;
 import com.alibaba.alink.params.dataproc.TensorToVectorParams.ConvertMethod;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TensorToVectorMapperTest {
+public class TensorToVectorMapperTest extends AlinkTestBase {
 	private static final double EPS = 0.00001;
 
 	@Test

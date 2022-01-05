@@ -69,9 +69,7 @@ public class EvalRegressionBatchOpTest extends AlinkTestBase {
 				.linkFrom(data);
 			op.print();
 			Assert.fail("Expected an IllegalStateException to be thrown");
-		} catch (JobExecutionException e) {
-			// pass
-		} catch (ProgramInvocationException e) {
+		} catch (JobExecutionException | ProgramInvocationException e) {
 			// pass
 		}
 

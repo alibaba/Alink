@@ -74,6 +74,9 @@ class BaseEntry(abc.ABC):
         if self.engine_type == TF1_TYPE:
             tf_helper.set_intra_op_parallelism(intra_op_parallelism_threads=intra_op_parallelism)
         elif self.engine_type == TF2_TYPE:
+            gpus = tf.config.experimental.list_physical_devices('GPU')
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
             tf.config.threading.set_intra_op_parallelism_threads(intra_op_parallelism)
 
         num_workers = int(properties['ALINK:num_workers'])

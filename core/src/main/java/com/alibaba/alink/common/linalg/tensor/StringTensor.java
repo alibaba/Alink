@@ -14,6 +14,10 @@ public final class StringTensor extends Tensor <String> {
 		this(NdArrays.ofObjects(String.class, shape.toNdArrayShape()));
 	}
 
+	public StringTensor(String data) {
+		this(NdArrays.scalarOfObject(data));
+	}
+
 	public StringTensor(String[] data) {
 		this(StdArrays.ndCopyOf(data));
 	}

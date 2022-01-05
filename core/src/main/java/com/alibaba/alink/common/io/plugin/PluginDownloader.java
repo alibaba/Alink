@@ -30,7 +30,6 @@ import java.util.Map;
 
 public class PluginDownloader {
 
-	private final static String MAIN_URL = "https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files";
 	private final static Logger LOG = LoggerFactory.getLogger(PluginDownloader.class);
 
 	private Map <String, PluginDownloaderConfig> jarsPluginConfigs;
@@ -48,7 +47,7 @@ public class PluginDownloader {
 	}
 
 	public PluginDownloader(String pluginDir) {
-		this(new FilePath(MAIN_URL), pluginDir);
+		this(new FilePath(AlinkGlobalConfiguration.getPluginUrl()), pluginDir);
 	}
 
 	public PluginDownloader(FilePath sourceRoot, String pluginDir) {
@@ -507,9 +506,12 @@ public class PluginDownloader {
 
 		new File(lockFile.getParent().getPath()).mkdirs();
 
+		FileChannel channel = null;
 		FileLock lock = null;
 
-		try (FileChannel channel = new FileOutputStream(lockFile.getPath(), true).getChannel()) {
+		try {
+			channel = new FileOutputStream(lockFile.getPath(), true).getChannel();
+
 			lock = channel.lock();
 
 			doDownload.download(localRawPath, localPath);
@@ -520,6 +522,15 @@ public class PluginDownloader {
 				} catch (IOException e) {
 					// pass
 					LOG.warn("Release file lock fail.", e);
+				}
+			}
+
+			if (channel != null) {
+				try {
+					channel.close();
+				} catch (IOException e) {
+					// pass
+					LOG.warn("Close channel fail.", e);
 				}
 			}
 		}

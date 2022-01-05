@@ -5,7 +5,6 @@ import com.alibaba.alink.common.utils.XMath;
 /**
  * 概率密度函数(Probability Density Function, 缩写为PDF)
  *
- * @author yangxu
  */
 public class PDF {
 

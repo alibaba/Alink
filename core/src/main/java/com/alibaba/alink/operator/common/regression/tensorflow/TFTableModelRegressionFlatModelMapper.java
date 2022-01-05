@@ -8,25 +8,27 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.TensorTypes;
 import com.alibaba.alink.common.mapper.FlatModelMapper;
+import com.alibaba.alink.common.mapper.IterableModelLoader;
 import com.alibaba.alink.common.model.LabeledModelDataConverter;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.tensorflow.CachedRichModelMapper;
 import com.alibaba.alink.operator.common.tensorflow.TFModelDataConverterUtils;
 import com.alibaba.alink.operator.common.tensorflow.TFTableModelPredictFlatModelMapper;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.dl.HasInferBatchSizeDefaultAs256;
-import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
 import com.alibaba.alink.params.regression.TFTableModelRegressionPredictParams;
+import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
 import com.alibaba.alink.pipeline.LocalPredictor;
 import com.alibaba.alink.pipeline.LocalPredictorLoader;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
 
-public class TFTableModelRegressionFlatModelMapper extends CachedRichModelMapper {
+public class TFTableModelRegressionFlatModelMapper extends CachedRichModelMapper implements IterableModelLoader {
 
 	private LocalPredictor preprocessLocalPredictor = null;
 	private TFTableModelPredictFlatModelMapper tfFlatModelMapper;
@@ -34,11 +36,13 @@ public class TFTableModelRegressionFlatModelMapper extends CachedRichModelMapper
 	private final TypeInformation <?> labelType;
 	private final String predCol;
 	private int predColId;
+	private final TFPredictorClassLoaderFactory factory;
 
 	public TFTableModelRegressionFlatModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 		predCol = params.get(TFTableModelRegressionPredictParams.PREDICTION_COL);
 		labelType = LabeledModelDataConverter.extractLabelType(modelSchema);
+		factory = new TFPredictorClassLoaderFactory();
 	}
 
 	@Override
@@ -56,6 +60,18 @@ public class TFTableModelRegressionFlatModelMapper extends CachedRichModelMapper
 		TFTableModelRegressionModelDataConverter modelDataConverter = new TFTableModelRegressionModelDataConverter(
 			labelType);
 		TFTableModelRegressionModelData modelData = modelDataConverter.load(modelRows);
+		loadFromModelData(modelData, modelDataConverter.getModelSchema());
+	}
+
+	@Override
+	public void loadIterableModel(Iterable <Row> modelRowsIterable) {
+		TFTableModelRegressionModelDataConverter modelDataConverter = new TFTableModelRegressionModelDataConverter(
+			labelType);
+		TFTableModelRegressionModelData modelData = modelDataConverter.loadIterable(modelRowsIterable);
+		loadFromModelData(modelData, modelDataConverter.getModelSchema());
+	}
+
+	protected void loadFromModelData(TFTableModelRegressionModelData modelData, TableSchema modelSchema) {
 		Params meta = modelData.getMeta();
 
 		String tfOutputSignatureDef = meta.get(TFModelDataConverterUtils.TF_OUTPUT_SIGNATURE_DEF);
@@ -91,8 +107,7 @@ public class TFTableModelRegressionFlatModelMapper extends CachedRichModelMapper
 		tfModelMapperParams.set(HasInferBatchSizeDefaultAs256.INFER_BATCH_SIZE,
 			params.get(HasInferBatchSizeDefaultAs256.INFER_BATCH_SIZE));
 
-		tfFlatModelMapper = new TFTableModelPredictFlatModelMapper(modelDataConverter.getModelSchema(),
-			dataSchema, tfModelMapperParams);
+		tfFlatModelMapper = new TFTableModelPredictFlatModelMapper(modelSchema, dataSchema, tfModelMapperParams, factory);
 		if (null != modelData.getTfModelZipPath()) {
 			tfFlatModelMapper.loadModelFromZipFile(modelData.getTfModelZipPath());
 		} else {

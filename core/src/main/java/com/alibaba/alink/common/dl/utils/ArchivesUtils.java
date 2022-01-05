@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class ArchivesUtils {
 
@@ -26,9 +27,9 @@ public class ArchivesUtils {
 	 * @param targetDir
 	 */
 	public static void downloadDecompressToDirectory(String path, File targetDir) {
-		File tempDir = PythonFileUtils.createTempDir(null);
-		String archiveFileName = FileDownloadUtils.downloadFileToDirectory(path, tempDir);
-		File archiveFile = new File(tempDir, archiveFileName);
+		Path downloadPath = PythonFileUtils.createTempDir("download_");
+		String archiveFileName = FileDownloadUtils.downloadFileToDirectory(path, downloadPath.toFile());
+		File archiveFile = downloadPath.resolve(archiveFileName).toFile();
 		try {
 			decompressFile(archiveFile, targetDir);
 		} catch (IOException e) {

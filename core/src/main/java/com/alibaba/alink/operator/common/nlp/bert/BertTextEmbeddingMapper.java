@@ -6,6 +6,7 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.linalg.tensor.TensorTypes;
 import com.alibaba.alink.common.mapper.ComboMapper;
 import com.alibaba.alink.common.mapper.Mapper;
@@ -40,8 +41,15 @@ public class BertTextEmbeddingMapper extends ComboMapper {
 		EncodingKeys.ATTENTION_MASK_KEY.label};
 	private static final String[] MODEL_OUTPUTS = new String[] {HIDDEN_STATES_COL};
 
+	private final TFPredictorClassLoaderFactory factory;
+
 	public BertTextEmbeddingMapper(TableSchema dataSchema, Params params) {
+		this(dataSchema, params, new TFPredictorClassLoaderFactory());
+	}
+
+	public BertTextEmbeddingMapper(TableSchema dataSchema, Params params, TFPredictorClassLoaderFactory factory) {
 		super(dataSchema, params);
+		this.factory = factory;
 	}
 
 	@Override
@@ -77,7 +85,7 @@ public class BertTextEmbeddingMapper extends ComboMapper {
 			ArrayUtils.add(reservedCols, tokenizerMapper.prependPrefix(EncodingKeys.LENGTH_KEY.label)));
 		tfParams.set(HasOutputBatchAxes.OUTPUT_BATCH_AXES, new int[]{1});
 		TFSavedModelPredictRowMapper tfMapper = new TFSavedModelPredictRowMapper(tokenizerMapper.getOutputSchema(),
-			tfParams);
+			tfParams, factory);
 
 		Params extractorParams = params.clone();
 		extractorParams.set(HasHiddenStatesCol.HIDDEN_STATES_COL, tokenizerMapper.prependPrefix(HIDDEN_STATES_COL));

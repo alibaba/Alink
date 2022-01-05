@@ -41,8 +41,6 @@ public class LeaveKObjectOutBatchOp extends BatchOperator <LeaveKObjectOutBatchO
 		final Double testFraction = getFraction();
 		final Integer testK = getK();
 
-		//in = in.select(new String[]{getGroupCol(), getObjectCol()});
-
 		DataSet <Tuple2 <Boolean, Row>> splits = in
 			.getDataSet()
 			.groupBy(TableUtil.findColIndexWithAssertAndHint(in.getSchema(), this.getGroupCol()))
@@ -52,7 +50,7 @@ public class LeaveKObjectOutBatchOp extends BatchOperator <LeaveKObjectOutBatchO
 			private static final long serialVersionUID = 8194568313949873147L;
 
 			@Override
-			public void flatMap(Tuple2 <Boolean, Row> value, Collector <Row> out) throws Exception {
+			public void flatMap(Tuple2 <Boolean, Row> value, Collector <Row> out) {
 				if (value.f0) {
 					out.collect(value.f1);
 				}
@@ -63,14 +61,14 @@ public class LeaveKObjectOutBatchOp extends BatchOperator <LeaveKObjectOutBatchO
 			private static final long serialVersionUID = 7652429568716812411L;
 
 			@Override
-			public void flatMap(Tuple2 <Boolean, Row> value, Collector <Row> out) throws Exception {
+			public void flatMap(Tuple2 <Boolean, Row> value, Collector <Row> out) {
 				if (!value.f0) {
 					out.collect(value.f1);
 				}
 			}
 		});
 
-		BatchOperator testOp = new DataSetWrapperBatchOp(test, in.getColNames(), in.getColTypes())
+		BatchOperator <?> testOp = new DataSetWrapperBatchOp(test, in.getColNames(), in.getColTypes())
 			.setMLEnvironmentId(getMLEnvironmentId());
 
 		Zipped2KObjectBatchOp op = new Zipped2KObjectBatchOp(getParams()).linkFrom(testOp);
@@ -83,8 +81,8 @@ public class LeaveKObjectOutBatchOp extends BatchOperator <LeaveKObjectOutBatchO
 
 	private static class Split implements GroupReduceFunction <Row, Tuple2 <Boolean, Row>> {
 		private static final long serialVersionUID = 9130706753665003510L;
-		private Double testFraction;
-		private Integer testK;
+		private final Double testFraction;
+		private final Integer testK;
 
 		public Split(Double fraction, Integer k) {
 			this.testFraction = fraction;

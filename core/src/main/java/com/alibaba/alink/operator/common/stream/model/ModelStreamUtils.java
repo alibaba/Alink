@@ -7,74 +7,54 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.core.fs.FSDataInputStream;
-import org.apache.flink.core.fs.FSDataOutputStream;
 import org.apache.flink.core.fs.FileStatus;
-import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.functions.co.RichCoFlatMapFunction;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
-import org.apache.flink.util.function.TriFunction;
 
-import com.alibaba.alink.common.io.directreader.DataBridge;
-import com.alibaba.alink.common.io.directreader.DirectReader;
-import com.alibaba.alink.common.io.filesystem.AkStream;
-import com.alibaba.alink.common.io.filesystem.AkStream.AkWriter.AkCollector;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils.AkMeta;
-import com.alibaba.alink.common.io.filesystem.AkUtils.FileForEachReaderIterator;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FilePath;
-import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
-import com.alibaba.alink.params.mapper.ModelMapperParams;
+import com.alibaba.alink.params.ModelStreamScanParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class ModelStreamUtils {
+
+	private static final Logger LOG = LoggerFactory.getLogger(ModelStreamUtils.class);
 
 	public static final String MODEL_STREAM_TIMESTAMP_COLUMN_NAME = "alinkmodelstreamtimestamp";
 	public static final TypeInformation <?> MODEL_STREAM_TIMESTAMP_COLUMN_TYPE = Types.SQL_TIMESTAMP;
 	public static final String MODEL_STREAM_COUNT_COLUMN_NAME = "alinkmodelstreamcount";
 	public static final TypeInformation <?> MODEL_STREAM_COUNT_COLUMN_TYPE = Types.LONG;
 
-	private static final Logger LOG = LoggerFactory.getLogger(ModelStreamUtils.class);
-
 	public static boolean useModelStreamFile(Params params) {
 		return params != null
-			&& params.get(ModelMapperParams.MODEL_STREAM_FILE_PATH) != null;
+			&& params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH) != null;
 	}
 
-	public static TableSchema getRawModelSchema(TableSchema modelStreamSchema, int timestampColIndex,
-												int countColIndex) {
+	public static TableSchema getRawModelSchema(
+		TableSchema modelStreamSchema, int timestampColIndex, int countColIndex) {
+
 		int fieldCount = modelStreamSchema.getFieldNames().length;
 
 		String[] rawNames = new String[fieldCount - 2];
@@ -90,80 +70,6 @@ public class ModelStreamUtils {
 		}
 
 		return new TableSchema(rawNames, rawTypes);
-	}
-
-	public static class ModelStreamFileSource implements Iterable <Row> {
-		private final FilePath filePath;
-		private final long scanInterval;
-		private final Timestamp startTime;
-
-		private transient ModelStreamFileIdScanner scanner;
-		private transient Iterator <Timestamp> fileIdIterator;
-		private transient Iterator <Row> modelIterator;
-
-		public ModelStreamFileSource(FilePath filePath, long scanInterval, Timestamp startTime) {
-			this.filePath = filePath;
-			this.scanInterval = scanInterval;
-			this.startTime = startTime;
-		}
-
-		public void open() {
-			scanner = new ModelStreamFileIdScanner(filePath, startTime, scanInterval);
-			scanner.open();
-			fileIdIterator = scanner.iterator();
-		}
-
-		public void close() throws IOException {
-			scanner.close();
-		}
-
-		private class ModelStreamSourceIterator implements Iterator <Row> {
-			private transient Tuple3 <Timestamp, Long, FilePath> modelDescCache;
-
-			@Override
-			public boolean hasNext() {
-
-				if (modelIterator == null || !modelIterator.hasNext()) {
-					// switch next fileId
-
-					if (!fileIdIterator.hasNext()) {
-						return false;
-					}
-
-					while (fileIdIterator.hasNext()) {
-						AkUtils.FileForEachReaderIterator fileForEachReaderIterator = new FileForEachReaderIterator();
-
-						modelDescCache = descModel(filePath, fileIdIterator.next());
-
-						try {
-							AkUtils.getFromFolderForEach(modelDescCache.f2, fileForEachReaderIterator);
-						} catch (IOException e) {
-							continue;
-						}
-
-						modelIterator = fileForEachReaderIterator.iterator();
-
-						if (modelIterator.hasNext()) {
-							return true;
-						}
-					}
-
-					return false;
-				}
-
-				return true;
-			}
-
-			@Override
-			public Row next() {
-				return genRowWithIdentifierInternal(modelIterator.next(), modelDescCache.f0, modelDescCache.f1);
-			}
-		}
-
-		@Override
-		public Iterator <Row> iterator() {
-			return new ModelStreamSourceIterator();
-		}
 	}
 
 	public static TableSchema createSchemaWithModelStreamPrefix(TableSchema tableSchema) {
@@ -211,14 +117,6 @@ public class ModelStreamUtils {
 		return rowWithIdentifier;
 	}
 
-	public static long getCountFromRowInternal(Row row) {
-		return (long) row.getField(1);
-	}
-
-	public static Row genRowWithoutIdentifierInternal(Row rowWithId) {
-		return genRowWithoutIdentifier(rowWithId, 0, 1);
-	}
-
 	public static Row genRowWithoutIdentifier(Row rowWithId, final int timestampColIndex, final int countColIndex) {
 		Row ret = new Row(rowWithId.getArity() - 2);
 
@@ -239,181 +137,6 @@ public class ModelStreamUtils {
 		Tuple3 <Timestamp, Long, FilePath> modelDesc = ModelStreamUtils.descModel(filePath, modelId);
 
 		return AkUtils.readFromPath(modelDesc.f2);
-	}
-
-	public enum ScanTaskStatus {
-		CREATED,
-		RUNNING,
-		CANCELED,
-		FAILED
-	}
-
-	public static class ScanTask implements Runnable {
-		private volatile ScanTaskStatus status;
-		private volatile Throwable error;
-
-		private final ExecutorService executorService;
-
-		private transient Future <?> future;
-
-		public ScanTask(ExecutorService executorService) {
-			this.executorService = executorService;
-		}
-
-		@Override
-		public void run() {
-			try {
-
-				status = ScanTaskStatus.CREATED;
-
-				doRun();
-			} catch (Throwable t) {
-				if (t instanceof ScanTaskCancelException) {
-					status = ScanTaskStatus.CANCELED;
-					error = t;
-
-					return;
-				}
-
-				status = ScanTaskStatus.FAILED;
-				error = t;
-			}
-		}
-
-		public void start() {
-			future = executorService.submit(this);
-		}
-
-		public void cancel() {
-			boolean cancelResult = future.cancel(true);
-		}
-
-		public void doRun() throws InterruptedException, ScanTaskCancelException {
-
-		}
-
-		private static class ScanTaskCancelException extends RuntimeException {
-
-			public ScanTaskCancelException() {
-			}
-
-			public ScanTaskCancelException(String message) {
-				super(message);
-			}
-
-			public ScanTaskCancelException(String message, Throwable cause) {
-				super(message, cause);
-			}
-
-			public ScanTaskCancelException(Throwable cause) {
-				super(cause);
-			}
-
-			public ScanTaskCancelException(String message, Throwable cause, boolean enableSuppression,
-										   boolean writableStackTrace) {
-				super(message, cause, enableSuppression, writableStackTrace);
-			}
-		}
-	}
-
-	public enum ReadMode {
-		CONTINUOUS,
-		ONCE
-	}
-
-	public static class ModelStreamFileIdScanner implements Iterable <Timestamp> {
-		private final static int BLOCK_QUEUE_CAP = 512;
-
-		private final FilePath filePath;
-		private final Timestamp startTime;
-		private final long scanInterval;
-
-		private transient BlockingQueue <Timestamp> queue;
-		private transient Thread monitorThread;
-		private transient FileModelStreamSourceMonitor monitor;
-
-		public ModelStreamFileIdScanner(FilePath filePath, Timestamp startTime, long scanInterval) {
-			this.filePath = filePath;
-			this.startTime = startTime;
-			this.scanInterval = scanInterval;
-		}
-
-		public void open() {
-			queue = new LinkedBlockingQueue <>(BLOCK_QUEUE_CAP);
-
-			monitor = new FileModelStreamSourceMonitor(filePath, new BlockQueueCollector(), scanInterval);
-
-			monitorThread = new Thread(() -> {
-				try {
-					monitor.startFrom(startTime, ReadMode.CONTINUOUS);
-				} catch (InterruptedException | IOException e) {
-					throw new IllegalStateException(e);
-				}
-			});
-
-			monitorThread.start();
-		}
-
-		public void close() throws IOException {
-			// pass
-			monitor.cancel();
-
-			try {
-				monitorThread.join();
-			} catch (InterruptedException e) {
-				throw new IllegalStateException(e);
-			}
-		}
-
-		@Override
-		public Iterator <Timestamp> iterator() {
-			return new ModelStreamFileIdIterator();
-		}
-
-		private class ModelStreamFileIdIterator implements Iterator <Timestamp> {
-			private transient Timestamp cache;
-
-			@Override
-			public boolean hasNext() {
-				if (cache == null) {
-					try {
-						cache = queue.take();
-					} catch (InterruptedException e) {
-						throw new IllegalStateException(e);
-					}
-				}
-
-				return true;
-			}
-
-			@Override
-			public Timestamp next() {
-				if (cache == null) {
-					throw new IllegalStateException("Should call hasNext first.");
-				}
-
-				Timestamp ret = cache;
-				cache = null;
-				return ret;
-			}
-		}
-
-		private class BlockQueueCollector implements Collector <Timestamp> {
-
-			@Override
-			public void collect(Timestamp record) {
-				try {
-					queue.put(record);
-				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
-			}
-
-			@Override
-			public void close() {
-				// pass
-			}
-		}
 	}
 
 	public static TableSchema getSchemaFromFolder(FilePath filePath) throws IOException {
@@ -474,211 +197,29 @@ public class ModelStreamUtils {
 			.collect(Collectors.toList());
 	}
 
-	public static class FileModelStreamSourceMonitor {
-		private final FilePath filePath;
+	public static List <Timestamp> listModels(FilePath filePath) throws IOException {
+		FileStatus[] fileStatuses = filePath.getFileSystem().listStatus(filePath.getPath());
 
-		private final Collector <Timestamp> collector;
-		private final long scanInterval;
-		private volatile boolean isRunning = false;
+		List <Timestamp> allModels = new ArrayList <>();
 
-		public FileModelStreamSourceMonitor(FilePath filePath, Collector <Timestamp> collector, long scanInterval) {
-			this.filePath = filePath;
+		for (FileStatus fileStatus : fileStatuses) {
+			if (fileStatus.isDir()) {
+				String folderName = fileStatus.getPath().getName();
+				Timestamp timestamp;
 
-			this.collector = collector;
-			this.scanInterval = scanInterval;
-		}
+				try {
+					timestamp = ModelStreamUtils.fromString(folderName);
+				} catch (Exception ex) {
+					// pass
 
-		public void startFrom(Timestamp startTime, ReadMode readMode) throws IOException, InterruptedException {
-
-			this.isRunning = true;
-
-			switch (readMode) {
-				case CONTINUOUS:
-
-					List <Timestamp> latest = null;
-
-					while (isRunning) {
-
-						List <Timestamp> files = filter(listModels(filePath), startTime);
-						if (latest == null) {
-							latest = files;
-						} else {
-							files.removeAll(latest);
-							latest.addAll(files);
-						}
-
-						for (Timestamp file : files) {
-							collector.collect(file);
-						}
-
-						Thread.sleep(scanInterval);
-					}
-
-					return;
-
-				case ONCE:
-
-					if (!isRunning) {
-						return;
-					}
-
-					for (Timestamp file : filter(listModels(filePath), startTime)) {
-						collector.collect(file);
-					}
-
-					return;
-				default:
-					throw new UnsupportedOperationException();
-			}
-		}
-
-		public void cancel() {
-			this.isRunning = false;
-		}
-	}
-
-	public static class ModelStreamMeta {
-		public long count;
-		public int numFiles;
-
-		public ModelStreamMeta() {
-		}
-
-		public ModelStreamMeta(long count, int numFiles) {
-			this.count = count;
-			this.numFiles = numFiles;
-		}
-	}
-
-	/**
-	 * Structure of model stream
-	 * <p>root
-	 * - conf - id0 - id1
-	 */
-	public static class FileModelStreamSink implements Serializable {
-		private final FilePath filePath;
-		private final String schemaStr;
-
-		public static final String MODEL_CONF = "conf";
-
-		private transient AkCollector collector;
-
-		public FileModelStreamSink(FilePath filePath, String schemaStr) {
-			this.filePath = filePath;
-			this.schemaStr = schemaStr;
-		}
-
-		public void initializeGlobal() throws IOException {
-
-			BaseFileSystem <?> fileSystem = filePath.getFileSystem();
-
-			// check and create conf dir.
-			Path confDirPath = new Path(filePath.getPath(), MODEL_CONF);
-
-			if (fileSystem.exists(confDirPath)) {
-				if (!fileSystem.getFileStatus(confDirPath).isDir()) {
-					throw new IllegalStateException("Conf dir of file model is exists and it it not a directory.");
+					continue;
 				}
-			} else {
-				fileSystem.mkdirs(confDirPath);
+
+				allModels.add(timestamp);
 			}
 		}
 
-		public void open(Timestamp modelId, int subId) throws IOException {
-			BaseFileSystem <?> fileSystem = filePath.getFileSystem();
-			Path confDirPath = new Path(filePath.getPath(), MODEL_CONF);
-			Path fileInProgress = new Path(confDirPath,
-				String.format("%s_%d", ModelStreamUtils.toStringPresentation(modelId), subId));
-
-			collector = new AkStream(
-				new FilePath(fileInProgress, fileSystem),
-				new AkMeta(schemaStr)
-			).getWriter().getCollector();
-		}
-
-		public void collect(Row row) {
-			collector.collect(row);
-		}
-
-		public void close() {
-			if (collector != null) {
-				collector.close();
-			}
-		}
-
-		public void finalizeGlobal(Timestamp modelId, long numRows, int numFiles, int numKeepModel) throws IOException {
-			List<Integer> filesId = new ArrayList <>();
-
-			for (int i = 0; i < numFiles; ++i) {
-				filesId.add(i);
-			}
-
-			finalizeGlobal(modelId, numRows, filesId, numKeepModel);
-		}
-
-		public void finalizeGlobal(Timestamp modelId, long numRows, List <Integer> filesId, int numKeepModel)
-			throws IOException {
-
-			BaseFileSystem <?> fileSystem = filePath.getFileSystem();
-
-			// construct model folder
-			Path confDirPath = new Path(filePath.getPath(), MODEL_CONF);
-
-			Path modelPath = new Path(confDirPath, ModelStreamUtils.toStringPresentation(modelId));
-
-			if (fileSystem.exists(modelPath)) {
-				throw new IOException(String.format("ModelPath: %s has existed.", modelPath));
-			} else {
-				fileSystem.mkdirs(modelPath);
-			}
-
-			filesId.sort(Integer::compareTo);
-
-			for (int i = 0; i < filesId.size(); ++i) {
-				Path subInProgressModelFilePath = new Path(confDirPath,
-					String.format("%s_%d", ModelStreamUtils.toStringPresentation(modelId), filesId.get(i)));
-				Path subToCommitModelFilePath = new Path(modelPath, String.valueOf(i));
-
-				if (!fileSystem.rename(subInProgressModelFilePath, subToCommitModelFilePath)) {
-					throw new IOException(
-						String.format(
-							"Submit sub-model %s to %s failed. Maybe folder %s exists.",
-							subInProgressModelFilePath,
-							subToCommitModelFilePath,
-							subToCommitModelFilePath
-						)
-					);
-				}
-			}
-
-			// if done, write redo log.
-			Path logPath = new Path(confDirPath,
-				String.format("%s.log", ModelStreamUtils.toStringPresentation(modelId)));
-
-			try (FSDataOutputStream outputStream = fileSystem.create(logPath, WriteMode.OVERWRITE)) {
-				outputStream.write(JsonConverter.toJson(new ModelStreamMeta(numRows, filesId.size())).getBytes());
-			} catch (Exception ex) {
-				// if write fail, delete the redo log to make the model invalid.
-				fileSystem.delete(logPath, false);
-				throw ex;
-			}
-
-			// if done, do commit.
-			Path finalModelPath = new Path(filePath.getPath(), ModelStreamUtils.toStringPresentation(modelId));
-			if (!fileSystem.rename(modelPath, finalModelPath)) {
-				throw new IOException(
-					String.format(
-						"Submit model %s to %s failed. Maybe folder %s exists.",
-						modelPath,
-						finalModelPath,
-						finalModelPath
-					)
-				);
-			}
-
-			// if done, do clean up
-			cleanUp(filePath, numKeepModel);
-		}
+		return allModels;
 	}
 
 	public static Timestamp createStartTime(String startTimeStr) {
@@ -735,81 +276,6 @@ public class ModelStreamUtils {
 					return value.f1;
 				}
 			});
-	}
-
-	public static class PredictProcess extends RichCoFlatMapFunction <Row, Row, Row> {
-
-		private final DataBridge dataBridge;
-		private ModelMapper mapper;
-		private final Map <Timestamp, List <Row>> buffers = new HashMap <>();
-		private final int timestampColIndex;
-		private final int countColIndex;
-
-		public PredictProcess(
-			TableSchema modelSchema, TableSchema dataSchema, Params params,
-			TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder,
-			DataBridge dataBridge, int timestampColIndex, int countColIndex) {
-
-			this.dataBridge = dataBridge;
-			this.mapper = mapperBuilder.apply(modelSchema, dataSchema, params);
-			this.timestampColIndex = timestampColIndex;
-			this.countColIndex = countColIndex;
-		}
-
-		@Override
-		public void open(Configuration parameters) throws Exception {
-
-			if (dataBridge != null) {
-				// read init model
-				List <Row> modelRows = DirectReader.directRead(dataBridge);
-				this.mapper.loadModel(modelRows);
-				this.mapper.open();
-			}
-		}
-
-		@Override
-		public void close() throws Exception {
-			super.close();
-			this.mapper.close();
-		}
-
-		@Override
-		public void flatMap1(Row row, Collector <Row> collector) throws Exception {
-			collector.collect(this.mapper.map(row));
-		}
-
-		@Override
-		public void flatMap2(Row inRow, Collector <Row> collector) throws Exception {
-			Timestamp timestamp = (Timestamp) inRow.getField(timestampColIndex);
-			long count = (long) inRow.getField(countColIndex);
-
-			Row row = genRowWithoutIdentifier(inRow, timestampColIndex, countColIndex);
-
-			if (buffers.containsKey(timestamp) && buffers.get(timestamp).size() == (int) count - 1) {
-				if (buffers.containsKey(timestamp)) {
-					buffers.get(timestamp).add(row);
-				} else {
-					List <Row> buffer = new ArrayList <>(0);
-					buffer.add(row);
-					buffers.put(timestamp, buffer);
-				}
-
-				ModelMapper modelMapper = this.mapper.createNew(buffers.get(timestamp));
-				modelMapper.open();
-
-				this.mapper = modelMapper;
-
-				buffers.get(timestamp).clear();
-			} else {
-				if (buffers.containsKey(timestamp)) {
-					buffers.get(timestamp).add(row);
-				} else {
-					List <Row> buffer = new ArrayList <>(0);
-					buffer.add(row);
-					buffers.put(timestamp, buffer);
-				}
-			}
-		}
 	}
 
 	private static final int YEAR_LENGTH = 4;
@@ -987,62 +453,6 @@ public class ModelStreamUtils {
 
 	public static String toStringPresentation(Timestamp timestamp) {
 		return toStringInternal(timestamp);
-	}
-
-	private static List <Timestamp> listModels(FilePath filePath) throws IOException {
-		FileStatus[] fileStatuses = filePath.getFileSystem().listStatus(filePath.getPath());
-
-		List <Timestamp> allModels = new ArrayList <>();
-
-		for (FileStatus fileStatus : fileStatuses) {
-			if (fileStatus.isDir()) {
-				String folderName = fileStatus.getPath().getName();
-				Timestamp timestamp;
-
-				try {
-					timestamp = fromString(folderName);
-				} catch (Exception ex) {
-					// pass
-
-					continue;
-				}
-
-				allModels.add(timestamp);
-			}
-		}
-
-		return allModels;
-	}
-
-	private static void cleanUp(FilePath filePath, int numKeepModel) throws IOException {
-
-		if (numKeepModel < 0) {
-			return;
-		}
-
-		List <Timestamp> models = listModels(filePath);
-
-		models.sort(Timestamp::compareTo);
-
-		BaseFileSystem <?> fileSystem = filePath.getFileSystem();
-		Path confFolder = new Path(filePath.getPath(), FileModelStreamSink.MODEL_CONF);
-
-		for (int i = 0; i < models.size() - numKeepModel; ++i) {
-			// do remove
-
-			// remove model
-			fileSystem.delete(new Path(filePath.getPath(), toStringPresentation(models.get(i))), true);
-
-			// remove log
-			fileSystem.delete(new Path(confFolder, String.format("%s.log", toStringPresentation(models.get(i)))),
-				false);
-		}
-	}
-
-	private static List <Timestamp> filter(List <Timestamp> input, final Timestamp startTimestamp) {
-		return input.stream()
-			.filter(timestamp -> timestamp.compareTo(startTimestamp) >= 0)
-			.collect(Collectors.toList());
 	}
 
 	public static int findTimestampColIndexWithAssertAndHint(TableSchema schema) {

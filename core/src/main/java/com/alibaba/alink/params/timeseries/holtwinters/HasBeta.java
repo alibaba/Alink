@@ -5,6 +5,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasBeta<T> extends WithParams <T> {
+
+
+	/**
+	 * @cn-name beta
+	 * @cn beta
+	 */
 	ParamInfo <Double> BETA = ParamInfoFactory
 		.createParamInfo("beta", Double.class)
 		.setDescription("The beta.")

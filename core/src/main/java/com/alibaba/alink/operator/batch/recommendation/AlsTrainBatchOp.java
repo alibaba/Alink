@@ -1,13 +1,11 @@
 package com.alibaba.alink.operator.batch.recommendation;
 
-import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.utils.DataSetUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.recommendation.AlsModelInfo;
 import com.alibaba.alink.operator.common.recommendation.HugeMfAlsImpl;
@@ -70,30 +68,30 @@ public final class AlsTrainBatchOp
 		BatchOperator <?> in;
 		if (inputs.length == 1) {
 			in = inputs[0];
-			Tuple2 <BatchOperator, BatchOperator> factors = HugeMfAlsImpl.factorize(in, getParams(), false);
-			BatchOperator[] outputs = new BatchOperator[] {factors.f0, factors.f1,
+			Tuple2 <BatchOperator <?>, BatchOperator <?>> factors = HugeMfAlsImpl.factorize(in, getParams(), false);
+			BatchOperator <?>[] outputs = new BatchOperator <?>[] {factors.f0, factors.f1,
 				in.select(new String[] {userColName, itemColName})};
-			BatchOperator model = PackBatchOperatorUtil.packBatchOps(outputs);
+			BatchOperator <?> model = PackBatchOperatorUtil.packBatchOps(outputs);
 			this.setOutputTable(model.getOutputTable());
 			this.setSideOutputTables(new Table[] {factors.f0.getOutputTable(), factors.f1.getOutputTable()});
 		} else if (inputs.length == 2) {
 			in = inputs[1];
 			AlsModelInfoBatchOp modelInfo = new AlsModelInfoBatchOp(getParams()).linkFrom(inputs[0]);
-			BatchOperator initUserEmbedding
+			BatchOperator <?> initUserEmbedding
 				= modelInfo.getUserEmbedding().select(USER_NAME + " as " + userColName + ", factors");
-			BatchOperator initItemEmbedding
+			BatchOperator <?> initItemEmbedding
 				= modelInfo.getItemEmbedding().select(ITEM_NAME + " as " + itemColName + ", factors");
-			Tuple4 <BatchOperator, BatchOperator, BatchOperator, BatchOperator>
+			Tuple4 <BatchOperator <?>, BatchOperator <?>, BatchOperator <?>, BatchOperator <?>>
 				factors = HugeMfAlsImpl.factorize(initUserEmbedding, initItemEmbedding, in, getParams(), false);
 
-			BatchOperator[] outputs = new BatchOperator[] {factors.f0, factors.f1,
+			BatchOperator <?>[] outputs = new BatchOperator <?>[] {factors.f0, factors.f1,
 				in.select(new String[] {userColName, itemColName})};
 
-			BatchOperator model = PackBatchOperatorUtil.packBatchOps(outputs);
+			BatchOperator <?> model = PackBatchOperatorUtil.packBatchOps(outputs);
 			this.setOutputTable(model.getOutputTable());
 
 			this.setSideOutputTables(new Table[] {factors.f0.getOutputTable(), factors.f1.getOutputTable(),
-					factors.f2.getOutputTable(), factors.f3.getOutputTable()});
+				factors.f2.getOutputTable(), factors.f3.getOutputTable()});
 		} else {
 			throw new RuntimeException("als input op count err, need 1 or 2 input op.");
 		}

@@ -66,34 +66,6 @@ public class BaseKerasSequentialTrainBatchOp<T extends BaseKerasSequentialTrainB
 			: TF_OUTPUT_SIGNATURE_DEF_REGRESSION;
 	}
 
-	public BatchOperator <?> toTensorCol(BatchOperator <?> in, String[] tensorColNames) {
-		TypeInformation <?>[] origTensorColTypes =
-			TableUtil.findColTypesWithAssertAndHint(in.getSchema(), tensorColNames);
-		boolean allTensorTypes = Arrays.stream(origTensorColTypes).allMatch(TensorTypes::isTensorType);
-		if (allTensorTypes) {
-			return in;
-		}
-
-		int[] tensorColIndices = TableUtil.findColIndicesWithAssertAndHint(in.getSchema(), tensorColNames);
-		DataSet <Row> out = in.getDataSet().map(new MapFunction <Row, Row>() {
-			@Override
-			public Row map(Row value) throws Exception {
-				Row ret = Row.copy(value);
-				for (int colIndex : tensorColIndices) {
-					ret.setField(colIndex, TensorUtil.getTensor(ret.getField(colIndex)));
-				}
-				return ret;
-			}
-		});
-		String[] colNames = in.getColNames();
-		TypeInformation <?>[] colTypes = in.getColTypes();
-		for (int colIndex : tensorColIndices) {
-			colTypes[colIndex] = TensorTypes.TENSOR;
-		}
-		Table table = DataSetConversionUtil.toTable(in.getMLEnvironmentId(), out, colNames, colTypes);
-		return new TableSourceBatchOp(table).setMLEnvironmentId(in.getMLEnvironmentId());
-	}
-
 	@Override
 	public T linkFrom(BatchOperator <?>... inputs) {
 		BatchOperator <?> in = inputs[0];
@@ -103,8 +75,6 @@ public class BaseKerasSequentialTrainBatchOp<T extends BaseKerasSequentialTrainB
 		boolean isReg = TaskType.REGRESSION.equals(taskType);
 
 		String tensorCol = getTensorCol();
-		in = toTensorCol(in, new String[] {tensorCol});
-
 		String labelCol = getLabelCol();
 		TypeInformation <?> labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelCol);
 

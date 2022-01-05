@@ -16,11 +16,11 @@ public class FmItemsPerUserRecommStreamOp
 
 	private static final long serialVersionUID = -7133237507931279638L;
 
-	public FmItemsPerUserRecommStreamOp(BatchOperator model) {
+	public FmItemsPerUserRecommStreamOp(BatchOperator <?> model) {
 		this(model, null);
 	}
 
-	public FmItemsPerUserRecommStreamOp(BatchOperator model, Params params) {
+	public FmItemsPerUserRecommStreamOp(BatchOperator <?> model, Params params) {
 		super(model, FmRecommKernel::new, RecommType.ITEMS_PER_USER, params);
 	}
 }

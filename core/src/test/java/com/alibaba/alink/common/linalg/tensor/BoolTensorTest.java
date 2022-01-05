@@ -1,11 +1,12 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
 
-public class BoolTensorTest {
+public class BoolTensorTest extends AlinkTestBase {
 
 	private static final Random random = new Random(0);
 
@@ -16,9 +17,17 @@ public class BoolTensorTest {
 		BoolTensor tensor = new BoolTensor(new Shape(n, m));
 		for (int i = 0; i < n; i += 1) {
 			for (int j = 0; j < m; j += 1) {
+				//noinspection SimplifiableAssertion
 				Assert.assertEquals(false, tensor.getBoolean(i, j));
 			}
 		}
+	}
+
+	@Test
+	public void testFromScalar() {
+		boolean v = random.nextBoolean();
+		BoolTensor tensor = new BoolTensor(v);
+		Assert.assertEquals(v, tensor.getBoolean());
 	}
 
 	@Test
@@ -96,6 +105,17 @@ public class BoolTensorTest {
 	}
 
 	@Test
+	public void testScalarSerDe() {
+		boolean v = random.nextBoolean();
+		BoolTensor tensor = new BoolTensor(v);
+		Assert.assertEquals("BOOLEAN##true ", tensor.toString());
+
+		BoolTensor tensor2 = (BoolTensor) TensorUtil.getTensor(tensor.toString());
+		System.out.println(tensor2.toString());
+		Assert.assertEquals(tensor.toString(), tensor2.toString());
+	}
+
+	@Test
 	public void testReshape() {
 		int n = 2;
 		int m = 6;
@@ -107,6 +127,14 @@ public class BoolTensorTest {
 		}
 		BoolTensor tensor = new BoolTensor(arr);
 		BoolTensor reshaped = tensor.reshape(new Shape(2, 3, 2));
+		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
+	}
+
+	@Test
+	public void testScalarReshape() {
+		boolean v = random.nextBoolean();
+		BoolTensor tensor = new BoolTensor(v);
+		BoolTensor reshaped = tensor.reshape(new Shape(1, 1, 1, 1));
 		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
 	}
 }

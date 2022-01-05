@@ -29,6 +29,10 @@ public interface ModelDataConverter<M1, M2> {
 	 */
 	M2 load(List <Row> rows);
 
+	default M2 loadIterable(Iterable <Row> rows) {
+		throw new UnsupportedOperationException();
+	}
+
 	/**
 	 * Get the schema of the table to which the model data is saved.
 	 *

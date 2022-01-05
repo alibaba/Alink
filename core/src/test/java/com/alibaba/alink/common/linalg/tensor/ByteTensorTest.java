@@ -1,11 +1,12 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
 
-public class ByteTensorTest {
+public class ByteTensorTest extends AlinkTestBase {
 
 	private static final Random random = new Random(0);
 
@@ -19,6 +20,13 @@ public class ByteTensorTest {
 				Assert.assertEquals(0, tensor.getByte(i, j));
 			}
 		}
+	}
+
+	@Test
+	public void testFromScalar() {
+		byte v = (byte) random.nextInt();
+		ByteTensor tensor = new ByteTensor(v);
+		Assert.assertEquals(v, tensor.getByte());
 	}
 
 	@Test
@@ -96,6 +104,17 @@ public class ByteTensorTest {
 	}
 
 	@Test
+	public void testScalarSerDe() {
+		byte v = (byte) random.nextInt();
+		ByteTensor tensor = new ByteTensor(v);
+		Assert.assertEquals("BYTE##96 ", tensor.toString());
+
+		ByteTensor tensor2 = (ByteTensor) TensorUtil.getTensor(tensor.toString());
+		System.out.println(tensor2.toString());
+		Assert.assertEquals(tensor.toString(), tensor2.toString());
+	}
+
+	@Test
 	public void testReshape() {
 		int n = 2;
 		int m = 6;
@@ -107,6 +126,14 @@ public class ByteTensorTest {
 		}
 		ByteTensor tensor = new ByteTensor(arr);
 		ByteTensor reshaped = tensor.reshape(new Shape(2, 3, 2));
+		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
+	}
+
+	@Test
+	public void testScalarReshape() {
+		byte v = (byte) random.nextInt();
+		ByteTensor tensor = new ByteTensor(v);
+		ByteTensor reshaped = tensor.reshape(new Shape(1, 1, 1, 1));
 		Assert.assertArrayEquals(tensor.getValueStrings(), reshaped.getValueStrings());
 	}
 }

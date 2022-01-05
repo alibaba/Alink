@@ -1,9 +1,10 @@
 package com.alibaba.alink.common.dl;
 
 import org.apache.flink.annotation.Internal;
+import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.operators.FlatMapOperator;
+import org.apache.flink.api.java.operators.MapPartitionOperator;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.StringUtils;
@@ -13,12 +14,11 @@ import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.NumSeqSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.nlp.bert.BertTokenizerMapper;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.EncodingKeys;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
-import com.alibaba.alink.operator.common.tensorflow.CommonUtils.ConstructModelFlatMapFunction;
+import com.alibaba.alink.operator.common.tensorflow.CommonUtils.ConstructModelMapPartitionFunction;
 import com.alibaba.alink.operator.common.tensorflow.CommonUtils.SortLabelsReduceGroupFunction;
 import com.alibaba.alink.params.dl.HasBatchSizeDefaultAs32;
 import com.alibaba.alink.params.dl.HasCheckpointFilePathDefaultAsNull;
@@ -61,7 +61,6 @@ import static com.alibaba.alink.common.dl.EasyTransferUtils.TF_OUTPUT_SIGNATURE_
 import static com.alibaba.alink.common.dl.EasyTransferUtils.mapLabelToIntIndex;
 import static com.alibaba.alink.operator.common.tensorflow.CommonUtils.PREPROCESS_PIPELINE_MODEL_BC_NAME;
 import static com.alibaba.alink.operator.common.tensorflow.CommonUtils.SORTED_LABELS_BC_NAME;
-import static com.alibaba.alink.operator.common.tensorflow.CommonUtils.TF_MODEL_BC_NAME;
 
 @Internal
 public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp <T>> extends BatchOperator <T> {
@@ -140,7 +139,7 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		}
 		int numFineTunedLayers = params.get(HasNumFineTunedLayersDefaultAs1.NUM_FINE_TUNED_LAYERS);
 		config.put("dropout_rate", 0.3);    // TODO
-		config.put("num_freezed_layers", Math.max(0, 12 - numFineTunedLayers));	// TODO: check 12
+		config.put("num_freezed_layers", Math.max(0, 12 - numFineTunedLayers));
 		config.put("keep_checkpoint_max", 1);
 		return config;
 	}
@@ -305,17 +304,20 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 
 		String tfOutputSignatureDef = EasyTransferUtils.getTfOutputSignatureDef(taskType);
 
-		FlatMapOperator <Row, Row> constructModelFlatMapOperator = new NumSeqSourceBatchOp().setFrom(0).setTo(0)
-			.setMLEnvironmentId(getMLEnvironmentId())
-			.getDataSet()
-			.flatMap(new ConstructModelFlatMapFunction(params, SAFE_MODEL_INPUTS,
+		MapPartitionOperator <Row, Row> constructModelMapPartitionOperator = tfModel.getDataSet()
+			.partitionCustom(new Partitioner <Long>() {
+				@Override
+				public int partition(Long key, int numPartitions) {
+					return 0;
+				}
+			}, 0)
+			.mapPartition(new ConstructModelMapPartitionFunction(params, SAFE_MODEL_INPUTS,
 				tfOutputSignatureDef, TF_OUTPUT_SIGNATURE_TYPE, preprocessPipelineModelSchemaStr))
-			.withBroadcastSet(preprocessPipelineModelOp.getDataSet(), PREPROCESS_PIPELINE_MODEL_BC_NAME)
-			.withBroadcastSet(tfModel.getDataSet(), TF_MODEL_BC_NAME);
-
+			// Assume the pipline model is smaller than the TF model
+			.withBroadcastSet(preprocessPipelineModelOp.getDataSet(), PREPROCESS_PIPELINE_MODEL_BC_NAME);
 		DataSet <Row> modelDataSet = TaskType.CLASSIFICATION.equals(taskType)
-			? constructModelFlatMapOperator.withBroadcastSet(sortedLabels, SORTED_LABELS_BC_NAME)
-			: constructModelFlatMapOperator;
+			? constructModelMapPartitionOperator.withBroadcastSet(sortedLabels, SORTED_LABELS_BC_NAME)
+			: constructModelMapPartitionOperator;
 
 		BatchOperator <?> modelOp = new TableSourceBatchOp(
 			DataSetConversionUtil.toTable(

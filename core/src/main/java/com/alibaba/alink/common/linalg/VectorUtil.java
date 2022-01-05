@@ -334,15 +334,15 @@ public class VectorUtil {
 
 	public static Vector fromBytes(byte[] bytes){
 		switch (bytes[0]) {
-			case VectorType.DENSE_VECTOR:
+			case VectorSerialType.DENSE_VECTOR:
 				return decodeDenseVector(bytes);
-			case VectorType.SPARSE_VECTOR:
+			case VectorSerialType.SPARSE_VECTOR:
 				return decodeSparseVector(bytes);
 		}
 		throw new RuntimeException("Unsupported Vector Type");
 	}
 
-	static class VectorType {
+	static class VectorSerialType {
 		public static final byte DENSE_VECTOR = (byte) 0;
 		public static final byte SPARSE_VECTOR = (byte) 1;
 	}

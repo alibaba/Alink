@@ -17,6 +17,7 @@ import static com.alibaba.alink.common.model.ModelConverterUtils.appendDataRows;
 import static com.alibaba.alink.common.model.ModelConverterUtils.appendMetaRow;
 import static com.alibaba.alink.common.model.ModelConverterUtils.extractAuxiliaryData;
 import static com.alibaba.alink.common.model.ModelConverterUtils.extractModelMetaAndData;
+import static com.alibaba.alink.common.model.ModelConverterUtils.extractModelMetaAndDataFromIterable;
 
 /**
  * The abstract class for a kind of {@link ModelDataConverter} where the model data can serialize to
@@ -74,7 +75,12 @@ public abstract class LabeledModelDataConverter<M1, M2> implements ModelDataConv
 		Tuple2 <Params, Iterable <String>> metaAndData = extractModelMetaAndData(rows);
 		Iterable <Object> labels = extractAuxiliaryData(rows, true);
 		return deserializeModel(metaAndData.f0, metaAndData.f1, labels);
+	}
 
+	@Override
+	public M2 loadIterable(Iterable <Row> rows) {
+		Tuple3 <Params, Iterable <String>, Iterable <Object>> tuple3 = extractModelMetaAndDataFromIterable(rows, true);
+		return deserializeModel(tuple3.f0, tuple3.f1, tuple3.f2);
 	}
 
 	@Override

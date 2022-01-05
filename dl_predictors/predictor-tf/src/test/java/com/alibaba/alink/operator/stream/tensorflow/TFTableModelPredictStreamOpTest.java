@@ -1,9 +1,6 @@
 package com.alibaba.alink.operator.stream.tensorflow;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
-import com.alibaba.alink.common.io.plugin.RegisterKey;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.RandomTableSourceBatchOp;
@@ -22,12 +19,7 @@ public class TFTableModelPredictStreamOpTest {
 	@Category(DLTest.class)
 	@Test
 	public void test() throws Exception {
-		AlinkGlobalConfiguration.setPrintProcessInfo(true);
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-
-		RegisterKey registerKey = TFPredictorClassLoaderFactory.getRegisterKey();
-		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
-
+		int savedStreamParallelism = MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().getParallelism();
 		BatchOperator.setParallelism(3);
 
 		BatchOperator <?> source = new RandomTableSourceBatchOp()
@@ -64,5 +56,6 @@ public class TFTableModelPredictStreamOpTest {
 			.linkFrom(streamSource);
 		tfTableModelPredictStreamOp.print();
 		StreamOperator.execute();
+		StreamOperator.setParallelism(savedStreamParallelism);
 	}
 }

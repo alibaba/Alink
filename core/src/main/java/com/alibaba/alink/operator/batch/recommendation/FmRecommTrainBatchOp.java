@@ -66,7 +66,7 @@ public final class FmRecommTrainBatchOp
         }
     }
 
-    private static BatchOperator createFeatureVectors(BatchOperator featureTable, String idCol,
+    private static BatchOperator <?> createFeatureVectors(BatchOperator <?> featureTable, String idCol,
                                                       String[] featureCols, String[] categoricalCols) {
         TableUtil.assertSelectedColExist(featureCols, categoricalCols);
         String[] numericalCols = subtract(featureCols, categoricalCols);
@@ -129,7 +129,7 @@ public final class FmRecommTrainBatchOp
                     , "item column type mismatch");
         }
 
-        BatchOperator history = samplesOp.select(new String[]{userCol, itemCol});
+        BatchOperator <?> history = samplesOp.select(new String[]{userCol, itemCol});
         userFeaturesOp = createFeatureVectors(userFeaturesOp, userCol, userFeatureCols, userCateFeatureCols);
         itemFeaturesOp = createFeatureVectors(itemFeaturesOp, itemCol, itemFeatureCols, itemCateFeatureCols);
 
@@ -150,7 +150,7 @@ public final class FmRecommTrainBatchOp
                 .setSelectedCols("__user_features__", "__item_features__").setOutputCol("__alink_features__").setReservedCols(
                         labelCol);
         samplesOp = va.transform(samplesOp);
-        BatchOperator fmModel;
+        BatchOperator <?> fmModel;
 
         if (!implicitFeedback) {
             fmModel = new FmRegressorTrainBatchOp(params)
@@ -161,7 +161,7 @@ public final class FmRecommTrainBatchOp
         }
         fmModel.linkFrom(samplesOp);
 
-        BatchOperator model = PackBatchOperatorUtil.packBatchOps(
+        BatchOperator <?> model = PackBatchOperatorUtil.packBatchOps(
                 new BatchOperator<?>[]{fmModel, userFeaturesOp, itemFeaturesOp, history});
         setOutputTable(model.getOutputTable());
         return this;

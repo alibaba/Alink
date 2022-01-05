@@ -3,13 +3,17 @@ package com.alibaba.alink.operator.batch.image;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 
-public class ReadImageToTensorBatchOpTest {
+public class ReadImageToTensorBatchOpTest extends AlinkTestBase {
 
+	@Ignore
 	@Test
 	public void testReadImageToTensorBatchOp() throws Exception {
 
@@ -19,12 +23,15 @@ public class ReadImageToTensorBatchOpTest {
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(data, "path string");
 
-		new ReadImageToTensorBatchOp()
+		List<Row> rows = new ReadImageToTensorBatchOp()
 			.setRootFilePath("https://pytorch.org/vision/stable/_images/")
 			.setRelativeFilePathCol("path")
 			.setOutputCol("tensor")
 			.linkFrom(memSourceBatchOp)
-			.print();
+			.collect();
+
+		Assert.assertEquals(1, rows.size());
+
 	}
 
 }

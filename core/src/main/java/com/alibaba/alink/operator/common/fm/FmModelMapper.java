@@ -19,7 +19,7 @@ import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.FmDataFormat;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
 import com.alibaba.alink.operator.common.linear.FeatureLabelUtil;
 import com.alibaba.alink.operator.common.optim.FmOptimizer;
-import com.alibaba.alink.params.classification.SoftmaxPredictParams;
+import com.alibaba.alink.params.recommendation.FmPredictParams;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +44,7 @@ public class FmModelMapper extends RichModelMapper {
 	public FmModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 		if (null != params) {
-			String vectorColName = params.get(SoftmaxPredictParams.VECTOR_COL);
+			String vectorColName = params.get(FmPredictParams.VECTOR_COL);
 			if (null != vectorColName && vectorColName.length() != 0) {
 				this.vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), vectorColName);
 			}

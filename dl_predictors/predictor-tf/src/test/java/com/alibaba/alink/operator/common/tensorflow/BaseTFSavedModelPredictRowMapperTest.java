@@ -44,14 +44,14 @@ public class BaseTFSavedModelPredictRowMapperTest {
 		pluginDownloader.downloadPlugin(registerKey.getName(), registerKey.getVersion());
 
 		MLEnvironmentFactory.getDefault().getExecutionEnvironment().setParallelism(2);
-		String url = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/mnist_dense.csv";
+		String url = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/mnist_dense.csv";
 		String schema = "label bigint, image string";
 
 		BatchOperator <?> data = new CsvSourceBatchOp().setFilePath(url).setSchemaStr(schema).setFieldDelimiter(";");
 		List <Row> rows = data.collect();
 
 		String modelPath = "http://alink-dataset.oss-cn-zhangjiakou.aliyuncs.com/tf/1551968314.zip";
-		String workDir = PythonFileUtils.createTempWorkDir("temp_");
+		String workDir = PythonFileUtils.createTempDir("temp_").toString();
 		String fn = FileDownloadUtils.downloadHttpOrOssFile(modelPath, workDir);
 		String localModelPath = workDir + File.separator + fn;
 		System.out.println("localModelPath: " + localModelPath);
@@ -101,10 +101,10 @@ public class BaseTFSavedModelPredictRowMapperTest {
 				new FloatTensor(new Shape(28, 28)));
 			rows.add(row);
 		}
-		BatchOperator <?> data = new MemSourceBatchOp(rows, "label LONG, image TENSOR_TYPES_FLOAT_TENSOR");
+		BatchOperator <?> data = new MemSourceBatchOp(rows, "label LONG, image FLOAT_TENSOR");
 
 		String modelPath = "http://alink-dataset.oss-cn-zhangjiakou.aliyuncs.com/tf/1551968314.zip";
-		String workDir = PythonFileUtils.createTempWorkDir("temp_");
+		String workDir = PythonFileUtils.createTempDir("temp_").toString();
 		String fn = FileDownloadUtils.downloadHttpOrOssFile(modelPath, workDir);
 		String localModelPath = workDir + File.separator + fn;
 		System.out.println("localModelPath: " + localModelPath);
@@ -118,7 +118,7 @@ public class BaseTFSavedModelPredictRowMapperTest {
 		Params params = new Params();
 		params.set(HasModelPath.MODEL_PATH, localModelPath);
 		params.set(HasSelectedCols.SELECTED_COLS, new String[] {"image"});
-		params.set(HasOutputSchemaStr.OUTPUT_SCHEMA_STR, "classes LONG, probabilities TENSOR_TYPES_FLOAT_TENSOR");
+		params.set(HasOutputSchemaStr.OUTPUT_SCHEMA_STR, "classes LONG, probabilities FLOAT_TENSOR");
 		BaseTFSavedModelPredictRowMapper baseTFSavedModelPredictRowMapper = new BaseTFSavedModelPredictRowMapper(
 			data.getSchema(), params);
 		baseTFSavedModelPredictRowMapper.open();

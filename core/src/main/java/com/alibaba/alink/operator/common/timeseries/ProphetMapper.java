@@ -11,7 +11,11 @@ import com.alibaba.alink.common.pyrunner.PyMIMOCalcHandle;
 import com.alibaba.alink.common.pyrunner.PyMIMOCalcRunner;
 import com.alibaba.alink.common.utils.CloseableThreadLocal;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.params.dl.HasPythonEnv;
 import com.alibaba.alink.params.timeseries.ProphetParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,10 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_CMD_KEY;
 import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_TURN_ON_LOGGING_KEY;
+import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_VIRTUAL_ENV_KEY;
 
 public class ProphetMapper extends TimeSeriesSingleMapper {
+
+	private static final Logger LOG = LoggerFactory.getLogger(ProphetMapper.class);
 
 	private transient CloseableThreadLocal <PyMIMOCalcRunner <PyMIMOCalcHandle>> runner;
 	private int predictNum;
@@ -41,6 +47,9 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 	private PyMIMOCalcRunner <PyMIMOCalcHandle> createPythonRunner() {
 		Map <String, String> config = new HashMap <>();
 		config.put(PY_TURN_ON_LOGGING_KEY, String.valueOf(AlinkGlobalConfiguration.isPrintProcessInfo()));
+		if (params.contains(HasPythonEnv.PYTHON_ENV)) {
+			config.put(PY_VIRTUAL_ENV_KEY, params.get(HasPythonEnv.PYTHON_ENV));
+		}
 
 		PyMIMOCalcRunner <PyMIMOCalcHandle> runner =
 			new PyMIMOCalcRunner <>("algo.prophet.PyProphetCalc2", config);
@@ -61,7 +70,9 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 	protected Tuple2 <double[], String> predictSingleVar(Timestamp[] historyTimes,
 														 double[] historyVals,
 														 int predictNum) {
+		LOG.info("Entering predictSingleVar");
 		if (historyVals.length <= 2) {
+			LOG.info("historyVals.length <= 2");
 			return Tuple2.of(null, null);
 		}
 
@@ -78,7 +89,7 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 		}
 
 		Tuple3 <String, String, double[]> tuple3 = warmStartProphet(this.runner, conf, inputs, null);
-
+		LOG.info("Leaving predictSingleVar");
 		return Tuple2.of(tuple3.f2, tuple3.f1);
 	}
 
@@ -97,20 +108,25 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 		CloseableThreadLocal <PyMIMOCalcRunner <PyMIMOCalcHandle>> runner,
 		Map <String, String> conf,
 		List <Row> inputs, String initModel) {
+		LOG.info("Entering warmStartProphet");
 
 		List <Row> outputs;
 		if (initModel != null) {
+			LOG.info("initModel != null");
 			outputs = runner.get().calc(conf, inputs, null);
+			LOG.info("after call calc");
 		} else {
+			LOG.info("initModel == null");
 			List <Row> modelRows = new ArrayList <>();
 			modelRows.add(Row.of(initModel));
 			outputs = runner.get().calc(conf, inputs, modelRows);
+			LOG.info("after call calc");
 		}
 
 		String model = (String) outputs.get(0).getField(0);
 		String detail = (String) outputs.get(0).getField(1);
 		double[] predictVals = JsonConverter.fromJson((String) outputs.get(0).getField(2), double[].class);
-
+		LOG.info("Leaving warmStartProphet");
 		return Tuple3.of(model, detail, predictVals);
 	}
 

@@ -9,7 +9,10 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.dataproc.SortUtils;
+import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
@@ -63,33 +66,39 @@ public class ImputerTest extends AlinkTestBase {
 		ImputerModel model = fillMissingValue.fit(batchData);
 		BatchOperator res = model.transform(batchData);
 
-		List rows = res.getDataSet().collect();
-		HashMap <String, Tuple3 <Long, Integer, Double>> map = new HashMap <String, Tuple3 <Long, Integer, Double>>();
-		map.put((String) ((Row) rows.get(0)).getField(0), Tuple3.of(
-			(Long) ((Row) rows.get(0)).getField(2),
-			(Integer) ((Row) rows.get(0)).getField(3),
-			(Double) ((Row) rows.get(0)).getField(4)));
-		map.put((String) ((Row) rows.get(1)).getField(0), Tuple3.of(
-			(Long) ((Row) rows.get(1)).getField(2),
-			(Integer) ((Row) rows.get(1)).getField(3),
-			(Double) ((Row) rows.get(1)).getField(4)));
-		map.put((String) ((Row) rows.get(2)).getField(0), Tuple3.of(
-			(Long) ((Row) rows.get(2)).getField(2),
-			(Integer) ((Row) rows.get(2)).getField(3),
-			(Double) ((Row) rows.get(2)).getField(4)));
-		map.put((String) ((Row) rows.get(3)).getField(0), Tuple3.of(
-			(Long) ((Row) rows.get(3)).getField(2),
-			(Integer) ((Row) rows.get(3)).getField(3),
-			(Double) ((Row) rows.get(3)).getField(4)));
-		assertEquals(map.get("0"), new Tuple3 <>(1L, 1, 2.0));
-		assertEquals(map.get("1"), new Tuple3 <>(2L, 2, -3.0));
-		assertEquals(map.get("2"), new Tuple3 <>(1L, 1, 2.0));
-		assertEquals(map.get("3"), new Tuple3 <>(0L, 0, 1.0));
+		List <Row> rows = res.getDataSet().collect();
+		rows.sort(new RowComparator(0));
+		assertEquals(rows.get(0).getField(2), 1L);
+		assertEquals(rows.get(1).getField(2), 2L);
+		assertEquals(rows.get(2).getField(2), 1L);
+		assertEquals(rows.get(3).getField(2), 0L);
+		assertEquals(rows.get(0).getField(3), 1);
+		assertEquals(rows.get(1).getField(3), 2);
+		assertEquals(rows.get(2).getField(3), 1);
+		assertEquals(rows.get(3).getField(3), 0);
+		assertEquals((Double) rows.get(0).getField(4), 2.0, 0.001);
+		assertEquals((Double) rows.get(1).getField(4), -3.0, 0.001);
+		assertEquals((Double) rows.get(2).getField(4), 2.0, 0.001);
+		assertEquals((Double) rows.get(3).getField(4), 1.0, 0.001);
+
 
 		StreamOperator streamData = (StreamOperator) getData(false);
-		model.transform(streamData).print();
+		CollectSinkStreamOp collectSinkStreamOp = new CollectSinkStreamOp().linkFrom(model.transform(streamData));
 		StreamOperator.execute();
-
+		List <Row> result = collectSinkStreamOp.getAndRemoveValues();
+		result.sort(new RowComparator(0));
+		assertEquals(result.get(0).getField(2), 1L);
+		assertEquals(result.get(1).getField(2), 2L);
+		assertEquals(result.get(2).getField(2), 1L);
+		assertEquals(result.get(3).getField(2), 0L);
+		assertEquals(result.get(0).getField(3), 1);
+		assertEquals(result.get(1).getField(3), 2);
+		assertEquals(result.get(2).getField(3), 1);
+		assertEquals(result.get(3).getField(3), 0);
+		assertEquals((Double) result.get(0).getField(4), 2.0, 0.001);
+		assertEquals((Double) result.get(1).getField(4), -3.0, 0.001);
+		assertEquals((Double) result.get(2).getField(4), 2.0, 0.001);
+		assertEquals((Double) result.get(3).getField(4), 1.0, 0.001);
 	}
 
 }

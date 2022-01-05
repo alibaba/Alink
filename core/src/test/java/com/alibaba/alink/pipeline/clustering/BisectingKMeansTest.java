@@ -1,27 +1,40 @@
 package com.alibaba.alink.pipeline.clustering;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.BisectingKMeansPredictBatchOp;
 import com.alibaba.alink.operator.batch.clustering.BisectingKMeansTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.clustering.BisectingKMeansPredictStreamOp;
+import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
+import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;
 import com.alibaba.alink.testutil.AlinkTestBase;
-import org.junit.Assert;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Tests the {@link BisectingKMeans}.
+ */
 public class BisectingKMeansTest extends AlinkTestBase {
-	@Test
-	public void test() throws Exception {
+	StreamOperator<?> inputStreamOp;
+	BatchOperator<?> inputBatchOp;
+	long[] expectedPrediction;
+
+	@Before
+	public void before() {
 		Row[] rows = new Row[] {
 			Row.of(0, "0  0  0"),
 			Row.of(1, "0.1  0.1  0.1"),
@@ -30,53 +43,57 @@ public class BisectingKMeansTest extends AlinkTestBase {
 			Row.of(4, "9.1  9.1  9.1"),
 			Row.of(5, "9.2  9.2  9.2"),
 		};
+		inputBatchOp = new TableSourceBatchOp(
+			MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"id", "vector"})
+		);
+		inputStreamOp = new TableSourceStreamOp(
+			MLEnvironmentFactory.getDefault().createStreamTable(rows, new String[] {"id", "vector"})
+		);
+		expectedPrediction = new long[] {0, 0, 0, 1, 1, 1};
+	}
 
-		Table data = MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"id", "vector"});
-		Table dataStream = MLEnvironmentFactory.getDefault().createStreamTable(rows, new String[] {"id", "vector"});
-
+	@Test
+	public void test() throws Exception {
 		BisectingKMeans bisectingKMeans = new BisectingKMeans()
 			.setVectorCol("vector")
 			.setPredictionCol("pred")
-			.setK(3)
-			.setMaxIter(10)
-			.enableLazyPrintModelInfo();
+			.setK(2)
+			.setMaxIter(10);
+		PipelineModel model = new Pipeline().add(bisectingKMeans).fit(inputBatchOp);
+		BatchOperator <?> batchPredOp = model.transform(inputBatchOp)
+			.select(new String[] {"id", "pred"});
+		verifyPredResult(batchPredOp.collect());
+		CollectSinkStreamOp streamPredOp = model.transform(inputStreamOp)
+			.select(new String[] {"id", "pred"})
+			.link(new CollectSinkStreamOp());
+		StreamOperator.execute();
+		verifyPredResult(streamPredOp.getAndRemoveValues());
+	}
 
-		PipelineModel model = new Pipeline().add(bisectingKMeans).fit(data);
-
-		BatchOperator <?> res = model.transform(new TableSourceBatchOp(data));
-
-		List <Row> list = res.select(new String[] {"id", "pred"}).collect();
-		Long[] actual = new Long[] {0L, 0L, 0L, 1L, 2L, 2L};
-		for (int i = 0; i < actual.length; i++) {
-			Assert.assertEquals(list.get(i).getField(1), actual[(int) list.get(i).getField(0)]);
-		}
-
-		Table resStream = model.transform(dataStream);
-
-		DataStreamConversionUtil.fromTable(MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID, resStream).print();
-
-		MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute();
+	private void verifyPredResult(List <Row> res) {
+		res.sort(Comparator.comparingInt(o -> (Integer) o.getField(0)));
+		long[] pred = res.stream().map(x -> (Long) x.getField(1)).mapToLong(Long::longValue).toArray();
+		assertArrayEquals(expectedPrediction, pred);
 	}
 
 	@Test
 	public void testInitializer() {
 		BisectingKMeansModel model = new BisectingKMeansModel();
-		Assert.assertEquals(model.getParams().size(), 0);
+		assertEquals(model.getParams().size(), 0);
 		BisectingKMeans bisectingKMeans = new BisectingKMeans(new Params());
-		Assert.assertEquals(bisectingKMeans.getParams().size(), 0);
+		assertEquals(bisectingKMeans.getParams().size(), 0);
 
 		BisectingKMeansTrainBatchOp op = new BisectingKMeansTrainBatchOp();
-		Assert.assertEquals(op.getParams().size(), 0);
+		assertEquals(op.getParams().size(), 0);
 
 		BisectingKMeansPredictBatchOp predict = new BisectingKMeansPredictBatchOp(new Params());
-		Assert.assertEquals(predict.getParams().size(), 0);
+		assertEquals(predict.getParams().size(), 0);
 		predict = new BisectingKMeansPredictBatchOp();
-		Assert.assertEquals(predict.getParams().size(), 0);
+		assertEquals(predict.getParams().size(), 0);
 
 		BisectingKMeansPredictStreamOp predictStream = new BisectingKMeansPredictStreamOp(op, new Params());
-		Assert.assertEquals(predictStream.getParams().size(), 0);
+		assertEquals(predictStream.getParams().size(), 0);
 		predictStream = new BisectingKMeansPredictStreamOp(predict);
-		Assert.assertEquals(predictStream.getParams().size(), 0);
-
+		assertEquals(predictStream.getParams().size(), 0);
 	}
 }

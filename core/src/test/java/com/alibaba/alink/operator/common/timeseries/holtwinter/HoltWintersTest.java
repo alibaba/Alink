@@ -2,10 +2,11 @@ package com.alibaba.alink.operator.common.timeseries.holtwinter;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.params.timeseries.holtwinters.HasSeasonalType.SeasonalType;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class HoltWintersTest {
+public class HoltWintersTest extends AlinkTestBase {
 	@Test
 	public void holtWintersTest() {
 

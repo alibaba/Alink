@@ -1,6 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
-import com.alibaba.alink.common.linalg.VectorUtil.VectorType;
+import com.alibaba.alink.common.linalg.VectorUtil.VectorSerialType;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -553,7 +553,7 @@ public class SparseVector extends Vector {
 	public byte[] toBytes() {
 		byte[] bytes = new byte[indices.length * (12) + 4 + 1];
 		ByteBuffer wrapper = ByteBuffer.wrap(bytes);
-		wrapper.put(VectorType.SPARSE_VECTOR);
+		wrapper.put(VectorSerialType.SPARSE_VECTOR);
 		wrapper.putInt(n);
 		for (int i = 0; i < indices.length; i ++) {
 			wrapper.putInt(indices[i]);

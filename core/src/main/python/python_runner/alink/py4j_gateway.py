@@ -115,7 +115,7 @@ def main():
             daemonize_connections=False,
             propagate_java_exceptions=True),
         python_server_entry_point=app)
-    print('Started Listening On {}'.format(z.py_port))
+    print('Started Listening On {}'.format(gateway.get_callback_server().get_listening_port()))
     sys.stdout.flush()
     while app.check():
         time.sleep(1.0)

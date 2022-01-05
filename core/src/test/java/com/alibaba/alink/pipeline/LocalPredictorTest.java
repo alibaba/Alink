@@ -8,7 +8,6 @@ import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.pipeline.classification.LogisticRegression;
 import com.alibaba.alink.pipeline.classification.OneVsRest;
-import com.alibaba.alink.pipeline.classification.OneVsRestModel;
 import com.alibaba.alink.pipeline.clustering.Lda;
 import com.alibaba.alink.pipeline.dataproc.vector.VectorAssembler;
 import com.alibaba.alink.pipeline.feature.Binarizer;
@@ -112,7 +111,7 @@ public class LocalPredictorTest extends LocalPredictorMultThreadTestBase {
 		return new CsvSourceBatchOp()
 			.setSchemaStr(
 				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv");
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv");
 	}
 
 	@Test

@@ -2,13 +2,18 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 
-public class TensorToVectorTest {
+public class TensorToVectorTest extends AlinkTestBase {
 
 	@Test
 	public void testTensorToVector() throws Exception {
@@ -19,6 +24,11 @@ public class TensorToVectorTest {
 		new TensorToVector()
 			.setSelectedCol("tensor")
 			.transform(memSourceBatchOp)
-			.print();
+			.lazyCollect(rows -> Assert.assertEquals(
+				Row.of(VectorUtil.getVector("0.0 0.1 1.0 1.1 2.0 2.1")),
+				rows.get(0)
+			));
+
+		BatchOperator.execute();
 	}
 }

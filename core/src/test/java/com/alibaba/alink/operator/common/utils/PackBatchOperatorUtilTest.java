@@ -13,6 +13,7 @@ import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -56,21 +57,30 @@ public class PackBatchOperatorUtilTest extends AlinkTestBase {
 	public void testUnpackRows(List <Row> rows, TableSchema modelSchema) {
 		List <Row> row0 = PackBatchOperatorUtil.unpackRows(rows, 0);
 		assertEquals(2, row0.size());
-
-		assertEquals("+I[10, 11, 12, 13.0]", row0.get(0).toString());
-		assertEquals("+I[20, 21, 22, 23.0]", row0.get(1).toString());
+		assertListRowEqual(
+			Arrays.asList(
+				Row.of(10, 11, 12, 13.0),
+				Row.of(20, 21, 22, 23.0)
+			), row0, 0
+		);
 
 		List <Row> row1 = PackBatchOperatorUtil.unpackRows(rows, 1);
 		assertEquals(2, row1.size());
-
-		assertEquals("+I[30.0, 31.0, 32, 33]", row1.get(0).toString());
-		assertEquals("+I[40.0, 41.0, 42, 43]", row1.get(1).toString());
+		assertListRowEqual(
+			Arrays.asList(
+				Row.of(30.0, 31.0, 32, 33),
+				Row.of(40.0, 41.0, 42, 43)
+			), row1, 0
+		);
 
 		List <Row> row2 = PackBatchOperatorUtil.unpackRows(rows, 2);
 		assertEquals(2, row2.size());
-
-		assertEquals("+I[50, 51, 52, 53.0]", row2.get(0).toString());
-		assertEquals("+I[60, 61, 63, 63.0]", row2.get(1).toString());
+		assertListRowEqual(
+			Arrays.asList(
+				Row.of(50, 51, 52, 53.0),
+				Row.of(60, 61, 63, 63.0)
+			), row2, 0
+		);
 	}
 
 	public void testUnpackSchema(List <Row> rows, TableSchema modelSchema) {

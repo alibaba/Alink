@@ -7,9 +7,7 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 public interface HasPythonEnv<T> extends WithParams <T> {
 	/**
 	 * @cn-name Python 环境路径
-	 * @cn Python 环境路径，一般情况下不需要填写。
-	 * 如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；
-	 * 如果是目录，那么只能使用本地路径，即 file://。
+	 * @cn Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。
 	 */
 	ParamInfo <String> PYTHON_ENV = ParamInfoFactory
 		.createParamInfo("pythonEnv", String.class)

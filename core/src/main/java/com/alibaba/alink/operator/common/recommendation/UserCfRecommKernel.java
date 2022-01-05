@@ -4,11 +4,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
-import com.alibaba.alink.params.recommendation.BaseRateRecommParams;
 import com.alibaba.alink.params.recommendation.BaseSimilarItemsRecommParams;
-import com.alibaba.alink.params.recommendation.BaseSimilarUsersRecommParams;
 import com.alibaba.alink.params.recommendation.BaseUsersPerItemRecommParams;
 
 import java.util.List;
@@ -27,15 +25,18 @@ public class UserCfRecommKernel extends RecommKernel implements Cloneable {
 		switch (recommType) {
 			case SIMILAR_USERS: {
 				this.topN = this.params.get(BaseSimilarItemsRecommParams.K);
+				this.recommObjType = modelSchema.getFieldTypes()[1];
 				break;
 			}
 			case USERS_PER_ITEM: {
 				this.topN = this.params.get(BaseUsersPerItemRecommParams.K);
 				this.excludeKnown = this.params.get(BaseUsersPerItemRecommParams.EXCLUDE_KNOWN);
+				this.recommObjType = modelSchema.getFieldTypes()[1];
 				break;
 			}
 			case ITEMS_PER_USER: {
 				this.topN = this.params.get(BaseItemsPerUserRecommParams.K);
+				this.recommObjType = modelSchema.getFieldTypes()[2];
 				break;
 			}
 			case RATE: {
@@ -77,22 +78,23 @@ public class UserCfRecommKernel extends RecommKernel implements Cloneable {
 	}
 
 	@Override
-	public String recommendItemsPerUser(Object userId) {
-		return ItemCfRecommKernel.recommendUsers(userId, model.get(), topN, excludeKnown, itemColName);
+	public MTable recommendItemsPerUser(Object userId) {
+		return ItemCfRecommKernel.recommendUsers(userId, model.get(), topN, excludeKnown, itemColName, recommObjType);
 	}
 
 	@Override
-	public String recommendUsersPerItem(Object itemId) {
-		return ItemCfRecommKernel.recommendItems(itemId, model.get(), topN, excludeKnown, scores.get(), userColName);
+	public MTable recommendUsersPerItem(Object itemId) {
+		return ItemCfRecommKernel.recommendItems(itemId, model.get(), topN, excludeKnown, scores.get(), userColName,
+			recommObjType);
 	}
 
 	@Override
-	public String recommendSimilarItems(Object itemId) {
+	public MTable recommendSimilarItems(Object itemId) {
 		throw new RuntimeException("ItemCf not support recommendSimilarItems");
 	}
 
 	@Override
-	public String recommendSimilarUsers(Object userId) {
-		return ItemCfRecommKernel.findSimilarItems(userId, model.get(), topN, userColName);
+	public MTable recommendSimilarUsers(Object userId) {
+		return ItemCfRecommKernel.findSimilarItems(userId, model.get(), topN, userColName, recommObjType);
 	}
 }

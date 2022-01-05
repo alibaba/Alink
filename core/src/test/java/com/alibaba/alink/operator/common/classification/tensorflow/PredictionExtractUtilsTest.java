@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.classification.tensorflow;
 
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -8,7 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PredictionExtractUtilsTest {
+public class PredictionExtractUtilsTest extends AlinkTestBase {
 	@Test
 	public void testSingleLogits() {
 		Map <Object, Double> predDetail = new HashMap <>();

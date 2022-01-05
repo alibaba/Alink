@@ -18,9 +18,11 @@
 
 package com.alibaba.alink.common.dl;
 
+import org.apache.flink.util.FileUtils;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
 import com.alibaba.flink.ml.cluster.node.MLContext;
@@ -106,6 +108,9 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
         mlContext.putEnvProperty("PATH", pathEnv);
         // To avoid encoding problems in Python process
         mlContext.putEnvProperty("PYTHONIOENCODING", "utf8");
+		if (System.getenv().containsKey("CUDA_VISIBLE_DEVICES")) {
+			mlContext.putEnvProperty("CUDA_VISIBLE_DEVICES", System.getenv("CUDA_VISIBLE_DEVICES"));
+		}
         buildProcessBuilder(builder);
         LOG.info("{} Python cmd: {}", mlContext.getIdentity(), Joiner.on(" ").join(args));
         runProcess(builder);
@@ -133,27 +138,35 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
             !Files.exists(Paths.get(virtualEnv, "bin", "conda-unpack"))) {
             return;
         }
-        InputStream is;
-        String[] args;
-        if (OsType.WINDOWS.equals(OsUtils.getSystemType())) {
-            is = this.getClass().getResourceAsStream(WIN_CALL_CONDA_UNPACK_SCRIPT);
-            Preconditions.checkNotNull(is, "Cannot get resource " + WIN_CALL_CONDA_UNPACK_SCRIPT);
-            Path filePath = Files.createTempFile("call_conda_pack", ".bat");
-            Files.copy(is, filePath, StandardCopyOption.REPLACE_EXISTING);
-            args = new String[]{
-                    "cmd.exe", filePath.toAbsolutePath().toString(), virtualEnv
-            };
-        } else {
-            is = this.getClass().getResourceAsStream(CALL_CONDA_UNPACK_SCRIPT);
-            Preconditions.checkNotNull(is, "Cannot get resource " + CALL_CONDA_UNPACK_SCRIPT);
-            Path filePath = Files.createTempFile("call_conda_pack", ".sh");
-            Files.copy(is, filePath, StandardCopyOption.REPLACE_EXISTING);
-            args = new String[]{
-                    "/bin/bash", filePath.toAbsolutePath().toString(), virtualEnv
-            };
-        }
 
-        LOG.info("{} Python cmd: {}", mlContext.getIdentity(), Joiner.on(" ").join(args));
+		String scriptResource;
+		String fileSuffix;
+		String cmd;
+		if (OsType.WINDOWS.equals(OsUtils.getSystemType())) {
+			scriptResource = WIN_CALL_CONDA_UNPACK_SCRIPT;
+			fileSuffix = ".bat";
+			cmd = "cmd.exe";
+		} else {
+			scriptResource = CALL_CONDA_UNPACK_SCRIPT;
+			fileSuffix = ".sh";
+			cmd = "/bin/bash";
+		}
+
+		Path filePath = PythonFileUtils.createTempFile("call_conda_pack", fileSuffix);
+		try (final InputStream is = getClass().getResourceAsStream(scriptResource)) {
+			Preconditions.checkNotNull(is, "Cannot get resource " + scriptResource);
+			Files.copy(is, filePath, StandardCopyOption.REPLACE_EXISTING);
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				try {
+					FileUtils.deleteFileOrDirectory(filePath.toFile());
+				} catch (IOException e) {
+					LOG.info("Failed to delete {}.", filePath.toFile().getAbsolutePath(), e);
+				}
+			}));
+		}
+		String[] args = new String[] {cmd, filePath.toAbsolutePath().toString(), virtualEnv};
+
+		LOG.info("{} Python cmd: {}", mlContext.getIdentity(), Joiner.on(" ").join(args));
         if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
             System.out.println("Python cmd: " + Joiner.on(" ").join(args));
         }
@@ -188,7 +201,7 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
             new ShellExec.ProcessLogger(child.getErrorStream(), d -> {
                 LOG.info("Python stderr: {}", d);
                 if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-                    System.err.println(d);
+                    System.out.println(d);
                 }
             }));
         inLogger.setName(mlContext.getIdentity() + "-in-logger");

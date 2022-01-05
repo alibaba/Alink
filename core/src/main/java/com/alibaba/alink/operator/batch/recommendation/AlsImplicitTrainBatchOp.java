@@ -32,8 +32,6 @@ public final class AlsImplicitTrainBatchOp
 	implements AlsImplicitTrainParams <AlsImplicitTrainBatchOp> {
 
 	private static final long serialVersionUID = 5432932329983325493L;
-	private BatchOperator userFactors;
-	private BatchOperator itemFactors;
 
 	public AlsImplicitTrainBatchOp() {
 		this(new Params());
@@ -62,25 +60,25 @@ public final class AlsImplicitTrainBatchOp
 		BatchOperator <?> in;
 		if (inputs.length == 1) {
 			in = inputs[0];
-			Tuple2 <BatchOperator, BatchOperator> factors = HugeMfAlsImpl.factorize(in, getParams(), true);
-			BatchOperator[] outputs = new BatchOperator[] {factors.f0, factors.f1,
+			Tuple2 <BatchOperator <?>, BatchOperator <?>> factors = HugeMfAlsImpl.factorize(in, getParams(), true);
+			BatchOperator <?>[] outputs = new BatchOperator <?>[] {factors.f0, factors.f1,
 				in.select(new String[] {userColName, itemColName})};
-			BatchOperator model = PackBatchOperatorUtil.packBatchOps(outputs);
+			BatchOperator <?> model = PackBatchOperatorUtil.packBatchOps(outputs);
 			this.setOutputTable(model.getOutputTable());
 			this.setSideOutputTables(new Table[] {factors.f0.getOutputTable(), factors.f1.getOutputTable()});
 		} else if (inputs.length == 2) {
 			in = inputs[1];
 			AlsModelInfoBatchOp modelInfo = new AlsModelInfoBatchOp(getParams()).linkFrom(inputs[0]);
-			BatchOperator initUserEmbedding
+			BatchOperator <?> initUserEmbedding
 				= modelInfo.getUserEmbedding().select(USER_NAME + " as " + userColName + ", factors");
-			BatchOperator initItemEmbedding
+			BatchOperator <?> initItemEmbedding
 				= modelInfo.getItemEmbedding().select(ITEM_NAME + " as " + itemColName + ", factors");
-			Tuple4 <BatchOperator, BatchOperator, BatchOperator, BatchOperator>
+			Tuple4 <BatchOperator <?>, BatchOperator <?>, BatchOperator <?>, BatchOperator <?>>
 				factors = HugeMfAlsImpl.factorize(initUserEmbedding, initItemEmbedding, in, getParams(), true);
-			BatchOperator[] outputs = new BatchOperator[] {factors.f0, factors.f1,
+			BatchOperator <?>[] outputs = new BatchOperator <?>[] {factors.f0, factors.f1,
 				in.select(new String[] {userColName, itemColName})};
 
-			BatchOperator model = PackBatchOperatorUtil.packBatchOps(outputs);
+			BatchOperator <?> model = PackBatchOperatorUtil.packBatchOps(outputs);
 			this.setOutputTable(model.getOutputTable());
 			this.setSideOutputTables(new Table[] {factors.f0.getOutputTable(), factors.f1.getOutputTable(),
 				factors.f2.getOutputTable(), factors.f3.getOutputTable()});

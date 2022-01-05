@@ -44,7 +44,7 @@ public class PCATest extends AlinkTestBase {
 		pca.enableLazyPrintModelInfo();
 
 		PCAModel model = pca.fit(source);
-		BatchOperator predict = model.transform(source);
+		BatchOperator<?> predict = model.transform(source);
 
 		VectorSummarizerBatchOp summarizerOp = new VectorSummarizerBatchOp()
 			.setSelectedCol("pred");
@@ -85,7 +85,7 @@ public class PCATest extends AlinkTestBase {
 		pca.enableLazyPrintModelInfo();
 
 		PCAModel model = pca.fit(source);
-		BatchOperator predict = model.transform(source);
+		BatchOperator<?> predict = model.transform(source);
 
 		VectorSummarizerBatchOp summarizerOp = new VectorSummarizerBatchOp()
 			.setSelectedCol("pred");
@@ -124,7 +124,7 @@ public class PCATest extends AlinkTestBase {
 		pca.enableLazyPrintModelInfo();
 
 		PCAModel model = pca.fit(source);
-		BatchOperator predict = model.transform(source);
+		BatchOperator<?> predict = model.transform(source);
 
 		VectorSummarizerBatchOp summarizerOp = new VectorSummarizerBatchOp()
 			.setSelectedCol("pred");

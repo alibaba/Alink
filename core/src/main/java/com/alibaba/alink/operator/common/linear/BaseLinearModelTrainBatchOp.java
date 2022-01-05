@@ -166,7 +166,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 				@Override
 				public void reduce(Iterable <Row> values, Collector <DenseVector> out) throws Exception {
 					int featSize = (int) getRuntimeContext().getBroadcastVariable("featSize").get(0);
-					DenseVector[] meanVar = (DenseVector[]) getRuntimeContext().getBroadcastVariable("meanVar").get(0);
+					DenseVector[] meanVar =
+						(DenseVector[]) getRuntimeContext().getBroadcastVariable("meanVar").get(0);
 					List <Row> modelRows = new ArrayList <>(0);
 					for (Row row : values) {
 						modelRows.add(row);
@@ -175,7 +176,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 
 					if (!(model.hasInterceptItem == params.get(HasWithIntercept.WITH_INTERCEPT))) {
 						throw new RuntimeException("initial linear model not compatible with parameter setting."
-						+ "InterceptItem parameter setting error.");
+							+ "InterceptItem parameter setting error.");
 					}
 					if (!(model.linearModelType == localLinearModelType)) {
 						throw new RuntimeException("initial linear model not compatible with parameter setting."
@@ -951,7 +952,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 								if (standardization) {
 									if (hasIntercept) {
 										for (int i = 0; i < aVector.size(); ++i) {
-											aVector.set(i, (aVector.get(i) - meanVar[0].get(i)) / meanVar[1].get(i));
+											aVector.set(i,
+												(aVector.get(i) - meanVar[0].get(i)) / meanVar[1].get(i));
 										}
 									} else {
 										for (int i = 0; i < aVector.size(); ++i) {
@@ -1128,6 +1130,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 		private boolean hasSparseVector = false;
 		private boolean hasDenseVector = false;
 		private boolean hasNull = false;
+		private boolean hasLabelNull = false;
 		private final Map <Integer, double[]> meanVarMap = new HashMap <>();
 
 		public Transform(boolean isRegProc, int weightIdx, int vecIdx,
@@ -1147,7 +1150,9 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 			if (hasNull) {
 				throw new RuntimeException("the input data has null values, please check it!");
 			}
-
+			if (hasLabelNull) {
+				throw new RuntimeException("label col has null values, please check it!");
+			}
 		}
 
 		@Override
@@ -1170,6 +1175,10 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 				cnt += 1.0;
 				Double weight = weightIdx != -1 ? ((Number) row.getField(weightIdx)).doubleValue() : 1.0;
 				Object val = row.getField(labelIdx);
+
+				if (null == val) {
+					this.hasLabelNull = true;
+				}
 
 				if (!this.isRegProc) {
 					labelValues.add(val);

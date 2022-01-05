@@ -3,10 +3,10 @@ package com.alibaba.alink.operator.batch.recommendation;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.evaluation.EvalRegressionBatchOp;
 import com.alibaba.alink.operator.common.evaluation.RegressionMetrics;
-import com.alibaba.alink.operator.common.recommendation.ItemCfRecommKernelTest;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -95,7 +95,13 @@ public class UserCfTrainBatchOpTest extends AlinkTestBase {
 		score.put("item6", new Double[] {2.49, 2.35, 1.76});
 
 		for (Row row : recommendUsers) {
-			Double[] actual = ItemCfRecommKernelTest.extractScore((String) row.getField(3), "score");
+			List<Row> rows = ((MTable) row.getField(3)).getRows();
+
+			Double[] actual = new Double[rows.size()];
+			for (int i = 0; i < rows.size(); ++i) {
+				actual[i] = (double) rows.get(i).getField(1);
+			}
+
 			Double[] expect = score.get(row.getField(1));
 			for (int i = 0; i < expect.length; i++) {
 				Assert.assertEquals(actual[i], expect[i], 0.01);
@@ -111,7 +117,11 @@ public class UserCfTrainBatchOpTest extends AlinkTestBase {
 		similarity.put(6L, new Double[] {0.63, 0.52, 0.40});
 
 		for (Row row : similarUsers) {
-			Double[] actual = ItemCfRecommKernelTest.extractScore((String) row.getField(3), "similarities");
+			List<Row> rows = ((MTable) row.getField(3)).getRows();
+			Double[] actual = new Double[rows.size()];
+			for (int i = 0; i < rows.size(); ++i) {
+				actual[i] = (double) rows.get(i).getField(1);
+			}
 			Double[] expect = similarity.get(row.getField(0));
 			for (int i = 0; i < expect.length; i++) {
 				Assert.assertEquals(actual[i], expect[i], 0.01);

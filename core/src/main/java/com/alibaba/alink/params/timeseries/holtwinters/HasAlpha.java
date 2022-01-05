@@ -13,6 +13,10 @@ public interface HasAlpha<T> extends WithParams <T> {
 		.setLeftInclusive(true)
 		.setRightInclusive(true);
 
+	/**
+	 * @cn-name alpha
+	 * @cn alpha
+	 */
 	ParamInfo <Double> ALPHA = ParamInfoFactory
 		.createParamInfo("alpha", Double.class)
 		.setDescription("The alpha.")

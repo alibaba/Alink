@@ -17,7 +17,7 @@ public class TFTableModelClassificationModelData extends TFTableModelRegressionM
 	public TFTableModelClassificationModelData() {
 	}
 
-	public TFTableModelClassificationModelData(Params params, String[] tfInputCols, List <Row> tfModelRows,
+	public TFTableModelClassificationModelData(Params params, String[] tfInputCols, Iterable <Row> tfModelRows,
 											   String tfOutputSignatureDef, TypeInformation <?> tfOutputSignatureType,
 											   String preprocessPipelineModelSchemaStr,
 											   List <Row> preprocessPipelineModelRows,

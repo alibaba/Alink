@@ -22,6 +22,7 @@ import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.common.tree.FeatureMeta;
 import com.alibaba.alink.operator.common.tree.Node;
@@ -39,6 +40,7 @@ import com.alibaba.alink.params.classification.GbdtTrainParams;
 import com.alibaba.alink.params.regression.LambdaMartNdcgParams;
 import com.alibaba.alink.params.shared.colname.HasCategoricalCols;
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
+import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,6 +149,24 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 		}
 
 		String[] trainColNames = trainColsWithGroup();
+
+		//check label if has null value or not.
+		final String labelColName = this.getParams().get(HasLabelCol.LABEL_COL);
+		final int labelColIdx = TableUtil.findColIndex(in.getSchema(), labelColName);
+
+		in = new TableSourceBatchOp(DataSetConversionUtil.toTable(in.getMLEnvironmentId(),
+			in.getDataSet()
+				.map(new MapFunction <Row, Row>() {
+					@Override
+					public Row map(Row row) throws Exception {
+						if (null == row.getField(labelColIdx)) {
+							throw new RuntimeException("label col has null values.");
+						}
+						return row;
+					}
+				}),
+			in.getSchema()))
+			.setMLEnvironmentId(in.getMLEnvironmentId());
 
 		in = Preprocessing.select(in, trainColNames);
 

@@ -9,6 +9,9 @@ import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.utils.MTableSerializeStreamOp;
+import com.alibaba.alink.operator.stream.utils.TensorSerializeStreamOp;
+import com.alibaba.alink.operator.stream.utils.VectorSerializeStreamOp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,12 @@ public final class CollectSinkStreamOp extends BaseSinkStreamOp <CollectSinkStre
 	public CollectSinkStreamOp(Params parameter) {
 		super(AnnotationUtils.annotatedName(CollectSinkStreamOp.class), parameter);
 		sessionId = CollectSinkObjKeeper.getNewSessionId();
+	}
+
+	@Override
+	public CollectSinkStreamOp linkFrom(StreamOperator <?>... inputs) {
+		StreamOperator <?> in = checkAndGetFirst(inputs);
+		return sinkFrom(in);
 	}
 
 	@Override

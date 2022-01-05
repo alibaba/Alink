@@ -6,44 +6,31 @@ import com.alibaba.alink.common.sql.builtin.agg.RankData;
 import com.alibaba.alink.common.sql.builtin.agg.RankUdaf;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RankTest extends AggFunctionTestBase <Long, Long, RankData> {
 	@Override
 	protected List <List <Long>> getInputValueSets() {
 		List <List <Long>> res = new ArrayList <>();
-		ArrayList <Long> data1 = new ArrayList <>();
-		data1.add(1L);
-		res.add((List <Long>) data1.clone());
-		data1.add(1L);
-		res.add((List <Long>) data1.clone());
-		data1.add(3L);
-		res.add((List <Long>) data1.clone());
-		data1.add(3L);
-		res.add((List <Long>) data1.clone());
-		data1.add(5L);
-		res.add((List <Long>) data1.clone());
-		data1.add(5L);
-		res.add((List <Long>) data1.clone());
-		data1.add(7L);
-		res.add((List <Long>) data1.clone());
-		data1.add(7L);
-		res.add((List <Long>) data1.clone());
+
+		List <Long> data = Arrays.asList(1L, 1L, 3L, 3L, 5L, 5L, 7L, 7L);
+
+		res.add(data.subList(0, 1));
+		res.add(data.subList(0, 2));
+		res.add(data.subList(0, 3));
+		res.add(data.subList(0, 4));
+		res.add(data.subList(0, 5));
+		res.add(data.subList(0, 6));
+		res.add(data.subList(0, 7));
+		res.add(data.subList(0, 8));
+
 		return res;
 	}
 
 	@Override
 	protected List <Long> getExpectedResults() {
-		List <Long> res = new ArrayList <>();
-		res.add(1L);
-		res.add(1L);
-		res.add(3L);
-		res.add(3L);
-		res.add(5L);
-		res.add(5L);
-		res.add(7L);
-		res.add(7L);
-		return res;
+		return Arrays.asList(1L, 1L, 3L, 3L, 5L, 5L, 7L, 7L);
 	}
 
 	@Override

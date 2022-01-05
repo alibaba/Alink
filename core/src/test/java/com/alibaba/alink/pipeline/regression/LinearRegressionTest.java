@@ -13,6 +13,8 @@ import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,8 +29,8 @@ public class LinearRegressionTest extends AlinkTestBase {
 
 	@Test
 	public void regressionPipelineTest() throws Exception {
-		BatchOperator<?> vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
-		StreamOperator<?> svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
+		BatchOperator <?> vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
+		StreamOperator <?> svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
 
 		String[] xVars = new String[] {"f0", "f1", "f2"};
 		String yVar = "label";
@@ -58,7 +60,7 @@ public class LinearRegressionTest extends AlinkTestBase {
 		Pipeline pl = new Pipeline().add(linear).add(vlinear).add(svlinear);
 		PipelineModel model = pl.fit(vecdata);
 
-		BatchOperator<?> result = model.transform(vecdata).select(
+		BatchOperator <?> result = model.transform(vecdata).select(
 			new String[] {"label", "linpred", "vlinpred", "svlinpred"});
 
 		List <Row> data = result.collect();
@@ -76,10 +78,10 @@ public class LinearRegressionTest extends AlinkTestBase {
 
 		// below is stream test code
 		CollectSinkStreamOp sop = model.transform(svecdata).select(
-			new String[] {"label", "linpred", "vlinpred", "svlinpred"})
+				new String[] {"label", "linpred", "vlinpred", "svlinpred"})
 			.link(new CollectSinkStreamOp());
 		StreamOperator.execute();
-		List<Row> rows = sop.getAndRemoveValues();
+		List <Row> rows = sop.getAndRemoveValues();
 		for (Row row : rows) {
 			if ((double) row.getField(0) == 16.8000) {
 				Assert.assertEquals((double) row.getField(1), 16.814789059973744, 0.01);
@@ -91,6 +93,45 @@ public class LinearRegressionTest extends AlinkTestBase {
 				Assert.assertEquals((double) row.getField(3), 6.773943529327923, 0.01);
 			}
 		}
+	}
+
+	@Test
+	public void testLabelNull() throws Exception {
+
+		try {
+			Row[] vecrows = new Row[] {
+				Row.of("$3$0:1.0 1:7.0 2:9.0", "1.0 7.0 9.0", 1.0, 7.0, 9.0, 16.8),
+				Row.of("$3$0:1.0 1:3.0 2:3.0", "1.0 3.0 3.0", 2.0, 3.0, 3.0, 6.7),
+				Row.of("$3$0:1.0 1:2.0 2:4.0", "1.0 2.0 4.0", 1.0, 2.0, 4.0, null),
+				Row.of("$3$0:1.0 1:3.0 2:4.0", "1.0 3.0 4.0", 1.0, 3.0, 4.0, 8.0)
+			};
+			String[] veccolNames = new String[] {"svec", "vec", "f0", "f1", "f2", "label"};
+
+			BatchOperator <?> vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
+
+			String[] xVars = new String[] {"f0", "f1", "f2"};
+			String yVar = "label";
+
+			LinearRegression linear = new LinearRegression()
+				.setLabelCol(yVar)
+				.setFeatureCols(xVars)
+				.setMaxIter(20)
+				.setOptimMethod("newton")
+				.setPredictionCol("linpred");
+
+			Pipeline pl = new Pipeline().add(linear);
+			PipelineModel model = pl.fit(vecdata);
+
+			BatchOperator <?> result = model.transform(vecdata);
+
+			result.collect();
+		} catch (Exception ex) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PrintStream ps = new PrintStream(baos);
+			ex.printStackTrace(ps);
+			Assert.assertTrue("label col has null value", baos.toString().contains("label col has null values, please check it!"));
+		}
+
 	}
 
 }

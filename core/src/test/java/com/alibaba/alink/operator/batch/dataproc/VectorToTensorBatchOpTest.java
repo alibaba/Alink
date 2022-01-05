@@ -3,12 +3,13 @@ package com.alibaba.alink.operator.batch.dataproc;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 
-public class VectorToTensorBatchOpTest {
+public class VectorToTensorBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void testVectorToTensorStreamOp() throws Exception {

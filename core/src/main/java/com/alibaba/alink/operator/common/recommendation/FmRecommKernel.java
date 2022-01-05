@@ -5,17 +5,18 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.shaded.guava18.com.google.common.collect.ImmutableMap;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp;
 import com.alibaba.alink.operator.common.fm.FmModelMapper;
+import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.common.utils.PackBatchOperatorUtil;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 import com.alibaba.alink.params.recommendation.BaseRateRecommParams;
@@ -84,7 +85,7 @@ final public class FmRecommKernel extends RecommKernel {
 	}
 
 	@Override
-	Double rate(Object[] ids) throws Exception {
+	Double rate(Object[] ids) {
 		Object userId = ids[0];
 		Object itemId = ids[1];
 		SparseVector userFea = userFeatures.get(userId);
@@ -92,19 +93,19 @@ final public class FmRecommKernel extends RecommKernel {
 		if (userFea != null && itemFea != null) {
 			return getScore(combine(userFea, itemFea));
 		} else {
-			/** unknown user or item */
+			/* unknown user or item */
 			return null;
 		}
 	}
 
-	private String recommend(String objectColName, SparseVector userFea, Set <Object> excludes,
+	private MTable recommend(String objectColName, SparseVector userFea, Set <Object> excludes,
 							 Map <Object, SparseVector> itemFeatures, final boolean reverse) {
 		RecommUtils.RecommPriorityQueue priorityQueue = new RecommUtils.RecommPriorityQueue(topK);
 
 		if (userFea != null) {
 			itemFeatures.forEach((itemId, itemFea) -> {
 				if (excludes == null || !excludes.contains(itemId)) {
-					float score = 0.F;
+					float score;
 					try {
 						SparseVector combined = combine(userFea, itemFea);
 						if (reverse) {
@@ -121,17 +122,13 @@ final public class FmRecommKernel extends RecommKernel {
 			});
 		}
 
-		Tuple2 <List <Object>, List <Double>> itemsAndScores = priorityQueue.getOrderedObjects();
-
-		return KObjectUtil.serializeRecomm(
-			objectColName,
-			itemsAndScores.f0,
-			ImmutableMap.of(KObjectUtil.RATING_NAME, itemsAndScores.f1)
-		);
+		List <Row> rows = priorityQueue.getOrderedRows();
+		return new MTable(rows,
+			objectColName + " " + FlinkTypeConverter.getTypeString(recommObjType) + "," + KObjectUtil.RATING_NAME + " DOUBLE");
 	}
 
 	@Override
-	public String recommendItemsPerUser(Object userId) throws Exception {
+	public MTable recommendItemsPerUser(Object userId) {
 		SparseVector userFea = userFeatures.get(userId);
 		Set <Object> excludes = null;
 		if (excludeKnown) {
@@ -141,7 +138,7 @@ final public class FmRecommKernel extends RecommKernel {
 	}
 
 	@Override
-	public String recommendUsersPerItem(Object itemId) throws Exception {
+	public MTable recommendUsersPerItem(Object itemId) {
 		SparseVector itemFea = itemFeatures.get(itemId);
 		Set <Object> excludes = null;
 		if (excludeKnown) {
@@ -151,16 +148,16 @@ final public class FmRecommKernel extends RecommKernel {
 	}
 
 	@Override
-	public String recommendSimilarItems(Object itemId) throws Exception {
+	public MTable recommendSimilarItems(Object itemId) {
 		throw new UnsupportedOperationException("not supported");
 	}
 
 	@Override
-	public String recommendSimilarUsers(Object userId) throws Exception {
+	public MTable recommendSimilarUsers(Object userId) {
 		throw new UnsupportedOperationException("not supported");
 	}
 
-	protected double getScore(SparseVector feature) throws Exception {
+	protected double getScore(SparseVector feature) {
 		return fmModelMapper.getY(feature, isBinCls);
 	}
 
@@ -172,6 +169,17 @@ final public class FmRecommKernel extends RecommKernel {
 					JsonConverter.fromJson((String) row.getField(1), Tuple2.class);
 				userColName = metaData.f0.get(3).get(0);
 				itemColName = metaData.f0.get(3).get(1);
+				int userIdx = metaData.f1.get(3).get(0);
+				int itemIdx = metaData.f1.get(3).get(1);
+				if (recommType == RecommType.ITEMS_PER_USER) {
+					recommObjType = getModelSchema().getFieldTypes()[itemIdx];
+				} else if (recommType == RecommType.USERS_PER_ITEM) {
+					recommObjType = getModelSchema().getFieldTypes()[userIdx];
+				} else if (recommType == RecommType.SIMILAR_USERS) {
+					recommObjType = getModelSchema().getFieldTypes()[userIdx];
+				} else if (recommType == RecommType.SIMILAR_ITEMS) {
+					recommObjType = getModelSchema().getFieldTypes()[itemIdx];
+				}
 			}
 		}
 
@@ -186,7 +194,8 @@ final public class FmRecommKernel extends RecommKernel {
 
 		if (userColIdx >= 0) {
 			Preconditions.checkArgument(
-				PackBatchOperatorUtil.unpackSchema(modelRows, getModelSchema(), 1).getFieldTypes()[0].equals(super.getDataSchema().getFieldTypes()[userColIdx]),
+				PackBatchOperatorUtil.unpackSchema(modelRows, getModelSchema(), 1).getFieldTypes()[0]
+					.equals(super.getDataSchema().getFieldTypes()[userColIdx]),
 				"user column type different from train set");
 		}
 		List <Row> userFeatureRows = PackBatchOperatorUtil.unpackRows(modelRows, 1);
@@ -197,7 +206,8 @@ final public class FmRecommKernel extends RecommKernel {
 
 		if (itemColIdx >= 0) {
 			Preconditions.checkArgument(
-				PackBatchOperatorUtil.unpackSchema(modelRows, getModelSchema(), 2).getFieldTypes()[0].equals(super.getDataSchema().getFieldTypes()[itemColIdx]),
+				PackBatchOperatorUtil.unpackSchema(modelRows, getModelSchema(), 2).getFieldTypes()[0]
+					.equals(super.getDataSchema().getFieldTypes()[itemColIdx]),
 				"user column type different from train set");
 		}
 		List <Row> itemFeatureRows = PackBatchOperatorUtil.unpackRows(modelRows, 2);
