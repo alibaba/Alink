@@ -329,6 +329,11 @@
             <type>jar</type>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.jd.flink.sql</groupId>
+            <artifactId>flink-connector-pravega</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>

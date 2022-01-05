@@ -19,6 +19,7 @@
         <module>connector-odps</module>
         <module>connector-jdbc</module>
         <module>connector-hive</module>
+        <module>connector-pravega</module>
         <module>filesystem</module>
     </modules>
 
