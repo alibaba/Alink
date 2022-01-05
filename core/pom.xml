@@ -249,6 +249,12 @@
         </dependency>
 
         <dependency>
+            <groupId>net.sf.py4j</groupId>
+            <artifactId>py4j</artifactId>
+            <version>0.10.9.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.fommil.netlib</groupId>
             <artifactId>all</artifactId>
             <type>pom</type>
@@ -322,6 +328,11 @@
             <version>2.21.0</version>
             <type>jar</type>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.jd.flink.sql</groupId>
+            <artifactId>flink-connector-pravega</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
