@@ -13,13 +13,13 @@ Python 类名：ArimaStreamOp
 | --- | --- | --- | --- | --- | --- |
 | order | 模型(p, d, q) | 模型(p, d, q) | int[] | ✓ |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| valueCol | Not available! | Not available! | String | ✓ |  |
+| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ |  |
 | seasonalOrder | 季节模型(p, d, q) | 季节模型(p, d, q) | int[] |  | null |
 | estMethod | 估计方法 | 估计方法 | String |  | "CssMle" |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | seasonalPeriod | 季节周期 | 季节周期 | Integer |  | 1 |
-| predictNum | Not available! | Not available! | Integer |  | 1 |
+| predictNum | 预测条数 | 预测条数 | Integer |  | 1 |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 
 ## 代码示例

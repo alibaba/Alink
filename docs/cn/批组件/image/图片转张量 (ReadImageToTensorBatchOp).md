@@ -13,11 +13,11 @@ Python 类名：ReadImageToTensorBatchOp
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| relativeFilePathCol | Not available! | Not available! | String | ✓ |  |
+| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ |  |
 | rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| imageWidth | Not available! | Not available! | Integer |  |  |
-| imageHeight | Not available! | Not available! | Integer |  |  |
+| imageWidth | 图片宽度 | 图片宽度 | Integer |  |  |
+| imageHeight | 图片高度 | 图片高度 | Integer |  |  |
 
 ## 代码示例
 

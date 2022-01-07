@@ -33,7 +33,7 @@ useLocalEnv(1)
 def adult(url):
     data = (
         CsvSourceBatchOp()
-            .setFilePath('http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_train.csv')
+            .setFilePath('https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/adult_train.csv')
             .setSchemaStr(
             'age bigint, workclass string, fnlwgt bigint,'
             'education string, education_num bigint,'
@@ -47,10 +47,10 @@ def adult(url):
     return data
 
 def adult_train():
-    return adult('http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_train.csv')
+    return adult('https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/adult_train.csv')
 
 def adult_test():
-    return adult('http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_test.csv')
+    return adult('https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/adult_test.csv')
 
 def adult_numerical_feature_strs():
     return [
@@ -182,7 +182,7 @@ public class GridSearchTVSplitTest {
 		};
 		String label = "label";
 		CsvSourceBatchOp data = new CsvSourceBatchOp()
-			.setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/adult_train.csv")
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/adult_train.csv")
 			.setSchemaStr(
 				"age bigint, workclass string, fnlwgt bigint, education string, education_num bigint, marital_status "
 					+ "string, occupation string, relationship string, race string, sex string, capital_gain bigint, "

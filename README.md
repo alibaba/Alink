@@ -13,10 +13,21 @@
 - Alink使用指南：https://www.yuque.com/pinshu/alink_guide
 - Alink插件下载器：https://www.yuque.com/pinshu/alink_guide/plugin_downloader
 
+#### Alink教程
+<div align=center>
+<img src="https://cdn.nlark.com/yuque/0/2022/png/286293/1641546754259-649596ef-f45c-4db8-bab2-c6c91109ad39.png" height="50%" width="50%">
+</div>
+
+- Alink教程：https://www.yuque.com/pinshu/alink_tutorial
+- 源代码地址：https://github.com/alibaba/Alink/tree/master/tutorial
+- Java版的数据和资料链接：https://www.yuque.com/pinshu/alink_tutorial/book_java_reference
+- Python版的数据和资料链接：https://www.yuque.com/pinshu/alink_tutorial/book_python_reference
+- 下载部分示例数据的Java代码：https://www.yuque.com/pinshu/alink_tutorial/book_java_download_some_data
+
 #### 开源算法列表
 
 <div align=center>
-<img src="https://img.alicdn.com/tfs/TB1n.edorj1gK0jSZFOXXc7GpXa-1635-714.png" height="60%" width="60%">
+<img src="https://cdn.nlark.com/yuque/0/2021/png/286293/1635941621837-b9f0e46a-f036-4e00-a487-e29375c03d2c.png" height="100%" width="100%">
 </div>
 
 #### PyAlink 使用截图

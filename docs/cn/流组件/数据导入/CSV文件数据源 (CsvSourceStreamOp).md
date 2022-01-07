@@ -13,6 +13,7 @@ Python 类名：CsvSourceStreamOp
 | filePath | 文件路径 | 文件路径 | String | ✓ |  |
 | schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |
 | fieldDelimiter | 字段分隔符 | 字段分隔符 | String |  | "," |
+| handleInvalidMethod | 处理无效值的方法 | 处理无效值的方法，可取 error, skip | String |  | "ERROR" |
 | ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  | false |
 | lenient | 是否容错 | 若为true，当解析失败时丢弃该数据；若为false，解析失败是抛异常 | Boolean |  | false |
 | quoteChar | 引号字符 | 引号字符 | Character |  | "\"" |
@@ -58,7 +59,7 @@ Web前端支持用户输入如下转义字符和unicode字符作为分隔符：
 ### Python 代码
 ### Python 代码
 ```python
-filePath = 'http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv'
+filePath = 'https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv'
 schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
 csvSource = CsvSourceStreamOp()\
     .setFilePath(filePath)\
@@ -76,7 +77,7 @@ import org.junit.Test;
 public class CsvSourceStreamOpTest {
 	@Test
 	public void testCsvSourceStreamOp() throws Exception {
-		String filePath = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
+		String filePath = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
 		String schema
 			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 		StreamOperator <?> csvSource = new CsvSourceStreamOp()

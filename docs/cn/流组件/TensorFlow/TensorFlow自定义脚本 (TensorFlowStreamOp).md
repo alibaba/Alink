@@ -21,9 +21,7 @@ Python 类名：TensorFlowStreamOp
 | intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  | 4 |
 | numPSs | PS 角色数 | PS 角色的数量。值未设置时，如果 Worker 角色数也未设置，则为作业总并发度的 1/4（需要取整），否则为总并发度减去 Worker 角色数。 | Integer |  | null |
 | numWorkers | Worker 角色数 | Worker 角色的数量。值未设置时，如果 PS 角色数也未设置，则为作业总并发度的 3/4（需要取整），否则为总并发度减去 PS 角色数。 | Integer |  | null |
-| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。
- 如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；
- 如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
+| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
 | selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
 | userParams | 自定义参数 | 用户自定义参数，JSON 字典格式的字符串 | String |  | "{}" |
 
@@ -49,9 +47,6 @@ Python 类名：TensorFlowStreamOp
 
 ### Python 代码
 ```python
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf115_python_env_macosx") # change according to system type
-
 import json
 
 source = RandomTableSourceStreamOp() \
@@ -82,8 +77,6 @@ StreamOperator.execute()
 
 ### Java 代码
 ```java
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.dataproc.TypeConvertStreamOp;
@@ -99,9 +92,6 @@ public class TensorFlowStreamOpTest {
 
 	@Test
 	public void testTensorFlowStreamOp() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf115_python_env_macosx"); // change according to system type
-
 		StreamOperator<?> source = new RandomTableSourceStreamOp()
 			.setMaxRows(1000L)
 			.setNumCols(10);

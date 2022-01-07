@@ -25,7 +25,7 @@ import pandas as pd
 
 useLocalEnv(1)
 
-URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv"
+URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv"
 data = TextSourceBatchOp().setFilePath(URL).setTextCol("text")
 data.print()
 ```
@@ -38,7 +38,7 @@ import org.junit.Test;
 public class TextSourceBatchOpTest {
 	@Test
 	public void testTextSourceBatchOp() throws Exception {
-		String URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
+		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
 		BatchOperator <?> data = new TextSourceBatchOp().setFilePath(URL).setTextCol("text");
 		data.print();
 	}

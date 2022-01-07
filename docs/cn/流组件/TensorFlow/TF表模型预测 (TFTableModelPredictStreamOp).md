@@ -19,6 +19,9 @@ Python 类名：TFTableModelPredictStreamOp
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
 | signatureDefKey | signature标签 | signature标签 | String |  | "serving_default" |
+| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  | null |
+| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  | 10 |
+| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  | null |
 
 ## 代码示例
 
@@ -26,9 +29,6 @@ Python 类名：TFTableModelPredictStreamOp
 
 ### Python 代码
 ```python
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf115_python_env_macosx") # change according to system type
-
 import json
 
 source = RandomTableSourceBatchOp() \
@@ -68,8 +68,6 @@ StreamOperator.execute()
 
 ### Java 代码
 ```java
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.RandomTableSourceBatchOp;
@@ -86,9 +84,6 @@ public class TFTableModelPredictStreamOpTest {
 
 	@Test
 	public void testTFTableModelPredictStreamOp() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf115_python_env_macosx"); // change according to system type
-
 		BatchOperator <?> source = new RandomTableSourceBatchOp()
 			.setNumRows(100L)
 			.setNumCols(10);

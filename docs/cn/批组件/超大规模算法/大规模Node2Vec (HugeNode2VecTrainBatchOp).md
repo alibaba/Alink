@@ -24,7 +24,7 @@ node2vec是一种用于网络中的特征学习有效的可扩展算法，该算
 | isToUndigraph | 是否转无向图 | 选为true时，会将当前图转成无向图，然后再游走 | Boolean |  | false |
 | minCount | 最小词频 | 最小词频 | Integer |  | 5 |
 | negative | 负采样大小 | 负采样大小 | Integer |  | 5 |
-| numCheckpoint | Not available! | Not available! | Integer |  | 1 |
+| numCheckpoint | checkPoint 数目 | checkPoint 数目 | Integer |  | 1 |
 | numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  | 1 |
 | p | p | p越小越趋向于访问到已经访问的节点，反之则趋向于访问没有访问过的节点 | Double |  | 1.0 |
 | q | q | q>1时行为类似于bfs趋向于访问和访问过的节点相连的节点，q<1时行为类似于dfs | Double |  | 1.0 |

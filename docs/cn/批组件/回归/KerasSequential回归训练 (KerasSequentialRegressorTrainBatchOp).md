@@ -33,9 +33,14 @@ Python 类名：KerasSequentialRegressorTrainBatchOp
 | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
 | layers | 各 layer 的描述 | 各 layer 的描述，使用 Python 语法，例如 "Conv1D(256, 5, padding='same', activation='relu')" | String[] | ✓ |  |
-| tensorCol | Not available! | Not available! | String | ✓ |  |
+| tensorCol | tensor列 | tensor列 | String | ✓ |  |
 | validationSplit | 验证集比例 | 验证集比例，当前需要总并发度为 1 | Double |  | 0.0 |
 | saveBestOnly | 是否导出最优的 checkpoint | 是否导出最优的 checkpoint | Boolean |  | false |
+| bestMetric | 指标 | 判断模型最优时用的指标。
+ 都支持的有：loss；
+ 二分类还支持：auc, precision, recall, binary_accuracy, false_negatives, false_positives, true_negatives, true_positives
+ 多分类还支持：sparse_categorical_accuracy
+ 回归还支持：mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, mean_squared_logarithmic_error, root_mean_squared_error | String |  | "loss" |
 | saveCheckpointsEpochs | 每隔多少 epochs 保存 checkpoints | 每隔多少 epochs 保存 checkpoints | Double |  | 1.0 |
 | saveCheckpointsSecs | 每隔多少秒保存 checkpoints | 每隔多少秒保存 checkpoints | Double |  |  |
 | batchSize | 数据批大小 | 数据批大小 | Integer |  | 128 |
@@ -46,9 +51,7 @@ Python 类名：KerasSequentialRegressorTrainBatchOp
 | numPSs | PS 角色数 | PS 角色的数量。值未设置时，如果 Worker 角色数也未设置，则为作业总并发度的 1/4（需要取整），否则为总并发度减去 Worker 角色数。 | Integer |  | null |
 | numWorkers | Worker 角色数 | Worker 角色的数量。值未设置时，如果 PS 角色数也未设置，则为作业总并发度的 3/4（需要取整），否则为总并发度减去 PS 角色数。 | Integer |  | null |
 | optimizer | 优化器 | 优化器，使用 Python 语法，例如 "Adam(learning_rate=0.1)" | String |  | "Adam()" |
-| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。
- 如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；
- 如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
+| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
 | removeCheckpointBeforeTraining | 是否在训练前移除 checkpoint 相关文件 | 是否在训练前移除 checkpoint 相关文件用于重新训练，只会删除必要的文件 | Boolean |  | null |
 
 
@@ -58,13 +61,15 @@ Python 类名：KerasSequentialRegressorTrainBatchOp
 
 ### Python 代码
 ```python
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf231_python_env_macosx") # change according to system type
-pluginDownloader.downloadPlugin("tf_predictor_macosx") # change according to system type
-
 source = CsvSourceBatchOp() \
     .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/random_tensor.csv") \
     .setSchemaStr("tensor string, label double")
+
+source = ToTensorBatchOp() \
+    .setSelectedCol("tensor") \
+    .setTensorDataType("DOUBLE") \
+    .setTensorShape([200, 3]) \
+    .linkFrom(source)
 
 trainBatchOp = KerasSequentialRegressorTrainBatchOp() \
     .setTensorCol("tensor") \
@@ -92,9 +97,8 @@ BatchOperator.execute()
 
 ### Java 代码
 ```java
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.ToTensorBatchOp;
 import com.alibaba.alink.operator.batch.regression.KerasSequentialRegressorPredictBatchOp;
 import com.alibaba.alink.operator.batch.regression.KerasSequentialRegressorTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
@@ -104,13 +108,15 @@ public class KerasSequentialRegressorTrainBatchOpTest {
 
 	@Test
 	public void testKerasSequentialRegressorTrainBatchOp() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf231_python_env_macosx"); // change according to system type
-		pluginDownloader.downloadPlugin("tf_predictor_macosx"); // change according to system type
-
 		BatchOperator<?> source = new CsvSourceBatchOp()
 			.setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/random_tensor.csv")
 			.setSchemaStr("tensor string, label double");
+
+		source = new ToTensorBatchOp()
+			.setSelectedCol("tensor")
+			.setTensorDataType("DOUBLE")
+			.setTensorShape(200, 3)
+			.linkFrom(source);
 
 		KerasSequentialRegressorTrainBatchOp trainBatchOp = new KerasSequentialRegressorTrainBatchOp()
 			.setTensorCol("tensor")
@@ -140,15 +146,15 @@ public class KerasSequentialRegressorTrainBatchOpTest {
 
 ### 运行结果
 
-label|pred
------|----
-1.0000|0.4822
-0.0000|0.4826
-0.0000|0.4752
-0.0000|0.4702
-1.0000|0.4907
-1.0000|0.4992
-0.0000|0.4866
-1.0000|0.5045
-0.0000|0.4994
-1.0000|0.4837
+| label  | pred   |
+|--------|--------|
+| 1.0000 | 0.4822 |
+| 0.0000 | 0.4826 |
+| 0.0000 | 0.4752 |
+| 0.0000 | 0.4702 |
+| 1.0000 | 0.4907 |
+| 1.0000 | 0.4992 |
+| 0.0000 | 0.4866 |
+| 1.0000 | 0.5045 |
+| 0.0000 | 0.4994 |
+| 1.0000 | 0.4837 |

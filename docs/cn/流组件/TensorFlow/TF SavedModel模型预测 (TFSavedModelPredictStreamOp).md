@@ -39,9 +39,6 @@ Python 类名：TFSavedModelPredictStreamOp
 
 ### Python 代码
 ```python
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf_predictor_macosx") # change according to system type
-
 url = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/mnist_dense.csv"
 schema = "label bigint, image string";
 
@@ -62,8 +59,6 @@ StreamOperator.execute()
 
 ### Java 代码
 ```java
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
 import com.alibaba.alink.operator.stream.tensorflow.TFSavedModelPredictStreamOp;
@@ -73,10 +68,7 @@ public class TFSavedModelPredictStreamOpTest {
 
 	@Test
 	public void testTFSavedModelPredictStreamOp() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf_predictor_macosx"); // change according to system type
-
-		String url = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/mnist_dense.csv";
+		String url = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/mnist_dense.csv";
 		String schema = "label bigint, image string";
 
 		StreamOperator <?> data = new CsvSourceStreamOp().setFilePath(url).setSchemaStr(schema).setFieldDelimiter(";");

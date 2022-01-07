@@ -30,10 +30,6 @@ import pandas as pd
 
 useLocalEnv(1)
 
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf_predictor_macosx") # change according to system type
-pluginDownloader.downloadPlugin("base_chinese_saved_model")
-
 df_data = pd.DataFrame([
     [1, 'An english sentence.'],
     [2, '这是一个中文句子']
@@ -53,9 +49,7 @@ BertTextEmbedding() \
 ```java
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.pipeline.nlp.BertTextEmbedding;
 import org.junit.Test;
@@ -64,10 +58,6 @@ public class BertTextEmbeddingTest {
 
 	@Test
 	public void testBertTextEmbedding() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf_predictor_macosx"); // change according to system type
-		pluginDownloader.downloadPlugin("base_chinese_saved_model");
-
 		Row[] rows1 = new Row[] {
 			Row.of(1L, "An english sentence."),
 			Row.of(2L, "这是一个中文句子"),

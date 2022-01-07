@@ -24,13 +24,15 @@ Python 类名：KerasSequentialRegressorPredictBatchOp
 
 ### Python 代码
 ```python
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf231_python_env_macosx") # change according to system type
-pluginDownloader.downloadPlugin("tf_predictor_macosx") # change according to system type
-
 source = CsvSourceBatchOp() \
     .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/random_tensor.csv") \
     .setSchemaStr("tensor string, label double")
+
+source = ToTensorBatchOp() \
+    .setSelectedCol("tensor") \
+    .setTensorDataType("DOUBLE") \
+    .setTensorShape([200, 3]) \
+    .linkFrom(source)
 
 trainBatchOp = KerasSequentialRegressorTrainBatchOp() \
     .setTensorCol("tensor") \
@@ -58,9 +60,8 @@ BatchOperator.execute()
 
 ### Java 代码
 ```java
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.ToTensorBatchOp;
 import com.alibaba.alink.operator.batch.regression.KerasSequentialRegressorPredictBatchOp;
 import com.alibaba.alink.operator.batch.regression.KerasSequentialRegressorTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
@@ -70,13 +71,15 @@ public class KerasSequentialRegressorTrainBatchOpTest {
 
 	@Test
 	public void testKerasSequentialRegressorTrainBatchOp() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf231_python_env_macosx"); // change according to system type
-		pluginDownloader.downloadPlugin("tf_predictor_macosx"); // change according to system type
-
 		BatchOperator<?> source = new CsvSourceBatchOp()
 			.setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/random_tensor.csv")
 			.setSchemaStr("tensor string, label double");
+
+		source = new ToTensorBatchOp()
+			.setSelectedCol("tensor")
+			.setTensorDataType("DOUBLE")
+			.setTensorShape(200, 3)
+			.linkFrom(source);
 
 		KerasSequentialRegressorTrainBatchOp trainBatchOp = new KerasSequentialRegressorTrainBatchOp()
 			.setTensorCol("tensor")
@@ -106,15 +109,15 @@ public class KerasSequentialRegressorTrainBatchOpTest {
 
 ### 运行结果
 
-label|pred
------|----
-1.0000|0.4822
-0.0000|0.4826
-0.0000|0.4752
-0.0000|0.4702
-1.0000|0.4907
-1.0000|0.4992
-0.0000|0.4866
-1.0000|0.5045
-0.0000|0.4994
-1.0000|0.4837
+| label  | pred   |
+|--------|--------|
+| 1.0000 | 0.4822 |
+| 0.0000 | 0.4826 |
+| 0.0000 | 0.4752 |
+| 0.0000 | 0.4702 |
+| 1.0000 | 0.4907 |
+| 1.0000 | 0.4992 |
+| 0.0000 | 0.4866 |
+| 1.0000 | 0.5045 |
+| 0.0000 | 0.4994 |
+| 1.0000 | 0.4837 |

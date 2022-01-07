@@ -24,7 +24,7 @@ DeepWalk是2014年提出的一个新的方法，用来为网络中的结点学�
 | isToUndigraph | 是否转无向图 | 选为true时，会将当前图转成无向图，然后再游走 | Boolean |  | false |
 | minCount | 最小词频 | 最小词频 | Integer |  | 5 |
 | negative | 负采样大小 | 负采样大小 | Integer |  | 5 |
-| numCheckpoint | Not available! | Not available! | Integer |  | 1 |
+| numCheckpoint | checkPoint 数目 | checkPoint 数目 | Integer |  | 1 |
 | numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  | 1 |
 | randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  | "true" |
 | vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | 100 |

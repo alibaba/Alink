@@ -44,7 +44,7 @@ df = pd.DataFrame([
     [0.9, 1]
 ])
 
-data = BatchOperator.fromDataframe(df, schemaStr="label double, feature double")
+data = BatchOperator.fromDataframe(df, schemaStr="feature double, label double")
 
 trainOp = IsotonicRegTrainBatchOp()\
             .setFeatureCol("feature")\
@@ -90,7 +90,7 @@ public class IsotonicRegTrainBatchOpTest {
 			Row.of(0.2, 0.0),
 			Row.of(0.9, 1.0)
 		);
-		BatchOperator <?> data = new MemSourceBatchOp(df, "label double, feature double");
+		BatchOperator <?> data = new MemSourceBatchOp(df, "feature double, label double");
 		BatchOperator <?> trainOp = new IsotonicRegTrainBatchOp()
 			.setFeatureCol("feature")
 			.setLabelCol("label");

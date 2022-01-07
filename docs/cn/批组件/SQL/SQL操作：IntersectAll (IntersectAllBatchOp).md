@@ -23,7 +23,7 @@ import pandas as pd
 
 useLocalEnv(1)
 
-URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv"
+URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv"
 SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 data1 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 data2 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
@@ -41,7 +41,7 @@ import org.junit.Test;
 public class IntersectAllBatchOpTest {
 	@Test
 	public void testIntersectAllBatchOp() throws Exception {
-		String URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
+		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
 		String SCHEMA_STR
 			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 		BatchOperator <?> data1 = new CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR);

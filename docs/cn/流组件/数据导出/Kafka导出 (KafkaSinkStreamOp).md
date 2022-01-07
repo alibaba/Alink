@@ -26,7 +26,7 @@ Python 类名：KafkaSinkStreamOp
 
 ### Python 代码
 ```python
-URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
+URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
 SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 data = CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 
@@ -46,7 +46,7 @@ import org.junit.Test;
 public class KafkaSinkStreamOpTest {
 	@Test
 	public void testKafkaSinkStreamOp() throws Exception {
-		String URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
+		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
 		String SCHEMA_STR
 			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 		StreamOperator <?> data = new CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR);

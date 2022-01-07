@@ -13,6 +13,7 @@ Fm 分类算法，二分类算法，支持模型训练和样本预测。
 | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
+| batchSize | 迭代数据batch size | 数据batch size | Integer |  | -1 |
 | epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | 1.0E-6 |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | null |
 | initStdev | 初始化参数的标准差 | 初始化参数的标准差 | Double |  | 0.05 |

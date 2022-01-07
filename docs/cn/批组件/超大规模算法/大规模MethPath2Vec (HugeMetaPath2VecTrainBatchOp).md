@@ -27,7 +27,7 @@ Python 类名：HugeMetaPath2VecTrainBatchOp
 | minCount | 最小词频 | 最小词频 | Integer |  | 5 |
 | mode | metapath中word2vec的模式，分别为metapath2vec和metapath2vecpp | metapath的模式 | String |  | "METAPATH2VEC" |
 | negative | 负采样大小 | 负采样大小 | Integer |  | 5 |
-| numCheckpoint | Not available! | Not available! | Integer |  | 1 |
+| numCheckpoint | checkPoint 数目 | checkPoint 数目 | Integer |  | 1 |
 | numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  | 1 |
 | randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  | "true" |
 | vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | 100 |

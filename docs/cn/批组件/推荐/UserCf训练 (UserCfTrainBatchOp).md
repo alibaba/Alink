@@ -16,9 +16,9 @@ UserCF 是一种被广泛使用的推荐算法，用给定打分数据训练一�
 | itemCol | Item列列名 | Item列列名 | String | ✓ |  |
 | userCol | User列列名 | User列列名 | String | ✓ |  |
 | rateCol | 打分列列名 | 打分列列名 | String |  | null |
+| similarityThreshold | 相似阈值 | 只有大于该阈值的Object才会被计算 | Double |  | 1.0E-4 |
 | similarityType | 距离度量方式 | 聚类使用的距离类型 | String |  | "COSINE" |
-| similarityThreshold | Not available! | Not available! | Double |  | 0.001 |
-| k | Not available! | Not available! | Integer |  | 64 |
+| k | 相似集合元素数目 | 相似集合元素数目 | Integer |  | 64 |
 
 ## 代码示例
 ### Python 代码

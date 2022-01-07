@@ -16,10 +16,10 @@ Fm 推荐是使用Fm算法在推荐场景的一种扩展，用给定打分数据
 | itemCol | Item列列名 | Item列列名 | String | ✓ |  |
 | rateCol | 打分列列名 | 打分列列名 | String | ✓ |  |
 | userCol | User列列名 | User列列名 | String | ✓ |  |
-| userFeatureCols | Not available! | Not available! | String[] |  | [] |
-| userCategoricalFeatureCols | Not available! | Not available! | String[] |  | [] |
-| itemFeatureCols | Not available! | Not available! | String[] |  | [] |
-| itemCategoricalFeatureCols | Not available! | Not available! | String[] |  | [] |
+| userFeatureCols | 用户特征列名字数组 | 用户特征列名字数组 | String[] |  | [] |
+| userCategoricalFeatureCols | 用户离散值列名字数组 | 用户离散值列名字数组 | String[] |  | [] |
+| itemFeatureCols | item特征列名字数组 | item特征列名字数组 | String[] |  | [] |
+| itemCategoricalFeatureCols | item离散值列名字数组 | item离散值列名字数组 | String[] |  | [] |
 | initStdev | 初始化参数的标准差 | 初始化参数的标准差 | Double |  | 0.05 |
 | lambda0 | 常数项正则化系数 | 常数项正则化系数 | Double |  | 0.0 |
 | lambda1 | 线性项正则化系数 | 线性项正则化系数 | Double |  | 0.0 |

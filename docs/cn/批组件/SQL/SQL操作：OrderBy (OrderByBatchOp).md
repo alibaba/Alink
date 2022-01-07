@@ -28,7 +28,7 @@ import pandas as pd
 
 useLocalEnv(1)
 
-URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv"
+URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv"
 SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 data = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
 data = data.link(OrderByBatchOp().setLimit(10).setClause("sepal_length"))
@@ -43,7 +43,7 @@ import org.junit.Test;
 public class OrderByBatchOpTest {
 	@Test
 	public void testOrderByBatchOp() throws Exception {
-		String URL = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
+		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
 		String SCHEMA_STR
 			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 

@@ -20,9 +20,7 @@ Python 类名：LSTNetTrainBatchOp
 | numEpochs | epoch数 | epoch数 | Integer |  | 10 |
 | numPSs | PS 角色数 | PS 角色的数量。值未设置时，如果 Worker 角色数也未设置，则为作业总并发度的 1/4（需要取整），否则为总并发度减去 Worker 角色数。 | Integer |  | null |
 | numWorkers | Worker 角色数 | Worker 角色的数量。值未设置时，如果 PS 角色数也未设置，则为作业总并发度的 3/4（需要取整），否则为总并发度减去 PS 角色数。 | Integer |  | null |
-| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。
- 如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；
- 如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
+| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
 | removeCheckpointBeforeTraining | 是否在训练前移除 checkpoint 相关文件 | 是否在训练前移除 checkpoint 相关文件用于重新训练，只会删除必要的文件 | Boolean |  | null |
 | selectedCol | 计算列对应的列名 | 计算列对应的列名, 默认值是null | String |  | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |

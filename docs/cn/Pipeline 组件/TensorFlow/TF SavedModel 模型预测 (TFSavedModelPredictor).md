@@ -39,9 +39,6 @@ Python 类名：TFSavedModelPredictor
 
 ### Python 代码
 ```python
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf_predictor_macosx") # change according to system type
-
 url = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/mnist_dense.csv"
 schema = "label bigint, image string";
 
@@ -61,8 +58,6 @@ data.print()
 
 ### Java 代码
 ```java
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.pipeline.tensorflow.TFSavedModelPredictor;
@@ -72,9 +67,6 @@ public class TFSavedModelPredictorTest {
 
 	@Test
 	public void testTFSavedModelPredictor() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf_predictor_macosx"); // change according to system type
-
 		String url = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/mnist_dense.csv";
 		String schema = "label bigint, image string";
 

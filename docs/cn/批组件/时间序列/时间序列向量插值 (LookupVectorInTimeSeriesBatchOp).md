@@ -13,7 +13,7 @@ Python 类名：LookupVectorInTimeSeriesBatchOp
 | --- | --- | --- | --- | --- | --- |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
 | timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String | ✓ |  |
-| timeSeriesCol | Not available! | Not available! | String | ✓ |  |
+| timeSeriesCol | 时间序列列 | 时间序列列，是特殊的MTable类型，一列是时间，一列是值 | String | ✓ |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 
@@ -59,7 +59,7 @@ source.link(
             FlattenMTableBatchOp()
 					.setReservedCols(["id", "predict"])
 					.setSelectedCol("predict")
-					.setSchemaStr("ts timestamp, val VEC_TYPES_VECTOR")
+					.setSchemaStr("ts timestamp, val VECTOR")
         ).link(
             LookupVectorInTimeSeriesBatchOp()
 				.setTimeCol("ts")

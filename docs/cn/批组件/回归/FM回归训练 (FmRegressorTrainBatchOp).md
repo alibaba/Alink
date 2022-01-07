@@ -16,6 +16,7 @@ Python 类名：FmRegressorTrainBatchOp
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
+| batchSize | 迭代数据batch size | 数据batch size | Integer |  | -1 |
 | epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | 1.0E-6 |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | null |
 | initStdev | 初始化参数的标准差 | 初始化参数的标准差 | Double |  | 0.05 |

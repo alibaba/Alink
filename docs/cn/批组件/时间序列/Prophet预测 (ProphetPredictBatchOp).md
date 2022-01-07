@@ -12,13 +12,11 @@ Python 类名：ProphetPredictBatchOp
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| valueCol | Not available! | Not available! | String | ✓ |  |
+| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ |  |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
-| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。
- 如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；
- 如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
+| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| predictNum | Not available! | Not available! | Integer |  | 1 |
+| predictNum | 预测条数 | 预测条数 | Integer |  | 1 |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 
 ## 代码示例

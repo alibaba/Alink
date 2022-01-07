@@ -12,20 +12,20 @@ Python 类名：HoltWintersBatchOp
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| valueCol | Not available! | Not available! | String | ✓ |  |
-| alpha | Not available! | Not available! | Double |  | 0.3 |
-| beta | Not available! | Not available! | Double |  | 0.1 |
-| doSeasonal | Not available! | Not available! | Boolean |  | false |
-| doTrend | Not available! | Not available! | Boolean |  | false |
-| frequency | Not available! | Not available! | Integer |  | 10 |
-| gamma | Not available! | Not available! | Double |  | 0.1 |
-| levelStart | Not available! | Not available! | Double |  |  |
+| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ |  |
+| alpha | alpha | alpha | Double |  | 0.3 |
+| beta | beta | beta | Double |  | 0.1 |
+| doSeasonal | 时间是否具有季节性 | 时间是否具有季节性 | Boolean |  | false |
+| doTrend | 时间是否具有趋势性 | 时间是否具有趋势性 | Boolean |  | false |
+| frequency | 时序频率 | 时序频率 | Integer |  | 10 |
+| gamma | gamma | gamma | Double |  | 0.1 |
+| levelStart | level初始值 | level初始值 | Double |  |  |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| seasonalStart | Not available! | Not available! | double[] |  |  |
-| seasonalType | Not available! | Not available! | String |  | "ADDITIVE" |
-| trendStart | Not available! | Not available! | Double |  |  |
-| predictNum | Not available! | Not available! | Integer |  | 1 |
+| seasonalStart | seasonal初始值 | seasonal初始值 | double[] |  |  |
+| seasonalType | 季节类型 | 季节类型 | String |  | "ADDITIVE" |
+| trendStart | trend初始值 | trend初始值 | Double |  |  |
+| predictNum | 预测条数 | 预测条数 | Integer |  | 1 |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 
 ## 代码示例

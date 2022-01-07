@@ -23,9 +23,6 @@ Python 类名：BertTextPairRegressorPredictBatchOp
 
 ### Python 代码
 ```python
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf_predictor_macosx") # change according to system type
-
 url = "http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/data/MRPC/train.tsv"
 schemaStr = "f_quality double, f_id_1 string, f_id_2 string, f_string_1 string, f_string_2 string"
 data = CsvSourceBatchOp() \
@@ -47,8 +44,6 @@ predict.print()
 
 ### Java 代码
 ```java
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.regression.BertTextPairRegressorPredictBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
@@ -58,9 +53,6 @@ public class BertTextPairRegressorPredictBatchOpTest {
 
 	@Test
 	public void test() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf_predictor_macosx"); // change according to system type
-
 		String url = "http://alink-algo-packages.oss-cn-hangzhou-zmf.aliyuncs.com/data/MRPC/train.tsv";
 		String schemaStr = "f_quality double, f_id_1 string, f_id_2 string, f_string_1 string, f_string_2 string";
 		BatchOperator <?> data = new CsvSourceBatchOp()

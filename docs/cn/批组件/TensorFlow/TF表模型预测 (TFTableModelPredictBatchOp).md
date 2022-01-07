@@ -26,10 +26,6 @@ Python 类名：TFTableModelPredictBatchOp
 
 ### Python 代码
 ```python
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf115_python_env_macosx") # change according to system type
-pluginDownloader.downloadPlugin("tf_predictor_macosx") # change according to system type
-
 import json
 
 source = RandomTableSourceBatchOp() \
@@ -64,8 +60,6 @@ tfTableModelPredictBatchOp.print()
 
 ### Java 代码
 ```java
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.RandomTableSourceBatchOp;
@@ -79,9 +73,6 @@ import java.util.Map;
 public class TFTableModelPredictBatchOpTest {
 	@Test
 	public void testTFTableModelPredictBatchOp() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf115_python_env_macosx"); // change according to system type
-
 		BatchOperator<?> source = new RandomTableSourceBatchOp()
 			.setNumRows(100L)
 			.setNumCols(10);

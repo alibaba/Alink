@@ -101,7 +101,7 @@ udtfs = [
 source = CsvSourceBatchOp() \
     .setSchemaStr(
     "sepal_length double, sepal_width double, petal_length double, petal_width double, category string") \
-    .setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv")
+    .setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv")
 
 for index, f in enumerate(udfs):
     udfBatchOp = UDFBatchOp() \
@@ -115,7 +115,7 @@ for index, f in enumerate(udfs):
 stream_source = CsvSourceStreamOp() \
     .setSchemaStr(
     "sepal_length double, sepal_width double, petal_length double, petal_width double, category string") \
-    .setFilePath("http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv")
+    .setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv")
 
 for index, f in enumerate(udtfs):
     udtfStreamOp = UDTFStreamOp() \

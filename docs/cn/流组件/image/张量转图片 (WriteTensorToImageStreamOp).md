@@ -12,10 +12,10 @@ Python 类名：WriteTensorToImageStreamOp
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| relativeFilePathCol | Not available! | Not available! | String | ✓ |  |
+| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ |  |
 | rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |
-| tensorCol | Not available! | Not available! | String | ✓ |  |
-| imageType | Not available! | Not available! | String |  | "PNG" |
+| tensorCol | tensor列 | tensor列 | String | ✓ |  |
+| imageType | 图片类型 | 图片类型 | String |  | "PNG" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 
 ## 代码示例

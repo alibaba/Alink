@@ -25,6 +25,7 @@ Python 类名：GbdtTrainBatchOp
 | minSumHessianPerLeaf | 叶子节点最小Hessian值 | 叶子节点最小Hessian值（默认为0） | Double |  | 0.0 |
 | lambda | xgboost中的l1正则项 | xgboost中的l1正则项 | Double |  | 0.0 |
 | gamma | xgboost中的l2正则项 | xgboost中的l2正则项 | Double |  | 0.0 |
+| criteria | 树分裂的策略 | 树分裂的策略，可以为PAI, XGBOOST | String |  | "PAI" |
 | categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  |  |
 | featureImportanceType | 特征重要性类型 | 特征重要性类型（默认为GAIN） | String |  | "GAIN" |
 | featureSubsamplingRatio | 每棵树特征采样的比例 | 每棵树特征采样的比例，范围为(0, 1]。 | Double |  | 1.0 |

@@ -22,7 +22,7 @@ Python 类名：CsvSinkStreamOp
 ### Python 代码
 
 ```python
-filePath = 'http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv'
+filePath = 'https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv'
 schema = 'sepal_length double, sepal_width double, petal_length double, petal_width double, category string'
 csvSource = CsvSourceStreamOp()\
     .setFilePath(filePath)\
@@ -46,7 +46,7 @@ import org.junit.Test;
 public class CsvSinkStreamOpTest {
 	@Test
 	public void testCsvSinkStreamOp() throws Exception {
-		String filePath = "http://alink-dataset.cn-hangzhou.oss.aliyun-inc.com/csv/iris.csv";
+		String filePath = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
 		String schema
 			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
 		CsvSourceStreamOp csvSource = new CsvSourceStreamOp()

@@ -31,10 +31,6 @@ import pandas as pd
 
 useLocalEnv(1)
 
-pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader()
-pluginDownloader.downloadPlugin("tf_predictor_macosx") # change according to system type
-pluginDownloader.downloadPlugin("base_chinese_saved_model")
-
 df_data = pd.DataFrame([
     [1, 'An english sentence.'],
     [2, '这是一个中文句子']
@@ -56,9 +52,7 @@ StreamOperator.execute()
 ```java
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.nlp.BertTextEmbeddingStreamOp;
 import org.junit.Test;
@@ -66,10 +60,6 @@ import org.junit.Test;
 public class BertTextEmbeddingStreamOpTest {
 	@Test
 	public void testBertTextEmbeddingStreamOp() throws Exception {
-		PluginDownloader pluginDownloader = AlinkGlobalConfiguration.getPluginDownloader();
-		pluginDownloader.downloadPlugin("tf_predictor_macosx"); // change according to system type
-		pluginDownloader.downloadPlugin("base_chinese_saved_model");
-
 		Row[] rows1 = new Row[] {
 			Row.of(1L, "An english sentence."),
 			Row.of(2L, "这是一个中文句子"),
