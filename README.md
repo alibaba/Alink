@@ -15,7 +15,7 @@
 
 #### Alink教程
 <div align=center>
-<img src="https://cdn.nlark.com/yuque/0/2022/png/286293/1641546754259-649596ef-f45c-4db8-bab2-c6c91109ad39.png" height="50%" width="50%">
+<img src="https://img.alicdn.com/imgextra/i4/O1CN01UwsPQW21LOWLY31Ac_!!6000000006968-2-tps-1297-791.png" height="50%" width="50%">
 </div>
 
 - Alink教程：https://www.yuque.com/pinshu/alink_tutorial
@@ -27,7 +27,7 @@
 #### 开源算法列表
 
 <div align=center>
-<img src="https://cdn.nlark.com/yuque/0/2021/png/286293/1635941621837-b9f0e46a-f036-4e00-a487-e29375c03d2c.png" height="100%" width="100%">
+<img src="https://img.alicdn.com/imgextra/i2/O1CN01RKHbLE202moQzvYjW_!!6000000006792-2-tps-1876-955.png" height="100%" width="100%">
 </div>
 
 #### PyAlink 使用截图
