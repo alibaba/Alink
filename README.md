@@ -15,7 +15,7 @@
 
 #### Alink教程
 <div align=center>
-<img src="https://img.alicdn.com/imgextra/i4/O1CN01UwsPQW21LOWLY31Ac_!!6000000006968-2-tps-1297-791.png" height="50%" width="50%">
+<img src="https://img.alicdn.com/imgextra/i2/O1CN01Z7sbCr1Hg22gLIsdk_!!6000000000786-0-tps-1280-781.jpg" height="50%" width="50%">
 </div>
 
 - Alink教程：https://www.yuque.com/pinshu/alink_tutorial
