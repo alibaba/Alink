@@ -20,8 +20,8 @@ public class Chap16 {
 
 	private static final String ORIGIN_FILE = "winequality-white.csv";
 
-	private static final String TRAIN_FILE = "train.ak";
-	private static final String TEST_FILE = "test.ak";
+	static final String TRAIN_FILE = "train.ak";
+	static final String TEST_FILE = "test.ak";
 
 	private static final String[] COL_NAMES = new String[] {
 		"fixedAcidity", "volatileAcidity", "citricAcid", "residualSugar", "chlorides",
@@ -35,8 +35,8 @@ public class Chap16 {
 		"double", "double"
 	};
 
-	private static final String[] FEATURE_COL_NAMES = ArrayUtils.removeElement(COL_NAMES, "quality");
-	private static final String LABEL_COL_NAME = "quality";
+	static final String[] FEATURE_COL_NAMES = ArrayUtils.removeElement(COL_NAMES, "quality");
+	static final String LABEL_COL_NAME = "quality";
 	private static final String PREDICTION_COL_NAME = "pred";
 
 	public static void main(String[] args) throws Exception {
