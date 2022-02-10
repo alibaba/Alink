@@ -100,8 +100,9 @@
         <apache.common.lang3.version>3.3.2</apache.common.lang3.version>
         <apache.common.io.version>2.4</apache.common.io.version>
         <breeze.version>0.13.1</breeze.version>
+        <junit.version>4.12</junit.version>
         <slf4j.version>1.7.15</slf4j.version>
-        <log4j.version>2.17.0</log4j.version>
+        <log4j.version>2.17.1</log4j.version>
         <netlib.java.version>1.1.2</netlib.java.version>
         <skip.tf.predictor.ut>true</skip.tf.predictor.ut>
         <maven.surefire.plugin.version>2.22.0</maven.surefire.plugin.version>
@@ -115,6 +116,12 @@
                 <artifactId>all</artifactId>
                 <type>pom</type>
                 <version>${netlib.java.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
             </dependency>
 
             <dependency>
@@ -147,6 +154,25 @@
                 <artifactId>log4j-1.2-api</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
+
+            <!-- remove log4j deps -->
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-test-utils_2.11</artifactId>
+                <version>${flink.version}</version>
+                <!-- exclude the deps of curator for updating the log4j-->
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- removing log4j deps ends here -->
         </dependencies>
     </dependencyManagement>
 
