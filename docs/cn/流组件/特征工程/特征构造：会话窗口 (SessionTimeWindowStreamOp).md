@@ -1,7 +1,7 @@
-# 特征构造: 滚动窗口 (TumbleTimeWindowStreamOp)
-Java 类名：com.alibaba.alink.operator.stream.feature.TumbleTimeWindowStreamOp
+# 特征构造：会话窗口 (SessionTimeWindowStreamOp)
+Java 类名：com.alibaba.alink.operator.stream.feature.SessionTimeWindowStreamOp
 
-Python 类名：TumbleTimeWindowStreamOp
+Python 类名：SessionTimeWindowStreamOp
 
 
 ## 功能介绍
@@ -63,7 +63,7 @@ clause当前支持全部flink支持的聚合函数，并在此基础上额外支
 | --- | --- | --- | --- | --- | --- |
 | clause | 运算语句 | 运算语句 | String | ✓ |  |
 | timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String | ✓ |  |
-| windowTime | 窗口大小 | 窗口大小 | Double | ✓ |  |
+| sessionGapTime | 会话窗口间隔大小 | 会话窗口间隔大小 | Double | ✓ |  |
 | latency | 水位线的延迟 | 水位线的延迟，默认0.0 | Double |  | 0.0 |
 | watermarkType | 水位线的类别 | 水位线的类别 | String |  | "PERIOD" |
 | partitionCols | 分组列名数组 | 分组列名，多列，可选，必选 | String[] |  | [] |
@@ -97,10 +97,6 @@ op = SessionTimeWindowStreamOp().setTimeCol("timeCol").setSessionGapTime(60).set
 
 streamSource.select('user, device, ip, to_timestamp(timeCol) as timeCol').link(op).print()
 
-op2 = TumbleTimeWindowStreamOp().setTimeCol("timeCol").setWindowTime(60).setPartitionCols(["user"]).setClause("count_preceding(ip) as countip")
-                                            
-streamSource.select('user, device, ip, to_timestamp(timeCol) as timeCol').link(op2).print()
-
 StreamOperator.execute()
 
 ```
@@ -110,7 +106,6 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.SessionTimeWindowStreamOp;
-import com.alibaba.alink.operator.stream.feature.TumbleTimeWindowStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.operator.stream.sql.SqlCmdStreamOp;
 import org.junit.Test;
@@ -118,9 +113,9 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
-public class TumbleTimeWindowStreamOpTest {
+public class SessionTimeWindowStreamOpTest {
 	@Test
-	public void testTumbleTimeWindowStreamOp() throws Exception {
+	public void testSessionTimeWindowStreamOp() throws Exception {
 		List <Row> sourceFrame = Arrays.asList(
 			Row.of(0, 0, 0, 1L),
 			Row.of(0, 2, 0, 2L),
@@ -135,16 +130,9 @@ public class TumbleTimeWindowStreamOpTest {
 		);
 		StreamOperator <?> streamSource = new MemSourceStreamOp(sourceFrame,
 			"user int, device int, ip int, timeCol long");
-		StreamOperator <?> add_time = new SqlCmdStreamOp()
-			.setAlias(new String[] {"time_data1"})
-			.setCommand("select user, device, ip, to_timestamp(timeCol) as timeCol from time_data1");
 		StreamOperator <?> op = new SessionTimeWindowStreamOp().setTimeCol("timeCol").setSessionGapTime(60).setLatency(
 			180).setPartitionCols("user").setClause("count_preceding(ip) as countip");
-		streamSource.link(add_time).link(op).print();
-		StreamOperator.execute();
-		op = new TumbleTimeWindowStreamOp().setTimeCol("timeCol").setWindowTime(60).setPartitionCols("user").setClause(
-			"count_preceding(ip) as countip");
-		streamSource.link(add_time).link(op).print();
+		streamSource.select("user, device, ip, to_timestamp(timeCol) as timeCol").link(op).print();
 		StreamOperator.execute();
 	}
 }
@@ -152,13 +140,6 @@ public class TumbleTimeWindowStreamOpTest {
 
 ### 运行结果
 
-批预测结果
-
-user|countip
-----|-------
-0|9
-
-流预测结果
 
 user|countip
 ----|-------

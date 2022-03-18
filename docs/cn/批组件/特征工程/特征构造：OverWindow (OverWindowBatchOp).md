@@ -1,4 +1,4 @@
-# 特征构造: OverWindow (OverWindowBatchOp)
+# 特征构造：OverWindow (OverWindowBatchOp)
 Java 类名：com.alibaba.alink.operator.batch.feature.OverWindowBatchOp
 
 Python 类名：OverWindowBatchOp

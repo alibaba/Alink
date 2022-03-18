@@ -1,4 +1,4 @@
-# 特征构造: OverTimeWindow (OverTimeWindowStreamOp)
+# 特征构造：OverTimeWindow (OverTimeWindowStreamOp)
 Java 类名：com.alibaba.alink.operator.stream.feature.OverTimeWindowStreamOp
 
 Python 类名：OverTimeWindowStreamOp
