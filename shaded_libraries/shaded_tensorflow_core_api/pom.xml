@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.alink</groupId>
         <artifactId>alink_shaded</artifactId>
-        <version>0.3</version>
+        <version>0.4-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -16,7 +16,7 @@
 
     <groupId>com.alibaba.alink</groupId>
     <artifactId>shaded_tensorflow_core_api</artifactId>
-    <version>${tensorflow.core.api.version}-0.3-SNAPSHOT</version>
+    <version>${tensorflow.core.api.version}-0.4-SNAPSHOT</version>
 
     <build>
         <plugins>
