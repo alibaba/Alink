@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.alibaba.alink</groupId>
         <artifactId>alink_shaded</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.4</version>
     </parent>
 
     <properties>
@@ -18,7 +18,7 @@
 
     <groupId>com.alibaba.alink</groupId>
     <artifactId>shaded_flink_ai_extended_tf2</artifactId>
-    <version>${flink.ai.extended.version}-0.4-SNAPSHOT</version>
+    <version>${flink.ai.extended.version}-0.4</version>
 
     <build>
         <plugins>
@@ -98,7 +98,7 @@
         <dependency>
             <groupId>com.alibaba.alink</groupId>
             <artifactId>shaded_tensorflow_core_api</artifactId>
-            <version>0.2.0-0.4-SNAPSHOT</version>
+            <version>0.2.0-0.4</version>
             <scope>provided</scope>
         </dependency>
 
