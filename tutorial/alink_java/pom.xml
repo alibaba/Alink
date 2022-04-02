@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.alibaba.alink</groupId>
             <artifactId>alink_core_flink-1.9_2.11</artifactId>
-            <version>1.5.2</version>
+            <version>1.5.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
