@@ -7,6 +7,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.linear.AftRegObjFunc;
@@ -114,6 +115,6 @@ public class AFTModelMapper extends RichModelMapper {
 		for (int i = 0; i < quantileProbabilities.length; i++) {
 			res[i] = dot * Math.exp(Math.log(-Math.log(1 - quantileProbabilities[i])) * scale);
 		}
-		return Tuple2.of(dot, new DenseVector(res).toString());
+		return Tuple2.of(dot, VectorUtil.serialize(new DenseVector(res)));
 	}
 }

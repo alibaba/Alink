@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasGroupCols<T> extends WithParams <T> {
-	/**
-	 * @cn-name 分组列列名数组
-	 * @cn  分组列列名数组
-	 */
+	@NameCn("分组列列名数组")
+	@DescCn(" 分组列列名数组")
 	ParamInfo <String[]> GROUP_COLS = ParamInfoFactory
 		.createParamInfo("groupCols", String[].class)
 		.setDescription("group column names")

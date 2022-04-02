@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.clustering;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.GmmTrainBatchOp;
@@ -23,6 +24,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * While this process is generally guaranteed to converge, it is not guaranteed
  * to find a global optimum.
  */
+@NameCn("高斯混合模型")
 public class GaussianMixture extends Trainer <GaussianMixture, GaussianMixtureModel> implements
 	GmmTrainParams <GaussianMixture>,
 	GmmPredictParams <GaussianMixture>, HasLazyPrintModelInfo <GaussianMixture> {

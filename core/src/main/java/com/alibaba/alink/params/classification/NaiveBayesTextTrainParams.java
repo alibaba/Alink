@@ -3,6 +3,8 @@ package com.alibaba.alink.params.classification;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.shared.HasSmoothing;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
@@ -18,10 +20,8 @@ public interface NaiveBayesTextTrainParams<T> extends
 	HasVectorCol <T>,
 	HasSmoothing <T> {
 
-	/**
-	 * @cn-name 模型类型
-	 * @cn 取值为 Multinomial 或 Bernoulli
-	 */
+	@NameCn("模型类型")
+	@DescCn("取值为 Multinomial 或 Bernoulli")
 	ParamInfo <ModelType> MODEL_TYPE = ParamInfoFactory
 		.createParamInfo("modelType", ModelType.class)
 		.setDescription("model type : Multinomial or Bernoulli.")

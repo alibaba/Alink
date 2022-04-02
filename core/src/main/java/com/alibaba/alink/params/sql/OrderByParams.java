@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.dataproc.HasClause;
 
 /**
@@ -13,29 +15,23 @@ import com.alibaba.alink.params.dataproc.HasClause;
  */
 public interface OrderByParams<T> extends WithParams <T>, HasClause <T> {
 
-	/**
-	 * @cn-name fetch的record数目
-	 * @cn fetch的record数目
-	 */
+	@NameCn("fetch的record数目")
+	@DescCn("fetch的record数目")
 	ParamInfo <Integer> FETCH = ParamInfoFactory
 		.createParamInfo("fetch", Integer.class)
 		.setDescription("Number of records to fetch")
 		.setOptional()
 		.build();
-	/**
-	 * @cn-name record的limit数
-	 * @cn record的limit数
-	 */
+	@NameCn("record的limit数")
+	@DescCn("record的limit数")
 	ParamInfo <Integer> LIMIT = ParamInfoFactory
 		.createParamInfo("limit", Integer.class)
 		.setDescription("Number of records limited")
 		.setOptional()
 		.build();
 
-	/**
-	 * @cn-name fetch的偏移值
-	 * @cn fetch的偏移值
-	 */
+	@NameCn("fetch的偏移值")
+	@DescCn("fetch的偏移值")
 	ParamInfo <Integer> OFFSET = ParamInfoFactory
 		.createParamInfo("offset", Integer.class)
 		.setDescription("Offset when fetching records")
@@ -66,10 +62,8 @@ public interface OrderByParams<T> extends WithParams <T>, HasClause <T> {
 		return set(OFFSET, value);
 	}
 
-	/**
-	 * @cn-name 排序方法
-	 * @cn 排序方法
-	 */
+	@NameCn("排序方法")
+	@DescCn("排序方法")
 	ParamInfo <String> ORDER = ParamInfoFactory
 		.createParamInfo("order", String.class)
 		.setDescription("asc or desc")

@@ -5,8 +5,8 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -20,6 +20,7 @@ import com.alibaba.alink.params.io.CsvSinkParams;
  */
 
 @IoOpAnnotation(name = "csv", ioType = IOType.SinkBatch)
+@NameCn("CSV文件导出")
 public final class CsvSinkBatchOp extends BaseSinkBatchOp <CsvSinkBatchOp>
 	implements CsvSinkParams <CsvSinkBatchOp> {
 

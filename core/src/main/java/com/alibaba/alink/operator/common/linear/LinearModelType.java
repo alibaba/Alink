@@ -14,5 +14,6 @@ public enum LinearModelType {
 	// Support vector machine
 	Perceptron,
 	// Perceptron
-	AFT        // Survival regression
+	AFT
+	// Survival regression
 }

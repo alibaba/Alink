@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.NaiveBayesTrainBatchOp;
@@ -14,6 +15,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * Bayes theorem based on independent assumption. It is an independent feature model.
  * The input feature can be continual or categorical.
  */
+@NameCn("朴素贝叶斯")
 public class NaiveBayes extends Trainer <NaiveBayes, NaiveBayesModel>
 	implements NaiveBayesTrainParams <NaiveBayes>,
 	NaiveBayesPredictParams <NaiveBayes>, HasLazyPrintModelInfo <NaiveBayes> {

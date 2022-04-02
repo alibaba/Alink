@@ -9,6 +9,10 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.pyrunner.PythonMIMOUdaf;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dl.HasPythonEnv;
@@ -18,9 +22,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.alibaba.alink.common.annotation.PortType.DATA;
+import static com.alibaba.alink.common.annotation.PortType.MODEL;
 import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_TURN_ON_LOGGING_KEY;
 import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_VIRTUAL_ENV_KEY;
 
+@InputPorts(values = @PortSpec(value = DATA))
+@OutputPorts(values = @PortSpec(value = MODEL))
+@NameCn("Prophet训练")
 public class ProphetTrainBatchOp extends BatchOperator <ProphetTrainBatchOp>
 	implements ProphetTrainParams <ProphetTrainBatchOp> {
 

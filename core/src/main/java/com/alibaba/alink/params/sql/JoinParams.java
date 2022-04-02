@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 /**
@@ -13,10 +15,8 @@ import com.alibaba.alink.params.ParamUtil;
  */
 public interface JoinParams<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name where语句
-	 * @cn where语句
-	 */
+	@NameCn("where语句")
+	@DescCn("where语句")
 	ParamInfo <String> JOIN_PREDICATE = ParamInfoFactory
 		.createParamInfo("joinPredicate", String.class)
 		.setDescription("joinPredicate")
@@ -24,20 +24,16 @@ public interface JoinParams<T> extends WithParams <T> {
 		.setRequired()
 		.build();
 
-	/**
-	 * @cn-name select语句
-	 * @cn select语句
-	 */
+	@NameCn("select语句")
+	@DescCn("select语句")
 	ParamInfo <String> SELECT_CLAUSE = ParamInfoFactory
 		.createParamInfo("selectClause", String.class)
 		.setDescription("Select clause")
 		.setRequired()
 		.build();
 
-	/**
-	 * @cn-name join类型
-	 * @cn join类型: "join", "leftOuterJoin", "rightOuterJoin" 或 "fullOuterJoin"
-	 */
+	@NameCn("join类型")
+	@DescCn("join类型: \"join\", \"leftOuterJoin\", \"rightOuterJoin\" 或 \"fullOuterJoin\"")
 	ParamInfo <Type> TYPE = ParamInfoFactory
 		.createParamInfo("type", Type.class)
 		.setDescription("Join type, one of \"join\", \"leftOuterJoin\", \"rightOuterJoin\", \"fullOuterJoin\"")

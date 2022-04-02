@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasVertexCol<T> extends WithParams <T> {
-	/**
-	 * @cn-name 节点列名
-	 * @cn 用来指定节点列
-	 */
+	@NameCn("节点列名")
+	@DescCn("用来指定节点列")
 	ParamInfo <String> VERTEX_COL = ParamInfoFactory
 		.createParamInfo("vertexCol", String.class)
 		.setAlias(new String[] {"vertexColName"})

@@ -2,6 +2,10 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerPredictParams;
@@ -11,6 +15,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerPredictParams;
  * to a specific range [min, max). (often [0, 1]).
  * MinMaxScalerPredict will scale the dataSet with model which trained from MaxAbsTrain.
  */
+@InputPorts(values = {@PortSpec(value = PortType.MODEL, suggestions = VectorMinMaxScalerTrainBatchOp.class), @PortSpec(PortType.DATA)})
+@NameCn("向量归一化预测")
 public final class VectorMinMaxScalerPredictBatchOp extends ModelMapBatchOp <VectorMinMaxScalerPredictBatchOp>
 	implements VectorMinMaxScalerPredictParams <VectorMinMaxScalerPredictBatchOp> {
 

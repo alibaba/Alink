@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.regression.BertTextPairRegressorTrainBatchOp;
 import com.alibaba.alink.params.classification.TFTableModelClassificationPredictParams;
@@ -11,6 +12,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * Text pair regressor using Bert models.
  */
+@NameCn("Bert文本对回归")
 public class BertTextPairRegressor extends Trainer <BertTextPairRegressor, BertRegressionModel>
 	implements BertTextPairTrainParams <BertTextPairRegressor>,
 	TFTableModelClassificationPredictParams <BertTextPairRegressor> {

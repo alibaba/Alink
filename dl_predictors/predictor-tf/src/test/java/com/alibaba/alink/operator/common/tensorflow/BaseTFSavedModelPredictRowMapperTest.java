@@ -16,7 +16,7 @@ import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -124,9 +124,9 @@ public class BaseTFSavedModelPredictRowMapperTest {
 		baseTFSavedModelPredictRowMapper.open();
 		Assert.assertEquals(TableSchema.builder()
 			.field("label", Types.LONG)
-			.field("image", TensorTypes.FLOAT_TENSOR)
+			.field("image", AlinkTypes.FLOAT_TENSOR)
 			.field("classes", Types.LONG)
-			.field("probabilities", TensorTypes.FLOAT_TENSOR)
+			.field("probabilities", AlinkTypes.FLOAT_TENSOR)
 			.build(), baseTFSavedModelPredictRowMapper.getOutputSchema()
 		);
 		for (Row row : rows) {

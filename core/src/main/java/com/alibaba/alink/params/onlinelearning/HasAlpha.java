@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasAlpha<T> extends WithParams <T> {
-	/**
-	 * @cn-name 希腊字母：阿尔法
-	 * @cn 经常用来表示算法特殊的参数
-	 */
+	@NameCn("希腊字母：阿尔法")
+	@DescCn("经常用来表示算法特殊的参数")
 	ParamInfo <Double> ALPHA = ParamInfoFactory
 		.createParamInfo("alpha", Double.class)
 		.setDescription("alpha")

@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasKvColDelimiterDefaultAsComma<T> extends WithParams <T> {
-	/**
-	 * @cn-name 分隔符
-	 * @cn 当输入数据为稀疏格式时，key-value对之间的分隔符
-	 */
+	@NameCn("分隔符")
+	@DescCn("当输入数据为稀疏格式时，key-value对之间的分隔符")
 	ParamInfo <String> KV_COL_DELIMITER = ParamInfoFactory
 		.createParamInfo("kvColDelimiter", String.class)
 		.setDescription("Delimiter used between key-value pairs when data in the input table is in sparse format")

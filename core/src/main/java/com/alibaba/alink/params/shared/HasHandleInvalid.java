@@ -4,16 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 /**
  * method to deal with invalid situation.
  */
 public interface HasHandleInvalid<T> extends WithParams <T> {
-	/**
-	 * @cn-name 处理无效值的方法
-	 * @cn 处理无效值的方法，可取 error, skip
-	 */
+	@NameCn("处理无效值的方法")
+	@DescCn("处理无效值的方法，可取 error, skip")
 	ParamInfo <HandleInvalidMethod> HANDLE_INVALID = ParamInfoFactory
 		.createParamInfo("handleInvalidMethod", HandleInvalidMethod.class)
 		.setDescription("the handle method of invalid value. include： error, skip")

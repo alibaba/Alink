@@ -1,0 +1,5 @@
+tox
+flake8
+pytest
+pytest-html
+pytest-xdist

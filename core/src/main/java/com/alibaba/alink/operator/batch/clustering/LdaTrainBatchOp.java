@@ -17,6 +17,13 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
@@ -66,6 +73,14 @@ import static org.apache.flink.shaded.guava18.com.google.common.hash.Hashing.mur
  * This algorithm can also generate the probability that each word belongs to each topic and the
  * perplexity which can evaluate the fitting effect of this algorithm.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {
+	@PortSpec(value = PortType.MODEL),
+	@PortSpec(value = PortType.DATA),
+	@PortSpec(value = PortType.DATA)
+})
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@NameCn("LDA训练")
 public class LdaTrainBatchOp extends BatchOperator <LdaTrainBatchOp>
 	implements LdaTrainParams <LdaTrainBatchOp>,
 	WithModelInfoBatchOp <LdaModelInfo, LdaTrainBatchOp, LdaModelInfoBatchOp> {

@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasEndPoint<T> extends WithParams <T> {
-	/**
-	 * @cn-name endpoint
-	 * @cn endpoint
-	 */
+	@NameCn("endpoint")
+	@DescCn("endpoint")
 	ParamInfo <String> END_POINT = ParamInfoFactory
 		.createParamInfo("endPoint", String.class)
 		.setDescription("end point")

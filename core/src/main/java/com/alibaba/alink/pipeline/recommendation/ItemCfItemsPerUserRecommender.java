@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.recommendation;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.recommendation.ItemCfRecommKernel;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
@@ -9,6 +10,7 @@ import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 /**
  * Recommend items for user with itemCF model.
  */
+@NameCn("ItemCf：ItemsPerUser推荐")
 public class ItemCfItemsPerUserRecommender
 	extends BaseRecommender <ItemCfItemsPerUserRecommender>
 	implements BaseItemsPerUserRecommParams <ItemCfItemsPerUserRecommender> {

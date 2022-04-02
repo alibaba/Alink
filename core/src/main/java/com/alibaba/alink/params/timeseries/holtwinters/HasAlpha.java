@@ -5,6 +5,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.ParamValidator;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.validators.RangeValidator;
 
 public interface HasAlpha<T> extends WithParams <T> {
@@ -13,10 +15,8 @@ public interface HasAlpha<T> extends WithParams <T> {
 		.setLeftInclusive(true)
 		.setRightInclusive(true);
 
-	/**
-	 * @cn-name alpha
-	 * @cn alpha
-	 */
+	@NameCn("alpha")
+	@DescCn("alpha")
 	ParamInfo <Double> ALPHA = ParamInfoFactory
 		.createParamInfo("alpha", Double.class)
 		.setDescription("The alpha.")

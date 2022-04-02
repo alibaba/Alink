@@ -11,6 +11,13 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dataproc.WeightSampleParams;
@@ -26,6 +33,10 @@ import java.util.Random;
  * The probability of being chosen for data point {i} is: weight_{i} / \sum_{j=1}^{n} weight_{j}, where weight_{i} is
  * the weight of data point i.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@ParamSelectColumnSpec(name = "weightCol", allowedTypeCollections = {TypeCollections.NUMERIC_TYPES})
+@NameCn("加权采样")
 public class WeightSampleBatchOp extends BatchOperator <WeightSampleBatchOp>
 	implements WeightSampleParams <WeightSampleBatchOp> {
 

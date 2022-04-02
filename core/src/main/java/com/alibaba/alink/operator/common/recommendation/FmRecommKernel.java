@@ -200,9 +200,7 @@ final public class FmRecommKernel extends RecommKernel {
 		}
 		List <Row> userFeatureRows = PackBatchOperatorUtil.unpackRows(modelRows, 1);
 		userFeatures = new HashMap <>();
-		userFeatureRows.forEach(row -> {
-			userFeatures.put(row.getField(0), VectorUtil.getSparseVector(row.getField(1)));
-		});
+		userFeatureRows.forEach(row -> userFeatures.put(row.getField(0), VectorUtil.getSparseVector(row.getField(1))));
 
 		if (itemColIdx >= 0) {
 			Preconditions.checkArgument(
@@ -212,9 +210,7 @@ final public class FmRecommKernel extends RecommKernel {
 		}
 		List <Row> itemFeatureRows = PackBatchOperatorUtil.unpackRows(modelRows, 2);
 		itemFeatures = new HashMap <>();
-		itemFeatureRows.forEach(row -> {
-			itemFeatures.put(row.getField(0), VectorUtil.getSparseVector(row.getField(1)));
-		});
+		itemFeatureRows.forEach(row -> itemFeatures.put(row.getField(0), VectorUtil.getSparseVector(row.getField(1))));
 
 		if (excludeKnown) {
 			List <Row> history = PackBatchOperatorUtil.unpackRows(modelRows, 3);
@@ -258,5 +254,10 @@ final public class FmRecommKernel extends RecommKernel {
 			indices[len1 + i] += size1;
 		}
 		return new SparseVector(size1 + size2, indices, values);
+	}
+
+	@Override
+	public RecommKernel createNew() {
+		return new FmRecommKernel(getModelSchema(), getDataSchema(), params.clone(), recommType);
 	}
 }

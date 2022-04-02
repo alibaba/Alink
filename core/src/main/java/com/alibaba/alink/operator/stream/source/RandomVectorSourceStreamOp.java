@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.source;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -16,6 +17,7 @@ import com.alibaba.alink.params.io.RandomVectorSourceStreamParams;
  */
 
 @IoOpAnnotation(name = "random_vector", ioType = IOType.SourceStream)
+@NameCn("随机生成向量数据源")
 public final class RandomVectorSourceStreamOp extends BaseSourceStreamOp <RandomVectorSourceStreamOp>
 	implements RandomVectorSourceStreamParams <RandomVectorSourceStreamOp> {
 

@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 
 public interface HasRootFilePath<T> extends WithParams <T> {
-	/**
-	 * @cn-name 文件路径
-	 * @cn 文件路径
-	 */
+	@NameCn("文件路径")
+	@DescCn("文件路径")
 	ParamInfo <String> ROOT_FILE_PATH = ParamInfoFactory
 		.createParamInfo("rootFilePath", String.class)
 		.setDescription("Root file path with file system.")

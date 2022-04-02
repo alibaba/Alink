@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.distance.CosineDistance;
 import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.JaccardDistance;
@@ -16,10 +18,8 @@ import java.io.Serializable;
  * Params: Distance type for clustering, support EUCLIDEAN and COSINE.
  */
 public interface HasSimilarityType<T> extends WithParams <T> {
-	/**
-	 * @cn-name 距离度量方式
-	 * @cn 聚类使用的距离类型
-	 */
+	@NameCn("距离度量方式")
+	@DescCn("聚类使用的距离类型")
 	ParamInfo <SimilarityType> SIMILARITY_TYPE = ParamInfoFactory
 		.createParamInfo("similarityType", SimilarityType.class)
 		.setDescription("similarity type for calculationg neighbor")

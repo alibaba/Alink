@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -13,6 +14,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * Ridge regression pipeline op.
  */
+@NameCn("岭回归")
 public class RidgeRegression extends Trainer <RidgeRegression, RidgeRegressionModel> implements
 	RidgeRegTrainParams <RidgeRegression>,
 	RidgeRegPredictParams <RidgeRegression>,

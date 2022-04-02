@@ -1,17 +1,14 @@
 package com.alibaba.alink.operator.stream.sink;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.utils.MTableSerializeStreamOp;
-import com.alibaba.alink.operator.stream.utils.TensorSerializeStreamOp;
-import com.alibaba.alink.operator.stream.utils.VectorSerializeStreamOp;
 
 import java.util.ArrayList;
 import java.util.List;

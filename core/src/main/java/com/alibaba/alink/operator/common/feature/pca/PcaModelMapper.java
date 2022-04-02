@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -88,7 +88,7 @@ public class PcaModelMapper extends ModelMapper {
 																						   Params params) {
 		return Tuple4.of(dataSchema.getFieldNames(),
 			new String[] {params.get(PcaPredictParams.PREDICTION_COL)},
-			new TypeInformation[] {VectorTypes.DENSE_VECTOR},
+			new TypeInformation[] {AlinkTypes.DENSE_VECTOR},
 			params.get(PcaPredictParams.RESERVED_COLS));
 	}
 

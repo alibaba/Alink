@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -13,6 +14,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * Linear svm pipeline op.
  */
+@NameCn("线性支持向量机")
 public class LinearSvm extends Trainer <LinearSvm, LinearSvmModel>
 	implements LinearBinaryClassTrainParams <LinearSvm>, LinearSvmPredictParams <LinearSvm>,
 	HasLazyPrintTrainInfo <LinearSvm>,

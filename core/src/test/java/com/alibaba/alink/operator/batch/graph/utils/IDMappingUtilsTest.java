@@ -111,7 +111,29 @@ public class IDMappingUtilsTest extends AlinkTestBase {
 			mappedResult,
 			new TupleComparator <Tuple3 <Long, Long, Double>>()
 		);
+	}
 
+	@Test
+	public void testRecoverDataSetWithIdMapping() throws Exception {
+		ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+		DataSet <Row> d = env.fromCollection(originalData);
+		DataSet <Tuple2 <String, Long>> idMapping = IDMappingUtils.computeIdMapping(d, new int[] {0, 1});
+		DataSet <Row> mappedResult = IDMappingUtils.mapDataSetWithIdMapping(d, idMapping, new int[] {0, 1});
+		List <Row> result = IDMappingUtils.recoverDataSetWithIdMapping(mappedResult, idMapping, new int[]{0, 1}).collect();
+
+		List <Tuple3 <String, String, Double>> recoverResult = result.stream().map(
+			x -> Tuple3.of((String) x.getField(0), (String) x.getField(1), (Double) x.getField(2))).collect(
+			Collectors.toList());
+
+		List <Tuple3 <String, String, Double>> expectedRecoveredResult = originalData.stream().map(
+			x -> Tuple3.of((String) x.getField(0), (String) x.getField(1), (Double) x.getField(2))).collect(
+			Collectors.toList());
+
+		compareResultCollections(
+			expectedRecoveredResult,
+			recoverResult,
+			new TupleComparator <Tuple3 <String, String, Double>>()
+		);
 	}
 
 	@Test

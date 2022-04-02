@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasMaxSeqLengthDefaultAsNull<T> extends WithParams <T> {
-	/**
-	 * @cn 句子截断长度
-	 * @cn-name 句子截断长度
-	 */
+	@NameCn("句子截断长度")
+	@DescCn("句子截断长度")
 	ParamInfo <Integer> MAX_SEQ_LENGTH = ParamInfoFactory
 		.createParamInfo("maxSeqLength", Integer.class)
 		.setDescription("maxSeqLength")

@@ -18,6 +18,7 @@ import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -152,7 +153,7 @@ public class LegacyModelExporterUtils {
 		}
 		for (int i = 0; i < schemas0.length; i++) {
 			if (!StringUtils.isNullOrWhitespaceOnly(schemas0[i])) {
-				schemas[i] = CsvUtil.schemaStr2Schema(schemas0[i]);
+				schemas[i] = TableUtil.schemaStr2Schema(schemas0[i]);
 			}
 		}
 		return unpackPipelineStages(batchOp, clazzNames, params, schemas);
@@ -262,8 +263,8 @@ public class LegacyModelExporterUtils {
 	@Deprecated
 	public static String getModelServingMeta(TableSchema modelSchema, TableSchema inputDataSchema) {
 		Map <String, String> config = new HashMap <>();
-		config.put("modelSchema", CsvUtil.schema2SchemaStr(modelSchema));
-		config.put("inputDataSchema", CsvUtil.schema2SchemaStr(inputDataSchema));
+		config.put("modelSchema", TableUtil.schema2SchemaStr(modelSchema));
+		config.put("inputDataSchema", TableUtil.schema2SchemaStr(inputDataSchema));
 		config.put("modelVersion", "v0.2");
 		return JsonConverter.toJson(config);
 	}
@@ -316,7 +317,7 @@ public class LegacyModelExporterUtils {
 			params[i] = params0[i].toJson();
 			schemas[i] = "";
 			if (schemas0[i] != null) {
-				schemas[i] = CsvUtil.schema2SchemaStr(schemas0[i]);
+				schemas[i] = TableUtil.schema2SchemaStr(schemas0[i]);
 			}
 		}
 		Map <String, Object> config = new HashMap <>();
@@ -466,7 +467,7 @@ public class LegacyModelExporterUtils {
 					new CsvSourceBatchOp()
 						.setMLEnvironmentId(mlEnvId)
 						.setFilePath(filePath)
-						.setSchemaStr(CsvUtil.schema2SchemaStr(PIPELINE_MODEL_SCHEMA)),
+						.setSchemaStr(TableUtil.schema2SchemaStr(PIPELINE_MODEL_SCHEMA)),
 					LegacyModelExporterUtils.loadMetaFromCsvFile(filePath).f1
 				).toArray(new PipelineStageBase[0])
 			);
@@ -491,7 +492,7 @@ public class LegacyModelExporterUtils {
 				new CsvSourceBatchOp()
 					.setMLEnvironmentId(mlEnvId)
 					.setFilePath(filePath)
-					.setSchemaStr(CsvUtil.schema2SchemaStr(LegacyModelExporterUtils.PIPELINE_MODEL_SCHEMA)),
+					.setSchemaStr(TableUtil.schema2SchemaStr(LegacyModelExporterUtils.PIPELINE_MODEL_SCHEMA)),
 				LegacyModelExporterUtils.loadMetaFromCsvFile(filePath).f1)
 			);
 		}

@@ -4,6 +4,14 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -16,6 +24,10 @@ import com.alibaba.alink.params.feature.VectorChiSqSelectorParams;
 /**
  * chi-square selector for vector.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@NameCn("向量卡方选择器")
 public final class VectorChiSqSelectorBatchOp extends BatchOperator <VectorChiSqSelectorBatchOp>
 	implements VectorChiSqSelectorParams <VectorChiSqSelectorBatchOp>,
 	WithModelInfoBatchOp <ChisqSelectorModelInfo, VectorChiSqSelectorBatchOp, ChisqSelectorModelInfoBatchOp> {

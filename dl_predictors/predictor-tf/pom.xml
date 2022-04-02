@@ -45,7 +45,7 @@
         <dependency>
             <groupId>com.alibaba.alink</groupId>
             <artifactId>shaded_tensorflow_core_api</artifactId>
-            <version>0.2.0-0.3</version>
+            <version>0.2.0-0.4</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>

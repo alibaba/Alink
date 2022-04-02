@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.nlp.NGramMapper;
 import com.alibaba.alink.params.nlp.NGramParams;
 import com.alibaba.alink.pipeline.MapTransformer;
@@ -12,6 +13,7 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * and each ngram is connected by a "_" character. All the ngrams are joined together with space in the
  * new document.
  */
+@NameCn("NGram")
 public class NGram extends MapTransformer <NGram>
 	implements NGramParams <NGram> {
 

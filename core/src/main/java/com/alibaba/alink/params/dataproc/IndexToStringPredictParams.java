@@ -3,6 +3,8 @@ package com.alibaba.alink.params.dataproc;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.mapper.ModelMapperParams;
 import com.alibaba.alink.params.shared.colname.HasOutputColDefaultAsNull;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
@@ -18,10 +20,8 @@ public interface IndexToStringPredictParams<T> extends
 	HasReservedColsDefaultAsNull <T>,
 	HasOutputColDefaultAsNull <T> {
 
-	/**
-	 * @cn-name 模型名字
-	 * @cn 模型名字
-	 */
+	@NameCn("模型名字")
+	@DescCn("模型名字")
 	ParamInfo <String> MODEL_NAME = ParamInfoFactory
 		.createParamInfo("modelName", String.class)
 		.setDescription("Name of the model")

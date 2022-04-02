@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasNewtonStep<T> extends WithParams <T> {
-	/**
-	 * @cn-name 是否使用二阶梯度
-	 * @cn 是否使用二阶梯度
-	 */
+	@NameCn("是否使用二阶梯度")
+	@DescCn("是否使用二阶梯度")
 	ParamInfo <Boolean> NEWTON_STEP = ParamInfoFactory
 		.createParamInfo("newtonStep", Boolean.class)
 		.setDescription("If open the newton step in gbdt.")

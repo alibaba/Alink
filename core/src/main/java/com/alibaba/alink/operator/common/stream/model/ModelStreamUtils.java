@@ -24,7 +24,6 @@ import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.ModelStreamScanParams;
 import org.apache.commons.io.IOUtils;
@@ -152,7 +151,7 @@ public class ModelStreamUtils {
 			new FilePath(new Path(filePath.getPath(), toStringPresentation(timestamp)), filePath.getFileSystem())
 		);
 
-		return CsvUtil.schemaStr2Schema(meta.schemaStr);
+		return TableUtil.schemaStr2Schema(meta.schemaStr);
 	}
 
 	public static Tuple3 <Timestamp, Long, FilePath> descModel(FilePath filePath, Timestamp timestamp) {
@@ -240,7 +239,7 @@ public class ModelStreamUtils {
 		TableSchema schema;
 
 		if (schemaStr != null) {
-			schema = CsvUtil.schemaStr2Schema(schemaStr);
+			schema = TableUtil.schemaStr2Schema(schemaStr);
 		} else {
 			try {
 				schema = ModelStreamUtils.getSchemaFromFolder(filePath);

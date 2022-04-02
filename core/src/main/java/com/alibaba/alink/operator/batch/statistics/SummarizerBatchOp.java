@@ -7,11 +7,17 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.SummaryDataConverter;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
-import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import com.alibaba.alink.params.statistics.SummarizerParams;
 
 import java.util.Arrays;
@@ -21,6 +27,10 @@ import java.util.function.Consumer;
 /**
  * It is summary of table, support count, mean, variance, min, max, sum.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ParamSelectColumnSpec(name = "selectedCols")
+@NameCn("全表统计")
 public class SummarizerBatchOp extends BatchOperator <SummarizerBatchOp>
 	implements SummarizerParams <SummarizerBatchOp> {
 

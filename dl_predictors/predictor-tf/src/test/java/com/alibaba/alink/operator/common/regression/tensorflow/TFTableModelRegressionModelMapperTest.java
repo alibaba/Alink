@@ -9,9 +9,9 @@ import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
 import com.alibaba.alink.testutil.categories.DLTest;
@@ -66,7 +66,7 @@ public class TFTableModelRegressionModelMapperTest {
 		params.set(HasReservedColsDefaultAsNull.RESERVED_COLS, new String[] {"s", "label"});
 
 		TFTableModelRegressionModelMapper mapper = new TFTableModelRegressionModelMapper(modelOp.getSchema(),
-			CsvUtil.schemaStr2Schema(dataSchemaStr), params);
+			TableUtil.schemaStr2Schema(dataSchemaStr), params);
 		mapper.loadModel(modelRows);
 		mapper.open();
 		Assert.assertEquals(TableSchema.builder()

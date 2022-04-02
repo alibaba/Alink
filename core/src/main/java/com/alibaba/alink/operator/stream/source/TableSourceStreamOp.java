@@ -7,12 +7,20 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 
 /**
  * Transform the Table to SourceStreamOp.
  */
+@InputPorts()
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@NameCn("Table数据源")
 public final class TableSourceStreamOp extends StreamOperator <TableSourceStreamOp> {
 
 	private static final long serialVersionUID = 6011949833466268149L;

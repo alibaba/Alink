@@ -2,12 +2,14 @@ package com.alibaba.alink.operator.stream.sql;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.sql.WhereParams;
 
 /**
  * Filter records in the stream operator.
  */
+@NameCn("SQL操作：Where")
 public final class WhereStreamOp extends BaseSqlApiStreamOp <WhereStreamOp>
 	implements WhereParams <WhereStreamOp> {
 

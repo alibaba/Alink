@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasFeatureCols<T> extends WithParams <T> {
-	/**
-	 * @cn-name 特征列名
-	 * @cn 特征列名，必选
-	 */
+	@NameCn("特征列名")
+	@DescCn("特征列名，必选")
 	ParamInfo <String[]> FEATURE_COLS = ParamInfoFactory
 		.createParamInfo("featureCols", String[].class)
 		.setDescription("Names of the feature columns used for training in the input table")

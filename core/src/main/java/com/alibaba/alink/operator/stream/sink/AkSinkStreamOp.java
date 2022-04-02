@@ -4,21 +4,20 @@ import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.functions.sink.OutputFormatSinkFunction;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.utils.MTableSerializeStreamOp;
-import com.alibaba.alink.operator.stream.utils.TensorSerializeStreamOp;
-import com.alibaba.alink.operator.stream.utils.VectorSerializeStreamOp;
 import com.alibaba.alink.params.io.AkSinkParams;
 
 /**
  * Sink stream op data to a file system with ak format.
  */
 @IoOpAnnotation(name = "alink_file", ioType = IOType.SinkStream)
+@NameCn("AK文件导出")
 public final class AkSinkStreamOp extends BaseSinkStreamOp <AkSinkStreamOp>
 	implements AkSinkParams <AkSinkStreamOp> {
 
@@ -44,7 +43,7 @@ public final class AkSinkStreamOp extends BaseSinkStreamOp <AkSinkStreamOp>
 				new OutputFormatSinkFunction <>(
 					new AkUtils.AkOutputFormat(
 						getFilePath(),
-						new AkUtils.AkMeta(CsvUtil.schema2SchemaStr(in.getSchema())),
+						new AkUtils.AkMeta(TableUtil.schema2SchemaStr(in.getSchema())),
 						getOverwriteSink() ? FileSystem.WriteMode.OVERWRITE : FileSystem.WriteMode.NO_OVERWRITE)
 				)
 			)

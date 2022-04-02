@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.sql;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sql.SelectBatchOp;
 import com.alibaba.alink.operator.common.sql.SelectMapper;
@@ -13,6 +14,7 @@ import com.alibaba.alink.pipeline.MapTransformer;
 /**
  * Select execute select statement for each row.
  */
+@NameCn("SQL操作：Select")
 public class Select extends MapTransformer <Select>
 	implements SelectParams <Select> {
 

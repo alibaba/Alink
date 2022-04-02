@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.stream.onlinelearning;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
@@ -9,7 +8,6 @@ import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple4;
@@ -30,6 +28,16 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -61,13 +69,27 @@ import java.util.Map;
  */
 
 @Internal
+@InputPorts(values = {
+	@PortSpec(value = PortType.MODEL, opType = OpType.BATCH),
+	@PortSpec(value = PortType.DATA, opType = OpType.SAME),
+})
+@OutputPorts(values = {@PortSpec(value = PortType.MODEL_STREAM, opType = OpType.SAME)})
+
+@ParamSelectColumnSpec(name = "featureCols",
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "vectorCol",
+	allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "labelCol")
+@FeatureColsVectorColMutexRule
+
+@NameCn("在线学习训练基类")
 public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp <T>> extends StreamOperator <T> {
 
 	private static final long serialVersionUID = 5419987051076832208L;
-	DataBridge dataBridge = null;
+	DataBridge dataBridge;
 	private OnlineLearningKernel kernel;
 
-	public BaseOnlineTrainStreamOp(BatchOperator model) throws Exception {
+	public BaseOnlineTrainStreamOp(BatchOperator <?> model) {
 		super(new Params());
 		if (model != null) {
 			dataBridge = DirectReader.collect(model);
@@ -77,7 +99,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 		}
 	}
 
-	public BaseOnlineTrainStreamOp(BatchOperator model, Params params) throws Exception {
+	public BaseOnlineTrainStreamOp(BatchOperator <?> model, Params params) {
 		super(params);
 		if (model != null) {
 			dataBridge = DirectReader.collect(model);
@@ -131,7 +153,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 			}
 			featureColLength = featureCols.length;
 		}
-		final TypeInformation labelType = inputs[0].getColTypes()[labelIdx];
+		final TypeInformation<?> labelType = inputs[0].getColTypes()[labelIdx];
 
 		int featureSize = vectorTrainIdx != -1 ? getParams().get(OnlineTrainParams.VECTOR_SIZE) : featureColLength;
 		final int[] splitInfo = getSplitInfo(featureSize, hasInterceptItem, parallelism);
@@ -162,8 +184,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 				private static final long serialVersionUID = -5436758453355074895L;
 
 				@Override
-				public boolean filter(Tuple2 <Long, Object> t2)
-					throws Exception {
+				public boolean filter(Tuple2 <Long, Object> t2) {
 					// if t2.f0 >= 0 then feedback
 					return (t2.f0 >= 0);
 				}
@@ -174,8 +195,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 				private static final long serialVersionUID = 4204787383191799107L;
 
 				@Override
-				public boolean filter(Tuple2 <Long, Object> t2)
-					throws Exception {
+				public boolean filter(Tuple2 <Long, Object> t2) {
 					/* if t2.f0 small than 0, then output */
 					return t2.f0 < 0;
 				}
@@ -185,7 +205,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 
 		TableSchema schema = new LinearModelDataConverter(labelType).getModelSchema();
 
-		TypeInformation[] types = new TypeInformation[schema.getFieldTypes().length + 2];
+		TypeInformation<?>[] types = new TypeInformation[schema.getFieldTypes().length + 2];
 		String[] names = new String[schema.getFieldTypes().length + 2];
 		names[0] = ModelStreamUtils.MODEL_STREAM_TIMESTAMP_COLUMN_NAME;
 		names[1] = ModelStreamUtils.MODEL_STREAM_COUNT_COLUMN_NAME;
@@ -203,12 +223,12 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 	public static class WriteModel
 		extends RichFlatMapFunction <Tuple2 <Long, Object>, Row> {
 		private static final long serialVersionUID = 828728999893377750L;
-		private StringTypeEnum type;
-		private String vectorColName;
-		private String[] featureCols;
-		private boolean hasInterceptItem;
+		private final StringTypeEnum type;
+		private final String vectorColName;
+		private final String[] featureCols;
+		private final boolean hasInterceptItem;
 
-		public WriteModel(TypeInformation type, String vectorColName, String[] featureCols, boolean hasInterceptItem) {
+		public WriteModel(TypeInformation<?> type, String vectorColName, String[] featureCols, boolean hasInterceptItem) {
 			this.type = StringTypeEnum.valueOf(type.toString().toUpperCase());
 			this.vectorColName = vectorColName;
 			this.featureCols = featureCols;
@@ -237,7 +257,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 				int rowSize = r.getArity();
 				Row row = new Row(rowSize + 2);
 				row.setField(0, new Timestamp(time));
-				row.setField(1, rows.size() + 0L);
+				row.setField(1, (long) rows.size());
 
 				for (int j = 0; j < rowSize; ++j) {
 					if (j == 2 && r.getField(j) != null) {
@@ -265,11 +285,11 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 		extends RichMapFunction <Row, Tuple3 <Long, Vector, Object>> {
 		private static final long serialVersionUID = 3738888745125082777L;
 		private long counter;
-		private boolean hasInterceptItem;
+		private final boolean hasInterceptItem;
 		private int parallelism;
-		private int vectorTrainIdx;
-		private int labelIdx;
-		private int[] featureIdx;
+		private final int vectorTrainIdx;
+		private final int labelIdx;
+		private final int[] featureIdx;
 
 		public ParseSample(boolean hasInterceptItem,
 						   int vectorTrainIdx, int[] featureIdx, int labelIdx) {
@@ -293,7 +313,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 			if (vectorTrainIdx == -1) {
 				vec = new DenseVector(featureIdx.length);
 				for (int i = 0; i < featureIdx.length; ++i) {
-					vec.set(i, Double.valueOf(row.getField(featureIdx[i]).toString()));
+					vec.set(i, Double.parseDouble(row.getField(featureIdx[i]).toString()));
 				}
 			} else {
 				vec = VectorUtil.getVector(row.getField(vectorTrainIdx));
@@ -316,8 +336,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 
 		@Override
 		public void flatMap1(Tuple3 <Long, Vector, Object> value,
-							 Collector <Tuple4 <Long, Vector, Object, double[]>> out)
-			throws Exception {
+							 Collector <Tuple4 <Long, Vector, Object, double[]>> out) {
 			if (cnt > 0 && (value.f0 / getRuntimeContext().getNumberOfParallelSubtasks()) % cnt != 0) {
 				return;
 			}
@@ -326,18 +345,17 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 		}
 
 		@Override
-		public void flatMap2(Tuple2 <Long, Object> value, Collector <Tuple4 <Long, Vector, Object, double[]>> out)
-			throws Exception {
+		public void flatMap2(Tuple2 <Long, Object> value, Collector <Tuple4 <Long, Vector, Object, double[]>> out) {
 			Tuple3 <Vector, Object, Long> sample = sampleBuffer.get(value.f0);
 			long timeInterval = System.currentTimeMillis() - sample.f2;
-			if (timeInterval > 500L) {
+			if (timeInterval > 500L && timeInterval <= 1000L) {
 				if (cnt != 2L) {
 					cnt = 2L;
 					if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
 						System.out.println("50% samples are abandoned. current sampleId " + value.f0);
 					}
 				}
-			} else if (timeInterval > 1000L) {
+			} else if (timeInterval > 1000L && timeInterval <= 10000L) {
 				if (cnt != 4L) {
 					cnt = 4L;
 					if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
@@ -368,11 +386,11 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 		Tuple6 <Long, Integer, Integer, Vector, Object, double[]>> {
 		private static final long serialVersionUID = -8716205207637225677L;
 		private int coefSize;
-		private boolean hasInterceptItem;
-		private int vectorSize;
+		private final boolean hasInterceptItem;
+		private final int vectorSize;
 		private int parallelism;
-		private int[] splitInfo;
-		private int[] nnz;
+		private final int[] splitInfo;
+		private final int[] nnz;
 
 		public SplitVector(int[] splitInfo, boolean hasInterceptItem, int vectorSize) {
 			this.hasInterceptItem = hasInterceptItem;
@@ -447,21 +465,20 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 		double[]>,
 		Tuple2 <Long, Object>> implements CheckpointedFunction {
 		private static final long serialVersionUID = 1613267176484234752L;
-		private DataBridge dataBridge;
+		private final DataBridge dataBridge;
 		transient private double[] coef;
 		transient private Map <Long, Tuple3 <Vector, Object, Long>> subVectors;
 
 		private int startIdx;
-		private int endIdx;
-		private int[] poses;
+		private final int[] poses;
 		long startTime = System.currentTimeMillis();
 		int modelSaveTimeInterval;
 		private Object[] labelValues;
 		private long modelId = 0;
-		private OnlineLearningKernel kernel = null;
-		private Params params;
-		private int vectorSize;
-		private boolean hasIntercept;
+		private final OnlineLearningKernel kernel;
+		private final Params params;
+		private final int vectorSize;
+		private final boolean hasIntercept;
 		private transient ListState <Tuple2 <double[], Object[]>> modelState;
 
 		public CalcTask(DataBridge dataBridge, int[] poses, Params params, OnlineLearningKernel kernel, int vectorSize) {
@@ -497,12 +514,12 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 					TypeInformation.of(new TypeHint <Tuple2 <double[], Object[]>>() {
 					}));
 
-			modelState = context.getOperatorStateStore().getListState(descriptor);
+			modelState = context.getOperatorStateStore().getOperatorState(descriptor);
 
 			int numWorkers = getRuntimeContext().getNumberOfParallelSubtasks();
 			int workerId = getRuntimeContext().getIndexOfThisSubtask();
 			startIdx = poses[workerId];
-			endIdx = poses[workerId + 1];
+			int endIdx = poses[workerId + 1];
 			if (context.isRestored()) {
 				for (Tuple2 <double[], Object[]> state : modelState.get()) {
 					this.coef = state.f0;
@@ -560,8 +577,8 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 	public static class ReduceTask extends
 		RichFlatMapFunction <Tuple2 <Long, Object>, Tuple2 <Long, Object>> {
 		private static final long serialVersionUID = 1072071076831105639L;
-		private int parallelism;
-		private int[] poses;
+		private final int parallelism;
+		private final int[] poses;
 		transient private Map <Long, Tuple2 <Integer, double[]>> buffer;
 		OnlineLearningKernel kernel;
 		private Map <Long, List <Tuple2 <Integer, double[]>>> models;
@@ -598,9 +615,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 					double[] coef = new double[poses[parallelism]];
 					for (Tuple2 <Integer, double[]> subModel : model) {
 						int pos = poses[subModel.f0];
-						for (int i = 0; i < subModel.f1.length; ++i) {
-							coef[pos + i] = subModel.f1[i];
-						}
+						System.arraycopy(subModel.f1, 0, coef, pos, subModel.f1.length);
 					}
 					out.collect(Tuple2.of(value.f0, Tuple2.of(t3.f1, coef)));
 					models.remove(modelId);
@@ -618,7 +633,7 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 					}
 				}
 
-				if (val.f0 == t2.f0) {
+				if (val.f0.equals(t2.f0)) {
 					out.collect(Tuple2.of(value.f0, kernel.getFeedbackVar(val.f1)));
 					buffer.remove(value.f0);
 				}
@@ -658,40 +673,21 @@ public abstract class BaseOnlineTrainStreamOp<T extends BaseOnlineTrainStreamOp 
 
 		/**
 		 * calc wx with sub vector.
-		 *
-		 * @param coef
-		 * @param vec
-		 * @param startIdx
-		 * @return
 		 */
 		public abstract double[] calcLocalWx(double[] coef, Vector vec, int startIdx);
 
 		/**
 		 * get feedback variable.
-		 *
-		 * @param wx
-		 * @return
 		 */
 		public abstract double[] getFeedbackVar(double[] wx);
 
 		/**
 		 * set model variables.
-		 *
-		 * @param params
-		 * @param localModelSize
-		 * @param labelValues
 		 */
 		public abstract void setModelParams(Params params, int localModelSize, Object[] labelValues);
 
 		/**
 		 * update model with feedback variables.
-		 *
-		 * @param coef
-		 * @param vec
-		 * @param wx
-		 * @param timeInterval
-		 * @param startIdx
-		 * @param labelValue
 		 */
 		public abstract void updateModel(double[] coef, Vector vec, double[] wx,
 										 long timeInterval, int startIdx, Object labelValue);

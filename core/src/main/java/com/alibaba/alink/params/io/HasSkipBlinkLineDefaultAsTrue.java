@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasSkipBlinkLineDefaultAsTrue<T> extends WithParams <T> {
-	/**
-	 * @cn-name 是否忽略空行
-	 * @cn 是否忽略空行
-	 */
+	@NameCn("是否忽略空行")
+	@DescCn("是否忽略空行")
 	ParamInfo <Boolean> SKIP_BLANK_LINE = ParamInfoFactory
 		.createParamInfo("skipBlankLine", Boolean.class)
 		.setDescription("skipBlankLine")

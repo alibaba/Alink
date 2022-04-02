@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.feature.OneHotModelMapper;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * One hot pipeline model.
  */
+@NameCn("独热编码模型")
 public class OneHotEncoderModel extends MapModel <OneHotEncoderModel>
 	implements OneHotPredictParams <OneHotEncoderModel> {
 

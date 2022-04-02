@@ -8,6 +8,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -22,6 +30,10 @@ import com.alibaba.alink.params.dataproc.MaxAbsScalerTrainParams;
  * [-1, 1] by dividing through the maximum absolute value in each feature.
  * MaxAbsScalerTrain will train a model.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA, opType = OpType.BATCH))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("绝对值最大化训练")
 public class MaxAbsScalerTrainBatchOp extends BatchOperator <MaxAbsScalerTrainBatchOp>
 	implements MaxAbsScalerTrainParams <MaxAbsScalerTrainBatchOp>,
 	WithModelInfoBatchOp <MaxAbsScalarModelInfo, MaxAbsScalerTrainBatchOp, MaxAbsScalerModelInfoBatchOp> {

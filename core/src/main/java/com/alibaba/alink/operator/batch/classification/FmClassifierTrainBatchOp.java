@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.classification;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -16,6 +17,7 @@ import java.util.List;
 /**
  * Fm classification train algorithm. the input of this algorithm can be vector or table.
  */
+@NameCn("FM分类训练")
 public class FmClassifierTrainBatchOp extends FmTrainBatchOp <FmClassifierTrainBatchOp>
 	implements FmTrainParams <FmClassifierTrainBatchOp>,
 	WithModelInfoBatchOp <FmClassifierModelInfo, FmClassifierTrainBatchOp, FmClassifierModelInfoBatchOp>,
@@ -44,11 +46,11 @@ public class FmClassifierTrainBatchOp extends FmTrainBatchOp <FmClassifierTrainB
 	/**
 	 * get model info of this train process.
 	 *
-	 * @return
+	 * @return FmClassifierModelInfoBatchOp.
 	 */
 	@Override
 	public FmClassifierModelInfoBatchOp getModelInfoBatchOp() {
-		return new FmClassifierModelInfoBatchOp(this.labelType)
+		return new FmClassifierModelInfoBatchOp()
 			.setMLEnvironmentId(this.getMLEnvironmentId()).linkFrom(this);
 	}
 }

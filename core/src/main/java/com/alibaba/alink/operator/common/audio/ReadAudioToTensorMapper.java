@@ -7,24 +7,22 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.common.dataproc.FFT;
 import com.alibaba.alink.params.audio.ReadAudioToTensorParams;
-
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
-
 import com.sun.media.sound.WaveFileReader;
 import org.apache.commons.math3.complex.Complex;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 public class ReadAudioToTensorMapper extends Mapper {
@@ -39,45 +37,51 @@ public class ReadAudioToTensorMapper extends Mapper {
         rootFolder = FilePath.deserialize(params.get(ReadAudioToTensorParams.ROOT_FILE_PATH));
         sampleRate = params.get(ReadAudioToTensorParams.SAMPLE_RATE);
         duration = params.contains(ReadAudioToTensorParams.DURATION) ?
-            params.get(ReadAudioToTensorParams.DURATION) : -1;
+                params.get(ReadAudioToTensorParams.DURATION) : -1;
         offset = params.get(ReadAudioToTensorParams.OFFSET);
     }
 
     @Override
     protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
         Tuple2<Long, FloatTensor> res = AudioToFloatTensor.read(
-            new FilePath(
-                new Path(rootFolder.getPath(), (String) selection.get(0)),
-                rootFolder.getFileSystem()
-            )
-            , sampleRate
-            , duration
-            , offset
+                new FilePath(
+                        new Path(rootFolder.getPath(), (String) selection.get(0)),
+                        rootFolder.getFileSystem()
+                )
+                , sampleRate
+                , duration
+                , offset
         );
         result.set(0, res.f1);
     }
-
+	
     @Override
     protected Tuple4<String[], String[], TypeInformation<?>[], String[]> prepareIoSchema(TableSchema dataSchema,
                                                                                          Params params) {
         return Tuple4.of(
-            new String[]{params.get(ReadAudioToTensorParams.RELATIVE_FILE_PATH_COL)},
-            new String[]{params.get(ReadAudioToTensorParams.OUTPUT_COL)},
-            new TypeInformation<?>[]{TensorTypes.FLOAT_TENSOR},
-            params.get(ReadAudioToTensorParams.RESERVED_COLS)
+                new String[]{params.get(ReadAudioToTensorParams.RELATIVE_FILE_PATH_COL)},
+                new String[]{params.get(ReadAudioToTensorParams.OUTPUT_COL)},
+                new TypeInformation<?>[]{AlinkTypes.FLOAT_TENSOR},
+                params.get(ReadAudioToTensorParams.RESERVED_COLS)
         );
     }
 
     public static final class AudioToFloatTensor {
         public static Tuple2<Long, FloatTensor> read(
-            FilePath filePath,
-            int sampleRate,
-            double duration,
-            double offset) throws IOException, UnsupportedAudioFileException {
-            String fileName = filePath.getPathStr();
+                FilePath filePath,
+                int sampleRate,
+                double duration,
+                double offset) throws IOException, UnsupportedAudioFileException {
+            BaseFileSystem<?> fileSystem = filePath.getFileSystem();
+            Path path = filePath.getPath();
+
             // 读取音频
             WaveFileReader waveFileReader = new WaveFileReader();
-            AudioFileFormat wavFormat = waveFileReader.getAudioFileFormat(new File(fileName));
+
+            AudioFileFormat wavFormat = null;
+            try (InputStream inputStream = fileSystem.open(path)) {
+                wavFormat = waveFileReader.getAudioFileFormat(inputStream);
+            }
             // 获取音频基本数据
             AudioFormat format = wavFormat.getFormat();
             int frameLen = wavFormat.getFrameLength();
@@ -108,9 +112,9 @@ public class ReadAudioToTensorMapper extends Mapper {
                 floatOffset = -1;
                 floatScale = (float) (0.5 * ((1 << sampleSize) - 1));
             }
-            FileInputStream inStream = new FileInputStream(new File(fileName));
-            try {
-                AudioInputStream audioInputStream = waveFileReader.getAudioInputStream(inStream);
+
+            try (InputStream inputStream = fileSystem.open(path)) {
+                AudioInputStream audioInputStream = waveFileReader.getAudioInputStream(inputStream);
                 byte[] b = new byte[frameSize];
                 for (int i = 0; i < frameLen; i++) {
                     for (int j = 0; j < channelNum; j++) {
@@ -120,9 +124,8 @@ public class ReadAudioToTensorMapper extends Mapper {
                         }
                     }
                 }
-            } finally {
-                inStream.close();
             }
+
             frameLen = sampleEnd - sampleStart;
             if (frameRate != sampleRate) {
                 // 重采样
@@ -155,6 +158,7 @@ public class ReadAudioToTensorMapper extends Mapper {
 
             }
             return Tuple2.of((long) frameRate, new FloatTensor(data));
+
         }
 
         static float byteToFloat(byte[] arr) {

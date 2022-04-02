@@ -23,6 +23,13 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -34,6 +41,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelData;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelData.ClusterSummary;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelDataConverter;
+import com.alibaba.alink.operator.common.dataproc.FirstReducer;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
@@ -63,6 +71,11 @@ import java.util.Set;
  * Steinbach, Karypis, and Kumar, A comparison of document clustering techniques, KDD Workshop on Text Mining,
  * 2000.</a>
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
+@ParamSelectColumnSpec(name = "vectorCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
+
+@NameCn("二分K均值聚类训练")
 public final class BisectingKMeansTrainBatchOp extends BatchOperator <BisectingKMeansTrainBatchOp>
 	implements BisectingKMeansTrainParams <BisectingKMeansTrainBatchOp>,
 	WithModelInfoBatchOp <BisectingKMeansModelInfoBatchOp.BisectingKMeansModelInfo,
@@ -607,7 +620,8 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator <BisectingK
 
 		IterativeDataSet <Tuple3 <Long, ClusterSummary, IterInfo>> loop
 			= clustersSummariesAndIterInfo.iterate(Integer.MAX_VALUE);
-		DataSet <Tuple1 <IterInfo>> iterInfo = loop. <Tuple1 <IterInfo>>project(2).first(1);
+		DataSet <Tuple1 <IterInfo>> iterInfo = loop. <Tuple1 <IterInfo>>project(2)
+			.reduceGroup(new FirstReducer <>(1));
 
 		//Get all cluster summaries. Split clusters if at the first step of inner iterations.
 		DataSet <Tuple3 <Long, ClusterSummary, IterInfo>> allClusters = getOrSplitClusters(loop, k,

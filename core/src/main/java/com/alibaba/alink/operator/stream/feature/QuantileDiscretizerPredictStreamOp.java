@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.stream.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -10,6 +13,8 @@ import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 /**
  * The stream operator that predict the data using the quantile discretizer model.
  */
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("分位数离散化预测")
 public class QuantileDiscretizerPredictStreamOp extends ModelMapStreamOp <QuantileDiscretizerPredictStreamOp>
 	implements QuantileDiscretizerPredictParams <QuantileDiscretizerPredictStreamOp> {
 

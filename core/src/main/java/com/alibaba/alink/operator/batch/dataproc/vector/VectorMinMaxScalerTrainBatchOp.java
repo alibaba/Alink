@@ -7,6 +7,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelDataConverter;
@@ -20,6 +27,10 @@ import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerTrainParams;
  * to a specific range [min, max). (often [0, 1]).
  * MinMaxScalerTrain will train a model.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@NameCn("向量归一化训练")
 public final class VectorMinMaxScalerTrainBatchOp extends BatchOperator <VectorMinMaxScalerTrainBatchOp>
 	implements VectorMinMaxScalerTrainParams <VectorMinMaxScalerTrainBatchOp>,
 	WithModelInfoBatchOp <VectorMinMaxScalerModelInfo, VectorMinMaxScalerTrainBatchOp,

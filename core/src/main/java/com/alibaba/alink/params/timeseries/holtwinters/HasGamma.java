@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasGamma<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name gamma
-	 * @cn gamma
-	 */
+	@NameCn("gamma")
+	@DescCn("gamma")
 	ParamInfo <Double> GAMMA = ParamInfoFactory
 		.createParamInfo("gamma", Double.class)
 		.setDescription("The gamma.")

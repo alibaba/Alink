@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasClause<T> extends WithParams <T> {
-	/**
-	 * @cn-name 运算语句
-	 * @cn 运算语句
-	 */
+	@NameCn("运算语句")
+	@DescCn("运算语句")
 	ParamInfo <String> CLAUSE = ParamInfoFactory
 		.createParamInfo("clause", String.class)
 		.setDescription("Operation clause.")

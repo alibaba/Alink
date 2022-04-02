@@ -5,6 +5,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 public interface HasDefaultDatabase<T> extends WithParams <T> {
+	/**
+	 * @cn 默认数据库
+	 */
 	ParamInfo <String> DEFAULT_DATABASE = ParamInfoFactory
 		.createParamInfo("defaultDatabase", String.class)
 		.setDescription("the default database")

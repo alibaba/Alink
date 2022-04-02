@@ -13,7 +13,7 @@ import org.apache.flink.util.StringUtils;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.OutputColsHelper;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dataproc.format.HasHandleInvalidDefaultAsError;
 import com.alibaba.alink.params.dataproc.format.HasHandleInvalidDefaultAsError.HandleInvalid;
 import com.alibaba.alink.params.dataproc.format.ToTripleParams;
@@ -48,7 +48,7 @@ public class AnyToTripleFlatMapper extends FlatMapper implements Serializable {
 	public AnyToTripleFlatMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
 
-		TableSchema schema = CsvUtil.schemaStr2Schema(params.get(ToTripleParams.TRIPLE_COLUMN_VALUE_SCHEMA_STR));
+		TableSchema schema = TableUtil.schemaStr2Schema(params.get(ToTripleParams.TRIPLE_COLUMN_VALUE_SCHEMA_STR));
 
 		fieldTypes = schema.getFieldTypes();
 		String[] reversedCols = this.params.get(ToTripleParams.RESERVED_COLS);

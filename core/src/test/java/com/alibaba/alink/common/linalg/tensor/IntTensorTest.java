@@ -96,22 +96,22 @@ public class IntTensorTest extends AlinkTestBase {
 	public void testSerDe() {
 		IntTensor tensor;
 		tensor = new IntTensor(new Shape(3, 4));
-		Assert.assertEquals("INT#3,4#0 0 0 0 0 0 0 0 0 0 0 0 ", tensor.toString());
+		Assert.assertEquals("INT#3,4#0 0 0 0 0 0 0 0 0 0 0 0 ", TensorUtil.toString(tensor));
 
-		IntTensor tensor2 = (IntTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		IntTensor tensor2 = (IntTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test
 	public void testScalarSerDe() {
 		int v = random.nextInt();
 		IntTensor tensor = new IntTensor(v);
-		Assert.assertEquals("INT##-1155484576 ", tensor.toString());
+		Assert.assertEquals("INT##-1155484576 ", TensorUtil.toString(tensor));
 
-		IntTensor tensor2 = (IntTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		IntTensor tensor2 = (IntTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test

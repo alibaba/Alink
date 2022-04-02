@@ -13,6 +13,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -23,6 +24,7 @@ import com.alibaba.alink.params.io.NumSeqSourceParams;
  * A data source of integers of a range.
  */
 @IoOpAnnotation(name = "num_seq", ioType = IOType.SourceBatch)
+@NameCn("数值队列数据源")
 public final class NumSeqSourceBatchOp extends BaseSourceBatchOp <NumSeqSourceBatchOp>
 	implements NumSeqSourceParams <NumSeqSourceBatchOp> {
 

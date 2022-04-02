@@ -259,12 +259,7 @@ public final class FilePath implements Serializable {
 			}
 
 			if (fileSystem == null) {
-				throw new IllegalArgumentException(
-					String.format("There are not file system matched the %s, "
-							+ "Maybe that set the filesystem of %s in file path's constructor will be better.",
-						path.toString(), schema
-					)
-				);
+				fileSystem = new FlinkFileSystem(path.toString());
 			}
 		}
 	}

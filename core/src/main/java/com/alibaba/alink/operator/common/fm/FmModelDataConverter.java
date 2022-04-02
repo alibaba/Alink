@@ -9,6 +9,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.model.ModelDataConverter;
 import com.alibaba.alink.common.model.ModelParamName;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.FmDataFormat;
 
 import java.util.List;
@@ -49,9 +50,9 @@ public class FmModelDataConverter implements ModelDataConverter<FmModelData, FmM
 
         for (int i = 0; i < factors.factors.length; ++i) {
             double[] factor = factors.factors[i];
-            collector.collect(Row.of((long)i, gson.toJson(factor), null));
+            collector.collect(Row.of((long)i, JsonConverter.toJson(factor), null));
         }
-        collector.collect(Row.of(-1L, gson.toJson(new double[]{factors.bias}), null));
+        collector.collect(Row.of(-1L, JsonConverter.toJson(new double[]{factors.bias}), null));
     }
 
     @Override
@@ -67,6 +68,7 @@ public class FmModelDataConverter implements ModelDataConverter<FmModelData, FmM
         }
 
         FmModelData modelData = new FmModelData();
+        assert meta != null;
         modelData.vectorColName = meta.get(ModelParamName.VECTOR_COL_NAME);
         modelData.featureColNames = meta.get(ModelParamName.FEATURE_COL_NAMES);
         modelData.labelColName = meta.get(ModelParamName.LABEL_COL_NAME);
@@ -83,14 +85,14 @@ public class FmModelDataConverter implements ModelDataConverter<FmModelData, FmM
         modelData.fmModel.dim = modelData.dim;
         for (Row row : rows) {
             Long featureId = (Long) row.getField(0);
-            if (featureId == null) {
-                continue;
-            } else if (featureId >= 0) {
-                double[] factor = gson.fromJson((String) row.getField(1), double[].class);
-                modelData.fmModel.factors[featureId.intValue()] = factor;
-            } else if (featureId == -1) {
-                double[] factor = gson.fromJson((String) row.getField(1), double[].class);
-                modelData.fmModel.bias = factor[0];
+            if (featureId != null) {
+                if (featureId >= 0) {
+                    double[] factor = gson.fromJson((String) row.getField(1), double[].class);
+                    modelData.fmModel.factors[featureId.intValue()] = factor;
+                } else if (featureId == -1) {
+                    double[] factor = gson.fromJson((String) row.getField(1), double[].class);
+                    modelData.fmModel.bias = factor[0];
+                }
             }
         }
         return modelData;

@@ -4,6 +4,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * An interface for classes with a parameter specifying the column name of prediction detail.
  *
@@ -11,10 +14,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasPredictionDetailCol<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 预测详细信息列名
-	 * @cn 预测详细信息列名
-	 */
+	@NameCn("预测详细信息列名")
+	@DescCn("预测详细信息列名")
 	ParamInfo <String> PREDICTION_DETAIL_COL = ParamInfoFactory
 		.createParamInfo("predictionDetailCol", String.class)
 		.setDescription("Column name of prediction result, it will include detailed info.")

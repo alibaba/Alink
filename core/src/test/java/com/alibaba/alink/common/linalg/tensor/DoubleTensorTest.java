@@ -97,22 +97,22 @@ public class DoubleTensorTest extends AlinkTestBase {
 	public void testSerDe() {
 		DoubleTensor tensor;
 		tensor = new DoubleTensor(new Shape(3, 4));
-		Assert.assertEquals("DOUBLE#3,4#0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ", tensor.toString());
+		Assert.assertEquals("DOUBLE#3,4#0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ", TensorUtil.toString(tensor));
 
-		DoubleTensor tensor2 = (DoubleTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		DoubleTensor tensor2 = (DoubleTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test
 	public void testScalarSerDe() {
 		double v = random.nextDouble();
 		DoubleTensor tensor = new DoubleTensor(v);
-		Assert.assertEquals("DOUBLE##0.730967787376657 ", tensor.toString());
+		Assert.assertEquals("DOUBLE##0.730967787376657 ", TensorUtil.toString(tensor));
 
-		DoubleTensor tensor2 = (DoubleTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		DoubleTensor tensor2 = (DoubleTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test

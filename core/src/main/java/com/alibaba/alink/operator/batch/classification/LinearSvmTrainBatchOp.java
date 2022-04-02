@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp;
 import com.alibaba.alink.operator.common.linear.LinearClassifierModelInfo;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
  * Linear svm train batch operator. it uses hinge loss func by setting LinearModelType = SVM and model name = "linear
  * SVM".
  */
+@NameCn("线性支持向量机训练")
 public final class LinearSvmTrainBatchOp extends BaseLinearModelTrainBatchOp <LinearSvmTrainBatchOp>
 	implements LinearBinaryClassTrainParams <LinearSvmTrainBatchOp>,
 	WithModelInfoBatchOp <LinearClassifierModelInfo, LinearSvmTrainBatchOp, LinearSvmModelInfoBatchOp> {

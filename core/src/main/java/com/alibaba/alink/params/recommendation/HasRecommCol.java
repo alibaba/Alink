@@ -4,15 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * An interface for classes with a parameter specifying the column name of the recommend result.
  */
 public interface HasRecommCol<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 推荐结果列名
-	 * @cn 推荐结果列名
-	 */
+	@NameCn("推荐结果列名")
+	@DescCn("推荐结果列名")
 	ParamInfo <String> RECOMM_COL = ParamInfoFactory
 		.createParamInfo("recommCol", String.class)
 		.setDescription("Column name of recommend result.")

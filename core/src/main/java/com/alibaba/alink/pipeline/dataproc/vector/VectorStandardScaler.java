@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorStandardScalerTrainBatchOp;
@@ -14,6 +15,7 @@ import com.alibaba.alink.pipeline.Trainer;
  *
  * x_scaled = (x - mean)／sigma, where mean is the mean value of column, sigma is the standard variance.
  */
+@NameCn("向量标准化")
 public class VectorStandardScaler extends Trainer <VectorStandardScaler, VectorStandardScalerModel> implements
 	VectorStandardTrainParams <VectorStandardScaler>,
 	VectorStandardPredictParams <VectorStandardScaler>,

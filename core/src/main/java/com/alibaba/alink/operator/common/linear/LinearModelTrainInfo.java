@@ -101,18 +101,7 @@ public final class LinearModelTrainInfo implements Serializable {
 		return importanceList;
 	}
 
-	private static Comparator compare = new Comparator <Tuple2 <String, Double>>() {
-		@Override
-		public int compare(Tuple2 <String, Double> o1, Tuple2 <String, Double> o2) {
-			if (o1.f1 < o2.f1) {
-				return 1;
-			} else if (o1.f1 > o2.f1) {
-				return -1;
-			} else {
-				return 0;
-			}
-		}
-	};
+	private static final Comparator compare = (Comparator <Tuple2 <String, Double>>) (o1, o2) -> o2.f1.compareTo(o1.f1);
 
 	@Override
 	public String toString() {
@@ -122,7 +111,7 @@ public final class LinearModelTrainInfo implements Serializable {
 		Map <String, String> map = new HashMap <>();
 		map.put("model name", meta.get(ModelParamName.MODEL_NAME));
 		map.put("num feature", meta.get(ModelParamName.VECTOR_SIZE).toString());
-		sbd.append(PrettyDisplayUtils.displayMap(map, 2, false) + "\n");
+		sbd.append(PrettyDisplayUtils.displayMap(map, 2, false)).append("\n");
 
 		if (!(meta.get(ModelParamName.MODEL_NAME).equals("softmax"))) {
 			sbd.append(PrettyDisplayUtils.displayHeadline("train importance info", '-'));
@@ -165,16 +154,16 @@ public final class LinearModelTrainInfo implements Serializable {
 		}
 		sbd.append(PrettyDisplayUtils.displayHeadline("train convergence info", '-'));
 		if (convInfo.length < 6) {
-			for (int i = 0; i < convInfo.length; ++i) {
-				sbd.append("" + convInfo[i] + "\n");
+			for (String s : convInfo) {
+				sbd.append(s).append("\n");
 			}
 		} else {
 			for (int i = 0; i < 3; ++i) {
-				sbd.append("" + convInfo[i] + "\n");
+				sbd.append(convInfo[i]).append("\n");
 			}
 			sbd.append("" + "... ... ... ..." + "\n");
 			for (int i = convInfo.length - 3; i < convInfo.length; ++i) {
-				sbd.append("" + convInfo[i] + "\n");
+				sbd.append(convInfo[i]).append("\n");
 			}
 		}
 

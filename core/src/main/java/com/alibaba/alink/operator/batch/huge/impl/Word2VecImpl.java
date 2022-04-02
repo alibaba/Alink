@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.batch.huge.impl;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.CoGroupFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.JoinFunction;
@@ -26,6 +25,14 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
@@ -35,9 +42,9 @@ import com.alibaba.alink.operator.batch.huge.word2vec.ApsSerializeDataW2V;
 import com.alibaba.alink.operator.batch.huge.word2vec.ApsSerializeModelW2V;
 import com.alibaba.alink.operator.batch.huge.word2vec.InitVecs;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.aps.ApsCheckpoint;
 import com.alibaba.alink.operator.common.aps.ApsContext;
 import com.alibaba.alink.operator.common.aps.ApsEnv;
-import com.alibaba.alink.operator.common.aps.ApsCheckpoint;
 import com.alibaba.alink.operator.common.nlp.WordCountUtil;
 import com.alibaba.alink.params.huge.HasNumCheckpoint;
 import com.alibaba.alink.params.nlp.HasBatchSize;
@@ -49,6 +56,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+@InputPorts(values = {
+	@PortSpec(value = PortType.DATA, desc = PortDesc.CORPUS),
+	@PortSpec(value = PortType.MODEL, isOptional = true, desc = PortDesc.INIT_MODEL)
+})
+@OutputPorts(values = @PortSpec(PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @Internal
 public class Word2VecImpl<T extends Word2VecImpl <T>> extends BatchOperator <T>
 	implements Word2VecParams <T> {

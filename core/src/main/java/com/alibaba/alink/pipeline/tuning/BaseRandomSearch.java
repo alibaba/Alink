@@ -2,11 +2,13 @@ package com.alibaba.alink.pipeline.tuning;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.shared.iter.HasNumIterDefaultAs10;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.TransformerBase;
 
+@NameCn("")
 public abstract class BaseRandomSearch<T extends BaseRandomSearch <T, M>, M extends BaseTuningModel <M>>
 	extends BaseTuning <T, M> implements
 	HasNumIterDefaultAs10 <T> {

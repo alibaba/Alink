@@ -22,7 +22,15 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -40,7 +48,6 @@ import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.clustering.StreamingKMeansParams;
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +60,17 @@ import java.util.List;
  * Streaming version of Kmeans.
  * It supports online learning and inference of kmeans model.
  */
+@InputPorts(values = {
+	@PortSpec(value = PortType.MODEL, opType = OpType.BATCH),
+	@PortSpec(value = PortType.DATA),
+	@PortSpec(value = PortType.DATA, isOptional = true)
+})
+@OutputPorts(values = {
+	@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT),
+	@PortSpec(value = PortType.MODEL, desc = PortDesc.KMEANS_MODEL),
+})
+@ReservedColsWithFirstInputSpec
+@NameCn("流式K均值聚类")
 public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMeansStreamOp>
 	implements StreamingKMeansParams <StreamingKMeansStreamOp> {
 	private static final long serialVersionUID = -7631814863449716946L;
@@ -134,7 +152,7 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 				case PRED_CLUS:{
 					outputColsHelper = new OutputColsHelper(in2.getSchema(),
 						new String[]{getPredictionCol(), getPredictionClusterCol()},
-						new TypeInformation[]{Types.LONG, VectorTypes.DENSE_VECTOR},
+						new TypeInformation[]{Types.LONG, AlinkTypes.DENSE_VECTOR},
 						this.getReservedCols());
 					break;
 
@@ -149,7 +167,7 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 				case PRED_CLUS_DIST:{
 					outputColsHelper = new OutputColsHelper(in2.getSchema(),
 						new String[] {this.getPredictionCol(), getPredictionClusterCol(), getPredictionDistanceCol()},
-						new TypeInformation[] {Types.LONG, VectorTypes.DENSE_VECTOR, Types.DOUBLE},
+						new TypeInformation[] {Types.LONG, AlinkTypes.DENSE_VECTOR, Types.DOUBLE},
 						this.getReservedCols());
 				}
 			}
@@ -217,7 +235,7 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 				new ListStateDescriptor("StreamingKMeansModelState",
 					TypeInformation.of(new TypeHint <Tuple2 <String, List <String>>>() {}));
 
-			modelState = context.getOperatorStateStore().getListState(descriptor);
+			modelState = context.getOperatorStateStore().getOperatorState(descriptor);
 
 			if (context.isRestored()) {
 				for (Tuple2 <String, List <String>> state : modelState.get()) {

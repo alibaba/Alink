@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasMode<T> extends WithParams <T> {
-	/**
-	 * @cn metapath的模式
-	 * @cn-name metapath中word2vec的模式，分别为metapath2vec和metapath2vecpp
-	 */
+	@NameCn("metapath中word2vec的模式，分别为metapath2vec和metapath2vecpp")
+	@DescCn("metapath的模式")
 	ParamInfo <Mode> MODE = ParamInfoFactory
 		.createParamInfo("mode", Mode.class)
 		.setDescription("mode for metapath")

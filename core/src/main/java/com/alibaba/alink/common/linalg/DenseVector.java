@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.common.DataTypeDisplayInterface;
 import com.alibaba.alink.common.linalg.VectorUtil.VectorSerialType;
 
 import java.nio.ByteBuffer;
@@ -9,7 +10,7 @@ import java.util.Random;
 /**
  * A dense vector represented by a values array.
  */
-public class DenseVector extends Vector {
+public class DenseVector extends Vector implements DataTypeDisplayInterface {
 	private static final long serialVersionUID = -5932985883649890536L;
 	/**
 	 * The array holding the vector data.
@@ -103,7 +104,7 @@ public class DenseVector extends Vector {
 
 	@Override
 	public String toString() {
-		return VectorUtil.toString(this);
+		return toDisplaySummary() + " " + toShortDisplayData();
 	}
 
 	@Override
@@ -384,6 +385,35 @@ public class DenseVector extends Vector {
 	@Override
 	public VectorIterator iterator() {
 		return new DenseVectorIterator();
+	}
+
+	@Override
+	public String toDisplayData(int n) {
+		StringBuilder sbd = new StringBuilder();
+		sbd.append("$" + size() + "$");
+		if (size() <= n || n < 0) {
+			return VectorUtil.toString(this);
+		} else {
+			int localSize = n / 2;
+			for (int i = 0; i < n - localSize; ++i) {
+				sbd.append(data[i]).append(" ");
+			}
+			sbd.append("...");
+			for (int i = localSize; i > 0; --i) {
+				sbd.append(" ").append(data[size() - i]);
+			}
+		}
+		return sbd.toString();
+	}
+
+	@Override
+	public String toDisplaySummary() {
+		return String.format("DenseVector(size = %d)", this.size());
+	}
+
+	@Override
+	public String toShortDisplayData() {
+		return toDisplayData(3);
 	}
 
 	private class DenseVectorIterator implements VectorIterator {

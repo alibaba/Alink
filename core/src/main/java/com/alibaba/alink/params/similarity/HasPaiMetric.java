@@ -4,14 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.similarity.Metric;
 
 public interface HasPaiMetric<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 度量类型
-	 * @cn 计算距离时，可以取不同的度量
-	 */
+	@NameCn("度量类型")
+	@DescCn("计算距离时，可以取不同的度量")
 	ParamInfo <String> PAI_METRIC = ParamInfoFactory
 		.createParamInfo("paiMetric", String.class)
 		.setDescription("Method to calculate calc or distance.")

@@ -22,6 +22,13 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -51,6 +58,12 @@ import java.util.Map;
  * /VRC will be calculated. If only predictionCol is given, only K/ClusterArray/CountArray will be
  * calculated.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
+@ParamSelectColumnSpec(name = "labelCol")
+@ParamSelectColumnSpec(name = "predictionCol")
+@ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@NameCn("聚类评估")
 public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
     implements EvalClusterParams<EvalClusterBatchOp>, EvaluationMetricsCollector<ClusterMetrics, EvalClusterBatchOp> {
     public static final String SILHOUETTE_COEFFICIENT = "silhouetteCoefficient";

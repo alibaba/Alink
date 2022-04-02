@@ -2,7 +2,8 @@ package com.alibaba.alink.common.dl;
 
 public class DLConstants {
     public static final String PYTHON_ENV = "ALINK:python_env";
-    public static final String ENTRY_SCRIPT = "ALINK:script";
+	public static final String ENV_VERSION = "ALINK:env_version";
+	public static final String ENTRY_SCRIPT = "ALINK:script";
     public static final String ENTRY_FUNC = "ALINK:entry_func";
     public static final String WORK_DIR = "ALINK:work_dir";
     public static final String USER_DEFINED_PARAMS = "ALINK:user_defined_params";

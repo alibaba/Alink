@@ -8,7 +8,7 @@ import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.InstantiationUtil;
 import org.apache.flink.util.StringUtils;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -119,12 +119,12 @@ public class CsvParser implements Serializable {
 		if (record.f1 == null) {
 			return record;
 		}
-		if (type.equals(VectorTypes.VECTOR)) {
+		if (type.equals(AlinkTypes.VECTOR)) {
 			record.f1 = VectorUtil.getVector(record.f1);
-		} else if (type.equals(VectorTypes.DENSE_VECTOR)) {
+		} else if (type.equals(AlinkTypes.DENSE_VECTOR)) {
 			record.f1 = VectorUtil.getDenseVector(record.f1);
 
-		} else if (type.equals(VectorTypes.SPARSE_VECTOR)) {
+		} else if (type.equals(AlinkTypes.SPARSE_VECTOR)) {
 			record.f1 = VectorUtil.getSparseVector(record.f1);
 		}
 		return record;

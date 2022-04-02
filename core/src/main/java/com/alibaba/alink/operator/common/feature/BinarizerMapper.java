@@ -4,7 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -60,7 +60,7 @@ public class BinarizerMapper extends SISOMapper {
 			return selectedColType;
 		}
 
-		return VectorTypes.VECTOR;
+		return AlinkTypes.VECTOR;
 	}
 
 	/**

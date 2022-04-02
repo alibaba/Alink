@@ -4,16 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.validators.RangeValidator;
 
 /**
  * Params maxFraction.
  */
 public interface HasFraction<T> extends WithParams <T> {
-	/**
-	 * @cn-name 拆分到测试集最大数据比例
-	 * @cn 拆分到测试集最大数据比例
-	 */
+	@NameCn("拆分到测试集最大数据比例")
+	@DescCn("拆分到测试集最大数据比例")
 	ParamInfo <Double> FRACTION = ParamInfoFactory
 		.createParamInfo("fraction", Double.class)
 		.setDescription("Proportion of data allocated to right output after splitting")

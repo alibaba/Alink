@@ -4,14 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasIcType<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 评价指标
-	 * @cn 评价指标
-	 */
+	@NameCn("评价指标")
+	@DescCn("评价指标")
 	ParamInfo <IcType> IC_TYPE = ParamInfoFactory
 		.createParamInfo("icType", IcType.class)
 		.setDescription("ic type")

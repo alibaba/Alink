@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.recommendation.KObjectUtil;
 
 public interface HasLabelRankingInfo<T> extends WithParams <T> {
-	/**
-	 * @cn-name Object列列名
-	 * @cn Object列列名
-	 */
+	@NameCn("Object列列名")
+	@DescCn("Object列列名")
 	ParamInfo <String> LABEL_RANKING_INFO = ParamInfoFactory
 		.createParamInfo("labelRankingInfo", String.class)
 		.setDescription("the label of ranking in label col")

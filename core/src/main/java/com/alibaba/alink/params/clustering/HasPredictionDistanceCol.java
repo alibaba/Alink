@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasPredictionDistanceCol<T> extends WithParams<T>{
-	/**
-	 * @cn-name 预测距离列名
-	 * @cn 预测距离列名
-	 */
-	ParamInfo<String> PREDICTION_DISTANCE_COL = ParamInfoFactory
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
+public interface HasPredictionDistanceCol<T> extends WithParams <T> {
+	@NameCn("预测距离列名")
+	@DescCn("预测距离列名")
+	ParamInfo <String> PREDICTION_DISTANCE_COL = ParamInfoFactory
 		.createParamInfo("predictionDistanceCol", String.class)
 		.setDescription("Column name of prediction.")
 		.build();

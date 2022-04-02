@@ -1,6 +1,5 @@
 package com.alibaba.alink.common.dl;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.Partitioner;
@@ -19,10 +18,16 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
+import com.alibaba.alink.common.dl.utils.DLTypeUtils;
 import com.alibaba.alink.common.dl.utils.DLUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
-import com.alibaba.alink.common.dl.utils.DLTypeUtils;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.dl.DLLauncherParams;
 import com.alibaba.flink.ml.tensorflow2.client.DLConfig;
@@ -44,7 +49,8 @@ import static com.alibaba.alink.common.dl.utils.DLLauncherUtils.adjustNumWorkers
  * <p>
  * {@link DLStreamCoFlatMapFunc} is the core of this operator.
  */
-@SuppressWarnings("unchecked")
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
 @Internal
 public final class DLLauncherStreamOp extends StreamOperator <DLLauncherStreamOp>
 	implements DLLauncherParams <DLLauncherStreamOp> {
@@ -71,7 +77,11 @@ public final class DLLauncherStreamOp extends StreamOperator <DLLauncherStreamOp
 		DLUtils.safePutProperties(config, MLConstants.ML_RUNNER_CLASS, DLRunner.class.getCanonicalName());
 		DLUtils.safePutProperties(config, MLConstants.CONFIG_STORAGE_TYPE, MLConstants.STORAGE_CUSTOM);
 		DLUtils.safePutProperties(config, MLConstants.STORAGE_IMPL_CLASS, MemoryStorageImplV2.class.getName());
-		DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, getPythonEnv());
+		if (!StringUtils.isNullOrWhitespaceOnly(getPythonEnv())) {
+			DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, getPythonEnv());
+		} else if (null != getEnvVersion()) {
+			DLUtils.safePutProperties(config, DLConstants.ENV_VERSION, getEnvVersion().name());
+		}
 		DLUtils.safePutProperties(config, DLConstants.ENTRY_SCRIPT, getMainScriptFile());
 		DLUtils.safePutProperties(config, DLConstants.ENTRY_FUNC, getEntryFunc());
 		DLUtils.safePutProperties(config, DLConstants.USER_DEFINED_PARAMS, getUserParams());
@@ -151,7 +161,7 @@ public final class DLLauncherStreamOp extends StreamOperator <DLLauncherStreamOp
 		final int numPSs = getNumPSs();
 
 		String outputSchemaStr = getOutputSchemaStr();
-		TableSchema outputSchema = CsvUtil.schemaStr2Schema(outputSchemaStr);
+		TableSchema outputSchema = TableUtil.schemaStr2Schema(outputSchemaStr);
 		DLConfig config = setupDLConfig(in.getSchema(), outputSchema);
 
 		ExternalFilesConfig externalFiles = getUserFiles();
@@ -159,17 +169,22 @@ public final class DLLauncherStreamOp extends StreamOperator <DLLauncherStreamOp
 		Map <String, String> fileRenameMap = externalFiles.getFileRenameMap();
 
 		String pythonEnv = getPythonEnv();
-		String dirName;
-		if (!StringUtils.isNullOrWhitespaceOnly(pythonEnv)) {
-			if (PythonFileUtils.isLocalFile(pythonEnv)) {
-				// should be a directory
-				dirName = pythonEnv;
-			} else {
-				filePaths.add(pythonEnv);
-				dirName = PythonFileUtils.getCompressedFileName(pythonEnv);
+		if (StringUtils.isNullOrWhitespaceOnly(pythonEnv)) {
+			Version envVersion = getEnvVersion();
+			DLUtils.safePutProperties(config, DLConstants.ENV_VERSION, envVersion.name());
+		} else {
+			String dirName;
+			if (!StringUtils.isNullOrWhitespaceOnly(pythonEnv)) {
+				if (PythonFileUtils.isLocalFile(pythonEnv)) {
+					// should be a directory
+					dirName = pythonEnv;
+				} else {
+					filePaths.add(pythonEnv);
+					dirName = PythonFileUtils.getCompressedFileName(pythonEnv);
+					DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, dirName);
+				}
 				DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, dirName);
 			}
-			DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, dirName);
 		}
 		DLUtils.safePutProperties(config, DLConstants.EXTERNAL_FILE_CONFIG_JSON, externalFiles.toJson());
 

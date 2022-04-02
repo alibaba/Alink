@@ -3,6 +3,8 @@ package com.alibaba.alink.params.similarity;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.similarity.dataConverter.MinHashModelDataConverter;
 import com.alibaba.alink.operator.common.similarity.dataConverter.NearestNeighborDataConverter;
 import com.alibaba.alink.operator.common.similarity.dataConverter.SimHashModelDataConverter;
@@ -15,10 +17,8 @@ public interface StringTextApproxNearestNeighborTrainParams<T> extends
 	NearestNeighborTrainParams <T>,
 	StringTextApproxParams <T> {
 
-	/**
-	 * @cn-name 距离类型
-	 * @cn 用于计算的距离类型
-	 */
+	@NameCn("距离类型")
+	@DescCn("用于计算的距离类型")
 	ParamInfo <Metric> METRIC = ParamInfoFactory
 		.createParamInfo("metric", Metric.class)
 		.setDescription("Method to calculate calc or distance.")

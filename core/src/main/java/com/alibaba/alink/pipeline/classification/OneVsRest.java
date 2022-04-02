@@ -15,6 +15,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -46,6 +47,7 @@ import static com.alibaba.alink.common.utils.JsonConverter.gson;
  * Each example is scored against all k models and the model with highest score
  * is picked to label the example.
  */
+@NameCn("OneVsRest")
 public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 	implements OneVsRestTrainParams <OneVsRest>, OneVsRestPredictParams <OneVsRest> {
 

@@ -35,30 +35,30 @@ public class LookupVectorInTimeSeriesStreamOpTest extends AlinkTestBase {
 
 		CollectSinkStreamOp resultOp =
 			source.link(
-					new OverCountWindowStreamOp()
-						.setTimeCol("ts")
-						.setPrecedingRows(5)
-						.setClause("mtable_agg(ts, val) as data")
-				).link(
-					new ShiftStreamOp()
-						.setValueCol("data")
-						.setShiftNum(7)
-						.setPredictNum(12)
-						.setPredictionCol("predict")
-				).link(
-					new LookupVectorInTimeSeriesStreamOp()
-						.setTimeCol("ts")
-						.setTimeSeriesCol("predict")
-						.setOutputCol("out")
-						.setReservedCols("ts")
-				)
+				new OverCountWindowStreamOp()
+					.setTimeCol("ts")
+					.setPrecedingRows(5)
+					.setClause("mtable_agg(ts, val) as data")
+			).link(
+				new ShiftStreamOp()
+					.setValueCol("data")
+					.setShiftNum(7)
+					.setPredictNum(12)
+					.setPredictionCol("predict")
+			).link(
+				new LookupVectorInTimeSeriesStreamOp()
+					.setTimeCol("ts")
+					.setTimeSeriesCol("predict")
+					.setOutputCol("out")
+					.setReservedCols("ts")
+			)
 				.link(
 					new CollectSinkStreamOp()
 				);
 
 		StreamOperator.execute();
 
-		List<Row> expectRows = Arrays.asList(
+		List <Row> expectRows = Arrays.asList(
 			Row.of(new Timestamp(1), null),
 			Row.of(new Timestamp(2), VectorUtil.getVector("10.0 21.0")),
 			Row.of(new Timestamp(3), VectorUtil.getVector("10.0 21.0")),

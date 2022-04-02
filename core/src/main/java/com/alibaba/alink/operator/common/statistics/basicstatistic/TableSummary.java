@@ -33,6 +33,11 @@ public class TableSummary extends BaseSummary {
 	DenseVector squareSum;
 
 	/**
+	 * sum3_i = sum(x_i * x_i * x_i)
+	 */
+	DenseVector sum3;
+
+	/**
 	 * min_i = min(x_i)
 	 */
 	DenseVector min;
@@ -199,6 +204,38 @@ public class TableSummary extends BaseSummary {
 				return Double.NaN;
 			}
 			return Math.sqrt(squareSum.get(idx));
+		} else {
+			return Double.NaN;
+		}
+	}
+
+	/**
+	 * 二阶中心矩
+	 */
+	public double centralMoment2(String colName) {
+		if (isEmpty(colName)) {
+			return Double.NaN;
+		}
+		int idx = findIdx(colName);
+		double mean = mean(colName);
+		if (idx >= 0) {
+			return squareSum.get(idx) / count - mean * mean;
+		} else {
+			return Double.NaN;
+		}
+	}
+
+	/**
+	 * 三阶中心矩
+	 */
+	public double centralMoment3(String colName) {
+		if (isEmpty(colName)) {
+			return Double.NaN;
+		}
+		int idx = findIdx(colName);
+		double mean = mean(colName);
+		if (idx >= 0) {
+			return (sum3.get(idx) - 3 * squareSum.get(idx) * mean + 2 * sum.get(idx) * mean * mean) / count;
 		} else {
 			return Double.NaN;
 		}

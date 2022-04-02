@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasKeyCols<T> extends WithParams <T> {
-	/**
-	 * @cn 多键值列
-	 * @cn-name 多键值列
-	 */
+	@NameCn("多键值列")
+	@DescCn("多键值列")
 	ParamInfo <String[]> KEY_COLS = ParamInfoFactory
 		.createParamInfo("keyCols", String[].class)
 		.setDescription("key colume names")

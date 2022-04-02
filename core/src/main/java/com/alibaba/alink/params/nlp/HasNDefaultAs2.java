@@ -4,14 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Params n, the length of ngram.
  */
 public interface HasNDefaultAs2<T> extends WithParams <T> {
-	/**
-	 * @cn-name nGram长度
-	 * @cn nGram长度
-	 */
+	@NameCn("nGram长度")
+	@DescCn("nGram长度")
 	ParamInfo <Integer> N = ParamInfoFactory
 		.createParamInfo("n", Integer.class)
 		.setDescription("NGram length")

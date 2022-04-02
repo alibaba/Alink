@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasItemsCol<T> extends WithParams <T> {
-	/**
-	 * @cn-name 项集列名
-	 * @cn 项集列名
-	 */
+	@NameCn("项集列名")
+	@DescCn("项集列名")
 	ParamInfo <String> ITEMS_COL = ParamInfoFactory
 		.createParamInfo("itemsCol", String.class)
 		.setAlias(new String[] {"itemsColName", "itemColName"})

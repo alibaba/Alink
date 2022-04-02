@@ -1,6 +1,11 @@
 package com.alibaba.alink.operator.common.graph;
 
-import org.apache.flink.api.common.functions.*;
+import org.apache.flink.api.common.functions.CoGroupFunction;
+import org.apache.flink.api.common.functions.JoinFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.MapPartitionFunction;
+import org.apache.flink.api.common.functions.Partitioner;
+import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -367,7 +372,7 @@ public class GraphUtilsWithString {
             for (Row data : iterableData) {
                 Vertex<Long, Tuple3<Double, Double, Integer>> res = new Vertex<>();
                 res.f0 = node;
-                double weight = hasWeightCol ? (Double) data.getField(2) : 1.0;
+                double weight = hasWeightCol ? ((Number) data.getField(2)).doubleValue() : 1.0;
                 res.f1 = new Tuple3<>(Double.valueOf(data.getField(1).toString()), weight, 0);
                 transformedData.collect(res);
             }
@@ -413,7 +418,7 @@ public class GraphUtilsWithString {
             Vertex <Long, Long> res = new Vertex <>();
             for (Row data : iterableData) {
                 res.f0 = node;
-                res.f1 = (Long) data.getField(1);
+                res.f1 = ((Number) data.getField(1)).longValue();
                 transformedData.collect(res);
             }
         }
@@ -463,7 +468,7 @@ public class GraphUtilsWithString {
         @Override
         void transform(Iterable<Row> iterableData, Long node, Collector<Tuple3<Long, String, Double>> transformedData) {
             for (Row row : iterableData) {
-                double weight = hasWeightCol ? (double) row.getField(2) : 1.0;
+                double weight = hasWeightCol ? ((Number) row.getField(2)).doubleValue() : 1.0;
                 transformedData.collect(Tuple3.of(node, (String) row.getField(1), weight));
             }
         }

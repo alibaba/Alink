@@ -136,7 +136,12 @@ public abstract class BasePythonBridge {
         try {
             this.process = pb.start();
             pythonPort = waitProcessStarted(this.process, "Started Listening On ");
-            inheritIO(this.process.getInputStream(), line -> LOG.info("PYTHON: {}", line));
+            inheritIO(this.process.getInputStream(), line -> {
+				LOG.info("PYTHON: {}", line);
+				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+					System.out.println("PYTHON: " + line);
+				}
+			});
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

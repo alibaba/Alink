@@ -4,14 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasEstmateMethod<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 估计方法
-	 * @cn 估计方法
-	 */
+	@NameCn("估计方法")
+	@DescCn("估计方法")
 	ParamInfo <EstMethod> EST_METHOD = ParamInfoFactory
 		.createParamInfo("estMethod", EstMethod.class)
 		.setDescription("arima garch method")

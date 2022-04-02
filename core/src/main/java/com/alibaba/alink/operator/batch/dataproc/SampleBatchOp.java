@@ -5,6 +5,11 @@ import org.apache.flink.api.java.functions.SampleWithFraction;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dataproc.SampleParams;
 
@@ -13,6 +18,9 @@ import java.util.Random;
 /**
  * Sample the input data with given ratio with or without replacement.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@NameCn("随机采样")
 public final class SampleBatchOp extends BatchOperator <SampleBatchOp>
 	implements SampleParams <SampleBatchOp> {
 

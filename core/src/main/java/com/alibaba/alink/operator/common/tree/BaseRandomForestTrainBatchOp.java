@@ -22,6 +22,13 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.ExecutorUtils;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.CompareCriterionFunction;
 import com.alibaba.alink.common.comqueue.CompleteResultFunction;
@@ -82,6 +89,24 @@ import static com.alibaba.alink.operator.common.tree.TreeModelDataConverter.IMPO
  * @param <T>
  * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = {
+	@PortSpec(PortType.MODEL),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.FEATURE_IMPORTANCE)
+})
+@ParamSelectColumnSpec(
+	name = "featureCols",
+	allowedTypeCollections = TypeCollections.TREE_FEATURE_TYPES
+)
+@ParamSelectColumnSpec(
+	name = "categoricalCols",
+	allowedTypeCollections = TypeCollections.TREE_FEATURE_TYPES
+)
+@ParamSelectColumnSpec(
+	name = "weightCol",
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES
+)
+@ParamSelectColumnSpec(name = "labelCol")
 public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTrainBatchOp <T>> extends BatchOperator <T> {
 
 	private static final long serialVersionUID = 5757403088524138175L;

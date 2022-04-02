@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.linear.LinearModelMapper;
 import com.alibaba.alink.params.classification.LinearSvmPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * Linear svm pipeline model.
  */
+@NameCn("线性支持向量机模型")
 public class LinearSvmModel extends MapModel <LinearSvmModel>
 	implements LinearSvmPredictParams <LinearSvmModel> {
 

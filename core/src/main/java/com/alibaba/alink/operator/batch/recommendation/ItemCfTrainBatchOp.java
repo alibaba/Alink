@@ -13,7 +13,14 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -39,6 +46,16 @@ import java.util.TreeMap;
 /**
  * A model that ranks an item according to its calc to other items observed for the user in question.
  */
+
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = {
+	@PortSpec(PortType.MODEL)
+})
+@ParamSelectColumnSpec(name = "userCol")
+@ParamSelectColumnSpec(name = "itemCol")
+@ParamSelectColumnSpec(name = "rateCol",
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("ItemCf训练")
 public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 	implements ItemCfRecommTrainParams <ItemCfTrainBatchOp>,
 	WithModelInfoBatchOp <ItemCfModelInfo, ItemCfTrainBatchOp, ItemCfModelInfoBatchOp> {
@@ -103,7 +120,7 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 			.name("GetUserItems");
 
 		BatchOperator <?> items = new DataSetWrapperBatchOp(itemVector, COL_NAMES,
-			new TypeInformation[] {Types.LONG, VectorTypes.SPARSE_VECTOR});
+			new TypeInformation[] {Types.LONG, AlinkTypes.SPARSE_VECTOR});
 
 		BatchOperator <?> train = new VectorNearestNeighborTrainBatchOp()
 			.setIdCol(COL_NAMES[0])

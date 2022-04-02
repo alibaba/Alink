@@ -1,9 +1,13 @@
 package com.alibaba.alink.operator.common.utils;
 
 import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.tensor.IntTensor;
+import com.alibaba.alink.common.linalg.tensor.Shape;
+import com.alibaba.alink.common.linalg.tensor.TensorInternalUtils;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -122,5 +126,33 @@ public class PrettyDisplayUtilsTest extends AlinkTestBase {
 	public void testHeadline() {
 		System.out.println(PrettyDisplayUtils.displayHeadline("IMPORTANCE", '-'));
 		System.out.println(PrettyDisplayUtils.displayHeadline("convergence info", '='));
+	}
+
+	@Test
+	public void testTensor() {
+		IntTensor tensor = new IntTensor(new Shape(6, 6, 6));
+		String s = PrettyDisplayUtils.displayTensor(tensor.shape(), TensorInternalUtils.getValueStrs(tensor), 2);
+		String expected = "[[[0 0 ... 0 0]\n"
+			+ "  [0 0 ... 0 0]\n"
+			+ "  ...\n"
+			+ "  [0 0 ... 0 0]\n"
+			+ "  [0 0 ... 0 0]]\n"
+			+ " [[0 0 ... 0 0]\n"
+			+ "  [0 0 ... 0 0]\n"
+			+ "  ...\n"
+			+ "  [0 0 ... 0 0]\n"
+			+ "  [0 0 ... 0 0]]\n"
+			+ " ...\n"
+			+ " [[0 0 ... 0 0]\n"
+			+ "  [0 0 ... 0 0]\n"
+			+ "  ...\n"
+			+ "  [0 0 ... 0 0]\n"
+			+ "  [0 0 ... 0 0]]\n"
+			+ " [[0 0 ... 0 0]\n"
+			+ "  [0 0 ... 0 0]\n"
+			+ "  ...\n"
+			+ "  [0 0 ... 0 0]\n"
+			+ "  [0 0 ... 0 0]]]";
+		Assert.assertEquals(expected, s);
 	}
 }

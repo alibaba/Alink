@@ -7,7 +7,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.params.dataproc.TensorToVectorParams;
@@ -24,7 +24,7 @@ public class TensorToVectorMapperTest extends AlinkTestBase {
 		final Mapper mapper = new TensorToVectorMapper(
 			new TableSchema(
 				new String[] {"tensor"},
-				new TypeInformation <?>[] {TensorTypes.FLOAT_TENSOR}
+				new TypeInformation <?>[] {AlinkTypes.FLOAT_TENSOR}
 			),
 			new Params()
 				.set(TensorToVectorParams.SELECTED_COL, "tensor")

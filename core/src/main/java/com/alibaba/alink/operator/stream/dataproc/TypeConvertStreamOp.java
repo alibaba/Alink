@@ -7,7 +7,13 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.VectorSerializeStreamOp;
@@ -25,6 +31,10 @@ import java.util.Set;
  * TypeConvertStreamOp can convert some columns to the same datatype in one time.
  */
 
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@ParamSelectColumnSpec(name = "selectedCols", portIndices = 0)
+@NameCn("类型转换")
 public final class TypeConvertStreamOp extends StreamOperator <TypeConvertStreamOp>
 	implements TypeConvertParams <TypeConvertStreamOp> {
 
@@ -49,9 +59,9 @@ public final class TypeConvertStreamOp extends StreamOperator <TypeConvertStream
 		TypeInformation[] colTypes = in.getColTypes();
 		List <Integer> vectorCols = new ArrayList <>();
 		for (int colIndice : colIndices) {
-			if (colTypes[colIndice].equals(VectorTypes.VECTOR) ||
-				colTypes[colIndice].equals(VectorTypes.DENSE_VECTOR) ||
-				colTypes[colIndice].equals(VectorTypes.SPARSE_VECTOR)) {
+			if (colTypes[colIndice].equals(AlinkTypes.VECTOR) ||
+				colTypes[colIndice].equals(AlinkTypes.DENSE_VECTOR) ||
+				colTypes[colIndice].equals(AlinkTypes.SPARSE_VECTOR)) {
 				vectorCols.add(colIndice);
 			}
 		}

@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasScanIntervalDefaultAs10<T> extends WithParams<T> {
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 
-	/**
-	 * @cn-name 扫描模型路径的时间间隔
-	 * @cn 描模型路径的时间间隔，单位秒
-	 */
+public interface HasScanIntervalDefaultAs10<T> extends WithParams <T> {
+
+	@NameCn("扫描模型路径的时间间隔")
+	@DescCn("描模型路径的时间间隔，单位秒")
 	ParamInfo <Integer> SCAN_INTERVAL = ParamInfoFactory
 		.createParamInfo("scanInterval", Integer.class)
 		.setDescription("time interval")

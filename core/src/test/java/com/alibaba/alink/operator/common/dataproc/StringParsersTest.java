@@ -6,7 +6,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class StringParsersTest extends AlinkTestBase {
 			= "media_name string, title string, compare_point double, spider_point double, search_point double, "
 			+ "collection_id bigint, media_id bigint";
 
-		TableSchema schema = CsvUtil.schemaStr2Schema(schemaStr);
+		TableSchema schema = TableUtil.schemaStr2Schema(schemaStr);
 		StringParsers.JsonParser parser = new StringParsers.JsonParser(schema.getFieldNames(), schema.getFieldTypes());
 		Tuple2 <Boolean, Row> parsed = parser.parse(jsonStr);
 		Assert.assertTrue(parsed.f0);
@@ -40,7 +40,7 @@ public class StringParsersTest extends AlinkTestBase {
 		String kvStr = "f1=1,f2=2.0,f3=false,f4=val,f5=2018-09-10,f6=14:22:20,f7=2018-09-10 14:22:20";
 		String schemaStr = "f1 bigint, f2 double, f3 boolean, f4 string, f5 date, f6 time, f7 timestamp";
 
-		TableSchema schema = CsvUtil.schemaStr2Schema(schemaStr);
+		TableSchema schema = TableUtil.schemaStr2Schema(schemaStr);
 		StringParsers.KvParser parser = new StringParsers.KvParser(schema.getFieldNames(), schema.getFieldTypes(), ",",
 			"=");
 		Tuple2 <Boolean, Row> parsed = parser.parse(kvStr);

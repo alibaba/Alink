@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.source;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.io.TextSourceParams;
  * A data sources that reads from text lines.
  */
 @IoOpAnnotation(name = "text", ioType = IOType.SourceBatch)
+@NameCn("Text文件读入")
 public final class TextSourceBatchOp extends BaseSourceBatchOp <TextSourceBatchOp>
 	implements TextSourceParams <TextSourceBatchOp> {
 

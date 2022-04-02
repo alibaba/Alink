@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.recommendation;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.recommendation.FmRecommKernel;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
 import com.alibaba.alink.params.recommendation.BaseUsersPerItemRecommParams;
@@ -9,6 +10,7 @@ import com.alibaba.alink.params.recommendation.BaseUsersPerItemRecommParams;
 /**
  * Fm recommendation batch op for recommending users to item.
  */
+@NameCn("FM：UsersPerItem推荐")
 public class FmUsersPerItemRecommBatchOp
 	extends BaseRecommBatchOp <FmUsersPerItemRecommBatchOp>
 	implements BaseUsersPerItemRecommParams <FmUsersPerItemRecommBatchOp> {

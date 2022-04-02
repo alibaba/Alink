@@ -4,15 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * An interface for classes with a parameter specifying the number of thread in one process.
  */
 public interface HasNumThreads<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 组件多线程线程个数
-	 * @cn 组件多线程线程个数
-	 */
+	@NameCn("组件多线程线程个数")
+	@DescCn("组件多线程线程个数")
 	ParamInfo <Integer> NUM_THREADS = ParamInfoFactory
 		.createParamInfo("numThreads", Integer.class)
 		.setDescription("Thread number of operator.")

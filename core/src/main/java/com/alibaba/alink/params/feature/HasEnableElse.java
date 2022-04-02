@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasEnableElse<T> extends WithParams <T> {
-	/**
-	 * @cn-name 预测时是否考虑未出现的元素
-	 * @cn 预测时是否考虑未出现的元素，默认true
-	 */
+	@NameCn("预测时是否考虑未出现的元素")
+	@DescCn("预测时是否考虑未出现的元素，默认true")
 	ParamInfo <Boolean> ENABLE_ELSE = ParamInfoFactory
 		.createParamInfo("enableElse", Boolean.class)
 		.setDescription("enableElse")

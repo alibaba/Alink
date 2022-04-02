@@ -4,15 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * An interface for classes with a parameter specifying the column name of the prediction.
  */
 public interface HasPredictionCol<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 预测结果列名
-	 * @cn 预测结果列名
-	 */
+	@NameCn("预测结果列名")
+	@DescCn("预测结果列名")
 	ParamInfo <String> PREDICTION_COL = ParamInfoFactory
 		.createParamInfo("predictionCol", String.class)
 		.setDescription("Column name of prediction.")

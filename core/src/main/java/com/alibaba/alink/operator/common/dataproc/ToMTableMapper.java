@@ -5,7 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MTable;
-import com.alibaba.alink.common.MTableTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.mapper.SISOMapper;
 import com.alibaba.alink.params.dataproc.ToMTableParams;
 import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
@@ -48,6 +48,6 @@ public class ToMTableMapper extends SISOMapper {
 
 	@Override
 	protected TypeInformation <?> initOutputColType() {
-		return MTableTypes.M_TABLE;
+		return AlinkTypes.M_TABLE;
 	}
 }

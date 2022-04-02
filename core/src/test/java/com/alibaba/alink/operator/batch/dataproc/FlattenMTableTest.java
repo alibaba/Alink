@@ -6,6 +6,7 @@ import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
@@ -52,7 +53,7 @@ public class FlattenMTableTest extends AlinkTestBase {
 			+ ", tensor FLOAT_TENSOR";
 		MTable mTable = new MTable(rows, schemaStr);
 		List <Row> table = new ArrayList <>();
-		table.add(Row.of("id", mTable.toString()));
+		table.add(Row.of("id", JsonConverter.toJson(mTable)));
 
 		BatchOperator <?> op = new MemSourceBatchOp(table, new String[] {"id", "mTable"});
 

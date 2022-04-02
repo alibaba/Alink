@@ -5,7 +5,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.dataproc.vector.VectorSizeHintParams;
 import com.alibaba.alink.testutil.AlinkTestBase;
@@ -28,7 +28,7 @@ public class VectorSizeHintMapperTest extends AlinkTestBase {
 
 		VectorSizeHintMapper mapper = new VectorSizeHintMapper(schema, params);
 		assertEquals(mapper.getOutputSchema(),
-			new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {VectorTypes.VECTOR}));
+			new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {AlinkTypes.VECTOR}));
 	}
 
 	@Test
@@ -45,6 +45,6 @@ public class VectorSizeHintMapperTest extends AlinkTestBase {
 		VectorSizeHintMapper mapper = new VectorSizeHintMapper(schema, params);
 		assertEquals(mapper.getOutputSchema(),
 			new TableSchema(new String[] {"vec", "res"},
-				new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR}));
+				new TypeInformation <?>[] {Types.STRING, AlinkTypes.VECTOR}));
 	}
 }

@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.source;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.io.TextSourceParams;
  * Stream source that reads text lines.
  */
 @IoOpAnnotation(name = "text", ioType = IOType.SourceStream)
+@NameCn("Text文件数据源")
 public final class TextSourceStreamOp extends BaseSourceStreamOp <TextSourceStreamOp>
 	implements TextSourceParams <TextSourceStreamOp> {
 

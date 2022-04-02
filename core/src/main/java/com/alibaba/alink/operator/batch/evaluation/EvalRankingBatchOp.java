@@ -10,6 +10,11 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -24,6 +29,9 @@ import java.util.List;
 /**
  * Evaluation for ranking system.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
+@NameCn("排序评估")
 public class EvalRankingBatchOp extends BatchOperator <EvalRankingBatchOp>
 	implements EvalRankingParams <EvalRankingBatchOp>, EvaluationMetricsCollector <RankingMetrics,
 	EvalRankingBatchOp> {

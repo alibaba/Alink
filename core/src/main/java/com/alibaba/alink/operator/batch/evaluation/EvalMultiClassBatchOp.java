@@ -12,6 +12,13 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
@@ -37,6 +44,12 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getMul
  * You can either give label column and predResult column or give label column and predDetail column. Once predDetail
  * column is given, the predResult column is ignored.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
+@ParamSelectColumnSpec(name = "labelCol")
+@ParamSelectColumnSpec(name = "predictionCol")
+@ParamSelectColumnSpec(name = "predictionDetailCol", allowedTypeCollections = TypeCollections.STRING_TYPE)
+@NameCn("多分类评估")
 public class EvalMultiClassBatchOp extends BatchOperator <EvalMultiClassBatchOp>
 	implements EvalMultiClassParams <EvalMultiClassBatchOp>,
 	EvaluationMetricsCollector <MultiClassMetrics, EvalMultiClassBatchOp> {

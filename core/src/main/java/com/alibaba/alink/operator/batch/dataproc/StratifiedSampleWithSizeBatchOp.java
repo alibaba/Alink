@@ -1,9 +1,5 @@
 package com.alibaba.alink.operator.batch.dataproc;
 
-import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.dataproc.StrafiedSampleWithSizeParams;
-
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.sampling.DistributedRandomSampler;
@@ -14,6 +10,16 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.params.dataproc.StrafiedSampleWithSizeParams;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -21,6 +27,10 @@ import java.util.Map;
 /**
  * StratifiedSample with given size with or without replacement.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@ParamSelectColumnSpec(name = "strataCol", portIndices = 0)
+@NameCn("固定条数分层随机采样")
 public final class StratifiedSampleWithSizeBatchOp extends BatchOperator <StratifiedSampleWithSizeBatchOp>
 	implements StrafiedSampleWithSizeParams <StratifiedSampleWithSizeBatchOp> {
 

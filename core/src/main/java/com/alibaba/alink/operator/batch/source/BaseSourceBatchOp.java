@@ -3,6 +3,10 @@ package com.alibaba.alink.operator.batch.source;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.io.HasIoName;
@@ -14,6 +18,8 @@ import com.alibaba.alink.params.io.HasIoType;
  * @param <T>
  */
 
+@InputPorts()
+@OutputPorts(values = {@PortSpec(PortType.ANY)})
 public abstract class BaseSourceBatchOp<T extends BaseSourceBatchOp <T>> extends BatchOperator <T> {
 
 	static final IOType IO_TYPE = IOType.SourceBatch;
@@ -21,7 +27,7 @@ public abstract class BaseSourceBatchOp<T extends BaseSourceBatchOp <T>> extends
 
 	protected BaseSourceBatchOp(String nameSrcSnk, Params params) {
 		super(params);
-		this.getParams().set(HasIoType.IO_TYPE, IO_TYPE)
+		getParams().set(HasIoType.IO_TYPE, IO_TYPE)
 			.set(HasIoName.IO_NAME, nameSrcSnk);
 
 	}

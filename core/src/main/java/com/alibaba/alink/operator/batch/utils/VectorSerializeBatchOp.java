@@ -2,8 +2,10 @@ package com.alibaba.alink.operator.batch.utils;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorSerializeMapper;
 
+@Internal
 public final class VectorSerializeBatchOp extends MapBatchOp <VectorSerializeBatchOp> {
 
 	private static final long serialVersionUID = 7868363049236528925L;

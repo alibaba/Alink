@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasInputTableName<T> extends WithParams <T> {
-	/**
-	 * @cn-name 输入表名字
-	 * @cn 输入表名字
-	 */
+	@NameCn("输入表名字")
+	@DescCn("输入表名字")
 	ParamInfo <String> INPUT_TABLE_NAME = ParamInfoFactory
 		.createParamInfo("inputTableName", String.class)
 		.setDescription("input table name")
