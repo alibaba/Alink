@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.QuantileDiscretizerTrainBatchOp;
@@ -14,6 +15,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * as model, and can transform a new data using the model.
  * <p>The output is the index of the interval.
  */
+@NameCn("分位数离散化")
 public class QuantileDiscretizer extends Trainer <QuantileDiscretizer, QuantileDiscretizerModel>
 	implements QuantileDiscretizerTrainParams <QuantileDiscretizer>,
 	QuantileDiscretizerPredictParams <QuantileDiscretizer>,

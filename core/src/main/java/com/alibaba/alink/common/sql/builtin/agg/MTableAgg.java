@@ -4,7 +4,6 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ public class MTableAgg extends BaseUdaf <MTable, List <Row>> {
 		this.dropLast = dropLast;
 		this.schemaStr = schemaStr;
 		this.sortColIdx = sortCol == null ? -1
-			: TableUtil.findColIndex(CsvUtil.schemaStr2Schema(schemaStr), sortCol);
+			: TableUtil.findColIndex(TableUtil.schemaStr2Schema(schemaStr), sortCol);
 	}
 
 	@Override

@@ -216,7 +216,7 @@ public class ItemCfRecommModelDataConverter
 
 		for (Row row : modelData.f1) {
 			// To align with meta row.
-			row.setField(2, row.getField(2).toString());
+			row.setField(2, VectorUtil.serialize(row.getField(2)));
 
 			collector.collect(row);
 		}

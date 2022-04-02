@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.ImputerModelMapper;
 import com.alibaba.alink.params.dataproc.ImputerPredictParams;
@@ -11,6 +12,7 @@ import com.alibaba.alink.params.dataproc.ImputerPredictParams;
  * Imputer Predict completes missing values in a dataSet with model which trained from Inputer train.
  * Strategy support min, max, mean or value.
  */
+@NameCn("缺失值填充批预测")
 public class ImputerPredictBatchOp extends ModelMapBatchOp <ImputerPredictBatchOp>
 	implements ImputerPredictParams <ImputerPredictBatchOp> {
 

@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasLongitudeCol<T> extends WithParams <T> {
-	/**
-	 * @cn-name 纬度列名
-	 * @cn 纬度列名
-	 */
+	@NameCn("纬度列名")
+	@DescCn("纬度列名")
 	ParamInfo <String> LONGITUDE_COL = ParamInfoFactory
 		.createParamInfo("longitudeCol", String.class)
 		.setDescription("longitude col name")

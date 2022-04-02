@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorElementwiseProductMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorElementwiseProductParams;
@@ -11,6 +14,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorElementwiseProductParams;
  * In other words, it scales each column of the dataset by a scalar multiplier. This represents the Hadamard product
  * between the input vector, v and transforming vector, w, to yield a result vector.
  */
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@NameCn("向量元素依次相乘")
 public final class VectorElementwiseProductBatchOp extends MapBatchOp <VectorElementwiseProductBatchOp>
 	implements VectorElementwiseProductParams <VectorElementwiseProductBatchOp> {
 

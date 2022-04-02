@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasLevelStart<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name level初始值
-	 * @cn level初始值
-	 */
+	@NameCn("level初始值")
+	@DescCn("level初始值")
 	ParamInfo <Double> LEVEL_START = ParamInfoFactory
 		.createParamInfo("levelStart", Double.class)
 		.setDescription("The level start.")

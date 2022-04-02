@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.stream.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorFunctionMapper;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
 import com.alibaba.alink.params.dataproc.vector.VectorFunctionParams;
@@ -11,6 +14,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorFunctionParams;
  * Vector can be sparse vector or dense vector.
  */
 
+@ParamSelectColumnSpec(name = "selectedCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
+@NameCn("向量函数")
 public final class VectorFunctionStreamOp extends MapStreamOp <VectorFunctionStreamOp>
 	implements VectorFunctionParams <VectorFunctionStreamOp> {
 

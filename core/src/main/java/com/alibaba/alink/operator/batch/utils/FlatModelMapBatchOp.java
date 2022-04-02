@@ -15,6 +15,13 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.function.TriFunction;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
 import com.alibaba.alink.common.mapper.FlatModelMapper;
 import com.alibaba.alink.common.mapper.FlatModelMapperAdapter;
@@ -25,6 +32,10 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@InputPorts(values = {@PortSpec(PortType.MODEL), @PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ReservedColsWithSecondInputSpec
+@Internal
 public class FlatModelMapBatchOp<T extends FlatModelMapBatchOp <T>> extends BatchOperator <T> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(FlatModelMapBatchOp.class);

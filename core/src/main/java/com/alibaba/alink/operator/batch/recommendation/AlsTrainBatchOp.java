@@ -5,6 +5,14 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.recommendation.AlsModelInfo;
@@ -29,6 +37,22 @@ import static com.alibaba.alink.operator.batch.recommendation.AlsModelInfoBatchO
  * We also support implicit preference model described in "Collaborative Filtering for Implicit Feedback Datasets,
  * 2008"
  */
+@InputPorts(values = {
+	@PortSpec(PortType.DATA),
+	@PortSpec(value = PortType.MODEL, isOptional = true),
+})
+@OutputPorts(values = {
+	@PortSpec(PortType.MODEL),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.USER_FACTOR),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.ITEM_FACTOR),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.APPEND_USER_FACTOR, isOptional = true),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.APPEND_ITEM_FACTOR, isOptional = true)
+})
+@ParamSelectColumnSpec(name = "userCol")
+@ParamSelectColumnSpec(name = "itemCol")
+@ParamSelectColumnSpec(name = "rateCol",
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("ALS训练")
 public final class AlsTrainBatchOp
 	extends BatchOperator <AlsTrainBatchOp>
 	implements AlsTrainParams <AlsTrainBatchOp>,

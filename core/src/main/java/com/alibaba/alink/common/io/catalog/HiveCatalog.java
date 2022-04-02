@@ -7,9 +7,6 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.core.fs.FSDataInputStream;
-import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.io.InputSplit;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.shaded.guava18.com.google.common.base.Joiner;
@@ -24,10 +21,8 @@ import org.apache.flink.table.catalog.CatalogPartition;
 import org.apache.flink.table.catalog.CatalogPartitionSpec;
 import org.apache.flink.table.catalog.CatalogTable;
 import org.apache.flink.table.catalog.CatalogTableImpl;
-import org.apache.flink.table.catalog.ObjectIdentifier;
 import org.apache.flink.table.catalog.ObjectPath;
-import org.apache.flink.table.catalog.ResolvedCatalogTable;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.catalog.config.CatalogConfig;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotEmptyException;
@@ -43,46 +38,42 @@ import org.apache.flink.table.catalog.exceptions.TableNotPartitionedException;
 import org.apache.flink.table.catalog.exceptions.TablePartitionedException;
 import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
-import org.apache.flink.table.data.DecimalData;
-import org.apache.flink.table.data.RowData;
-import org.apache.flink.table.data.binary.BinaryStringData;
+import org.apache.flink.table.dataformat.BaseRow;
+import org.apache.flink.table.dataformat.BinaryString;
+import org.apache.flink.table.dataformat.TypeGetterSetters;
 import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.CatalogFactory;
-import org.apache.flink.table.factories.DynamicTableFactory;
-import org.apache.flink.table.factories.FactoryUtil;
-import org.apache.flink.table.factories.FactoryUtil.DefaultCatalogContext;
-import org.apache.flink.table.factories.TableSourceFactory.Context;
-import org.apache.flink.table.factories.TableSourceFactoryContextImpl;
+import org.apache.flink.table.factories.TableSinkFactory;
+import org.apache.flink.table.factories.TableSourceFactory;
+import org.apache.flink.table.sinks.OutputFormatTableSink;
+import org.apache.flink.table.sinks.OverwritableTableSink;
+import org.apache.flink.table.sinks.PartitionableTableSink;
+import org.apache.flink.table.sources.InputFormatTableSource;
+import org.apache.flink.table.sources.PartitionableTableSource;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.types.utils.TypeConversions;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.FileUtils;
 import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.CatalogAnnotation;
+import com.alibaba.alink.common.io.catalog.HiveBaseUtils.HiveConfFolderStructure;
 import com.alibaba.alink.common.io.catalog.plugin.HiveClassLoaderFactory;
 import com.alibaba.alink.common.io.catalog.plugin.RichInputFormatWithClassLoader;
 import com.alibaba.alink.common.io.catalog.plugin.RichOutputFormatWithClassLoader;
 import com.alibaba.alink.common.io.filesystem.FilePath;
-import com.alibaba.alink.common.io.filesystem.LocalFileSystem;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.HiveCatalogParams;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -442,17 +433,14 @@ public class HiveCatalog extends BaseCatalog {
 
 	@Override
 	public Table sourceStream(ObjectPath objectPath, Params params, Long sessionId) {
-		Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormatWithClassLoader <RowData>> all
-			= createInputFormat(
-			objectPath, params, loadCatalog(),
-			MLEnvironmentFactory.get(sessionId)
-				.getStreamTableEnvironment().getConfig().getConfiguration(), hiveClassLoaderFactory);
+		Tuple3 <TableSchema, TypeInformation<BaseRow>, RichInputFormatWithClassLoader <BaseRow>> all
+			= createInputFormat(objectPath, params, loadCatalog(), hiveClassLoaderFactory);
 
 		DataStream <Row> dataStream = MLEnvironmentFactory
 			.get(sessionId)
 			.getStreamExecutionEnvironment()
 			.createInput(all.f2, all.f1)
-			.map(new RowDataToRow(all.f0.getFieldDataTypes()));
+			.map(new BaseRowToRow(all.f0.getFieldDataTypes()));
 
 		Table tbl = DataStreamConversionUtil.toTable(sessionId, dataStream, all.f0);
 
@@ -470,34 +458,40 @@ public class HiveCatalog extends BaseCatalog {
 
 	@Override
 	public void sinkStream(ObjectPath objectPath, Table in, Params params, Long sessionId) {
+		OutputFormat <Row> outputFormat =
+			hiveClassLoaderFactory.doAsThrowRuntime(() -> {
+					checkTableExistenceBeforeSink(objectPath, in.getSchema(), params);
 
-		checkTableExistenceBeforeSink(objectPath, in.getSchema(), params);
+					OutputFormatTableSink <Row> tableSink = createHiveTableSink(objectPath, params,
+						loadCatalog(), hiveClassLoaderFactory);
 
-		RichOutputFormatWithClassLoader outputFormat =
-			createOutput(objectPath, params, loadCatalog(),
-				MLEnvironmentFactory.get(sessionId)
-					.getStreamTableEnvironment().getConfig().getConfiguration(), hiveClassLoaderFactory, true);
+					((PartitionableTableSink) tableSink).setStaticPartition(
+						HiveBaseUtils.getStaticPartitionSpec(params.get(HiveCatalogParams.PARTITION)));
+
+					((OverwritableTableSink) tableSink).setOverwrite(true);
+
+					return tableSink.getOutputFormat();
+				}
+			);
 
 		StreamOperator
 			.fromTable(in)
 			.setMLEnvironmentId(sessionId)
 			.getDataStream()
-			.writeUsingOutputFormat(outputFormat)
-			.name("hive_stream_sink_" + objectPath.getFullName());
+			.writeUsingOutputFormat(
+				new RichOutputFormatWithClassLoader(hiveClassLoaderFactory, outputFormat)
+			).name("hive_stream_sink_" + objectPath.getFullName());
 	}
 
 	@Override
 	public Table sourceBatch(ObjectPath objectPath, Params params, Long sessionId) {
-		Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormatWithClassLoader <RowData>> all
-			= createInputFormat(
-			objectPath, params, loadCatalog(),
-			MLEnvironmentFactory.get(sessionId)
-				.getStreamTableEnvironment().getConfig().getConfiguration(), hiveClassLoaderFactory);
+		Tuple3 <TableSchema, TypeInformation<BaseRow>, RichInputFormatWithClassLoader <BaseRow>> all
+			= createInputFormat(objectPath, params, loadCatalog(), hiveClassLoaderFactory);
 
 		DataSet <Row> ds = MLEnvironmentFactory.get(sessionId)
 			.getExecutionEnvironment()
 			.createInput(all.f2, all.f1)
-			.map(new RowDataToRow(all.f0.getFieldDataTypes()));
+			.map(new BaseRowToRow(all.f0.getFieldDataTypes()));
 
 		Table tbl = DataSetConversionUtil.toTable(sessionId, ds, all.f0);
 
@@ -516,20 +510,25 @@ public class HiveCatalog extends BaseCatalog {
 
 	@Override
 	public void sinkBatch(ObjectPath objectPath, Table in, Params params, Long sessionId) {
+		OutputFormat <Row> outputFormat = hiveClassLoaderFactory.doAsThrowRuntime(() -> {
+				checkTableExistenceBeforeSink(objectPath, in.getSchema(), params);
+				OutputFormatTableSink <Row> tableSink = createHiveTableSink(objectPath, params,
+					loadCatalog(), hiveClassLoaderFactory);
+				((PartitionableTableSink) tableSink).setStaticPartition(
+					HiveBaseUtils.getStaticPartitionSpec(params.get(HiveCatalogParams.PARTITION)));
+				((OverwritableTableSink) tableSink).setOverwrite(true);
 
-		checkTableExistenceBeforeSink(objectPath, in.getSchema(), params);
-
-		RichOutputFormatWithClassLoader outputFormat =
-			createOutput(objectPath, params, loadCatalog(),
-				MLEnvironmentFactory.get(sessionId)
-					.getStreamTableEnvironment().getConfig().getConfiguration(), hiveClassLoaderFactory, true);
+				return tableSink.getOutputFormat();
+			}
+		);
 
 		BatchOperator
 			.fromTable(in)
 			.setMLEnvironmentId(sessionId)
 			.getDataSet()
-			.output(outputFormat)
-			.name("hive_batch_sink_" + objectPath.getFullName());
+			.output(
+				new RichOutputFormatWithClassLoader(hiveClassLoaderFactory, outputFormat)
+			).name("hive_batch_sink_" + objectPath.getFullName());
 	}
 
 	public List <String> getPartitionCols(ObjectPath objectPath) throws TableNotExistException {
@@ -554,7 +553,7 @@ public class HiveCatalog extends BaseCatalog {
 		TableSchema schema, ObjectPath objectPath) throws TableNotExistException {
 
 		// remove static partition columns
-		List <String> staticPartCols = getPartitionCols(objectPath);
+		List<String> staticPartCols = getPartitionCols(objectPath);
 		int numPartCols = staticPartCols.size();
 		if (numPartCols > 0) {
 			Set <String> partColsSet = new HashSet <>(staticPartCols);
@@ -600,6 +599,35 @@ public class HiveCatalog extends BaseCatalog {
 		}
 	}
 
+	private static class BaseRowToRow implements MapFunction <BaseRow, Row> {
+		private static final long serialVersionUID = 8244536444446985884L;
+
+		DataType[] dataTypes;
+
+		BaseRowToRow(DataType[] dataTypes) {
+			this.dataTypes = dataTypes;
+		}
+
+		@Override
+		public Row map(BaseRow baseRow) throws Exception {
+			Row row = new Row(baseRow.getArity());
+			for (int i = 0; i < baseRow.getArity(); i++) {
+				if (baseRow.isNullAt(i)) {
+					row.setField(i, null);
+				} else {
+					Object o = TypeGetterSetters.get(baseRow, i, dataTypes[i].getLogicalType());
+
+					if (o instanceof BinaryString) {
+						o = o.toString();
+					}
+
+					row.setField(i, o);
+				}
+			}
+			return row;
+		}
+	}
+
 	private void checkSchemaMatch(TableSchema outputSchema, ObjectPath objectPath) {
 		TableSchema tableSchema;
 		try {
@@ -623,39 +651,6 @@ public class HiveCatalog extends BaseCatalog {
 					String.format("mismatched schema between outputting operator and the overwritten table \"%s\"." +
 						"Outputting operator schema is %s", objectPath.getFullName(), outputSchema.toString()));
 			}
-		}
-	}
-
-	private static class RowDataToRow implements MapFunction <RowData, Row> {
-		private static final long serialVersionUID = -2751018757273958023L;
-
-		DataType[] dataTypes;
-
-		RowDataToRow(DataType[] dataTypes) {
-			this.dataTypes = dataTypes;
-		}
-
-		@Override
-		public Row map(RowData baseRow) throws Exception {
-			Row row = new Row(baseRow.getArity());
-			for (int i = 0; i < baseRow.getArity(); i++) {
-				if (baseRow.isNullAt(i)) {
-					row.setField(i, null);
-				} else {
-					Object o = RowData
-						.createFieldGetter(dataTypes[i].getLogicalType(), i)
-						.getFieldOrNull(baseRow);
-
-					if (o instanceof BinaryStringData) {
-						o = o.toString();
-					} else if (o instanceof DecimalData) {
-						o = ((DecimalData) o).toBigDecimal();
-					}
-
-					row.setField(i, o);
-				}
-			}
-			return row;
 		}
 	}
 
@@ -687,110 +682,9 @@ public class HiveCatalog extends BaseCatalog {
 		}
 
 		Map <String, String> properties = new HashMap <>();
-		properties.put(FactoryUtil.CONNECTOR.key(), "hive");
+		properties.put(CatalogConfig.IS_GENERIC, "false");
 
 		return new CatalogTableImpl(schema, Arrays.asList(partitionCols), properties, objectPath.getFullName());
-	}
-
-	public static boolean fileExists(FilePath folder, String file) throws IOException {
-		// local
-		if (folder.getFileSystem() instanceof LocalFileSystem) {
-			return folder.getFileSystem().exists(new Path(folder.getPath(), file));
-		}
-
-		String scheme = folder.getPath().toUri().getScheme();
-
-		if (scheme != null && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))) {
-			try (HttpFileSplitReader reader = new HttpFileSplitReader(folder.getPathStr() + "/" + file)) {
-				long fileLen = reader.getFileLength();
-				reader.open(null, 0, fileLen);
-			} catch (FileNotFoundException exception) {
-				return false;
-			}
-
-			return true;
-		} else {
-			return folder.getFileSystem().exists(new Path(folder.getPath(), file));
-		}
-	}
-
-	public static String readFile(FilePath filePath) throws IOException {
-		String scheme = filePath.getPath().toUri().getScheme();
-		if (scheme != null && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))) {
-			try (HttpFileSplitReader reader = new HttpFileSplitReader(filePath.toString())) {
-				long fileLen = reader.getFileLength();
-				reader.open(null, 0, fileLen);
-
-				int len = (int) reader.getFileLength();
-
-				byte[] buffer = new byte[len];
-				reader.read(buffer, 0, len);
-
-				return new String(buffer, StandardCharsets.UTF_8);
-			}
-		} else {
-			try (FSDataInputStream inputStream = filePath.getFileSystem().open(filePath.getPath())) {
-				return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-			}
-		}
-	}
-
-	public static String downloadFolder(FilePath folder, String... files) throws IOException {
-		// local
-		if (folder.getFileSystem() instanceof LocalFileSystem) {
-			return folder.getPathStr();
-		}
-
-		File localConfDir = new File(System.getProperty("java.io.tmpdir"), FileUtils.getRandomFilename(""));
-		String scheme = folder.getPath().toUri().getScheme();
-
-		if (!localConfDir.mkdir()) {
-			throw new RuntimeException("Could not create the dir " + localConfDir.getAbsolutePath());
-		}
-
-		if (scheme != null && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))) {
-			for (String path : files) {
-				try (HttpFileSplitReader reader = new HttpFileSplitReader(folder.getPathStr() + "/" + path)) {
-					long fileLen = reader.getFileLength();
-					reader.open(null, 0, fileLen);
-
-					int offset = 0;
-					byte[] buffer = new byte[1024];
-
-					try (FileOutputStream outputStream = new FileOutputStream(
-						Paths.get(localConfDir.getPath(), path).toFile())) {
-						while (offset < fileLen) {
-							int len = reader.read(buffer, offset, 1024);
-							outputStream.write(buffer, offset, len);
-							offset += len;
-						}
-					}
-
-				} catch (FileNotFoundException exception) {
-					// pass
-				}
-			}
-		} else {
-			for (String path : files) {
-				// file system
-				if (!folder.getFileSystem().exists(new Path(folder.getPath(), path))) {
-					continue;
-				}
-
-				try (FSDataInputStream inputStream = folder.getFileSystem().open(
-					new Path(folder.getPath(), path));
-					 FileOutputStream outputStream = new FileOutputStream(
-						 Paths.get(localConfDir.getPath(), path).toFile())) {
-					IOUtils.copy(inputStream, outputStream);
-				}
-			}
-		}
-
-		return localConfDir.getAbsolutePath();
-	}
-
-	public static String downloadHiveConf(FilePath hiveConfDir) throws IOException {
-		return downloadFolder(hiveConfDir, "hive-site.xml");
 	}
 
 	public static CatalogFactory createCatalogFactory(ClassLoader classLoader) {
@@ -811,10 +705,21 @@ public class HiveCatalog extends BaseCatalog {
 
 		CatalogFactory factory = createCatalogFactory(classLoader);
 
+		List <String> supportedKeys = factory.supportedProperties();
+
+		if (!supportedKeys.contains(CATALOG_HIVE_VERSION)
+			|| !supportedKeys.contains(CATALOG_HIVE_CONF_DIR)
+			|| !supportedKeys.contains(CATALOG_DEFAULT_DATABASE)) {
+
+			throw new IllegalStateException(
+				"Incorrect hive dependency. Please check the configure of hive environment."
+			);
+		}
+
 		String localHiveConfDir;
 
 		try {
-			localHiveConfDir = downloadHiveConf(
+			localHiveConfDir = HiveBaseUtils.downloadHiveConf(
 				FilePath.deserialize(params.get(HiveCatalogParams.HIVE_CONF_DIR))
 			);
 		} catch (IOException e) {
@@ -830,67 +735,15 @@ public class HiveCatalog extends BaseCatalog {
 			properties.put(CATALOG_DEFAULT_DATABASE, params.get(HiveCatalogParams.DEFAULT_DATABASE));
 		}
 
-		CatalogFactory.Context context = new DefaultCatalogContext(catalogName, properties, null, null);
+		properties.putAll(factory.requiredContext());
 
-		return factory.createCatalog(context);
-	}
-
-	/**
-	 * Structure of hive conf folder.
-	 * <p>hive-conf/
-	 * <p> |--krb5.conf      # configure of kdc
-	 * <p> |--user.keytab    # user kerberos keytab
-	 * <p> |--user.name      # user kerberos name
-	 * <p> |--hive-site.xml  # hive configure
-	 * <p> |--core-site.xml  # hadoop core configure
-	 * <p> |--hdfs-site.xml  # hdfs configure
-	 */
-	public static class HiveConfFolderStructure implements Serializable {
-		private static final String KEYTAB_FILE_NAME = "user.keytab";
-		private static final String PRINCIPAL_FILE_NAME = "user.name";
-
-		private final FilePath folder;
-
-		public HiveConfFolderStructure(FilePath folder) {
-			this.folder = folder;
-		}
-
-		public String getKerberosPrincipal() throws IOException {
-			if (fileExists(folder, PRINCIPAL_FILE_NAME)) {
-				return readFile(new FilePath(new Path(folder.getPath(), PRINCIPAL_FILE_NAME), folder.getFileSystem()));
-			} else {
-				return null;
-			}
-		}
-
-		public FilePath getKerberosKeytabPath() throws IOException {
-			if (fileExists(folder, KEYTAB_FILE_NAME)) {
-				return new FilePath(new Path(folder.getPath(), KEYTAB_FILE_NAME), folder.getFileSystem());
-			} else {
-				return null;
-			}
-		}
-	}
-
-	public static Map <String, String> getStaticPartitionSpec(String partitionSpec) {
-		Map <String, String> spec = new HashMap <>();
-		if (!StringUtils.isNullOrWhitespaceOnly(partitionSpec)) {
-			String[] partitions = partitionSpec.split("/");
-			for (String p : partitions) {
-				int pos = p.indexOf('=');
-				Preconditions.checkArgument(pos > 0);
-				String col = p.substring(0, pos);
-				String val = p.substring(pos + 1);
-				spec.put(col, val);
-			}
-		}
-		return spec;
+		return factory.createCatalog(catalogName, properties);
 	}
 
 	public static List <Map <String, String>> getSelectedPartitions(String[] partitionSpecs) {
 		List <Map <String, String>> selected = new ArrayList <>();
 		for (String s : partitionSpecs) {
-			Map <String, String> spec = getStaticPartitionSpec(s);
+			Map <String, String> spec = HiveBaseUtils.getStaticPartitionSpec(s);
 			selected.add(spec);
 		}
 		return selected;
@@ -901,20 +754,10 @@ public class HiveCatalog extends BaseCatalog {
 		return (CatalogTable) action.doAsThrowRuntime(() -> catalog.getTable(objectPath));
 	}
 
-	private Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormatWithClassLoader <RowData>> createInputFormat(
-		ObjectPath objectPath, final Params params, Catalog catalog,
-		ReadableConfig config, HiveClassLoaderFactory factory) {
+	private Tuple3 <TableSchema, TypeInformation<BaseRow>, RichInputFormatWithClassLoader <BaseRow>> createInputFormat(
+		ObjectPath objectPath, final Params params, Catalog catalog, HiveClassLoaderFactory factory) {
 
-		Context context = new TableSourceFactoryContextImpl(
-			ObjectIdentifier.of(
-				"default",
-				objectPath.getDatabaseName(),
-				objectPath.getObjectName()
-			),
-			getCatalogTable(objectPath, catalog, factory),
-			config,
-			false
-		);
+		final CatalogTable catalogTable = getCatalogTable(objectPath, catalog, factory);
 
 		return factory.doAsThrowRuntime(() -> {
 
@@ -930,91 +773,30 @@ public class HiveCatalog extends BaseCatalog {
 				true, Thread.currentThread().getContextClassLoader()
 			);
 
-			Method method = inputOutputFormat.getMethod("createInputFormat", Catalog.class, Context.class, List.class);
+			Method method = inputOutputFormat.getMethod(
+				"createInputFormat", Catalog.class, ObjectPath.class, CatalogTable.class, List.class
+			);
 
-			Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormat <RowData, InputSplit>> internalRet =
-				(Tuple3 <TableSchema, TypeInformation <RowData>, RichInputFormat <RowData, InputSplit>>)
-					method.invoke(null, catalog, context, selectedPartitions);
+			Tuple3 <TableSchema, TypeInformation<BaseRow>, RichInputFormat <BaseRow, InputSplit>> internalRet =
+				(Tuple3 <TableSchema, TypeInformation<BaseRow>, RichInputFormat <BaseRow, InputSplit>>)
+					method.invoke(null, catalog, objectPath, catalogTable, selectedPartitions);
 
-			return Tuple3.of(internalRet.f0, internalRet.f1,
-				new RichInputFormatWithClassLoader <>(factory, internalRet.f2));
+			return Tuple3.of(internalRet.f0, internalRet.f1, new RichInputFormatWithClassLoader <>(factory, internalRet.f2));
 		});
 	}
 
-	private RichOutputFormatWithClassLoader createOutput(
-		ObjectPath objectPath, final Params params, Catalog catalog,
-		final ReadableConfig config, HiveClassLoaderFactory factory, boolean isStream) {
-
-		final ObjectIdentifier identifier = ObjectIdentifier.of(
-			"default",
-			objectPath.getDatabaseName(),
-			objectPath.getObjectName()
-		);
-
-		final CatalogTable table = getCatalogTable(objectPath, catalog, factory);
-
-		final ClassLoader classLoader = factory.create();
-
-		final DynamicTableFactory.Context context = new DynamicTableFactory.Context() {
-			@Override
-			public ObjectIdentifier getObjectIdentifier() {
-				return identifier;
-			}
-
-			@Override
-			public ResolvedCatalogTable getCatalogTable() {
-				if (table instanceof ResolvedCatalogTable) {
-					return (ResolvedCatalogTable) table;
-				}
-
-				if (table.getSchema() != null) {
-					TableSchema schema = table.getSchema();
-
-					return new ResolvedCatalogTable(table,
-						ResolvedSchema.physical(schema.getFieldNames(), schema.getFieldDataTypes())
-					);
-				}
-
-				throw new IllegalArgumentException("Catalog table must be the ResolvedCatalogTable");
-			}
-
-			@Override
-			public ReadableConfig getConfiguration() {
-				return config;
-			}
-
-			@Override
-			public ClassLoader getClassLoader() {
-				return classLoader;
-			}
-
-			@Override
-			public boolean isTemporary() {
-				return false;
-			}
-		};
-
-		return factory.doAsThrowRuntime(() -> {
-
-			String partitionSpec = params.get(HiveCatalogParams.PARTITION);
-
-			Map <String, String> partitions = null;
-			if (!StringUtils.isNullOrWhitespaceOnly(partitionSpec)) {
-				partitions = getStaticPartitionSpec(partitionSpec);
-			}
-
-			Class <?> inputOutputFormat = Class.forName(
-				"org.apache.flink.connectors.hive.InputOutputFormat",
-				true, Thread.currentThread().getContextClassLoader()
+	public static OutputFormatTableSink <Row> createHiveTableSink(
+		ObjectPath objectPath, Params params, Catalog catalog, HiveClassLoaderFactory action) {
+		try {
+			return action.doAs(() -> (OutputFormatTableSink <Row>) ((TableSinkFactory <Row>) catalog
+				.getTableFactory()
+				.orElseGet(() -> {
+					throw new RuntimeException("Could not create the table sink factory in hive.");
+				}))
+				.createTableSink(objectPath, getCatalogTable(objectPath, catalog, action))
 			);
-
-			Method method = inputOutputFormat.getMethod("createOutputFormat", Catalog.class,
-				DynamicTableFactory.Context.class, Map.class);
-
-			OutputFormat <Row> internalRet =
-				(OutputFormat <Row>) method.invoke(null, catalog, context, partitions);
-
-			return new RichOutputFormatWithClassLoader(factory, internalRet);
-		});
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

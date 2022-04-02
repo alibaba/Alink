@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.stream.similarity;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.similarity.TextSimilarityPairwiseMapper;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
 import com.alibaba.alink.params.similarity.StringTextPairwiseParams;
@@ -24,7 +27,8 @@ import com.alibaba.alink.params.similarity.StringTextPairwiseParams;
  * MINHASH_SIM: MinHashSim = P(hmin(A) = hmin(B)) = Count(I(hmin(A) = hmin(B))) / k.
  * JACCARD_SIM: JaccardSim = |A ∩ B| / |A ∪ B| = |A ∩ B| / (|A| + |B| - |A ∩ B|)
  */
-
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@NameCn("文本两两相似度计算")
 public final class TextSimilarityPairwiseStreamOp extends MapStreamOp <TextSimilarityPairwiseStreamOp>
 	implements StringTextPairwiseParams <TextSimilarityPairwiseStreamOp> {
 	private static final long serialVersionUID = 6688031410512149751L;

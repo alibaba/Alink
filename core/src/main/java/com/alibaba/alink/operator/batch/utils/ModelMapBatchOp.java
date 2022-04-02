@@ -16,6 +16,13 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.function.TriFunction;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
 import com.alibaba.alink.common.mapper.IterableModelLoader;
 import com.alibaba.alink.common.mapper.IterableModelLoaderModelMapperAdapter;
@@ -34,6 +41,13 @@ import java.util.List;
 /**
  * *
  */
+@InputPorts(values = {
+	@PortSpec(value = PortType.MODEL, desc = PortDesc.PREDICT_INPUT_MODEL),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.PREDICT_INPUT_DATA)
+})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ReservedColsWithSecondInputSpec
+@Internal
 public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperator <T> {
 
 	private static final String BROADCAST_MODEL_TABLE_NAME = "broadcastModelTable";
@@ -42,7 +56,7 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 	/**
 	 * (modelScheme, dataSchema, params) -> ModelMapper
 	 */
-	private final TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder;
+	protected final TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder;
 
 	public ModelMapBatchOp(TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder,
 						   Params params) {
@@ -54,15 +68,27 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 	public T linkFrom(BatchOperator <?>... inputs) {
 		checkOpSize(2, inputs);
 		try {
-			final ModelMapper mapper = this.mapperBuilder.apply(
+			final ModelMapper mapper = mapperBuilder.apply(
 				inputs[0].getSchema(),
 				inputs[1].getSchema(),
-				this.getParams());
-			DataSet <Row> resultRows = null;
-			if (mapper instanceof IterableModelLoader) {
-				final long handler = IterTaskObjKeeper.getNewHandle();
-				DataSet <Row> modelRows = inputs[0].getDataSet();
-				DataSet <Row> distributedModelRows = modelRows.flatMap(
+				getParams());
+
+			DataSet <Row> resultRows = calcResultRows(inputs[0], inputs[1], mapper, getParams());
+
+			TableSchema outputSchema = mapper.getOutputSchema();
+			setOutput(resultRows, outputSchema);
+			return (T) this;
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	public static DataSet <Row> calcResultRows(BatchOperator <?> input_model, BatchOperator <?> input_data,
+											   ModelMapper mapper, Params params) {
+		if (mapper instanceof IterableModelLoader) {
+			final long handler = IterTaskObjKeeper.getNewHandle();
+			DataSet <Row> modelRows = input_model.getDataSet();
+			DataSet <Row> distributedModelRows = modelRows.flatMap(
 					new RichFlatMapFunction <Row, Tuple2 <Integer, Row>>() {
 						private static final long serialVersionUID = 3544759002096859673L;
 						int numTask;
@@ -79,95 +105,87 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 							}
 						}
 					}).returns(new TupleTypeInfo <>(Types.INT, modelRows.getType()))
-					.partitionCustom(new Partitioner <Integer>() {
-						private static final long serialVersionUID = -2924355974935165844L;
+				.partitionCustom(new Partitioner <Integer>() {
+					private static final long serialVersionUID = -2924355974935165844L;
+
+					@Override
+					public int partition(Integer key, int numPartitions) {
+						return key;
+					}
+				}, 0)
+				.map(new MapFunction <Tuple2 <Integer, Row>, Row>() {
+					private static final long serialVersionUID = 8884296007768771379L;
+
+					@Override
+					public Row map(Tuple2 <Integer, Row> value) throws Exception {
+						return value.f1;
+					}
+				})
+				.returns(modelRows.getType());
+
+			DataSet <Integer> barrier = distributedModelRows.mapPartition(
+				new RichMapPartitionFunction <Row, Integer>() {
+					private static final long serialVersionUID = 2358845952757630826L;
+
+					@Override
+					public void mapPartition(Iterable <Row> values, Collector <Integer> out) {
+						int taskId = getRuntimeContext().getIndexOfThisSubtask();
+						((IterableModelLoader) mapper).loadIterableModel(values);
+						IterTaskObjKeeper.put(handler, taskId, mapper);
+					}
+				});
+
+			if (params.get(ModelMapperParams.NUM_THREADS) <= 1) {
+				return input_data.getDataSet()
+					.map(new IterableModelLoaderModelMapperAdapter(handler))
+					.withBroadcastSet(barrier, "barrier");
+			} else {
+				return input_data.getDataSet()
+					.flatMap(new IterableModelLoaderModelMapperAdapterMT(handler,
+						params.get(ModelMapperParams.NUM_THREADS)))
+					.withBroadcastSet(barrier, "barrier");
+			}
+		} else {
+			final BroadcastVariableModelSource modelSource = new BroadcastVariableModelSource(
+				BROADCAST_MODEL_TABLE_NAME);
+			DataSet <Row> modelRows = input_model.getDataSet().rebalance();
+
+			if (ModelStreamUtils.useModelStreamFile(params)) {
+				return input_data
+					.getDataSet()
+					.map(new RichMapFunction <Row, Row>() {
+						ModelStreamModelMapperAdapter modelStreamModelMapper;
 
 						@Override
-						public int partition(Integer key, int numPartitions) {
-							return key;
+						public void open(Configuration parameters) throws Exception {
+							super.open(parameters);
+							List <Row> modelRows = modelSource.getModelRows(getRuntimeContext());
+							mapper.loadModel(modelRows);
+							mapper.open();
+
+							modelStreamModelMapper = new ModelStreamModelMapperAdapter(mapper);
 						}
-					}, 0)
-					.map(new MapFunction <Tuple2 <Integer, Row>, Row>() {
-						private static final long serialVersionUID = 8884296007768771379L;
 
 						@Override
-						public Row map(Tuple2 <Integer, Row> value) throws Exception {
-							return value.f1;
+						public Row map(Row value) throws Exception {
+							return modelStreamModelMapper.map(value);
 						}
 					})
-					.returns(modelRows.getType());
-
-				DataSet <Integer> barrier = distributedModelRows.mapPartition(
-					new RichMapPartitionFunction <Row, Integer>() {
-						private static final long serialVersionUID = 2358845952757630826L;
-
-						@Override
-						public void mapPartition(Iterable <Row> values, Collector <Integer> out) {
-							int taskId = getRuntimeContext().getIndexOfThisSubtask();
-							((IterableModelLoader) mapper).loadIterableModel(values);
-							IterTaskObjKeeper.put(handler, taskId, mapper);
-						}
-					});
-
-				if (getParams().get(ModelMapperParams.NUM_THREADS) <= 1) {
-					resultRows = inputs[1].getDataSet()
-						.map(new IterableModelLoaderModelMapperAdapter(handler))
-						.withBroadcastSet(barrier, "barrier");
-				} else {
-					resultRows = inputs[1].getDataSet()
-						.flatMap(new IterableModelLoaderModelMapperAdapterMT(handler,
-							getParams().get(ModelMapperParams.NUM_THREADS)))
-						.withBroadcastSet(barrier, "barrier");
-				}
+					.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
+			} else if (params.get(ModelMapperParams.NUM_THREADS) <= 1) {
+				return input_data
+					.getDataSet()
+					.map(new ModelMapperAdapter(mapper, modelSource))
+					.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
 			} else {
-				final BroadcastVariableModelSource modelSource = new BroadcastVariableModelSource(
-					BROADCAST_MODEL_TABLE_NAME);
-				DataSet <Row> modelRows = inputs[0].getDataSet().rebalance();
-
-				if (ModelStreamUtils.useModelStreamFile(getParams())) {
-
-					resultRows = inputs[1]
-						.getDataSet()
-						.map(new RichMapFunction <Row, Row>() {
-							ModelStreamModelMapperAdapter modelStreamModelMapper;
-
-							@Override
-							public void open(Configuration parameters) throws Exception {
-								super.open(parameters);
-								List <Row> modelRows = modelSource.getModelRows(getRuntimeContext());
-								mapper.loadModel(modelRows);
-								mapper.open();
-
-								modelStreamModelMapper = new ModelStreamModelMapperAdapter(mapper);
-							}
-
-							@Override
-							public Row map(Row value) throws Exception {
-								return modelStreamModelMapper.map(value);
-							}
-						})
-						.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
-				} else if (getParams().get(ModelMapperParams.NUM_THREADS) <= 1) {
-					resultRows = inputs[1]
-						.getDataSet()
-						.map(new ModelMapperAdapter(mapper, modelSource))
-						.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
-				} else {
-					resultRows = inputs[1]
-						.getDataSet()
-						.flatMap(
-							new ModelMapperAdapterMT(mapper, modelSource,
-								getParams().get(ModelMapperParams.NUM_THREADS))
-						)
-						.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
-				}
+				return input_data
+					.getDataSet()
+					.flatMap(
+						new ModelMapperAdapterMT(mapper, modelSource,
+							params.get(ModelMapperParams.NUM_THREADS))
+					)
+					.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
 			}
-
-			TableSchema outputSchema = mapper.getOutputSchema();
-			this.setOutput(resultRows, outputSchema);
-			return (T) this;
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
 		}
 	}
 }

@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.PcaTrainBatchOp;
@@ -14,6 +15,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * PcaTrainBatchOp is train a model which can be used to batch predict and stream predict
  * The calculation is done using eigen on the correlation or covariance matrix.
  */
+@NameCn("主成分分析")
 public class PCA extends Trainer <PCA, PCAModel> implements
 	PcaTrainParams <PCA>,
 	PcaPredictParams <PCA>,

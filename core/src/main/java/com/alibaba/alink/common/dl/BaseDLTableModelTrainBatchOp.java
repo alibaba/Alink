@@ -2,6 +2,12 @@ package com.alibaba.alink.common.dl;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.ShuffleBatchOp;
@@ -19,6 +25,11 @@ import java.util.Map;
  * restricted version of BaseDLBatchOp. That is, in this class, we still know ips and ports of all tasks, but we must
  * write table model back to Alink with schema "model_id long, model_info string".
  */
+@InputPorts(values = {
+	@PortSpec(PortType.DATA),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.DL_BC_DATA, isRepeated = true)}
+)
+@OutputPorts(values = @PortSpec(PortType.MODEL))
 public abstract class BaseDLTableModelTrainBatchOp<T extends BaseDLTableModelTrainBatchOp <T>>
 	extends BatchOperator <T> implements BaseDLTableModelTrainParams <T> {
 
@@ -41,6 +52,8 @@ public abstract class BaseDLTableModelTrainBatchOp<T extends BaseDLTableModelTra
 	protected String mainScriptFileName;
 	protected Integer numPss = null;
 	protected String userMainScriptRename;
+	// when `pythonEnv` not set, download from plugin with `version`
+	protected Version version;
 	protected Map <String, String> scriptRenameMap = new HashMap <>();
 
 	// entry function
@@ -77,6 +90,7 @@ public abstract class BaseDLTableModelTrainBatchOp<T extends BaseDLTableModelTra
 			.setNumPSs(numPss)
 			.setEntryFunc(entryFuncName)
 			.setPythonEnv(getPythonEnv())
+			.setEnvVersion(version)
 			.setUserFiles(externalFiles)
 			.setMainScriptFile(mainScriptFileName)
 			.setUserParams(JsonConverter.toJson(algoParams))

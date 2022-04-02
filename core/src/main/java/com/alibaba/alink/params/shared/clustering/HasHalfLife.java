@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasHalfLife<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 半生命周期
-	 * @cn 半生命周期
-	 */
+	@NameCn("半生命周期")
+	@DescCn("半生命周期")
 	ParamInfo <Integer> HALF_LIFE = ParamInfoFactory
 		.createParamInfo("halfLife", Integer.class)
 		.setDescription("half life")

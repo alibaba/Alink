@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.similarity;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.similarity.TrainType;
 import com.alibaba.alink.operator.common.similarity.dataConverter.StringModelDataConverter;
 import com.alibaba.alink.params.similarity.StringTextApproxNearestNeighborTrainParams;
@@ -9,6 +10,7 @@ import com.alibaba.alink.params.similarity.StringTextApproxNearestNeighborTrainP
 /**
  * Find the approximate nearest neighbor of query texts.
  */
+@NameCn("文本近似最近邻训练")
 public class TextApproxNearestNeighborTrainBatchOp
 	extends BaseNearestNeighborTrainBatchOp<TextApproxNearestNeighborTrainBatchOp>
 	implements StringTextApproxNearestNeighborTrainParams <TextApproxNearestNeighborTrainBatchOp> {

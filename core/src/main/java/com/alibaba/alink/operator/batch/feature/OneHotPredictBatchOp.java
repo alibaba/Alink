@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.feature.OneHotModelMapper;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
@@ -10,6 +11,7 @@ import com.alibaba.alink.params.feature.OneHotPredictParams;
  * One-hot batch operator maps a serial of columns of category indices to a column of
  * sparse binary vectors.
  */
+@NameCn("独热编码预测")
 public final class OneHotPredictBatchOp extends ModelMapBatchOp <OneHotPredictBatchOp>
 	implements OneHotPredictParams <OneHotPredictBatchOp> {
 

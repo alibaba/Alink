@@ -4,15 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Trait for parameter selectedColName.
  */
 public interface HasSelectedColDefaultAsContent<T> extends WithParams <T> {
 
-	/**
-	 * @cn 计算列对应的列名
-	 * @cn-name 计算列对应的列名
-	 */
+	@NameCn("计算列对应的列名")
+	@DescCn("计算列对应的列名")
 	ParamInfo <String> SELECTED_COL = ParamInfoFactory
 		.createParamInfo("selectedCol", String.class)
 		.setDescription("Name of the selected column used for processing")

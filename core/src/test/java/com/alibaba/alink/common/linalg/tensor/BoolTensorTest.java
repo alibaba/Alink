@@ -97,22 +97,22 @@ public class BoolTensorTest extends AlinkTestBase {
 	public void testSerDe() {
 		BoolTensor tensor;
 		tensor = new BoolTensor(new Shape(3, 4));
-		Assert.assertEquals("BOOLEAN#3,4#false false false false false false false false false false false false ", tensor.toString());
+		Assert.assertEquals("BOOLEAN#3,4#false false false false false false false false false false false false ", TensorUtil.toString(tensor));
 
-		BoolTensor tensor2 = (BoolTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		BoolTensor tensor2 = (BoolTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test
 	public void testScalarSerDe() {
 		boolean v = random.nextBoolean();
 		BoolTensor tensor = new BoolTensor(v);
-		Assert.assertEquals("BOOLEAN##true ", tensor.toString());
+		Assert.assertEquals("BOOLEAN##true ", TensorUtil.toString(tensor));
 
-		BoolTensor tensor2 = (BoolTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		BoolTensor tensor2 = (BoolTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test

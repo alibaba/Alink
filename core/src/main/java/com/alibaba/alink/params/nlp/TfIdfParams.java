@@ -4,13 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface TfIdfParams<T> extends
 	WithParams <T>,
 	HasDocIdCol <T> {
-	/**
-	 * @cn-name 单词列
-	 * @cn 单词列名
-	 */
+	@NameCn("单词列")
+	@DescCn("单词列名")
 	ParamInfo <String> WORD_COL = ParamInfoFactory
 		.createParamInfo("wordCol", String.class)
 		.setDescription("Name of the word column")
@@ -18,10 +19,8 @@ public interface TfIdfParams<T> extends
 		.setRequired()
 		.build();
 
-	/**
-	 * @cn-name 词频列
-	 * @cn 词频列名
-	 */
+	@NameCn("词频列")
+	@DescCn("词频列名")
 	ParamInfo <String> COUNT_COL = ParamInfoFactory
 		.createParamInfo("countCol", String.class)
 		.setDescription("Name of the count column")

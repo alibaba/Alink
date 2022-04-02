@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.BaseRandomForestTrainBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
@@ -14,6 +15,7 @@ import com.alibaba.alink.params.shared.tree.HasSubsamplingRatio;
 /**
  * Fit a id3 model.
  */
+@NameCn("ID3决策树分类训练")
 public final class Id3TrainBatchOp extends BaseRandomForestTrainBatchOp <Id3TrainBatchOp>
 	implements Id3TrainParams <Id3TrainBatchOp>,
 	WithModelInfoBatchOp <TreeModelInfo.DecisionTreeModelInfo, Id3TrainBatchOp, Id3ModelInfoBatchOp> {

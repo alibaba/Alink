@@ -6,7 +6,7 @@ import org.apache.flink.shaded.guava18.com.google.common.hash.HashFunction;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.SISOModelMapper;
 
@@ -42,7 +42,7 @@ public class DocHashCountVectorizerModelMapper extends SISOModelMapper {
 
 	@Override
 	protected TypeInformation initPredResultColType() {
-		return VectorTypes.SPARSE_VECTOR;
+		return AlinkTypes.SPARSE_VECTOR;
 	}
 
 	@Override

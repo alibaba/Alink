@@ -46,6 +46,7 @@ public final class BinaryMetricsSummary
 	 */
 	long[] positiveBin, negativeBin;
 
+	private double decisionThreshold;
 	/**
 	 * Logloss = sum_i{sum_j{y_ij * log(p_ij)}}
 	 */
@@ -56,9 +57,15 @@ public final class BinaryMetricsSummary
 
 	public BinaryMetricsSummary(long[] positiveBin, long[] negativeBin, Object[] labels, double logLoss,
 								long total) {
+		this(positiveBin, negativeBin, labels, 0.5, logLoss, total);
+	}
+
+	public BinaryMetricsSummary(long[] positiveBin, long[] negativeBin, Object[] labels, double decisionThreshold,
+								double logLoss, long total) {
 		this.positiveBin = positiveBin;
 		this.negativeBin = negativeBin;
 		this.labels = labels;
+		this.decisionThreshold = decisionThreshold;
 		this.logLoss = logLoss;
 		this.total = total;
 	}
@@ -76,14 +83,14 @@ public final class BinaryMetricsSummary
 		}
 		Preconditions.checkState(Arrays.equals(labels, binaryClassMetrics.labels), "The labels are not the same!");
 
-		for (int i = 0; i < this.positiveBin.length; i++) {
-			this.positiveBin[i] += binaryClassMetrics.positiveBin[i];
+		for (int i = 0; i < positiveBin.length; i++) {
+			positiveBin[i] += binaryClassMetrics.positiveBin[i];
 		}
-		for (int i = 0; i < this.negativeBin.length; i++) {
-			this.negativeBin[i] += binaryClassMetrics.negativeBin[i];
+		for (int i = 0; i < negativeBin.length; i++) {
+			negativeBin[i] += binaryClassMetrics.negativeBin[i];
 		}
-		this.logLoss += binaryClassMetrics.logLoss;
-		this.total += binaryClassMetrics.total;
+		logLoss += binaryClassMetrics.logLoss;
+		total += binaryClassMetrics.total;
 		return this;
 	}
 
@@ -115,7 +122,7 @@ public final class BinaryMetricsSummary
 		ConfusionMatrix[] matrices = sampledMatrixThreCurve.f0;
 		setComputationsArrayParams(params, sampledMatrixThreCurve.f1, sampledMatrixThreCurve.f0);
 		setLoglossParams(params, logLoss, total);
-		int middleIndex = getMiddleThresholdIndex(sampledMatrixThreCurve.f1);
+		int middleIndex = getMiddleThresholdIndex(sampledMatrixThreCurve.f1, decisionThreshold);
 		setMiddleThreParams(params, matrices[middleIndex], labelStrs);
 		return new BinaryClassMetrics(params);
 	}
@@ -127,7 +134,7 @@ public final class BinaryMetricsSummary
 	 * @param confusionMatrix ConfusionMatrix.
 	 * @param labels          label array.
 	 */
-	static void setMiddleThreParams(Params params, ConfusionMatrix confusionMatrix, String[] labels) {
+	public static void setMiddleThreParams(Params params, ConfusionMatrix confusionMatrix, String[] labels) {
 		params.set(BinaryClassMetrics.PRECISION,
 			ClassificationEvaluationUtil.Computations.PRECISION.computer.apply(confusionMatrix, 0));
 		params.set(BinaryClassMetrics.RECALL,
@@ -143,9 +150,8 @@ public final class BinaryMetricsSummary
 	 * @param params                 Params.
 	 * @param sampledMatrixThreCurve sampled data.
 	 */
-	private static void setCurvePointsParams(Params params,
-											 Tuple3 <ConfusionMatrix[], double[], EvaluationCurve[]>
-												 sampledMatrixThreCurve) {
+	static void setCurvePointsParams(Params params,
+									 Tuple3 <ConfusionMatrix[], double[], EvaluationCurve[]> sampledMatrixThreCurve) {
 		params.set(BinaryClassMetrics.ROC_CURVE, sampledMatrixThreCurve.f2[0].getXYArray());
 		params.set(BinaryClassMetrics.RECALL_PRECISION_CURVE, sampledMatrixThreCurve.f2[1].getXYArray());
 		params.set(BinaryClassMetrics.LIFT_CHART, sampledMatrixThreCurve.f2[2].getXYArray());
@@ -158,7 +164,7 @@ public final class BinaryMetricsSummary
 	 * @param params Params.
 	 * @param curves Array of ConfusionMatrix/threshold/Curves.
 	 */
-	private static void setCurveAreaParams(Params params, EvaluationCurve[] curves) {
+	static void setCurveAreaParams(Params params, EvaluationCurve[] curves) {
 		params.set(BinaryClassMetrics.AUC, curves[0].calcArea());
 		params.set(BinaryClassMetrics.PRC, curves[1].calcArea());
 		params.set(BinaryClassMetrics.KS, curves[0].calcKs());
@@ -261,11 +267,15 @@ public final class BinaryMetricsSummary
 	 * @return the middle index.
 	 */
 	static int getMiddleThresholdIndex(double[] threshold) {
+		return getMiddleThresholdIndex(threshold, 0.5);
+	}
+
+	static int getMiddleThresholdIndex(double[] threshold, double decisionThreshold) {
 		double min = Double.MAX_VALUE;
 		int index = 0;
 		for (int i = 0; i < threshold.length; i++) {
-			if (Math.abs(threshold[i] - 0.5) < min) {
-				min = Math.abs(threshold[i] - 0.5);
+			if (Math.abs(threshold[i] - decisionThreshold) < min) {
+				min = Math.abs(threshold[i] - decisionThreshold);
 				index = i;
 			}
 		}

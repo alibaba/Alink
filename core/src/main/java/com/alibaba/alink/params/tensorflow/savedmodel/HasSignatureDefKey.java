@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasSignatureDefKey<T> extends WithParams <T> {
-	/**
-	 * @cn-name signature标签
-	 * @cn signature标签
-	 */
+	@NameCn("signature标签")
+	@DescCn("signature标签")
 	ParamInfo <String> SIGNATURE_DEF_KEY = ParamInfoFactory
 		.createParamInfo("signatureDefKey", String.class)
 		.setDescription("signature def key")

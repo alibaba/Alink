@@ -12,6 +12,12 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataSetUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -32,6 +38,11 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getReg
  * Coeffient MSE: Mean Squared Error RMSE: Root Mean Squared Error SAE/SAD: Sum of Absolute Error/Difference MAE/MAD:
  * Mean Absolute Error/Difference MAPE: Mean Absolute Percentage Error
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
+@ParamSelectColumnSpec(name = "labelCol")
+@ParamSelectColumnSpec(name = "predictionCol")
+@NameCn("回归评估")
 public final class EvalRegressionBatchOp extends BatchOperator <EvalRegressionBatchOp>
 	implements EvalRegressionParams <EvalRegressionBatchOp>,
 	EvaluationMetricsCollector <RegressionMetrics, EvalRegressionBatchOp> {

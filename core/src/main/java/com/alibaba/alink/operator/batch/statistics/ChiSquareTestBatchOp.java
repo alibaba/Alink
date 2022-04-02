@@ -4,6 +4,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -23,6 +30,11 @@ import java.util.function.Consumer;
  * Its zero hypothesis is that the two factors are independent of each other.
  * More information on chi-square test: http://en.wikipedia.org/wiki/Chi-squared_test
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ParamSelectColumnSpec(name = "selectedCols")
+@ParamSelectColumnSpec(name = "labelCol")
+@NameCn("卡方检验")
 public final class ChiSquareTestBatchOp extends BatchOperator <ChiSquareTestBatchOp>
 	implements ChiSquareTestParams <ChiSquareTestBatchOp> {
 

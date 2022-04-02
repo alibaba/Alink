@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.stream.recommendation;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.recommendation.AlsRecommKernel;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
@@ -10,6 +11,7 @@ import com.alibaba.alink.params.recommendation.BaseRateRecommParams;
 /**
  * this of rating user item pair with als model in stream format.
  */
+@NameCn("ALS：打分推荐")
 public class AlsRateRecommStreamOp
 	extends BaseRecommStreamOp <AlsRateRecommStreamOp>
 	implements BaseRateRecommParams <AlsRateRecommStreamOp> {

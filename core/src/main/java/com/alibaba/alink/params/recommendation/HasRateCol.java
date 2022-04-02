@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasRateCol<T> extends WithParams <T> {
-	/**
-	 * @cn-name 打分列列名
-	 * @cn 打分列列名
-	 */
+	@NameCn("打分列列名")
+	@DescCn("打分列列名")
 	ParamInfo <String> RATE_COL = ParamInfoFactory
 		.createParamInfo("rateCol", String.class)
 		.setAlias(new String[] {"rateColName"})

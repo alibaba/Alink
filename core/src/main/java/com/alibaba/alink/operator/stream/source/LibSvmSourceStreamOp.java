@@ -7,6 +7,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -20,6 +21,7 @@ import com.alibaba.alink.params.io.LibSvmSourceParams;
  * Stream source that read data in libsvm format.
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SourceStream)
+@NameCn("LibSvm文件数据源")
 public final class LibSvmSourceStreamOp extends BaseSourceStreamOp <LibSvmSourceStreamOp>
 	implements LibSvmSourceParams <LibSvmSourceStreamOp> {
 

@@ -17,6 +17,11 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -35,6 +40,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @IoOpAnnotation(name = "modelstream_file", ioType = IOType.SourceStream)
+@InputPorts()
+@OutputPorts(values = @PortSpec(value = PortType.MODEL_STREAM))
+@NameCn("流式模型流输入")
 public final class ModelStreamFileSourceStreamOp extends BaseSourceStreamOp <ModelStreamFileSourceStreamOp>
 	implements ModelStreamFileSourceParams <ModelStreamFileSourceStreamOp> {
 

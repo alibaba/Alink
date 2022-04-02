@@ -316,7 +316,7 @@ public class EvaluationUtilTest extends AlinkTestBase {
 	@Test
 	public void testException1() {
 		thrown.expect(RuntimeException.class);
-		thrown.expectMessage("Fail to deserialize detail column a, b, c!");
+		thrown.expectMessage("Failed to deserialize prediction detail: a, b, c.");
 		EvaluationUtil.extractLabelProbMap(Row.of(null, "a, b, c"), Types.LONG);
 	}
 

@@ -65,7 +65,7 @@ public class BisectingKMeansModelMapper extends RichModelMapper {
 		ContinuousDistance distance = this.modelData.distanceType.getFastDistance();
 		Tuple2 <Long, Long> clusterIdAndTreeNodeId = this.tree.predict(x, distance);
 		double[] prob = computeProbability(clusterIdAndTreeNodeId.f1, tree.treeNodeIds);
-		return Tuple2.of(clusterIdAndTreeNodeId.f0, new DenseVector(prob).toString());
+		return Tuple2.of(clusterIdAndTreeNodeId.f0, VectorUtil.serialize(new DenseVector(prob)));
 	}
 
 	private int level(long node) {

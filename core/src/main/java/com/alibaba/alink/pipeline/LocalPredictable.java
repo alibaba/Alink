@@ -2,7 +2,7 @@ package com.alibaba.alink.pipeline;
 
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 
 /**
  * LocalPredictable get a {@link LocalPredictor} using {@link TableSchema}
@@ -13,7 +13,7 @@ public interface LocalPredictable {
 	LocalPredictor collectLocalPredictor(TableSchema inputSchema) throws Exception;
 
 	default LocalPredictor collectLocalPredictor(String inputSchemaStr) throws Exception {
-		return collectLocalPredictor(CsvUtil.schemaStr2Schema(inputSchemaStr));
+		return collectLocalPredictor(TableUtil.schemaStr2Schema(inputSchemaStr));
 	}
 
 	@Deprecated

@@ -10,9 +10,9 @@ import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.PluginDownloader;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
@@ -68,7 +68,7 @@ public class TFTableModelClassificationFlatModelMapperTest {
 		params.set(HasReservedColsDefaultAsNull.RESERVED_COLS, new String[] {"l", "label"});
 
 		TFTableModelClassificationFlatModelMapper mapper = new TFTableModelClassificationFlatModelMapper(modelOp.getSchema(),
-			CsvUtil.schemaStr2Schema(dataSchemaStr), params);
+			TableUtil.schemaStr2Schema(dataSchemaStr), params);
 		mapper.loadModel(modelRows);
 
 		List <Row> list = new ArrayList <>();

@@ -10,6 +10,11 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.MTableSerializeStreamOp;
@@ -23,6 +28,9 @@ import com.alibaba.alink.params.io.HasIoType;
  *
  * @param <T>
  */
+@InputPorts(values = {@PortSpec(PortType.ANY)})
+@OutputPorts()
+@NameCn("")
 public abstract class BaseSinkStreamOp<T extends BaseSinkStreamOp <T>> extends StreamOperator <T> {
 
 	static final IOType IO_TYPE = IOType.SinkStream;
@@ -30,7 +38,7 @@ public abstract class BaseSinkStreamOp<T extends BaseSinkStreamOp <T>> extends S
 
 	protected BaseSinkStreamOp(String nameSrcSnk, Params params) {
 		super(params);
-		this.getParams().set(HasIoType.IO_TYPE, IO_TYPE)
+		getParams().set(HasIoType.IO_TYPE, IO_TYPE)
 			.set(HasIoName.IO_NAME, nameSrcSnk);
 	}
 

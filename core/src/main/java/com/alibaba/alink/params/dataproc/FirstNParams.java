@@ -4,15 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.validators.MinValidator;
 
 public interface FirstNParams<T> extends
 	WithParams <T> {
 
-	/**
-	 * @cn-name 采样个数
-	 * @cn 采样个数
-	 */
+	@NameCn("采样个数")
+	@DescCn("采样个数")
 	ParamInfo <Integer> SIZE = ParamInfoFactory
 		.createParamInfo("size", Integer.class)
 		.setDescription("sampling size")

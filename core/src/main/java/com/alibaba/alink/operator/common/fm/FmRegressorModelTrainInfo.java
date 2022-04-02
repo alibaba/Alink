@@ -64,20 +64,20 @@ public class FmRegressorModelTrainInfo implements Serializable {
 		map.put("numFactor", meta.get(FmTrainParams.NUM_FACTOR).toString());
 		map.put("hasLinearItem", meta.get(FmTrainParams.WITH_LINEAR_ITEM).toString());
 		map.put("hasIntercept", meta.get(FmTrainParams.WITH_INTERCEPT).toString());
-		sbd.append(PrettyDisplayUtils.displayMap(map, 2, false) + "\n");
+		sbd.append(PrettyDisplayUtils.displayMap(map, 2, false)).append("\n");
 
 		sbd.append(PrettyDisplayUtils.displayHeadline("train convergence info", '-'));
 		if (convInfo.length < 6) {
-			for (int i = 0; i < convInfo.length; ++i) {
-				sbd.append("" + convInfo[i] + "\n");
+			for (String s : convInfo) {
+				sbd.append(s).append("\n");
 			}
 		} else {
 			for (int i = 0; i < 3; ++i) {
-				sbd.append("" + convInfo[i] + "\n");
+				sbd.append(convInfo[i]).append("\n");
 			}
 			sbd.append("" + "... ... ... ..." + "\n");
 			for (int i = convInfo.length - 3; i < convInfo.length; ++i) {
-				sbd.append("" + convInfo[i] + "\n");
+				sbd.append(convInfo[i]).append("\n");
 			}
 		}
 

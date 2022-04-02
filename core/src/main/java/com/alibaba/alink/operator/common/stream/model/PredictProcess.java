@@ -11,6 +11,10 @@ import org.apache.flink.util.function.TriFunction;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.mapper.ModelMapper;
+import com.alibaba.alink.operator.common.recommendation.FourFunction;
+import com.alibaba.alink.operator.common.recommendation.RecommKernel;
+import com.alibaba.alink.operator.common.recommendation.RecommMapper;
+import com.alibaba.alink.operator.common.recommendation.RecommType;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -30,9 +34,20 @@ public class PredictProcess extends RichCoFlatMapFunction <Row, Row, Row> {
 		TableSchema modelSchema, TableSchema dataSchema, Params params,
 		TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder,
 		DataBridge dataBridge, int timestampColIndex, int countColIndex) {
-
 		this.dataBridge = dataBridge;
 		this.mapper = mapperBuilder.apply(modelSchema, dataSchema, params);
+		this.timestampColIndex = timestampColIndex;
+		this.countColIndex = countColIndex;
+	}
+
+	public PredictProcess(
+		TableSchema modelSchema, TableSchema dataSchema, Params params,
+		FourFunction <TableSchema, TableSchema, Params, RecommType, RecommKernel> recommKernelBuilder,
+		RecommType type, DataBridge dataBridge, int timestampColIndex, int countColIndex) {
+		this.dataBridge = dataBridge;
+		this.mapper = new RecommMapper(
+			recommKernelBuilder, type,
+			modelSchema, dataSchema, params);
 		this.timestampColIndex = timestampColIndex;
 		this.countColIndex = countColIndex;
 	}
@@ -60,7 +75,7 @@ public class PredictProcess extends RichCoFlatMapFunction <Row, Row, Row> {
 	}
 
 	@Override
-	public void flatMap2(Row inRow, Collector <Row> collector) throws Exception {
+	public void flatMap2(Row inRow, Collector <Row> collector) {
 		Timestamp timestamp = (Timestamp) inRow.getField(timestampColIndex);
 		long count = (long) inRow.getField(countColIndex);
 
@@ -74,13 +89,14 @@ public class PredictProcess extends RichCoFlatMapFunction <Row, Row, Row> {
 				buffer.add(row);
 				buffers.put(timestamp, buffer);
 			}
-
-			ModelMapper modelMapper = this.mapper.createNew(buffers.get(timestamp));
-			modelMapper.open();
-
-			this.mapper = modelMapper;
-
-			buffers.get(timestamp).clear();
+			try {
+				ModelMapper modelMapper = this.mapper.createNew(buffers.get(timestamp));
+				modelMapper.open();
+				this.mapper = modelMapper;
+				buffers.get(timestamp).clear();
+			} catch (Exception e) {
+				System.err.println("Model stream updating failed. Please check your model stream.");
+			}
 		} else {
 			if (buffers.containsKey(timestamp)) {
 				buffers.get(timestamp).add(row);

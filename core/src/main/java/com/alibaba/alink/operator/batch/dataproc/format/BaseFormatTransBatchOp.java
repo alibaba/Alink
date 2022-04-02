@@ -1,16 +1,18 @@
 package com.alibaba.alink.operator.batch.dataproc.format;
 
-import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.format.FormatTransMapper;
 import com.alibaba.alink.operator.common.dataproc.format.FormatTransParams;
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
+import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
 
 /**
  * The base class of transformation between csv, json, kv, vector and table types.
  */
+@Internal
 public class BaseFormatTransBatchOp<T extends BaseFormatTransBatchOp <T>>
 	extends MapBatchOp <T> implements HasReservedColsDefaultAsNull<T> {
 

@@ -9,6 +9,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
@@ -37,6 +45,12 @@ import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistance
  * <p>
  * (https://en.wikipedia.org/wiki/K-means_clustering)
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {
+	@PortSpec(value = PortType.MODEL, desc = PortDesc.KMEANS_MODEL),
+})
+@ParamSelectColumnSpec(name = "vectorCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
+@NameCn("K均值聚类训练")
 public final class KMeansTrainBatchOp extends BatchOperator <KMeansTrainBatchOp>
 	implements KMeansTrainParams <KMeansTrainBatchOp>,
 	WithModelInfoBatchOp <KMeansModelInfoBatchOp.KMeansModelInfo, KMeansTrainBatchOp, KMeansModelInfoBatchOp> {

@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasOptimizer<T> extends WithParams <T> {
-	/**
-	 * @cn-name 优化器
-	 * @cn 优化器，使用 Python 语法，例如 "Adam(learning_rate=0.1)"
-	 */
+	@NameCn("优化器")
+	@DescCn("优化器，使用 Python 语法，例如 \"Adam(learning_rate=0.1)\"")
 	ParamInfo <String> OPTIMIZER = ParamInfoFactory
 		.createParamInfo("optimizer", String.class)
 		.setDescription("Optimizer, in Python language, "

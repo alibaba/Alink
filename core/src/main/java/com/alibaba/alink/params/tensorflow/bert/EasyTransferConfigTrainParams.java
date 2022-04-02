@@ -3,6 +3,8 @@ package com.alibaba.alink.params.tensorflow.bert;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.dl.HasIntraOpParallelism;
 import com.alibaba.alink.params.dl.HasNumPssDefaultAsNull;
 import com.alibaba.alink.params.dl.HasNumWorkersDefaultAsNull;
@@ -14,14 +16,12 @@ import com.alibaba.alink.params.shared.colname.HasSelectedColsDefaultAsNull;
 
 public interface EasyTransferConfigTrainParams<T> extends
 	HasSelectedColsDefaultAsNull <T>, HasTaskType <T>,
-	HasUserFiles<T>, HasUserParams<T>,
+	HasUserFiles <T>, HasUserParams <T>,
 	HasPythonEnv <T>, HasIntraOpParallelism <T>,
 	HasNumWorkersDefaultAsNull <T>, HasNumPssDefaultAsNull <T> {
 
-	/**
-	 * @cn-name EasyTransfer 接收的 JSON 配置
-	 * @cn EasyTransfer 接收的 JSON 配置
-	 */
+	@NameCn("EasyTransfer 接收的 JSON 配置")
+	@DescCn("EasyTransfer 接收的 JSON 配置")
 	ParamInfo <String> CONFIG_JSON = ParamInfoFactory
 		.createParamInfo("configJson", String.class)
 		.setDescription("config in JSON format")

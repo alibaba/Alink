@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.EqualWidthDiscretizerTrainBatchOp;
@@ -14,6 +15,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * as model, and can transform a new data using the model.
  * <p>The output is the index of the interval.
  */
+@NameCn("等宽离散化")
 public class EqualWidthDiscretizer extends Trainer <EqualWidthDiscretizer, QuantileDiscretizerModel>
 	implements QuantileDiscretizerTrainParams <EqualWidthDiscretizer>,
 	QuantileDiscretizerPredictParams <EqualWidthDiscretizer>, HasLazyPrintModelInfo <EqualWidthDiscretizer> {

@@ -39,7 +39,7 @@ public class ProphetPredictStreamOpTest {
 		ProphetTrainBatchOp model = new ProphetTrainBatchOp()
 			.setTimeCol("ds1")
 			.setValueCol("y1");
-		//.setPythonCmdPath("/Library/Frameworks/Python.framework/Versions/3.7/bin/python3");
+			//.setPythonCmdPath("/Library/Frameworks/Python.framework/Versions/3.7/bin/python3");
 
 		source.link(model);
 

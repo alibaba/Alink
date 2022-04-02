@@ -8,7 +8,7 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.mapper.Mapper;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.tensorflow.savedmodel.HasInputNames;
 import com.alibaba.alink.params.tensorflow.savedmodel.HasOutputNames;
 import com.alibaba.alink.params.tensorflow.savedmodel.TFSavedModelPredictParams;
@@ -52,7 +52,7 @@ public class TFSavedModelPredictMapper extends Mapper implements Serializable {
 			TypeInformation <?>[] outputTypes = new TypeInformation[outputNames.length];
 			Arrays.fill(outputTypes, Types.STRING);
 			TableSchema outputSchema = new TableSchema(outputNames, outputTypes);
-			mapperParams.set(TFSavedModelPredictParams.OUTPUT_SCHEMA_STR, CsvUtil.schema2SchemaStr(outputSchema));
+			mapperParams.set(TFSavedModelPredictParams.OUTPUT_SCHEMA_STR, TableUtil.schema2SchemaStr(outputSchema));
 		}
 
 		mapper = new BaseTFSavedModelPredictMapper(dataSchema, mapperParams, factory);
@@ -66,7 +66,7 @@ public class TFSavedModelPredictMapper extends Mapper implements Serializable {
 			tfInputCols = dataSchema.getFieldNames();
 		}
 		String tfOutputSchemaStr = params.get(TFSavedModelPredictParams.OUTPUT_SCHEMA_STR);
-		TableSchema tfOutputSchema = CsvUtil.schemaStr2Schema(tfOutputSchemaStr);
+		TableSchema tfOutputSchema = TableUtil.schemaStr2Schema(tfOutputSchemaStr);
 		String[] reservedCols = params.get(TFSavedModelPredictParams.RESERVED_COLS);
 		return Tuple4.of(tfInputCols,
 			tfOutputSchema.getFieldNames(),

@@ -19,7 +19,7 @@ import tensorflow_hub as hub
 from tensorflow_hub.keras_layer import KerasLayer
 
 from akdl.engine.run_config import generate_run_config
-from akdl.engine.train import train_estimator, train_keras_model, train_estimator_one_worker
+from akdl.engine.train import train_estimator, train_estimator_one_worker
 from akdl.runner.config import TrainTaskConfig
 from akdl.engine.inputs import dtype_str_map
 from akdl.runner.io_helper import remove_checkpoint_files
@@ -61,7 +61,7 @@ def get_info_info(task_config: TrainTaskConfig):
     example_config.append({
         'name': label_col,
         'dtype': label_type_str,
-        'shape': []
+        'shape': tensor_shapes.get(label_col, [])
     })
     return example_config, label_col, num_classes
 
@@ -148,29 +148,49 @@ def main(task_config: TrainTaskConfig):
     }
     logging.info("export_config = {}".format(export_config))
 
-    model = get_model(tensor_name=tensor_col, tensor_shape=tensor_config['shape'],
-                      tensor_dtype=dtype_str_map[tensor_config['dtype']],
-                      layers_str=layers_str,
-                      num_classes=num_classes)
+    add_output_layer = user_params.get("add_output_layer", 'true') in ('true', 'True')
+    logging.info("add_output_layer = {}".format(add_output_layer))
+    model = create_model(tensor_name=tensor_col, tensor_shape=tensor_config['shape'],
+                         tensor_dtype=dtype_str_map[tensor_config['dtype']], layers_str=layers_str,
+                         add_output_layer=add_output_layer, num_classes=num_classes)
     model.summary(print_fn=lambda d: logging.info(d))
 
-    if num_classes == 1:
-        loss = tf.keras.losses.MeanAbsoluteError()
-        metrics = ['mse', tf.keras.metrics.RootMeanSquaredError(), 'mae', 'mape', 'msle']
-    elif num_classes == 2:
-        loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        metrics = [AUC(from_logits=True),
-                   BinaryAccuracy(from_logits=True),
-                   TruePositives(from_logits=True),
-                   FalsePositives(from_logits=True),
-                   TrueNegatives(from_logits=True),
-                   FalseNegatives(from_logits=True),
-                   Precision(from_logits=True),
-                   Recall(from_logits=True)
-                   ]
+    def try_eval(s: str):
+        # noinspection PyBroadException
+        try:
+            return eval(s)
+        except:
+            return s
+
+    loss = None
+    metrics = []
+    if add_output_layer:
+        if num_classes == 1:
+            loss = tf.keras.losses.MeanAbsoluteError()
+            metrics = ['mse', tf.keras.metrics.RootMeanSquaredError(), 'mae', 'mape', 'msle']
+        elif num_classes == 2:
+            loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+            metrics = [AUC(from_logits=True),
+                       BinaryAccuracy(from_logits=True),
+                       TruePositives(from_logits=True),
+                       FalsePositives(from_logits=True),
+                       TrueNegatives(from_logits=True),
+                       FalseNegatives(from_logits=True),
+                       Precision(from_logits=True),
+                       Recall(from_logits=True)
+                       ]
+        else:
+            loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+            metrics = [SparseCategoricalAccuracy(from_logits=True)]
     else:
-        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        metrics = [SparseCategoricalAccuracy(from_logits=True)]
+        if 'loss' not in user_params:
+            raise AttributeError("Must provide loss when default output layer is not used.")
+    if 'loss' in user_params:
+        loss_str = user_params.get('loss')
+        loss = try_eval(loss_str)
+    if 'metrics' in user_params:
+        metrics_strs = json.loads(user_params.get('metrics'))
+        metrics = list(map(try_eval, metrics_strs))
 
     optimizer = eval(user_params.get('optimizer', 'Adam()'))
 
@@ -183,20 +203,33 @@ def main(task_config: TrainTaskConfig):
         train_estimator(estimator, input_config, train_config, export_config, task_config)
     else:
         train_estimator_one_worker(estimator, input_config, train_config, export_config, task_config)
-    # train_keras_model(model, input_config, train_config, task_config)
 
 
-def get_model(tensor_name, tensor_shape, tensor_dtype, layers_str: List[str], num_classes: int):
+def create_model(tensor_name, tensor_shape, tensor_dtype, layers_str: List[str],
+                 add_output_layer: bool, num_classes: int):
+    """
+    Create a Keras sequential model from config.
+    :param tensor_name: input tensor name
+    :param tensor_shape: input tensor shape
+    :param tensor_dtype: input tensor dtype
+    :param layers_str: specification of layers in string format, which are applied 'eval' to get the layers
+    :param add_output_layer: whether to add an output layer automatically based on tasks
+    :param num_classes: number of class in labels: 1 for regression task, 2 for binary classification tasks, and >2 for multi-classification task. Add an output layer if `add_output_layer` is true.
+    :return: a Keras Model
+    """
     inputs = Input(shape=tensor_shape, name=tensor_name, dtype=tensor_dtype)
     x = inputs
     for layer_str in layers_str:
         x = eval(layer_str)(x)
-    if num_classes == 1:
-        y = Dense(1, name='y')(x)
-        return Model(inputs, y)
-    elif num_classes == 2:
-        logits = Dense(1, name='logits')(x)
-        return Model(inputs, logits)
+    if add_output_layer:
+        if num_classes == 1:
+            y = Dense(1, name='y')(x)
+            return Model(inputs, y)
+        elif num_classes == 2:
+            logits = Dense(1, name='logits')(x)
+            return Model(inputs, logits)
+        else:
+            logits = Dense(num_classes, name='logits')(x)
+            return Model(inputs, logits)
     else:
-        logits = Dense(num_classes, name='logits')(x)
-        return Model(inputs, logits)
+        return Model(inputs, x)

@@ -2,12 +2,45 @@ package com.alibaba.alink.operator.batch.recommendation;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.recommendation.FmRecommBinaryImplicitTrainParams;
 
 /**
  * Fm train batch op for implicit rating condition.
  */
+@InputPorts(values = {
+	@PortSpec(PortType.DATA),
+	@PortSpec(value = PortType.DATA, isOptional = true),
+	@PortSpec(value = PortType.DATA, isOptional = true)
+})
+@OutputPorts(values = {
+	@PortSpec(PortType.MODEL),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.USER_FACTOR),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.ITEM_FACTOR),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.APPEND_USER_FACTOR, isOptional = true),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.APPEND_ITEM_FACTOR, isOptional = true)
+})
+@ParamSelectColumnSpec(name = "userCol")
+@ParamSelectColumnSpec(name = "itemCol")
+@ParamSelectColumnSpec(name = "rateCol",
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+
+@ParamSelectColumnSpec(name = "userFeatureCols", portIndices = 1,
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "userCategoricalFeatureCols", portIndices = 1)
+@ParamSelectColumnSpec(name = "itemFeatureCols", portIndices = 2,
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "itemCategoricalFeatureCols", portIndices = 2)
+
+@NameCn("FM二分类隐式训练")
 public final class FmRecommBinaryImplicitTrainBatchOp
 	extends BatchOperator <FmRecommBinaryImplicitTrainBatchOp>
 	implements FmRecommBinaryImplicitTrainParams <FmRecommBinaryImplicitTrainBatchOp> {

@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.regression.GlmEvaluationBatchOp;
 import com.alibaba.alink.operator.common.regression.GlmModelMapper;
@@ -11,6 +12,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * Generalized Linear Model.
  */
+@NameCn("广义线性回归模型")
 public class GeneralizedLinearRegressionModel extends MapModel <GeneralizedLinearRegressionModel>
 	implements GlmPredictParams <GeneralizedLinearRegressionModel> {
 

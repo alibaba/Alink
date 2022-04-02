@@ -178,7 +178,6 @@ public class SoftmaxObjFunc extends OptimObjFunc {
 	 * @param labelVector a sample of train data.
 	 * @param coefVector  coefficient of current time.
 	 * @param updateGrad  gradient need to update.
-	 * @return weight sum value
 	 */
 	@Override
 	protected void updateGradient(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
@@ -267,7 +266,6 @@ public class SoftmaxObjFunc extends OptimObjFunc {
 	 * @param labelVector   a sample of train data.
 	 * @param coefVector    coefficient of current time.
 	 * @param updateHessian hessian matrix need to update.
-	 * @return weight sum value
 	 */
 	@Override
 	protected void updateHessian(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,

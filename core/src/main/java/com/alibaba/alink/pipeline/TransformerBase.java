@@ -4,7 +4,7 @@ import org.apache.flink.ml.api.core.Transformer;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
@@ -89,6 +89,7 @@ public abstract class TransformerBase<T extends TransformerBase <T>>
 	 * @return the transformed batch result data
 	 */
 	public abstract BatchOperator <?> transform(BatchOperator <?> input);
+
 
 	/**
 	 * Applies the transformer on the input streaming data from StreamOperator, and returns the streaming result data

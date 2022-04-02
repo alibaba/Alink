@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.tuning;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.tuning.HasNumFolds;
 import com.alibaba.alink.pipeline.Pipeline;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.Pipeline;
 /**
  * random search cv.
  */
+@NameCn("随机搜索CV")
 public class RandomSearchCV extends BaseRandomSearch <RandomSearchCV, RandomSearchCVModel>
 	implements HasNumFolds <RandomSearchCV> {
 

@@ -6,8 +6,8 @@ import com.alibaba.alink.params.shared.HasOverwriteSink;
 
 public interface CsvSinkParams<T> extends WithParams <T>,
 	HasFilePath <T>,
-	HasFieldDelimiterDvComma <T>,
-	HasRowDelimiterDvNewline <T>,
+	HasFieldDelimiterDefaultAsComma <T>,
+	HasRowDelimiterDefaultAsNewline <T>,
 	HasQuoteCharDefaultAsDoubleQuote <T>,
 	HasOverwriteSink <T>,
 	HasNumFiles <T> {

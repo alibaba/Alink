@@ -3,6 +3,8 @@ package com.alibaba.alink.operator.batch.sink;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -14,6 +16,9 @@ import com.alibaba.alink.params.io.RedisSinkParams;
  * Sink to redis.
  */
 @IoOpAnnotation(name = "redis", ioType = IOType.SinkBatch)
+@ParamSelectColumnSpec(name = "keyCols")
+@ParamSelectColumnSpec(name = "valueCols")
+@NameCn("")
 public final class RedisSinkBatchOp extends BaseSinkBatchOp <RedisSinkBatchOp>
 	implements RedisSinkParams <RedisSinkBatchOp> {
 

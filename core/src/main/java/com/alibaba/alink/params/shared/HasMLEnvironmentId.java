@@ -5,16 +5,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 
 /**
  * An interface for classes with a parameter specifying the id of MLEnvironment.
  */
 public interface HasMLEnvironmentId<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name ML环境ID
-	 * @cn ML环境ID
-	 */
+	@NameCn("ML环境ID")
+	@DescCn("ML环境ID")
 	ParamInfo <Long> ML_ENVIRONMENT_ID = ParamInfoFactory
 		.createParamInfo("MLEnvironmentId", Long.class)
 		.setDescription("ID of ML environment.")

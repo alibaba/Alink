@@ -14,7 +14,7 @@ import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluat
 /**
  * Save the evaluation data for binary classification.
  */
-public final class AccurateBinaryMetricsSummary
+public class AccurateBinaryMetricsSummary
 	implements BaseMetricsSummary <BinaryClassMetrics, AccurateBinaryMetricsSummary> {
 	private static final long serialVersionUID = 4614108912380382179L;
 
@@ -22,6 +22,11 @@ public final class AccurateBinaryMetricsSummary
 	 * Label array.
 	 */
 	Object[] labels;
+
+	/**
+	 * Decision threshold
+	 */
+	double decisionThreshold;
 
 	/**
 	 * The count of samples.
@@ -56,7 +61,13 @@ public final class AccurateBinaryMetricsSummary
 	List <Tuple2 <Double, ConfusionMatrix>> metricsInfoList;
 
 	public AccurateBinaryMetricsSummary(Object[] labels, double logLoss, long total, double auc) {
+		this(labels, 0.5, logLoss, total, auc);
+	}
+
+	public AccurateBinaryMetricsSummary(Object[] labels, double decisionThreshold, double logLoss, long total,
+										double auc) {
 		this.labels = labels;
+		this.decisionThreshold = decisionThreshold;
 		this.logLoss = logLoss;
 		this.total = total;
 		this.auc = auc;
@@ -75,13 +86,13 @@ public final class AccurateBinaryMetricsSummary
 			return this;
 		}
 		Preconditions.checkState(Arrays.equals(labels, binaryClassMetrics.labels), "The labels are not the same!");
-		Preconditions.checkState(Double.compare(this.auc, binaryClassMetrics.auc) == 0, "Auc not equal!");
+		Preconditions.checkState(Double.compare(auc, binaryClassMetrics.auc) == 0, "Auc not equal!");
 
-		this.logLoss += binaryClassMetrics.logLoss;
-		this.total += binaryClassMetrics.total;
-		this.ks = Math.max(this.ks, binaryClassMetrics.ks);
-		this.prc += binaryClassMetrics.prc;
-		this.gini += binaryClassMetrics.gini;
+		logLoss += binaryClassMetrics.logLoss;
+		total += binaryClassMetrics.total;
+		ks = Math.max(ks, binaryClassMetrics.ks);
+		prc += binaryClassMetrics.prc;
+		gini += binaryClassMetrics.gini;
 
 		metricsInfoList.addAll(binaryClassMetrics.metricsInfoList);
 		return this;
@@ -112,7 +123,7 @@ public final class AccurateBinaryMetricsSummary
 
 		BinaryMetricsSummary.setComputationsArrayParams(params, thresholds, matrices);
 		setLoglossParams(params, logLoss, total);
-		int middleIndex = BinaryMetricsSummary.getMiddleThresholdIndex(thresholds);
+		int middleIndex = BinaryMetricsSummary.getMiddleThresholdIndex(thresholds, decisionThreshold);
 		BinaryMetricsSummary.setMiddleThreParams(params, matrices[middleIndex], labelStrs);
 		return new BinaryClassMetrics(params);
 	}

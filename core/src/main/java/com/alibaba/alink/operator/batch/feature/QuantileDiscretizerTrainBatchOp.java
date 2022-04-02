@@ -8,7 +8,6 @@ import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.functions.RichReduceFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple4;
@@ -18,6 +17,19 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamCond;
+import com.alibaba.alink.common.annotation.ParamCond.CondType;
+import com.alibaba.alink.common.annotation.ParamCond.CondValue;
+import com.alibaba.alink.common.annotation.ParamCond.CondValueType;
+import com.alibaba.alink.common.annotation.ParamMutexRule;
+import com.alibaba.alink.common.annotation.ParamMutexRule.ActionType;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -50,6 +62,28 @@ import java.util.stream.StreamSupport;
 /**
  * Fit a quantile discretizer model.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamMutexRule(
+	name = "numBuckets",
+	type = ActionType.DISABLE,
+	cond = @ParamCond(
+		name = "numBucketsArray",
+		type = CondType.WHEN_VALUES_NOT_IN,
+		values = {@CondValue(type = CondValueType.NULL), @CondValue("[]")}
+	)
+)
+@ParamMutexRule(
+	name = "numBucketsArray",
+	type = ActionType.DISABLE,
+	cond = @ParamCond(
+		name = "numBuckets",
+		type = CondType.WHEN_VALUES_NOT_IN,
+		values = {@CondValue(type = CondValueType.NULL), @CondValue()}
+	)
+)
+@NameCn("分位数离散化训练")
 public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <QuantileDiscretizerTrainBatchOp>
 	implements QuantileDiscretizerTrainParams <QuantileDiscretizerTrainBatchOp>,
 	WithModelInfoBatchOp <QuantileDiscretizerModelInfo, QuantileDiscretizerTrainBatchOp,
@@ -71,9 +105,9 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		final HasRoundMode.RoundMode roundMode,
 		final boolean zeroAsMissing) {
 
-        Tuple4<DataSet <PairComparable>, DataSet <Tuple2 <Integer, Long>>,
-            DataSet <Long>, DataSet <Tuple2 <Integer, Long>>> quantileData =
-            quantilePreparing(input, zeroAsMissing);
+		Tuple4 <DataSet <PairComparable>, DataSet <Tuple2 <Integer, Long>>,
+			DataSet <Long>, DataSet <Tuple2 <Integer, Long>>> quantileData =
+			quantilePreparing(input, zeroAsMissing);
 
 		/* calculate quantile */
 		return quantileData.f0
@@ -85,11 +119,9 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 			.reduceGroup(new ReduceQuantile());
 	}
 
-
-
-	public static Tuple4<DataSet <PairComparable>, DataSet <Tuple2 <Integer, Long>>,
-        DataSet <Long>, DataSet <Tuple2 <Integer, Long>>> quantilePreparing(DataSet <Row> input,
-											final boolean zeroAsMissing) {
+	public static Tuple4 <DataSet <PairComparable>, DataSet <Tuple2 <Integer, Long>>,
+		DataSet <Long>, DataSet <Tuple2 <Integer, Long>>> quantilePreparing(DataSet <Row> input,
+																			final boolean zeroAsMissing) {
 		/* instance count of dataset */
 		DataSet <Long> cnt = DataSetUtils
 			.countElementsPerPartition(input)
@@ -142,8 +174,8 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 								.mapToObj(y -> Tuple2.of(y, counts[y]));
 						})
 						.collect(Collectors.groupingBy(
-							x -> x.f0,
-							Collectors.mapping(x -> x.f1, Collectors.reducing((a, b) -> a + b))
+								x -> x.f0,
+								Collectors.mapping(x -> x.f1, Collectors.reducing((a, b) -> a + b))
 							)
 						)
 						.entrySet()
@@ -221,6 +253,54 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		return Tuple4.of(sortedData.f0, sortedData.f1, cnt, missingCount);
 	}
 
+	public static DataSet <FeatureBinsCalculator> transformModelToFeatureBins(DataSet <Row> modelDataSet,
+																			  BinDivideType binDivideType) {
+		return modelDataSet
+			.reduceGroup(
+				new GroupReduceFunction <Row, FeatureBinsCalculator>() {
+					private static final long serialVersionUID = -483197241292759310L;
+
+					@Override
+					public void reduce(Iterable <Row> values, Collector <FeatureBinsCalculator> out) {
+						List <Row> list = new ArrayList <>();
+						values.forEach(list::add);
+						QuantileDiscretizerModelDataConverter model
+							= new QuantileDiscretizerModelDataConverter().load(list);
+						for (ContinuousRanges featureInterval : model.data.values()) {
+							out.collect(FeatureBinsCalculatorTransformer
+								.fromContinuousFeatureInterval(featureInterval, binDivideType));
+						}
+					}
+				}
+			);
+	}
+
+	public static DataSet <Row> transformFeatureBinsToModel(DataSet <FeatureBinsCalculator> featureBorderDataSet) {
+		return featureBorderDataSet.mapPartition(new MapPartitionFunction <FeatureBinsCalculator, Row>() {
+			private static final long serialVersionUID = 5693661987734996860L;
+
+			@Override
+			public void mapPartition(Iterable <FeatureBinsCalculator> values, Collector <Row> out) throws Exception {
+				transformFeatureBinsToModel(values, out);
+			}
+		}).setParallelism(1);
+	}
+
+	public static void transformFeatureBinsToModel(Iterable <FeatureBinsCalculator> values, Collector <Row> out) {
+		List <String> selectedCols = new ArrayList <>();
+		Map <String, ContinuousRanges> m = new HashMap <>();
+		for (FeatureBinsCalculator featureBinsCalculator : values) {
+			m.put(featureBinsCalculator.getFeatureName(),
+				FeatureBinsCalculatorTransformer.toContinuousFeatureInterval(featureBinsCalculator));
+			selectedCols.add(featureBinsCalculator.getFeatureName());
+		}
+		Params meta = new Params().set(QuantileDiscretizerTrainParams.SELECTED_COLS,
+			selectedCols.toArray(new String[0]));
+		QuantileDiscretizerModelDataConverter model = new QuantileDiscretizerModelDataConverter(m, meta);
+
+		model.save(model, out);
+	}
+
 	@Override
 	public QuantileDiscretizerTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
 		BatchOperator <?> in = checkAndGetFirst(inputs);
@@ -264,14 +344,18 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		return this;
 	}
 
+	@Override
+	public QuantileDiscretizerModelInfoBatchOp getModelInfoBatchOp() {
+		return new QuantileDiscretizerModelInfoBatchOp(this.getParams()).linkFrom(this);
+	}
 
 	public static class MultiQuantile
 		extends RichMapPartitionFunction <PairComparable, Tuple2 <Integer, Number>> {
 		private static final long serialVersionUID = -467677491431226184L;
+		protected int[] quantileNum;
 		private List <Tuple2 <Integer, Long>> counts;
 		private List <Tuple2 <Integer, Long>> missingCounts;
 		private long totalCnt = 0;
-		protected int[] quantileNum;
 		private HasRoundMode.RoundMode roundType;
 		private int taskId;
 
@@ -462,9 +546,9 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 
 	public static class SerializeModel extends RichGroupReduceFunction <Row, Row> {
 		private static final long serialVersionUID = 7835845627485620888L;
-		private Params meta;
 		protected String[] colNames;
 		protected TypeInformation <?>[] colTypes;
+		private Params meta;
 
 		public SerializeModel(Params meta, String[] colNames, TypeInformation <?>[] colTypes) {
 			this.meta = meta;
@@ -525,59 +609,6 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		public long genIndex(int k) {
 			return roundMode.calc(this.q1 * (this.totalCount - 1.0) * (double) k);
 		}
-	}
-
-	@Override
-	public QuantileDiscretizerModelInfoBatchOp getModelInfoBatchOp() {
-		return new QuantileDiscretizerModelInfoBatchOp(this.getParams()).linkFrom(this);
-	}
-
-	public static DataSet <FeatureBinsCalculator> transformModelToFeatureBins(DataSet <Row> modelDataSet,
-																			  BinDivideType binDivideType) {
-		return modelDataSet
-			.reduceGroup(
-				new GroupReduceFunction <Row, FeatureBinsCalculator>() {
-					private static final long serialVersionUID = -483197241292759310L;
-
-					@Override
-					public void reduce(Iterable <Row> values, Collector <FeatureBinsCalculator> out) {
-						List <Row> list = new ArrayList <>();
-						values.forEach(list::add);
-						QuantileDiscretizerModelDataConverter model
-							= new QuantileDiscretizerModelDataConverter().load(list);
-						for (ContinuousRanges featureInterval : model.data.values()) {
-							out.collect(FeatureBinsCalculatorTransformer
-								.fromContinuousFeatureInterval(featureInterval, binDivideType));
-						}
-					}
-				}
-			);
-	}
-
-	public static DataSet <Row> transformFeatureBinsToModel(DataSet <FeatureBinsCalculator> featureBorderDataSet) {
-		return featureBorderDataSet.mapPartition(new MapPartitionFunction <FeatureBinsCalculator, Row>() {
-			private static final long serialVersionUID = 5693661987734996860L;
-
-			@Override
-			public void mapPartition(Iterable <FeatureBinsCalculator> values, Collector <Row> out) throws Exception {
-				transformFeatureBinsToModel(values, out);
-			}
-		}).setParallelism(1);
-	}
-
-	public static void transformFeatureBinsToModel(Iterable <FeatureBinsCalculator> values, Collector <Row> out) {
-		List <String> selectedCols = new ArrayList <>();
-		Map <String, ContinuousRanges> m = new HashMap <>();
-		for (FeatureBinsCalculator featureBinsCalculator : values) {
-			m.put(featureBinsCalculator.getFeatureName(),
-				FeatureBinsCalculatorTransformer.toContinuousFeatureInterval(featureBinsCalculator));
-			selectedCols.add(featureBinsCalculator.getFeatureName());
-		}
-		Params meta = new Params().set(QuantileDiscretizerTrainParams.SELECTED_COLS,
-			selectedCols.toArray(new String[0]));
-		QuantileDiscretizerModelDataConverter model = new QuantileDiscretizerModelDataConverter(m, meta);
-
-		model.save(model, out);
 	}
 
 }

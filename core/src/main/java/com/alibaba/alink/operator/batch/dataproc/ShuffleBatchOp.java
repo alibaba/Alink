@@ -8,6 +8,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 
 import java.util.ArrayList;
@@ -18,6 +23,9 @@ import java.util.Random;
 /**
  * shuffle data.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@NameCn("打乱数据顺序")
 public final class ShuffleBatchOp extends BatchOperator <ShuffleBatchOp> {
 	private static final long serialVersionUID = 4849933592970017744L;
 

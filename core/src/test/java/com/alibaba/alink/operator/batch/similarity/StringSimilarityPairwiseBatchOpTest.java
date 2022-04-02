@@ -3,7 +3,6 @@ package com.alibaba.alink.operator.batch.similarity;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.AppendIdBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.similarity.StringSimilarityPairwiseStreamOp;
@@ -16,8 +15,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static org.junit.Assert.assertArrayEquals;
 
 public class StringSimilarityPairwiseBatchOpTest extends AlinkTestBase {
 	private String selectedColName0 = "col0";

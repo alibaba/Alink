@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.operator.common.timeseries.holtwinter.HoltWinters;
 import com.alibaba.alink.operator.common.timeseries.holtwinter.HoltWintersModel;
 import com.alibaba.alink.params.timeseries.HoltWintersParams;
@@ -12,12 +13,16 @@ import com.alibaba.alink.params.timeseries.holtwinters.HasSeasonalStart;
 import com.alibaba.alink.params.timeseries.holtwinters.HasSeasonalType;
 import com.alibaba.alink.params.timeseries.holtwinters.HasSeasonalType.SeasonalType;
 import com.alibaba.alink.params.timeseries.holtwinters.HasTrendStart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 
 public class HoltWintersMapper extends TimeSeriesSingleMapper {
 
 	private static final long serialVersionUID = 6653124016287841989L;
+	private static final Logger LOG = LoggerFactory.getLogger(HoltWintersMapper.class);
 
 	private double alpha;
 	private double beta;
@@ -71,15 +76,36 @@ public class HoltWintersMapper extends TimeSeriesSingleMapper {
 				}
 			}
 
-			HoltWintersModel model = HoltWinters.fit(historyVals, frequency,
-				alpha, beta, gamma, doTrend, doSeasonal,
-				seasonalType, levelStart, trendStart, seasonalStart);
+			HoltWintersModel model = adapterFit(historyVals.clone());
 
-			return Tuple2.of(model.forecast(predictNum), null);
+			return model == null ? Tuple2.of(null, null) : Tuple2.of(model.forecast(predictNum), null);
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return Tuple2.of(null, null);
+		}
+	}
+
+	private HoltWintersModel adapterFit(double[] historyVals) {
+		while (true) {
+			try {
+				return HoltWinters.fit(historyVals, frequency,
+					alpha, beta, gamma, doTrend, doSeasonal,
+					seasonalType, levelStart, trendStart, seasonalStart);
+			} catch (Throwable ex) {
+				LOG.info(ex.toString());
+				LOG.info("val length -1 ");
+				double[] newVals = Arrays.copyOfRange(historyVals, 1, historyVals.length);
+				if (2 >= newVals.length) {
+					System.out.println("holtwinter error." + new DoubleTensor(historyVals).toDisplayData());
+					return null;
+				}
+				if (doTrend && (2 * frequency > newVals.length)) {
+					System.out.println("holtwinter error." + new DoubleTensor(historyVals).toDisplayData());
+					return null;
+				}
+				historyVals = newVals;
+			}
 		}
 	}
 }

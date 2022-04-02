@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasNumSubsetFeatures<T> extends WithParams <T> {
-	/**
-	 * @cn-name 每棵树的特征采样数目
-	 * @cn 每棵树的特征采样数目
-	 */
+	@NameCn("每棵树的特征采样数目")
+	@DescCn("每棵树的特征采样数目")
 	ParamInfo <Integer> NUM_SUBSET_FEATURES = ParamInfoFactory
 		.createParamInfo("numSubsetFeatures", Integer.class)
 		.setDescription("The number of features to consider for splits at each tree node.")

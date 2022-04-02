@@ -4,14 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasEncodeWithoutWoeAndIndex<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 编码方法
-	 * @cn 编码方法
-	 */
+	@NameCn("编码方法")
+	@DescCn("编码方法")
 	ParamInfo <Encode> ENCODE = ParamInfoFactory
 		.createParamInfo("encode", Encode.class)
 		.setDescription("encode type: VECTOR, ASSEMBLED_VECTOR.")

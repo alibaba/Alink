@@ -5,12 +5,16 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.common.utils.TimeUtil;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil.prependTagMapFunction;
@@ -30,12 +34,14 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getMul
  * for binary classification and multi classification. You can either give label column and predResult column or give
  * label column and predDetail column. Once predDetail column is given, the predResult column is ignored.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
+@Internal
 public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends StreamOperator <T> {
 	private static final String DATA_OUTPUT = "Data";
-	private static final String MULTI_CLASS_NAME = "MultiEvalClassStreamOp";
-	private static final String BINARY_CLASS_NAME = "EvalClassStreamOp";
+
 	private static final long serialVersionUID = -6277527784116345678L;
-	private boolean binary;
+	private final boolean binary;
 
 	public BaseEvalClassStreamOp(Params params, boolean binary) {
 		super(params);
@@ -66,10 +72,9 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 				LabelPredictionWindow predMultiWindowFunction = new LabelPredictionWindow(binary, positiveValue,
 					labelType);
-				statistics = in
-					.select(new String[] {labelColName, predResultColName})
+				statistics = in.select(new String[] {labelColName, predResultColName})
 					.getDataStream()
-					.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+					.timeWindowAll(TimeUtil.convertTime(timeInterval))
 					.apply(predMultiWindowFunction);
 				break;
 			}
@@ -81,7 +86,7 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 				statistics = in.select(new String[] {labelColName, predDetailColName})
 					.getDataStream()
-					.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+					.timeWindowAll(TimeUtil.convertTime(timeInterval))
 					.apply(eval);
 				break;
 			}
@@ -109,9 +114,9 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 	static class LabelPredictionWindow implements AllWindowFunction <Row, BaseMetricsSummary, TimeWindow> {
 		private static final long serialVersionUID = -4426213828656690161L;
-		private boolean binary;
-		private String positiveValue;
-		private TypeInformation labelType;
+		private final boolean binary;
+		private final String positiveValue;
+		private final TypeInformation labelType;
 
 		LabelPredictionWindow(boolean binary, String positiveValue, TypeInformation labelType) {
 			this.binary = binary;
@@ -138,9 +143,9 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 	static class PredDetailLabel implements AllWindowFunction <Row, BaseMetricsSummary, TimeWindow> {
 		private static final long serialVersionUID = 8057305974098408321L;
-		private String positiveValue;
-		private Boolean binary;
-		private TypeInformation labelType;
+		private final String positiveValue;
+		private final Boolean binary;
+		private final TypeInformation labelType;
 
 		PredDetailLabel(String positiveValue, boolean binary, TypeInformation labelType) {
 			this.positiveValue = positiveValue;

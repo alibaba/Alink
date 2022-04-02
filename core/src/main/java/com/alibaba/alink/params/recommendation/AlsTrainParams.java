@@ -3,6 +3,8 @@ package com.alibaba.alink.params.recommendation;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.shared.iter.HasNumIterDefaultAs10;
 
 public interface AlsTrainParams<T> extends
@@ -10,10 +12,8 @@ public interface AlsTrainParams<T> extends
 	HasItemCol <T>,
 	HasRateCol <T>,
 	HasNumIterDefaultAs10 <T> {
-	/**
-	 * @cn-name 因子数
-	 * @cn 因子数
-	 */
+	@NameCn("因子数")
+	@DescCn("因子数")
 	ParamInfo <Integer> RANK = ParamInfoFactory
 		.createParamInfo("rank", Integer.class)
 		.setDescription("Rank of the factorization (>0).")
@@ -29,29 +29,23 @@ public interface AlsTrainParams<T> extends
 		return set(RANK, value);
 	}
 
-	/**
-	 * @cn-name 正则化系数
-	 * @cn 正则化系数
-	 */
+	@NameCn("正则化系数")
+	@DescCn("正则化系数")
 	ParamInfo <Double> LAMBDA = ParamInfoFactory
 		.createParamInfo("lambda", Double.class)
 		.setDescription("regularization parameter (>= 0).")
 		.setHasDefaultValue(0.1)
 		.setAlias(new String[] {"regParam"})
 		.build();
-	/**
-	 * @cn-name 是否约束因子非负
-	 * @cn 是否约束因子非负
-	 */
+	@NameCn("是否约束因子非负")
+	@DescCn("是否约束因子非负")
 	ParamInfo <Boolean> NON_NEGATIVE = ParamInfoFactory
 		.createParamInfo("nonnegative", Boolean.class)
 		.setDescription("Whether enforce the non-negative constraint.")
 		.setHasDefaultValue(false)
 		.build();
-	/**
-	 * @cn-name 分块数目
-	 * @cn 分块数目
-	 */
+	@NameCn("分块数目")
+	@DescCn("分块数目")
 	ParamInfo <Integer> NUM_BLOCKS = ParamInfoFactory
 		.createParamInfo("numBlocks", Integer.class)
 		.setDescription("Number of blocks when doing ALS. This is a performance parameter.")

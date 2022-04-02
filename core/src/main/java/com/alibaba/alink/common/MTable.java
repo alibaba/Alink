@@ -6,6 +6,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.common.typeutils.TypeComparator;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
+import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonGenerator;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonParser;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,36 +23,55 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable.MTableDeserializer;
 import com.alibaba.alink.common.MTable.MTableSerializer;
+import com.alibaba.alink.common.exceptions.MTableSerializerException;
+import com.alibaba.alink.common.io.filesystem.binary.RowStreamSerializer;
 import com.alibaba.alink.common.linalg.VectorUtil;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvFormatter;
 import com.alibaba.alink.operator.common.io.csv.CsvParser;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummarizer;
+import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 @JsonSerialize(using = MTableSerializer.class)
 @JsonDeserialize(using = MTableDeserializer.class)
-public class MTable implements Serializable {
+public class MTable implements Serializable, DataTypeDisplayInterface {
 
 	private final List <Row> rows;
 	private final String schemaStr;
+	private final int displaySize = 5;
 
 	public MTable(String json) {
 		MTable mTable = deserialize(json);
@@ -60,41 +80,91 @@ public class MTable implements Serializable {
 		this.schemaStr = mTable.schemaStr;
 	}
 
+	public MTable(Object[] vals, String colName) {
+		rows = new ArrayList <>(vals.length);
+		for (Object val : vals) {
+			rows.add(Row.of(val));
+		}
+		this.schemaStr = initSchemaStr(this.rows, new String[] {colName});
+	}
+
+	public MTable(Object[][] vals, String[] colNames) {
+		rows = new ArrayList <>(vals.length);
+		for (Object[] val : vals) {
+			rows.add(Row.of(val));
+		}
+		this.schemaStr = initSchemaStr(this.rows, colNames);
+	}
+
 	public MTable(List <Row> rows, String[] colNames, TypeInformation <?>[] colTypes) {
 		this(rows, new TableSchema(colNames, colTypes));
 	}
 
 	public MTable(List <Row> rows, TableSchema schema) {
-		this(rows, CsvUtil.schema2SchemaStr(schema));
+		this(rows, TableUtil.schema2SchemaStr(schema));
 	}
 
 	public MTable(List <Row> rows, String schemaStr) {
-		if (rows == null) {
-			this.rows = new ArrayList <>();
-		} else {
-			this.rows = rows;
-		}
+		this.rows = rows;
 		this.schemaStr = schemaStr;
 	}
 
-	public List <Row> getTable() {
+	public MTable(List <Row> rows, String[] colNames) {
+		this(rows, initSchemaStr(rows, colNames));
+	}
+
+	public MTable(Row[] rows, String[] colNames, TypeInformation <?>[] colTypes) {
+		this(Arrays.asList(rows), colNames, colTypes);
+	}
+
+	public MTable(Row[] rows, TableSchema schema) {
+		this(Arrays.asList(rows), schema);
+	}
+
+	public MTable(Row[] rows, String schemaStr) {
+		this(Arrays.asList(rows), schemaStr);
+	}
+
+	public MTable(Row[] rows, String[] colNames) {
+		this(Arrays.asList(rows), colNames);
+	}
+
+	private static String initSchemaStr(List <Row> rows, String[] colNames) {
+		if (rows == null || rows.size() < 1) {
+			throw new IllegalArgumentException("Values can not be empty.");
+		}
+
+		Row first = rows.iterator().next();
+
+		int arity = first.getArity();
+
+		TypeInformation <?>[] types = new TypeInformation[arity];
+
+		for (int i = 0; i < arity; ++i) {
+			types[i] = TypeExtractor.getForObject(first.getField(i));
+		}
+
+		return TableUtil.schema2SchemaStr(new TableSchema(colNames, types));
+	}
+
+	public List <Row> getRows() {
 		return rows;
 	}
 
-	public Object getEntry(int row, int col) {
-		return rows.get(row).getField(col);
+	public Row getRow(int index) {
+		return rows.get(index);
 	}
 
-	public TableSchema getTableSchema() {
-		return CsvUtil.schemaStr2Schema(schemaStr);
+	public TableSchema getSchema() {
+		return TableUtil.schemaStr2Schema(this.schemaStr);
 	}
 
 	public String[] getColNames() {
-		return CsvUtil.getColNames(schemaStr);
+		return TableUtil.getColNames(this.schemaStr);
 	}
 
 	public TypeInformation <?>[] getColTypes() {
-		return CsvUtil.getColTypes(schemaStr);
+		return TableUtil.getColTypes(this.schemaStr);
 	}
 
 	public int getNumRow() {
@@ -102,15 +172,96 @@ public class MTable implements Serializable {
 	}
 
 	public int getNumCol() {
-		return getColNames() != null ? getColNames().length : -1;
-	}
-
-	public List <Row> getRows() {
-		return rows;
+		return getColNames().length;
 	}
 
 	public String getSchemaStr() {
 		return schemaStr;
+	}
+
+	public Object getEntry(int row, int col) {
+		return rows.get(row).getField(col);
+	}
+
+	public void setEntry(int row, int col, Object val) {
+		rows.get(row).setField(col, val);
+	}
+
+	public MTable copy() {
+		return MTableUtil.copy(this);
+	}
+
+	public MTable select(String... colNames) {
+		return MTableUtil.select(this, colNames);
+	}
+
+	public MTable select(int... colIndexes) {
+		return MTableUtil.select(this, colIndexes);
+	}
+
+	public TableSummary summary(String... selectedColNames) {
+		TableSchema schema = getSchema();
+		TableSummarizer srt = new TableSummarizer(
+			selectedColNames.length == 0 ? schema.getFieldNames() : selectedColNames,
+			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema)), true);
+		for (Row row : this.rows) {
+			srt.visit(row);
+		}
+		return srt.toSummary();
+	}
+
+	private static String[] getCalcCols(TableSchema tableSchema) {
+		ArrayList <String> calcCols = new ArrayList <>();
+			String[] inColNames = tableSchema.getFieldNames();
+		TypeInformation <?>[] inColTypes = tableSchema.getFieldTypes();
+
+		for (int i = 0; i < inColNames.length; i++) {
+			if (isSupportedType(inColTypes[i])) {
+				calcCols.add(inColNames[i]);
+			}
+		}
+
+		return calcCols.toArray(new String[0]);
+	}
+
+	public static boolean isSupportedType(TypeInformation <?> dataType) {
+		return Types.DOUBLE.equals(dataType)
+			|| Types.LONG.equals(dataType)
+			|| Types.BYTE.equals(dataType)
+			|| Types.INT.equals(dataType)
+			|| Types.FLOAT.equals(dataType)
+			|| Types.SHORT.equals(dataType)
+			|| Types.BIG_DEC.equals(dataType)
+			|| Types.BOOLEAN.equals(dataType);
+	}
+
+	public void printSummary(String... selectedColNames) {
+		System.out.println(summary(selectedColNames).toString());
+	}
+
+	/**
+	 * Sampling without replacement.
+	 */
+	public MTable sampleWithSize(int numSamples, Random rnd) {
+		PriorityQueue <Tuple2 <Double, Row>> q = new PriorityQueue <>(
+			numSamples,
+			Comparator.comparing(o -> o.f0)
+		);
+
+		for (Row row : rows) {
+			if (q.size() < numSamples) {
+				q.offer(Tuple2.of(rnd.nextDouble(), row));
+			} else {
+				Double rand = rnd.nextDouble();
+
+				if (rand > q.element().f0) {
+					q.poll();
+					q.offer(Tuple2.of(rand, row));
+				}
+			}
+		}
+
+		return new MTable(q.stream().map(item -> item.f1).collect(Collectors.toList()), schemaStr);
 	}
 
 	/**
@@ -187,8 +338,56 @@ public class MTable implements Serializable {
 	}
 
 	@Override
+	public String toDisplaySummary() {
+		StringBuilder summary = new StringBuilder("MTable(");
+		summary.append(getNumRow()).append(",").append(getColNames().length).append(")(");
+		int maxSize = Math.min(displaySize, getColNames().length);
+		for (int i = 0; i < maxSize - 1; ++i) {
+			summary.append(getColNames()[i]).append(",");
+		}
+		if (maxSize == getColNames().length) {
+			summary.append(getColNames()[getColNames().length - 1]).append(")");
+		} else {
+			summary.append("...)");
+		}
+		return summary.toString();
+	}
+
+	@Override
+	public String toDisplayData(int n) {
+		if (n < 0) {
+			n = Integer.MAX_VALUE;
+		}
+		StringBuilder sbd = new StringBuilder();
+		int i = 0;
+		for (Row row : this.rows) {
+			if (i < n) {
+				if (row.getArity() <= displaySize) {
+					sbd.append(TableUtil.formatRows(row)).append("\n");
+				} else {
+					Row simpleRow = new Row(displaySize);
+					for (int j = 0; j < displaySize - 1; ++j) {
+						simpleRow.setField(j, row.getField(j));
+					}
+					simpleRow.setField(displaySize - 1, "...");
+					sbd.append(TableUtil.formatRows(simpleRow)).append("\n");
+				}
+				i++;
+			} else {
+				break;
+			}
+		}
+		return sbd.toString();
+	}
+
+	@Override
+	public String toShortDisplayData() {
+		return toDisplayData(displaySize);
+	}
+
+	@Override
 	public String toString() {
-		return JsonConverter.toJson(this);
+		return toDisplaySummary() + "\n" + toShortDisplayData();
 	}
 
 	private static MTable deserialize(String json) {
@@ -204,20 +403,20 @@ public class MTable implements Serializable {
 		static {
 			Map <TypeInformation <?>, Function <Object, String>> serializer = new HashMap <>();
 
-			serializer.put(VectorTypes.VECTOR, Object::toString);
-			serializer.put(VectorTypes.DENSE_VECTOR, Object::toString);
-			serializer.put(VectorTypes.SPARSE_VECTOR, Object::toString);
+			serializer.put(AlinkTypes.VECTOR, VectorUtil::serialize);
+			serializer.put(AlinkTypes.DENSE_VECTOR, VectorUtil::serialize);
+			serializer.put(AlinkTypes.SPARSE_VECTOR, VectorUtil::serialize);
 
-			serializer.put(TensorTypes.TENSOR, Object::toString);
-			serializer.put(TensorTypes.FLOAT_TENSOR, Object::toString);
-			serializer.put(TensorTypes.DOUBLE_TENSOR, Object::toString);
-			serializer.put(TensorTypes.BOOL_TENSOR, Object::toString);
-			serializer.put(TensorTypes.INT_TENSOR, Object::toString);
-			serializer.put(TensorTypes.BYTE_TENSOR, Object::toString);
-			serializer.put(TensorTypes.LONG_TENSOR, Object::toString);
-			serializer.put(TensorTypes.STRING_TENSOR, Object::toString);
-			serializer.put(TensorTypes.UBYTE_TENSOR, Object::toString);
-			serializer.put(Types.SQL_TIMESTAMP, Object::toString);
+			serializer.put(AlinkTypes.TENSOR, TensorUtil::serialize);
+			serializer.put(AlinkTypes.FLOAT_TENSOR, TensorUtil::serialize);
+			serializer.put(AlinkTypes.DOUBLE_TENSOR, TensorUtil::serialize);
+			serializer.put(AlinkTypes.BOOL_TENSOR, TensorUtil::serialize);
+			serializer.put(AlinkTypes.INT_TENSOR, TensorUtil::serialize);
+			serializer.put(AlinkTypes.BYTE_TENSOR, TensorUtil::serialize);
+			serializer.put(AlinkTypes.LONG_TENSOR, TensorUtil::serialize);
+			serializer.put(AlinkTypes.STRING_TENSOR, TensorUtil::serialize);
+			serializer.put(AlinkTypes.UBYTE_TENSOR, TensorUtil::serialize);
+			serializer.put(AlinkTypes.SQL_TIMESTAMP, Object::toString);
 			SERIALIZERS = Collections.unmodifiableMap(serializer);
 		}
 
@@ -241,7 +440,7 @@ public class MTable implements Serializable {
 
 			final TableSchema schema = new TableSchema(value.getColNames(), value.getColTypes());
 			final TypeInformation <?>[] types = value.getColTypes();
-			final List <Row> table = value.getTable();
+			final List <Row> rows = value.getRows();
 
 			final int arity = types.length;
 
@@ -254,7 +453,7 @@ public class MTable implements Serializable {
 			for (int i = 0; i < arity; ++i) {
 				gen.writeFieldName(names[i]);
 				gen.writeStartArray();
-				for (Row row : table) {
+				for (Row row : rows) {
 					gen.writeObject(to(row.getField(i), types[i]));
 				}
 				gen.writeEndArray();
@@ -262,7 +461,7 @@ public class MTable implements Serializable {
 			gen.writeEndObject();
 
 			gen.writeFieldName(M_TABLE_SCHEMA_STR);
-			gen.writeObject(CsvUtil.schema2SchemaStr(schema));
+			gen.writeObject(TableUtil.schema2SchemaStr(schema));
 
 			gen.writeEndObject();
 		}
@@ -275,19 +474,19 @@ public class MTable implements Serializable {
 		static {
 			Map <TypeInformation <?>, Function <String, Object>> deserializers = new HashMap <>();
 
-			deserializers.put(VectorTypes.VECTOR, VectorUtil::getVector);
-			deserializers.put(VectorTypes.DENSE_VECTOR, VectorUtil::getVector);
-			deserializers.put(VectorTypes.SPARSE_VECTOR, VectorUtil::getVector);
+			deserializers.put(AlinkTypes.VECTOR, VectorUtil::getVector);
+			deserializers.put(AlinkTypes.DENSE_VECTOR, VectorUtil::getVector);
+			deserializers.put(AlinkTypes.SPARSE_VECTOR, VectorUtil::getVector);
 
-			deserializers.put(TensorTypes.TENSOR, TensorUtil::getTensor);
-			deserializers.put(TensorTypes.FLOAT_TENSOR, TensorUtil::getTensor);
-			deserializers.put(TensorTypes.DOUBLE_TENSOR, TensorUtil::getTensor);
-			deserializers.put(TensorTypes.BOOL_TENSOR, TensorUtil::getTensor);
-			deserializers.put(TensorTypes.INT_TENSOR, TensorUtil::getTensor);
-			deserializers.put(TensorTypes.BYTE_TENSOR, TensorUtil::getTensor);
-			deserializers.put(TensorTypes.LONG_TENSOR, TensorUtil::getTensor);
-			deserializers.put(TensorTypes.STRING_TENSOR, TensorUtil::getTensor);
-			deserializers.put(TensorTypes.UBYTE_TENSOR, TensorUtil::getTensor);
+			deserializers.put(AlinkTypes.TENSOR, TensorUtil::getTensor);
+			deserializers.put(AlinkTypes.FLOAT_TENSOR, TensorUtil::getTensor);
+			deserializers.put(AlinkTypes.DOUBLE_TENSOR, TensorUtil::getTensor);
+			deserializers.put(AlinkTypes.BOOL_TENSOR, TensorUtil::getTensor);
+			deserializers.put(AlinkTypes.INT_TENSOR, TensorUtil::getTensor);
+			deserializers.put(AlinkTypes.BYTE_TENSOR, TensorUtil::getTensor);
+			deserializers.put(AlinkTypes.LONG_TENSOR, TensorUtil::getTensor);
+			deserializers.put(AlinkTypes.STRING_TENSOR, TensorUtil::getTensor);
+			deserializers.put(AlinkTypes.UBYTE_TENSOR, TensorUtil::getTensor);
 			deserializers.put(Types.SQL_TIMESTAMP, Timestamp::valueOf);
 
 			DESERIALIZERS = Collections.unmodifiableMap(deserializers);
@@ -319,7 +518,7 @@ public class MTable implements Serializable {
 			final JsonNode schemaNode = node.get(M_TABLE_SCHEMA_STR);
 			final JsonNode dataNode = node.get(M_TABLE_DATA);
 
-			final TableSchema schema = CsvUtil.schemaStr2Schema(schemaNode.asText());
+			final TableSchema schema = TableUtil.schemaStr2Schema(schemaNode.asText());
 			final String[] names = schema.getFieldNames();
 			final TypeInformation <?>[] types = schema.getFieldTypes();
 
@@ -342,13 +541,12 @@ public class MTable implements Serializable {
 					index++;
 				}
 			}
-
 			return new MTable(data, schema);
 		}
 	}
 
 	public static MTable readCsvFromFile(BufferedReader reader, String schemaStr) throws IOException {
-		TableSchema schema = CsvUtil.schemaStr2Schema(schemaStr);
+		TableSchema schema = TableUtil.schemaStr2Schema(schemaStr);
 		CsvParser parser = new CsvParser(schema.getFieldTypes(), ",", '"');
 		List <Row> rows = new ArrayList <>();
 		while (true) {
@@ -367,12 +565,195 @@ public class MTable implements Serializable {
 	}
 
 	public void writeCsvToFile(BufferedWriter writer) throws IOException {
-		TableSchema schema = CsvUtil.schemaStr2Schema(schemaStr);
+		TableSchema schema = getSchema();
 		CsvFormatter formatter = new CsvFormatter(schema.getFieldTypes(), ",", '"');
 		for (Row row : rows) {
 			String line = formatter.format(row);
 			writer.write(line);
 			writer.newLine();
 		}
+	}
+
+	public static class MTableKryoSerializer extends Serializer <MTable> implements Serializable {
+
+		@Override
+		public void write(Kryo kryo, Output output, MTable mTable) {
+			String schemaStr = mTable.getSchemaStr();
+			List <Row> data = mTable.getRows();
+
+			// null mask, 2-bits
+			byte nullMask = 0x0;
+
+			if (schemaStr == null) {
+				nullMask |= 0x1;
+			}
+
+			if (data == null) {
+				nullMask |= 0x2;
+			}
+
+			output.writeByte(nullMask);
+
+			// schema str is null and data is null
+			if (schemaStr == null && data == null) {
+				output.flush();
+				return;
+			}
+
+			// schema str is null and data is not null
+			if (schemaStr == null) {
+				kryo.writeClassAndObject(output, data);
+				output.flush();
+				return;
+			}
+
+			// schema str is not null and data is null
+			if (data == null) {
+				byte[] schemaStrBytes = schemaStr.getBytes(StandardCharsets.UTF_8);
+
+				int schemaLen = schemaStrBytes.length;
+
+				output.writeInt(schemaLen);
+
+				output.write(schemaStrBytes);
+
+				output.flush();
+
+				return;
+			}
+
+			// schema str is not null and data is not null
+			TableSchema tableSchema = mTable.getSchema();
+
+			byte[] schemaStrBytes = schemaStr.getBytes(StandardCharsets.UTF_8);
+			int schemaLen = schemaStrBytes.length;
+			int dataLen = data.size();
+
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+			try (GZIPOutputStream gzOut = new GZIPOutputStream(byteArrayOutputStream)) {
+
+				// write the length of schema.
+				writeInt(schemaLen, gzOut);
+
+				// write schema
+				gzOut.write(schemaStrBytes);
+
+				// write the length of data.
+				writeInt(dataLen, gzOut);
+
+				// write rows
+				RowStreamSerializer rowSerializer = new RowStreamSerializer(
+					tableSchema.getFieldNames(), tableSchema.getFieldTypes(), null, gzOut
+				);
+
+				for (Row row : data) {
+					rowSerializer.serialize(row);
+				}
+
+			} catch (IOException e) {
+				throw new MTableSerializerException("Write gzip output stream in MTable serializer error.", e);
+			}
+
+			output.writeInt(byteArrayOutputStream.size());
+
+			try {
+				byteArrayOutputStream.writeTo(output);
+			} catch (IOException e) {
+				throw new MTableSerializerException("Write data to output stream in MTable serializer error.", e);
+			}
+
+			output.flush();
+		}
+
+		@Override
+		public MTable read(Kryo kryo, Input input, Class <MTable> type) {
+
+			// read mask
+			byte nullMask = input.readByte();
+
+			boolean schemaIsNull = (nullMask & 0x1) > 0;
+			boolean dataIsNull = (nullMask & 0x2) > 0;
+
+			// schema is null and data is null
+			if (schemaIsNull && dataIsNull) {
+				return new MTable((List <Row>) null, (String) null);
+			}
+
+			// schema is null and data is not null
+			if (schemaIsNull) {
+				return new MTable((List <Row>) kryo.readClassAndObject(input), (String) null);
+			}
+
+			// schema is not null and data is null
+			if (dataIsNull) {
+				byte[] buffer = new byte[input.readInt()];
+				try {
+					IOUtils.readFully(input, buffer, 0, buffer.length);
+				} catch (IOException e) {
+					throw new MTableSerializerException("Read data from input stream in MTable serializer error.", e);
+				}
+
+				return new MTable((List <Row>) null, new String(buffer, StandardCharsets.UTF_8));
+			}
+
+			int bufferLen = input.readInt();
+
+			byte[] buffer = new byte[bufferLen];
+
+			try {
+				IOUtils.readFully(input, buffer, 0, bufferLen);
+			} catch (IOException e) {
+				throw new MTableSerializerException("Read data from input stream in MTable serializer error.", e);
+			}
+
+			try (GZIPInputStream gzIn = new GZIPInputStream(new ByteArrayInputStream(buffer))) {
+
+				// read the length of schema.
+				int schemaLen = readInt(gzIn);
+
+				// read schema
+				byte[] strBytes = new byte[schemaLen];
+
+				IOUtils.readFully(gzIn, strBytes, 0, schemaLen);
+
+				String schemaStr = new String(strBytes, 0, schemaLen, StandardCharsets.UTF_8);
+
+				TableSchema schema = TableUtil.schemaStr2Schema(schemaStr);
+
+				// read the length of data
+				int dataLen = readInt(gzIn);
+
+				// read rows
+				RowStreamSerializer rowSerializer = new RowStreamSerializer(
+					schema.getFieldNames(), schema.getFieldTypes(), gzIn, null
+				);
+
+				ArrayList <Row> data = new ArrayList <>(dataLen);
+
+				for (int i = 0; i < dataLen; ++i) {
+					data.add(rowSerializer.deserialize());
+				}
+
+				return new MTable(data, schemaStr);
+			} catch (IOException e) {
+				throw new MTableSerializerException("Read gzip input stream in MTable serializer error.", e);
+			}
+		}
+
+		private static void writeInt(int value, OutputStream outputStream) throws IOException {
+			outputStream.write((value >> 24) & 0xFF);
+			outputStream.write((value >> 16) & 0xFF);
+			outputStream.write((value >> 8) & 0xFF);
+			outputStream.write((value) & 0xFF);
+		}
+
+		private static int readInt(InputStream inputStream) throws IOException {
+			return (inputStream.read() & 0xFF) << 24
+				| (inputStream.read() & 0xFF) << 16
+				| (inputStream.read() & 0xFF) << 8
+				| (inputStream.read() & 0xFF);
+		}
+
 	}
 }

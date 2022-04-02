@@ -2,11 +2,12 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.tree.predictors.TreeModelEncoderModelMapper;
-import com.alibaba.alink.params.feature.C45EncoderParams;
 import com.alibaba.alink.params.feature.Id3EncoderParams;
 import com.alibaba.alink.pipeline.MapModel;
 
+@NameCn("Id3编码模型")
 public class Id3EncoderModel extends MapModel <Id3EncoderModel>
 	implements Id3EncoderParams <Id3EncoderModel> {
 

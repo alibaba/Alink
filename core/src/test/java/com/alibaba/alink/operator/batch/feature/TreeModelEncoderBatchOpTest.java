@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelDataConverter;
 import com.alibaba.alink.operator.common.tree.predictors.TreeModelEncoderModelMapper;
@@ -88,6 +89,6 @@ public class TreeModelEncoderBatchOpTest extends AlinkTestBase {
 		Assert.assertEquals(1, result.getField(0));
 		Assert.assertNull(result.getField(1));
 		Assert.assertEquals(0, result.getField(2));
-		Assert.assertEquals("$3$2:1.0", result.getField(3).toString());
+		Assert.assertEquals("$3$2:1.0", VectorUtil.serialize(result.getField(3)));
 	}
 }

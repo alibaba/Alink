@@ -10,6 +10,7 @@ import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.mapper.Mapper;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.ToMTableBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -50,8 +51,7 @@ public class ToMTableMapperTest extends AlinkTestBase {
 				.set(ToMTableParams.SELECTED_COL, "mTable")
 		);
 
-		String mTableStr = mTable.toString();
-		MTable result = (MTable) mapper.map(Row.of(mTableStr)).getField(0);
+		MTable result = (MTable) mapper.map(Row.of(JsonConverter.toJson(mTable))).getField(0);
 		Assert.assertEquals(mTable.toString(), result.toString());
 		System.out.println(mTable.toString());
 	}

@@ -4,6 +4,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * An interface for classes with a parameter specifying the name of the table column with null default value.
  *
@@ -13,10 +16,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasSelectedColDefaultAsNull<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 计算列对应的列名
-	 * @cn 计算列对应的列名, 默认值是null
-	 */
+	@NameCn("计算列对应的列名")
+	@DescCn("计算列对应的列名, 默认值是null")
 	ParamInfo <String> SELECTED_COL = ParamInfoFactory
 		.createParamInfo("selectedCol", String.class)
 		.setDescription("Name of the selected column used for processing")

@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.BaseRandomForestTrainBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
@@ -28,6 +29,7 @@ import com.alibaba.alink.params.regression.RandomForestRegTrainParams;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
+@NameCn("随机森林回归训练")
 public final class RandomForestRegTrainBatchOp extends BaseRandomForestTrainBatchOp <RandomForestRegTrainBatchOp>
 	implements RandomForestRegTrainParams <RandomForestRegTrainBatchOp>,
 	WithModelInfoBatchOp <TreeModelInfo.RandomForestModelInfo, RandomForestRegTrainBatchOp,

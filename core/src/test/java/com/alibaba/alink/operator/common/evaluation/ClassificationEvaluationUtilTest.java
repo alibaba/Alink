@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import org.apache.flink.api.common.functions.RuntimeContext;
+import org.apache.flink.api.common.functions.util.ListCollector;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -7,6 +9,8 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.BinaryPartitionSummary;
+import com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.CalcBinaryPartitionSummary;
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
 import com.alibaba.alink.testutil.AlinkTestBase;
@@ -14,6 +18,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.DECISION_THRESHOLD_BC_NAME;
 import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getDetailStatistics;
 
 /**
@@ -56,12 +62,22 @@ public class ClassificationEvaluationUtilTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void predResultLabelMapException() {
+	public void predResultLabelMapExceptionWhenBinaryClassification() {
 		HashSet <Object> set = new HashSet <>();
 		set.add("0");
 		thrown.expect(IllegalArgumentException.class);
-		thrown.expectMessage("The distinct label number less than 2!");
+		thrown.expectMessage("The number of labels must be equal to 2!");
 		ClassificationEvaluationUtil.buildLabelIndexLabelArray(set, true, null, Types.INT, true);
+	}
+
+	@Test
+	public void predResultLabelMapWhenMultiClassification() {
+		HashSet <Object> set = new HashSet <>();
+		set.add("0");
+		Tuple2 <Map <Object, Integer>, Object[]> labelIndexLabelArray =
+			ClassificationEvaluationUtil.buildLabelIndexLabelArray(set, false, null, Types.INT, true);
+		Assert.assertEquals(1, labelIndexLabelArray.f0.size());
+		Assert.assertArrayEquals(new Object[] {"0"}, labelIndexLabelArray.f1);
 	}
 
 	@Test
@@ -156,7 +172,7 @@ public class ClassificationEvaluationUtilTest extends AlinkTestBase {
 			Tuple3 <Double, Boolean, Double> t = ClassificationEvaluationUtil.getBinaryDetailStatistics(row, labels,
 				labelType);
 			if (null != t) {
-				ClassificationEvaluationUtil.updateBinaryPartitionSummary(summary, t);
+				ClassificationEvaluationUtil.updateBinaryPartitionSummary(summary, t, 0.5);
 			}
 		}
 		Assert.assertEquals(summary.curNegative, 2);
@@ -208,7 +224,7 @@ public class ClassificationEvaluationUtilTest extends AlinkTestBase {
 		}
 		Collections.sort(list, Comparator.comparingDouble(t -> -t.f0));
 		list.forEach(t -> ClassificationEvaluationUtil.updateAccurateBinaryMetricsSummary(t, summary, countValues,
-			tprFprPrecision, true));
+			tprFprPrecision, true, 0.5, 1.0));
 
 		BinaryClassMetrics summary1 = (BinaryClassMetrics) getDetailStatistics(Arrays.asList(rows), null, true,
 			Types.STRING).toMetrics();
@@ -218,5 +234,89 @@ public class ClassificationEvaluationUtilTest extends AlinkTestBase {
 		Assert.assertEquals(summary1.getKs(), summary2.getKs());
 		Assert.assertEquals(summary1.getPrc(), summary2.getPrc());
 		Assert.assertEquals(summary1.getGini(), summary2.getGini());
+	}
+
+	BinaryPartitionSummary runCalcBinaryPartitionSummary(
+		RuntimeContext runtimeContext, List <Tuple3 <Double, Boolean, Double>> values) {
+		CalcBinaryPartitionSummary f = new CalcBinaryPartitionSummary();
+		f.setRuntimeContext(runtimeContext);
+		f.open(null);
+		List <BinaryPartitionSummary> results = new ArrayList <>();
+		f.mapPartition(values, new ListCollector <>(results));
+		Assert.assertEquals(1, results.size());
+		return results.get(0);
+	}
+
+	@Test
+	public void testCalcBinaryPartitionSummaryProbs() {
+		//noinspection unchecked
+		Tuple3 <Double, Boolean, Double>[] rows = new Tuple3[] {
+			Tuple3.of(0.9, true, 0.1),
+			Tuple3.of(0.8, true, 0.1),
+			Tuple3.of(0.7, true, 0.1),
+			Tuple3.of(0.75, false, 0.1),
+			Tuple3.of(0.6, false, 0.1),
+		};
+		List <Tuple3 <Double, Boolean, Double>> values = Arrays.asList(rows);
+
+		RuntimeContext mockRuntimeContext = Mockito.mock(RuntimeContext.class);
+		int taskId = 2;
+		Mockito.when(mockRuntimeContext.getIndexOfThisSubtask()).thenReturn(taskId);
+
+		BinaryPartitionSummary summary = runCalcBinaryPartitionSummary(mockRuntimeContext, values);
+		Assert.assertEquals(summary.curNegative, 2);
+		Assert.assertEquals(summary.curPositive, 3);
+		Assert.assertEquals((int) summary.taskId, taskId);
+		Assert.assertEquals(summary.maxScore, 0.9, 0.01);
+	}
+
+	@Test
+	public void testCalcBinaryPartitionSummaryProbsWithDecisionThresh() {
+		//noinspection unchecked
+		Tuple3 <Double, Boolean, Double>[] rows = new Tuple3[] {
+			Tuple3.of(0.9, true, 0.1),
+			Tuple3.of(0.8, true, 0.1),
+			Tuple3.of(0.7, true, Double.NaN),
+			Tuple3.of(0.75, false, 0.1),
+			Tuple3.of(0.6, false, 0.1),
+		};
+		List <Tuple3 <Double, Boolean, Double>> values = Arrays.asList(rows);
+
+		RuntimeContext mockRuntimeContext = Mockito.mock(RuntimeContext.class);
+		int taskId = 2;
+		Mockito.when(mockRuntimeContext.getIndexOfThisSubtask()).thenReturn(taskId);
+		Mockito.when(mockRuntimeContext.hasBroadcastVariable(DECISION_THRESHOLD_BC_NAME))
+			.thenReturn(true);
+		Mockito.when(mockRuntimeContext.getBroadcastVariable(DECISION_THRESHOLD_BC_NAME))
+			.thenReturn(Collections.singletonList(0.7));
+
+		BinaryPartitionSummary summary = runCalcBinaryPartitionSummary(mockRuntimeContext, values);
+		Assert.assertEquals(summary.curNegative, 2);
+		Assert.assertEquals(summary.curPositive, 2);
+		Assert.assertEquals((int) summary.taskId, taskId);
+		Assert.assertEquals(summary.maxScore, 0.9, 0.01);
+	}
+
+	@Test
+	public void testCalcBinaryPartitionSummaryNegScores() {
+		//noinspection unchecked
+		Tuple3 <Double, Boolean, Double>[] rows = new Tuple3[] {
+			Tuple3.of(-0.9, true, 0.1),
+			Tuple3.of(-0.8, true, 0.1),
+			Tuple3.of(-0.7, true, 0.1),
+			Tuple3.of(-0.75, false, 0.1),
+			Tuple3.of(-0.6, false, 0.1),
+		};
+		List <Tuple3 <Double, Boolean, Double>> values = Arrays.asList(rows);
+
+		RuntimeContext mockRuntimeContext = Mockito.mock(RuntimeContext.class);
+		int taskId = 2;
+		Mockito.when(mockRuntimeContext.getIndexOfThisSubtask()).thenReturn(taskId);
+
+		BinaryPartitionSummary summary = runCalcBinaryPartitionSummary(mockRuntimeContext, values);
+		Assert.assertEquals(summary.curNegative, 2);
+		Assert.assertEquals(summary.curPositive, 3);
+		Assert.assertEquals((int) summary.taskId, taskId);
+		Assert.assertEquals(summary.maxScore, -0.6, 0.01);
 	}
 }

@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.BaseRandomForestTrainBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
@@ -14,6 +15,7 @@ import com.alibaba.alink.params.shared.tree.HasSubsamplingRatio;
 /**
  * Fit a c45 model.
  */
+@NameCn("C45决策树分类训练")
 public final class C45TrainBatchOp extends BaseRandomForestTrainBatchOp <C45TrainBatchOp>
 	implements C45TrainParams <C45TrainBatchOp>,
 	WithModelInfoBatchOp <TreeModelInfo.DecisionTreeModelInfo, C45TrainBatchOp, C45ModelInfoBatchOp> {

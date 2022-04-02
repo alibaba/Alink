@@ -10,21 +10,63 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.DataTypeDisplayInterface;
+import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.common.similarity.similarity.LevenshteinSimilarity;
 import com.google.common.base.Joiner;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+
+import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
 
 /**
  * Utility to operator to interact with Table contents, such as rows and columns.
  */
 public class TableUtil {
-	private static LevenshteinSimilarity levenshteinSimilarity = new LevenshteinSimilarity();
+	public static final BiMap <String, TypeInformation <?>> STRING_TYPE_MAP = HashBiMap.create();
+	public static final Set <String> STRING_TYPE_SET = new HashSet <>();
+	private static final LevenshteinSimilarity levenshteinSimilarity = new LevenshteinSimilarity();
+	public static final int DISPLAY_SIZE = 6;
+
+	static {
+		STRING_TYPE_MAP.put("VARBINARY", BYTE_PRIMITIVE_ARRAY_TYPE_INFO);
+		STRING_TYPE_MAP.put("VECTOR", AlinkTypes.VECTOR);
+		STRING_TYPE_MAP.put("DENSE_VECTOR", AlinkTypes.DENSE_VECTOR);
+		STRING_TYPE_MAP.put("SPARSE_VECTOR", AlinkTypes.SPARSE_VECTOR);
+		STRING_TYPE_MAP.put("TENSOR", AlinkTypes.TENSOR);
+		STRING_TYPE_MAP.put("BOOL_TENSOR", AlinkTypes.BOOL_TENSOR);
+		STRING_TYPE_MAP.put("BYTE_TENSOR", AlinkTypes.BYTE_TENSOR);
+		STRING_TYPE_MAP.put("DOUBLE_TENSOR", AlinkTypes.DOUBLE_TENSOR);
+		STRING_TYPE_MAP.put("FLOAT_TENSOR", AlinkTypes.FLOAT_TENSOR);
+		STRING_TYPE_MAP.put("INT_TENSOR", AlinkTypes.INT_TENSOR);
+		STRING_TYPE_MAP.put("LONG_TENSOR", AlinkTypes.LONG_TENSOR);
+		STRING_TYPE_MAP.put("STRING_TENSOR", AlinkTypes.STRING_TENSOR);
+		STRING_TYPE_MAP.put("MTABLE", AlinkTypes.M_TABLE);
+
+		STRING_TYPE_SET.add("VEC_TYPES_VECTOR");
+		STRING_TYPE_SET.add("VEC_TYPES_DENSE_VECTOR");
+		STRING_TYPE_SET.add("VEC_TYPES_SPARSE_VECTOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_BOOL_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_BYTE_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_DOUBLE_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_FLOAT_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_INT_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_LONG_TENSOR");
+		STRING_TYPE_SET.add("TENSOR_TYPES_STRING_TENSOR");
+	}
 
 	/**
 	 * Return a temp table named with prefix `temp_`, follow by a random UUID.
@@ -84,8 +126,7 @@ public class TableUtil {
 
 	/**
 	 * Find the index of <code>targetCol</code> in string array <code>tableCols</code>. If not found, it will try to
-	 * find
-	 * the most similar cols, and throw a runtime exception include colname hint.
+	 * find the most similar cols, and throw a runtime exception include colname hint.
 	 *
 	 * @param tableCols a string array among which to find the targetCol.
 	 * @param targetCol the targetCol to find.
@@ -254,11 +295,11 @@ public class TableUtil {
 	 * @param targetCols  the targetCols to find.
 	 * @return the corresponding types.
 	 */
-	public static TypeInformation[] findColTypes(TableSchema tableSchema, String[] targetCols) {
+	public static TypeInformation <?>[] findColTypes(TableSchema tableSchema, String[] targetCols) {
 		if (targetCols == null) {
 			return tableSchema.getFieldTypes();
 		}
-		TypeInformation[] types = new TypeInformation[targetCols.length];
+		TypeInformation <?>[] types = new TypeInformation[targetCols.length];
 		for (int i = 0; i < types.length; i++) {
 			types[i] = findColType(tableSchema, targetCols[i]);
 		}
@@ -272,11 +313,11 @@ public class TableUtil {
 	 * @param targetCols  the targetCols to find.
 	 * @return the corresponding types.
 	 */
-	public static TypeInformation[] findColTypesWithAssert(TableSchema tableSchema, String[] targetCols) {
+	public static TypeInformation <?>[] findColTypesWithAssert(TableSchema tableSchema, String[] targetCols) {
 		if (targetCols == null) {
 			return tableSchema.getFieldTypes();
 		}
-		TypeInformation[] types = new TypeInformation[targetCols.length];
+		TypeInformation <?>[] types = new TypeInformation[targetCols.length];
 		for (int i = 0; i < types.length; i++) {
 			types[i] = findColTypeWithAssert(tableSchema, targetCols[i]);
 		}
@@ -290,11 +331,11 @@ public class TableUtil {
 	 * @param targetCols  the targetCols to find.
 	 * @return the corresponding types.
 	 */
-	public static TypeInformation[] findColTypesWithAssertAndHint(TableSchema tableSchema, String[] targetCols) {
+	public static TypeInformation <?>[] findColTypesWithAssertAndHint(TableSchema tableSchema, String[] targetCols) {
 		if (targetCols == null) {
 			return tableSchema.getFieldTypes();
 		}
-		TypeInformation[] types = new TypeInformation[targetCols.length];
+		TypeInformation <?>[] types = new TypeInformation[targetCols.length];
 		for (int i = 0; i < types.length; i++) {
 			types[i] = findColTypeWithAssertAndHint(tableSchema, targetCols[i]);
 		}
@@ -308,7 +349,7 @@ public class TableUtil {
 	 * @param targetCol   the targetCol to find.
 	 * @return the corresponding type.
 	 */
-	public static TypeInformation findColType(TableSchema tableSchema, String targetCol) {
+	public static TypeInformation <?> findColType(TableSchema tableSchema, String targetCol) {
 		int index = findColIndex(tableSchema.getFieldNames(), targetCol);
 
 		return index == -1 ? null : tableSchema.getFieldTypes()[index];
@@ -321,7 +362,7 @@ public class TableUtil {
 	 * @param targetCol   the targetCol to find.
 	 * @return the corresponding type.
 	 */
-	public static TypeInformation findColTypeWithAssert(TableSchema tableSchema, String targetCol) {
+	public static TypeInformation <?> findColTypeWithAssert(TableSchema tableSchema, String targetCol) {
 		return tableSchema.getFieldTypes()[findColIndexWithAssert(tableSchema, targetCol)];
 	}
 
@@ -332,7 +373,7 @@ public class TableUtil {
 	 * @param targetCol   the targetCol to find.
 	 * @return the corresponding type.
 	 */
-	public static TypeInformation findColTypeWithAssertAndHint(TableSchema tableSchema, String targetCol) {
+	public static TypeInformation <?> findColTypeWithAssertAndHint(TableSchema tableSchema, String targetCol) {
 		return tableSchema.getFieldTypes()[findColIndexWithAssertAndHint(tableSchema, targetCol)];
 	}
 
@@ -342,7 +383,7 @@ public class TableUtil {
 	 * @param dataType the dataType to determine.
 	 * @return whether it is number type
 	 */
-	public static boolean isSupportedNumericType(TypeInformation dataType) {
+	public static boolean isSupportedNumericType(TypeInformation <?> dataType) {
 		return Types.DOUBLE.equals(dataType)
 			|| Types.LONG.equals(dataType)
 			|| Types.BYTE.equals(dataType)
@@ -358,7 +399,7 @@ public class TableUtil {
 	 * @param dataType the dataType to determine.
 	 * @return whether it is string type
 	 */
-	public static boolean isString(TypeInformation dataType) {
+	public static boolean isString(TypeInformation <?> dataType) {
 		return Types.STRING == dataType;
 	}
 
@@ -368,10 +409,10 @@ public class TableUtil {
 	 * @param dataType the dataType to determine.
 	 * @return whether it is vector type
 	 */
-	public static boolean isVector(TypeInformation dataType) {
-		return VectorTypes.VECTOR.equals(dataType)
-			|| VectorTypes.DENSE_VECTOR.equals(dataType)
-			|| VectorTypes.SPARSE_VECTOR.equals(dataType)
+	public static boolean isVector(TypeInformation <?> dataType) {
+		return AlinkTypes.VECTOR.equals(dataType)
+			|| AlinkTypes.DENSE_VECTOR.equals(dataType)
+			|| AlinkTypes.SPARSE_VECTOR.equals(dataType)
 			|| Types.STRING.equals(dataType)
 			;
 	}
@@ -525,9 +566,9 @@ public class TableUtil {
 	 * <p>If <code>categoricalCols</code> is null, return all the categorical columns.
 	 *
 	 * <p>for example: In FeatureHasher which projects a number of categorical or numerical features
-	 * into a feature vector of a specified dimension needs to identify the categorical features. And
-	 * the column which is the string or boolean must be categorical. We need to find these columns as
-	 * categorical when user do not specify the types(categorical or numerical).
+	 * into a feature vector of a specified dimension needs to identify the categorical features. And the column which
+	 * is the string or boolean must be categorical. We need to find these columns as categorical when user do not
+	 * specify the types(categorical or numerical).
 	 *
 	 * @param tableSchema     TableSchema.
 	 * @param featureCols     the columns to chosen from.
@@ -546,7 +587,7 @@ public class TableUtil {
 			throw new IllegalArgumentException("CategoricalCols must be included in featureCols!");
 		}
 
-		TypeInformation[] featureColTypes = findColTypes(tableSchema, featureCols);
+		TypeInformation <?>[] featureColTypes = findColTypes(tableSchema, featureCols);
 		List <String> res = new ArrayList <>();
 		for (int i = 0; i < featureCols.length; i++) {
 			boolean included = null != categoricalList && categoricalList.contains(featureCols[i]);
@@ -579,7 +620,7 @@ public class TableUtil {
 			}
 		}
 
-		return sbd.toString() + "\r\n" + sbdSplitter.toString();
+		return sbd.toString() + "\n" + sbdSplitter.toString();
 	}
 
 	/**
@@ -587,7 +628,9 @@ public class TableUtil {
 	 */
 	public static String formatRows(Row row) {
 		StringBuilder sbd = new StringBuilder();
-
+		StringBuilder[] subBuilders = new StringBuilder[DISPLAY_SIZE];
+		int maxPos;
+		int maxSubPos = 0;
 		for (int i = 0; i < row.getArity(); ++i) {
 			if (i > 0) {
 				sbd.append("|");
@@ -595,11 +638,74 @@ public class TableUtil {
 			Object obj = row.getField(i);
 			if (obj instanceof Double || obj instanceof Float) {
 				sbd.append(String.format("%.4f", ((Number) obj).doubleValue()));
+			} else if (obj instanceof DataTypeDisplayInterface) {
+				if (obj instanceof DenseVector || obj instanceof SparseVector) {
+					sbd.append(((DataTypeDisplayInterface) obj).toShortDisplayData());
+					continue;
+				}
+				maxPos = sbd.length();
+				sbd.append(((DataTypeDisplayInterface) obj).toDisplaySummary());
+				String[] objStrArr = ((DataTypeDisplayInterface) obj).toShortDisplayData().split("\n");
+				if (objStrArr.length == 1 && objStrArr[0].isEmpty()) {
+					continue;
+				}
+				int minSize = Math.min(DISPLAY_SIZE, objStrArr.length);
+				for (int k = 0; k < minSize; ++k) {
+					if (subBuilders[k] == null) {
+						subBuilders[k] = new StringBuilder();
+					}
+					if (subBuilders[k].length() < maxPos) {
+						subBuilders[k].append(StringUtils.repeat(" ", maxPos - subBuilders[k].length() - 1));
+					}
+					if (k == DISPLAY_SIZE - 1) {
+						if (i == 0) {
+							subBuilders[k].append(" ... ... ");
+						} else {
+							if ('|' == subBuilders[k].charAt(subBuilders[k].length() - 1)) {
+								subBuilders[k].append(" ... ... ");
+							} else {
+								subBuilders[k].append("|").append(" ... ... ");
+							}
+						}
+					} else {
+						if (i == 0) {
+							subBuilders[k].append(objStrArr[k]);
+						} else {
+							if ('|' == subBuilders[k].charAt(subBuilders[k].length() - 1)) {
+								subBuilders[k].append(objStrArr[k]);
+							} else {
+								subBuilders[k].append("|").append(objStrArr[k]);
+							}
+						}
+					}
+					maxSubPos = Math.max(maxSubPos, subBuilders[k].length());
+				}
+				int localMaxSize = Math.max(maxSubPos, sbd.length());
+				for (int k = 0; k < minSize; ++k) {
+					if (subBuilders[k].length() < localMaxSize) {
+						subBuilders[k].append(StringUtils.repeat(" ", localMaxSize - subBuilders[k].length()));
+					}
+					if (i != row.getArity() - 1) {
+						subBuilders[k].append("|");
+					}
+				}
+				if (sbd.length() < maxSubPos) {
+					for (int k = sbd.length(); k < maxSubPos; ++k) {
+						sbd.append(" ");
+					}
+				}
 			} else {
 				sbd.append(obj);
 			}
 		}
-
+		if (subBuilders[0] != null) {
+			for (int k = 0; k < DISPLAY_SIZE; ++k) {
+				if (subBuilders[k] != null) {
+					sbd.append("\n");
+					sbd.append(subBuilders[k]);
+				}
+			}
+		}
 		return sbd.toString();
 	}
 
@@ -637,7 +743,7 @@ public class TableUtil {
 	public static Table concatTables(Table[] tables, Long sessionId) {
 		final int[] numCols = new int[tables.length];
 		final List <String> allColNames = new ArrayList <>();
-		final List <TypeInformation> allColTypes = new ArrayList <>();
+		final List <TypeInformation <?>> allColTypes = new ArrayList <>();
 		allColNames.add("table_id");
 		allColTypes.add(Types.LONG);
 		for (int i = 0; i < tables.length; i++) {
@@ -673,12 +779,12 @@ public class TableUtil {
 				transient Row reused;
 
 				@Override
-				public void open(Configuration parameters) throws Exception {
+				public void open(Configuration parameters) {
 					reused = new Row(numAllCols);
 				}
 
 				@Override
-				public Row map(Row value) throws Exception {
+				public Row map(Row value) {
 					for (int i = 0; i < numAllCols; i++) {
 						reused.setField(i, null);
 					}
@@ -709,12 +815,12 @@ public class TableUtil {
 		}
 
 		String lastCol = colNames[colNames.length - 1];
-		int maxTableId = Integer.valueOf(lastCol.substring(1, lastCol.indexOf('_')));
+		int maxTableId = Integer.parseInt(lastCol.substring(1, lastCol.indexOf('_')));
 		int numTables = maxTableId + 1;
 
 		int[] numColsOfEachTable = new int[numTables];
 		for (int i = 1; i < colNames.length; i++) {
-			int tableId = Integer.valueOf(colNames[i].substring(1, lastCol.indexOf('_')));
+			int tableId = Integer.parseInt(colNames[i].substring(1, lastCol.indexOf('_')));
 			numColsOfEachTable[tableId]++;
 		}
 
@@ -725,7 +831,7 @@ public class TableUtil {
 				continue;
 			}
 			String[] selectedCols = Arrays.copyOfRange(colNames, startCol, startCol + numColsOfEachTable[i]);
-			BatchOperator sub = BatchOperator.fromTable(table)
+			BatchOperator <?> sub = BatchOperator.fromTable(table)
 				.where(String.format("%s=%d", "table_id", i))
 				.select(selectedCols);
 
@@ -754,5 +860,122 @@ public class TableUtil {
 			}
 		}
 		return res;
+	}
+
+	/**
+	 * Split a string by commas that are not inside parentheses or brackets.
+	 *
+	 * @param s string
+	 * @return split strings.
+	 */
+	private static String[] robustSpiltByComma(String s) {
+		List <String> splits = new ArrayList <>();
+		char[] chars = s.toCharArray();
+		int start = 0;
+		int parenthesesLevel = 0;
+		int angleBracketsLevel = 0;
+		for (int i = 0; i < chars.length; i += 1) {
+			char ch = chars[i];
+			if (ch == '(') {
+				parenthesesLevel += 1;
+			} else if (ch == ')') {
+				parenthesesLevel -= 1;
+			} else if (ch == '<') {
+				angleBracketsLevel += 1;
+			} else if (ch == '>') {
+				angleBracketsLevel -= 1;
+			}
+			if (ch == ',' && (parenthesesLevel == 0) && (angleBracketsLevel == 0)) {
+				splits.add(new String(chars, start, i - start));
+				start = i += 1;
+			}
+		}
+		if (start < s.length()) {
+			splits.add(new String(chars, start, s.length() - start));
+		}
+		return splits.toArray(new String[0]);
+	}
+
+	/**
+	 * Extract the TableSchema from a string. The format of the string is comma separated colName-colType pairs,
+	 * such as
+	 * "f0 int,f1 bigint,f2 string".
+	 *
+	 * @param schemaStr The formatted schema string.
+	 * @return TableSchema.
+	 */
+	public static TableSchema schemaStr2Schema(String schemaStr) {
+		String[] fields = robustSpiltByComma(schemaStr);
+		String[] colNames = new String[fields.length];
+		TypeInformation <?>[] colTypes = new TypeInformation[fields.length];
+		for (int i = 0; i < colNames.length; i++) {
+			String[] kv = fields[i].trim().split("\\s+", 2);
+			colNames[i] = kv[0];
+			if (STRING_TYPE_SET.contains(kv[1])) {
+				if (kv[1].startsWith("VEC_TYPES_")) {
+					kv[1] = kv[1].substring("VEC_TYPES_".length());
+				} else if (kv[1].startsWith("TENSOR_TYPES_")) {
+					kv[1] = kv[1].substring("TENSOR_TYPES_".length());
+				}
+			}
+			if (STRING_TYPE_MAP.containsKey(kv[1].toUpperCase())) {
+				colTypes[i] = STRING_TYPE_MAP.get(kv[1].toUpperCase());
+			} else {
+				if (kv[1].contains("<") && kv[1].contains(">")) {
+					colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1]);
+				} else {
+					colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1].toUpperCase());
+				}
+			}
+		}
+		return new TableSchema(colNames, colTypes);
+	}
+
+	/**
+	 * Transform the TableSchema to a string. The format of the string is comma separated colName-colType pairs,
+	 * such as
+	 * "f0 int,f1 bigint,f2 string".
+	 *
+	 * @param schema the TableSchema to transform.
+	 * @return a string.
+	 */
+	public static String schema2SchemaStr(TableSchema schema) {
+		String[] colNames = schema.getFieldNames();
+		TypeInformation <?>[] colTypes = schema.getFieldTypes();
+
+		StringBuilder sbd = new StringBuilder();
+		for (int i = 0; i < colNames.length; i++) {
+			if (i > 0) {
+				sbd.append(",");
+			}
+			String typeName;
+			if (STRING_TYPE_MAP.containsValue(colTypes[i])) {
+				typeName = STRING_TYPE_MAP.inverse().get(colTypes[i]);
+			} else {
+				typeName = FlinkTypeConverter.getTypeString(colTypes[i]);
+			}
+			sbd.append(colNames[i]).append(" ").append(typeName);
+		}
+		return sbd.toString();
+	}
+
+	/**
+	 * Get column names from a schema string.
+	 *
+	 * @param schemaStr The formatted schema string.
+	 * @return An array of column names.
+	 */
+	public static String[] getColNames(String schemaStr) {
+		return schemaStr2Schema(schemaStr).getFieldNames();
+	}
+
+	/**
+	 * Get column types from a schema string.
+	 *
+	 * @param schemaStr The formatted schema string.
+	 * @return An array of column types.
+	 */
+	public static TypeInformation <?>[] getColTypes(String schemaStr) {
+		return schemaStr2Schema(schemaStr).getFieldTypes();
 	}
 }

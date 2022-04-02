@@ -8,7 +8,7 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.params.image.ReadImageToTensorParams;
 import javax.imageio.ImageIO;
@@ -64,7 +64,7 @@ public class ReadImageToTensorMapper extends Mapper {
 		return Tuple4.of(
 			new String[] {params.get(ReadImageToTensorParams.RELATIVE_FILE_PATH_COL)},
 			new String[] {params.get(ReadImageToTensorParams.OUTPUT_COL)},
-			new TypeInformation <?>[] {TensorTypes.FLOAT_TENSOR},
+			new TypeInformation <?>[] {AlinkTypes.FLOAT_TENSOR},
 			params.get(ReadImageToTensorParams.RESERVED_COLS)
 		);
 	}

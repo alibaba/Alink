@@ -2,10 +2,12 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.tree.predictors.TreeModelEncoderModelMapper;
 import com.alibaba.alink.params.feature.GbdtRegEncoderParams;
 import com.alibaba.alink.pipeline.MapModel;
 
+@NameCn("Gbdt回归编码模型")
 public class GbdtRegEncoderModel extends MapModel <GbdtRegEncoderModel>
 	implements GbdtRegEncoderParams <GbdtRegEncoderModel> {
 

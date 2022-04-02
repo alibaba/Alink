@@ -59,7 +59,7 @@ public class KMeansModelMapperTest extends AlinkTestBase {
 		KMeansModelMapper mapper = new KMeansModelMapper(modelSchema, dataSchema, params);
 		mapper.loadModel(model);
 
-		assertEquals(mapper.map(Row.of("0 0 0", 1)).getField(3), "0.010869565217391353 0.9891304347826086");
+		assertEquals(mapper.map(Row.of("0 0 0", 1)).getField(3), "DenseVector(size = 2) 0.010869565217391353 0.9891304347826086");
 		assertEquals(mapper.map(Row.of(null, 2)).getField(3), null);
 		assertEquals(mapper.getOutputSchema(), new TableSchema(new String[] {"Y", "id", "pred", "detail"},
 			new TypeInformation <?>[] {Types.STRING, Types.INT, Types.LONG, Types.STRING}));
@@ -97,7 +97,7 @@ public class KMeansModelMapperTest extends AlinkTestBase {
 		mapper.loadModel(model);
 
 		Row res = mapper.map(Row.of("0 0 0", 1));
-		assertEquals(res.getField(3), "0.010869565217391353 0.9891304347826086");
+		assertEquals(res.getField(3), "DenseVector(size = 2) 0.010869565217391353 0.9891304347826086");
 		assertEquals((double) res.getField(4), 0.173, 0.001);
 		assertEquals(mapper.map(Row.of(null, 2)).getField(3), null);
 		assertEquals(mapper.getOutputSchema(), new TableSchema(new String[] {"Y", "id", "pred", "detail", "distance"},

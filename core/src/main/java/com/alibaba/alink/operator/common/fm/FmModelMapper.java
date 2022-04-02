@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.alibaba.alink.common.utils.JsonConverter.gson;
-
 /**
  * Fm mapper maps one sample to a sample with a predicted label.
  */
@@ -85,6 +83,7 @@ public class FmModelMapper extends RichModelMapper {
 
 	@Override
 	public ModelMapper createNew(List <Row> modelRows) {
+		System.out.println("update model");
 		FmModelMapper fmModelMapper = new FmModelMapper(getModelSchema(), getDataSchema(), params.clone());
 		FmModelData modelData = new FmModelData();
 		modelData.vectorColName = this.model.vectorColName;
@@ -101,44 +100,22 @@ public class FmModelMapper extends RichModelMapper {
 		modelData.fmModel.dim = modelData.dim;
 
 		int featureSize = model.fmModel.factors.length;
-		int cnt = 0;
 		for (int i = 0; i < featureSize; ++i) {
 			if (model.fmModel.factors[i] != null) {
 				modelData.fmModel.factors[i] = model.fmModel.factors[i];
 			}
 		}
-
-		Params meta = null;
 		for (Row row : modelRows) {
 			Long featureId = (Long) row.getField(0);
-			if (featureId == null && row.getField(1) != null) {
-				String metaStr = (String) row.getField(1);
-				meta = Params.fromJson(metaStr);
-				break;
+			if (featureId == null) {
+				continue;
 			}
-		}
-
-		if (this.lastModelVersion == meta.get("lastModelVersion", Long.TYPE)
-			|| meta.get("isFullModel", Boolean.TYPE)) {
-			cnt = 0;
-			this.lastModelVersion = meta.get("modelVersion", Long.TYPE);
-			for (Row row : modelRows) {
-				Long featureId = (Long) row.getField(0);
-				if (featureId >= 0) {
-					cnt++;
-					double[] factor = gson.fromJson((String) row.getField(1), double[].class);
-					modelData.fmModel.factors[featureId.intValue()] = factor;
-				} else if (featureId == -1) {
-					double[] factor = gson.fromJson((String) row.getField(1), double[].class);
-					model.fmModel.bias = factor[0];
-				}
-			}
-		}
-		if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-			if (meta.get("isFullModel", Boolean.TYPE)) {
-				System.out.println("load fm full model ok, model size : " + cnt);
-			} else {
-				System.out.println("load fm increment model ok, model size : " + cnt);
+			if (featureId >= 0) {
+				double[] factor = JsonConverter.fromJson((String) row.getField(1), double[].class);
+				modelData.fmModel.factors[featureId.intValue()] = factor;
+			} else if (featureId == -1) {
+				double[] factor = JsonConverter.fromJson((String) row.getField(1), double[].class);
+				model.fmModel.bias = factor[0];
 			}
 		}
 		fmModelMapper.model = modelData;
@@ -153,8 +130,8 @@ public class FmModelMapper extends RichModelMapper {
 		return y;
 	}
 
-	private static double logit(double x) {
-		return 1. / (1. + Math.exp(-x));
+	private static double logit(double y) {
+		return 1. / (1. + Math.exp(-y));
 	}
 
 	public FmModelData getModel() {
@@ -167,7 +144,7 @@ public class FmModelMapper extends RichModelMapper {
 	}
 
 	@Override
-	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) {
 		Vector vec;
 		if (vectorColIndex != -1) {
 			vec = FeatureLabelUtil.getVectorFeature(selection.get(vectorColIndex), false, model.vectorSize);

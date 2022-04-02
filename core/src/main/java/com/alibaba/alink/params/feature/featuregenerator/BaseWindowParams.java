@@ -3,17 +3,18 @@ package com.alibaba.alink.params.feature.featuregenerator;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.dataproc.HasClause;
+import com.alibaba.alink.params.shared.colname.HasTimeCol;
 
-public interface BaseWindowParams <T> extends
+public interface BaseWindowParams<T> extends
 	HasTimeCol <T>,
 	HasClause <T> {
 
-	/**
-	 * @cn-name 水位线的延迟
-	 * @cn 水位线的延迟，默认0.0
-	 */
+	@NameCn("水位线的延迟")
+	@DescCn("水位线的延迟，默认0.0")
 	ParamInfo <Double> LATENCY = ParamInfoFactory
 		.createParamInfo("latency", Double.class)
 		.setDescription("latency for watermark")
@@ -32,10 +33,8 @@ public interface BaseWindowParams <T> extends
 		return set(LATENCY, value.doubleValue());
 	}
 
-	/**
-	 * @cn-name 水位线的类别
-	 * @cn 水位线的类别
-	 */
+	@NameCn("水位线的类别")
+	@DescCn("水位线的类别")
 	ParamInfo <WatermarkType> WATERMARK_TYPE = ParamInfoFactory
 		.createParamInfo("watermarkType", WatermarkType.class)
 		.setDescription("watermark type : Period or Punctuated.")

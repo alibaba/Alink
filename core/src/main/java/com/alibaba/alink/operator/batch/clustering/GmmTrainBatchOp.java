@@ -18,6 +18,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -29,6 +36,7 @@ import com.alibaba.alink.operator.common.clustering.GmmClusterSummary;
 import com.alibaba.alink.operator.common.clustering.GmmModelData;
 import com.alibaba.alink.operator.common.clustering.GmmModelDataConverter;
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansInitCentroids;
+import com.alibaba.alink.operator.common.dataproc.FirstReducer;
 import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.MultivariateGaussian;
@@ -54,6 +62,10 @@ import java.util.List;
  * While this process is generally guaranteed to converge, it is not guaranteed
  * to find a global optimum.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
+@ParamSelectColumnSpec(name = "vectorCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
+@NameCn("高斯混合模型训练")
 public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 	implements GmmTrainParams <GmmTrainBatchOp>,
 	WithModelInfoBatchOp <GmmModelInfoBatchOp.GmmModelInfo, GmmTrainBatchOp, GmmModelInfoBatchOp> {
@@ -321,7 +333,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 			}, 0);
 
 		// Check whether stop criterion is met.
-		DataSet <Boolean> criterion = updatedModel.first(1)
+		DataSet <Boolean> criterion = updatedModel.reduceGroup(new FirstReducer <>(1))
 			.flatMap(new RichFlatMapFunction <Tuple3 <Integer, GmmClusterSummary, IterationStatus>, Boolean>() {
 				private static final long serialVersionUID = 6890280483282243057L;
 

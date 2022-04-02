@@ -4,15 +4,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public abstract class ComboModelMapper extends ModelMapper {
-	private static final Logger LOG = LoggerFactory.getLogger(ComboModelMapper.class);
 
 	protected MapperChain mapperList;
 

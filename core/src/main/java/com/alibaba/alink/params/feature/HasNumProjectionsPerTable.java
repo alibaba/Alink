@@ -4,6 +4,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Param: numProjections.
  *
@@ -11,10 +14,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasNumProjectionsPerTable<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 每个哈希表中的哈希函数个数
-	 * @cn 每个哈希表中的哈希函数个数
-	 */
+	@NameCn("每个哈希表中的哈希函数个数")
+	@DescCn("每个哈希表中的哈希函数个数")
 	ParamInfo <Integer> NUM_PROJECTIONS_PER_TABLE = ParamInfoFactory
 		.createParamInfo("numProjectionsPerTable", Integer.class)
 		.setDescription("The number of hash functions within every hash table")

@@ -18,7 +18,6 @@
 
 package com.alibaba.alink.common.io.filesystem.copy.bucket;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.fs.RecoverableWriter;
@@ -29,6 +28,8 @@ import org.apache.flink.core.memory.DataInputView;
 import org.apache.flink.core.memory.DataOutputSerializer;
 import org.apache.flink.core.memory.DataOutputView;
 import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.annotation.Internal;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasStringOrderTypeDefaultAsRandom<T> extends WithParams <T> {
-	/**
-	 * @cn-name Token排序方法
-	 * @cn Token排序方法
-	 */
+	@NameCn("Token排序方法")
+	@DescCn("Token排序方法")
 	ParamInfo <StringOrderType> STRING_ORDER_TYPE = ParamInfoFactory
 		.createParamInfo("stringOrderType", StringOrderType.class)
 		.setDescription(

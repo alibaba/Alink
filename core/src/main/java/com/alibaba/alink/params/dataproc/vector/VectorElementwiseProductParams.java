@@ -3,6 +3,8 @@ package com.alibaba.alink.params.dataproc.vector;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.mapper.SISOMapperParams;
 
 /**
@@ -10,10 +12,8 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
  */
 public interface VectorElementwiseProductParams<T> extends SISOMapperParams <T> {
 
-	/**
-	 * @cn-name 尺度变化向量。
-	 * @cn 尺度的变化向量。
-	 */
+	@NameCn("尺度变化向量。")
+	@DescCn("尺度的变化向量。")
 	ParamInfo <String> SCALING_VECTOR = ParamInfoFactory
 		.createParamInfo("scalingVector", String.class)
 		.setDescription("scaling vector with str format")

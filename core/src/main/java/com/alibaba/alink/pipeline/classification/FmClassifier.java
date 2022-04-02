@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -13,6 +14,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * Fm classifier pipeline op.
  */
+@NameCn("FM分类")
 public class FmClassifier extends Trainer <FmClassifier, FmClassificationModel>
 	implements FmTrainParams <FmClassifier>, FmPredictParams <FmClassifier>, HasLazyPrintModelInfo <FmClassifier>,
 	HasLazyPrintTrainInfo <FmClassifier> {

@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.classification.NaiveBayesModelMapper;
 import com.alibaba.alink.params.classification.NaiveBayesPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * Naive bayes pipeline model.
  */
+@NameCn("朴素贝叶斯模型")
 public class NaiveBayesModel extends MapModel <NaiveBayesModel>
 	implements NaiveBayesPredictParams <NaiveBayesModel> {
 

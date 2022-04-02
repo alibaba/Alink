@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasIndividualTreeType<T> extends WithParams <T> {
-	/**
-	 * @cn-name 模型中树的类型
-	 * @cn 模型中树的类型，三种选项可选：树为一种方式gini, infoGain, infoGainRatio
-	 */
+	@NameCn("模型中树的类型")
+	@DescCn("模型中树的类型，三种选项可选：树为一种方式gini, infoGain, infoGainRatio")
 	ParamInfo <TreeType> TREE_TYPE = ParamInfoFactory
 		.createParamInfo("treeType", TreeType.class)
 		.setDescription("The criteria of the tree. " +

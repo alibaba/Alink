@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.ImputerTrainBatchOp;
@@ -18,6 +19,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * If mean, will replace missing value with mean of the column.
  * If value, will replace missing value with the value.
  */
+@NameCn("缺失值填充")
 public class Imputer extends Trainer <Imputer, ImputerModel> implements
 	ImputerTrainParams <Imputer>,
 	ImputerPredictParams <Imputer>,

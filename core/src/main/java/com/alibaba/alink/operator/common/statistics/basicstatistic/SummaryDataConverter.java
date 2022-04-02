@@ -21,6 +21,7 @@ public class SummaryDataConverter extends SimpleModelDataConverter <TableSummary
 	public SummaryDataConverter() {
 	}
 
+	@Override
 	public Tuple2 <Params, Iterable <String>> serializeModel(TableSummary summary) {
 		List <String> data = null;
 		if (summary != null) {

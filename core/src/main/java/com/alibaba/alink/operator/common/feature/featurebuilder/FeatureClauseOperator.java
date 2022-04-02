@@ -3,7 +3,7 @@ package com.alibaba.alink.operator.common.feature.featurebuilder;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 
-import com.alibaba.alink.common.MTableTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.sql.builtin.agg.AvgUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.BaseUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.CountUdaf;
@@ -146,9 +146,9 @@ public enum FeatureClauseOperator {
 
 	TIMESERIES_AGG_PRECEDING(Types.STRING, new TimeSeriesAgg(true)),
 
-	MTABLE_AGG_PRECEDING(MTableTypes.M_TABLE, new MTableAgg(true)),
+	MTABLE_AGG_PRECEDING(AlinkTypes.M_TABLE, new MTableAgg(true)),
 
-	MTABLE_AGG(MTableTypes.M_TABLE, new MTableAgg(false));
+	MTABLE_AGG(AlinkTypes.M_TABLE, new MTableAgg(false));
 
 	private final TypeInformation<?> resType;
 	private final BaseUdaf calc;

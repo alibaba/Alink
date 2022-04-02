@@ -1,10 +1,10 @@
 package com.alibaba.alink.operator.batch.graph.utils;
 
 import org.apache.flink.api.common.functions.CoGroupFunction;
-import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
-import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -25,32 +25,26 @@ public class IDMappingUtils {
 	 * @return
 	 */
 	public static DataSet <Tuple2 <String, Long>> computeIdMapping(DataSet <Row> dataSet, int[] colIds) {
-		return dataSet.flatMap(
-			new FlatMapFunction <Row, String>() {
-				@Override
-				public void flatMap(Row value, Collector <String> out) throws Exception {
+		return dataSet.mapPartition(new MapPartitionFunction <Row, String>() {
+			@Override
+			public void mapPartition(Iterable <Row> values, Collector <String> out) throws Exception {
+				for (Row value : values) {
 					for (int i = 0; i < colIds.length; i++) {
 						out.collect((String) value.getField(colIds[i]));
 					}
 				}
-			})
+			}
+		})
 			.distinct()
-			.map(new RichMapFunction <String, Tuple2 <String, Long>>() {
-
-				long cnt;
-				int numTasks;
-				int taskId;
-
+			.mapPartition(new RichMapPartitionFunction <String, Tuple2 <String, Long>>() {
 				@Override
-				public void open(Configuration parameters) throws Exception {
-					cnt = 0L;
-					numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
-					taskId = getRuntimeContext().getIndexOfThisSubtask();
-				}
-
-				@Override
-				public Tuple2 <String, Long> map(String value) throws Exception {
-					return Tuple2.of(value, numTasks * (cnt++) + taskId);
+				public void mapPartition(Iterable <String> vertices, Collector <Tuple2 <String, Long>> out) {
+					long cnt = 0L;
+					int numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
+					int taskId = getRuntimeContext().getIndexOfThisSubtask();
+					for (String vertex : vertices) {
+						out.collect(Tuple2.of(vertex, numTasks * (cnt++) + taskId));
+					}
 				}
 			})
 			.name("build_node_mapping");
@@ -78,11 +72,48 @@ public class IDMappingUtils {
 				@Override
 				public void coGroup(Iterable <Row> first, Iterable <Tuple2 <String, Long>> second,
 									Collector <Row> out) throws Exception {
-					Iterator <Tuple2<String, Long>> iterator2 = second.iterator();
+					Iterator <Tuple2 <String, Long>> iterator2 = second.iterator();
 					if (iterator2.hasNext()) {
 						long idx = iterator2.next().f1;
 						for (Row r : first) {
 							r.setField(colId, idx);
+							out.collect(r);
+						}
+					}
+				}
+			}).name("cogroup at " + colId);
+		}
+		return tmp;
+	}
+
+	/**
+	 * recover the mappedDataSet using the dict.
+	 *
+	 * @param mappedDataSet
+	 * @param dict
+	 * @param colIds
+	 * @return
+	 */
+	public static DataSet <Row> recoverDataSetWithIdMapping(DataSet <Row> mappedDataSet,
+															DataSet <Tuple2 <String, Long>> dict,
+															int[] colIds) {
+		DataSet <Row> tmp = mappedDataSet;
+		for (int i = 0; i < colIds.length; i++) {
+			int colId = colIds[i];
+			tmp = tmp.coGroup(dict).where(new KeySelector <Row, Long>() {
+				@Override
+				public Long getKey(Row value) throws Exception {
+					return (Long) value.getField(colId);
+				}
+			}).equalTo(1).with(new CoGroupFunction <Row, Tuple2 <String, Long>, Row>() {
+				@Override
+				public void coGroup(Iterable <Row> first, Iterable <Tuple2 <String, Long>> second,
+									Collector <Row> out) throws Exception {
+					Iterator <Tuple2 <String, Long>> iterator2 = second.iterator();
+					if (iterator2.hasNext()) {
+						String originalStr = iterator2.next().f0;
+						for (Row r : first) {
+							r.setField(colId, originalStr);
 							out.collect(r);
 						}
 					}
@@ -131,7 +162,7 @@ public class IDMappingUtils {
 				public void coGroup(Iterable <Tuple3 <Long, Long, Long>> first,
 									Iterable <Tuple2 <String, Long>> second,
 									Collector <Tuple3 <Long, Long, String>> out) throws Exception {
-					Iterator <Tuple2<String, Long>> iterator2 = second.iterator();
+					Iterator <Tuple2 <String, Long>> iterator2 = second.iterator();
 					if (iterator2.hasNext()) {
 						String strVal = iterator2.next().f0;
 						for (Tuple3 <Long, Long, Long> t3 : first) {

@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.BaseRandomForestTrainBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
@@ -31,6 +32,7 @@ import com.alibaba.alink.params.shared.tree.HasSubsamplingRatio;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
+@NameCn("决策树训练")
 public final class DecisionTreeTrainBatchOp extends BaseRandomForestTrainBatchOp <DecisionTreeTrainBatchOp>
 	implements DecisionTreeTrainParams <DecisionTreeTrainBatchOp>,
 	WithModelInfoBatchOp <TreeModelInfo.DecisionTreeModelInfo, DecisionTreeTrainBatchOp, DecisionTreeModelInfoBatchOp> {

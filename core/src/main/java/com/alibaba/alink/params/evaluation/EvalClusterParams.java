@@ -3,6 +3,8 @@ package com.alibaba.alink.params.evaluation;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.shared.clustering.HasClusteringDistanceType;
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
 
@@ -13,10 +15,8 @@ public interface EvalClusterParams<T> extends
 	HasPredictionCol <T>,
 	HasClusteringDistanceType <T> {
 
-	/**
-	 * @cn-name 标签列名
-	 * @cn 输入表中的标签列名
-	 */
+	@NameCn("标签列名")
+	@DescCn("输入表中的标签列名")
 	ParamInfo <String> LABEL_COL = ParamInfoFactory
 		.createParamInfo("labelCol", String.class)
 		.setDescription("Name of the label column in the input table")
@@ -32,10 +32,8 @@ public interface EvalClusterParams<T> extends
 		return set(LABEL_COL, value);
 	}
 
-	/**
-	 * @cn-name 向量列名
-	 * @cn 输入表中的向量列名
-	 */
+	@NameCn("向量列名")
+	@DescCn("输入表中的向量列名")
 	ParamInfo <String> VECTOR_COL = ParamInfoFactory
 		.createParamInfo("vectorCol", String.class)
 		.setDescription("Name of a vector column")

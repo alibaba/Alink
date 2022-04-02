@@ -3,6 +3,8 @@ package com.alibaba.alink.params.tensorflow.kerasequential;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.dl.HasBatchSizeDefaultAs128;
 import com.alibaba.alink.params.dl.HasCheckpointFilePathDefaultAsNull;
 import com.alibaba.alink.params.dl.HasIntraOpParallelism;
@@ -11,8 +13,8 @@ import com.alibaba.alink.params.dl.HasNumEpochsDefaultAs10;
 import com.alibaba.alink.params.dl.HasNumPssDefaultAsNull;
 import com.alibaba.alink.params.dl.HasNumWorkersDefaultAsNull;
 import com.alibaba.alink.params.dl.HasPythonEnv;
-import com.alibaba.alink.params.image.HasTensorCol;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
+import com.alibaba.alink.params.shared.colname.HasTensorCol;
 
 public interface BaseKerasSequentialTrainParams<T> extends
 	HasTensorCol <T>, HasLabelCol <T>,
@@ -22,13 +24,11 @@ public interface BaseKerasSequentialTrainParams<T> extends
 	HasPythonEnv <T>, HasIntraOpParallelism <T>,
 	HasNumWorkersDefaultAsNull <T>, HasNumPssDefaultAsNull <T> {
 
-	/**
-	 * @cn-name 验证集比例
-	 * @cn 验证集比例，当前需要总并发度为 1
-	 */
+	@NameCn("验证集比例")
+	@DescCn("验证集比例，仅在总并发度为 1 时生效")
 	ParamInfo <Double> VALIDATION_SPLIT = ParamInfoFactory
 		.createParamInfo("validationSplit", Double.class)
-		.setDescription("Split ratio for validation set, currently only works when total parallelism is 1")
+		.setDescription("Split ratio for validation set, only works when total parallelism is 1")
 		.setHasDefaultValue(0.)
 		.build();
 
@@ -40,13 +40,11 @@ public interface BaseKerasSequentialTrainParams<T> extends
 		return set(VALIDATION_SPLIT, value);
 	}
 
-	/**
-	 * @cn-name 是否导出最优的 checkpoint
-	 * @cn 是否导出最优的 checkpoint
-	 */
+	@NameCn("是否导出最优的 checkpoint")
+	@DescCn("是否导出最优的 checkpoint，仅在总并发度为 1 时生效")
 	ParamInfo <Boolean> SAVE_BEST_ONLY = ParamInfoFactory
 		.createParamInfo("saveBestOnly", Boolean.class)
-		.setDescription("Whether to export the checkpoint with best metric")
+		.setDescription("Whether to export the checkpoint with best metric, only works when total parallelism is 1")
 		.setHasDefaultValue(false)
 		.build();
 
@@ -58,17 +56,12 @@ public interface BaseKerasSequentialTrainParams<T> extends
 		return set(SAVE_BEST_ONLY, value);
 	}
 
-	/**
-	 * @cn-name 指标
-	 * @cn 判断模型最优时用的指标。
-	 * 都支持的有：loss；
-	 * 二分类还支持：auc, precision, recall, binary_accuracy, false_negatives, false_positives, true_negatives, true_positives
-	 * 多分类还支持：sparse_categorical_accuracy
-	 * 回归还支持：mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, mean_squared_logarithmic_error, root_mean_squared_error
-	 */
+	@NameCn("最优指标")
+	@DescCn(
+		"判断模型最优时用的指标，仅在总并发度为 1 时起作用。都支持的有：loss； 二分类还支持：auc, precision, recall, binary_accuracy, false_negatives, false_positives, true_negatives, true_positives；多分类还支持：sparse_categorical_accuracy；回归还支持：mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, mean_squared_logarithmic_error, root_mean_squared_error")
 	ParamInfo <String> BEST_METRIC = ParamInfoFactory
 		.createParamInfo("bestMetric", String.class)
-		.setDescription("The metrics used to decide best checkpoint")
+		.setDescription("The metrics used to decide best checkpoint, only works when total parallelism is 1")
 		.setHasDefaultValue("loss")
 		.build();
 
@@ -80,10 +73,8 @@ public interface BaseKerasSequentialTrainParams<T> extends
 		return set(BEST_METRIC, value);
 	}
 
-	/**
-	 * @cn-name 每隔多少 epochs 保存 checkpoints
-	 * @cn 每隔多少 epochs 保存 checkpoints
-	 */
+	@NameCn("每隔多少 epochs 保存 checkpoints")
+	@DescCn("每隔多少 epochs 保存 checkpoints")
 	ParamInfo <Double> SAVE_CHECKPOINTS_EPOCHS = ParamInfoFactory
 		.createParamInfo("saveCheckpointsEpochs", Double.class)
 		.setDescription("Save checkpoints every several epochs")
@@ -98,10 +89,8 @@ public interface BaseKerasSequentialTrainParams<T> extends
 		return set(SAVE_CHECKPOINTS_EPOCHS, value);
 	}
 
-	/**
-	 * @cn-name 每隔多少秒保存 checkpoints
-	 * @cn 每隔多少秒保存 checkpoints
-	 */
+	@NameCn("每隔多少秒保存 checkpoints")
+	@DescCn("每隔多少秒保存 checkpoints")
 	ParamInfo <Double> SAVE_CHECKPOINTS_SECS = ParamInfoFactory
 		.createParamInfo("saveCheckpointsSecs", Double.class)
 		.setDescription("Save checkpoints every several seconds")

@@ -2,12 +2,14 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.RandomForestTrainBatchOp;
 import com.alibaba.alink.params.classification.RandomForestTrainParams;
 import com.alibaba.alink.params.feature.RandomForestEncoderParams;
 import com.alibaba.alink.pipeline.Trainer;
 
+@NameCn("随机森林编码")
 public class RandomForestEncoder
 	extends Trainer <RandomForestEncoder, RandomForestEncoderModel> implements
 	RandomForestTrainParams <RandomForestEncoder>,

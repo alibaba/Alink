@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline.nlp;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.nlp.Word2VecTrainBatchOp;
@@ -19,6 +20,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * Distributed representations of words and phrases and their compositionality.
  * <p>https://code.google.com/archive/p/word2vec/
  */
+@NameCn("Word2Vec")
 public class Word2Vec extends Trainer <Word2Vec, Word2VecModel>
 	implements Word2VecTrainParams <Word2Vec>, Word2VecPredictParams <Word2Vec>, HasLazyPrintTrainInfo <Word2Vec> {
 	private static final long serialVersionUID = -91548532293731389L;

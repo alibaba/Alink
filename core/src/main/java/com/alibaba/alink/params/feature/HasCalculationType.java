@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasCalculationType<T> extends WithParams <T> {
-	/**
-	 * @cn-name 计算类型
-	 * @cn 计算类型，包含"CORR", "COV"两种。
-	 */
+	@NameCn("计算类型")
+	@DescCn("计算类型，包含\"CORR\", \"COV\"两种。")
 	ParamInfo <CalculationType> CALCULATION_TYPE = ParamInfoFactory
 		.createParamInfo("calculationType", CalculationType.class)
 		.setDescription("compute type, be CORR, COV.")

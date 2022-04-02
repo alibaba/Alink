@@ -6,7 +6,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.feature.FeatureHasherParams;
 import com.alibaba.alink.testutil.AlinkTestBase;
@@ -37,7 +37,7 @@ public class FeatureHasherMapperTest extends AlinkTestBase {
 		assertEquals(mapper.map(Row.of(2.1, true, "1", "A")).getField(0),
 			new SparseVector(262144, new int[] {76287, 85133, 120275, 214318}, new double[] {1.0, 1.0, 1.0, 2.1}));
 		assertEquals(mapper.getOutputSchema(),
-			new TableSchema(new String[] {"output"}, new TypeInformation <?>[] {VectorTypes.VECTOR})
+			new TableSchema(new String[] {"output"}, new TypeInformation <?>[] {AlinkTypes.VECTOR})
 		);
 	}
 
@@ -61,7 +61,7 @@ public class FeatureHasherMapperTest extends AlinkTestBase {
 		assertEquals(mapper.getOutputSchema(),
 			new TableSchema(new String[] {"double", "bool", "number", "str", "output"},
 				new TypeInformation <?>[] {Types.DOUBLE(), Types.BOOLEAN(), Types.STRING(), Types.STRING(),
-					VectorTypes.VECTOR}));
+					AlinkTypes.VECTOR}));
 	}
 
 	@Test

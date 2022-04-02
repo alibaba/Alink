@@ -2,29 +2,30 @@ package com.alibaba.alink.common;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
+import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.sink.CsvSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Test cases for gbdt.
+ * Test cases for MTable.
  */
-
-public class MTableTest extends AlinkTestBase {
+public class MTableTest {
 
 	@Test
 	public void test() throws Exception {
@@ -48,10 +49,11 @@ public class MTableTest extends AlinkTestBase {
 				+ ", tensor FLOAT_TENSOR");
 
 		System.out.println(mTable);
+		System.out.println(new SparseVector(3, new int[] {1}, new double[] {2.0}).toString());
+		System.out.println(new DenseVector(new double[] {0.0, 1.0}).toString());
+		System.out.println(new MTable(JsonConverter.toJson(mTable)));
 
-		System.out.println(new MTable(mTable.toString()));
-
-		List <Object> objects = MTableUtils.getColumn(mTable, "col0");
+		List <Object> objects = MTableUtil.getColumn(mTable, "col0");
 		System.out.println(objects);
 
 		mTable.orderBy("col1", "ts");
@@ -68,13 +70,124 @@ public class MTableTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void testNull() throws Exception {
+	public void testFormat() throws Exception {
+
+		final FloatTensor A = new FloatTensor(
+			new float[][][] {
+				new float[][] {
+					new float[] {0.f, 1.f, 0.1f},
+					new float[] {1.f, 1.f, 1.1f},
+					new float[] {2.f, 1.f, 2.1f}
+				},
+				new float[][] {
+					new float[] {3.f, 1.f, 3.1f},
+					new float[] {4.f, 1.f, 4.1f},
+					new float[] {5.f, 1.f, 5.1f}
+				},
+				new float[][] {
+					new float[] {6.f, 1.f, 6.1f},
+					new float[] {7.f, 1.f, 7.1f},
+					new float[] {8.f, 1.f, 8.1f}
+				},
+			}
+		);
+		System.out.println(A.toString());
+		List <Row> rows = new ArrayList <>();
+		List <Row> rows1 = new ArrayList <>();
+		Row row1 = Row.of(1, "2", 0, new Timestamp(20000031232012L),
+			null, new SparseVector(3, new int[] {1}, new double[] {2.0}));
+
+		Row row2 = Row.of(null, "2", 0, new Timestamp(1000000234234L),
+			new DenseVector(new double[] {0.0, 1.0}),
+			new SparseVector(4, new int[] {2}, new double[] {3.0}));
+
+		Row row3 = Row.of(null, "2", 0, new Timestamp(1000000234234L),
+			new DenseVector(new double[] {0.0, 1.0}),
+			new SparseVector(4, new int[] {2}, new double[] {3.0}));
+		for (int i = 0; i < 3; ++i) {
+			rows.add(row1);
+			rows.add(row2);
+			rows.add(row3);
+		}
+		rows1.add(row1);
+		rows1.add(row2);
+		rows1.add(row3);
+
+		MTable mTable = new MTable(
+			rows,
+			"col0 int, col1 string, label int, ts timestamp"
+				+ ", d_vec DENSE_VECTOR"
+				+ ", s_vec VECTOR");
+		System.out.println(mTable.toString());
+
+		MTable mTable1 = new MTable(
+			rows1,
+			"col0 int, col1 string, label int, ts timestamp"
+				+ ", d_vec DENSE_VECTOR"
+				+ ", s_vec VECTOR");
+
+		Row row = Row.of(1, 3, 4, mTable, "d4353", "dfadsfa", mTable1, "weidosdjaslje", 343, A);
+		Row row11 = Row.of(1, 3, 4, mTable, "d4353", "dfaderwerewrwesfa", mTable1, "weidosdjaslje", 343, A);
+		Row row22 = Row.of(1332323, 3, 4, mTable, "d4erwer353", "dfadsfa", mTable1, "weidoeeeeesdjaslje", 343, A);
+		Row row33 = Row.of(1, 333333, 4, mTable, "d4353", "dfadeesfa", mTable1, "weidoseeeedjaslje", 343, A);
+
+		Row[] allRows = new Row[] {row, row11, row22, row33};
+		new MemSourceBatchOp(allRows,
+			new String[] {"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9"}).print();
+
 		new MemSourceBatchOp(
-			new Row[] {
-				Row.of(new MTable(null, new String[] {"col_mtable"}, new TypeInformation <?>[] {Types.STRING}))
+			new DoubleTensor[][] {
+				{new DoubleTensor(new double[][] {{1.0, 2.0}, {1.0, 2.0}, {3.0, 4.0}}),
+					new DoubleTensor(new double[][] {{1.0, 2.0}, {3.0, 4.0}})},
+				{new DoubleTensor(new double[][] {{1.0, 2.0}, {3.0, 4.0}}),
+					new DoubleTensor(new double[][] {{1.0, 2.0}, {3.0, 4.0}})},
+				{new DoubleTensor(new double[][] {{1.0, 2.0}, {3.0, 4.0}}),
+					new DoubleTensor(new double[][] {{1.0, 2.0}, {3.0, 4.0}})},
+				{new DoubleTensor(new double[][] {{1.0, 2.0}, {3.0, 4.0}}),
+					new DoubleTensor(new double[][] {{1.0, 2.0}, {3.0, 4.0}})},
+				{new DoubleTensor(new double[][] {{1.0, 2.0}, {3.0, 4.0}}),
+					new DoubleTensor(new double[][] {{1.0, 2.0}, {3.0, 4.0}})},
+				{new DoubleTensor(new double[][] {{5.0, 6.0}, {7.0, 8.0}}),
+					new DoubleTensor(new double[][] {{5.0, 6.0}, {7.0, 8.0}})}
 			},
-			new String[] {"col0"}
-		).print();
+			new String[] {"tensor", "t1"})
+			.lazyPrint();
+
+		BatchOperator.execute();
+	}
+
+	@Test
+	public void testNull() throws Exception {
+		BatchOperator.setParallelism(1);
+		String schemaStr = TableUtil.schema2SchemaStr(
+			new TableSchema(new String[] {"col_mtable"}, new TypeInformation <?>[] {AlinkTypes.STRING})
+		);
+		List <Row> result = new MemSourceBatchOp(
+			new Row[] {
+				Row.of(
+					new MTable((List <Row>) null, (String) null),
+					new MTable((List <Row>) null, schemaStr),
+					new MTable(Collections.emptyList(), (String) null),
+					new MTable(new Row[] {}, schemaStr)
+				)
+			},
+			new String[] {"col0", "col1", "col2", "col3"}
+		).collect();
+
+		Assert.assertTrue(result != null && result.size() == 1);
+
+		Row resultRow = result.get(0);
+
+		Assert.assertNull(((MTable) resultRow.getField(0)).getRows());
+		Assert.assertNull(((MTable) resultRow.getField(0)).getSchemaStr());
+		Assert.assertNull(((MTable) resultRow.getField(1)).getRows());
+		Assert.assertEquals(schemaStr, ((MTable) resultRow.getField(1)).getSchemaStr());
+		Assert.assertNotNull(((MTable) resultRow.getField(2)).getRows());
+		Assert.assertTrue(((MTable) resultRow.getField(2)).getRows().isEmpty());
+		Assert.assertNull(((MTable) resultRow.getField(2)).getSchemaStr());
+		Assert.assertNotNull(((MTable) resultRow.getField(3)).getRows());
+		Assert.assertTrue(((MTable) resultRow.getField(3)).getRows().isEmpty());
+		Assert.assertEquals(schemaStr, ((MTable) resultRow.getField(3)).getSchemaStr());
 	}
 
 	@Test
@@ -86,12 +199,12 @@ public class MTableTest extends AlinkTestBase {
 
 		MTable mTable = new MTable(rows, "col0 int, col1 string, label int");
 		List <Row> table = new ArrayList <>();
-		table.add(Row.of(mTable.toString()));
+		table.add(Row.of(mTable));
 
 		BatchOperator <?> op = new MemSourceBatchOp(table, new String[] {"mTable"});
-		BatchOperator out = op.link(new MTableTestBatchOp()).link(new MTableTestBatchOp());
-		List<Row> outRows = out.collect();
-		for (Row row :outRows) {
+		BatchOperator out = op.link(new MTableTestBatchOp());
+		List <Row> outRows = out.collect();
+		for (Row row : outRows) {
 			System.out.println(row);
 		}
 	}
@@ -104,11 +217,11 @@ public class MTableTest extends AlinkTestBase {
 			DataSet <Row> ret = data.map(new MapFunction <Row, Row>() {
 				@Override
 				public Row map(Row value) throws Exception {
-					MTable mTable = new MTable((value.getField(0).toString()));
+					MTable mTable = new MTable(JsonConverter.toJson(value.getField(0)));
 					return Row.of(mTable);
 				}
 			});
-			this.setOutput(ret, new TableSchema(new String[] {"out"}, new TypeInformation[] {MTableTypes.M_TABLE}));
+			this.setOutput(ret, new TableSchema(new String[] {"out"}, new TypeInformation[] {AlinkTypes.M_TABLE}));
 			return this;
 		}
 	}

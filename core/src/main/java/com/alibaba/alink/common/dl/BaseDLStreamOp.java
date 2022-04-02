@@ -4,6 +4,11 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.common.dl.utils.DLTypeUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.dataproc.TypeConvertStreamOp;
@@ -20,6 +25,8 @@ import java.util.List;
  * Moreover, the dataset can only be accesses once by default, unless explicitly saved. Any number of outputs are
  * allowed from scripts, even no outputs.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
 public abstract class BaseDLStreamOp<T extends BaseDLStreamOp <T>> extends StreamOperator <T>
 	implements BaseDLParams <T> {
 
@@ -47,6 +54,8 @@ public abstract class BaseDLStreamOp<T extends BaseDLStreamOp <T>> extends Strea
 	protected String mainScriptFileName;
 	protected Integer numPss = null;
 	protected String userScriptMainFileName;
+	// when `pythonEnv` not set, download from plugin with `version`
+	protected Version version;
 
 	// entry function
 	private static final String entryFuncName = "entry_func";
@@ -92,6 +101,7 @@ public abstract class BaseDLStreamOp<T extends BaseDLStreamOp <T>> extends Strea
 			.setNumWorkers(getNumWorkers())
 			.setNumPSs(numPss)
 			.setPythonEnv(getPythonEnv())
+			.setEnvVersion(version)
 			.linkFrom(in);
 
 		setOutputTable(dlLauncherStreamOp.getOutputTable());

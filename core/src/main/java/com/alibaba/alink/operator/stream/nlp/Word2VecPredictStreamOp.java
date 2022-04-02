@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.stream.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.nlp.Word2VecModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -19,6 +22,8 @@ import com.alibaba.alink.params.nlp.Word2VecPredictParams;
  * Distributed representations of words and phrases and their compositionality.
  * <p>https://code.google.com/archive/p/word2vec/
  */
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@NameCn("Word2Vec预测")
 public class Word2VecPredictStreamOp extends ModelMapStreamOp <Word2VecPredictStreamOp>
 	implements Word2VecPredictParams <Word2VecPredictStreamOp> {
 	private static final long serialVersionUID = 329339396597412614L;

@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.regression.IsotonicRegTrainBatchOp;
 import com.alibaba.alink.params.regression.IsotonicRegPredictParams;
@@ -13,6 +14,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * Implement parallelized pool adjacent violators algorithm.
  * Support single feature input or vector input(extractor one index of the vector).
  */
+@NameCn("Isotonic回归")
 public class IsotonicRegression extends Trainer <IsotonicRegression, IsotonicRegressionModel> implements
 	IsotonicRegTrainParams <IsotonicRegression>,
 	IsotonicRegPredictParams <IsotonicRegression> {

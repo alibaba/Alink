@@ -8,6 +8,12 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.dataproc.SampleParams;
 
@@ -16,7 +22,10 @@ import java.util.Random;
 /**
  * Sample with given ratio with or without replacement.
  */
+@InputPorts(values = {@PortSpec(value = PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @SuppressWarnings("uncheck")
+@NameCn("随机采样")
 public class SampleStreamOp extends StreamOperator <SampleStreamOp> implements SampleParams <SampleStreamOp> {
 
 	private static final long serialVersionUID = 2165833879105000066L;

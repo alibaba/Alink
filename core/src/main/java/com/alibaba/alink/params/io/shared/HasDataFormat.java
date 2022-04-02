@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasDataFormat<T> extends WithParams <T> {
-	/**
-	 * @cn-name 数据格式
-	 * @cn 数据格式。json,csv
-	 */
+	@NameCn("数据格式")
+	@DescCn("数据格式。json,csv")
 	// "json", "csv"
 	ParamInfo <DataFormat> DATA_FORMAT = ParamInfoFactory
 		.createParamInfo("dataFormat", DataFormat.class)

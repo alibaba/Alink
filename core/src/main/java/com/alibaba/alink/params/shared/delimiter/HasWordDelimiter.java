@@ -4,14 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Params for wordDelimiter.
  */
 public interface HasWordDelimiter<T> extends WithParams <T> {
-	/**
-	 * @cn-name 单词分隔符
-	 * @cn 单词之间的分隔符
-	 */
+	@NameCn("单词分隔符")
+	@DescCn("单词之间的分隔符")
 	ParamInfo <String> WORD_DELIMITER = ParamInfoFactory
 		.createParamInfo("wordDelimiter", String.class)
 		.setDescription("Delimiter of words")

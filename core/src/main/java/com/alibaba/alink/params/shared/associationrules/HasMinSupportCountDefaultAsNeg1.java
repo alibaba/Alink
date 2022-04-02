@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasMinSupportCountDefaultAsNeg1<T> extends WithParams <T> {
-	/**
-	 * @cn-name 最小支持度数目
-	 * @cn 最小支持度目，当取值大于或等于0时起作用，当小于0时参数minSupportPercent起作用
-	 */
+	@NameCn("最小支持度数目")
+	@DescCn("最小支持度目，当取值大于或等于0时起作用，当小于0时参数minSupportPercent起作用")
 	ParamInfo <Integer> MIN_SUPPORT_COUNT = ParamInfoFactory
 		.createParamInfo("minSupportCount", Integer.class)
 		.setDescription("Minimum support count")

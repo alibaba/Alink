@@ -4,14 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasImageType<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 图片类型
-	 * @cn 图片类型
-	 */
+	@NameCn("图片类型")
+	@DescCn("图片类型")
 	ParamInfo <ImageType> IMAGE_TYPE = ParamInfoFactory
 		.createParamInfo("imageType", ImageType.class)
 		.setDescription("the handle method of invalid value. include： error, skip")

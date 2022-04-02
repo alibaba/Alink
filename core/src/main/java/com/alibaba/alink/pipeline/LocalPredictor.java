@@ -7,7 +7,7 @@ import org.apache.flink.util.Preconditions;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperChain;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,11 +25,11 @@ public class LocalPredictor {
 	protected MapperChain mapperList;
 
 	public LocalPredictor(String pipelineModelPath, String inputSchemaStr) throws Exception {
-		this(new FilePath(pipelineModelPath), CsvUtil.schemaStr2Schema(inputSchemaStr));
+		this(new FilePath(pipelineModelPath), TableUtil.schemaStr2Schema(inputSchemaStr));
 	}
 
 	public LocalPredictor(FilePath pipelineModelPath, String inputSchemaStr) throws Exception {
-		this(pipelineModelPath, CsvUtil.schemaStr2Schema(inputSchemaStr));
+		this(pipelineModelPath, TableUtil.schemaStr2Schema(inputSchemaStr));
 	}
 
 	public LocalPredictor(FilePath pipelineModelPath, TableSchema inputSchema) throws Exception {

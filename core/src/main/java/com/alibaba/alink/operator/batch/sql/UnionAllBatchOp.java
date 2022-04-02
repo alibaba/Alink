@@ -2,11 +2,19 @@ package com.alibaba.alink.operator.batch.sql;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 
 /**
  * Union with another <code>BatchOperator</code>. The duplicated records are kept.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA, isRepeated = true))
+@OutputPorts(values = @PortSpec(value = PortType.DATA))
+@NameCn("SQL操作：UnionAll")
 public final class UnionAllBatchOp extends BatchOperator <UnionAllBatchOp> {
 
 	private static final long serialVersionUID = 2468662188701775196L;

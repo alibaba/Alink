@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.batch.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.tree.predictors.GbdtModelMapper;
 import com.alibaba.alink.params.regression.GbdtRegPredictParams;
@@ -26,6 +29,8 @@ import com.alibaba.alink.params.regression.GbdtRegPredictParams;
  * "A communication-efficient parallel algorithm for decision tree", Qi Meng et al., NIPS 2016
  * for an introduction on data-parallel, feature-parallel, etc., algorithms to construct decision forests.
  */
+@ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@NameCn("GBDT回归预测")
 public final class GbdtRegPredictBatchOp extends ModelMapBatchOp <GbdtRegPredictBatchOp>
 	implements GbdtRegPredictParams <GbdtRegPredictBatchOp> {
 	private static final long serialVersionUID = 5866895002748842133L;

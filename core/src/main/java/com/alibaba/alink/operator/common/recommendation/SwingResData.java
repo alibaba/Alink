@@ -45,7 +45,7 @@ public class SwingResData implements AlinkSerializable {
 
 		List <Row> rows = new ArrayList <>(thisSize);
 		for (int i = 0; i < thisSize; i++) {
-			rows.add(Row.of(object[i], score[i]));
+			rows.add(Row.of(object[i], Double.valueOf(score[i])));
 		}
 		return new MTable(rows, itemCol + " " + FlinkTypeConverter.getTypeString(objType) + "," + "score DOUBLE");
 	}

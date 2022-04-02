@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.params.regression.DecisionTreeRegPredictParams;
@@ -26,6 +27,7 @@ import com.alibaba.alink.params.regression.DecisionTreeRegPredictParams;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
+@NameCn("决策树回归预测")
 public final class DecisionTreeRegPredictBatchOp extends ModelMapBatchOp <DecisionTreeRegPredictBatchOp> implements
 	DecisionTreeRegPredictParams <DecisionTreeRegPredictBatchOp> {
 	private static final long serialVersionUID = -8850643703068190492L;

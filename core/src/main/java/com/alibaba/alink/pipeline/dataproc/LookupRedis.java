@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.dataproc.LookupRedisMapper;
 import com.alibaba.alink.params.dataproc.LookupRedisParams;
 import com.alibaba.alink.pipeline.MapTransformer;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapTransformer;
 /**
  * Lookup operation from redis.
  */
+@NameCn("Redis表查找")
 public class LookupRedis extends MapTransformer <LookupRedis>
 	implements LookupRedisParams <LookupRedis> {
 

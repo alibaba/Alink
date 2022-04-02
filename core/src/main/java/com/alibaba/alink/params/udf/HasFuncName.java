@@ -4,15 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * the name of a registered UDF/UDTF function in the table environment
  */
 public interface HasFuncName<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 函数名
-	 * @cn 函数名
-	 */
+	@NameCn("函数名")
+	@DescCn("函数名")
 	ParamInfo <String> FUNC_NAME = ParamInfoFactory
 		.createParamInfo("funcName", String.class)
 		.setDescription("function name")

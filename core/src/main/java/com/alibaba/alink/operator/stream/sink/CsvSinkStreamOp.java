@@ -7,8 +7,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.sink.OutputFormatSinkFunction;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -21,6 +21,7 @@ import com.alibaba.alink.params.io.CsvSinkParams;
  * Sink to local or HDFS files in CSV format.
  */
 @IoOpAnnotation(name = "csv", ioType = IOType.SinkStream)
+@NameCn("CSV文件导出")
 public final class CsvSinkStreamOp extends BaseSinkStreamOp <CsvSinkStreamOp>
 	implements CsvSinkParams <CsvSinkStreamOp> {
 
