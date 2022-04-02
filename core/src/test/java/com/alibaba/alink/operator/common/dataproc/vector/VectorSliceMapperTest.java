@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.dataproc.vector.VectorSliceParams;
@@ -33,7 +33,7 @@ public class VectorSliceMapperTest extends AlinkTestBase {
 		assertEquals(mapper.map(Row.of(new DenseVector(new double[] {3.0, 4.0, 3.0}))).getField(0),
 			new DenseVector(new double[] {3.0, 4.0}));
 		assertEquals(mapper.getOutputSchema(),
-			new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {VectorTypes.VECTOR}));
+			new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {AlinkTypes.VECTOR}));
 	}
 
 	@Test
@@ -52,7 +52,7 @@ public class VectorSliceMapperTest extends AlinkTestBase {
 		assertEquals(
 			mapper.getOutputSchema(),
 			new TableSchema(new String[] {"vec", "res"},
-				new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR})
+				new TypeInformation <?>[] {Types.STRING, AlinkTypes.VECTOR})
 		);
 	}
 
@@ -72,7 +72,7 @@ public class VectorSliceMapperTest extends AlinkTestBase {
 			.getField(0), new SparseVector(3, new int[] {0, 1, 2}, new double[] {3.0, 4.0, 3.0}));
 		assertEquals(
 			mapper.getOutputSchema(),
-			new TableSchema(new String[] {"res"}, new TypeInformation <?>[] {VectorTypes.VECTOR})
+			new TableSchema(new String[] {"res"}, new TypeInformation <?>[] {AlinkTypes.VECTOR})
 		);
 	}
 }

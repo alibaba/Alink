@@ -5,12 +5,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.FilePath;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvTypeConverter;
 import com.alibaba.alink.operator.common.io.csv.InternalCsvSourceBatchOp;
 import com.alibaba.alink.params.io.CsvSourceParams;
@@ -26,6 +27,7 @@ import com.alibaba.alink.params.io.CsvSourceParams;
  * </ul></p>
  */
 @IoOpAnnotation(name = "csv", ioType = IOType.SourceBatch)
+@NameCn("CSV文件读入")
 public class CsvSourceBatchOp extends BaseSourceBatchOp <CsvSourceBatchOp>
 	implements CsvSourceParams <CsvSourceBatchOp> {
 
@@ -47,7 +49,7 @@ public class CsvSourceBatchOp extends BaseSourceBatchOp <CsvSourceBatchOp>
 	public CsvSourceBatchOp(String filePath, TableSchema schema) {
 		this(new Params()
 			.set(FILE_PATH, new FilePath(filePath).serialize())
-			.set(SCHEMA_STR, CsvUtil.schema2SchemaStr(schema))
+			.set(SCHEMA_STR, TableUtil.schema2SchemaStr(schema))
 		);
 	}
 
@@ -55,7 +57,7 @@ public class CsvSourceBatchOp extends BaseSourceBatchOp <CsvSourceBatchOp>
 							String fieldDelim, String rowDelim) {
 		this(new Params()
 			.set(FILE_PATH, new FilePath(filePath).serialize())
-			.set(SCHEMA_STR, CsvUtil.schema2SchemaStr(new TableSchema(colNames, colTypes)))
+			.set(SCHEMA_STR, TableUtil.schema2SchemaStr(new TableSchema(colNames, colTypes)))
 			.set(FIELD_DELIMITER, fieldDelim)
 			.set(ROW_DELIMITER, rowDelim)
 		);
@@ -63,14 +65,14 @@ public class CsvSourceBatchOp extends BaseSourceBatchOp <CsvSourceBatchOp>
 
 	@Override
 	protected Table initializeDataSource() {
-		TableSchema schema = CsvUtil.schemaStr2Schema(getSchemaStr());
+		TableSchema schema = TableUtil.schemaStr2Schema(getSchemaStr());
 		String[] colNames = schema.getFieldNames();
 		TypeInformation <?>[] colTypes = schema.getFieldTypes();
 
 		Params rawCsvParams = getParams().clone()
 			.set(
 				CsvSourceParams.SCHEMA_STR,
-				CsvUtil.schema2SchemaStr(new TableSchema(colNames, CsvTypeConverter.rewriteColTypes(colTypes)))
+				TableUtil.schema2SchemaStr(new TableSchema(colNames, CsvTypeConverter.rewriteColTypes(colTypes)))
 			);
 
 		BatchOperator <?> source = new InternalCsvSourceBatchOp(rawCsvParams);

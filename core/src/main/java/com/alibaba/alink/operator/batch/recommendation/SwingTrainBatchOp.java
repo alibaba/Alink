@@ -13,6 +13,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -35,6 +42,13 @@ import java.util.Map.Entry;
  * Swing is an item recall model. The topology of user-item graph usually can be described as
  * user-item-user or item-user-item, which are like 'swing'.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = {
+    @PortSpec(PortType.MODEL)
+})
+@ParamSelectColumnSpec(name = "userCol")
+@ParamSelectColumnSpec(name = "itemCol")
+@NameCn("swing训练")
 public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
     implements SwingTrainParams<SwingTrainBatchOp> {
     private static final long serialVersionUID = 6094224433980263495L;

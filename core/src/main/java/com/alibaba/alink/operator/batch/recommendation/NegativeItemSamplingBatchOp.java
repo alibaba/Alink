@@ -14,6 +14,11 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.ShuffleBatchOp;
 import com.alibaba.alink.params.recommendation.NegativeItemSamplingParams;
@@ -28,6 +33,13 @@ import java.util.Set;
  * Given a dataset of user-item pairs, generate new user-item pairs and add them to original dataset. For the user in
  * each user-item pair, a "SAMPLING_FACTOR" number of items are sampled.
  */
+@InputPorts(values = {
+	@PortSpec(PortType.DATA)
+})
+@OutputPorts(values = {
+	@PortSpec(PortType.DATA)
+})
+@NameCn("推荐负采样")
 public final class NegativeItemSamplingBatchOp
 	extends BatchOperator <NegativeItemSamplingBatchOp>
 	implements NegativeItemSamplingParams <NegativeItemSamplingBatchOp> {

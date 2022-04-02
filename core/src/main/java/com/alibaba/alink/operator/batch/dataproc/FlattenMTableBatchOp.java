@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.batch.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.utils.FlatMapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.FlattenMTableMapper;
 import com.alibaba.alink.params.dataproc.FlattenMTableParams;
@@ -9,6 +12,9 @@ import com.alibaba.alink.params.dataproc.FlattenMTableParams;
 /**
  * Transform MTable format recommendation to table format.
  */
+@ParamSelectColumnSpec(name = "selectedCol",
+	allowedTypeCollections = TypeCollections.MTABLE_TYPES)
+@NameCn("MTable展开")
 public class FlattenMTableBatchOp extends FlatMapBatchOp <FlattenMTableBatchOp>
 	implements FlattenMTableParams <FlattenMTableBatchOp> {
 

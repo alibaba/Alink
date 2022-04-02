@@ -158,9 +158,9 @@ public class PipelineModelTest extends AlinkTestBase {
 
 		for (Row row : rows) {
 			if (row.getField(0).toString().equals("doc0")) {
-				Assert.assertEquals(VectorUtil.getVector(row.getField(1).toString()).size(), 19);
+				Assert.assertEquals(VectorUtil.getVector(VectorUtil.serialize(row.getField(1))).size(), 19);
 			} else if (row.getField(0).toString().equals("doc2")) {
-				Assert.assertEquals(VectorUtil.getVector(row.getField(1).toString()).size(), 19);
+				Assert.assertEquals(VectorUtil.getVector(VectorUtil.serialize(row.getField(1))).size(), 19);
 			}
 		}
 

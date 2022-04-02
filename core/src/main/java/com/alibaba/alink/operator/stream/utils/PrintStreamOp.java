@@ -11,13 +11,17 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.io.annotations.AnnotationUtils;
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.sink.BaseSinkStreamOp;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -28,22 +32,20 @@ import java.util.concurrent.TimeUnit;
  * Print Stream op to screen.
  */
 @IoOpAnnotation(name = "print", ioType = IOType.SinkStream)
-public class PrintStreamOp extends BaseSinkStreamOp <PrintStreamOp> {
-
-	/**
-	 * @cn-name 刷新间隔
-	 * @cn 输出的刷新间隔
-	 */
+@InputPorts(values = {@PortSpec(PortType.ANY)})
+@OutputPorts()
+@NameCn("流式数据打印")
+public class PrintStreamOp extends StreamOperator <PrintStreamOp> {
+	@NameCn("刷新间隔")
+	@DescCn("输出的刷新间隔")
 	public static final ParamInfo <Integer> REFRESH_INTERVAL = ParamInfoFactory
 		.createParamInfo("refreshInterval", Integer.class)
 		.setDescription("refresh interval")
 		.setHasDefaultValue(-1)
 		.build();
 
-	/**
-	 * @cn-name 每个窗口内的最大输出条数
-	 * @cn 每个窗口内的最大输出条数
-	 */
+	@NameCn("每个窗口内的最大输出条数")
+	@DescCn("每个窗口内的最大输出条数")
 	public static final ParamInfo <Integer> MAX_LIMIT = ParamInfoFactory
 		.createParamInfo("maxLimit", Integer.class)
 		.setDescription("max limit")
@@ -57,7 +59,7 @@ public class PrintStreamOp extends BaseSinkStreamOp <PrintStreamOp> {
 	}
 
 	public PrintStreamOp(Params params) {
-		super(AnnotationUtils.annotatedName(PrintStreamOp.class), params);
+		super(params);
 	}
 
 	public static void setStreamPrintStream(PrintStream printStream) {
@@ -65,7 +67,8 @@ public class PrintStreamOp extends BaseSinkStreamOp <PrintStreamOp> {
 	}
 
 	@Override
-	protected PrintStreamOp sinkFrom(StreamOperator<?> in) {
+	public PrintStreamOp linkFrom(StreamOperator <?>... inputs) {
+		StreamOperator <?> in = checkAndGetFirst(inputs);
 		try {
 			System.err.println(TableUtil.formatTitle(in.getColNames()));
 			final int refreshInterval = getParams().get(REFRESH_INTERVAL);
@@ -113,6 +116,7 @@ public class PrintStreamOp extends BaseSinkStreamOp <PrintStreamOp> {
 			this.stream = System.err;
 		}
 
+		@Override
 		public void invoke(List <Row> records) {
 			for (Row record : records) {
 				this.stream.println(TableUtil.formatRows(record));
@@ -143,6 +147,7 @@ public class PrintStreamOp extends BaseSinkStreamOp <PrintStreamOp> {
 			this.stream = System.err;
 		}
 
+		@Override
 		public void invoke(Row record) {
 			this.stream.println(TableUtil.formatRows(record));
 		}

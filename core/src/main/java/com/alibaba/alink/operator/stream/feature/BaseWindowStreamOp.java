@@ -20,6 +20,15 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil.ClauseInfo;
@@ -34,6 +43,12 @@ import static com.alibaba.alink.operator.common.feature.featurebuilder.WindowRes
 /**
  * Base class for stream feature builder.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ParamSelectColumnSpec(name = "partitionCols")
+@ParamSelectColumnSpec(name = "timeCol", allowedTypeCollections = TypeCollections.TIMESTAMP_TYPES)
+@ReservedColsWithFirstInputSpec
+@NameCn("")
 abstract class BaseWindowStreamOp<T extends BaseWindowStreamOp <T>>
 	extends StreamOperator <T> implements BaseWindowParams <T> {
 

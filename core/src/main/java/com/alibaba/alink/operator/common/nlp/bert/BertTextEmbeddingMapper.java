@@ -7,14 +7,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.mapper.ComboMapper;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.dl.BertResources;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.EncodingKeys;
 import com.alibaba.alink.operator.common.tensorflow.TFSavedModelPredictMapper;
 import com.alibaba.alink.operator.common.tensorflow.TFSavedModelPredictRowMapper;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.tensorflow.bert.BertTextEmbeddingParams;
 import com.alibaba.alink.params.tensorflow.bert.HasMaxSeqLength;
 import com.alibaba.alink.params.tensorflow.bert.HasMaxSeqLengthDefaultAsNull;
@@ -76,9 +76,9 @@ public class BertTextEmbeddingMapper extends ComboMapper {
 			Arrays.stream(MODEL_INPUTS).map(BertTokenizerMapper::prependPrefix).toArray(String[]::new));
 		tfParams.set(TFSavedModelPredictParams.INPUT_SIGNATURE_DEFS, MODEL_INPUTS);
 		tfParams.set(TFSavedModelPredictParams.OUTPUT_SCHEMA_STR,
-			CsvUtil.schema2SchemaStr(
+			TableUtil.schema2SchemaStr(
 				TableSchema.builder()
-					.field(tokenizerMapper.prependPrefix(HIDDEN_STATES_COL), TensorTypes.FLOAT_TENSOR)
+					.field(tokenizerMapper.prependPrefix(HIDDEN_STATES_COL), AlinkTypes.FLOAT_TENSOR)
 					.build()));
 		tfParams.set(TFSavedModelPredictParams.OUTPUT_SIGNATURE_DEFS, MODEL_OUTPUTS);
 		tfParams.set(TFSavedModelPredictParams.RESERVED_COLS,

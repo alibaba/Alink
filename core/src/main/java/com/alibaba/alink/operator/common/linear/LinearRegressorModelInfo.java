@@ -16,12 +16,12 @@ import java.util.Map;
  */
 public class LinearRegressorModelInfo implements Serializable {
 	private static final long serialVersionUID = 1587799722352066332L;
-	private String[] featureNames;
-	private String vectorColName;
-	private DenseVector coefVector;
-	private int vectorSize;
-	private String modelName;
-	private boolean hasInterceptItem;
+	private final String[] featureNames;
+	private final String vectorColName;
+	private final DenseVector coefVector;
+	private final int vectorSize;
+	private final String modelName;
+	private final boolean hasInterceptItem;
 	private static final int WIDTH = 10;
 	private static final int NAX_NUM_LAYER = 5;
 
@@ -76,11 +76,11 @@ public class LinearRegressorModelInfo implements Serializable {
 		}
 		map.put("hasInterception", String.valueOf(hasInterceptItem));
 		ret.append(PrettyDisplayUtils.displayHeadline("model meta info", '-'));
-		ret.append(PrettyDisplayUtils.displayMap(map, WIDTH, false) + "\n");
+		ret.append(PrettyDisplayUtils.displayMap(map, WIDTH, false)).append("\n");
 
 		if (labelValues != null && labelValues.length > 1) {
 			ret.append(PrettyDisplayUtils.displayHeadline("model label values", '-'));
-			ret.append(PrettyDisplayUtils.displayList(java.util.Arrays.asList(labelValues)) + "\n");
+			ret.append(PrettyDisplayUtils.displayList(java.util.Arrays.asList(labelValues))).append("\n");
 		}
 
 		ret.append(PrettyDisplayUtils.displayHeadline("model weight info", '-'));

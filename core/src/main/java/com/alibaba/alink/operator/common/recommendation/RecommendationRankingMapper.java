@@ -8,7 +8,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
-import com.alibaba.alink.common.MTableTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.mapper.MapperChain;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -58,14 +59,14 @@ public class RecommendationRankingMapper extends ModelMapper {
 			outputCol = params.get(RecommendationRankingParams.M_TABLE_COL);
 		}
 		return Tuple4.of(dataSchema.getFieldNames(), new String[] {outputCol},
-			new TypeInformation <?>[] {MTableTypes.M_TABLE}, reservedCols);
+			new TypeInformation <?>[] {AlinkTypes.M_TABLE}, reservedCols);
 	}
 
 	@Override
 	protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
-		MTable recallData = (MTable) selection.get(itemListIdx);
+		MTable recallData = MTableUtil.getMTable(selection.get(itemListIdx));
 		if (mapperList == null) {
-			TableSchema mTableSchema = recallData.getTableSchema();
+			TableSchema mTableSchema = recallData.getSchema();
 
 			String[] dataNames = getDataSchema().getFieldNames();
 			this.recallNames = mTableSchema.getFieldNames();
@@ -91,6 +92,7 @@ public class RecommendationRankingMapper extends ModelMapper {
 
 			this.mapperList = ModelExporterUtils.loadMapperListFromStages(modelRows, getModelSchema(),
 				new TableSchema(allNames, allTypes));
+			this.mapperList.open();
 
 			String[] resultNames = this.mapperList.getOutTableSchema().getFieldNames();
 			this.scoreIndex = scoreCol != null ? TableUtil.findColIndex(resultNames, scoreCol) :

@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.shared.colname.HasSelectedColsDefaultAsNull;
 
 /**
@@ -13,10 +15,8 @@ import com.alibaba.alink.params.shared.colname.HasSelectedColsDefaultAsNull;
  */
 public interface HasInferSelectedColsDefaultAsNull<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 用于推理的列名数组
-	 * @cn 用于推理的列名列表
-	 */
+	@NameCn("用于推理的列名数组")
+	@DescCn("用于推理的列名列表")
 	ParamInfo <String[]> INFER_SELECTED_COLS = ParamInfoFactory
 		.createParamInfo("inferSelectedCols", String[].class)
 		.setDescription("Column names used for inference")

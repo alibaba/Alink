@@ -4,16 +4,17 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Param: number of hash tables.
  */
 public interface HasNumHashTables<T> extends
 	WithParams <T> {
 
-	/**
-	 * @cn-name 哈希表的数目
-	 * @cn 哈希表的数目
-	 */
+	@NameCn("哈希表的数目")
+	@DescCn("哈希表的数目")
 	ParamInfo <Integer> NUM_HASH_TABLES = ParamInfoFactory
 		.createParamInfo("numHashTables", Integer.class)
 		.setDescription("The number of hash tables")

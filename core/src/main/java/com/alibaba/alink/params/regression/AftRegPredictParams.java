@@ -3,6 +3,8 @@ package com.alibaba.alink.params.regression;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
 import com.alibaba.alink.params.shared.colname.HasVectorColDefaultAsNull;
 
@@ -14,10 +16,8 @@ public interface AftRegPredictParams<T> extends
 	HasVectorColDefaultAsNull <T>,
 	HasPredictionDetailCol <T> {
 
-	/**
-	 * @cn-name 分位数概率数组
-	 * @cn 分位数概率数组
-	 */
+	@NameCn("分位数概率数组")
+	@DescCn("分位数概率数组")
 	ParamInfo <double[]> QUANTILE_PROBABILITIES = ParamInfoFactory
 		.createParamInfo("quantileProbabilities", double[].class)
 		.setDescription("Array of quantile probabilities.")

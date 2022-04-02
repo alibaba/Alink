@@ -14,5 +14,5 @@ public interface OnlineTrainParams<T> extends WithParams <T>,
 	HasVectorSize <T>,
 	HasFeatureColsDefaultAsNull <T>,
 	HasWithIntercept <T>,
-	HasTimeInterval_1800 <T> {
+	HasTimeIntervalDefaultAs1800 <T> {
 }

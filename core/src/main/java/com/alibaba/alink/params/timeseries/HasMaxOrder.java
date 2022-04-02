@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasMaxOrder<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 模型(p, q)上限
-	 * @cn 模型(p, q)上限
-	 */
+	@NameCn("模型(p, q)上限")
+	@DescCn("模型(p, q)上限")
 	ParamInfo <Integer> MAX_ORDER = ParamInfoFactory
 		.createParamInfo("maxOrder", Integer.class)
 		.setDescription("max order of p, q")

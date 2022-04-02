@@ -4,13 +4,20 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.statistics.ChiSquareTestResult;
 import com.alibaba.alink.operator.common.statistics.ChiSquareTestResults;
 import com.alibaba.alink.operator.common.statistics.ChiSquareTestUtil;
-import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import com.alibaba.alink.params.statistics.VectorChiSquareTestParams;
 
 import java.util.Arrays;
@@ -23,6 +30,11 @@ import java.util.function.Consumer;
  * factors are independent of each other.
  * More information on Chi-squared test: http://en.wikipedia.org/wiki/Chi-squared_test
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "labelCol")
+@NameCn("向量卡方检验")
 public final class VectorChiSquareTestBatchOp extends BatchOperator <VectorChiSquareTestBatchOp>
 	implements VectorChiSquareTestParams <VectorChiSquareTestBatchOp> {
 

@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class SoftmaxModelInfo implements Serializable {
 	private static final long serialVersionUID = 1587799722352066332L;
-	private String[] featureNames;
+	private final String[] featureNames;
 	private String vectorColName;
 	private int vectorSize;
 	private String modelName;

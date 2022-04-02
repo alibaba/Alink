@@ -17,7 +17,6 @@
 
 package com.alibaba.alink.common.io.filesystem.copy;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.io.FilePathFilter;
 import org.apache.flink.api.common.state.ListState;
@@ -37,6 +36,7 @@ import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.apache.flink.streaming.api.functions.source.TimestampedFileInputSplit;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FileSystemUtils;
 import org.slf4j.Logger;

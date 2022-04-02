@@ -2,6 +2,11 @@ package com.alibaba.alink.operator.batch.sql;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
 import com.alibaba.alink.params.sql.JoinParams;
@@ -9,6 +14,10 @@ import com.alibaba.alink.params.sql.JoinParams;
 /**
  * Full outer join two batch operators.
  */
+
+@InputPorts(values = {@PortSpec(PortType.DATA), @PortSpec(PortType.DATA)})
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@NameCn("SQL操作：FullOuterJoin")
 public final class FullOuterJoinBatchOp extends BaseSqlApiBatchOp <FullOuterJoinBatchOp>
 	implements JoinParams <FullOuterJoinBatchOp> {
 

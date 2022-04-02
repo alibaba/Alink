@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.clustering;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.BisectingKMeansTrainBatchOp;
@@ -20,6 +21,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * Steinbach, Karypis, and Kumar, A comparison of document clustering techniques,
  * KDD Workshop on Text Mining, 2000.</a>
  */
+@NameCn("二分K均值聚类")
 public class BisectingKMeans extends Trainer <BisectingKMeans, BisectingKMeansModel> implements
 	BisectingKMeansTrainParams <BisectingKMeans>,
 	BisectingKMeansPredictParams <BisectingKMeans>,

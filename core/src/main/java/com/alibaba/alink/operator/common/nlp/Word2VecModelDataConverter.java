@@ -6,7 +6,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.model.ModelDataConverter;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class Word2VecModelDataConverter
 	public TableSchema getModelSchema() {
 		return new TableSchema(
 			new String[] {"word", "vec"},
-			new TypeInformation[] {Types.STRING, VectorTypes.VECTOR}
+			new TypeInformation[] {Types.STRING, AlinkTypes.VECTOR}
 		);
 	}
 }

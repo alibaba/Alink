@@ -8,6 +8,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.recommendation.Zipped2KObjectParams;
@@ -22,6 +23,7 @@ import java.util.TreeMap;
 /**
  * Transform table format recommendation to json format.
  */
+@Internal
 public class Zipped2KObjectBatchOp extends BatchOperator <Zipped2KObjectBatchOp>
 	implements Zipped2KObjectParams <Zipped2KObjectBatchOp> {
 

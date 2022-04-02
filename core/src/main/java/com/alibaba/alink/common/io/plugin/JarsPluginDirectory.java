@@ -2,6 +2,9 @@ package com.alibaba.alink.common.io.plugin;
 
 import org.apache.flink.shaded.guava18.com.google.common.base.Joiner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -56,6 +59,8 @@ public class JarsPluginDirectory {
 	 */
 	private final PathMatcher jarFileMatcher;
 
+	private static final Logger LOG = LoggerFactory.getLogger(JarsPluginDirectory.class);
+
 	public JarsPluginDirectory(Path pluginsRootDir) {
 		this.pluginsRootDir = pluginsRootDir;
 
@@ -97,10 +102,12 @@ public class JarsPluginDirectory {
 
 	private URL[] createJarURLsFromDirectory(Path subDirectory) throws IOException {
 		URL[] urls = Files.list(subDirectory)
-			.filter((Path p) -> Files.isRegularFile(p) && jarFileMatcher.matches(p))
+			.filter((Path p) -> Files.isRegularFile(p, LinkOption.NOFOLLOW_LINKS) && jarFileMatcher.matches(p))
 			.map((Path p) -> {
 				try {
-					return p.toUri().toURL();
+					URL url = p.toUri().toURL();
+					LOG.info("Found jar url: {}", url);
+					return url;
 				} catch (MalformedURLException e) {
 					throw new RuntimeException(e);
 				}

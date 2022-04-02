@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.NaiveBayesTextTrainBatchOp;
@@ -18,6 +19,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * Details info of the algorithm:
  * https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-text-classification-1.html
  */
+@NameCn("朴素贝叶斯文本分类器")
 public class NaiveBayesTextClassifier
 	extends Trainer <NaiveBayesTextClassifier, NaiveBayesTextModel> implements
 	NaiveBayesTextTrainParams <NaiveBayesTextClassifier>,

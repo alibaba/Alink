@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>alink</artifactId>
+        <groupId>com.alibaba.alink</groupId>
+        <version>1.5-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>alink_python_flink-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
+    <name>alink_python</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.alink</groupId>
+            <artifactId>alink_core_flink-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-java</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java_${alink.scala.major.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-scala_${alink.scala.major.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-api-java-bridge_${alink.scala.major.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-api-java</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-planner_${alink.scala.major.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-planner-blink_${alink.scala.major.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-python_${alink.scala.major.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-clients_${alink.scala.major.version}</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.8.37</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>15.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <parameters>true</parameters>
+                    <testCompilerArgument>-parameters</testCompilerArgument>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>1.0b3</version>
+                        <exclusions>
+                            <exclusion>
+                                <artifactId>ant</artifactId>
+                                <groupId>ant</groupId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>Generate Python Source Code</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="GeneratePythonSourceCode">
+                                <echo  message="begin to generate python source code"/>
+
+                                <property name="compile_classpath" refid="maven.compile.classpath"/>
+                                <property name="runtime_classpath" refid="maven.runtime.classpath"/>
+                                <property name="test_classpath" refid="maven.test.classpath"/>
+                                <property name="plugin_classpath" refid="maven.plugin.classpath"/>
+
+                                <copy todir="${project.build.directory}/package">
+                                    <fileset dir="${project.basedir}/src/main/python" includes="**" />
+                                </copy>
+
+                                <property name="py_dir" value="${project.build.directory}/package/pyalink"/>
+                                <mkdir dir="${py_dir}/alink/batch/common"/>
+                                <mkdir dir="${py_dir}/alink/stream/common"/>
+                                <mkdir dir="${py_dir}/alink/pipeline/common"/>
+
+                                <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+                                <for list="batch,stream,pipeline" param="type">
+                                    <sequential>
+                                        <echo>Generating type: @{type}</echo>
+                                        <java classpathref="maven.compile.classpath" fork="true" failonerror="yes"
+                                              classname="com.alibaba.alink.python.executables.GeneratePyOp">
+                                            <sysproperty key="file.encoding" value="UTF-8"/>
+                                            <env key="LC_ALL" value="en_US.UTF-8"/>
+                                            <env key="LANG" value="en_US.UTF-8"/>
+                                            <env key="LANGUAGE" value="en_US.UTF-8"/>
+                                            <arg line="@{type} ${py_dir}/alink/@{type}/common 50"/>
+                                        </java>
+                                    </sequential>
+                                </for>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>post-shade</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>false</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <artifactSet>
+                                <includes>
+                                    <include>*:*</include>
+                                    <include>com.google.code.gson:gson</include>
+                                    <include>org.apache.commons:commons-math3</include>
+                                    <include>net.sf.py4j:py4j</include>
+                                    <include>com.alibaba.alink:alink_python</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>com/alibaba/alink/python/executables/**</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>reference.conf</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

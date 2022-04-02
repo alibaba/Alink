@@ -37,7 +37,7 @@ public class PcaModelMapperTest extends AlinkTestBase {
 
 		assertEquals(in.getField(0), out.getField(0));
 		assertEquals(in.getField(1), out.getField(1));
-		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2).toString());
+		assertEquals("DenseVector(size = 3) 0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2).toString());
 
 	}
 
@@ -55,7 +55,8 @@ public class PcaModelMapperTest extends AlinkTestBase {
 
 		assertEquals(in.getField(0), out.getField(0));
 		assertEquals(in.getField(1), out.getField(1));
-		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2).toString());
+		assertEquals("DenseVector(size = 3) 0.38335283618300353 -1.3916523315682483 -0.31709372958050464",
+			out.getField(2).toString());
 
 	}
 
@@ -73,7 +74,7 @@ public class PcaModelMapperTest extends AlinkTestBase {
 
 		assertEquals(in.getField(0), out.getField(0));
 		assertEquals(in.getField(1), out.getField(1));
-		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2).toString());
+		assertEquals("DenseVector(size = 3) 0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(2).toString());
 	}
 
 	@Test
@@ -93,7 +94,7 @@ public class PcaModelMapperTest extends AlinkTestBase {
 		assertEquals(in.getField(2), out.getField(2));
 		assertEquals(in.getField(3), out.getField(3));
 		assertEquals(in.getField(4), out.getField(4));
-		assertEquals("0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(5).toString());
+		assertEquals("DenseVector(size = 3) 0.38335283618300353 -1.3916523315682483 -0.31709372958050464", out.getField(5).toString());
 	}
 
 	private void genDense() {

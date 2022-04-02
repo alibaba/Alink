@@ -21,11 +21,16 @@ package com.alibaba.alink.common.io.plugin;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 
 public class JarsPluginManager {
+
+	private static final Logger LOG = LoggerFactory.getLogger(JarsPluginManager.class);
 
 	private final JarsPluginDirectory pluginDirectory;
 
@@ -40,7 +45,7 @@ public class JarsPluginManager {
 	private final String[] alwaysParentFirstPatterns;
 
 	public JarsPluginManager(JarsPluginDirectory pluginDirectory, String[] alwaysParentFirstPatterns) {
-		this(pluginDirectory, Configuration.class.getClassLoader(), alwaysParentFirstPatterns);
+		this(pluginDirectory, JarsPluginManager.class.getClassLoader(), alwaysParentFirstPatterns);
 	}
 
 	public JarsPluginManager(JarsPluginDirectory pluginDirectory, ClassLoader parentClassLoader,
@@ -57,6 +62,8 @@ public class JarsPluginManager {
 			flinkVersion, pluginName, pluginVersion
 		);
 
+		LOG.info("Plugin descriptor: {}", pluginDescriptor);
+
 		JarsPluginLoader pluginLoader = JarsPluginLoader.create(pluginDescriptor, parentClassLoader,
 			alwaysParentFirstPatterns);
 
@@ -70,7 +77,9 @@ public class JarsPluginManager {
 
 			@Override
 			public Tuple2 <P, PluginDescriptor> next() {
-				return Tuple2.of(serviceIter.next(), pluginDescriptor);
+				P next = serviceIter.next();
+				LOG.info("Next plugin service: {}", next);
+				return Tuple2.of(next, pluginDescriptor);
 			}
 		};
 	}

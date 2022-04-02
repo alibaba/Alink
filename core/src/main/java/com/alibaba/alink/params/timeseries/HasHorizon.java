@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasHorizon<T> extends WithParams <T> {
-	/**
-	 * @cn-name horizon大小
-	 * @cn horizon大小
-	 */
+	@NameCn("horizon大小")
+	@DescCn("horizon大小")
 	ParamInfo <Integer> HORIZON = ParamInfoFactory
 		.createParamInfo("horizon", Integer.class)
 		.setDescription("horizon")

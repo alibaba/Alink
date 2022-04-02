@@ -22,6 +22,7 @@ public class TFSavedModelPredictBatchOpTest {
 		BatchOperator <?> predictor = new TFSavedModelPredictBatchOp()
 			.setModelPath("http://alink-dataset.oss-cn-zhangjiakou.aliyuncs.com/tf/1551968314.zip")
 			.setSelectedCols("image")
+			.setIntraOpParallelism(1)
 			.setOutputSchemaStr("classes bigint, probabilities string");
 
 		data = predictor.linkFrom(data).select("label, classes, probabilities");

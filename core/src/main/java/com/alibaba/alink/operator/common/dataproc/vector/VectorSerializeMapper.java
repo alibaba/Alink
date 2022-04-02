@@ -6,8 +6,9 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.Mapper;
 
 import java.util.ArrayList;
@@ -33,9 +34,9 @@ public class VectorSerializeMapper extends Mapper {
 		TypeInformation <?>[] types = dataSchema.getFieldTypes();
 
 		for (int i = 0; i < types.length; i++) {
-			if (VectorTypes.VECTOR.equals(types[i]) ||
-				VectorTypes.DENSE_VECTOR.equals(types[i]) ||
-				VectorTypes.SPARSE_VECTOR.equals(types[i])) {
+			if (AlinkTypes.VECTOR.equals(types[i]) ||
+				AlinkTypes.DENSE_VECTOR.equals(types[i]) ||
+				AlinkTypes.SPARSE_VECTOR.equals(types[i])) {
 
 				vectorCols.add(names[i]);
 				vectorColTypes.add(Types.STRING);
@@ -53,7 +54,7 @@ public class VectorSerializeMapper extends Mapper {
 		for (int i = 0; i < selection.length(); i++) {
 			Vector vector = (Vector) selection.get(i);
 			if (null != vector) {
-				result.set(i, vector.toString());
+				result.set(i, VectorUtil.serialize(vector));
 			}
 		}
 	}

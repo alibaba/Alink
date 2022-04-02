@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.params.classification.C45PredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * the c45 model for pipeline.
  */
+@NameCn("C45决策树分类模型")
 public class C45Model extends MapModel <C45Model>
 	implements C45PredictParams <C45Model> {
 

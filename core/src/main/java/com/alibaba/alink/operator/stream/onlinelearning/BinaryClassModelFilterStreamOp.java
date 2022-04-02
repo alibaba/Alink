@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.stream.onlinelearning;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -11,6 +10,15 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.function.TriFunction;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.common.evaluation.BinaryClassMetrics;
@@ -40,6 +48,15 @@ import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluat
  */
 
 @Internal
+@InputPorts(values = {
+	@PortSpec(value = PortType.MODEL_STREAM, opType = OpType.SAME),
+	@PortSpec(value = PortType.DATA, opType = OpType.SAME),
+})
+@OutputPorts(values = {@PortSpec(value = PortType.MODEL_STREAM)})
+@ParamSelectColumnSpec(name = "vectorCol",
+	allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "labelCol")
+@NameCn("")
 public class BinaryClassModelFilterStreamOp<T extends BinaryClassModelFilterStreamOp<T>> extends StreamOperator <T> {
 
 	/**

@@ -3,7 +3,7 @@ package com.alibaba.alink.pipeline;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -200,7 +200,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 			filePath,
 			new TableSchema(
 				ArrayUtils.add(data.getColNames(), "features"),
-				ArrayUtils.add(data.getColTypes(), VectorTypes.DENSE_VECTOR)
+				ArrayUtils.add(data.getColTypes(), AlinkTypes.DENSE_VECTOR)
 			)
 		);
 
@@ -237,7 +237,7 @@ public class PipelineSaveAndLoadTest extends AlinkTestBase {
 			filePath,
 			new TableSchema(
 				ArrayUtils.add(data.getColNames(), "features"),
-				ArrayUtils.add(data.getColTypes(), VectorTypes.DENSE_VECTOR)
+				ArrayUtils.add(data.getColTypes(), AlinkTypes.DENSE_VECTOR)
 			)
 		);
 

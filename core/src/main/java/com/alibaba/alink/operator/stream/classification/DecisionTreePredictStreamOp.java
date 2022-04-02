@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.stream.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -27,6 +28,7 @@ import com.alibaba.alink.params.classification.DecisionTreePredictParams;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
+@NameCn("决策树预测")
 public final class DecisionTreePredictStreamOp extends ModelMapStreamOp <DecisionTreePredictStreamOp> implements
 	DecisionTreePredictParams <DecisionTreePredictStreamOp> {
 	private static final long serialVersionUID = -746782128171077666L;

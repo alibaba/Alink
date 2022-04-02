@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.linalg.tensor.IntTensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.EncodingKeys;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.Kwargs;
@@ -74,7 +74,7 @@ abstract class PreTrainedTokenizerMapper extends Mapper {
 			.map(d -> prependPrefix(d.label))
 			.toArray(String[]::new);
 		TypeInformation <?>[] outputTypes = new TypeInformation <?>[outputCols.length];
-		Arrays.fill(outputTypes, TensorTypes.INT_TENSOR);
+		Arrays.fill(outputTypes, AlinkTypes.INT_TENSOR);
 
 		return Tuple4.of(
 			selectedCols,

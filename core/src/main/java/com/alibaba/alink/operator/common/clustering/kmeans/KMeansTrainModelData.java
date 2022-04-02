@@ -5,7 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.params.clustering.GeoKMeansTrainParams;
 import com.alibaba.alink.params.clustering.KMeansTrainParams;
-import com.alibaba.alink.params.shared.HasVectorSizeDv100;
+import com.alibaba.alink.params.shared.HasVectorSizeDefaultAs100;
 import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
 
 import java.io.Serializable;
@@ -105,7 +105,7 @@ public class KMeansTrainModelData implements Serializable {
 
 		public ParamSummary(Params params) {
 			k = params.get(KMeansTrainParams.K);
-			vectorSize = params.get(HasVectorSizeDv100.VECTOR_SIZE);
+			vectorSize = params.get(HasVectorSizeDefaultAs100.VECTOR_SIZE);
 			distanceType = params.get(HasKMeansWithHaversineDistanceType.DISTANCE_TYPE);
 			vectorColName = params.get(KMeansTrainParams.VECTOR_COL);
 			latitudeColName = params.get(GeoKMeansTrainParams.LATITUDE_COL);
@@ -115,7 +115,7 @@ public class KMeansTrainModelData implements Serializable {
 		public Params toParams() {
 			return new Params().set(HasKMeansWithHaversineDistanceType.DISTANCE_TYPE, distanceType)
 				.set(KMeansTrainParams.K, k)
-				.set(HasVectorSizeDv100.VECTOR_SIZE, vectorSize)
+				.set(HasVectorSizeDefaultAs100.VECTOR_SIZE, vectorSize)
 				.set(KMeansTrainParams.VECTOR_COL, vectorColName)
 				.set(GeoKMeansTrainParams.LATITUDE_COL, latitudeColName)
 				.set(GeoKMeansTrainParams.LONGITUDE_COL, longtitudeColName);

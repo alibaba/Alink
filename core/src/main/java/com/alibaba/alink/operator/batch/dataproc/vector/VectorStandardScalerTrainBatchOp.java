@@ -7,6 +7,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelDataConverter;
@@ -19,6 +27,10 @@ import com.alibaba.alink.params.dataproc.vector.VectorStandardTrainParams;
  * StandardScaler transforms a dataSet, normalizing each feature to have unit standard deviation and/or zero mean.
  * If withMean is false, set mean as 0; if withStd is false, set std as 1.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA, opType = OpType.BATCH))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@NameCn("向量标准化训练")
 public final class VectorStandardScalerTrainBatchOp extends BatchOperator <VectorStandardScalerTrainBatchOp>
 	implements VectorStandardTrainParams <VectorStandardScalerTrainBatchOp>,
 	WithModelInfoBatchOp <VectorStandardScalerModelInfo, VectorStandardScalerTrainBatchOp,

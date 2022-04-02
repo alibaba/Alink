@@ -36,22 +36,15 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 		switch (recommType) {
 			case SIMILAR_ITEMS: {
 				this.topN = this.params.get(BaseSimilarItemsRecommParams.K);
-				this.recommObjType = modelSchema.getFieldTypes()[1];
 				break;
 			}
-			case ITEMS_PER_USER: {
-				this.topN = this.params.get(BaseItemsPerUserRecommParams.K);
-				this.excludeKnown = this.params.get(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN);
-				this.recommObjType = modelSchema.getFieldTypes()[1];
-				break;
-			}
-			case RATE: {
-				break;
-			}
+			case ITEMS_PER_USER:
 			case USERS_PER_ITEM: {
 				this.topN = this.params.get(BaseItemsPerUserRecommParams.K);
 				this.excludeKnown = this.params.get(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN);
-				this.recommObjType = modelSchema.getFieldTypes()[0];
+				break;
+			}
+			case RATE: {
 				break;
 			}
 			default: {
@@ -220,6 +213,10 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 		}
 		model = ThreadLocal.withInitial(() -> new ItemCfRecommModelDataConverter(recommType).load(modelRows));
 		scores = ThreadLocal.withInitial(() -> new double[model.get().items.length]);
+
+		recommObjType = FlinkTypeConverter.getFlinkType(
+			model.get().meta.get(ItemCfRecommModelDataConverter.ITEM_TYPE)
+		);
 	}
 
 	@Override
@@ -258,5 +255,10 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 	@Override
 	public MTable recommendSimilarUsers(Object userId) {
 		throw new RuntimeException("ItemCf not support recommendSimilarUsers");
+	}
+
+	@Override
+	public RecommKernel createNew() {
+		return new ItemCfRecommKernel(getModelSchema(), getDataSchema(), params.clone(), recommType);
 	}
 }

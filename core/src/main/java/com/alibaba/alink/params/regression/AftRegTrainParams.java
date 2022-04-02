@@ -3,11 +3,13 @@ package com.alibaba.alink.params.regression;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.shared.colname.HasFeatureColsDefaultAsNull;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import com.alibaba.alink.params.shared.colname.HasVectorColDefaultAsNull;
 import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs100;
-import com.alibaba.alink.params.shared.linear.HasEpsilonDv0000001;
+import com.alibaba.alink.params.shared.linear.HasEpsilonDefaultAs0000001;
 import com.alibaba.alink.params.shared.linear.HasL1;
 import com.alibaba.alink.params.shared.linear.HasL2;
 import com.alibaba.alink.params.shared.linear.HasWithIntercept;
@@ -17,7 +19,7 @@ import com.alibaba.alink.params.shared.linear.HasWithIntercept;
  */
 public interface AftRegTrainParams<T> extends
 	HasMaxIterDefaultAs100 <T>,
-	HasEpsilonDv0000001 <T>,
+	HasEpsilonDefaultAs0000001 <T>,
 	HasWithIntercept <T>,
 	HasLabelCol <T>,
 	HasVectorColDefaultAsNull <T>,
@@ -25,10 +27,8 @@ public interface AftRegTrainParams<T> extends
 	HasL1 <T>,
 	HasL2 <T> {
 
-	/**
-	 * @cn-name 生存列名
-	 * @cn 生存列名
-	 */
+	@NameCn("生存列名")
+	@DescCn("生存列名")
 	ParamInfo <String> CENSOR_COL = ParamInfoFactory
 		.createParamInfo("censorCol", String.class)
 		.setDescription(

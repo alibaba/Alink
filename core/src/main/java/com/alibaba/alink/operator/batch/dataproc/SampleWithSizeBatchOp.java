@@ -5,12 +5,20 @@ import org.apache.flink.api.java.utils.DataSetUtils;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dataproc.SampleWithSizeParams;
 
 /**
  * Sample the input data with given size with or without replacement.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@NameCn("固定条数随机采样")
 public class SampleWithSizeBatchOp extends BatchOperator <SampleWithSizeBatchOp>
 	implements SampleWithSizeParams <SampleWithSizeBatchOp> {
 

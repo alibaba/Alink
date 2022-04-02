@@ -4,14 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface RandomVectorSourceStreamParams<T> extends WithParams <T> {
 
 	/**
 	 * Param "idColName"
-	 *
-	 * @cn-name id 列名
-	 * @cn 列名，若列名非空，表示输出表中包含一个整形序列id列，否则无该列
 	 */
+	@NameCn("id 列名")
+	@DescCn("列名，若列名非空，表示输出表中包含一个整形序列id列，否则无该列")
 	ParamInfo <String> ID_COL = ParamInfoFactory
 		.createParamInfo("idCol", String.class)
 		.setDescription("id col name")
@@ -20,10 +22,9 @@ public interface RandomVectorSourceStreamParams<T> extends WithParams <T> {
 		.build();
 	/**
 	 * Param "outputColName"
-	 *
-	 * @cn-name 输出列名
-	 * @cn 输出随机生成的数据存储列名
 	 */
+	@NameCn("输出列名")
+	@DescCn("输出随机生成的数据存储列名")
 	ParamInfo <String> OUTPUT_COL = ParamInfoFactory
 		.createParamInfo("outputCol", String.class)
 		.setDescription("output col name")
@@ -32,10 +33,9 @@ public interface RandomVectorSourceStreamParams<T> extends WithParams <T> {
 		.build();
 	/**
 	 * Param "size"
-	 *
-	 * @cn-name 张量size
-	 * @cn 整型数组，张量的size
 	 */
+	@NameCn("张量size")
+	@DescCn("整型数组，张量的size")
 	ParamInfo <Integer[]> SIZE = ParamInfoFactory
 		.createParamInfo("size", Integer[].class)
 		.setDescription("size")
@@ -43,10 +43,9 @@ public interface RandomVectorSourceStreamParams<T> extends WithParams <T> {
 		.build();
 	/**
 	 * Param "maxRows"
-	 *
-	 * @cn-name 最大行数
-	 * @cn 输出数据流的行数目的最大值
 	 */
+	@NameCn("最大行数")
+	@DescCn("输出数据流的行数目的最大值")
 	ParamInfo <Long> MAX_ROWS = ParamInfoFactory
 		.createParamInfo("maxRows", Long.class)
 		.setDescription("max rows")
@@ -54,10 +53,9 @@ public interface RandomVectorSourceStreamParams<T> extends WithParams <T> {
 		.build();
 	/**
 	 * Param "sparsity"
-	 *
-	 * @cn-name 稀疏度
-	 * @cn 非零元素在所有张量数据中的占比
 	 */
+	@NameCn("稀疏度")
+	@DescCn("非零元素在所有张量数据中的占比")
 	ParamInfo <Double> SPARSITY = ParamInfoFactory
 		.createParamInfo("sparsity", Double.class)
 		.setDescription("sparsity")
@@ -65,10 +63,9 @@ public interface RandomVectorSourceStreamParams<T> extends WithParams <T> {
 		.build();
 	/**
 	 * Param "timePerSample"
-	 *
-	 * @cn-name 稀疏度
-	 * @cn 整型数组，张量的size
 	 */
+	@NameCn("稀疏度")
+	@DescCn("整型数组，张量的size")
 	ParamInfo <Double> TIME_PER_SAMPLE = ParamInfoFactory
 		.createParamInfo("timePerSample", Double.class)
 		.setDescription("time per sample")

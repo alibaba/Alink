@@ -16,6 +16,14 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -29,6 +37,8 @@ import com.alibaba.alink.operator.common.classification.ann.MlpcModelData;
 import com.alibaba.alink.operator.common.classification.ann.MlpcModelDataConverter;
 import com.alibaba.alink.operator.common.classification.ann.Topology;
 import com.alibaba.alink.params.classification.MultilayerPerceptronTrainParams;
+import com.alibaba.alink.params.shared.colname.HasFeatureCols;
+import com.alibaba.alink.params.shared.colname.HasVectorCol;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +52,21 @@ import java.util.Map;
  * Number of inputs has to be equal to the size of feature vectors.
  * Number of outputs has to be equal to the total number of labels.
  */
+@InputPorts(values = {
+    @PortSpec(PortType.DATA),
+    @PortSpec(value = PortType.MODEL, isOptional = true)
+})
+@OutputPorts(values = {
+    @PortSpec(PortType.MODEL)
+})
+@ParamSelectColumnSpec(name = "featureCols",
+    allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "vectorCol",
+    allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "labelCol")
+@FeatureColsVectorColMutexRule
+
+@NameCn("多层感知机分类训练")
 public final class MultilayerPerceptronTrainBatchOp
         extends BatchOperator<MultilayerPerceptronTrainBatchOp>
         implements MultilayerPerceptronTrainParams<MultilayerPerceptronTrainBatchOp> {
@@ -59,7 +84,7 @@ public final class MultilayerPerceptronTrainBatchOp
     /**
      * Get distinct labels and assign each label an index.
      */
-    private static DataSet<Tuple2<Long, Object>> getDistinctLabels(BatchOperator data, final String labelColName) {
+    private static DataSet<Tuple2<Long, Object>> getDistinctLabels(BatchOperator <?> data, final String labelColName) {
         data = data.select("`" + labelColName + "`").distinct();
         DataSet<Row> labelRows = data.getDataSet();
         return DataSetUtils.zipWithIndex(labelRows)
@@ -67,7 +92,7 @@ public final class MultilayerPerceptronTrainBatchOp
                     private static final long serialVersionUID = 6650168043579663372L;
 
                     @Override
-                    public Tuple2<Long, Object> map(Tuple2<Long, Row> value) throws Exception {
+                    public Tuple2<Long, Object> map(Tuple2<Long, Row> value) {
                         return Tuple2.of(value.f0, value.f1.getField(0));
                     }
                 })
@@ -91,11 +116,9 @@ public final class MultilayerPerceptronTrainBatchOp
             private static final long serialVersionUID = 7200866630508717163L;
 
             @Override
-            public void mapPartition(Iterable<Row> iterable, Collector<DenseVector> collector) throws Exception {
+            public void mapPartition(Iterable<Row> iterable, Collector<DenseVector> collector) {
                 DenseVector maxAbs = null;
                 if (isVectorInput) {
-                    Map<Integer, Double> sparseMaxAbs = new HashMap<>();
-                    int maxIdx = -1;
                     for (Row value : iterable) {
                         Vector vec = VectorUtil.getVector(value.getField(vectorColIdx));
                         if (maxAbs == null) {
@@ -106,8 +129,8 @@ public final class MultilayerPerceptronTrainBatchOp
                                 }
                             } else {
                                 int[] indices = ((SparseVector) vec).getIndices();
-                                for (int i = 0; i < indices.length; ++i) {
-                                    maxAbs.set(indices[i], Math.abs(vec.get(indices[i])));
+                                for (int index : indices) {
+                                    maxAbs.set(index, Math.abs(vec.get(index)));
                                 }
                             }
                         } else {
@@ -117,9 +140,9 @@ public final class MultilayerPerceptronTrainBatchOp
                                 }
                             } else {
                                 int[] indices = ((SparseVector) vec).getIndices();
-                                for (int i = 0; i < indices.length; ++i) {
-                                    maxAbs.set(indices[i],
-                                            Math.max(maxAbs.get(indices[i]), Math.abs(vec.get(indices[i]))));
+                                for (int index : indices) {
+                                    maxAbs.set(index,
+                                        Math.max(maxAbs.get(index), Math.abs(vec.get(index))));
                                 }
                             }
                         }
@@ -155,7 +178,7 @@ public final class MultilayerPerceptronTrainBatchOp
             private static final long serialVersionUID = 880634306611878638L;
 
             @Override
-            public void reduce(Iterable<DenseVector> iterable, Collector<DenseVector> collector) throws Exception {
+            public void reduce(Iterable<DenseVector> iterable, Collector<DenseVector> collector) {
                 DenseVector maxAbs = null;
                 for (DenseVector vec : iterable) {
                     if (maxAbs == null) {
@@ -175,7 +198,7 @@ public final class MultilayerPerceptronTrainBatchOp
      * Get training samples from input data.
      */
     private static DataSet<Tuple2<Double, DenseVector>> getTrainingSamples(
-            BatchOperator data, DataSet<Tuple2<Long, Object>> labels, DataSet<DenseVector> maxAbs,
+            BatchOperator <?> data, DataSet<Tuple2<Long, Object>> labels, DataSet<DenseVector> maxAbs,
             final String[] featureColNames, final String vectorColName, final String labelColName, final int vecSize) {
 
         final boolean isVectorInput = !StringUtils.isNullOrWhitespaceOnly(vectorColName);
@@ -189,16 +212,16 @@ public final class MultilayerPerceptronTrainBatchOp
         return dataRows
                 .map(new RichMapFunction<Row, Tuple2<Double, DenseVector>>() {
                     private static final long serialVersionUID = -2883936655064900395L;
-                    transient Map<Comparable, Long> label2index;
+                    transient Map<Comparable<?>, Long> label2index;
                     private DenseVector maxAbs;
 
                     @Override
-                    public void open(Configuration parameters) throws Exception {
+                    public void open(Configuration parameters) {
                         List<Tuple2<Long, Object>> bcLabels = getRuntimeContext().getBroadcastVariable("labels");
                         this.label2index = new HashMap<>();
                         bcLabels.forEach(t2 -> {
                             Long index = t2.f0;
-                            Comparable label = (Comparable) t2.f1;
+                            Comparable<?> label = (Comparable<?>) t2.f1;
                             this.label2index.put(label, index);
                         });
                         maxAbs = (DenseVector) getRuntimeContext().getBroadcastVariable("maxAbs").get(0);
@@ -210,15 +233,15 @@ public final class MultilayerPerceptronTrainBatchOp
                     }
 
                     @Override
-                    public Tuple2<Double, DenseVector> map(Row value) throws Exception {
-                        Comparable label = (Comparable) value.getField(labelColIdx);
+                    public Tuple2<Double, DenseVector> map(Row value) {
+                        Comparable<?> label = (Comparable<?>) value.getField(labelColIdx);
                         Long labelIdx = this.label2index.get(label);
                         if (labelIdx == null) {
                             throw new RuntimeException("unknown label: " + label);
                         }
                         if (isVectorInput) {
                             Vector vec = VectorUtil.getVector(value.getField(vectorColIdx));
-                            DenseVector finalVec = null;
+                            DenseVector finalVec;
                             if (null == vec) {
                                 return new Tuple2<>(labelIdx.doubleValue(), null);
                             } else {
@@ -232,9 +255,9 @@ public final class MultilayerPerceptronTrainBatchOp
                                     tmpVec.setSize(vecSize);
                                     finalVec = tmpVec.toDenseVector();
                                     int[] indices = ((SparseVector) vec).getIndices();
-                                    for (int i = 0; i < indices.length; ++i) {
-                                        finalVec.set(indices[i], finalVec.get(indices[i]) / maxAbs.get(indices[i]));
-                                    }
+									for (int index : indices) {
+										finalVec.set(index, finalVec.get(index) / maxAbs.get(index));
+									}
                                 }
                             }
                             return new Tuple2<>(labelIdx.doubleValue(), finalVec);
@@ -267,10 +290,12 @@ public final class MultilayerPerceptronTrainBatchOp
         final String labelColName = getLabelCol();
         final String vectorColName = getVectorCol();
         final boolean isVectorInput = !StringUtils.isNullOrWhitespaceOnly(vectorColName);
+        if (getParams().contains(HasFeatureCols.FEATURE_COLS) && getParams().contains(HasVectorCol.VECTOR_COL)) {
+            throw new RuntimeException("featureCols and vectorCol cannot be set at the same time.");
+        }
         final String[] featureColNames = isVectorInput ? null :
                 (getParams().contains(FEATURE_COLS) ? getFeatureCols() :
                         TableUtil.getNumericCols(in.getSchema(), new String[]{labelColName}));
-
         final TypeInformation<?> labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(),
                 labelColName);
         DataSet<Tuple2<Long, Object>> labels = getDistinctLabels(in, labelColName);
@@ -290,7 +315,7 @@ public final class MultilayerPerceptronTrainBatchOp
         DataSet<DenseVector> initialModel = initModel == null ? null : initModel.getDataSet().reduceGroup(
             new RichGroupReduceFunction <Row, DenseVector>() {
                 @Override
-                public void reduce(Iterable <Row> values, Collector <DenseVector> out) throws Exception {
+                public void reduce(Iterable <Row> values, Collector <DenseVector> out) {
                     DenseVector maxAbs = (DenseVector) getRuntimeContext().getBroadcastVariable("maxAbs").get(0);
                     List <Row> modelRows = new ArrayList <>(0);
                     for (Row row : values) {
@@ -329,13 +354,11 @@ public final class MultilayerPerceptronTrainBatchOp
                     private static final long serialVersionUID = 9083288793177120814L;
 
                     @Override
-                    public void flatMap(DenseVector value, Collector<Row> out) throws Exception {
+                    public void flatMap(DenseVector value, Collector<Row> out) {
                         List<Tuple2<Long, Object>> bcLabels = getRuntimeContext().getBroadcastVariable("labels");
                         DenseVector maxAbs = (DenseVector) getRuntimeContext().getBroadcastVariable("maxAbs").get(0);
                         Object[] labels = new Object[bcLabels.size()];
-                        bcLabels.forEach(t2 -> {
-                            labels[t2.f0.intValue()] = t2.f1;
-                        });
+                        bcLabels.forEach(t2 -> labels[t2.f0.intValue()] = t2.f1);
                         for (int i = 0; i < layerSize[0]; ++i) {
                             for (int j = 0; j < layerSize[1]; ++j) {
                                 if (maxAbs.get(i) > 0) {

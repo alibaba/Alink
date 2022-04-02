@@ -4,15 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.linalg.VectorType;
 import com.alibaba.alink.params.ParamUtil;
 
-public interface HasVectorType<T> extends WithParams<T> {
+public interface HasVectorType<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 要转换的Vector类型。
-	 * @cn 要转换的Vector类型。
-	 */
+	@NameCn("要转换的Vector类型。")
+	@DescCn("要转换的Vector类型。")
 	ParamInfo <VectorType> VECTOR_TYPE = ParamInfoFactory
 		.createParamInfo("vectorType", VectorType.class)
 		.setDescription("Vector type is sparse or not.")

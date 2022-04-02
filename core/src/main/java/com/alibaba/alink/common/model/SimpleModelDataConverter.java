@@ -11,10 +11,9 @@ import org.apache.flink.util.Collector;
 import java.util.List;
 
 /**
- * The abstract class for a kind of {@link ModelDataConverter} where the model data can serialize to
- * "Tuple2&jt;Params, Iterable&jt;String&gt;&gt;". Here "Params" is the meta data of the model, and
- * "Iterable&jt;String&gt;" is
- * concrete data of the model.
+ * The abstract class for a kind of {@link ModelDataConverter} where the model data can serialize to "Tuple2&jt;Params,
+ * Iterable&jt;String&gt;&gt;". Here "Params" is the meta data of the model, and "Iterable&jt;String&gt;" is concrete
+ * data of the model.
  */
 public abstract class SimpleModelDataConverter<M1, M2> implements ModelDataConverter <M1, M2> {
 	/**
@@ -37,8 +36,8 @@ public abstract class SimpleModelDataConverter<M1, M2> implements ModelDataConve
 
 	private static final String FIRST_COL_NAME = "model_id";
 	private static final String SECOND_COL_NAME = "model_info";
-	private static final TypeInformation FIRST_COL_TYPE = Types.LONG();
-	private static final TypeInformation SECOND_COL_TYPE = Types.STRING();
+	private static final TypeInformation <?> FIRST_COL_TYPE = Types.LONG();
+	private static final TypeInformation <?> SECOND_COL_TYPE = Types.STRING();
 
 	@Override
 	public TableSchema getModelSchema() {

@@ -4,14 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Number of buckets.
  */
 public interface HasNumBuckets<T> extends WithParams <T> {
-	/**
-	 * @cn-name quantile个数
-	 * @cn quantile个数，对所有列有效。
-	 */
+	@NameCn("quantile个数")
+	@DescCn("quantile个数，对所有列有效。")
 	ParamInfo <Integer> NUM_BUCKETS = ParamInfoFactory
 		.createParamInfo("numBuckets", Integer.class)
 		.setDescription("number of buckets")

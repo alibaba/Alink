@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.common.DataTypeDisplayInterface;
 import com.alibaba.alink.common.linalg.VectorUtil.VectorSerialType;
 
 import java.nio.ByteBuffer;
@@ -14,7 +15,7 @@ import java.util.function.BiConsumer;
 /**
  * A sparse vector represented by an indices array and a values array.
  */
-public class SparseVector extends Vector {
+public class SparseVector extends Vector implements DataTypeDisplayInterface {
 
 	private static final long serialVersionUID = -3756357155623064883L;
 	/**
@@ -283,7 +284,7 @@ public class SparseVector extends Vector {
 
 	@Override
 	public String toString() {
-		return VectorUtil.toString(this);
+		return toDisplaySummary() + " " + toShortDisplayData();
 	}
 
 	@Override
@@ -594,6 +595,39 @@ public class SparseVector extends Vector {
 	@Override
 	public VectorIterator iterator() {
 		return new SparseVectorVectorIterator();
+	}
+
+	@Override
+	public String toDisplayData(int n) {
+		StringBuilder sbd = new StringBuilder();
+		if (indices.length > 0) {
+			if ((indices.length <= n || n < 0)) {
+				for (int i = 0; i < indices.length - 1; ++i) {
+					sbd.append(indices[i]).append(":").append(values[i]).append(" ");
+				}
+				sbd.append(indices[indices.length - 1]).append(":").append(values[indices.length - 1]);
+			} else {
+				int localSize = n / 2;
+				for (int i = 0; i < n - localSize; ++i) {
+					sbd.append(indices[i]).append(":").append(values[i]).append(" ");
+				}
+				sbd.append("...");
+				for (int i = localSize; i > 0; --i) {
+					int idx = indices.length - i;
+					sbd.append(" ").append(indices[idx]).append(":").append(values[idx]);
+				}
+			}
+		}
+		return sbd.toString();
+	}
+	@Override
+	public String toDisplaySummary() {
+		return String.format("SparseVector(size = %d, nnz = %d)", this.size(), indices.length);
+	}
+
+	@Override
+	public String toShortDisplayData() {
+		return toDisplayData(3);
 	}
 
 	private class SparseVectorVectorIterator implements VectorIterator {

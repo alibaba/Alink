@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.DecisionTreeTrainBatchOp;
@@ -29,6 +30,7 @@ import com.alibaba.alink.pipeline.Trainer;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
+@NameCn("决策树分类器")
 public class DecisionTreeClassifier extends Trainer <DecisionTreeClassifier, DecisionTreeClassificationModel> implements
 	DecisionTreeTrainParams <DecisionTreeClassifier>,
 	DecisionTreePredictParams <DecisionTreeClassifier>,

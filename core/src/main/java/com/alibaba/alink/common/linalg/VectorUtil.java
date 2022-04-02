@@ -190,6 +190,13 @@ public class VectorUtil {
 	}
 
 	/**
+	 * Serialize the vector to a string.
+	 */
+	public static String serialize(Object vector) {
+		return toString((Vector) vector);
+	}
+
+	/**
 	 * Serialize the SparseVector to string.
 	 *
 	 * <p>The format of the returned is described at {@link #parseSparse(String)}

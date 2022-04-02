@@ -13,7 +13,10 @@ import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.MTable.MTableKryoSerializer;
 import com.alibaba.alink.common.lazy.LazyObjectsManager;
+import com.alibaba.alink.common.linalg.tensor.Tensor;
+import com.alibaba.alink.common.linalg.tensor.TensorKryoSerializer;
 import com.alibaba.alink.common.sql.builtin.BuildInAggRegister;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
@@ -100,6 +103,14 @@ public class MLEnvironment {
 		this.batchTableEnv = batchTableEnv;
 		this.streamEnv = streamEnv;
 		this.streamTableEnv = streamTableEnv;
+		if (this.env != null) {
+			env.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializer());
+			env.addDefaultKryoSerializer(Tensor.class, new TensorKryoSerializer());
+		}
+		if (this.streamEnv != null) {
+			streamEnv.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializer());
+			streamEnv.addDefaultKryoSerializer(Tensor.class, new TensorKryoSerializer());
+		}
 		if (this.batchTableEnv != null) {
 			BuildInAggRegister.registerUdf(this.batchTableEnv);
 			BuildInAggRegister.registerUdaf(this.batchTableEnv);
@@ -138,6 +149,9 @@ public class MLEnvironment {
 			} else {
 				env = ExecutionEnvironment.getExecutionEnvironment();
 			}
+
+			env.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializer());
+			env.addDefaultKryoSerializer(Tensor.class, new TensorKryoSerializer());
 		}
 		return env;
 	}
@@ -152,6 +166,8 @@ public class MLEnvironment {
 	public StreamExecutionEnvironment getStreamExecutionEnvironment() {
 		if (null == streamEnv) {
 			streamEnv = StreamExecutionEnvironment.getExecutionEnvironment();
+			streamEnv.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializer());
+			streamEnv.addDefaultKryoSerializer(Tensor.class, new TensorKryoSerializer());
 		}
 		return streamEnv;
 	}

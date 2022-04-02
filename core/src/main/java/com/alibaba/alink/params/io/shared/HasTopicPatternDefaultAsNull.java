@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasTopicPatternDefaultAsNull<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name "topic pattern"
-	 * @cn "topic pattern"
-	 */
+	@NameCn("topic pattern")
+	@DescCn("topic pattern")
 	ParamInfo <String> TOPIC_PATTERN = ParamInfoFactory
 		.createParamInfo("topicPattern", String.class)
 		.setDescription("topic pattern")

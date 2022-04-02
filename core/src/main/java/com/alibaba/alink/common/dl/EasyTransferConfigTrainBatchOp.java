@@ -1,9 +1,14 @@
 package com.alibaba.alink.common.dl;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.tensorflow.TFTableModelTrainBatchOp;
@@ -15,6 +20,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCols")
 @Internal
 public class EasyTransferConfigTrainBatchOp extends BatchOperator <EasyTransferConfigTrainBatchOp>
 	implements EasyTransferConfigTrainParams <EasyTransferConfigTrainBatchOp> {

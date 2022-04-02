@@ -1,14 +1,46 @@
+import json
+import os
+from array import array
+
 import pandas as pd
 from prophet import Prophet
 from prophet.serialize import model_to_json, model_from_json
-import json
-from array import array
+
+
+class suppress_stdout_stderr(object):
+    '''
+    A context manager for doing a "deep suppression" of stdout and stderr in
+    Python, i.e. will suppress all print, even if the print originates in a
+    compiled C/Fortran sub-function.
+       This will not suppress raised exceptions, since exceptions are printed
+    to stderr just before a script exits, and after the context manager has
+    exited (at least, I think that is why it lets exceptions through).
+    '''
+
+    def __init__(self):
+        # Open a pair of null files
+        self.null_fds = [os.open(os.devnull, os.O_RDWR) for x in range(2)]
+        # Save the actual stdout (1) and stderr (2) file descriptors.
+        self.save_fds = [os.dup(1), os.dup(2)]
+
+    def __enter__(self):
+        # Assign the null pointers to stdout and stderr.
+        os.dup2(self.null_fds[0], 1)
+        os.dup2(self.null_fds[1], 2)
+
+    def __exit__(self, *_):
+        # Re-assign the real stdout/stderr back to (1) and (2)
+        os.dup2(self.save_fds[0], 1)
+        os.dup2(self.save_fds[1], 2)
+        # Close the null files
+        for fd in self.null_fds + self.save_fds:
+            os.close(fd)
+
 
 class PyProphetCalc2:
 
     def setCollector(self, collector):
         self._collector = collector
-
 
     def stan_init(self, m):
         res = {}
@@ -68,18 +100,19 @@ class PyProphetCalc2:
 
             dataLen = len(list_of_tuples)
 
-            #init model
-            m = Prophet(growth=growth, uncertainty_samples=uncertainty_samples)
-            if stan_i is not None and dataLen == dimDelta + 2:
-                m.fit(df, init=stan_i)
-            elif argv2 is None or argv2[0][0] is None:
-                m.fit(df)
-            else :
-                init_model_str = argv2[0][0]
-                init_model = model_from_json(init_model_str)
+            # init model
+            with suppress_stdout_stderr():
+                m = Prophet(growth=growth, uncertainty_samples=uncertainty_samples)
+                if stan_i is not None and dataLen == dimDelta + 2:
+                    m.fit(df, init=stan_i)
+                elif argv2 is None or argv2[0][0] is None:
+                    m.fit(df)
+                else:
+                    init_model_str = argv2[0][0]
+                    init_model = model_from_json(init_model_str)
 
-                #fit and pred
-                m.fit(df, init=stan_init(init_model))
+                    # fit and pred
+                    m.fit(df, init=stan_init(init_model))
 
             future = m.make_future_dataframe(periods=predict_num, freq=freq, include_history=False)
             pout = m.predict(future)

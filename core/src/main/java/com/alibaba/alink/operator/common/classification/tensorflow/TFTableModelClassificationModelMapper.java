@@ -8,7 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.mapper.IterableModelLoader;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperChain;
@@ -17,7 +17,6 @@ import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.model.LabeledModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.tensorflow.TFModelDataConverterUtils;
 import com.alibaba.alink.operator.common.tensorflow.TFTableModelPredictModelMapper;
 import com.alibaba.alink.params.classification.TFTableModelClassificationPredictParams;
@@ -87,7 +86,7 @@ public class TFTableModelClassificationModelMapper extends RichModelMapper imple
 		Params meta = modelData.getMeta();
 
 		String tfOutputSignatureDef = meta.get(TFModelDataConverterUtils.TF_OUTPUT_SIGNATURE_DEF);
-		TypeInformation <?> tfOutputSignatureType = TensorTypes.FLOAT_TENSOR;
+		TypeInformation <?> tfOutputSignatureType = AlinkTypes.FLOAT_TENSOR;
 		String[] reservedCols = null == params.get(HasReservedColsDefaultAsNull.RESERVED_COLS)
 			? getDataSchema().getFieldNames()
 			: params.get(HasReservedColsDefaultAsNull.RESERVED_COLS);
@@ -95,7 +94,7 @@ public class TFTableModelClassificationModelMapper extends RichModelMapper imple
 		TableSchema dataSchema = getDataSchema();
 		if (CollectionUtils.isNotEmpty(modelData.getPreprocessPipelineModelRows())) {
 			String preprocessPipelineModelSchemaStr = modelData.getPreprocessPipelineModelSchemaStr();
-			TableSchema pipelineModelSchema = CsvUtil.schemaStr2Schema(preprocessPipelineModelSchemaStr);
+			TableSchema pipelineModelSchema = TableUtil.schemaStr2Schema(preprocessPipelineModelSchemaStr);
 
 			MapperChain mapperList = ModelExporterUtils.loadMapperListFromStages(
 				modelData.getPreprocessPipelineModelRows(),
@@ -112,7 +111,7 @@ public class TFTableModelClassificationModelMapper extends RichModelMapper imple
 		tfModelMapperParams.set(TFTableModelPredictParams.OUTPUT_SIGNATURE_DEFS,
 			new String[] {tfOutputSignatureDef});
 		tfModelMapperParams.set(TFTableModelPredictParams.OUTPUT_SCHEMA_STR,
-			CsvUtil.schema2SchemaStr(TableSchema.builder().field(predCol, tfOutputSignatureType).build()));
+			TableUtil.schema2SchemaStr(TableSchema.builder().field(predCol, tfOutputSignatureType).build()));
 		tfModelMapperParams.set(TFTableModelPredictParams.SELECTED_COLS, tfInputCols);
 		tfModelMapperParams.set(TFTableModelPredictParams.RESERVED_COLS, reservedCols);
 

@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.feature.BucketizerMapper;
 import com.alibaba.alink.params.feature.BucketizerParams;
@@ -17,6 +18,7 @@ import com.alibaba.alink.params.feature.BucketizerParams;
  * Split array must be strictly increasing and have at least three points. It's a string input with split points
  * segments with delimiter ",".
  */
+@NameCn("分桶")
 public final class BucketizerBatchOp extends MapBatchOp <BucketizerBatchOp>
 	implements BucketizerParams <BucketizerBatchOp> {
 	private static final long serialVersionUID = -2658623503634689607L;

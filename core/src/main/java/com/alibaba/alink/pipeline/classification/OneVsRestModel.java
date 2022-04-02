@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.classification.OneVsRestModelMapper;
 import com.alibaba.alink.params.classification.OneVsRestPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * Model fitted by OneVsRest.
  */
+@NameCn("OneVsRest模型")
 public class OneVsRestModel extends MapModel <OneVsRestModel>
 	implements OneVsRestPredictParams <OneVsRestModel> {
 

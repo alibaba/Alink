@@ -9,7 +9,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.common.tree.Preprocessing;
@@ -211,7 +211,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 					Preconditions.checkArgument(resultCols.length == selectedCols.length,
 						"Input column name is not match output column name.");
 					resultColTypes = new TypeInformation[resultCols.length];
-					Arrays.fill(resultColTypes, VectorTypes.SPARSE_VECTOR);
+					Arrays.fill(resultColTypes, AlinkTypes.SPARSE_VECTOR);
 					break;
 				}
 				case ASSEMBLED_VECTOR: {
@@ -219,7 +219,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 					Preconditions.checkArgument(null != outputCols && outputCols.length == 1,
 						"When encode is ASSEMBLED_VECTOR, outputCols must be given and the length must be 1!");
 					resultColTypes = new TypeInformation[resultCols.length];
-					Arrays.fill(resultColTypes, VectorTypes.SPARSE_VECTOR);
+					Arrays.fill(resultColTypes, AlinkTypes.SPARSE_VECTOR);
 					break;
 				}
 				default: {

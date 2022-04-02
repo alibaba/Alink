@@ -10,65 +10,46 @@ import org.apache.flink.util.InstantiationUtil;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
 public class RichInputFormatWithClassLoader<T> extends RichInputFormat <T, InputSplit> {
 	private static final long serialVersionUID = 604359344643992350L;
 
-	private final ClassLoaderFactory factory;
-	private final byte[] serializedInputFormat;
+	private ClassLoaderFactory factory;
+	private RichInputFormat <T, InputSplit> inputFormat;
 
-	private transient RichInputFormat <T, InputSplit> inputFormat;
-
-	public RichInputFormatWithClassLoader(
-		ClassLoaderFactory factory, RichInputFormat <T, InputSplit> inputFormat) {
-
+	public RichInputFormatWithClassLoader(ClassLoaderFactory factory,
+										  RichInputFormat <T, InputSplit> inputFormat) {
 		this.factory = factory;
 		this.inputFormat = inputFormat;
-
-		try {
-			serializedInputFormat = InstantiationUtil.serializeObject(inputFormat);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private RichInputFormat <T, InputSplit> getInputFormat() {
-		if (inputFormat == null) {
-			try {
-				inputFormat = InstantiationUtil.deserializeObject(serializedInputFormat, factory.create());
-			} catch (IOException | ClassNotFoundException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		return inputFormat;
 	}
 
 	@Override
 	public void configure(Configuration parameters) {
-		factory.doAsThrowRuntime(() -> getInputFormat().configure(parameters));
+		factory.doAsThrowRuntime(() -> inputFormat.configure(parameters));
 	}
 
 	@Override
 	public void openInputFormat() throws IOException {
-		factory.doAsThrowRuntime(() -> getInputFormat().openInputFormat());
+		factory.doAsThrowRuntime(() -> inputFormat.openInputFormat());
 	}
 
 	@Override
 	public void closeInputFormat() throws IOException {
-		factory.doAsThrowRuntime(() -> getInputFormat().closeInputFormat());
+		factory.doAsThrowRuntime(() -> inputFormat.closeInputFormat());
 	}
 
 	@Override
 	public BaseStatistics getStatistics(BaseStatistics cachedStatistics) throws IOException {
-		return factory.doAsThrowRuntime(() -> getInputFormat().getStatistics(cachedStatistics));
+		return factory.doAsThrowRuntime(() -> inputFormat.getStatistics(cachedStatistics));
 	}
 
 	@Override
 	public InputSplitWithClassLoader[] createInputSplits(int minNumSplits) throws IOException {
-		return factory.doAsThrowRuntime(() -> Arrays.stream(getInputFormat().createInputSplits(minNumSplits))
+		return factory.doAsThrowRuntime(() -> Arrays.stream(inputFormat.createInputSplits(minNumSplits))
 			.map(x -> new InputSplitWithClassLoader(factory, x))
 			.toArray(InputSplitWithClassLoader[]::new));
 	}
@@ -87,7 +68,7 @@ public class RichInputFormatWithClassLoader<T> extends RichInputFormat <T, Input
 
 				return new InputSplitAssignerWithClassLoader(
 					factory,
-					getInputFormat().getInputSplitAssigner(raw)
+					inputFormat.getInputSplitAssigner(raw)
 				);
 			}
 		);
@@ -95,21 +76,33 @@ public class RichInputFormatWithClassLoader<T> extends RichInputFormat <T, Input
 
 	@Override
 	public void open(InputSplit split) throws IOException {
-		factory.doAsThrowRuntime(() -> getInputFormat().open(((InputSplitWithClassLoader) split).getInputSplit()));
+		factory.doAsThrowRuntime(() -> inputFormat.open(((InputSplitWithClassLoader) split).getInputSplit()));
 	}
 
 	@Override
 	public boolean reachedEnd() throws IOException {
-		return factory.doAsThrowRuntime(() -> getInputFormat().reachedEnd());
+		return factory.doAsThrowRuntime(() -> inputFormat.reachedEnd());
 	}
 
 	@Override
 	public T nextRecord(T reuse) throws IOException {
-		return factory.doAsThrowRuntime(() -> getInputFormat().nextRecord(reuse));
+		return factory.doAsThrowRuntime(() -> inputFormat.nextRecord(reuse));
 	}
 
 	@Override
 	public void close() throws IOException {
-		factory.doAsThrowRuntime(() -> getInputFormat().close());
+		factory.doAsThrowRuntime(() -> inputFormat.close());
+	}
+
+	private void writeObject(ObjectOutputStream stream)
+		throws IOException {
+		InstantiationUtil.serializeObject(stream, factory);
+		InstantiationUtil.serializeObject(stream, inputFormat);
+	}
+
+	private void readObject(ObjectInputStream stream)
+		throws IOException, ClassNotFoundException {
+		factory = InstantiationUtil.deserializeObject(stream, Thread.currentThread().getContextClassLoader());
+		inputFormat = InstantiationUtil.deserializeObject(stream, factory.create());
 	}
 }

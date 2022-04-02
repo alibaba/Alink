@@ -16,7 +16,7 @@ import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
  */
 public class UnaryLossObjFunc extends OptimObjFunc {
 	private static final long serialVersionUID = 1178693053439209380L;
-	private UnaryLossFunc unaryLossFunc;
+	private final UnaryLossFunc unaryLossFunc;
 
 	/**
 	 * Constructor.

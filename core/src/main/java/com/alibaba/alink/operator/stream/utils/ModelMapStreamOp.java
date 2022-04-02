@@ -6,14 +6,22 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.function.TriFunction;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.ModelMapperAdapter;
 import com.alibaba.alink.common.mapper.ModelMapperAdapterMT;
 import com.alibaba.alink.common.model.DataBridgeModelSource;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.common.stream.model.PredictProcess;
 import com.alibaba.alink.operator.stream.StreamOperator;
@@ -24,18 +32,26 @@ import com.alibaba.alink.params.mapper.ModelMapperParams;
 /**
  * *
  */
+@InputPorts(values = {
+	@PortSpec(value = PortType.MODEL, opType = OpType.BATCH, desc = PortDesc.PREDICT_INPUT_MODEL),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.PREDICT_INPUT_DATA),
+	@PortSpec(value = PortType.MODEL_STREAM, isOptional = true, desc = PortDesc.PREDICT_INPUT_MODEL_STREAM)
+})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ReservedColsWithSecondInputSpec
+@Internal
 public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOperator <T>
 	implements ModelStreamScanParams <T> {
 
 	private static final long serialVersionUID = -6591412871091394859L;
-	private final BatchOperator model;
+	protected final BatchOperator <?> model;
 
 	/**
 	 * (modelScheme, dataSchema, params) -> ModelMapper
 	 */
-	private final TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder;
+	protected final TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder;
 
-	public ModelMapStreamOp(BatchOperator model,
+	public ModelMapStreamOp(BatchOperator <?> model,
 							TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder,
 							Params params) {
 		super(params);
@@ -47,69 +63,81 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 	public T linkFrom(StreamOperator <?>... inputs) {
 		checkMinOpSize(1, inputs);
 
-		StreamOperator <?> in = inputs[0];
+		StreamOperator <?> inputData = inputs[0];
 
-		TableSchema modelSchema = this.model.getSchema();
+		StreamOperator <?> inputModelStream = inputs.length > 1 ? inputs[1] : null;
 
 		try {
-			DataBridge modelDataBridge = DirectReader.collect(model);
-			final DataBridgeModelSource modelSource = new DataBridgeModelSource(modelDataBridge);
-			final ModelMapper mapper = this.mapperBuilder.apply(modelSchema, in.getSchema(), this.getParams());
-			DataStream <Row> resultRows;
 
-			DataStream <Row> modelStream = null;
-			TableSchema modelStreamSchema = null;
+			final ModelMapper mapper = mapperBuilder.apply(model.getSchema(), inputData.getSchema(),
+				getParams());
 
-			if (ModelStreamUtils.useModelStreamFile(getParams())) {
-				StreamOperator <?> modelStreamOp = new ModelStreamFileSourceStreamOp()
-					.setFilePath(getModelStreamFilePath())
-					.setScanInterval(getModelStreamScanInterval())
-					.setStartTime(getModelStreamStartTime())
-					.setSchemaStr(CsvUtil.schema2SchemaStr(modelSchema))
-					.setMLEnvironmentId(getMLEnvironmentId());
-				modelStreamSchema = modelStreamOp.getSchema();
-				modelStream = modelStreamOp.getDataStream();
-			}
-
-			if (inputs.length > 1) {
-				StreamOperator <?> localModelStreamOp = inputs[1];
-
-				if (modelStream == null) {
-					modelStreamSchema = localModelStreamOp.getSchema();
-					modelStream = localModelStreamOp.getDataStream();
-				} else {
-					localModelStreamOp = localModelStreamOp.select(modelStreamSchema.getFieldNames());
-					modelStream = modelStream.union(localModelStreamOp.getDataStream());
-				}
-			}
-
-			if (modelStream != null) {
-				resultRows = in
-					.getDataStream()
-					.connect(ModelStreamUtils.broadcastStream(modelStream))
-					.flatMap(
-						new PredictProcess(
-							modelSchema, in.getSchema(), getParams(), mapperBuilder, modelDataBridge,
-							ModelStreamUtils.findTimestampColIndexWithAssertAndHint(modelStreamSchema),
-							ModelStreamUtils.findCountColIndexWithAssertAndHint(modelStreamSchema)
-						)
-					);
-			} else if (getParams().get(ModelMapperParams.NUM_THREADS) <= 1) {
-				resultRows = in
-					.getDataStream()
-					.map(new ModelMapperAdapter(mapper, modelSource));
-
-			} else {
-				resultRows = in.getDataStream().flatMap(
-					new ModelMapperAdapterMT(mapper, modelSource, getParams().get(ModelMapperParams.NUM_THREADS)));
-			}
+			DataStream <Row> resultRows = calcResultRows(model, inputData, inputModelStream,
+				mapper, getParams(), getMLEnvironmentId(), mapperBuilder);
 
 			TableSchema resultSchema = mapper.getOutputSchema();
-			this.setOutput(resultRows, resultSchema);
+			setOutput(resultRows, resultSchema);
 
 			return (T) this;
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
 	}
+
+	public static DataStream <Row> calcResultRows(BatchOperator <?> model, StreamOperator <?> input_data,
+												  StreamOperator <?> input_model_stream,
+												  ModelMapper mapper, Params params, Long mlEnvironmentId,
+												  TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder) {
+		DataBridge modelDataBridge = DirectReader.collect(model);
+		final DataBridgeModelSource modelSource = new DataBridgeModelSource(modelDataBridge);
+		TableSchema modelSchema = model.getSchema();
+
+		DataStream <Row> modelStream = null;
+		TableSchema modelStreamSchema = null;
+
+		if (ModelStreamUtils.useModelStreamFile(params)) {
+			StreamOperator <?> modelStreamOp = new ModelStreamFileSourceStreamOp()
+				.setFilePath(params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH))
+				.setScanInterval(params.get(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL))
+				.setStartTime(params.get(ModelStreamScanParams.MODEL_STREAM_START_TIME))
+				.setSchemaStr(TableUtil.schema2SchemaStr(modelSchema))
+				.setMLEnvironmentId(mlEnvironmentId);
+			modelStreamSchema = modelStreamOp.getSchema();
+			modelStream = modelStreamOp.getDataStream();
+		}
+
+		if (null != input_model_stream) {
+			StreamOperator <?> localModelStreamOp = input_model_stream;
+
+			if (modelStream == null) {
+				modelStreamSchema = localModelStreamOp.getSchema();
+				modelStream = localModelStreamOp.getDataStream();
+			} else {
+				localModelStreamOp = localModelStreamOp.select(modelStreamSchema.getFieldNames());
+				modelStream = modelStream.union(localModelStreamOp.getDataStream());
+			}
+		}
+
+		if (modelStream != null) {
+			return input_data
+				.getDataStream()
+				.connect(ModelStreamUtils.broadcastStream(modelStream))
+				.flatMap(
+					new PredictProcess(
+						modelSchema, input_data.getSchema(), params, mapperBuilder, modelDataBridge,
+						ModelStreamUtils.findTimestampColIndexWithAssertAndHint(modelStreamSchema),
+						ModelStreamUtils.findCountColIndexWithAssertAndHint(modelStreamSchema)
+					)
+				);
+		} else if (params.get(ModelMapperParams.NUM_THREADS) <= 1) {
+			return input_data
+				.getDataStream()
+				.map(new ModelMapperAdapter(mapper, modelSource));
+
+		} else {
+			return input_data.getDataStream().flatMap(
+				new ModelMapperAdapterMT(mapper, modelSource, params.get(ModelMapperParams.NUM_THREADS)));
+		}
+	}
+
 }

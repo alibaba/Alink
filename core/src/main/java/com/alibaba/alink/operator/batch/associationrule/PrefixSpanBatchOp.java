@@ -21,6 +21,14 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -41,6 +49,10 @@ import java.util.Map;
  * The PrefixSpan algorithm is described in J. Pei, et al.,
  * Mining Sequential Patterns by Pattern-Growth: The PrefixSpan Approach
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA, opType = OpType.BATCH))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@ParamSelectColumnSpec(name = "itemsCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@NameCn("PrefixSpan")
 public final class PrefixSpanBatchOp extends BatchOperator <PrefixSpanBatchOp>
 	implements PrefixSpanParams <PrefixSpanBatchOp> {
 	private static final Logger LOG = LoggerFactory.getLogger(PrefixSpanBatchOp.class);

@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -11,6 +12,7 @@ import com.alibaba.alink.pipeline.MapModel;
  * as model, and can transform a new data using the model.
  * <p>The output is the index of the interval.
  */
+@NameCn("等宽离散化模型")
 public class EqualWidthDiscretizerModel extends MapModel <EqualWidthDiscretizerModel>
 	implements QuantileDiscretizerPredictParams <EqualWidthDiscretizerModel> {
 

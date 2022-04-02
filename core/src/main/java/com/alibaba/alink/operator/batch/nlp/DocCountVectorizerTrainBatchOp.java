@@ -13,6 +13,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.SortUtils;
@@ -32,6 +39,10 @@ import static com.alibaba.alink.operator.common.nlp.WordCountUtil.localSort;
  * Extract all words from the dataset.Record the document frequency(DF), word count(WC) and Inverse document
  * frequency(IDF) of every word as a model.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@NameCn("文本特征生成训练")
 public final class DocCountVectorizerTrainBatchOp extends BatchOperator <DocCountVectorizerTrainBatchOp>
 	implements DocCountVectorizerTrainParams <DocCountVectorizerTrainBatchOp> {
 	private static final String WORD_COL_NAME = "word";

@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.nlp.Method;
 import com.alibaba.alink.params.ParamUtil;
 
@@ -11,10 +13,8 @@ import com.alibaba.alink.params.ParamUtil;
  * Method for keywordsextraction.
  */
 public interface HasMethod<T> extends WithParams <T> {
-	/**
-	 * @cn-name 抽取关键词的方法
-	 * @cn 抽取关键词的方法，支持TF_IDF和TEXT_RANK
-	 */
+	@NameCn("抽取关键词的方法")
+	@DescCn("抽取关键词的方法，支持TF_IDF和TEXT_RANK")
 	ParamInfo <Method> METHOD = ParamInfoFactory
 		.createParamInfo("method", Method.class)
 		.setDescription("Method to extract keywords, support TF_IDF and TEXT_RANK")

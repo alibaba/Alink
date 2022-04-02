@@ -10,6 +10,19 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamCond;
+import com.alibaba.alink.common.annotation.ParamCond.CondType;
+import com.alibaba.alink.common.annotation.ParamCond.CondValue;
+import com.alibaba.alink.common.annotation.ParamCond.CondValueType;
+import com.alibaba.alink.common.annotation.ParamMutexRule;
+import com.alibaba.alink.common.annotation.ParamMutexRule.ActionType;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.regression.IsotonicRegressionConverter;
@@ -31,6 +44,30 @@ import java.util.List;
  * @see <a href="http://en.wikipedia.org/wiki/Isotonic_regression">Isotonic regression
  * (Wikipedia)</a>
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(PortType.MODEL)})
+@ParamSelectColumnSpec(name = "labelCol",allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "weightCol",allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "featureCol",allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "vectorCol",allowedTypeCollections= TypeCollections.VECTOR_TYPES)
+@ParamMutexRule(
+	name = "vectorCol", type = ActionType.DISABLE,
+	cond = @ParamCond(
+		name = "featureCol",
+		type = CondType.WHEN_VALUES_NOT_IN,
+		values = {@CondValue(type = CondValueType.NULL), @CondValue()}
+	)
+)
+@ParamMutexRule(
+	name = "featureCol", type = ActionType.DISABLE,
+	cond = @ParamCond(
+		name = "vectorCol",
+		type = CondType.WHEN_VALUES_NOT_IN,
+		values = {@CondValue(type = CondValueType.NULL), @CondValue()}
+	)
+)
+
+@NameCn("保序回归训练")
 public final class IsotonicRegTrainBatchOp extends BatchOperator <IsotonicRegTrainBatchOp>
 	implements IsotonicRegTrainParams <IsotonicRegTrainBatchOp> {
 
@@ -75,9 +112,12 @@ public final class IsotonicRegTrainBatchOp extends BatchOperator <IsotonicRegTra
 			} else {
 				selectedColNames = new String[] {labelColName, vectorColName, weightColName};
 			}
+		} else if (null != featureColName) {
+			throw new IllegalArgumentException("featureCols and vectorCol cannot be set at the same time.");
 		} else {
 			throw new IllegalArgumentException("Either featureColName or vectorColName is required!");
 		}
+
 		//initialize the input data, the three dimensions are label, feature, weight.
 		DataSet <Tuple3 <Double, Double, Double>> dataSet = in.select(selectedColNames)
 			.getDataSet()
@@ -124,9 +164,10 @@ public final class IsotonicRegTrainBatchOp extends BatchOperator <IsotonicRegTra
 	 */
 	public static class BuildModel implements MapPartitionFunction <byte[], Row> {
 		private static final long serialVersionUID = -8409030153684329440L;
-		private boolean isotonic;
-		private String featureColName, vectorColName;
-		private int index;
+		private final boolean isotonic;
+		private final String featureColName;
+		private final String vectorColName;
+		private final int index;
 
 		BuildModel(boolean isotonic, String featureColName, String vectorColName, int index) {
 			this.isotonic = isotonic;
@@ -198,12 +239,7 @@ public final class IsotonicRegTrainBatchOp extends BatchOperator <IsotonicRegTra
 	 */
 	private static LinkedData initLinkedData(Iterable <Tuple3 <Double, Double, Double>> tuple) {
 		ArrayList <Tuple3 <Double, Double, Double>> listData = Lists.newArrayList(tuple);
-		listData.sort(new Comparator <Tuple3 <Double, Double, Double>>() {
-			@Override
-			public int compare(Tuple3 <Double, Double, Double> o1, Tuple3 <Double, Double, Double> o2) {
-				return o1.f1.compareTo(o2.f1);
-			}
-		});
+		listData.sort(Comparator.comparing(o -> o.f1));
 		return new LinkedData(listData);
 	}
 

@@ -70,7 +70,7 @@ public class ProphetModelMapper extends TimeSeriesModelMapper {
 		}
 
 		PyMIMOCalcRunner <PyMIMOCalcHandle> runner =
-			new PyMIMOCalcRunner <>("algo.prophet.PyProphetCalc2", config);
+			new PyMIMOCalcRunner <>("algo.prophet.PyProphetCalc2", config::getOrDefault);
 		runner.open();
 		return runner;
 	}

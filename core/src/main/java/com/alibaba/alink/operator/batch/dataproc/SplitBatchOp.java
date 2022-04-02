@@ -15,6 +15,11 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -34,6 +39,9 @@ import static org.apache.flink.shaded.guava18.com.google.common.hash.Hashing.mur
 /**
  * Split a dataset into two parts.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = {@PortSpec(PortType.DATA), @PortSpec(PortType.DATA)})
+@NameCn("数据拆分")
 public final class SplitBatchOp extends BatchOperator <SplitBatchOp>
 	implements SplitParams <SplitBatchOp> {
 

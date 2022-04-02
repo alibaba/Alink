@@ -65,4 +65,9 @@ public class SwingRecommKernel extends RecommKernel implements Cloneable {
 	public MTable recommendSimilarUsers(Object userId) {
 		throw new RuntimeException("Swing not support recommendItemsPerUser.");
 	}
+
+	@Override
+	public RecommKernel createNew() {
+		return new SwingRecommKernel(getModelSchema(), getDataSchema(), params.clone(), recommType);
+	}
 }

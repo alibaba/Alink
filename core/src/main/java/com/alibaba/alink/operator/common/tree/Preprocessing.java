@@ -23,8 +23,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -55,6 +55,7 @@ import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
 import com.alibaba.alink.params.mapper.SISOMapperParams;
 import com.alibaba.alink.params.shared.colname.HasCategoricalCols;
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
+import com.alibaba.alink.params.shared.colname.HasFeatureColsDefaultAsNull;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import com.alibaba.alink.params.shared.colname.HasOutputColDefaultAsNull;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
@@ -321,11 +322,18 @@ public final class Preprocessing {
 	public static BatchOperator <?> castContinuousCols(
 		BatchOperator <?> input,
 		Params params) {
-		String[] continuousColNames = ArrayUtils
-			.removeElements(
-				params.get(HasFeatureCols.FEATURE_COLS),
-				params.get(HasCategoricalCols.CATEGORICAL_COLS)
-			);
+
+		String[] continuousColNames;
+
+		if (params.contains(HasCategoricalCols.CATEGORICAL_COLS)) {
+			continuousColNames = ArrayUtils
+				.removeElements(
+					params.get(HasFeatureCols.FEATURE_COLS),
+					params.get(HasCategoricalCols.CATEGORICAL_COLS)
+				);
+		} else {
+			continuousColNames = params.get(HasFeatureCols.FEATURE_COLS);
+		}
 
 		if (continuousColNames != null && continuousColNames.length > 0) {
 			input = new NumericalTypeCast()
@@ -356,12 +364,12 @@ public final class Preprocessing {
 	public static BatchOperator <?> generateQuantileDiscretizerModel(
 		BatchOperator <?> input,
 		Params params) {
-		if (params.contains(HasVectorCol.VECTOR_COL)) {
+		if (params.contains(HasVectorColDefaultAsNull.VECTOR_COL)) {
 			return sample(input, params)
 				.linkTo(new VectorTrain(
 					new Params().set(ZERO_AS_MISSING, params.get(ZERO_AS_MISSING)))
 					.setMLEnvironmentId(input.getMLEnvironmentId())
-					.setVectorCol(params.get(HasVectorCol.VECTOR_COL))
+					.setVectorCol(params.get(HasVectorColDefaultAsNull.VECTOR_COL))
 					.setNumBuckets(params.get(HasMaxBins.MAX_BINS))
 				);
 		}
@@ -408,10 +416,10 @@ public final class Preprocessing {
 		BatchOperator <?> quantileDiscretizerModel,
 		Params params) {
 
-		if (params.contains(HasVectorCol.VECTOR_COL)) {
+		if (params.contains(HasVectorColDefaultAsNull.VECTOR_COL)) {
 			input = new VectorPredict()
 				.setMLEnvironmentId(input.getMLEnvironmentId())
-				.setVectorCol(params.get(HasVectorCol.VECTOR_COL))
+				.setVectorCol(params.get(HasVectorColDefaultAsNull.VECTOR_COL))
 				.linkFrom(quantileDiscretizerModel, input);
 
 			return input;
@@ -575,6 +583,28 @@ public final class Preprocessing {
 		return params.contains(HasVectorColDefaultAsNull.VECTOR_COL);
 	}
 
+	public static <T> String[] checkAndGetOptionalFeatureCols(Params params, T that) {
+		if (params.contains(HasFeatureColsDefaultAsNull.FEATURE_COLS)) {
+			return params.get(HasFeatureColsDefaultAsNull.FEATURE_COLS);
+		}
+
+		throw new IllegalArgumentException("Could not find the feature columns. "
+			+ "Please consider to set the feature columns on the "
+			+ that.getClass().getName()
+			+ ".");
+	}
+
+	public static <T> String checkAndGetOptionalVectorCols(Params params, T that) {
+		if (params.contains(HasVectorColDefaultAsNull.VECTOR_COL)) {
+			return params.get(HasVectorColDefaultAsNull.VECTOR_COL);
+		}
+
+		throw new IllegalArgumentException("Could not find the vector column. "
+			+ "Please consider to set the vector column on the "
+			+ that.getClass().getName()
+			+ ".");
+	}
+
 	public static int zeroIndex(QuantileDiscretizerModelDataConverter model, String featureName) {
 		return createVectorDiscretizer(
 			model.data.get(featureName),
@@ -697,7 +727,6 @@ public final class Preprocessing {
 					return Tuple2.of(value1.f0, value1.f1 + value2.f1);
 				}
 			});
-
 
 		DataSet <Tuple2 <Integer, Long>> nonzeroCounts = input
 			.mapPartition(new RichMapPartitionFunction <Row, Tuple2 <Integer, Long>>() {
@@ -968,12 +997,13 @@ public final class Preprocessing {
 		private final Map <Integer, VectorDiscretizer> discretizers = new HashMap <>();
 
 		public VectorModel(TableSchema modelSchema, TableSchema dataSchema, Params params) {
-			super(modelSchema, dataSchema, params.set(SISOMapperParams.SELECTED_COL, params.get(HasVectorCol.VECTOR_COL)));
+			super(modelSchema, dataSchema,
+				params.set(SISOMapperParams.SELECTED_COL, params.get(VectorPredictParams.VECTOR_COL)));
 		}
 
 		@Override
 		protected TypeInformation <?> initPredResultColType() {
-			return VectorTypes.VECTOR;
+			return AlinkTypes.VECTOR;
 		}
 
 		@Override

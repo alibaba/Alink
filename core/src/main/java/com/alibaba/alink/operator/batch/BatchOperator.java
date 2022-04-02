@@ -16,9 +16,9 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.AbstractID;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -241,7 +241,8 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	 * @return The resulted <code>BatchOperator</code> of the "groupBy" operation.
 	 */
 	public BatchOperator <?> groupBy(String groupByPredicate, String selectClause) {
-		return new GroupByBatchOp(groupByPredicate, selectClause).setMLEnvironmentId(this.getMLEnvironmentId()).linkFrom(this);
+		return new GroupByBatchOp(groupByPredicate, selectClause).setMLEnvironmentId(this.getMLEnvironmentId())
+			.linkFrom(this);
 	}
 
 	public BatchOperator <?> rebalance() {
@@ -310,6 +311,10 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		}
 	}
 
+	public MTable collectMTable() {
+		return new MTable(collect(), getSchema());
+	}
+
 	@Deprecated
 	public String getTableName() {
 		Table outputTable = getOutputTable();
@@ -369,7 +374,19 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 
 	@Override
 	public T print() throws Exception {
-		this.lazyPrint(-1);
+		return print(0);
+	}
+
+	public T print(String title) throws Exception {
+		return print(0, title);
+	}
+
+	public T print(int n) throws Exception {
+		return print(n, null);
+	}
+
+	public T print(int n, String title) throws Exception {
+		this.lazyPrint(n, title);
 		triggerLazyEvaluation(MLEnvironmentFactory.get(getMLEnvironmentId()));
 		return (T) this;
 	}
@@ -522,6 +539,14 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		}
 	}
 
+	public T lazyPrint() {
+		return lazyPrint(0, null);
+	}
+
+	public T lazyPrint(String title) {
+		return lazyPrint(0, title);
+	}
+
 	public T lazyPrint(int n) {
 		return lazyPrint(n, null);
 	}
@@ -535,9 +560,25 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 				System.out.println(title);
 			}
 			System.out.println(TableUtil.formatTitle(d.getLeft().getColNames()));
+
+			if (0 == n) {
+				List <Row> rows = d.getRight();
+				if (rows.size() > 21) {
+					for (int i = 0; i < 10; i++) {
+						System.out.println(TableUtil.formatRows(rows.get(i)));
+					}
+					System.out.println(" ......");
+					for (int i = rows.size() - 10; i < rows.size(); i++) {
+						System.out.println(TableUtil.formatRows(rows.get(i)));
+					}
+					return;
+				}
+			}
+
 			for (Row row : d.getRight()) {
 				System.out.println(TableUtil.formatRows(row));
 			}
+
 		});
 		return (T) this;
 	}
@@ -548,6 +589,15 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		LazyEvaluation <Pair <BatchOperator <?>, List <Row>>> lazyRowOps = lazyObjectsManager.genLazySink(this);
 		for (Consumer <List <Row>> callback : callbacks) {
 			lazyRowOps.addCallback(d -> callback.accept(d.getRight()));
+		}
+		return (T) this;
+	}
+
+	public final T lazyCollectMTable(Consumer <MTable>... callbacks) {
+		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(this);
+		LazyEvaluation <Pair <BatchOperator <?>, List <Row>>> lazyRowOps = lazyObjectsManager.genLazySink(this);
+		for (Consumer <MTable> callback : callbacks) {
+			lazyRowOps.addCallback(d -> callback.accept(new MTable(d.getRight(), getSchema())));
 		}
 		return (T) this;
 	}

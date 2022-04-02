@@ -2,6 +2,12 @@ package com.alibaba.alink.common.dl;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dl.BaseDLParams;
@@ -18,6 +24,11 @@ import java.util.Map;
  * powerful op for executing dl-ops and the tasks could know each other. In other words, in this op,: (1) we can write
  * anything back to Alink (2) each task know ips and ports of others, that is we can do distributed training tasks.
  */
+@InputPorts(values = {
+	@PortSpec(PortType.DATA),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.DL_BC_DATA, isRepeated = true)}
+)
+@OutputPorts(values = @PortSpec(PortType.DATA))
 public abstract class BaseDLBatchOp<T extends BaseDLBatchOp<T>> extends BatchOperator <T>
 	implements BaseDLParams <T> {
 
@@ -44,6 +55,8 @@ public abstract class BaseDLBatchOp<T extends BaseDLBatchOp<T>> extends BatchOpe
 	protected String mainScriptFileName;
 	protected Integer numPss = null;
 	protected String userScriptMainFileName;
+	// when `pythonEnv` not set, download from plugin with `version`
+	protected Version version;
 
 	// entry function
 	private static final String entryFuncName = "entry_func";
@@ -76,6 +89,7 @@ public abstract class BaseDLBatchOp<T extends BaseDLBatchOp<T>> extends BatchOpe
 			.setNumPSs(numPss)
 			.setEntryFunc(entryFuncName)
 			.setPythonEnv(getPythonEnv())
+			.setEnvVersion(version)
 			.setUserFiles(externalFilesConfig.toJson())
 			.setMainScriptFile(mainScriptFileName)
 			.setUserParams(JsonConverter.toJson(algoParams))

@@ -9,7 +9,7 @@ import com.alibaba.alink.operator.common.aps.ApsContext;
 import com.alibaba.alink.operator.common.aps.ApsFuncTrain;
 import com.alibaba.alink.params.graph.LineParams;
 import com.alibaba.alink.params.nlp.HasNegative;
-import com.alibaba.alink.params.shared.HasVectorSizeDv100;
+import com.alibaba.alink.params.shared.HasVectorSizeDefaultAs100;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class ApsFuncTrainLine extends ApsFuncTrain <Number[], float[][]> {
 			int threadNum = params.getIntegerOrDefault("threadNum", 8);
 			double sampleRatioPerPartition = params.get(LineParams.SAMPLE_RATIO_PER_PARTITION);
 			double leaningRate = params.get(LineParams.RHO);
-			int vectorSize = params.get(HasVectorSizeDv100.VECTOR_SIZE);
+			int vectorSize = params.get(HasVectorSizeDefaultAs100.VECTOR_SIZE);
 			int order = params.get(LineParams.ORDER).getValue();
 			double minRhoRate = params.get(LineParams.MIN_RHO_RATE);
 			int modelLength = relatedFeatures.size();

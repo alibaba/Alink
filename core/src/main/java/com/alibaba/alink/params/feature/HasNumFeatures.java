@@ -4,14 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Param: The number of features. It will be the length of the output vector.
  */
 public interface HasNumFeatures<T> extends WithParams <T> {
-	/**
-	 * @cn-name 向量维度
-	 * @cn 生成向量长度
-	 */
+	@NameCn("向量维度")
+	@DescCn("生成向量长度")
 	ParamInfo <Integer> NUM_FEATURES = ParamInfoFactory
 		.createParamInfo("numFeatures", Integer.class)
 		.setDescription("The number of features. It will be the length of the output vector.")

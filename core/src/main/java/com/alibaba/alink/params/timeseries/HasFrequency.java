@@ -4,14 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasFrequency<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 时序频率
-	 * @cn 时序频率
-	 */
+	@NameCn("时序频率")
+	@DescCn("时序频率")
 	ParamInfo <Integer> FREQUENCY = ParamInfoFactory
 		.createParamInfo("frequency", Integer.class)
 		.setDescription("Defines the number of observations in a single period," +

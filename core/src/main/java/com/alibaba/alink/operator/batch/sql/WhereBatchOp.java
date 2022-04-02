@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.sql;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dataproc.HasClause;
 import com.alibaba.alink.params.sql.WhereParams;
@@ -9,6 +10,7 @@ import com.alibaba.alink.params.sql.WhereParams;
 /**
  * Filter records in the batch operator.
  */
+@NameCn("SQL操作：Where")
 public final class WhereBatchOp extends BaseSqlApiBatchOp <WhereBatchOp>
 	implements WhereParams <WhereBatchOp> {
 

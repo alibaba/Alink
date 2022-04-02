@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasMaxSeasonalOrder<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 季节模型(p, q)上限
-	 * @cn 季节模型(p, q)上限
-	 */
+	@NameCn("季节模型(p, q)上限")
+	@DescCn("季节模型(p, q)上限")
 	ParamInfo <Integer> MAX_SEASONAL_ORDER = ParamInfoFactory
 		.createParamInfo("maxSeasonalOrder", Integer.class)
 		.setDescription("seasonality upper bound")

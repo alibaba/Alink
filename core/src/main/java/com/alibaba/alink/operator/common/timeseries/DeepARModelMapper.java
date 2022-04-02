@@ -8,14 +8,13 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
 import com.alibaba.alink.operator.common.tensorflow.TFTableModelPredictModelMapper;
 import com.alibaba.alink.operator.common.timeseries.DeepARModelDataConverter.DeepARModelData;
 import com.alibaba.alink.operator.common.timeseries.TimestampUtil.TimestampToCalendar;
@@ -32,7 +31,7 @@ public class DeepARModelMapper extends TimeSeriesModelMapper {
 	private static final String[] TF_MODEL_MAPPER_INPUT_COL_NAMES
 		= new String[] {"agg_to_tensor_tensor_col_internal_impl"};
 	private static final TypeInformation <?>[] TF_MODEL_MAPPER_INPUT_COL_TYPES
-		= new TypeInformation <?>[] {TensorTypes.FLOAT_TENSOR};
+		= new TypeInformation <?>[] {AlinkTypes.FLOAT_TENSOR};
 
 	private transient TimeFrequency unit;
 
@@ -324,7 +323,7 @@ public class DeepARModelMapper extends TimeSeriesModelMapper {
 			new MTable(
 				Arrays.asList(sigmas),
 				new String[] {"sigma"},
-				new TypeInformation <?>[] {VectorTypes.DENSE_VECTOR}
+				new TypeInformation <?>[] {AlinkTypes.DENSE_VECTOR}
 			).toString()
 		);
 	}

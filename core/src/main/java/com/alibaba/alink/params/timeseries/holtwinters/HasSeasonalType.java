@@ -4,14 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasSeasonalType<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 季节类型
-	 * @cn 季节类型
-	 */
+	@NameCn("季节类型")
+	@DescCn("季节类型")
 	ParamInfo <SeasonalType> SEASONAL_TYPE = ParamInfoFactory
 		.createParamInfo("seasonalType", SeasonalType.class)
 		.setDescription("Use additive or multiplicative. True is additive.")

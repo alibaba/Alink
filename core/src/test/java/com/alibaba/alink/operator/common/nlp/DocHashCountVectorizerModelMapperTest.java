@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.nlp.DocCountVectorizerTrainParams;
 import com.alibaba.alink.params.nlp.DocHashCountVectorizerPredictParams;
@@ -48,7 +48,7 @@ public class DocHashCountVectorizerModelMapperTest extends AlinkTestBase {
 			new SparseVector(20, new int[] {7, 13, 14, 15},
 				new double[] {0.0, 0.06757751801802739, -0.25541281188299536, -0.047947012075296815}));
 		assertEquals(mapper.getOutputSchema(),
-			new TableSchema(new String[] {"sentence"}, new TypeInformation[] {VectorTypes.SPARSE_VECTOR}));
+			new TableSchema(new String[] {"sentence"}, new TypeInformation[] {AlinkTypes.SPARSE_VECTOR}));
 	}
 
 	@Test

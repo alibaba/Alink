@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.dataproc.AppendIdBatchOp;
 
 /**
@@ -11,10 +13,8 @@ import com.alibaba.alink.operator.batch.dataproc.AppendIdBatchOp;
  */
 public interface HasIdCol<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name ID列名
-	 * @cn ID列名
-	 */
+	@NameCn("ID列名")
+	@DescCn("ID列名")
 	ParamInfo <String> ID_COL = ParamInfoFactory
 		.createParamInfo("idCol", String.class)
 		.setDescription("Id column name")

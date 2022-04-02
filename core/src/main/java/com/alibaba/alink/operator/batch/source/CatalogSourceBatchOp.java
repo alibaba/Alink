@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.source;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.io.HasCatalogObject;
  * catalog source batch op for Hive, Derby, Mysql, Sqlite.
  */
 @IoOpAnnotation(name = "catalog", ioType = IOType.SourceBatch)
+@NameCn("Catalog读入")
 public class CatalogSourceBatchOp extends BaseSourceBatchOp <CatalogSourceBatchOp>
 	implements HasCatalogObject <CatalogSourceBatchOp> {
 

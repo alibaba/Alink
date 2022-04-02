@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.evaluation;
 import org.apache.flink.util.Preconditions;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * LongMatrix stores a 2 dimension long array, and provides some methods to operate on the array it represents.
@@ -28,8 +29,8 @@ public class LongMatrix implements Serializable {
 		Preconditions.checkNotNull(matrix, "The matrix is null!");
 		Preconditions.checkState(matrix.length > 0 && matrix[0].length > 0, "The matrix is empty!");
 		this.matrix = matrix;
-		this.rowNum = matrix.length;
-		this.colNum = matrix[0].length;
+		rowNum = matrix.length;
+		colNum = matrix[0].length;
 		for (int i = 1; i < rowNum; i++) {
 			Preconditions.checkState(matrix[i].length == colNum, "The column numbers are not equal!");
 		}
@@ -96,5 +97,16 @@ public class LongMatrix implements Serializable {
 	public void setValue(int i, int j, long value) {
 		Preconditions.checkArgument(i >= 0 && i < rowNum && j >= 0 && j < colNum, "Index out of bound!");
 		matrix[i][j] = value;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof LongMatrix)) {
+			return false;
+		}
+		LongMatrix other = (LongMatrix) obj;
+		return Arrays.deepEquals(matrix, other.matrix)
+			&& rowNum == other.rowNum
+			&& colNum == other.colNum;
 	}
 }

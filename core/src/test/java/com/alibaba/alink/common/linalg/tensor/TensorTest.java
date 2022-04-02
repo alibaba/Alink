@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.linalg.tensor;
 
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -172,7 +173,7 @@ public class TensorTest extends AlinkTestBase {
 			FloatTensor
 				.of(
 					TensorUtil.getTensor(
-						DoubleTensor.of(TensorUtil.getTensor(A.toString())).toVector()
+						DoubleTensor.of(TensorUtil.getTensor(TensorUtil.toString(A))).toVector()
 					)
 				)
 				.reshape(new Shape(A.shape()))

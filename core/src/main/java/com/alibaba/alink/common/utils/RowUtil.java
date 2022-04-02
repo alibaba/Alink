@@ -31,41 +31,43 @@ public class RowUtil {
 	/**
 	 * remove idx value from row.
 	 */
-	public static Row remove(Row rec, int idx) {
-		int n1 = rec.getArity();
+	public static Row remove(Row row, int idx) {
+		int n1 = row.getArity();
 		Row ret = new Row(n1 - 1);
 		for (int i = 0; i < n1; ++i) {
 			if (i < idx) {
-				ret.setField(i, rec.getField(i));
+				ret.setField(i, row.getField(i));
 			} else if (i > idx) {
-				ret.setField(i - 1, rec.getField(i));
+				ret.setField(i - 1, row.getField(i));
 			}
 		}
 		return ret;
 	}
 
 	/**
-	 * merge row and obj, return a new row.
+	 * merge row and objs, return a new row.
 	 */
-	public static Row merge(Row rec1, Object obj) {
-		int n1 = rec1.getArity();
-		Row ret = new Row(n1 + 1);
+	public static Row merge(Row row, Object... objs) {
+		int n1 = row.getArity();
+		Row ret = new Row(n1 + objs.length);
 		for (int i = 0; i < n1; ++i) {
-			ret.setField(i, rec1.getField(i));
+			ret.setField(i, row.getField(i));
 		}
-		ret.setField(n1, obj);
+		for (int i = 0; i < objs.length; ++i) {
+			ret.setField(i + n1, objs[i]);
+		}
 		return ret;
 	}
 
 	/**
 	 * merge obj and row, return a new row.
 	 */
-	public static Row merge(Object obj, Row rec1) {
-		int n1 = rec1.getArity();
+	public static Row merge(Object obj, Row row) {
+		int n1 = row.getArity();
 		Row ret = new Row(n1 + 1);
 		ret.setField(0, obj);
 		for (int i = 0; i < n1; ++i) {
-			ret.setField(i + 1, rec1.getField(i));
+			ret.setField(i + 1, row.getField(i));
 		}
 		return ret;
 	}
@@ -73,15 +75,15 @@ public class RowUtil {
 	/**
 	 * merge left and right.
 	 */
-	public static Row merge(Row rec1, Row rec2) {
-		int n1 = rec1.getArity();
-		int n2 = rec2.getArity();
+	public static Row merge(Row row1, Row row2) {
+		int n1 = row1.getArity();
+		int n2 = row2.getArity();
 		Row ret = new Row(n1 + n2);
 		for (int i = 0; i < n1; ++i) {
-			ret.setField(i, rec1.getField(i));
+			ret.setField(i, row1.getField(i));
 		}
 		for (int i = 0; i < n2; ++i) {
-			ret.setField(i + n1, rec2.getField(i));
+			ret.setField(i + n1, row2.getField(i));
 		}
 		return ret;
 	}

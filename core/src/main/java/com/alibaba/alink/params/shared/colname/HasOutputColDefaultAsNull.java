@@ -4,6 +4,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * An interface for classes with a parameter specifying name of the output column with a null default value.
  *
@@ -13,10 +16,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasOutputColDefaultAsNull<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 输出结果列
-	 * @cn 输出结果列列名，可选，默认null
-	 */
+	@NameCn("输出结果列")
+	@DescCn("输出结果列列名，可选，默认null")
 	ParamInfo <String> OUTPUT_COL = ParamInfoFactory
 		.createParamInfo("outputCol", String.class)
 		.setDescription("Name of the output column")

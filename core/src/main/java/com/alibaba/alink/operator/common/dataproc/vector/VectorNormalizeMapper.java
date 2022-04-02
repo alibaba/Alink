@@ -4,7 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.SISOMapper;
@@ -35,7 +35,7 @@ public class VectorNormalizeMapper extends SISOMapper {
 	 */
 	@Override
 	protected TypeInformation <?> initOutputColType() {
-		return VectorTypes.VECTOR;
+		return AlinkTypes.VECTOR;
 	}
 
 	/**

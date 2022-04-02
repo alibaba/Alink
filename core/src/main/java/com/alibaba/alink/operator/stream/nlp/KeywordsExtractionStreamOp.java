@@ -5,6 +5,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.nlp.KeywordsExtractionMap;
@@ -14,6 +22,10 @@ import com.alibaba.alink.params.nlp.KeywordsExtractionStreamParams;
 /**
  * Automatically identify in a text a set of terms that best describe the document based on TextRank.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@NameCn("关键词抽取")
 public final class KeywordsExtractionStreamOp extends StreamOperator <KeywordsExtractionStreamOp>
 	implements KeywordsExtractionStreamParams <KeywordsExtractionStreamOp> {
 	private static final long serialVersionUID = 7089771952234251214L;

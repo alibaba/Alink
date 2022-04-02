@@ -20,6 +20,7 @@ public class PrettyDisplayUtils {
 	static int MAP_NUM_EDGE_ITEMS = Integer.MAX_VALUE << 1;
 	static String DEFAULT_DECIMAL_FORMAT = "#.####";
 	static int DEFAULT_LINE_WIDTH = 75;
+	static char DEFAULT_LIST_DELIMITER = ',';
 
 	/**
 	 * display any values with default settings
@@ -38,9 +39,9 @@ public class PrettyDisplayUtils {
 		}
 		Class <?> clz = v.getClass();
 		if (List.class.isAssignableFrom(clz)) {
-			return displayList((List) v);
+			return displayList((List <?>) v);
 		} else if (Map.class.isAssignableFrom(clz)) {
-			return displayMap((Map) v);
+			return displayMap((Map <?, ?>) v);
 		} else if (Double.class.isAssignableFrom(clz)) {
 			return displayDouble((Double) v, useRawDoubleFormat);
 		} else if (DenseVector.class.isAssignableFrom(clz)) {
@@ -86,41 +87,46 @@ public class PrettyDisplayUtils {
 	/**
 	 * display a list
 	 *
+	 * @param <T>
 	 * @param list         list
 	 * @param numEdgeItems when the list is long, only first and last several items are displayed
 	 * @param linebreak    whether to break line after each item
-	 * @param <T>
+	 * @param delimiter
 	 * @return
 	 */
-	public static <T> String displayList(List <T> list, int numEdgeItems, boolean linebreak) {
+	public static <T> String displayList(List <T> list, int numEdgeItems, boolean linebreak, char delimiter) {
 		StringBuilder sbd = new StringBuilder();
-		String delimiter = linebreak ? ",\n" : ", ";
+		String delimiterStr = delimiter + (linebreak ? "\n" : " ");
 		if (list.size() <= 2 * numEdgeItems) {
 			for (int i = 0; i < list.size(); i += 1) {
 				sbd.append(display(list.get(i)));
 				if (i < list.size() - 1) {
-					sbd.append(delimiter);
+					sbd.append(delimiterStr);
 				}
 			}
 		} else {
 			for (int i = 0; i < numEdgeItems; i += 1) {
 				sbd.append(display(list.get(i)));
-				sbd.append(delimiter);
+				sbd.append(delimiterStr);
 			}
 			sbd.append("...");
-			sbd.append(delimiter);
+			sbd.append(delimiterStr);
 			for (int i = list.size() - numEdgeItems; i < list.size(); i += 1) {
 				sbd.append(display(list.get(i)));
 				if (i < list.size() - 1) {
-					sbd.append(delimiter);
+					sbd.append(delimiterStr);
 				}
 			}
 		}
 		return prependStringWithIndent(sbd.toString(), "[") + "]";
 	}
 
+	public static <T> String displayList(List <T> list, int numEdgeItems, boolean linebreak) {
+		return displayList(list, numEdgeItems, linebreak, DEFAULT_LIST_DELIMITER);
+	}
+
 	public static <T> String displayList(List <T> list, boolean linebreak) {
-		return displayList(list, LIST_NUM_EDGE_ITEMS, linebreak);
+		return displayList(list, LIST_NUM_EDGE_ITEMS, linebreak, DEFAULT_LIST_DELIMITER);
 	}
 
 	public static <T> String displayList(List <T> list) {
@@ -151,7 +157,7 @@ public class PrettyDisplayUtils {
 		for (int i = 0; i < dm.numRows(); i++) {
 			list.add(new DenseVector(dm.getRow(i)));
 		}
-		sbd.append(displayList(list, 2, true));
+		sbd.append(displayList(list, 2, true, DEFAULT_LIST_DELIMITER));
 		return sbd.toString();
 	}
 
@@ -204,8 +210,8 @@ public class PrettyDisplayUtils {
 	}
 
 	/**
-	 * Display 2D array as a table.
-	 * If the table is very large, you can truncate rows/columns in the middle before passing it.
+	 * Display 2D array as a table. If the table is very large, you can truncate rows/columns in the middle before
+	 * passing it.
 	 *
 	 * @param table         table data
 	 * @param nRows         number of rows
@@ -399,8 +405,7 @@ public class PrettyDisplayUtils {
 
 	/**
 	 * Split text into multiple lines, prepend s to the first line and spaces to other lines, and then join to one
-	 * string.
-	 * The number of spaces is equal to the length of s
+	 * string. The number of spaces is equal to the length of s
 	 *
 	 * @param text text
 	 * @param s    the string to be prepended in the first line
@@ -419,5 +424,63 @@ public class PrettyDisplayUtils {
 		ret = StringUtils.rightPad(ret, ret.length() + paddingLength, padChar);
 		ret += "\n";
 		return ret;
+	}
+
+	/**
+	 * Display a slice of tensor. The slice is starting from dimension `dim`.
+	 *
+	 * @param dim        starting dimension of the slice. When is zero, display the original tensor.
+	 * @param shape      shape of the original tensor.
+	 * @param index      index of the first element in the current slice.
+	 * @param valueStrs  strings of all values in the tensor, in row-major order.
+	 * @param nEdgeItems the number of edge items. For each dimension, only first and last number of edge items are *
+	 *                   displayed, while others are omitted as ellipse.
+	 * @return
+	 */
+	static StringBuilder displayTensorSlice(int dim, long[] shape, int index, String[] valueStrs, int nEdgeItems) {
+		StringBuilder sbd = new StringBuilder();
+		int dimSize = Math.toIntExact(shape[dim]);
+		sbd.append("[");
+		if (dim == shape.length - 1) {
+			for (int i = 0; i < dimSize; i += 1) {
+				if (i > 0) {
+					sbd.append(" ");
+				}
+				if (i >= nEdgeItems && i < dimSize - nEdgeItems) {
+					sbd.append("...");
+					i = dimSize - nEdgeItems - 1;
+				} else {
+					sbd.append(valueStrs[index + i]);
+				}
+			}
+		} else {
+			for (int i = 0; i < dimSize; i += 1) {
+				if (i > 0) {
+					sbd.append("\n");
+					sbd.append(StringUtils.repeat(" ", dim + 1));
+				}
+				if (i >= nEdgeItems && i < dimSize - nEdgeItems) {
+					sbd.append("...");
+					i = dimSize - nEdgeItems - 1;
+				} else {
+					sbd.append(displayTensorSlice(dim + 1, shape, index * dimSize + i, valueStrs, nEdgeItems));
+				}
+			}
+		}
+		sbd.append("]");
+		return sbd;
+	}
+
+	/**
+	 * Display a tensor in a same format as numpy.array and TensorFlow tensor.
+	 *
+	 * @param shape      shape of the tensor.
+	 * @param valueStrs  strings of all values in the tensor, in row-major order.
+	 * @param nEdgeItems the number of edge items. For each dimension, only first and last number of edge items are
+	 *                   displayed, while others are omitted as ellipse.
+	 * @return
+	 */
+	public static String displayTensor(long[] shape, String[] valueStrs, int nEdgeItems) {
+		return PrettyDisplayUtils.displayTensorSlice(0, shape, 0, valueStrs, nEdgeItems).toString();
 	}
 }

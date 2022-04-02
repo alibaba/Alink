@@ -1,10 +1,13 @@
 package com.alibaba.alink.pipeline.nlp;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.nlp.bert.BertTextEmbeddingMapper;
 import com.alibaba.alink.params.tensorflow.bert.BertTextEmbeddingParams;
 import com.alibaba.alink.pipeline.MapTransformer;
-import org.apache.flink.ml.api.misc.param.Params;
 
+@NameCn("Bert文本嵌入")
 public class BertTextEmbedding extends MapTransformer<BertTextEmbedding>
     implements BertTextEmbeddingParams<BertTextEmbedding> {
 

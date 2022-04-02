@@ -2,6 +2,8 @@ package com.alibaba.alink.operator.batch.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.SelectedColsWithSecondInputSpec;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
@@ -11,6 +13,8 @@ import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
  * as model, and can transform a new data using the model.
  * <p>The output is the index of the interval.
  */
+@SelectedColsWithSecondInputSpec
+@NameCn("等宽离散化预测")
 public final class EqualWidthDiscretizerPredictBatchOp extends ModelMapBatchOp <EqualWidthDiscretizerPredictBatchOp>
 	implements QuantileDiscretizerPredictParams <EqualWidthDiscretizerPredictBatchOp> {
 

@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.common.io.csv;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
@@ -13,12 +12,14 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.filesystem.copy.csv.RowCsvInputFormat;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import com.alibaba.alink.operator.stream.source.BaseSourceStreamOp;
 import com.alibaba.alink.params.io.CsvSourceParams;
@@ -58,8 +59,8 @@ public final class InternalCsvSourceStreamOp extends BaseSourceStreamOp <Interna
 		final boolean skipBlankLine = getSkipBlankLine();
 		final boolean lenient = getLenient();
 
-		final String[] colNames = CsvUtil.getColNames(schemaStr);
-		final TypeInformation <?>[] colTypes = CsvUtil.getColTypes(schemaStr);
+		final String[] colNames = TableUtil.getColNames(schemaStr);
+		final TypeInformation <?>[] colTypes = TableUtil.getColTypes(schemaStr);
 
 		boolean ignoreFirstLine = getIgnoreFirstLine();
 		String protocol = "";

@@ -21,7 +21,7 @@ import com.alibaba.alink.params.nlp.walk.HasSourceCol;
 import com.alibaba.alink.params.nlp.walk.HasTargetCol;
 import com.alibaba.alink.params.nlp.walk.HasTypeCol;
 import com.alibaba.alink.params.nlp.walk.HasVertexCol;
-import com.alibaba.alink.params.nlp.walk.HasWeightCol;
+import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
 
 public class GraphEmbedding {
 	public static final String SOURCE_COL = "sourcecol";
@@ -47,8 +47,8 @@ public class GraphEmbedding {
 		String sourceColName = params.get(HasSourceCol.SOURCE_COL);
 		String targetColName = params.get(HasTargetCol.TARGET_COL);
 		String clause;
-		if (params.contains(HasWeightCol.WEIGHT_COL)) {
-			String weightColName = params.get(HasWeightCol.WEIGHT_COL);
+		if (params.contains(HasWeightColDefaultAsNull.WEIGHT_COL)) {
+			String weightColName = params.get(HasWeightColDefaultAsNull.WEIGHT_COL);
 			clause = "`" + sourceColName + "`, `" + targetColName + "`, `" + weightColName + "`";
 		} else {
 			clause = "`" + sourceColName + "`, `" + targetColName + "`, 1.0";

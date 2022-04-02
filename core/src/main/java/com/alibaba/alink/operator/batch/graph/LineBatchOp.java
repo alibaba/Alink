@@ -21,7 +21,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.huge.line.ApsIteratorLine;
@@ -38,6 +45,12 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(PortType.MODEL)})
+@ParamSelectColumnSpec(name="sourceCol", allowedTypeCollections = TypeCollections.INT_LONG_STRING_TYPES)
+@ParamSelectColumnSpec(name="targetCol", allowedTypeCollections = TypeCollections.INT_LONG_STRING_TYPES)
+@ParamSelectColumnSpec(name="weightCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("Line")
 public class LineBatchOp extends BatchOperator <LineBatchOp>
 	implements LineParams <LineBatchOp> {
 
@@ -209,7 +222,7 @@ public class LineBatchOp extends BatchOperator <LineBatchOp>
 		DataSet <Row> res = map.mapLine(modelRes);
 
 		this.setOutput(res, new String[] {"vertexId", "vertexVector"},
-			new TypeInformation <?>[] {vertexType, VectorTypes.DENSE_VECTOR});
+			new TypeInformation <?>[] {vertexType, AlinkTypes.DENSE_VECTOR});
 		return this;
 	}
 

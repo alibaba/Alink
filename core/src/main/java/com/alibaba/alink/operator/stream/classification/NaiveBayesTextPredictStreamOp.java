@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.stream.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.classification.NaiveBayesTextModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -16,6 +19,8 @@ import com.alibaba.alink.params.classification.NaiveBayesTextPredictParams;
  * Details info of the algorithm:
  * https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-text-classification-1.html
  */
+@ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@NameCn("朴素贝叶斯文本分类预测")
 public final class NaiveBayesTextPredictStreamOp extends ModelMapStreamOp <NaiveBayesTextPredictStreamOp>
 	implements NaiveBayesTextPredictParams <NaiveBayesTextPredictStreamOp> {
 

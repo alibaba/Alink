@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;
 
 /**
  * An simple helper class to simplify creation of fake Operator.
  */
-
+@Internal
 public class FakeOpBase extends BaseSourceBatchOp <FakeOpBase> {
 
 	private static final long serialVersionUID = -1111600420333788431L;

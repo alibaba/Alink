@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.validators.MinValidator;
 
 /**
@@ -11,10 +13,8 @@ import com.alibaba.alink.params.validators.MinValidator;
  */
 public interface HasL1<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name L1 正则化系数
-	 * @cn L1 正则化系数，默认为0。
-	 */
+	@NameCn("L1 正则化系数")
+	@DescCn("L1 正则化系数，默认为0。")
 	ParamInfo <Double> L_1 = ParamInfoFactory
 		.createParamInfo("l1", Double.class)
 		.setDescription("the L1-regularized parameter.")

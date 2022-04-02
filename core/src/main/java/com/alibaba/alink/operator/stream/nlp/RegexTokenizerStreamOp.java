@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.stream.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.nlp.RegexTokenizerMapper;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
 import com.alibaba.alink.params.nlp.RegexTokenizerParams;
@@ -11,6 +14,8 @@ import com.alibaba.alink.params.nlp.RegexTokenizerParams;
  * pattern.
  * It processes streaming data.
  */
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@NameCn("RegexTokenizer")
 public final class RegexTokenizerStreamOp extends MapStreamOp <RegexTokenizerStreamOp>
 	implements RegexTokenizerParams <RegexTokenizerStreamOp> {
 

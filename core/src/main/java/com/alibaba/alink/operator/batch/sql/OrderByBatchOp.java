@@ -3,12 +3,14 @@ package com.alibaba.alink.operator.batch.sql;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.sql.OrderByParams;
 
 /**
  * Order the batch operator.
  */
+@NameCn("SQL操作：OrderBy")
 public final class OrderByBatchOp extends BaseSqlApiBatchOp <OrderByBatchOp>
 	implements OrderByParams <OrderByBatchOp> {
 

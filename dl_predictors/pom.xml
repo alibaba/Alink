@@ -11,10 +11,13 @@
 
     <artifactId>alink_dl_predictors</artifactId>
 
+    <name>alink-dl-predictors</name>
+
     <packaging>pom</packaging>
 
     <modules>
         <module>predictor-tf</module>
+        <module>predictor-torch</module>
     </modules>
 
 </project>

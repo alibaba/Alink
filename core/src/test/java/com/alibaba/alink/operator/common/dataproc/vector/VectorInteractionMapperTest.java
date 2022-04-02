@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.dataproc.vector.VectorInteractionParams;
@@ -26,7 +26,7 @@ public class VectorInteractionMapperTest extends AlinkTestBase {
 			new TypeInformation <?>[] {Types.STRING, Types.STRING});
 
 		TableSchema outSchema = new TableSchema(new String[] {"c0", "c1", "out"},
-			new TypeInformation <?>[] {Types.STRING, Types.STRING, VectorTypes.VECTOR});
+			new TypeInformation <?>[] {Types.STRING, Types.STRING, AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(VectorInteractionParams.SELECTED_COLS, new String[] {"c0", "c1"})
@@ -46,7 +46,7 @@ public class VectorInteractionMapperTest extends AlinkTestBase {
 			new TypeInformation <?>[] {Types.STRING, Types.STRING});
 
 		TableSchema outSchema = new TableSchema(new String[] {"c0", "out"},
-			new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR});
+			new TypeInformation <?>[] {Types.STRING, AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(VectorInteractionParams.SELECTED_COLS, new String[] {"c0", "c1"})
@@ -67,7 +67,7 @@ public class VectorInteractionMapperTest extends AlinkTestBase {
 			new TypeInformation <?>[] {Types.STRING, Types.STRING});
 
 		TableSchema outSchema = new TableSchema(new String[] {"c0", "out"},
-			new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR});
+			new TypeInformation <?>[] {Types.STRING, AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(VectorInteractionParams.SELECTED_COLS, new String[] {"c0", "c1"})

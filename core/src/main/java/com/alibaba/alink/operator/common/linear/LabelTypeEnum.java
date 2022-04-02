@@ -25,7 +25,7 @@ public class LabelTypeEnum {
 		BYTE(x -> JsonConverter.fromJson(x, (Type) Byte.class)),
 		STRING(x -> x);
 
-		private Functional.SerializableFunction <String, Object> operation;
+		private final Functional.SerializableFunction <String, Object> operation;
 
 		StringTypeEnum(Functional.SerializableFunction <String, Object> operation) {
 			this.operation = operation;
@@ -48,7 +48,7 @@ public class LabelTypeEnum {
 		INTEGER(Double::intValue),
 		DOUBLE(x -> x);
 
-		private Functional.SerializableFunction <Double, Number> operation;
+		private final Functional.SerializableFunction <Double, Number> operation;
 
 		DoubleTypeEnum(Functional.SerializableFunction <Double, Number> operation) {
 			this.operation = operation;

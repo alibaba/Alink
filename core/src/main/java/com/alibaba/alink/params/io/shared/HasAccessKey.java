@@ -4,8 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasAccessKey<T> extends WithParams <T> {
 
+	@NameCn("accessKey")
+	@DescCn("accessKey")
 	ParamInfo <String> ACCESS_KEY = ParamInfoFactory
 		.createParamInfo("accessKey", String.class)
 		.setDescription("access key")

@@ -40,36 +40,36 @@ import java.util.HashSet;
  */
 public class OutputColsHelper implements Serializable {
 	private static final long serialVersionUID = 1590546996380714412L;
-	private String[] inputColNames;
-	private TypeInformation[] inputColTypes;
-	private String[] outputColNames;
-	private TypeInformation[] outputColTypes;
+	private final String[] inputColNames;
+	private final TypeInformation<?>[] inputColTypes;
+	private final String[] outputColNames;
+	private final TypeInformation<?>[] outputColTypes;
 
 	/**
 	 * Column indices in the input data that would be forward to the result.
 	 */
-	private int[] reservedCols;
+	private final int[] reservedCols;
 
 	/**
 	 * The positions of reserved columns in the result.
 	 */
-	private int[] reservedColsPosInResult;
+	private final int[] reservedColsPosInResult;
 
 	/**
 	 * The positions of output columns in the result.
 	 */
-	private int[] outputColsPosInResult;
+	private final int[] outputColsPosInResult;
 
-	public OutputColsHelper(TableSchema inputSchema, String outputColName, TypeInformation outputColType) {
+	public OutputColsHelper(TableSchema inputSchema, String outputColName, TypeInformation<?> outputColType) {
 		this(inputSchema, outputColName, outputColType, inputSchema.getFieldNames());
 	}
 
-	public OutputColsHelper(TableSchema inputSchema, String outputColName, TypeInformation outputColType,
+	public OutputColsHelper(TableSchema inputSchema, String outputColName, TypeInformation<?> outputColType,
 							String[] reservedColNames) {
 		this(inputSchema, new String[] {outputColName}, new TypeInformation[] {outputColType}, reservedColNames);
 	}
 
-	public OutputColsHelper(TableSchema inputSchema, String[] outputColNames, TypeInformation[] outputColTypes) {
+	public OutputColsHelper(TableSchema inputSchema, String[] outputColNames, TypeInformation<?>[] outputColTypes) {
 		this(inputSchema, outputColNames, outputColTypes, inputSchema.getFieldNames());
 	}
 
@@ -82,7 +82,7 @@ public class OutputColsHelper implements Serializable {
 	 * @param reservedColNames Reserved column names, which is a subset of input data's column names that we want to
 	 *                         preserve.
 	 */
-	public OutputColsHelper(TableSchema inputSchema, String[] outputColNames, TypeInformation[] outputColTypes,
+	public OutputColsHelper(TableSchema inputSchema, String[] outputColNames, TypeInformation<?>[] outputColTypes,
 							String[] reservedColNames) {
 		this.inputColNames = inputSchema.getFieldNames();
 		this.inputColTypes = inputSchema.getFieldTypes();
@@ -98,6 +98,12 @@ public class OutputColsHelper implements Serializable {
 		outputColsPosInResult = new int[outputColNames.length];
 		Arrays.fill(outputColsPosInResult, -1);
 		int index = 0;
+		HashSet<String> inputColNameSet = new HashSet <>(Arrays.asList(inputColNames));
+		for (String reservedName : toReservedCols) {
+			if (!(inputColNameSet.contains(reservedName))) {
+				throw new RuntimeException("Reserved col name (" + reservedName + ") not exists in input col names.");
+			}
+		}
 		for (int i = 0; i < inputColNames.length; i++) {
 			int key = ArrayUtils.indexOf(outputColNames, inputColNames[i]);
 			if (key >= 0) {
@@ -146,7 +152,7 @@ public class OutputColsHelper implements Serializable {
 	public TableSchema getResultSchema() {
 		int resultLength = reservedCols.length + outputColNames.length;
 		String[] resultColNames = new String[resultLength];
-		TypeInformation[] resultColTypes = new TypeInformation[resultLength];
+		TypeInformation<?>[] resultColTypes = new TypeInformation[resultLength];
 		for (int i = 0; i < reservedCols.length; i++) {
 			resultColNames[reservedColsPosInResult[i]] = inputColNames[reservedCols[i]];
 			resultColTypes[reservedColsPosInResult[i]] = inputColTypes[reservedCols[i]];

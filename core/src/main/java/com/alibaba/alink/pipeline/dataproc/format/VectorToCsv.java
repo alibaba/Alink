@@ -2,12 +2,14 @@ package com.alibaba.alink.pipeline.dataproc.format;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.VectorToCsvParams;
 
 /**
  * Transform data type from Vector to Csv.
  */
+@NameCn("向量转CSV")
 public class VectorToCsv extends BaseFormatTrans <VectorToCsv> implements VectorToCsvParams <VectorToCsv> {
 
 	private static final long serialVersionUID = -3896458488194164642L;

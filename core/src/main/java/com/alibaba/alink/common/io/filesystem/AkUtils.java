@@ -15,7 +15,7 @@ import com.alibaba.alink.common.io.filesystem.AkStream.AkReader.AkReadIterator;
 import com.alibaba.alink.common.io.filesystem.copy.FileInputFormat;
 import com.alibaba.alink.common.io.filesystem.copy.FileOutputFormat;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedInputStream;
@@ -187,7 +187,7 @@ public class AkUtils {
 
 						akReader = akStream.getReader();
 
-						schema = CsvUtil.schemaStr2Schema(akStream.getAkMeta().schemaStr);
+						schema = TableUtil.schemaStr2Schema(akStream.getAkMeta().schemaStr);
 
 						akIterator = akReader.iterator();
 					} catch (IOException e) {

@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasSampleRate<T> extends WithParams <T> {
-	/**
-	 * @cn-name 采样率
-	 * @cn 采样率
-	 */
+	@NameCn("采样率")
+	@DescCn("采样率")
 	ParamInfo <Integer> SAMPLE_RATE = ParamInfoFactory
 		.createParamInfo("sampleRate", Integer.class)
 		.setDescription("sample rate of audio")

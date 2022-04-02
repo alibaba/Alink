@@ -10,6 +10,13 @@ import org.apache.flink.shaded.guava18.com.google.common.hash.HashFunction;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.nlp.DocHashCountVectorizerModelData;
@@ -28,6 +35,10 @@ import static org.apache.flink.shaded.guava18.com.google.common.hash.Hashing.mur
  * <p>
  * It's used together with DocHashCountVectorizerPredictBatchOp.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@NameCn("文本哈希特征生成训练")
 public class DocHashCountVectorizerTrainBatchOp extends BatchOperator <DocHashCountVectorizerTrainBatchOp>
 	implements DocHashCountVectorizerTrainParams <DocHashCountVectorizerTrainBatchOp> {
 	private static final long serialVersionUID = 6469196128919853279L;

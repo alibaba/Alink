@@ -1,14 +1,23 @@
 package com.alibaba.alink.operator.common.evaluation;
 
+import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.RichMapPartitionFunction;
+import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
+import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.params.evaluation.EvalMultiClassParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static com.alibaba.alink.operator.batch.evaluation.EvalMultiLabelBatchOp.LABELS;
 import static com.alibaba.alink.operator.common.evaluation.BaseSimpleClassifierMetrics.ACCURACY;
 import static com.alibaba.alink.operator.common.evaluation.BaseSimpleClassifierMetrics.ACCURACY_ARRAY;
 import static com.alibaba.alink.operator.common.evaluation.BaseSimpleClassifierMetrics.CONFUSION_MATRIX;
@@ -77,7 +87,14 @@ public class ClassificationEvaluationUtil implements Serializable {
 	public static final String STATISTICS_OUTPUT = "Statistics";
 	public static final Tuple2 <String, Integer> WINDOW = Tuple2.of("window", 0);
 	public static final Tuple2 <String, Integer> ALL = Tuple2.of("all", 1);
+
 	private static final long serialVersionUID = -2732226343798663348L;
+
+	private static final Logger LOG = LoggerFactory.getLogger(ClassificationEvaluationUtil.class);
+
+	public static String LABELS_BC_NAME = "labels";
+	public static String DECISION_THRESHOLD_BC_NAME = "score_boundary";
+	public static String PARTITION_SUMMARIES_BC_NAME = "partition_summaries";
 	/**
 	 * Divide [0,1] into <code>DETAIL_BIN_NUMBER</code> bins.
 	 */
@@ -110,9 +127,16 @@ public class ClassificationEvaluationUtil implements Serializable {
 	public static Tuple3 <Double, Boolean, Double> getBinaryDetailStatistics(Row row,
 																			 Object[] tuple,
 																			 TypeInformation <?> labelType) {
+		return getBinaryDetailStatistics(row, tuple, labelType, new DefaultLabelProbMapExtractor());
+	}
+
+	public static Tuple3 <Double, Boolean, Double> getBinaryDetailStatistics(Row row,
+																			 Object[] tuple,
+																			 TypeInformation <?> labelType,
+																			 LabelProbMapExtractor extractor) {
 		Preconditions.checkArgument(tuple.length == 2, "Label length is not 2, Only support binary evaluation!");
 		if (EvaluationUtil.checkRowFieldNotNull(row)) {
-			TreeMap <Object, Double> labelProbMap = EvaluationUtil.extractLabelProbMap(row, labelType);
+			TreeMap <Object, Double> labelProbMap = EvaluationUtil.extractLabelProbMap(row, labelType, extractor);
 			Object label = row.getField(0);
 			Preconditions.checkState(labelProbMap.size() == BINARY_LABEL_NUMBER,
 				"The number of labels must be equal to 2!");
@@ -126,6 +150,98 @@ public class ClassificationEvaluationUtil implements Serializable {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * For every partition, calculate (partial) evaluation metrics.
+	 *
+	 * @param labels            contains 1 entry, i.e. label info (label-index map and label array)
+	 * @param sampleStatistics  simple statistics for every sample, including: score to be positive, is real be
+	 *                          positive, and log loss
+	 * @param decisionThreshold contains 1 entry, i.e. the decision threshold of score (For binary classification, it's
+	 *                          just 0.5)
+	 * @return a `DataSet` of `AccurateBinaryMetricsSummary`
+	 */
+	public static DataSet <BaseMetricsSummary> calLabelPredDetailLocal(
+		DataSet <Tuple2 <Map <Object, Integer>, Object[]>> labels,
+		DataSet <Tuple3 <Double, Boolean, Double>> sampleStatistics,
+		DataSet <Double> decisionThreshold) {
+		/*
+		  Data is partitioned by range and sort on prediction probability to be positive.
+		 */
+		sampleStatistics = sampleStatistics.partitionByRange(0)
+			.sortPartition(0, Order.DESCENDING);
+
+		/*
+		  For each partition, calculate `BinaryPartitionSummary` from sample statistics, including #positive samples,
+		  #negative samples, and maximum prediction probability to be positive.
+		 */
+		DataSet <BinaryPartitionSummary> partitionSummaries = sampleStatistics
+			.mapPartition(new CalcBinaryPartitionSummary())
+			.withBroadcastSet(decisionThreshold, DECISION_THRESHOLD_BC_NAME);
+
+		// Calculate AUC from `BinaryPartitionSummary`
+		DataSet <Tuple1 <Double>> auc = sampleStatistics
+			.mapPartition(new CalcSampleOrders())
+			.withBroadcastSet(partitionSummaries, PARTITION_SUMMARIES_BC_NAME)
+			.withBroadcastSet(decisionThreshold, DECISION_THRESHOLD_BC_NAME)
+			.groupBy(0)
+			.reduceGroup(new GroupReduceFunction <Tuple3 <Double, Long, Boolean>, Tuple1 <Double>>() {
+				private static final long serialVersionUID = -7442946470184046220L;
+
+				@Override
+				public void reduce(Iterable <Tuple3 <Double, Long, Boolean>> values, Collector <Tuple1 <Double>> out) {
+					long sum = 0;
+					long cnt = 0;
+					long positiveCnt = 0;
+					for (Tuple3 <Double, Long, Boolean> t : values) {
+						sum += t.f1;
+						cnt++;
+						if (t.f2) {
+							positiveCnt++;
+						}
+					}
+					out.collect(Tuple1.of(1. * sum / cnt * positiveCnt));
+				}
+			}).sum(0);
+
+		return sampleStatistics.mapPartition(new CalcBinaryMetricsSummary())
+			.withBroadcastSet(partitionSummaries, PARTITION_SUMMARIES_BC_NAME)
+			.withBroadcastSet(labels, LABELS)
+			.withBroadcastSet(auc, "auc")
+			.withBroadcastSet(decisionThreshold, DECISION_THRESHOLD_BC_NAME);
+	}
+
+	/**
+	 * Calculate {@link BinaryPartitionSummary} for each partition from a dataset of tuples (score, is real positive,
+	 * logloss).
+	 * <p>
+	 * {@link #decisionThreshold} is used to exclude the special entry from counting positive/negative samples.
+	 * <p>
+	 * Note that scores are not necessary to be in range [0, 1] or to be positive, so initial value of `maxScore` is
+	 * `-Double.MAX_VALUE`.
+	 */
+	static class CalcBinaryPartitionSummary
+		extends RichMapPartitionFunction <Tuple3 <Double, Boolean, Double>, BinaryPartitionSummary> {
+
+		private double decisionThreshold = 0.5;
+		private static final long serialVersionUID = 9012670438603117070L;
+
+		@Override
+		public void open(Configuration parameters) {
+			decisionThreshold = getRuntimeContext().hasBroadcastVariable(DECISION_THRESHOLD_BC_NAME)
+				? getRuntimeContext(). <Double>getBroadcastVariable(DECISION_THRESHOLD_BC_NAME).get(0)
+				: 0.5;
+		}
+
+		@Override
+		public void mapPartition(Iterable <Tuple3 <Double, Boolean, Double>> values,
+								 Collector <BinaryPartitionSummary> out) {
+			BinaryPartitionSummary statistics = new BinaryPartitionSummary(
+				getRuntimeContext().getIndexOfThisSubtask(), -Double.MAX_VALUE, 0, 0);
+			values.forEach(t -> updateBinaryPartitionSummary(statistics, t, decisionThreshold));
+			out.collect(statistics);
+		}
 	}
 
 	/**
@@ -180,7 +296,8 @@ public class ClassificationEvaluationUtil implements Serializable {
 		Object[] labels = set.toArray();
 		Arrays.sort(labels, Collections.reverseOrder());
 
-		Preconditions.checkArgument(!classification || labels.length >= 2, "The distinct label number less than 2!");
+		// For multi-classification evaluation, #labels == 1 gives reasonable results.
+		// So, it is OK to only check #labels in binary classification evaluation.
 		Preconditions.checkArgument(!binary || labels.length == BINARY_LABEL_NUMBER,
 			"The number of labels must be equal to 2!");
 		Map <Object, Integer> map = new HashMap <>(labels.length);
@@ -377,7 +494,7 @@ public class ClassificationEvaluationUtil implements Serializable {
 					 ParamInfo <Double> macroParamInfo,
 					 ParamInfo <Double> microParamInfo) {
 			this.computer = computer;
-			this.arrayParamInfo = paramInfo;
+			arrayParamInfo = paramInfo;
 			this.weightedParamInfo = weightedParamInfo;
 			this.macroParamInfo = macroParamInfo;
 			this.microParamInfo = microParamInfo;
@@ -387,8 +504,11 @@ public class ClassificationEvaluationUtil implements Serializable {
 	public static class BinaryPartitionSummary implements Serializable {
 		private static final long serialVersionUID = 1L;
 		Integer taskId;
+		// maximum score in this partition
 		double maxScore;
+		// #real positives in this partition
 		long curPositive;
+		// #real negatives in this partition
 		long curNegative;
 
 		public BinaryPartitionSummary(Integer taskId, double maxScore, long curPositive, long curNegative) {
@@ -406,8 +526,7 @@ public class ClassificationEvaluationUtil implements Serializable {
 	 */
 	public static Tuple2 <Boolean, long[]> reduceBinaryPartitionSummary(List <BinaryPartitionSummary> values,
 																		int taskId) {
-		List <BinaryPartitionSummary> list = new ArrayList <>();
-		values.forEach(list::add);
+		List <BinaryPartitionSummary> list = new ArrayList <>(values);
 		list.sort(Comparator.comparingDouble(t -> -t.maxScore));
 		long curTrue = 0;
 		long curFalse = 0;
@@ -428,18 +547,14 @@ public class ClassificationEvaluationUtil implements Serializable {
 		return Tuple2.of(firstBin, new long[] {curTrue, curFalse, totalTrue, totalFalse});
 	}
 
-	public static boolean isMiddlePoint(Tuple3 <Double, Boolean, Double> t) {
-		if (Double.compare(t.f0, 0.5) == 0 && t.f1 && Double.isNaN(t.f2)) {
-			return true;
-		}
-		return false;
+	public static boolean isMiddlePoint(Tuple3 <Double, Boolean, Double> t, double middleThreshold) {
+		return Double.compare(t.f0, middleThreshold) == 0 && t.f1 && Double.isNaN(t.f2);
 	}
 
-	public static Tuple3 <Double, Boolean, Double> middlePoint = Tuple3.of(0.5, true, Double.NaN);
-
 	public static void updateBinaryPartitionSummary(BinaryPartitionSummary statistics,
-													Tuple3 <Double, Boolean, Double> t) {
-		if (!isMiddlePoint(t)) {
+													Tuple3 <Double, Boolean, Double> t,
+													double middleThreshold) {
+		if (!isMiddlePoint(t, middleThreshold)) {
 			if (t.f1) {
 				statistics.curPositive++;
 			} else {
@@ -456,7 +571,8 @@ public class ClassificationEvaluationUtil implements Serializable {
 														  AccurateBinaryMetricsSummary binaryMetricsSummary,
 														  long[] countValues,
 														  double[] recordValues,
-														  boolean first) {
+														  boolean first,
+														  double decisionThreshold, double largestThreshold) {
 		if (binaryMetricsSummary.total == 0) {
 			recordValues[TPR] = countValues[TOTAL_TRUE] == 0 ? 1.0
 				: 1.0 * countValues[CUR_TRUE] / countValues[TOTAL_TRUE];
@@ -468,7 +584,7 @@ public class ClassificationEvaluationUtil implements Serializable {
 				countValues[TOTAL_TRUE] + countValues[TOTAL_FALSE]);
 		}
 
-		if (!isMiddlePoint(cur)) {
+		if (!isMiddlePoint(cur, decisionThreshold)) {
 			binaryMetricsSummary.total++;
 			binaryMetricsSummary.logLoss += cur.f2;
 			if (cur.f1) {
@@ -486,11 +602,12 @@ public class ClassificationEvaluationUtil implements Serializable {
 		double positiveRate = 1.0 * (countValues[CUR_TRUE] + countValues[CUR_FALSE]) / (countValues[TOTAL_TRUE]
 			+ countValues[TOTAL_FALSE]);
 
+		List <Tuple2 <Double, ConfusionMatrix>> metricsInfoList = binaryMetricsSummary.metricsInfoList;
 		if (binaryMetricsSummary.total == 1 && first) {
 			recordValues[PRECISION] = precision;
 			ConfusionMatrix confusionMatrix = new ConfusionMatrix(
 				new long[][] {{0, 0}, {countValues[TOTAL_TRUE], countValues[TOTAL_FALSE]}});
-			binaryMetricsSummary.metricsInfoList.add(Tuple2.of(1.0, confusionMatrix));
+			metricsInfoList.add(Tuple2.of(largestThreshold, confusionMatrix));
 		}
 
 		//binaryMetricsSummary.auc += ((fpr - recordValues[FPR]) * (tpr + recordValues[TPR]) / 2);
@@ -507,18 +624,202 @@ public class ClassificationEvaluationUtil implements Serializable {
 			new long[][] {{countValues[CUR_TRUE], countValues[CUR_FALSE]},
 				{countValues[TOTAL_TRUE] - countValues[CUR_TRUE], countValues[TOTAL_FALSE] - countValues[CUR_FALSE]}});
 
-		//keep the middlePoint(p = 0.5), keep the first point(p = 1.0), then compare the threshold
-		if (binaryMetricsSummary.metricsInfoList.isEmpty()
-			|| (isMiddlePoint(cur) && (binaryMetricsSummary.metricsInfoList.isEmpty()
-			|| binaryMetricsSummary.metricsInfoList.get(binaryMetricsSummary.metricsInfoList.size() - 1).f0 != 0.5))
-			|| Math.abs(
-			threshold - binaryMetricsSummary.metricsInfoList.get(binaryMetricsSummary.metricsInfoList.size() - 1).f0)
-			>= PROBABILITY_ERROR) {
-			binaryMetricsSummary.metricsInfoList.add(Tuple2.of(threshold, confusionMatrix));
+		//keep the middlePoint(p = decisionThreshold), keep the first point(p = 1.0), then compare the threshold
+		if (metricsInfoList.isEmpty()
+			|| (isMiddlePoint(cur, decisionThreshold) && (metricsInfoList.isEmpty()
+			|| metricsInfoList.get(metricsInfoList.size() - 1).f0 != decisionThreshold))
+			|| Math.abs(threshold - metricsInfoList.get(metricsInfoList.size() - 1).f0) >= PROBABILITY_ERROR) {
+			metricsInfoList.add(Tuple2.of(threshold, confusionMatrix));
 		} else {
-			Tuple2 <Double, ConfusionMatrix> metricsInfo = binaryMetricsSummary.metricsInfoList
-				.get(binaryMetricsSummary.metricsInfoList.size() - 1);
+			Tuple2 <Double, ConfusionMatrix> metricsInfo = metricsInfoList.get(metricsInfoList.size() - 1);
 			metricsInfo.f1 = confusionMatrix;
+		}
+	}
+
+	/**
+	 * For every sample, convert the label-score map to simple statistics, including: score to be positive, is real positive, and log loss.
+	 *
+	 * @param data              data samples where 1st field real label and 2nd field is the prediction details
+	 * @param labels            contains 1 entry: label-index map and label array
+	 * @param labelType         label type
+	 * @param decisionThreshold decision threshold of score (for binary classification, it is 0.5)
+	 * @param extractor         extract label-score map from prediction details
+	 * @return statistics for every sample, including: score to be positive, is real positive, and log loss
+	 */
+	public static DataSet <Tuple3 <Double, Boolean, Double>> calcSampleStatistics(
+		DataSet <Row> data, DataSet <Tuple2 <Map <Object, Integer>, Object[]>> labels,
+		TypeInformation <?> labelType, DataSet <Double> decisionThreshold, LabelProbMapExtractor extractor) {
+		return data.rebalance()
+			.mapPartition(new SampleStatisticsMapPartitionFunction(labelType, extractor))
+			.withBroadcastSet(labels, LABELS_BC_NAME)
+			.withBroadcastSet(decisionThreshold, DECISION_THRESHOLD_BC_NAME);
+	}
+
+	/**
+	 * This overloaded version is for binary classification usage, where default extractor is used and decision
+	 * threshold is set to 0.5.
+	 */
+	public static DataSet <Tuple3 <Double, Boolean, Double>> calcSampleStatistics(
+		DataSet <Row> data, DataSet <Tuple2 <Map <Object, Integer>, Object[]>> labels,
+		TypeInformation <?> labelType) {
+		return calcSampleStatistics(data, labels, labelType,
+			labels.getExecutionEnvironment().fromElements(0.5),
+			new DefaultLabelProbMapExtractor());
+	}
+
+	/**
+	 * For each sample, calculate simple statistics.
+	 * <p>
+	 * Input row contains two fields: real label and prediction details.
+	 * <p>
+	 * Output is a tuple of (positive score, is real positive, log loss)
+	 */
+	static class SampleStatisticsMapPartitionFunction
+		extends RichMapPartitionFunction <Row, Tuple3 <Double, Boolean, Double>> {
+		private static final long serialVersionUID = 5680342197308160013L;
+
+		private Tuple2 <Map <Object, Integer>, Object[]> map;
+		private final TypeInformation <?> labelType;
+		private final LabelProbMapExtractor extractor;
+		private double decisionThreshold = 0.5;
+
+		public SampleStatisticsMapPartitionFunction(TypeInformation <?> labelType, LabelProbMapExtractor extractor) {
+			this.labelType = labelType;
+			this.extractor = extractor;
+		}
+
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			List <Tuple2 <Map <Object, Integer>, Object[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
+			Preconditions.checkArgument(list.size() > 0,
+				"Please check the evaluation input! there is no effective row!");
+			map = list.get(0);
+
+			decisionThreshold = getRuntimeContext().hasBroadcastVariable(DECISION_THRESHOLD_BC_NAME)
+				? getRuntimeContext(). <Double>getBroadcastVariable(DECISION_THRESHOLD_BC_NAME).get(0)
+				: 0.5;
+		}
+
+		@Override
+		public void mapPartition(Iterable <Row> rows, Collector <Tuple3 <Double, Boolean, Double>> collector) {
+			for (Row row : rows) {
+				Tuple3 <Double, Boolean, Double> t = getBinaryDetailStatistics(row, map.f1, labelType, extractor);
+				if (null != t) {
+					collector.collect(t);
+				}
+			}
+			if (getRuntimeContext().getIndexOfThisSubtask() == 0) {
+				collector.collect(Tuple3.of(decisionThreshold, true, Double.NaN));
+			}
+		}
+	}
+
+	/**
+	 * For each sample, calculate its score order among all samples. The sample with minimum score has order 1, while
+	 * the sample with maximum score has order #samples.
+	 * <p>
+	 * Input is a dataset of tuple (score, is real positive, logloss), output is a dataset of tuple (score, order, is
+	 * real positive).
+	 */
+	static class CalcSampleOrders
+		extends RichMapPartitionFunction <Tuple3 <Double, Boolean, Double>, Tuple3 <Double, Long, Boolean>> {
+		private static final long serialVersionUID = 3047511137846831576L;
+		private long startIndex;
+		private long total;
+		private double decisionThreshold;
+
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			List <BinaryPartitionSummary> statistics = getRuntimeContext()
+				.getBroadcastVariable(PARTITION_SUMMARIES_BC_NAME);
+			Tuple2 <Boolean, long[]> t = reduceBinaryPartitionSummary(statistics,
+				getRuntimeContext().getIndexOfThisSubtask());
+			startIndex = t.f1[CUR_FALSE] + t.f1[CUR_TRUE] + 1;
+			total = t.f1[TOTAL_TRUE] + t.f1[TOTAL_FALSE];
+
+			decisionThreshold = getRuntimeContext().hasBroadcastVariable(DECISION_THRESHOLD_BC_NAME)
+				? getRuntimeContext(). <Double>getBroadcastVariable(DECISION_THRESHOLD_BC_NAME).get(0)
+				: 0.5;
+		}
+
+		@Override
+		public void mapPartition(Iterable <Tuple3 <Double, Boolean, Double>> values,
+								 Collector <Tuple3 <Double, Long, Boolean>> out) throws Exception {
+			for (Tuple3 <Double, Boolean, Double> t : values) {
+				if (!isMiddlePoint(t, decisionThreshold)) {
+					out.collect(Tuple3.of(t.f0, total - startIndex + 1, t.f1));
+					startIndex++;
+				}
+			}
+		}
+	}
+
+	static class CalcBinaryMetricsSummary
+		extends RichMapPartitionFunction <Tuple3 <Double, Boolean, Double>, BaseMetricsSummary> {
+		private static final long serialVersionUID = 5680342197308160013L;
+		private Object[] labels;
+		private long[] countValues;
+		private boolean firstBin;
+		private double auc;
+		private double decisionThreshold;
+		private double largestThreshold;
+
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			List <Tuple2 <Map <Object, Integer>, Object[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
+			Preconditions.checkArgument(list.size() > 0,
+				"Please check the evaluation input! there is no effective row!");
+			labels = list.get(0).f1;
+
+			List <BinaryPartitionSummary> statistics = getRuntimeContext()
+				.getBroadcastVariable(PARTITION_SUMMARIES_BC_NAME);
+			Tuple2 <Boolean, long[]> t = reduceBinaryPartitionSummary(statistics,
+				getRuntimeContext().getIndexOfThisSubtask());
+			firstBin = t.f0;
+			countValues = t.f1;
+
+			auc = getRuntimeContext(). <Tuple1 <Double>>getBroadcastVariable("auc").get(0).f0;
+			long totalTrue = countValues[TOTAL_TRUE];
+			long totalFalse = countValues[TOTAL_FALSE];
+			if (totalTrue == 0) {
+				LOG.warn("There is no positive sample in data!");
+			}
+			if (totalFalse == 0) {
+				LOG.warn("There is no negative sample in data!");
+			}
+			if (totalTrue > 0 && totalFalse > 0) {
+				auc = (auc - 1. * totalTrue * (totalTrue + 1) / 2) / (totalTrue * totalFalse);
+			} else {
+				auc = Double.NaN;
+			}
+
+			if (getRuntimeContext().hasBroadcastVariable(DECISION_THRESHOLD_BC_NAME)) {
+				decisionThreshold = getRuntimeContext().
+					<Double>getBroadcastVariable(DECISION_THRESHOLD_BC_NAME).get(0);
+				largestThreshold = Double.POSITIVE_INFINITY;
+			} else {
+				decisionThreshold = 0.5;
+				largestThreshold = 1.0;
+			}
+		}
+
+		@Override
+		public void mapPartition(Iterable <Tuple3 <Double, Boolean, Double>> iterable,
+								 Collector <BaseMetricsSummary> collector) {
+			AccurateBinaryMetricsSummary summary =
+				new AccurateBinaryMetricsSummary(labels, decisionThreshold, 0.0, 0L, auc);
+			double[] tprFprPrecision = new double[RECORD_LEN];
+			for (Tuple3 <Double, Boolean, Double> t : iterable) {
+				updateAccurateBinaryMetricsSummary(
+					t,
+					summary,
+					countValues,
+					tprFprPrecision,
+					firstBin,
+					decisionThreshold,
+					largestThreshold);
+			}
+			collector.collect(summary);
 		}
 	}
 }

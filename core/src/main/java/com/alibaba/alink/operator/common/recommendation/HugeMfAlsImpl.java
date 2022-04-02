@@ -308,7 +308,7 @@ public class HugeMfAlsImpl {
 					for (int i = 0; i < d.length; i++) {
 						d[i] = value.f2[i];
 					}
-					return Row.of(value.f1, new DenseVector(d).toString());
+					return Row.of(value.f1, VectorUtil.serialize(new DenseVector(d)));
 				}
 			});
 		Table table = DataSetConversionUtil.toTable(envId, rows, new String[] {name, "factors"},

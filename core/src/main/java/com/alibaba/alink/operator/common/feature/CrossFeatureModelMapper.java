@@ -7,7 +7,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -70,7 +70,7 @@ public class CrossFeatureModelMapper extends ModelMapper {
 																						   TableSchema dataSchema,
 																						   Params params) {
 		String[] outColNames = new String[] {params.get(CrossFeaturePredictParams.OUTPUT_COL)};
-		TypeInformation[] outTypes = new TypeInformation[] {VectorTypes.SPARSE_VECTOR};
+		TypeInformation[] outTypes = new TypeInformation[] {AlinkTypes.SPARSE_VECTOR};
 		return Tuple4.of(dataSchema.getFieldNames(), outColNames, outTypes, dataSchema.getFieldNames());
 	}
 

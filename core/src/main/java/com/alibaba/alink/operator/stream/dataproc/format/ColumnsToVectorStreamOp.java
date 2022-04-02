@@ -2,12 +2,14 @@ package com.alibaba.alink.operator.stream.dataproc.format;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
 import com.alibaba.alink.params.dataproc.format.ColumnsToVectorParams;
 
 /**
  * Transform data type from Columns to Vector.
  */
+@NameCn("列数据转向量")
 public class ColumnsToVectorStreamOp extends BaseFormatTransStreamOp <ColumnsToVectorStreamOp>
 	implements ColumnsToVectorParams <ColumnsToVectorStreamOp> {
 

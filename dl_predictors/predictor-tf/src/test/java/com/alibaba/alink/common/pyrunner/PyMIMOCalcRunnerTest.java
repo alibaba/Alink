@@ -27,7 +27,7 @@ public class PyMIMOCalcRunnerTest {
 		for (int i = 0; i < n; i += 1) {
 			Thread t = new Thread(() -> {
 				PyMIMOCalcRunner <SleepCalcHandler> runner =
-					new PyMIMOCalcRunner <>("algo.misc.FactorialCalc", config);
+					new PyMIMOCalcRunner <>("algo.misc.FactorialCalc", config::getOrDefault);
 				runner.open();
 				List <Row> output = runner.calc(rows);
 				System.out.println(output);
@@ -55,7 +55,7 @@ public class PyMIMOCalcRunnerTest {
 		);
 
 		PyMIMOCalcRunner <SleepCalcHandler> runner =
-			new PyMIMOCalcRunner <>("algo.misc.FactorialCalc", config);
+			new PyMIMOCalcRunner <>("algo.misc.FactorialCalc", config::getOrDefault);
 		runner.open();
 		List <Row> output = runner.calc(rows);
 		System.out.println(output);

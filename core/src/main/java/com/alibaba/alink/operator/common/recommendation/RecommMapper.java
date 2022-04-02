@@ -7,8 +7,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MTable;
-import com.alibaba.alink.common.MTableTypes;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 import com.alibaba.alink.params.recommendation.BaseRateRecommParams;
@@ -38,9 +38,17 @@ public class RecommMapper extends ModelMapper {
 		this.recommKernel = recommKernelBuilder.apply(modelSchema, dataSchema, params, recommType);
 		this.initRecommCol = params.get(HasInitRecommCol.INIT_RECOMM_COL);
 		this.ioSchema = recommPrepareIoSchema(params, recommType);
-
 		checkIoSchema();
+		initializeSliced();
+	}
 
+	public RecommMapper(TableSchema modelSchema, TableSchema dataSchema, Params params,
+						RecommKernel recommKernel, String initRecommCol) {
+		super(modelSchema, dataSchema, params);
+		this.recommKernel = recommKernel.createNew();
+		this.initRecommCol = initRecommCol;
+		this.ioSchema = recommPrepareIoSchema(params, recommKernel.recommType);
+		checkIoSchema();
 		initializeSliced();
 	}
 
@@ -74,13 +82,13 @@ public class RecommMapper extends ModelMapper {
 			case SIMILAR_ITEMS:
 				itemCol = params.get(BaseUsersPerItemRecommParams.ITEM_COL);
 				selectedCols = initRecommCol == null ? new String[] {itemCol} : new String[] {itemCol, initRecommCol};
-				outputTypes = new TypeInformation <?>[] {MTableTypes.M_TABLE};
+				outputTypes = new TypeInformation <?>[] {AlinkTypes.M_TABLE};
 				break;
 			case ITEMS_PER_USER:
 			case SIMILAR_USERS:
 				userCol = params.get(BaseItemsPerUserRecommParams.USER_COL);
 				selectedCols = initRecommCol == null ? new String[] {userCol} : new String[] {userCol, initRecommCol};
-				outputTypes = new TypeInformation <?>[] {MTableTypes.M_TABLE};
+				outputTypes = new TypeInformation <?>[] {AlinkTypes.M_TABLE};
 				break;
 			default:
 				throw new RuntimeException("not support yet.");
@@ -105,4 +113,12 @@ public class RecommMapper extends ModelMapper {
 			}
 		}
 	}
+
+	@Override
+	public ModelMapper createNew(List <Row> modelRows) {
+		RecommMapper mapper = new RecommMapper(getModelSchema(), getDataSchema(), params, recommKernel, initRecommCol);
+		mapper.loadModel(modelRows);
+		return mapper;
+	}
+
 }

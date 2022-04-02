@@ -11,6 +11,9 @@ import org.junit.rules.ExpectedException;
  */
 
 public class MultiClassMetricsTest extends AlinkTestBase {
+
+	private static final double EPS = 1e-6;
+
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -37,13 +40,40 @@ public class MultiClassMetricsTest extends AlinkTestBase {
 
 		baseMetricsSummary = metrics1.merge(null);
 		Assert.assertEquals(baseMetricsSummary, metrics1);
+	}
 
-		thrown.expect(RuntimeException.class);
-		thrown.expectMessage("The labels are not the same!");
-		metrics2 = new MultiMetricsSummary(
-			new long[][] {new long[] {1, 3, 2}, new long[] {1, 4, 2}, new long[] {2, 0, 2}},
+	@Test
+	public void testReduceDifferentLabelOrder() {
+		MultiMetricsSummary metrics1 = new MultiMetricsSummary(
+			new long[][] {{0, 1, 2}, {3, 1, 0}, {1, 1, 4}},
+			new String[] {"0", "1", "2"}, 0.4, 13);
+		MultiMetricsSummary metrics2 = new MultiMetricsSummary(
+			new long[][] {{1, 3, 2}, {1, 4, 2}, {2, 0, 2}},
 			new String[] {"0", "2", "1"}, 1.4, 17);
 		metrics1.merge(metrics2);
+
+		Assert.assertArrayEquals(new Object[] {"2", "1", "0"}, metrics1.labels);
+		long[][] matrix = metrics1.matrix.getMatrix();
+		Assert.assertArrayEquals(new long[][] {{8, 3, 2}, {0, 3, 5}, {5, 3, 1}}, matrix);
+		Assert.assertEquals(1.8, metrics1.logLoss, EPS);
+		Assert.assertEquals(30, metrics1.total);
+	}
+
+	@Test
+	public void testReduceDifferentLabelSet() {
+		MultiMetricsSummary metrics1 = new MultiMetricsSummary(
+			new long[][] {{1, 0}, {1, 4}},
+			new String[] {"1", "2"}, 0.4, 13);
+		MultiMetricsSummary metrics2 = new MultiMetricsSummary(
+			new long[][] {{1, 3}, {1, 4,}},
+			new String[] {"0", "2"}, 1.4, 17);
+		metrics1.merge(metrics2);
+
+		Assert.assertArrayEquals(new Object[] {"2", "1", "0"}, metrics1.labels);
+		long[][] matrix = metrics1.matrix.getMatrix();
+		Assert.assertArrayEquals(new long[][] {{8, 1, 1}, {0, 1, 0}, {3, 0, 1}}, matrix);
+		Assert.assertEquals(1.8, metrics1.logLoss, EPS);
+		Assert.assertEquals(30, metrics1.total);
 	}
 
 	@Test

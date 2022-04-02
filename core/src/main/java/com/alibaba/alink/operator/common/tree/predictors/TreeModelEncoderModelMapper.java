@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.common.tree.Node;
 
@@ -39,7 +39,7 @@ public class TreeModelEncoderModelMapper extends TreeModelMapper {
 
 	@Override
 	protected TypeInformation <?> initPredResultColType(TableSchema modelSchema) {
-		return VectorTypes.SPARSE_VECTOR;
+		return AlinkTypes.SPARSE_VECTOR;
 	}
 
 	@Override

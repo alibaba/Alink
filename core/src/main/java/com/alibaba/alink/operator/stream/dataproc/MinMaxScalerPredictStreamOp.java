@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.stream.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.dataproc.MinMaxScalerPredictParams;
  * to a specific range [min, max). (often [0, 1]).
  * MinMaxScalerPredict will scale the dataset with model which trained from MaxAbsTrain.
  */
+@NameCn("归一化流预测")
 public class MinMaxScalerPredictStreamOp extends ModelMapStreamOp <MinMaxScalerPredictStreamOp>
 	implements MinMaxScalerPredictParams <MinMaxScalerPredictStreamOp> {
 

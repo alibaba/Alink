@@ -7,11 +7,10 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.io.filesystem.binary.RowSerializer;
-import com.alibaba.alink.common.io.redis.Redis;
 import com.alibaba.alink.common.io.redis.RedisClassLoaderFactory;
+import com.alibaba.alink.common.io.redis.Redis;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.dataproc.LookupRedisParams;
 
 /**
@@ -33,7 +32,7 @@ public class LookupRedisMapper extends Mapper {
 	@Override
 	public void open() {
 		super.open();
-		TableSchema valuesSchema = CsvUtil.schemaStr2Schema(params.get(LookupRedisParams.OUTPUT_SCHEMA_STR));
+		TableSchema valuesSchema = TableUtil.schemaStr2Schema(params.get(LookupRedisParams.OUTPUT_SCHEMA_STR));
 		String[] selectedColNames = params.get(LookupRedisParams.SELECTED_COLS);
 		keyRowSerializer = new RowSerializer(
 			selectedColNames,
@@ -79,7 +78,7 @@ public class LookupRedisMapper extends Mapper {
 	@Override
 	protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(
 		TableSchema dataSchema, Params params) {
-		TableSchema valuesSchema = CsvUtil.schemaStr2Schema(params.get(LookupRedisParams.OUTPUT_SCHEMA_STR));
+		TableSchema valuesSchema = TableUtil.schemaStr2Schema(params.get(LookupRedisParams.OUTPUT_SCHEMA_STR));
 
 		return Tuple4.of(params.get(LookupRedisParams.SELECTED_COLS),
 			valuesSchema.getFieldNames(), valuesSchema.getFieldTypes(),

@@ -65,7 +65,7 @@ public class GmmModelMapper extends RichModelMapper {
 			}
 		}
 
-		return Tuple2.of((long) maxIndex, new DenseVector(prob).toString());
+		return Tuple2.of((long) maxIndex, VectorUtil.serialize(new DenseVector(prob)));
 	}
 
 	@Override

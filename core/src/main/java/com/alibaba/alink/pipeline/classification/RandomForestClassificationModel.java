@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.params.classification.RandomForestPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * It is random forest classification model.
  */
+@NameCn("随机森林模型")
 public class RandomForestClassificationModel extends MapModel <RandomForestClassificationModel>
 	implements RandomForestPredictParams <RandomForestClassificationModel> {
 

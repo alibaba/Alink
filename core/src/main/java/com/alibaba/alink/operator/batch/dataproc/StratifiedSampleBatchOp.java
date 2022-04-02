@@ -10,6 +10,12 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dataproc.HashWithReplacementParams;
@@ -22,6 +28,11 @@ import java.util.Map;
 /**
  * StratifiedSample with given ratio with/without replacement.
  */
+
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@ParamSelectColumnSpec(name = "strataCol", portIndices = 0)
+@NameCn("分层随机采样")
 public final class StratifiedSampleBatchOp extends BatchOperator <StratifiedSampleBatchOp>
 	implements StratifiedSampleParams <StratifiedSampleBatchOp>, HashWithReplacementParams <StratifiedSampleBatchOp> {
 

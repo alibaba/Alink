@@ -90,7 +90,7 @@ public class SortUtils {
 		splitPointSize++;
 
 		Long div = count / splitPointSize;
-		Long mod = count % splitPointSize;
+		long mod = count % splitPointSize;
 
 		return div * splitPointIdx + ((mod > splitPointIdx) ? splitPointIdx : mod) - 1;
 	}
@@ -101,7 +101,7 @@ public class SortUtils {
 	public static class SampleSplitPoint extends RichMapPartitionFunction <Row, Tuple2 <Object, Integer>> {
 		private static final long serialVersionUID = 5794681315388872420L;
 		private int taskId;
-		private int index;
+		private final int index;
 
 		public SampleSplitPoint(int index) {
 			this.index = index;
@@ -134,7 +134,7 @@ public class SortUtils {
 				return;
 			}
 
-			Collections.sort(allValues, new ComparableComparator());
+			allValues.sort(new ComparableComparator());
 
 			int size = allValues.size();
 
@@ -144,9 +144,9 @@ public class SortUtils {
 
 			for (int i = 0; i < localSplitPointSize; ++i) {
 				int index = genSampleIndex(
-					Long.valueOf(i),
-					Long.valueOf(size),
-					Long.valueOf(localSplitPointSize)
+					(long) i,
+					(long) size,
+					(long) localSplitPointSize
 				).intValue();
 
 				if (index >= size) {
@@ -158,14 +158,11 @@ public class SortUtils {
 
 			for (Object obj : splitPoints) {
 				Tuple2 <Object, Integer> cur
-					= new Tuple2 <Object, Integer>(
-					obj,
-					taskId);
-
+					= Tuple2.of(obj, taskId);
 				out.collect(cur);
 			}
 
-			out.collect(new Tuple2(
+			out.collect(Tuple2.of(
 				getRuntimeContext().getNumberOfParallelSubtasks(),
 				-taskId - 1));
 		}
@@ -212,16 +209,16 @@ public class SortUtils {
 
 			int count = all.size();
 
-			Collections.sort(all, new PairComparator());
+			all.sort(new PairComparator());
 
 			Set <Tuple2 <Object, Integer>> spliters = new HashSet <>();
 
 			int splitPointSize = instanceCount - 1;
 			for (int i = 0; i < splitPointSize; ++i) {
 				int index = genSampleIndex(
-					Long.valueOf(i),
-					Long.valueOf(count),
-					Long.valueOf(splitPointSize))
+					(long) i,
+					(long) count,
+					(long) splitPointSize)
 					.intValue();
 
 				if (index >= count) {
@@ -241,7 +238,7 @@ public class SortUtils {
 		private static final long serialVersionUID = -8110878379231333376L;
 		private int taskId;
 		private List <Tuple2 <Object, Integer>> splitPoints;
-		private int index;
+		private final int index;
 
 		public SplitData(int index) {
 			this.index = index;
@@ -271,7 +268,7 @@ public class SortUtils {
 						for (Tuple2 <Object, Integer> datum : data) {
 							sortedData.add(datum);
 						}
-						Collections.sort(sortedData, new PairComparator());
+						sortedData.sort(new PairComparator());
 						return sortedData;
 					}
 				});
@@ -367,8 +364,8 @@ public class SortUtils {
 	}
 
 	public static class RowComparator implements Comparator <Row> {
-		private ComparableComparator objectComparator = new ComparableComparator();
-		private int index;
+		private final ComparableComparator objectComparator = new ComparableComparator();
+		private final int index;
 
 		public RowComparator(int index) {
 			this.index = index;

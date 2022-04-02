@@ -5,7 +5,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -49,7 +49,7 @@ public class VectorFunctionMapper extends SISOMapper {
 				return Types.DOUBLE;
 			case Normalize:
 			case Scale:
-				return VectorTypes.VECTOR;
+				return AlinkTypes.VECTOR;
 			default:
 				return Types.STRING;
 		}
@@ -65,7 +65,7 @@ public class VectorFunctionMapper extends SISOMapper {
 			case NormL1:
 				return VectorUtil.getVector(input).normL1();
 			case Normalize:
-				Vector vec = VectorUtil.getVector(input);
+				Vector vec = (input instanceof Vector) ? ((Vector) input).clone() : VectorUtil.getVector(input);
 				vec.normalizeEqual(doubleVariable);
 				return vec;
 			case NormL2Square:

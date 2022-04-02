@@ -4,15 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Trait for parameter vectorSize.
  */
 public interface HasVectorSize<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 向量长度
-	 * @cn 向量长度
-	 */
+	@NameCn("向量长度")
+	@DescCn("向量长度")
 	ParamInfo <Long> VECTOR_SIZE = ParamInfoFactory
 		.createParamInfo("vectorSize", Long.class)
 		.setDescription("Size of the vector")

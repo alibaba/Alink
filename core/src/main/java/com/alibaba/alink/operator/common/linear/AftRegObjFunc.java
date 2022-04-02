@@ -66,7 +66,7 @@ public class AftRegObjFunc extends OptimObjFunc {
 	 */
 	@Override
 	protected double calcLoss(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector) {
-		/**
+		/*
 		 * loss = censor * coefVector.get(coefVector.size() - 1) - censor * epsilon + Math.exp(epsilon)
 		 * the last one of coefVector is the log(sigma)
 		 */

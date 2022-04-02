@@ -27,19 +27,10 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
      * construct function.
      *
      * @param params parameters needed by training process.
-     * @param task   Fm task: maybe "classification" or "regression".
+     * @param task   Fm task: maybe "binary_classification" or "regression".
      */
     public FmTrainBatchOp(Params params, Task task) {
         super(params.set(ModelParamName.TASK, task));
-    }
-
-    /**
-     * construct function.
-     *
-     * @param task
-     */
-    public FmTrainBatchOp(Task task) {
-        super(new Params().set(ModelParamName.TASK, task));
     }
 
     /**
@@ -63,7 +54,7 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
             private static final long serialVersionUID = 76796953320215874L;
 
             @Override
-            public FmDataFormat map(Integer value) throws Exception {
+            public FmDataFormat map(Integer value) {
                 return new FmDataFormat(value, dim, initStdev);
             }
         });

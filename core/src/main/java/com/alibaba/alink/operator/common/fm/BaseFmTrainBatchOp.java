@@ -19,6 +19,14 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -29,6 +37,8 @@ import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.recommendation.FmTrainParams;
+import com.alibaba.alink.params.shared.colname.HasFeatureCols;
+import com.alibaba.alink.params.shared.colname.HasVectorCol;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -41,6 +51,21 @@ import java.util.Set;
 /**
  * Base FM model training.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = {
+    @PortSpec(PortType.MODEL),
+    @PortSpec(value = PortType.DATA, desc = PortDesc.MODEL_INFO)
+})
+
+@ParamSelectColumnSpec(name = "featureCols",
+    allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "vectorCol",
+    allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "labelCol")
+@ParamSelectColumnSpec(name = "weightCol",
+    allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@FeatureColsVectorColMutexRule
+
 public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extends BatchOperator<T> {
 
     public static final String LABEL_VALUES = "labelValues";
@@ -109,7 +134,9 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         BatchOperator<?> in = checkAndGetFirst(inputs);
         // Get parameters of this algorithm.
         Params params = getParams();
-
+        if (params.contains(HasFeatureCols.FEATURE_COLS) && params.contains(HasVectorCol.VECTOR_COL)) {
+            throw new RuntimeException("featureCols and vectorCol cannot be set at the same time.");
+        }
         int[] dim = new int[3];
         dim[0] = params.get(FmTrainParams.WITH_INTERCEPT) ? 1 : 0;
         dim[1] = params.get(FmTrainParams.WITH_LINEAR_ITEM) ? 1 : 0;
@@ -129,8 +156,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                     private static final long serialVersionUID = 1099531852518545431L;
 
                     @Override
-                    public Integer map(Tuple2<Object[], Integer> value)
-                            throws Exception {
+                    public Integer map(Tuple2<Object[], Integer> value) {
                         return value.f1;
                     }
                 });
@@ -140,8 +166,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
 
                     @Override
                     public void flatMap(Tuple2<Object[], Integer> value,
-                                        Collector<Object[]> out)
-                            throws Exception {
+                                        Collector<Object[]> out) {
                         out.collect(value.f0);
                     }
                 });
@@ -176,14 +201,14 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                     private Object[] labelValues = null;
 
                     @Override
-                    public void open(Configuration parameters) throws Exception {
+                    public void open(Configuration parameters) {
                         this.labelValues = (Object[]) getRuntimeContext()
                                 .getBroadcastVariable(LABEL_VALUES).get(0);
                     }
 
                     @Override
                     public void mapPartition(Iterable<Tuple3<Double, Object, Vector>> values,
-                                             Collector<Tuple3<Double, Double, Vector>> out) throws Exception {
+                                             Collector<Tuple3<Double, Double, Vector>> out) {
                         for (Tuple3<Double, Object, Vector> value : values) {
 
                             if (value.f0 > 0) {
@@ -210,7 +235,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                     private static final long serialVersionUID = 4954837288144406855L;
 
                     @Override
-                    public boolean filter(Tuple3<Double, Object, Vector> value) throws Exception {
+                    public boolean filter(Tuple3<Double, Object, Vector> value) {
                         return value.f0 < 0.0;
                     }
                 }).reduceGroup(
@@ -220,8 +245,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
 
                     @Override
                     public void reduce(Iterable<Tuple3<Double, Object, Vector>> values,
-                                       Collector<Tuple2<Object[], Integer>> out)
-                            throws Exception {
+                                       Collector<Tuple2<Object[], Integer>> out) {
                         int size = -1;
                         Set<Object> labelValues = new HashSet<>();
                         for (Tuple3<Double, Object, Vector> value : values) {
@@ -231,8 +255,8 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                             size = Math.max(size, labelVals.f0);
 
                         }
-                        Object[] labelssort = isRegProc ? labelValues.toArray() : orderLabels(labelValues);
-                        out.collect(Tuple2.of(labelssort, size));
+                        Object[] labelsSort = isRegProc ? labelValues.toArray() : orderLabels(labelValues);
+                        out.collect(Tuple2.of(labelsSort, size));
                     }
                 });
     }
@@ -241,7 +265,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
      * order by the dictionary order, only classification problem need do this process.
      *
      * @param unorderedLabelRows unordered label rows
-     * @return
+     * @return Ordered labels.
      */
     protected static Object[] orderLabels(Iterable<Object> unorderedLabelRows) {
         List<Object> tmpArr = new ArrayList<>();
@@ -377,7 +401,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
             private static final long serialVersionUID = 2063366042018382802L;
 
             @Override
-            public void mapPartition(Iterable<Row> values, Collector<FmModelData> out) throws Exception {
+            public void mapPartition(Iterable<Row> values, Collector<FmModelData> out) {
                 List<Row> rows = new ArrayList<>();
                 for (Row row : values) {
                     rows.add(row);
@@ -392,7 +416,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                             private static final long serialVersionUID = 8785824618242390100L;
 
                             @Override
-                            public void mapPartition(Iterable<FmModelData> values, Collector<Row> out) throws Exception {
+                            public void mapPartition(Iterable<FmModelData> values, Collector<Row> out) {
 
                                 FmModelData model = values.iterator().next();
                                 double[] cinfo = model.convergenceInfo;
@@ -432,18 +456,18 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         /**
          * calculate loss of sample.
          *
-         * @param yTruth
-         * @param y
-         * @return
+         * @param yTruth Truth label.
+         * @param y Predicted label.
+         * @return Loss.
          */
         double l(double yTruth, double y);
 
         /**
          * calculate dldy of sample
          *
-         * @param yTruth
-         * @param y
-         * @return
+         * @param yTruth Truth label.
+         * @param y Predicted label.
+         * @return dldy.
          */
         double dldy(double yTruth, double y);
     }
@@ -499,8 +523,8 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
             return sigmoid(y) - yTruth;
         }
 
-        private double sigmoid(double x) {
-            return 1.0 / (1.0 + Math.exp(-x));
+        private double sigmoid(double y) {
+            return 1.0 / (1.0 + Math.exp(-y));
         }
     }
 

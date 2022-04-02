@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
 import com.alibaba.alink.operator.common.aps.ApsFuncTrain;
-import com.alibaba.alink.params.shared.HasVectorSizeDv100;
+import com.alibaba.alink.params.shared.HasVectorSizeDefaultAs100;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class ApsFuncTrainW2V extends ApsFuncTrain <int[], float[]> {
 
 			LOG.info("taskId: {}, trainDataSize: {}", getPatitionId(), trainData.size());
 
-			int vectorSize = params.get(HasVectorSizeDv100.VECTOR_SIZE);
+			int vectorSize = params.get(HasVectorSizeDefaultAs100.VECTOR_SIZE);
 
 			float[] buffer = new float[relatedFeatures.size() * vectorSize];
 			int cur = 0;
