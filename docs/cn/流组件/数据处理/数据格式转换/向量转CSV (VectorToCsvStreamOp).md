@@ -7,6 +7,12 @@ Python 类名：VectorToCsvStreamOp
 ## 功能介绍
 将数据格式从 Vector 转成 Csv
 
+一条输入对应一条输出结果，输入的vector可以为稀疏格式，也可以为稠密格式。
+vector的数据维度不需要保持一致。
+
+setCsvCol设置csv输出列名，setReservedCols设置保留的输入列。
+设置SchemaStr时需要注意，字段个数必须小于等于vector列的最小维度。类型为string或者double。
+当vector维度大于SchemaStr中的字段个数时，输入vector中后面的维度会被忽略。如果vector在前面维度没有值，输出中也会为空，对应位置会保留。
 
 ## 参数说明
 
@@ -30,8 +36,8 @@ import pandas as pd
 useLocalEnv(1)
 
 df = pd.DataFrame([
-    ['1', '{"f0":"1.0","f1":"2.0"}', '$3$0:1.0 1:2.0', 'f0:1.0,f1:2.0', '1.0,2.0', 1.0, 2.0],
-    ['2', '{"f0":"4.0","f1":"8.0"}', '$3$0:4.0 1:8.0', 'f0:4.0,f1:8.0', '4.0,8.0', 4.0, 8.0]])
+    ['1', '{"f0":"1.0","f1":"2.0"}', '$4$0:1.0 3:2.0', 'f0:1.0,f1:2.0', '1.0,2.0', 1.0, 2.0],
+    ['2', '{"f0":"4.0","f1":"8.0"}', '$3$0:4.0 2:8.0', 'f0:4.0,f1:8.0', '4.0,8.0', 4.0, 8.0]])
 
 data = StreamOperator.fromDataframe(df, schemaStr="row string, json string, vec string, kv string, csv string, f0 double, f1 double")
 
@@ -39,7 +45,7 @@ op = VectorToCsvStreamOp()\
     .setVectorCol("vec")\
     .setReservedCols(["row"])\
     .setCsvCol("csv")\
-    .setSchemaStr("f0 double, f1 double")\
+    .setSchemaStr("f0 double, f1 double, f2 double")\
     .linkFrom(data)
 
 op.print()
@@ -62,7 +68,8 @@ public class VectorToCsvStreamOpTest {
 	@Test
 	public void testVectorToCsvStreamOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
+			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$4$0:1.0 3:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0),
+			Row.of("2", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:4.0 2:8.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
 		);
 		StreamOperator <?> data = new MemSourceStreamOp(df,
 			"row string, json string, vec string, kv string, csv string, f0 double, f1 double");
@@ -70,7 +77,7 @@ public class VectorToCsvStreamOpTest {
 			.setVectorCol("vec")
 			.setReservedCols("row")
 			.setCsvCol("csv")
-			.setSchemaStr("f0 double, f1 double")
+			.setSchemaStr("f0 double, f1 double, f2 double")
 			.linkFrom(data);
 		op.print();
 		StreamOperator.execute();
@@ -79,9 +86,9 @@ public class VectorToCsvStreamOpTest {
 ```
 
 ### 运行结果
-    
-|row|csv|
-|---|-------|
-|1|1.0,2.0|
-|2|4.0,8.0|
+
+row|csv
+---|---
+2|4.0,,8.0
+1|1.0,,
     

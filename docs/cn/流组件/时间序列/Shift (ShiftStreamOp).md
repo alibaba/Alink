@@ -5,7 +5,8 @@ Python 类名：ShiftStreamOp
 
 
 ## 功能介绍
-使用Shift进行时间序列预测。
+给定分组，对每一组的数据使用Shift进行时间序列预测,使用ShiftNum之前的数据作为预测结果。
+
 
 ## 参数说明
 

@@ -5,10 +5,19 @@ Python 类名：LinearSvmPredictBatchOp
 
 
 ## 功能介绍
-load 支持向量机的model，对数据进行预测。
+线性SVM算法是经典的二分类算法，通过对打标签样本集合训练得到模型，使用模型预测样本的标签。逻辑回归组件支持稀疏、稠密两种数据格式。
+
+### 算法原理
+SVM使用铰链损失函数（hinge loss）计算经验风险（empirical risk）并在求解系统中加入了正则化项以优化结构风险，是一个具有稀疏性
+和稳健性的分类器。
+
+### 算法使用
+SVM在各领域的模式识别问题中有应用，包括人像识别、文本分类、手写字符识别、生物信息学等。
+
+### 文献
+[1] Vapnik, V．Statistical learning theory. 1998 (Vol. 3). ．New York, NY：Wiley，1998：Chapter 10-11, pp.401-492.
 
 ## 参数说明
-
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
@@ -17,9 +26,6 @@ load 支持向量机的model，对数据进行预测。
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
-
-
-
 
 ## 代码示例
 ### Python 代码

@@ -6,7 +6,7 @@ Python 类名：KvToCsvStreamOp
 
 ## 功能介绍
 将数据格式从 Kv 转成 Csv
-
+setSchemaStr 设置csv每一列的key值。如果指定的key不在输入的KV中，留空。
 
 ## 参数说明
 
@@ -64,7 +64,8 @@ public class KvToCsvStreamOpTest {
 	@Test
 	public void testKvToCsvStreamOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
+			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0),
+			Row.of("2", "{\"f0\":\"4.0\",\"f1\":\"8.0\"}", "$3$0:4.0 1:8.0", "f0:4.0,f1:8.0", "4.0,8.0", 4.0, 8.0)
 		);
 		StreamOperator <?> data = new MemSourceStreamOp(df,
 			"row string, json string, vec string, kv string, csv string, f0 double, f1 double");

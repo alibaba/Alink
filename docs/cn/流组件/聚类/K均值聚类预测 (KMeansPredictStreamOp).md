@@ -50,25 +50,18 @@ inOp2 = StreamOperator.fromDataframe(df, schemaStr='id int, vec string')
 
 kmeans = KMeansTrainBatchOp()\
     .setVectorCol("vec")\
-    .setK(2)
-
-
-predictBatch = KMeansPredictBatchOp()\
-    .setPredictionCol("pred")
-    
-kmeans.linkFrom(inOp1)
+    .setK(2)\
+    .linkFrom(inOp1)
 kmeans.lazyPrint(10)
 
-predictBatch.linkFrom(kmeans, inOp1)
-
-
+predictBatch = KMeansPredictBatchOp()\
+    .setPredictionCol("pred")\
+    .linkFrom(kmeans, inOp1)
 predictBatch.print()
 
 predictStream = KMeansPredictStreamOp(kmeans)\
-    .setPredictionCol("pred")
-
-predictStream.linkFrom(inOp2)
-
+    .setPredictionCol("pred")\
+    .linkFrom(inOp2)
 predictStream.print()
 
 StreamOperator.execute()
@@ -89,9 +82,9 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
-public class KMeansPredictStreamOpTest {
+public class KMeansPredictBatchOpTest {
 	@Test
-	public void testKMeansPredictStreamOp() throws Exception {
+	public void testKMeansPredictBatchOp() throws Exception {
 		List <Row> df = Arrays.asList(
 			Row.of(0, "0 0 0"),
 			Row.of(1, "0.1,0.1,0.1"),
@@ -104,16 +97,18 @@ public class KMeansPredictStreamOpTest {
 		StreamOperator <?> inOp2 = new MemSourceStreamOp(df, "id int, vec string");
 		BatchOperator <?> kmeans = new KMeansTrainBatchOp()
 			.setVectorCol("vec")
-			.setK(2);
-		BatchOperator <?> predictBatch = new KMeansPredictBatchOp()
-			.setPredictionCol("pred");
-		kmeans.linkFrom(inOp1);
+			.setK(2)
+            .linkFrom(inOp1);
 		kmeans.lazyPrint(10);
-		predictBatch.linkFrom(kmeans, inOp1);
+
+		BatchOperator <?> predictBatch = new KMeansPredictBatchOp()
+			.setPredictionCol("pred")
+            .linkFrom(kmeans, inOp1);
 		predictBatch.print();
+
 		StreamOperator <?> predictStream = new KMeansPredictStreamOp(kmeans)
-			.setPredictionCol("pred");
-		predictStream.linkFrom(inOp2);
+			.setPredictionCol("pred")
+            .linkFrom(inOp2);
 		predictStream.print();
 		StreamOperator.execute();
 	}
@@ -125,7 +120,7 @@ public class KMeansPredictStreamOpTest {
 model_id|model_info
 --------|----------
 0|{"vectorCol":"\"vec\"","latitudeCol":null,"longitudeCol":null,"distanceType":"\"EUCLIDEAN\"","k":"2","vectorSize":"3"}
-1048576|{"clusterId":0,"weight":3.0,"vec":{"data":[9.1,9.1,9.1]}}
+1048576|{"clusterId":0,"weight":3.0,"vec":{"data":[9.099999999999998,9.099999999999998,9.099999999999998]}}
 2097152|{"clusterId":1,"weight":3.0,"vec":{"data":[0.1,0.1,0.1]}}
 
 #### 预测结果
@@ -137,4 +132,3 @@ id|vec|pred
 3|9 9 9|0
 4|9.1 9.1 9.1|0
 5|9.2 9.2 9.2|0
-

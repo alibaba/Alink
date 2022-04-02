@@ -5,8 +5,7 @@ Python 类名：TsvSourceStreamOp
 
 
 ## 功能介绍
-
-读Tsv文件，Tsv文件是以tab为分隔符
+按行读取以tab为分隔符的Tsv文件。
 
 ## 参数说明
 

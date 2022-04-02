@@ -5,7 +5,21 @@ Python 类名：FmClassifier
 
 
 ## 功能介绍
-Fm 分类算法，二分类算法，支持模型训练和样本预测。
+
+FM即因子分解机（Factor Machine），它的特点是考虑了特征之间的相互作用，是一种非线性模型。该组件使用FM模型解决分类问题。
+
+### 算法原理
+FM模型是线性模型的升级，是在线性表达式后面加入了新的交叉项特征及对应的权值，FM模型的表达式如下所示：
+![](https://img.alicdn.com/imgextra/i1/O1CN01cmatso24OY6CKEvtF_!!6000000007381-2-tps-829-181.png)
+这里我们使用 Adagrad 优化算法求解该模型。算法原理细节可以参考文献[1]。
+
+### 算法使用
+FM算法是推荐领域被验证的效果较好的推荐方案之一，在电商、广告、视频、信息流、游戏的推荐领域有广泛应用。
+
+- 备注 ：该组件训练的时候 FeatureCols 和 VectorCol 是两个互斥参数，只能有一个参数来描述算法的输入特征。
+
+### 文献
+[1] S. Rendle, "Factorization Machines," 2010 IEEE International Conference on Data Mining, 2010, pp. 995-1000, doi: 10.1109/ICDM.2010.127.
 
 ## 参数说明
 

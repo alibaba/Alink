@@ -5,7 +5,14 @@ Python 类名：VectorToColumnsBatchOp
 
 
 ## 功能介绍
-将数据格式从 Vector 转成 Columns
+将数据格式从 Vector 转成 Columns，vector中的数据拆分成多列
+
+一条输入对应一条输出结果，输入的vector可以为稀疏格式，也可以为稠密格式。
+vector的数据维度不需要保持一致。
+
+setReservedCols设置保留的输入列。
+设置SchemaStr时需要注意，字段个数必须小于等于vector列的最小维度。字段名称和类型用空格分隔，类型必须为double。
+当vector维度大于SchemaStr中的字段个数时，输入vector中后面的维度会被忽略。如果vector在前面维度没有值，默认输出为0.0。
 
 
 ## 参数说明
@@ -27,15 +34,15 @@ import pandas as pd
 useLocalEnv(1)
 
 df = pd.DataFrame([
-    ['1', '{"f0":"1.0","f1":"2.0"}', '$3$0:1.0 1:2.0', 'f0:1.0,f1:2.0', '1.0,2.0', 1.0, 2.0],
-    ['2', '{"f0":"4.0","f1":"8.0"}', '$3$0:4.0 1:8.0', 'f0:4.0,f1:8.0', '4.0,8.0', 4.0, 8.0]])
+    ['1', '{"f0":"1.0","f1":"2.0"}', '$4$0:1.0 3:2.0', 'f0:1.0,f1:2.0', '1.0,2.0', 1.0, 2.0],
+    ['2', '{"f0":"4.0","f1":"8.0"}', '$3$0:4.0 2:8.0', 'f0:4.0,f1:8.0', '4.0,8.0', 4.0, 8.0]])
 
 data = BatchOperator.fromDataframe(df, schemaStr="row string, json string, vec string, kv string, csv string, f0 double, f1 double")
  
 op = VectorToColumnsBatchOp()\
     .setVectorCol("vec")\
     .setReservedCols(["row"])\
-    .setSchemaStr("f0 double, f1 double")\
+    .setSchemaStr("f0 double, f1 double, f2 double")\
     .linkFrom(data)
 
 op.print()
@@ -56,14 +63,15 @@ public class VectorToColumnsBatchOpTest {
 	@Test
 	public void testVectorToColumnsBatchOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
+			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$4$0:1.0 3:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0),
+			Row.of("2", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:4.0 2:8.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
 		);
 		BatchOperator <?> data = new MemSourceBatchOp(df,
 			"row string, json string, vec string, kv string, csv string, f0 double, f1 double");
 		BatchOperator <?> op = new VectorToColumnsBatchOp()
 			.setVectorCol("vec")
 			.setReservedCols("row")
-			.setSchemaStr("f0 double, f1 double")
+			.setSchemaStr("f0 double, f1 double, f2 double")
 			.linkFrom(data);
 		op.print();
 	}
@@ -71,9 +79,9 @@ public class VectorToColumnsBatchOpTest {
 ```
 
 ### 运行结果
-    
-|row|f0|f1|
-|---|---|---|
-|1|1.0|2.0|
-|2|4.0|8.0|
+
+row|f0|f1|f2
+---|---|---|---
+1|1.0000|0.0000|0.0000
+2|4.0000|0.0000|8.0000
     

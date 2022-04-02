@@ -9,6 +9,8 @@ Python 类名：VectorNormalizeBatchOp
 
 指定参数范数的阶，例如p = 2, 对于向量<x1, x2, x3>，计算向量的平方和再开二次方记为norm，最终计算结果为<x1/norm, x2/norm, x3/norm>
 
+通过 setOutputCol，指定新生成的列名。如果不指定，默认替代输入列。
+
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |

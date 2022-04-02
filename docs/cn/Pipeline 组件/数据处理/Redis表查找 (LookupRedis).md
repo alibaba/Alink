@@ -13,13 +13,17 @@ Python 类名：LookupRedis
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| pluginVersion | Not available! | Not available! | String | ✓ |  |
+| pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
 | outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |
-| redisIP | Not available! | Not available! | String | ✓ |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| redisPort | Not available! | Not available! | Integer |  | 6379 |
 | redisPassword | Not available! | Not available! | String |  |  |
+| redisIP | Not available! | Not available! | String |  |  |
+| redisPort | Not available! | Not available! | Integer |  | 6379 |
+| databaseIndex | Not available! | Not available! | Long |  |  |
+| timeout | Not available! | Not available! | Integer |  |  |
+| redisIPs | Not available! | Not available! | String[] |  |  |
+| clusterMode | Not available! | Not available! | Boolean |  | false |
 
 
 ## 代码示例

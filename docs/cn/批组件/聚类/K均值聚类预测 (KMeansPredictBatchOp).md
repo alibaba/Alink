@@ -47,25 +47,18 @@ inOp2 = StreamOperator.fromDataframe(df, schemaStr='id int, vec string')
 
 kmeans = KMeansTrainBatchOp()\
     .setVectorCol("vec")\
-    .setK(2)
-
-
-predictBatch = KMeansPredictBatchOp()\
-    .setPredictionCol("pred")
-    
-kmeans.linkFrom(inOp1)
+    .setK(2)\
+    .linkFrom(inOp1)
 kmeans.lazyPrint(10)
 
-predictBatch.linkFrom(kmeans, inOp1)
-
-
+predictBatch = KMeansPredictBatchOp()\
+    .setPredictionCol("pred")\
+    .linkFrom(kmeans, inOp1)
 predictBatch.print()
 
 predictStream = KMeansPredictStreamOp(kmeans)\
-    .setPredictionCol("pred")
-
-predictStream.linkFrom(inOp2)
-
+    .setPredictionCol("pred")\
+    .linkFrom(inOp2)
 predictStream.print()
 
 StreamOperator.execute()
@@ -101,16 +94,18 @@ public class KMeansPredictBatchOpTest {
 		StreamOperator <?> inOp2 = new MemSourceStreamOp(df, "id int, vec string");
 		BatchOperator <?> kmeans = new KMeansTrainBatchOp()
 			.setVectorCol("vec")
-			.setK(2);
-		BatchOperator <?> predictBatch = new KMeansPredictBatchOp()
-			.setPredictionCol("pred");
-		kmeans.linkFrom(inOp1);
+			.setK(2)
+            .linkFrom(inOp1);
 		kmeans.lazyPrint(10);
-		predictBatch.linkFrom(kmeans, inOp1);
+
+		BatchOperator <?> predictBatch = new KMeansPredictBatchOp()
+			.setPredictionCol("pred")
+            .linkFrom(kmeans, inOp1);
 		predictBatch.print();
+
 		StreamOperator <?> predictStream = new KMeansPredictStreamOp(kmeans)
-			.setPredictionCol("pred");
-		predictStream.linkFrom(inOp2);
+			.setPredictionCol("pred")
+            .linkFrom(inOp2);
 		predictStream.print();
 		StreamOperator.execute();
 	}
@@ -134,4 +129,3 @@ id|vec|pred
 3|9 9 9|0
 4|9.1 9.1 9.1|0
 5|9.2 9.2 9.2|0
-

@@ -5,7 +5,9 @@ Python 类名：SwingRecommBatchOp
 
 
 ## 功能介绍
-Swing 是一种被广泛使用的item召回算法
+Swing 是一种被广泛使用的item召回算法，算法详细介绍可以参考SwingTrainBatchOp组件。
+
+该组件为Swing的批处理预测组件，输入为 SwingTrainBatchOp 输出的模型和要预测的item列。
 
 ## 参数说明
 
@@ -47,11 +49,11 @@ data = BatchOperator.fromDataframe(df_data, schemaStr='user string, item string,
 model = SwingTrainBatchOp()\
     .setUserCol("user")\
     .setItemCol("item")\
-    .setRateCol("rating").linkFrom(data);
+    .linkFrom(data)
 
 predictor = SwingRecommBatchOp()\
     .setItemCol("item")\
-    .setRecommCol("prediction_result");
+    .setRecommCol("prediction_result")
 
 predictor.linkFrom(model, data).print()
 ```
@@ -89,7 +91,7 @@ public class SwingRecommBatchOpTest {
 		BatchOperator <?> model = new SwingTrainBatchOp()
 			.setUserCol("user")
 			.setItemCol("item")
-			.setRateCol("rating").linkFrom(data);
+			.linkFrom(data);
 		BatchOperator <?> predictor = new SwingRecommBatchOp()
 			.setItemCol("item")
 			.setRecommCol("prediction_result");

@@ -6,7 +6,9 @@ Python 类名：VectorMaxAbsScalerTrainBatchOp
 
 ## 功能介绍
 
- vector绝对值最大标准化是对vector数据按照数值最大绝对值进行标准化的组件, 将数据归一到-1和1之间。
+ vector绝对值最大标准化是对vector数据按照数值最大绝对值进行标准化的组件, 将数据归一到-1和1之间。输入的向量维度可以不相同。
+
+计算公式为 value / max( | value | )
 
 该组件生成Vector绝对值最大标准化的模型
 
@@ -43,7 +45,7 @@ trainOp = VectorMaxAbsScalerTrainBatchOp()\
 model = trainOp.linkFrom(data) 
 
 batchPredictOp = VectorMaxAbsScalerPredictBatchOp()
-batchPredictOp.linkFrom(model, data).collectToDataframe()
+batchPredictOp.linkFrom(model, data).print()
 ```
 ### Java 代码
 ```java
@@ -81,14 +83,14 @@ public class VectorMaxAbsScalerTrainBatchOpTest {
 ```
 ### 运行结果
 
-col1|vec
-----|---
-c|1.0,0.01
-b|-0.024777006937561942,0.09
-d|-0.9900891972249752,1.0
-a|0.09910802775024777,1.0
-b|-0.02180376610505451,0.09
-c|0.9930624380574826,0.01
-a|0.013875123885034686,0.01
+col|vec
+---|---
+a|0.09910802775024777 1.0
+b|-0.024777006937561942 0.09
+c|0.9930624380574826 0.01
+d|-0.9900891972249752 1.0
+a|0.013875123885034686 0.01
+b|-0.02180376610505451 0.09
+c|1.0 0.01
 
 

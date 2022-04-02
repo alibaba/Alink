@@ -5,7 +5,9 @@ Python 类名：VectorPolynomialExpandBatchOp
 
 
 ## 功能介绍
-对 Vector 进行多项式展开，组成一个新的Vector。
+对 Vector 进行多项式展开，生成一个新的Vector。
+
+调用 setDegree ，设置幂，默认2。调用 setOutputCol，设置生成的列名，如果不指定，默认替代输入列。
 
 ## 参数说明
 

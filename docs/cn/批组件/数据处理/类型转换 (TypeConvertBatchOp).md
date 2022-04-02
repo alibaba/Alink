@@ -39,22 +39,50 @@ df_data = pd.DataFrame([['Ohio', 2000, 1.5],
 
 
 batch_data = BatchOperator.fromDataframe(df_data, schemaStr='f1 string, f2 bigint, f3 double')
-op = TypeConvertBatchOp().setSelectedCols(['f2']).setTargetType('double')
-batch_data = batch_data.link(op)
-batch_data.print()
+op = TypeConvertBatchOp().setSelectedCols(['f2']).setTargetType('double').linkFrom(batch_data)
+op.print()
+```
 
+### Java 代码
+```java
+import org.apache.flink.types.Row;
 
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Test;
 
+import java.util.Arrays;
+
+public class TypeConvertBatchOpTest extends AlinkTestBase {
+
+	@Test
+	public void test() throws Exception {
+		Row[] testArray = new Row[] {
+			Row.of("Ohio", 2000L, 1.5),
+			Row.of("Ohio", 2001L, 1.7),
+			Row.of("Ohio", 2002L, 3.6),
+			Row.of("Nevada", 2001L, 2.4),
+			Row.of("Nevada", 2002L, 2.9),
+			Row.of("Nevada", 2003L, 3.2)
+		};
+
+		MemSourceBatchOp inOp = new MemSourceBatchOp(Arrays.asList(testArray), "f1 string, f2 bigint, f3 double");
+		TypeConvertBatchOp op = new TypeConvertBatchOp()
+			.setSelectedCols("f2")
+			.setTargetType("double")
+			.linkFrom(inOp);
+		op.print();
+	}
+}
 ```
 
 ### 运行结果
 
-```
-       f1      f2   f3
-0    Ohio  2000.0  1.5
-1    Ohio  2001.0  1.7
-2    Ohio  2002.0  3.6
-3  Nevada  2001.0  2.4
-4  Nevada  2002.0  2.9
-5  Nevada  2003.0  3.2
-```
+f1|f2|f3
+---|---|---
+Ohio|2000.0000|1.5000
+Ohio|2001.0000|1.7000
+Ohio|2002.0000|3.6000
+Nevada|2001.0000|2.4000
+Nevada|2002.0000|2.9000
+Nevada|2003.0000|3.2000

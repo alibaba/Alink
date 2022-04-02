@@ -1,4 +1,4 @@
-# 转向量 (ToMTable)
+# 转MTable (ToMTable)
 Java 类名：com.alibaba.alink.pipeline.dataproc.ToMTable
 
 Python 类名：ToMTable

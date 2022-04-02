@@ -5,7 +5,16 @@ Python 类名：AutoGarchStreamOp
 
 
 ## 功能介绍
-使用AutoGarch进行时间序列预测。
+给定分组，对每一组的数据使用AutoGarch进行时间序列预测。
+
+### 算法原理
+
+garch(Generalized AutoRegressive Conditional Heteroskedasticity) 又称广义自回归条件异方差模型, 
+
+garch 详细介绍请见链接 https://en.wikipedia.org/wiki/Autoregressive_conditional_heteroskedasticity#GARCH
+
+garch是只需要指定MaxOrder, 不需要指定p/d/q, 对每个分组分别计算出最优的参数，给出预测结果。
+
 
 ## 参数说明
 

@@ -5,8 +5,9 @@ Python 类名：KvToTripleStreamOp
 
 
 ## 功能介绍
-将数据格式从 Kv 转成 Triple
-
+将数据格式从 Kv 转成 Triple，三元组。一条数据可能输出多条结果。
+setTripleColumnValueSchemaStr 设置三元组格式，包含两列，一列为key的值，一般类型为string，如果key为数字字符串，也可以指定为int、long等类型。
+一列为value的值，如果指定为数字或者字符串格式。
 
 ## 参数说明
 
@@ -57,7 +58,8 @@ public class KvToTripleStreamOpTest {
 	@Test
 	public void testKvToTripleStreamOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
+			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0),
+			Row.of("2", "{\"f0\":\"4.0\",\"f1\":\"8.0\"}", "$3$0:4.0 1:8.0", "f0:4.0,f1:8.0", "4.0,8.0", 4.0, 8.0)
 		);
 		StreamOperator <?> data = new MemSourceStreamOp(df,
 			"row string, json string, vec string, kv string, csv string, f0 double, f1 double");
@@ -75,7 +77,7 @@ public class KvToTripleStreamOpTest {
     
 |row|col|val|
 |---|---|---|
-|1|1|1.0|
-|1|2|2.0|
-|2|1|4.0|
-|2|2|8.0|
+|1|f0|1.0|
+|1|f1|2.0|
+|2|f0|4.0|
+|2|f1|8.0|

@@ -5,9 +5,9 @@ Python 类名：BisectingKMeansTrainBatchOp
 
 
 ## 功能介绍
-二分k均值算法是k-means聚类算法的一个变体，主要是为了改进k-means算法随机选择初始质心的随机性造成聚类结果不确定性的问题.
+二分k均值算法是k-means聚类算法的一个变体，主要是为了改进k-means算法随机选择初始质心的随机性造成聚类结果不确定性的问题。
 
-Alink上算法包括二分K均值聚类训练，二分K均值聚类预测, 二分K均值聚类流式预测。
+二分k均值方法是一种自顶向下的聚类。初始阶段该算法将所有节点视为属于同一个cluster。在每次迭代中，它选择一个类别，然后使用Kmeans算法对该类中的所有数据点进行二分类。当没有类可拆分时或者达到最大聚类个数时，算法终止。
 
 ## 参数说明
 #### 训练
@@ -40,28 +40,22 @@ df = pd.DataFrame([
 ])
 
 inBatch = BatchOperator.fromDataframe(df, schemaStr='id int, vec string')
-
 inStream = StreamOperator.fromDataframe(df, schemaStr='id int, vec string')
 
 kmeansTrain = BisectingKMeansTrainBatchOp()\
     .setVectorCol("vec")\
-    .setK(2)
-    
-predictBatch = BisectingKMeansPredictBatchOp()\
-    .setPredictionCol("pred")
-    
-kmeansTrain.linkFrom(inBatch)
-
-predictBatch.linkFrom(kmeansTrain, inBatch)
-
+    .setK(2)\
+    .linkFrom(inBatch)
 kmeansTrain.lazyPrint(10)
+
+predictBatch = BisectingKMeansPredictBatchOp()\
+    .setPredictionCol("pred")\
+    .linkFrom(kmeansTrain, inBatch)
 predictBatch.print()
 
 predictStream = BisectingKMeansPredictStreamOp(kmeansTrain)\
-    .setPredictionCol("pred")
-    
-predictStream.linkFrom(inStream)
-
+    .setPredictionCol("pred")\
+    .linkFrom(inStream)
 predictStream.print()
 
 StreamOperator.execute()
@@ -97,16 +91,18 @@ public class BisectingKMeansTrainBatchOpTest {
 		StreamOperator <?> inStream = new MemSourceStreamOp(df, "id int, vec string");
 		BatchOperator <?> kmeansTrain = new BisectingKMeansTrainBatchOp()
 			.setVectorCol("vec")
-			.setK(2);
-		BatchOperator <?> predictBatch = new BisectingKMeansPredictBatchOp()
-			.setPredictionCol("pred");
-		kmeansTrain.linkFrom(inBatch);
-		predictBatch.linkFrom(kmeansTrain, inBatch);
+			.setK(2)
+            .linkFrom(inBatch);
 		kmeansTrain.lazyPrint(10);
+
+		BatchOperator <?> predictBatch = new BisectingKMeansPredictBatchOp()
+			.setPredictionCol("pred")
+		    .linkFrom(kmeansTrain, inBatch);
 		predictBatch.print();
+
 		StreamOperator <?> predictStream = new BisectingKMeansPredictStreamOp(kmeansTrain)
-			.setPredictionCol("pred");
-		predictStream.linkFrom(inStream);
+			.setPredictionCol("pred")
+            .linkFrom(inStream);
 		predictStream.print();
 		StreamOperator.execute();
 	}
@@ -131,7 +127,3 @@ id|vec|pred
 3|9 9 9|1
 4|9.1 9.1 9.1|1
 5|9.2 9.2 9.2|1
-
-
-
-

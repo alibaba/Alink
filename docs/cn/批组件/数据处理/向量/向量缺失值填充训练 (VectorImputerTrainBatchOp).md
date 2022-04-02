@@ -36,7 +36,7 @@ df = pd.DataFrame([
 data = BatchOperator.fromDataframe(df, schemaStr="vec string, id bigint")
 vecFill = VectorImputerTrainBatchOp().setSelectedCol("vec")
 model = data.link(vecFill)
-VectorImputerPredictBatchOp().setOutputCol("vec1").linkFrom(model, data).collectToDataframe()
+VectorImputerPredictBatchOp().setOutputCol("vec1").linkFrom(model, data).print()
 ```
 ### Java 代码
 ```java

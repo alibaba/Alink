@@ -1,4 +1,4 @@
-# 转MTable (ToVector)
+# 转向量 (ToVector)
 Java 类名：com.alibaba.alink.pipeline.dataproc.ToVector
 
 Python 类名：ToVector

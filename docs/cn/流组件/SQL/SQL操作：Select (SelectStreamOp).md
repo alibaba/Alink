@@ -4,20 +4,28 @@ Java 类名：com.alibaba.alink.operator.stream.sql.SelectStreamOp
 Python 类名：SelectStreamOp
 
 
+## 功能介绍
+对流式数据进行sql的SELECT操作。
+
+### 使用方式
+
+SELECT 语句中支持的内置函数可以参考 Flink
+对应版本的官方文档： [System (Built-in) Functions](https://nightlies.apache.org/flink/flink-docs-release-1.13/docs/dev/table/functions/systemfunctions/)
+。 但需要注意，有些内置函数在旧 planner
+中不支持，在这里列出：[Unsupported Built-In Functions](https://nightlies.apache.org/flink/flink-docs-release-1.13/docs/dev/table/legacy_planner/#unsupported-built-in-functions)
+。
+
 ## 参数说明
+
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
 | clause | 运算语句 | 运算语句 | String | ✓ |  |
 
 ## 代码示例
+
 ### Python 代码
+
 ```python
-from pyalink.alink import *
-
-import pandas as pd
-
-useLocalEnv(1)
-
 df = pd.DataFrame([
     ['Ohio', 2000, 1.5],
     ['Ohio', 2001, 1.7],
@@ -69,11 +77,11 @@ public class SelectStreamOpTest {
 
 ### 运行结果
 
-river|
------|
-Nevada|
-Nevada|
-Ohio|
-Nevada|
-Ohio|
-Ohio|
+river
+-----
+Ohio
+Ohio
+Nevada
+Ohio
+Nevada
+Nevada

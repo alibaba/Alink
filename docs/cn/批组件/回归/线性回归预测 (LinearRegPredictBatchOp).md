@@ -5,13 +5,21 @@ Python 类名：LinearRegPredictBatchOp
 
 
 ## 功能介绍
-* 线性回归是一个回归算法
-* 线性回归组件支持稀疏、稠密两种数据格式
-* 线性回归组件支持带样本权重的训练
+线性回归算法是经典的回归算法，通过对带有回归值的样本集合训练得到回归模型，使用模型预测样本的回归值。线性回归组件支持稀疏、稠密两种数据格式，并且支持带权重样本训练。
+
+### 算法原理
+面对回归类问题，线性回归利用称为线性回归方程的最小平方函数对一个或多个自变量和因变量之间关系进行建模的一种回归分析。
+
+### 算法使用
+线性回归模型经常被用来做一些数值型变量的预测，类似房价预测、销售量预测、贷款额度预测、温度预测、适度预测等。
+
+### 文献或出处
+[1] Seber, George AF, and Alan J. Lee. Linear regression analysis. John Wiley & Sons, 2012.
+
+[2] https://baike.baidu.com/item/%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/8190345?fr=aladdin
 
 
 ## 参数说明
-
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
@@ -68,9 +76,9 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
-public class LinearRegPredictBatchOpTest {
+public class LinearRegTrainBatchOpTest {
 	@Test
-	public void testLinearRegPredictBatchOp() throws Exception {
+	public void testLinearRegTrainBatchOp() throws Exception {
 		List <Row> df = Arrays.asList(
 			Row.of(2, 1, 1),
 			Row.of(3, 2, 1),
@@ -104,7 +112,4 @@ f0 | f1 | label | pred
    4 |  3   |   2  | 2.076934
    1 |  2   |   1  | 0.553842
    5 |  3   |   3  | 2.569250
-
-
-
 

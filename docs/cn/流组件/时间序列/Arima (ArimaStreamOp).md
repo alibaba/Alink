@@ -5,7 +5,13 @@ Python 类名：ArimaStreamOp
 
 
 ## 功能介绍
-使用Arima进行时间序列预测。
+给定分组，对每一组的数据进行Arima时间序列预测，给出下一时间段的结果。
+
+### 算法原理
+
+Arima全称为自回归积分滑动平均模型(Autoregressive Integrated Moving Average Model,简记ARIMA)，是由博克思(Box)和詹金斯(Jenkins)于70年代初提出一著名时间序列预测方法，所以又称为box-jenkins模型、博克思-詹金斯法.
+
+Arima 详细介绍请见链接 https://en.wikipedia.org/wiki/Autoregressive_integrated_moving_average
 
 ## 参数说明
 

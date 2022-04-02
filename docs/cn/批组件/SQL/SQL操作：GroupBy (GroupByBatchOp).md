@@ -5,8 +5,7 @@ Python 类名：GroupByBatchOp
 
 
 ## 功能介绍
-对批数据进行groupby运算
-
+对批式数据进行sql的GROUPBY操作。
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
@@ -72,6 +71,7 @@ public class GroupByBatchOpTest {
 ```
 
 ### 运行结果
+
 f1|f2
 ---|---
 Nevada|2002

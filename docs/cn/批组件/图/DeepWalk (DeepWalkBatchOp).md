@@ -27,7 +27,7 @@ DeepWalk是2014年提出的一个新的方法，用来为网络中的结点学�
 | numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  | 1 |
 | randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  | "true" |
 | vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | 100 |
-| weightCol | 权重列名 | 用来指定权重列, 权重列的值必须为非负的浮点数, 否则算法抛异常。 | String |  | null |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | window | 窗口大小 | 窗口大小 | Integer |  | 5 |
 
 

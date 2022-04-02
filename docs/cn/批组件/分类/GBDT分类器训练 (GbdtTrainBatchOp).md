@@ -6,20 +6,40 @@ Python 类名：GbdtTrainBatchOp
 
 ## 功能介绍
 
-- gbdt(Gradient Boosting Decision Trees)二分类，是经典的基于boosting的有监督学习模型，可以用来解决二分类问题
+梯度提升决策树(Gradient Boosting Decision Trees)二分类，是经典的基于梯度提升的有监督学习模型，可以用来解决二分类问题
+
+### 算法原理
+
+梯度提升决策树模型构建了一个由多棵决策树组成的组合模型。每一棵决策树对应一个弱学习器，将这些弱学习器组合在一起，可以达到比较好的分类或回归效果。
+
+梯度提升的基本递推结构为：
+
+$$F_{m}(x) = F_{m-1}(x) + \beta_{m}h(x;a_m)$$
+
+其中 $h(x;a_m)$ 通常为一棵 CART[2] 决策树，${a_m}$ 为在这棵决策树下的分割变量，$\beta_{m}h(x;a_m)$ 为在 $h(x;a_m)$ 约束下的步长，通过这个递推结构即可得出最终模型。
+
+### 算法使用
+
+对于一些常见的二分类问题，都可以使用这个算法解决，模型拥有较好的性能，且拥有不错的可解释性，在实际场景中，应用较为广泛。
 
 - 支持连续特征和离散特征
-
 - 支持数据采样和特征采样
+- 目标分类必须为两个
 
-- 目标分类必须是两个
+### 文献或出处
+
+1. Friedman J H. Greedy function approximation: a gradient boosting machine[J]. Annals of statistics, 2001: 1189-1232.
+2. Breiman, L., Friedman, J. H., Olshen, R. and Stone, C. (1983). Classification and Regression
+Trees. Wadsworth, Belmont, CA.
+3. [weka](https://www.cs.waikato.ac.nz/ml/weka/)
+4. [xgboost](https://xgboost.readthedocs.io/en/stable/)
+5. [lightgbm](https://lightgbm.readthedocs.io/en/latest/)
 
 ## 参数说明
 
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ |  |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
 | learningRate | 学习率 | 学习率（默认为0.3） | Double |  | 0.3 |
 | minSumHessianPerLeaf | 叶子节点最小Hessian值 | 叶子节点最小Hessian值（默认为0） | Double |  | 0.0 |
@@ -27,6 +47,7 @@ Python 类名：GbdtTrainBatchOp
 | gamma | xgboost中的l2正则项 | xgboost中的l2正则项 | Double |  | 0.0 |
 | criteria | 树分裂的策略 | 树分裂的策略，可以为PAI, XGBOOST | String |  | "PAI" |
 | categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  |  |
+| featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | null |
 | featureImportanceType | 特征重要性类型 | 特征重要性类型（默认为GAIN） | String |  | "GAIN" |
 | featureSubsamplingRatio | 每棵树特征采样的比例 | 每棵树特征采样的比例，范围为(0, 1]。 | Double |  | 1.0 |
 | maxBins | 连续特征进行分箱的最大个数 | 连续特征进行分箱的最大个数。 | Integer |  | 128 |

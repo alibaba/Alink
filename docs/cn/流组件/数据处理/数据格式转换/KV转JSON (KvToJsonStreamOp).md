@@ -7,7 +7,6 @@ Python 类名：KvToJsonStreamOp
 ## 功能介绍
 将数据格式从 Kv 转成 Json
 
-
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
@@ -57,7 +56,8 @@ public class KvToJsonStreamOpTest {
 	@Test
 	public void testKvToJsonStreamOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
+			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0),
+			Row.of("2", "{\"f0\":\"4.0\",\"f1\":\"8.0\"}", "$3$0:4.0 1:8.0", "f0:4.0,f1:8.0", "4.0,8.0", 4.0, 8.0)
 		);
 		StreamOperator <?> data = new MemSourceStreamOp(df,
 			"row string, json string, vec string, kv string, csv string, f0 double, f1 double");
@@ -75,5 +75,5 @@ public class KvToJsonStreamOpTest {
     
 |row|json|
 |---|----|
-| 1 |{"f1":"1.0","f2":"2.0"}|
-| 2 |{"f1":"4.0","f2":"8.0"}|
+| 1 |{"f0":"1.0","f1":"2.0"}|
+| 2 |{"f0":"4.0","f1":"8.0"}|

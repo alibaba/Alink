@@ -5,7 +5,7 @@ Python 类名：JoinBatchOp
 
 
 ## 功能介绍
-提供sql的join语句功能
+对批式数据进行sql的JOIN操作。
 
 ## 参数说明
 
@@ -26,48 +26,63 @@ import pandas as pd
 
 useLocalEnv(1)
 
-URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-data1 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
-data2 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
+df1 = pd.DataFrame([
+    ['Ohio', 2000, 1.5],
+    ['Ohio', 2001, 1.7],
+    ['Ohio', 2002, 3.6],
+    ['Nevada', 2001, 2.4],
+    ['Nevada', 2002, 2.9],
+    ['Nevada', 2003, 3.2]
+])
+df2 = pd.DataFrame([
+    ['Nevada', 2001, 2.4],
+    ['Nevada', 2003, 3.2]
+])
 
-joinOp = JoinBatchOp().setJoinPredicate("a.category=b.category").setSelectClause("a.petal_length")
-output = joinOp.linkFrom(data1, data2)
+batch_data1 = BatchOperator.fromDataframe(df1, schemaStr='f1 string, f2 bigint, f3 double')
+batch_data2 = BatchOperator.fromDataframe(df2, schemaStr='f1 string, f2 bigint, f3 double')
+
+op = JoinBatchOp().setJoinPredicate("a.f1=b.f1").setSelectClause("a.f1, a.f2, a.f3")
+op.linkFrom(batch_data1, batch_data2).print()
 ```
 ### Java 代码
 ```java
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.JoinBatchOp;
 import org.junit.Test;
 
 public class JoinBatchOpTest {
 	@Test
-	public void testJoinBatchOp() throws Exception {
-		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
-		String SCHEMA_STR
-			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-		BatchOperator <?> data1 = new CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR);
-		BatchOperator <?> data2 = new CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR);
-		BatchOperator <?> joinOp = new JoinBatchOp().setJoinPredicate("a.category=b.category").setSelectClause(
-			"a.petal_length");
-		joinOp.linkFrom(data1, data2).print();
+    public void testJoinBatchOp() throws Exception {
+    	List <Row> df1 = Arrays.asList(
+        	Row.of("Ohio", 2000, 1.5),
+    		Row.of("Ohio", 2001, 1.7),
+    		Row.of("Ohio", 2002, 3.6),
+    		Row.of("Nevada", 2001, 2.4),
+    		Row.of("Nevada", 2002, 2.9),
+    		Row.of("Nevada", 2003, 3.2)
+    	);
+    	List <Row> df2 = Arrays.asList(
+    		Row.of("Nevada", 2001, 2.4),
+    		Row.of("Nevada", 2003, 3.2)
+    	);
+    	BatchOperator <?> data1 = new MemSourceBatchOp(df1, "f1 string, f2 int, f3 double");
+    	BatchOperator <?> data2 = new MemSourceBatchOp(df2, "f1 string, f2 int, f3 double");
+    	BatchOperator <?> joinOp = new JoinBatchOp().setJoinPredicate("a.f1=b.f1").setSelectClause(
+    		"a.f1, a.f2, a.f3");
+    	joinOp.linkFrom(data1, data2).print();
 	}
 }
 ```
 
 ### 运行结果
 
-petal_length|
-------------|
-6.0000|
-6.6000|
-4.8000|
-4.5000|
-4.9000|
-...|
-1.2000|
-1.5000|
-1.5000|
-1.4000|
-1.5000|
+f1|f2|f3
+---|---|---
+Nevada|2001|2.4000
+Nevada|2002|2.9000
+Nevada|2003|3.2000
+Nevada|2001|2.4000
+Nevada|2002|2.9000
+Nevada|2003|3.2000

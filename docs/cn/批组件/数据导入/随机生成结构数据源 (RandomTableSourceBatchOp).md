@@ -6,6 +6,18 @@ Python 类名：RandomTableSourceBatchOp
 
 ## 功能介绍
 随机生成批式的表数据。
+支持5种随机数据生成方法：uniform, uniform_open, gauss, weight_set 和 poisson
+
+### 使用方法
+setOutputColConfs(列配置信息参数)的含义和编写方法如下
+
+| 参数示例 | 生成方法 |
+| ---- | ---- | 
+| uniform(1,2,nullper=0.1) | 1到2闭区间上服从均匀分布，有10%的数据为null的随机数序列 |
+| uniform_open(1,2) | 1到2开区间上服从均匀分布的随机数序列 |
+| weight_set(1.0,1.0,5.0,2.0) | 由1和5组成的随机序列，生成概率为1：2 |
+| gauss(0,1) | 满足均值为0、方差为1的正态分布的随机数序列 |
+| poisson(0.5) | 满足lambda为0.5的泊松分布的随机序列|
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |

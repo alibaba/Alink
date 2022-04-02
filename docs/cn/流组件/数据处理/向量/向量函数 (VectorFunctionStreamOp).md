@@ -12,11 +12,11 @@ Python 类名：VectorFunctionStreamOp
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| funcName | 函数名字 | 函数操作名称, 可取max（最大值）, min（最小值）, argMax（最大值索引）, argMin（最小值索引） | String | ✓ |  |
+| funcName | 函数名字 | 函数操作名称, 可取max（最大值）, min（最小值）, argMax（最大值索引）, argMin（最小值索引）, scale（尺度变换）, NormL2, NormL1, NormL2Square, Normalize | String | ✓ |  |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| WithVariable |  |  | String |  |  |
+| WithVariable | Not available! | Not available! | String |  |  |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 
 

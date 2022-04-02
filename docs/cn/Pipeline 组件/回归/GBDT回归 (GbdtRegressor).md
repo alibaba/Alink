@@ -17,7 +17,6 @@ Python 类名：GbdtRegressor
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ |  |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
 | learningRate | 学习率 | 学习率（默认为0.3） | Double |  | 0.3 |
@@ -26,6 +25,7 @@ Python 类名：GbdtRegressor
 | gamma | xgboost中的l2正则项 | xgboost中的l2正则项 | Double |  | 0.0 |
 | criteria | 树分裂的策略 | 树分裂的策略，可以为PAI, XGBOOST | String |  | "PAI" |
 | categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  |  |
+| featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | null |
 | featureImportanceType | 特征重要性类型 | 特征重要性类型（默认为GAIN） | String |  | "GAIN" |
 | featureSubsamplingRatio | 每棵树特征采样的比例 | 每棵树特征采样的比例，范围为(0, 1]。 | Double |  | 1.0 |
 | maxBins | 连续特征进行分箱的最大个数 | 连续特征进行分箱的最大个数。 | Integer |  | 128 |

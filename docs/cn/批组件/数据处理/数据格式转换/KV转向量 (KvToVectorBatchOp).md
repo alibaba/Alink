@@ -6,7 +6,7 @@ Python 类名：KvToVectorBatchOp
 
 ## 功能介绍
 将数据格式从 Key-value 转成 Vector
-
+Kv中的key和value必须为数字，否则会出错报异常。
 
 ## 参数说明
 

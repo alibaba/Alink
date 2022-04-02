@@ -5,7 +5,10 @@ Python 类名：MultiStringIndexerPredictBatchOp
 
 
 ## 功能介绍
-基于MultiStringIndexer模型，将多列字符串映射为整数。
+多列字符串转换组件，输入的模型数据来自 MultiStringIndexerTrainBatchOp 组件的输出，训练的时候指定多个列，每个列单独编码。
+这个组件为批式预测组件，预测时需要指定列名，列名必须与训练时列名相同。如果转换时指定了训练时不存在的列名，会报异常。
+支持按照一定的次序编码。如随机、出现频次生序，出现频次降序、字符串生序、字符串降序5种方式。
+设置 setStringOrderType 参数时分别对应 random frequency_asc frequency_desc alphabet_asc alphabet_desc。
 
 ## 参数说明
 
@@ -28,21 +31,21 @@ import pandas as pd
 useLocalEnv(1)
 
 df = pd.DataFrame([
-    ["football"],
-    ["football"],
-    ["football"],
-    ["basketball"],
-    ["basketball"],
-    ["tennis"],
+    ["football", "apple"],
+    ["football", "banana"],
+    ["football", "banana"],
+    ["basketball", "orange"],
+    ["basketball", "grape"],
+    ["tennis", "grape"],
 ])
 
-data = BatchOperator.fromDataframe(df, schemaStr='f0 string')
+data = BatchOperator.fromDataframe(df, schemaStr='f0 string,f1 string')
 
 stringindexer = MultiStringIndexerTrainBatchOp() \
-    .setSelectedCols(["f0"]) \
+    .setSelectedCols(["f0", "f1"]) \
     .setStringOrderType("frequency_asc")
 
-predictor = MultiStringIndexerPredictBatchOp().setSelectedCols(["f0"]).setOutputCols(["f0_indexed"])
+predictor = MultiStringIndexerPredictBatchOp().setSelectedCols(["f0", "f1"]).setOutputCols(["f0_indexed", "f1_indexed"])
 
 model = stringindexer.linkFrom(data)
 predictor.linkFrom(model, data).print()
@@ -64,19 +67,19 @@ public class MultiStringIndexerPredictBatchOpTest {
 	@Test
 	public void testMultiStringIndexerPredictBatchOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("football"),
-			Row.of("football"),
-			Row.of("football"),
-			Row.of("basketball"),
-			Row.of("basketball"),
-			Row.of("tennis")
+			Row.of("football", "apple"),
+			Row.of("football", "banana"),
+			Row.of("football", "banana"),
+			Row.of("basketball", "orange"),
+			Row.of("basketball", "grape"),
+			Row.of("tennis", "grape")
 		);
-		BatchOperator <?> data = new MemSourceBatchOp(df, "f0 string");
+		BatchOperator <?> data = new MemSourceBatchOp(df, "f0 string,f1 string");
 		BatchOperator <?> stringindexer = new MultiStringIndexerTrainBatchOp()
-			.setSelectedCols("f0")
+			.setSelectedCols("f0", "f1")
 			.setStringOrderType("frequency_asc");
-		BatchOperator <?> predictor = new MultiStringIndexerPredictBatchOp().setSelectedCols("f0").setOutputCols(
-			"f0_indexed");
+		BatchOperator <?> predictor = new MultiStringIndexerPredictBatchOp().setSelectedCols("f0", "f1").setOutputCols(
+			"f0_indexed", "f1_indexed");
 		BatchOperator model = stringindexer.linkFrom(data);
 		predictor.linkFrom(model, data).print();
 	}
@@ -85,11 +88,11 @@ public class MultiStringIndexerPredictBatchOpTest {
 
 ### 运行结果
 
-f0|f0_indexed
----|---
-football|2
-football|2
-football|2
-basketball|1
-basketball|1
-tennis|0
+f0|f1|f0_indexed|f1_indexed
+---|---|----------|----------
+basketball|orange|1|0
+football|apple|2|1
+tennis|grape|0|3
+football|banana|2|2
+basketball|grape|1|3
+football|banana|2|2

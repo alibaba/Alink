@@ -5,7 +5,10 @@ Python 类名：VectorToKvBatchOp
 
 
 ## 功能介绍
-将数据格式从 Vector 转成 Key-value
+将数据格式从 Vector 转成 Key-value，批式组件
+
+一条输入数据对应一条输出数据，setKvCol设置kv输出列名，setReservedCols设置保留的输入列。
+在输出kv列中，vector的下标对应key，vector的值对应的value。
 
 
 ## 参数说明
@@ -58,7 +61,8 @@ public class VectorToKvBatchOpTest {
 	@Test
 	public void testVectorToKvBatchOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
+			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0),
+			Row.of("2", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:4.0 1:8.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
 		);
 		BatchOperator <?> data = new MemSourceBatchOp(df,
 			"row string, json string, vec string, kv string, csv string, f0 double, f1 double");
@@ -73,9 +77,9 @@ public class VectorToKvBatchOpTest {
 ```
 
 ### 运行结果
-    
-|row|kv|
-|---|---|
-|1|1:1.0,2:2.0|
-|2|1:4.0,2:8.0|
+
+row|kv
+---|---
+1|0:1.0,1:2.0
+2|0:4.0,1:8.0
     

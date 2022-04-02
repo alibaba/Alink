@@ -5,9 +5,11 @@ Python 类名：VectorNearestNeighborPredictBatchOp
 
 
 ## 功能介绍
-该组件为向量最近邻预测功能，接收VectorNearestNeighborTrainBatchOp训练的模型
+该组件为向量最近邻预测功能，接收 VectorNearestNeighborTrainBatchOp 训练的模型
 
-该功能由预测时候的topN和radius参数控制, 如果填写了topN，则输出最近邻，如果填写了radius，则输出radius范围内的邻居。
+该功能由预测时候的topN和radius参数控制, 如果填写了topN，则输出前N个最近邻，如果填写了radius，则输出radius范围内的邻居。如果两个同时设置，则输出radius范围内前N个最近邻。
+
+如果不设置 OutputCol，输出列会替换输入的向量列。
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |

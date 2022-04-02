@@ -5,15 +5,14 @@ Python 类名：StreamingKMeansStreamOp
 
 
 ## 功能介绍
+流式Kmeans聚类算法，对流数据进行Kmeans聚类。流式KMeans聚类，需要三个输入: 
+1. 训练好的批式的KMeans模型
+2. 流式的更新模型的数据
+3. 流式的需要预测的数据
 
-流式KMeans聚类，需要三种输入: 
-1。训练好的批式的KMeans模型
-2。流式的更新模型的数据
-3。流式的需要预测的数据
+若只有两个输入，那么第一个输入被算法识别为训练好的初始Kmeans模型，第二个输入被同时用作"流式的更新模型的数据"和"流式的需要预测的数据"。
 
-组件会根据2流入的数据在固定的timeinterval内更新模型，这个模型会用来预测3的输入数据。
-
-
+本算法组件会根据2流入的数据在固定的timeinterval内更新模型，这个模型会用来预测3的输入数据。
 
 ## 参数说明
 
@@ -52,11 +51,10 @@ df = pd.DataFrame([
 inOp = BatchOperator.fromDataframe(df, schemaStr='id int, vec string')
 stream_data = StreamOperator.fromDataframe(df, schemaStr='id int, vec string')
 
-kmeans = KMeansTrainBatchOp()\
+init_model = KMeansTrainBatchOp()\
     .setVectorCol("vec")\
-    .setK(2)
-    
-init_model = kmeans.linkFrom(inOp)
+    .setK(2)\
+    .linkFrom(inOp)
 
 streamingkmeans = StreamingKMeansStreamOp(init_model) \
   .setTimeInterval(1) \
@@ -97,10 +95,10 @@ public class StreamingKMeansStreamOpTest {
 		);
 		BatchOperator <?> inOp = new MemSourceBatchOp(df, "id int, vec string");
 		StreamOperator <?> stream_data = new MemSourceStreamOp(df, "id int, vec string");
-		BatchOperator <?> kmeans = new KMeansTrainBatchOp()
+		BatchOperator <?> init_model = new KMeansTrainBatchOp()
 			.setVectorCol("vec")
-			.setK(2);
-		BatchOperator <?> init_model = kmeans.linkFrom(inOp);
+			.setK(2)
+            .linkFrom(inOp);
 		StreamOperator <?> streamingkmeans = new StreamingKMeansStreamOp(init_model)
 			.setTimeInterval(1L)
 			.setHalfLife(1)

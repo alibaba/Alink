@@ -7,6 +7,9 @@ Python 类名：TripleToVectorBatchOp
 ## 功能介绍
 将数据格式从 Triple 转成 Vector
 
+三元组转换为向量，setTripleRowCol 设置数据行信息的列名，这一列值相同的数据，会被合并成一个向量。
+setTripleColumnCol 设置向量的索引所在列，数值为向量的索引，因此需要为整型，int或者long。
+setTripleValueCol 设置向量的值所在列，因此该列必须为数值类型。
 
 ## 参数说明
 
@@ -64,7 +67,8 @@ public class TripleToVectorBatchOpTest {
 		List <Row> df = Arrays.asList(
 			Row.of(1, 1, 1.0),
 			Row.of(1, 2, 2.0),
-			Row.of(2, 1, 4.0)
+			Row.of(2, 1, 4.0),
+			Row.of(2, 2, 8.0)
 		);
 		BatchOperator <?> data = new MemSourceBatchOp(df, "row int, col int, val double");
 		BatchOperator <?> op = new TripleToVectorBatchOp()
@@ -80,9 +84,9 @@ public class TripleToVectorBatchOpTest {
 ```
 
 ### 运行结果
-    
-|row|vec|
-|---|-----|
-|1|$5$1.0 2.0|
-|2|$5$4.0 8.0|
+
+row|vec
+---|---
+1|$5$1:1.0 2:2.0
+2|$5$1:4.0 2:8.0
     

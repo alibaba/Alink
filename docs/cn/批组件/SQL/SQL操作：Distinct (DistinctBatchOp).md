@@ -5,7 +5,7 @@ Python 类名：DistinctBatchOp
 
 
 ## 功能介绍
-数据去重
+对批式数据进行sql的DISTINCT操作。
 
 ## 参数说明
 
@@ -35,12 +35,7 @@ df = pd.DataFrame([
 
 batch_data = BatchOperator.fromDataframe(df, schemaStr='f1 string, f2 bigint, f3 double')
 
-batch_data\
-    .select('f1')\
-    .link(\
-        DistinctBatchOp()\
-    )\
-    .print()
+batch_data.select('f1').link(DistinctBatchOp()).print()
 ```
 ### Java 代码
 ```java
@@ -66,12 +61,7 @@ public class DistinctBatchOpTest {
 			Row.of("Nevada", 2003, 3.2)
 		);
 		BatchOperator <?> batch_data = new MemSourceBatchOp(df, "f1 string, f2 int, f3 double");
-		batch_data
-			.select("f1")
-			.link(
-				new DistinctBatchOp()
-			)
-			.print();
+		batch_data.select("f1").link(new DistinctBatchOp()).print();
 	}
 }
 ```

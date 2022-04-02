@@ -5,7 +5,7 @@ Python 类名：SplitBatchOp
 
 
 ## 功能介绍
-本算子将输入数据按比例拆分为两部分。
+将输入数据按比例拆分为两部分。
 
 ## 参数说明
 
@@ -25,23 +25,21 @@ import pandas as pd
 
 useLocalEnv(1)
 
-df_data = pd.DataFrame([['Ohio', 2000, 1.5], 
-                        ['Ohio', 2001, 1.7],
+df_data = pd.DataFrame([['Ohio', 2001, 1.7],
                         ['Ohio', 2002, 3.6],
                         ['Nevada', 2001, 2.4],
-                        ['Nevada', 2002, 2.9],
-                        ['Nevada', 2003, 3.2],])
-
+                        ['Nevada', 2002, 2.9]])
 
 batch_data = BatchOperator.fromDataframe(df_data, schemaStr='f1 string, f2 bigint, f3 double')
 
 spliter = SplitBatchOp().setFraction(0.5)
 spliter.linkFrom(batch_data)
+spliter.lazyPrint(-1)
+spliter.getSideOutput(0).lazyPrint(-1)
 
-spliter.print()
-
-
+BatchOperator.execute()
 ```
+
 ### Java 代码
 ```java
 import org.apache.flink.types.Row;
@@ -56,17 +54,19 @@ import java.util.List;
 
 public class SplitBatchOpTest {
 	@Test
-	public void testSplitBatchOp() throws Exception {
-		List <Row> df_data = Arrays.asList(
-			Row.of("Ohio", 2001, 1.7),
-			Row.of("Ohio", 2002, 3.6),
-			Row.of("Nevada", 2001, 2.4),
-			Row.of("Nevada", 2002, 2.9)
-		);
-		BatchOperator <?> batch_data = new MemSourceBatchOp(df_data, "f1 string, f2 int, f3 double");
-		BatchOperator <?> spliter = new SplitBatchOp().setFraction(0.5);
-		spliter.linkFrom(batch_data);
-		spliter.print();
+    public void testSplitBatchOp() throws Exception {
+        List <Row> df_data = Arrays.asList(
+    	    Row.of("Ohio", 2001, 1.7),
+    		Row.of("Ohio", 2002, 3.6),
+    		Row.of("Nevada", 2001, 2.4),
+    		Row.of("Nevada", 2002, 2.9)
+   		);
+        BatchOperator <?> batch_data = new MemSourceBatchOp(df_data, "f1 string, f2 int, f3 double");
+        BatchOperator <?> spliter = new SplitBatchOp().setFraction(0.5);
+        spliter.linkFrom(batch_data);
+        spliter.lazyPrint(-1);
+        spliter.getSideOutput(0).lazyPrint(-1);
+        BatchOperator.execute();
 	}
 }
 ```
@@ -77,3 +77,8 @@ f1|f2|f3
 ---|---|---
 Ohio|2001|1.7000
 Nevada|2002|2.9000
+
+f1|f2|f3
+---|---|---
+Ohio|2002|3.6000
+Nevada|2001|2.4000

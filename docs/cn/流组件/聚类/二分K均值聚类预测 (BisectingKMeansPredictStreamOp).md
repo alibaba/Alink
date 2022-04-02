@@ -41,28 +41,22 @@ df = pd.DataFrame([
 ])
 
 inBatch = BatchOperator.fromDataframe(df, schemaStr='id int, vec string')
-
 inStream = StreamOperator.fromDataframe(df, schemaStr='id int, vec string')
 
 kmeansTrain = BisectingKMeansTrainBatchOp()\
     .setVectorCol("vec")\
-    .setK(2)
-    
-predictBatch = BisectingKMeansPredictBatchOp()\
-    .setPredictionCol("pred")
-    
-kmeansTrain.linkFrom(inBatch)
-
-predictBatch.linkFrom(kmeansTrain, inBatch)
-
+    .setK(2)\
+    .linkFrom(inBatch)
 kmeansTrain.lazyPrint(10)
+
+predictBatch = BisectingKMeansPredictBatchOp()\
+    .setPredictionCol("pred")\
+    .linkFrom(kmeansTrain, inBatch)
 predictBatch.print()
 
 predictStream = BisectingKMeansPredictStreamOp(kmeansTrain)\
-    .setPredictionCol("pred")
-    
-predictStream.linkFrom(inStream)
-
+    .setPredictionCol("pred")\
+    .linkFrom(inStream)
 predictStream.print()
 
 StreamOperator.execute()
@@ -98,22 +92,23 @@ public class BisectingKMeansPredictStreamOpTest {
 		StreamOperator <?> inStream = new MemSourceStreamOp(df, "id int, vec string");
 		BatchOperator <?> kmeansTrain = new BisectingKMeansTrainBatchOp()
 			.setVectorCol("vec")
-			.setK(2);
-		BatchOperator <?> predictBatch = new BisectingKMeansPredictBatchOp()
-			.setPredictionCol("pred");
-		kmeansTrain.linkFrom(inBatch);
-		predictBatch.linkFrom(kmeansTrain, inBatch);
+			.setK(2)
+            .linkFrom(inBatch);
 		kmeansTrain.lazyPrint(10);
+
+		BatchOperator <?> predictBatch = new BisectingKMeansPredictBatchOp()
+			.setPredictionCol("pred")
+		    .linkFrom(kmeansTrain, inBatch);
 		predictBatch.print();
+
 		StreamOperator <?> predictStream = new BisectingKMeansPredictStreamOp(kmeansTrain)
-			.setPredictionCol("pred");
-		predictStream.linkFrom(inStream);
+			.setPredictionCol("pred")
+            .linkFrom(inStream);
 		predictStream.print();
 		StreamOperator.execute();
 	}
 }
 ```
-
 
 ### 运行结果
 #### 模型结果
@@ -122,7 +117,7 @@ model_id|model_info
 0|{"vectorCol":"\"vec\"","distanceType":"\"EUCLIDEAN\"","k":"2","vectorSize":"3"}
 1048576|{"clusterId":1,"size":6,"center":{"data":[4.6,4.6,4.6]},"cost":364.61999999999995}
 2097152|{"clusterId":2,"size":3,"center":{"data":[0.1,0.1,0.1]},"cost":0.06}
-3145728|{"clusterId":3,"size":3,"center":{"data":[9.1,9.1,9.1]},"cost":0.06000000000005912}
+3145728|{"clusterId":3,"size":3,"center":{"data":[9.099999999999998,9.099999999999998,9.099999999999998]},"cost":0.060000000000172804}
 
 #### 预测结果
 id|vec|pred
@@ -133,7 +128,3 @@ id|vec|pred
 3|9 9 9|1
 4|9.1 9.1 9.1|1
 5|9.2 9.2 9.2|1
-
-
-
-

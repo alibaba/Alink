@@ -59,7 +59,6 @@ kmeans = GeoKMeansTrainBatchOp()\
                 .setLatitudeCol("f1")\
                 .setK(2)\
                 .linkFrom(inOp1)
-
 kmeans.print()
 
 predict = GeoKMeansPredictBatchOp()\
@@ -127,8 +126,6 @@ model_id|model_info
 0|{"vectorCol":null,"latitudeCol":"\"f1\"","longitudeCol":"\"f0\"","distanceType":"\"HAVERSINE\"","k":"2","vectorSize":"2"}
 1048576|{"clusterId":0,"weight":3.0,"center":"[8.333333333333332, 9.0]","vec":null}
 2097152|{"clusterId":1,"weight":3.0,"center":"[1.0, 1.3333333333333333]","vec":null}
-2097152|{"center":"{\"data\":[1.0,1.3333333333333333]}","clusterId":1,"weight":3.0}
-
 
 #### 预测输出
 f0|f1|pred
@@ -139,5 +136,3 @@ f0|f1|pred
 9|10|0
 3|1|1
 10|7|0
-
-

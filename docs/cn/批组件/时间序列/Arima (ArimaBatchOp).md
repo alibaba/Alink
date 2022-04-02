@@ -5,7 +5,32 @@ Python 类名：ArimaBatchOp
 
 
 ## 功能介绍
-使用Arima进行时间序列预测。
+给定分组，对每一组的数据进行Arima时间序列预测，给出下一时间段的结果。
+
+### 算法原理
+
+Arima全称为自回归积分滑动平均模型(Autoregressive Integrated Moving Average Model,简记ARIMA)，是由博克思(Box)和詹金斯(Jenkins)于70年代初提出一著名时间序列预测方法，所以又称为box-jenkins模型、博克思-詹金斯法.
+
+Arima 详细介绍请见链接 https://en.wikipedia.org/wiki/Autoregressive_integrated_moving_average
+
+### 使用方式
+* 第一步，将每组数据(时间列和数据列) 聚合成MTable.
+    ```python
+     GroupByBatchOp()
+        .setGroupByPredicate("id")
+        .setSelectClause("id, mtable_agg(ts, val) as data")
+    ```
+* 第二步，使用时间序列方法进行预测，预测结果也是MTable。
+* 第三步，使用FlattenMTableBatchOp，将MTable转换成列，
+   ```python
+      FlattenMTableBatchOp()
+          .setReservedCols(["id", "predict"])
+          .setSelectedCol("predict")
+          .setSchemaStr("ts timestamp, val double")
+   ```
+ 
+     
+
 
 ## 参数说明
 

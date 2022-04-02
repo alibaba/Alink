@@ -18,6 +18,7 @@ Python 类名：TFSavedModelPredictStreamOp
 | outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如 "f0 string, f1 bigint, f2 double" | String | ✓ |  |
 | graphDefTag | graph标签 | graph标签 | String |  | "serve" |
 | inputSignatureDefs | 输入 SignatureDef | SavedModel 模型的输入 SignatureDef 名，用逗号分隔，需要与输入列一一对应，默认与选择列相同 | String[] |  | null |
+| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  | 4 |
 | outputSignatureDefs | TF 输出 SignatureDef 名 | 模型的输出 SignatureDef 名，多个输出时用逗号分隔，并且与输出 Schema 一一对应，默认与输出 Schema 中的列名相同 | String[] |  | null |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
@@ -39,28 +40,36 @@ Python 类名：TFSavedModelPredictStreamOp
 
 ### Python 代码
 ```python
-url = "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/mnist_dense.csv"
-schema = "label bigint, image string";
+test = AkSourceStreamOp()\
+    .setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/mnist_test_vector.ak");
 
-data = CsvSourceStreamOp() \
-    .setFilePath(url) \
-    .setSchemaStr(schema) \
-    .setFieldDelimiter(";")
+test = VectorToTensorStreamOp()\
+    .setTensorDataType("float")\
+    .setTensorShape([1, 28, 28, 1])\
+    .setSelectedCol("vec")\
+    .setOutputCol("tensor")\
+    .setReservedCols(["label"])\
+    .linkFrom(test)
 
-predictor = TFSavedModelPredictStreamOp() \
-    .setModelPath("http://alink-dataset.oss-cn-zhangjiakou.aliyuncs.com/tf/1551968314.zip") \
-    .setSelectedCols(["image"]) \
-    .setOutputSchemaStr("classes bigint, probabilities string")
+predictor = TFSavedModelPredictStreamOp()\
+    .setModelPath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/mnist_model_tf.zip")\
+    .setSelectedCols(["tensor"])\
+    .setInputSignatureDefs(["input_1"])\
+    .setOutputSignatureDefs(["output_1"])\
+    .setOutputSchemaStr("probabilities FLOAT_TENSOR")
 
-data = predictor.linkFrom(data).select("label, classes, probabilities")
-data.print()
+test = predictor.linkFrom(test).select("label, probabilities")
+test.print()
 StreamOperator.execute()
 ```
 
 ### Java 代码
 ```java
+package examples;
+
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
+import com.alibaba.alink.operator.stream.dataproc.VectorToTensorStreamOp;
+import com.alibaba.alink.operator.stream.source.AkSourceStreamOp;
 import com.alibaba.alink.operator.stream.tensorflow.TFSavedModelPredictStreamOp;
 import org.junit.Test;
 
@@ -68,29 +77,28 @@ public class TFSavedModelPredictStreamOpTest {
 
 	@Test
 	public void testTFSavedModelPredictStreamOp() throws Exception {
-		String url = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/mnist_dense.csv";
-		String schema = "label bigint, image string";
+		StreamOperator.setParallelism(1);
+		StreamOperator <?> test = new AkSourceStreamOp()
+			.setFilePath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/mnist_test_vector.ak");
 
-		StreamOperator <?> data = new CsvSourceStreamOp().setFilePath(url).setSchemaStr(schema).setFieldDelimiter(";");
+		test = new VectorToTensorStreamOp()
+			.setTensorDataType("float")
+			.setTensorShape(1, 28, 28, 1)
+			.setSelectedCol("vec")
+			.setOutputCol("tensor")
+			.setReservedCols("label")
+			.linkFrom(test);
 
 		StreamOperator <?> predictor = new TFSavedModelPredictStreamOp()
-			.setModelPath("http://alink-dataset.oss-cn-zhangjiakou.aliyuncs.com/tf/1551968314.zip")
-			.setSelectedCols("image")
-			.setOutputSchemaStr("classes bigint, probabilities string");
+			.setModelPath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/mnist_model_tf.zip")
+			.setSelectedCols("tensor")
+			.setInputSignatureDefs(new String[] {"input_1"})
+			.setOutputSignatureDefs(new String[] {"output_1"})
+			.setOutputSchemaStr("probabilities FLOAT_TENSOR");
 
-		data = predictor.linkFrom(data).select("label, classes, probabilities");
-		data.print();
+		test = predictor.linkFrom(test).select("label, probabilities");
+		test.print();
 		StreamOperator.execute();
 	}
 }
 ```
-
-### 运行结果
-label|classes|probabilities
------|-------|-------------
-6|6|0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0
-0|0|1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-3|3|0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0
-6|6|0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0
-5|5|0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0
-...|...|...

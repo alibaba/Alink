@@ -6,14 +6,44 @@ Python 类名：KeywordsExtractionBatchOp
 
 ## 功能介绍
 
-关键词抽取是自然语言处理中的重要技术之一，具体是指从文本里面把跟这篇文章意义最相关的一些词抽取出来。
+从每行文本中抽取与文本意义最相关的若干词语。
 
-本算法有两种抽取关键词的方法：
-- 基于TextRank，它受到网页之间关系PageRank算法启发，利用局部词汇之间关系（共现窗口）构建网络，计算词的重要性，选取权重大的作为关键词。
-- 基于TF-IDF，统计出每行文本中每个词的TF-IDF值，选取最大的作为关键词。
+### 算法原理
 
-常用流程： 原始语料 → 分词 → 停用词过滤 → 关键词抽取
+组件支持两种抽取关键词的方法：基于 TextRank 和基于 TF-IDF。
 
+#### TextRank
+
+TextRank 受到网页间关系的 PageRank 算法启发，利用局部词汇之间关系（共现窗口）构建图，计算词的重要性，选取权重大的作为关键词。
+
+在构建的图中，每个词语对应一个节点 $V_{.}$。 
+两个不同的词语 $i, j$ 只要在同一个窗口中共同出现过，对应节点间就存在两条有向边 $e_{ij}$ 和 $e_{ji}$， 权重分别为 1，即 $w_{ij} = w_{ji} = 1$。
+
+每个节点初始重要性值 $WS(V_{*}) = \frac{1}{|Out(V_{*})|}$，并按照下面公式进行迭代更新直至收敛：
+
+$$WS(V_i) = (1 - d) + d * \Sigma_{V_j\in In(V_i)} \frac{w_{ji}}{\Sigma_{V_k\in Out(V_i)}w_{jk} }WS(V_j).$$
+
+其中，d 是阻尼系数。
+
+### TF-IDF
+
+同时考虑所有文本，计算每个词语的 TF-IDF 值。然后在每行文本中，选取最大的若干个作为关键词。
+
+### 使用方式
+
+文本列通过参数 selectedCol 指定，需要是空格分隔的词语。 文本列可以使用分词（SegmentBatchOp）组件的输出结果列，同时也可以在之前接入停用词过滤（StopWordsRemoverBatchOp）组件去掉常见的高频词。
+
+使用的提取方法通过参数 method 在指定，提取的关键词数目通过参数 topN 指定。
+
+当使用基于 TextRank 的方法时，需要设置窗口大小 windowSize、最大迭代步数 maxIter、收敛阈值 epsilon 和阻尼稀疏 dampingFactor。
+
+使用基于 TF-IDF 的方法不需要指定其他参数。
+
+### 文献索引
+
+TextRank：[https://web.eecs.umich.edu/~mihalcea/papers/mihalcea.emnlp04.pdf](https://web.eecs.umich.edu/~mihalcea/papers/mihalcea.emnlp04.pdf)
+
+TF-IDF：[https://en.wikipedia.org/wiki/Tf%E2%80%93idf](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
 
 ## 参数说明
 
@@ -28,18 +58,11 @@ Python 类名：KeywordsExtractionBatchOp
 | topN | 前N的数据 | 挑选最近的N个数据 | Integer |  | 10 |
 | windowSize | 窗口大小 | 窗口大小 | Integer |  | 2 |
 
-
-
-
 ## 代码示例
+
 ### Python 代码
+
 ```python
-from pyalink.alink import *
-
-import pandas as pd
-
-useLocalEnv(1)
-
 df = pd.DataFrame([
     [0, u'二手旧书:医学电磁成像'],
     [1, u'二手美国文学选读（ 下册 ）李宜燮南开大学出版社 9787310003969'],
@@ -62,7 +85,9 @@ keywords2 = KeywordsExtractionStreamOp().setSelectedCol("text").setTopN(3).linkF
 keywords2.print()
 StreamOperator.execute()
 ```
+
 ### Java 代码
+
 ```java
 import org.apache.flink.types.Row;
 
@@ -97,7 +122,7 @@ public class KeywordsExtractionBatchOpTest {
 		BatchOperator <?> remover = new StopWordsRemoverBatchOp().setSelectedCol("text").linkFrom(segment);
 		BatchOperator <?> keywords =
 			new KeywordsExtractionBatchOp().setSelectedCol("text").setMethod("TF_IDF").setTopN(
-			3).linkFrom(remover);
+				3).linkFrom(remover);
 		keywords.print();
 		StreamOperator <?> segment2 = new SegmentStreamOp().setSelectedCol("text").linkFrom(inOp2);
 		StreamOperator <?> remover2 = new StopWordsRemoverStreamOp().setSelectedCol("text").linkFrom(segment2);
@@ -110,20 +135,23 @@ public class KeywordsExtractionBatchOpTest {
 ```
 
 ### 运行结果
+
 #### 批运行结果
-text|id
-----|---
-索引 糖尿病 文献|3
-旧书 成像 医学|0
-李宜燮 9787310003969 美国|1
-华龄 思 谢恩|2
-国内 十二册 书|4
+
+| text                 | id  |
+|----------------------|-----|
+| 索引 糖尿病 文献            | 3   |
+| 旧书 成像 医学             | 0   |
+| 李宜燮 9787310003969 美国 | 1   |
+| 华龄 思 谢恩              | 2   |
+| 国内 十二册 书             | 4   |
 
 #### 流运行结果
-id|text
----|----
-3|中国 文献 糖尿病
-4|郁达夫 馆藏 文集
-0|旧书 电磁 医学
-1|美国 出版社 文学
-2|正版 华龄 图解
+
+| id  | text      |
+|-----|-----------|
+| 3   | 中国 文献 糖尿病 |
+| 4   | 郁达夫 馆藏 文集 |
+| 0   | 旧书 电磁 医学  |
+| 1   | 美国 出版社 文学 |
+| 2   | 正版 华龄 图解  |

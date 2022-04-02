@@ -5,9 +5,7 @@ Python 类名：BucketizerBatchOp
 
 
 ## 功能介绍
-给定切分点，将连续变量分桶，可支持单列输入或多列输入，对应需要给出单列切分点或者多列切分点。
-
-每列切分点需要严格递增，且至少有三个点。
+给定切分点，将连续变量分桶，需要选择需要进行切分的单列或多列，同时给出选中每列的切分点，每列切分点都是一个double数组，需要严格递增。
 
 ## 参数说明
 
@@ -43,7 +41,7 @@ df = pd.DataFrame([
 inOp1 = BatchOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
 inOp2 = StreamOperator.fromDataframe(df, schemaStr='double double, bool boolean, number int, str string')
 
-bucketizer = BucketizerBatchOp().setSelectedCols(["double"]).setCutsArray([[2.0]])
+bucketizer = BucketizerBatchOp().setSelectedCols(["double","number"]).setCutsArray([[1.0,2.0,2.2,4.0],[0.0,1.1]])
 bucketizer.linkFrom(inOp1).print()
 
 bucketizer = BucketizerStreamOp().setSelectedCols(["double"]).setCutsArray([[2.0]])
@@ -77,8 +75,8 @@ public class BucketizerBatchOpTest {
 		);
 		BatchOperator <?> inOp1 = new MemSourceBatchOp(df, "double double, bool boolean, number int, str string");
 		StreamOperator <?> inOp2 = new MemSourceStreamOp(df, "double double, bool boolean, number int, str string");
-		BatchOperator <?> bucketizer = new BucketizerBatchOp().setSelectedCols("double").setCutsArray(
-			new double[] {2.0});
+		BatchOperator <?> bucketizer = new BucketizerBatchOp().setSelectedCols("double","number").setCutsArray(
+			new double[] {1.0,2.0,2.2,4.0},new double[]{0.0,1.1});
 		bucketizer.linkFrom(inOp1).print();
 		StreamOperator <?> bucketizer2 = new BucketizerStreamOp().setSelectedCols("double").setCutsArray(
 			new double[] {2.0});
@@ -90,10 +88,20 @@ public class BucketizerBatchOpTest {
 ### 运行结果
 
 ##### 输出数据
+批预测结果
 
 double|bool|number|str
-------|----|------|---
+------|---|---|---
 0|true|2|A
+1|false|2|B
+2|true|1|B
+3|true|1|A
+
+流预测结果
+
+double|bool|number|str
+---|---|---|---
 0|false|2|B
 0|true|1|B
+0|true|2|A
 1|true|1|A

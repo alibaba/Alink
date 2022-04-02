@@ -5,7 +5,14 @@ Python 类名：VectorToTripleBatchOp
 
 
 ## 功能介绍
-将数据格式从 Vector 转成 Triple
+将数据格式从 Vector 转成 Triple，批式组件
+
+一条输入数据可能对应多条输出结果，输入中vector的维度为多少，就会生成多少条结果。
+因此输出数据时，最好保留记录的ID字段，也就是代码示例中的"row"字段，通过setReservedCols参数指定。
+
+输出结果中除包含通过setReservedCols中指定列外，会输出vector的下标和对应位置的值两列。列名和格式通过
+setTripleColumnValueSchemaStr指定。注意该schemaStr中并没有对格式做限定，但如果设置不对会导致运行失败。
+下标列可以设置为int long和string类型，第二列只能设置为string或者double。
 
 
 ## 参数说明
@@ -56,7 +63,8 @@ public class VectorToTripleBatchOpTest {
 	@Test
 	public void testVectorToTripleBatchOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
+			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0),
+			Row.of("2", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:4.0 1:8.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
 		);
 		BatchOperator <?> data = new MemSourceBatchOp(df,
 			"row string, json string, vec string, kv string, csv string, f0 double, f1 double");
@@ -71,10 +79,10 @@ public class VectorToTripleBatchOpTest {
 ```
 
 ### 运行结果
-    
-|row|col|val|
-|---|---|---|
-|1|1|1.0|
-|1|2|2.0|
-|2|1|4.0|
-|2|2|8.0|
+
+row|col|val
+---|---|---
+2|0|4.0000
+1|0|1.0000
+1|1|2.0000
+2|1|8.0000

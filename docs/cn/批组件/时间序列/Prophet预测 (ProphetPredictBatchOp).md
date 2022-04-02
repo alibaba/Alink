@@ -5,7 +5,19 @@ Python 类名：ProphetPredictBatchOp
 
 
 ## 功能介绍
-使用Prophet进行时间序列训练和预测。
+指定模型(通过ProphetTrainBatchOp训练得到),对每一行的MTable数据, 进行Prophet时间序列预测，给出下一时间段的预测结果。
+
+### 算法原理
+
+Prophet是facebook开源的一个时间序列预测算法, github地址：https://github.com/facebook/prophet.
+
+Prophet适用于具有明显的内在规律的数据, 例如：
+
+* 有一定的历史数据，有至少几个月的每小时、每天或每周观察的历史数据
+* 有较强的季节性趋势：每周的一些天，每年的一些时间
+* 有已知的以不定期的间隔发生的重要节假日（比如国庆节）
+* 缺失的历史数据或较大的异常数据的数量在合理范围内
+* 对于数据中蕴含的非线性增长的趋势都有一个自然极限或饱和状态
 
 ## 参数说明
 
@@ -130,14 +142,14 @@ public class ProphetBatchOpTest {
 				Row.of("2", new Timestamp(117, 12, 8, 0, 0, 0, 0), 8.38251828808963),
 				Row.of("2", new Timestamp(117, 12, 9, 0, 0, 0, 0), 8.06965530688617)
 			};
-		String[] colNames = new String[] {"id", "ds1", "y1"};
+		String[] colNames = new String[] {"id", "ts", "val"};
 
 		//train batch model.
 		MemSourceBatchOp source = new MemSourceBatchOp(Arrays.asList(rowsData), colNames);
 
 		ProphetTrainBatchOp model = new ProphetTrainBatchOp()
-			.setTimeCol("ds1")
-			.setValueCol("y1");
+			.setTimeCol("ts")
+			.setValueCol("val");
 
 		source.link(model).print();
 
@@ -147,7 +159,7 @@ public class ProphetBatchOpTest {
 			.setSelectClause("mtable_agg(ts, val) as data");
 
 		ProphetPredictBatchOp prophetPredict = new ProphetPredictBatchOp()
-			.setValueCol("ts")
+			.setValueCol("data")
 			.setPredictNum(4)
 			.setPredictionCol("pred");
 

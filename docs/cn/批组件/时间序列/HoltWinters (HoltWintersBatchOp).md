@@ -5,7 +5,49 @@ Python 类名：HoltWintersBatchOp
 
 
 ## 功能介绍
-使用HoltWinters进行时间序列预测。
+给定分组，对每一组的数据使用HoltWinters进行时间序列预测。
+
+### 算法原理
+
+HoltWinters由Holt和Winters提出的三次指数平滑算法，又称holt-winters,
+
+HoltWinters 详细介绍请见链接 https://en.wikipedia.org/wiki/Exponential_smoothing
+
+holt-winters支持2种季节类型： additive 和 multiplicative
+
+* additive seasonal holt-winters
+
+![image](https://zos.alipayobjects.com/rmsportal/vUIABTTfaEbfBYeuiuYx.png)
+
+* multiplicative seasonal holt_winters
+
+![image](https://zos.alipayobjects.com/rmsportal/iuSBCUXsZuexJJgmwqsT.png)
+
+* 其中，
+
+    * smoothValue（l、b、s）分别表示level，trend，seasonal
+
+    * smoothParameter(α、β、γ)分别表示alpha，beta，gamma
+
+    * t表示当前时刻，h表示要预测h步
+
+    * p表示period或frequency，时间序列的周期
+
+### 使用方式
+* 第一步，将每组数据(时间列和数据列) 聚合成MTable.
+    ```python
+     GroupByBatchOp()
+        .setGroupByPredicate("id")
+        .setSelectClause("id, mtable_agg(ts, val) as data")
+    ```
+* 第二步，使用时间序列方法进行预测，预测结果也是MTable。
+* 第三步，使用FlattenMTableBatchOp，将MTable转换成列，
+   ```python
+      FlattenMTableBatchOp()
+          .setReservedCols(["id", "predict"])
+          .setSelectedCol("predict")
+          .setSchemaStr("ts timestamp, val double")
+   ```
 
 ## 参数说明
 

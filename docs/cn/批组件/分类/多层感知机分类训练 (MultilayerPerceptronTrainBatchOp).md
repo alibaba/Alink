@@ -5,7 +5,24 @@ Python 类名：MultilayerPerceptronTrainBatchOp
 
 
 ## 功能介绍
-多层感知机多分类模型
+多层感知机（MLP，Multilayer Perceptron）也被称作人工神经网络（ANN，Artificial Neural Network），经常用来进行多分类问题的训练预测。
+
+### 算法原理
+多层感知机算法除了输入输出层外，它中间可以有多个隐层，最简单的MLP只含一个隐层，即三层的结构，如下图：
+
+![](https://img.alicdn.com/imgextra/i3/O1CN0197rvPM290ndhiOaJv_!!6000000008006-2-tps-898-925.png)
+
+从上图可以看到，多层感知机层与层之间是全连接的。多层感知机最左边是输入层，中间是隐藏层，最后是输出层。 其中输出层对应的是各个分类标签，输出层
+的每一个节点对应每一个标签的出现的概率。
+
+### 算法使用
+多层感知机主要用于多分类问题，类似文字识别，语音识别，文本分析等问题。
+
+- 备注 ：该组件训练的时候 FeatureCols 和 VectorCol 是两个互斥参数，只能有一个参数来描述算法的输入特征。
+
+### 文献
+[1]Artificial neural networks (the multilayer perceptron)—a review of applications in the atmospheric sciences
+   MW Gardner, SR Dorling - Atmospheric environment, 1998 - Elsevier.
 
 ## 参数说明
 

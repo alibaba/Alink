@@ -6,7 +6,11 @@ Python 类名：TokenizerStreamOp
 
 ## 功能介绍
 
-Tokenizer(标记器)是将文本（如句子）分解成单个词语（通常是单词）的过程。
+对文本按空白符进行切分操作。
+
+### 使用方式
+
+文本列通过参数 selectedCol 指定，输出列通过 outputCol 指定。
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
@@ -80,15 +84,15 @@ public class TokenizerStreamOpTest {
 
 ### 运行结果
 #### 批运行结果
-id|text
----|----
-0|that is an english book!
-1|do you like math?
-2|have a good day!
+| id  | text                     |
+|-----|--------------------------|
+| 0   | that is an english book! |
+| 1   | do you like math?        |
+| 2   | have a good day!         |
 
 #### 流运行结果
-id|text
----|----
-0|that is an english book!
-2|have a good day!
-1|do you like math?
+| id  | text                     |
+|-----|--------------------------|
+| 0   | that is an english book! |
+| 2   | have a good day!         |
+| 1   | do you like math?        |

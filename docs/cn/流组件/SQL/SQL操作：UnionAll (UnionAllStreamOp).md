@@ -5,8 +5,7 @@ Python 类名：UnionAllStreamOp
 
 
 ## 功能介绍
-提供sql的union all语句功能
-
+对流式数据进行sql的UNION ALL操作。
 
 ## 参数说明
 
@@ -81,14 +80,14 @@ public class UnionAllStreamOpTest {
 f1|f2|f3
 ---|---|---
 Ohio|2000|1.5000
+Ohio|2001|1.7000
 Nevada|2001|2.4000
 Ohio|2002|3.6000
-Ohio|2002|3.6000
 Nevada|2003|3.2000
-Ohio|2001|1.7000
-Nevada|2003|3.2000
+Nevada|2002|2.9000
 Ohio|2000|1.5000
 Ohio|2001|1.7000
-Nevada|2002|2.9000
-Nevada|2002|2.9000
+Ohio|2002|3.6000
 Nevada|2001|2.4000
+Nevada|2002|2.9000
+Nevada|2003|3.2000

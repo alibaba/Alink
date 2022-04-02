@@ -5,7 +5,7 @@ Python 类名：FilterStreamOp
 
 
 ## 功能介绍
-提供sql的where语句功能
+对流式数据进行sql的FILTER操作。
 
 ## 参数说明
 
@@ -78,5 +78,5 @@ public class FilterStreamOpTest {
 f1|f2|f3
 ---|---|---
 Ohio|2000|1.5000
-Ohio|2002|3.6000
 Ohio|2001|1.7000
+Ohio|2002|3.6000

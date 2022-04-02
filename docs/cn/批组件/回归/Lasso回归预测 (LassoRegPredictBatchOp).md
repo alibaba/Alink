@@ -5,9 +5,20 @@ Python 类名：LassoRegPredictBatchOp
 
 
 ## 功能介绍
-* Lasso回归是一个回归算法
-* Lasso回归组件支持稀疏、稠密两种数据格式
-* Lasso回归组件支持带样本权重的训练
+Lasso回归算法是由1996年Robert Tibshirani首次提出。是一种经典的回归算法。Lasso回归组件支持稀疏、稠密两种数据格式，并且支持带权重样本训练。
+
+### 算法原理
+Lasso回归算法通过构造一个惩罚函数得到一个较为精炼的模型，使得它压缩一些回归系数，即强制系数绝对值之和小于某个固定值；同时设定一些回归系数为零。因此保留了子集收缩的优点，是一种处理具有复共线性数据的有偏估计。
+
+### 算法使用
+Lasso回归模型应用领域和线性回归类似，经常被用来做一些数值型变量的预测，类似房价预测、销售量预测、贷款额度预测、温度预测、适度预测等。
+
+
+### 文献或出处
+[1] Tibshirani, Robert. "Regression shrinkage and selection via the lasso." Journal of the Royal Statistical Society: Series B (Methodological) 58.1 (1996): 267-288.
+
+[2] https://baike.baidu.com/item/LASSO/20366865?fr=aladdin
+
 
 ## 参数说明
 

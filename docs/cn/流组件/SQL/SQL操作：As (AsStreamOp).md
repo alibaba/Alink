@@ -5,7 +5,7 @@ Python 类名：AsStreamOp
 
 
 ## 功能介绍
-对列进行重命名
+对流式数据进行sql的AS操作。
 
 ## 参数说明
 
@@ -39,6 +39,7 @@ stream_data = stream_data.link(op)
 stream_data.print()
 StreamOperator.execute()
 ```
+
 ### Java 代码
 ```java
 import org.apache.flink.types.Row;
@@ -76,8 +77,8 @@ public class AsStreamOpTest {
 ff1|ff2|ff3
 ---|---|---
 Ohio|2001|1.7000
-Nevada|2001|2.4000
-Nevada|2003|3.2000
 Ohio|2000|1.5000
+Nevada|2001|2.4000
 Ohio|2002|3.6000
 Nevada|2002|2.9000
+Nevada|2003|3.2000

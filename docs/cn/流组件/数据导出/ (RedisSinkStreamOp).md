@@ -13,12 +13,16 @@ Python 类名：RedisSinkStreamOp
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
 | --- | --- | --- | --- | --- | --- |
-| pluginVersion | Not available! | Not available! | String | ✓ |  |
-| redisIP | Not available! | Not available! | String | ✓ |  |
+| pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |
 | keyCols | 多键值列 | 多键值列 | String[] |  | null |
 | valueCols | 多数值列 | 多数值列 | String[] |  | null |
-| redisPort | Not available! | Not available! | Integer |  | 6379 |
 | redisPassword | Not available! | Not available! | String |  |  |
+| redisIP | Not available! | Not available! | String |  |  |
+| redisPort | Not available! | Not available! | Integer |  | 6379 |
+| databaseIndex | Not available! | Not available! | Long |  |  |
+| timeout | Not available! | Not available! | Integer |  |  |
+| redisIPs | Not available! | Not available! | String[] |  |  |
+| clusterMode | Not available! | Not available! | Boolean |  | false |
 
 ## 代码示例
 

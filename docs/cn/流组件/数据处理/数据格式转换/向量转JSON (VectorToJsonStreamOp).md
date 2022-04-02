@@ -7,6 +7,8 @@ Python 类名：VectorToJsonStreamOp
 ## 功能介绍
 将数据格式从 Vector 转成 Json
 
+一条输入数据对应一条输出数据，setJsonCol设置json输出列名，setReservedCols设置保留的输入列。
+在输出json列中，vector的下标生成json中的key，vector的值生成json中的value。
 
 ## 参数说明
 
@@ -58,7 +60,8 @@ public class VectorToJsonStreamOpTest {
 	@Test
 	public void testVectorToJsonStreamOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
+			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0),
+			Row.of("2", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:4.0 1:8.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
 		);
 		StreamOperator <?> data = new MemSourceStreamOp(df,
 			"row string, json string, vec string, kv string, csv string, f0 double, f1 double");
@@ -74,8 +77,8 @@ public class VectorToJsonStreamOpTest {
 ```
 
 ### 运行结果
-    
-|row|json|
-|---|----|
-| 1 |{"1":"1.0","2":"2.0"}|
-| 2 |{"1":"4.0","2":"8.0"}|
+
+row|json
+---|----
+1|{"0":"1.0","1":"2.0"}
+2|{"0":"4.0","1":"8.0"}

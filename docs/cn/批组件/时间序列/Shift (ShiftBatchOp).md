@@ -5,8 +5,23 @@ Python 类名：ShiftBatchOp
 
 
 ## 功能介绍
-使用Shift进行时间序列预测。
+给定分组，对每一组的数据使用Shift进行时间序列预测,使用ShiftNum之前的数据作为预测结果。
 
+### 使用方式
+* 第一步，将每组数据(时间列和数据列) 聚合成MTable.
+    ```python
+     GroupByBatchOp()
+        .setGroupByPredicate("id")
+        .setSelectClause("id, mtable_agg(ts, val) as data")
+    ```
+* 第二步，使用时间序列方法进行预测，预测结果也是MTable。
+* 第三步，使用FlattenMTableBatchOp，将MTable转换成列，
+   ```python
+      FlattenMTableBatchOp()
+          .setReservedCols(["id", "predict"])
+          .setSelectedCol("predict")
+          .setSchemaStr("ts timestamp, val double")
+   ```
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |

@@ -5,8 +5,7 @@ Python 类名：IntersectBatchOp
 
 
 ## 功能介绍
-一个数据集交另一个数据集，去重
-
+对批式数据进行sql的INTERSECT操作。(一个数据集交另一个数据集，去重)
 
 ## 参数说明
 
@@ -24,46 +23,61 @@ import pandas as pd
 
 useLocalEnv(1)
 
-URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-data1 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
-data2 = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
+df1 = pd.DataFrame([
+    ['Ohio', 2000, 1.5],
+    ['Ohio', 2001, 1.7],
+    ['Ohio', 2002, 3.6],
+    ['Nevada', 2001, 2.4],
+    ['Nevada', 2001, 2.4],
+    ['Nevada', 2003, 3.2]
+])
+df2 = pd.DataFrame([
+    ['Nevada', 2001, 2.4],
+    ['Nevada', 2001, 2.4],
+    ['Nevada', 2003, 3.2]
+])
 
-intersectOp = IntersectBatchOp()
-output = intersectOp.linkFrom(data1, data2)
+batch_data1 = BatchOperator.fromDataframe(df1, schemaStr='f1 string, f2 bigint, f3 double')
+batch_data2 = BatchOperator.fromDataframe(df2, schemaStr='f1 string, f2 bigint, f3 double')
+
+op = IntersectBatchOp()
+op.linkFrom(batch_data1, batch_data2).print()
 ```
+
 ### Java 代码
 ```java
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.IntersectBatchOp;
 import org.junit.Test;
 
 public class IntersectBatchOpTest {
 	@Test
 	public void testIntersectBatchOp() throws Exception {
-		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
-		String SCHEMA_STR
-			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-		BatchOperator <?> data1 = new CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR);
-		BatchOperator <?> data2 = new CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR);
-		BatchOperator <?> intersectOp = new IntersectBatchOp();
-		intersectOp.linkFrom(data1, data2).print();
+		List <Row> df1 = Arrays.asList(
+        	Row.of("Ohio", 2000, 1.5),
+        	Row.of("Ohio", 2001, 1.7),
+        	Row.of("Ohio", 2002, 3.6),
+        	Row.of("Nevada", 2001, 2.4),
+        	Row.of("Nevada", 2001, 2.4),
+        	Row.of("Nevada", 2003, 3.2)
+        );
+        List <Row> df2 = Arrays.asList(
+        	Row.of("Nevada", 2001, 2.4),
+        	Row.of("Nevada", 2001, 2.4),
+        	Row.of("Nevada", 2003, 3.2)
+        );
+        BatchOperator <?> data1 = new MemSourceBatchOp(df1, "f1 string, f2 int, f3 double");
+        BatchOperator <?> data2 = new MemSourceBatchOp(df2, "f1 string, f2 int, f3 double");
+        BatchOperator <?> intersectAllOp = new IntersectBatchOp();
+        intersectAllOp.linkFrom(data1, data2).print();
 	}
 }
 ```
 
 ### 运行结果
-sepal_length|sepal_width|petal_length|petal_width|category
-------------|-----------|------------|-----------|--------
-4.4000|2.9000|1.4000|0.2000|Iris-setosa
-4.6000|3.4000|1.4000|0.3000|Iris-setosa
-4.6000|3.6000|1.0000|0.2000|Iris-setosa
-4.7000|3.2000|1.6000|0.2000|Iris-setosa
-5.0000|3.5000|1.3000|0.3000|Iris-setosa
-...   | ...  | ...  | ...  | ...
-6.0000|2.9000|4.5000|1.5000|Iris-versicolor
-6.1000|2.8000|4.7000|1.2000|Iris-versicolor
-6.4000|3.2000|4.5000|1.5000|Iris-versicolor
-6.5000|2.8000|4.6000|1.5000|Iris-versicolor
-6.8000|3.0000|5.5000|2.1000|Iris-virginica
+
+f1|f2|f3
+---|---|---
+Nevada|2001|2.4000
+Nevada|2003|3.2000

@@ -5,7 +5,9 @@ Python 类名：MultiStringIndexerTrainBatchOp
 
 
 ## 功能介绍
-MultiStringIndexer训练组件的作用是训练一个模型用于将多列字符串映射为整数。
+MultiStringIndexer 训练组件的作用是训练一个模型用于将多列字符串映射为整数，训练的时候指定多个列，每个列单独编码。
+支持按照一定的次序编码。如随机、出现频次生序，出现频次降序、字符串生序、字符串降序5种方式。
+设置 setStringOrderType 参数时分别对应 random frequency_asc frequency_desc alphabet_asc alphabet_desc。
 
 ## 参数说明
 

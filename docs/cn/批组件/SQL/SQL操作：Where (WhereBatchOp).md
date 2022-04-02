@@ -5,7 +5,7 @@ Python 类名：WhereBatchOp
 
 
 ## 功能介绍
-提供sql的where语句功能
+对批式数据进行sql的WHERE操作。
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
@@ -23,42 +23,46 @@ import pandas as pd
 
 useLocalEnv(1)
 
-URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-data = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
-data = data.link(WhereBatchOp().setClause("category='Iris-setosa'"))
+df = pd.DataFrame([
+    ['Ohio', 2000, 1.5],
+    ['Ohio', 2001, 1.7],
+    ['Ohio', 2002, 3.6],
+    ['Nevada', 2001, 2.4],
+    ['Nevada', 2002, 2.9],
+    ['Nevada', 2003, 3.2]
+])
+batch_data = BatchOperator.fromDataframe(df, schemaStr='f1 string, f2 bigint, f3 double')
+batch_data.link(WhereBatchOp().setClause("f1='Ohio'"))
 ```
+
 ### Java 代码
 ```java
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.WhereBatchOp;
 import org.junit.Test;
 
 public class WhereBatchOpTest {
 	@Test
 	public void testWhereBatchOp() throws Exception {
-		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
-		String SCHEMA_STR
-			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-		BatchOperator <?> data = new CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR);
-		data.link(new WhereBatchOp().setClause("category='Iris-setosa'")).print();
+		List <Row> df = Arrays.asList(
+            Row.of("Ohio", 2000, 1.5),
+        	Row.of("Ohio", 2001, 1.7),
+        	Row.of("Ohio", 2002, 3.6),
+        	Row.of("Nevada", 2001, 2.4),
+        	Row.of("Nevada", 2002, 2.9),
+        	Row.of("Nevada", 2003, 3.2)
+        );
+	    BatchOperator <?> data = new MemSourceBatchOp(df, "f1 string, f2 int, f3 double");
+        data.link(new WhereBatchOp().setClause("f1='Ohio'")).print();
 	}
 }
 ```
 
 
 ### 运行结果
-sepal_length|sepal_width|petal_length|petal_width|category
-------------|-----------|------------|-----------|--------
-5.4000|3.7000|1.5000|0.2000|Iris-setosa
-5.4000|3.4000|1.5000|0.4000|Iris-setosa
-4.8000|3.4000|1.6000|0.2000|Iris-setosa
-5.2000|4.1000|1.5000|0.1000|Iris-setosa
-4.8000|3.0000|1.4000|0.1000|Iris-setosa
-...|...|...|...|...
-4.4000|2.9000|1.4000|0.2000|Iris-setosa
-4.7000|3.2000|1.6000|0.2000|Iris-setosa
-4.9000|3.1000|1.5000|0.1000|Iris-setosa
-4.8000|3.1000|1.6000|0.2000|Iris-setosa
-5.0000|3.3000|1.4000|0.2000|Iris-setosa
+f1|f2|f3
+---|---|---
+Ohio|2000|1.5000
+Ohio|2001|1.7000
+Ohio|2002|3.6000

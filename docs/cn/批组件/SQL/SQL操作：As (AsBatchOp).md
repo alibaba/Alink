@@ -5,7 +5,7 @@ Python 类名：AsBatchOp
 
 
 ## 功能介绍
-对列进行重命名
+对批式数据进行sql的AS操作。
 
 ## 参数说明
 
@@ -38,6 +38,7 @@ op = AsBatchOp().setClause("ff1,ff2,ff3")
 batch_data = batch_data.link(op)
 batch_data.print()
 ```
+
 ### Java 代码
 ```java
 import org.apache.flink.types.Row;

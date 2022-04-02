@@ -5,9 +5,7 @@ Python 类名：WindowGroupByStreamOp
 
 
 ## 功能介绍
-
-本组件的作用是对流数据按窗口做聚合计算。用户可指定窗口的类型、长度，然后通过sql聚合函数对窗口内的数据进行聚合运算，每个窗口输出一条计算结果。若有其它附加的key列，则在每个&lt;窗口，key&gt;内进行聚合运算，输出一条结果。
-
+对流式数据按窗口做聚合计算。用户可指定窗口的类型、长度，然后通过sql聚合函数对窗口内的数据进行聚合运算，每个窗口输出一条计算结果。若有其它附加的key列，则在每个&lt;窗口，key&gt;内进行聚合运算，输出一条结果。
 
 ## 参数说明
 
@@ -104,7 +102,8 @@ public class WindowGroupByStreamOpTest {
 		StreamOperator <?> stream_data = new MemSourceStreamOp(df, "f1 string, f2 int, f3 double");
 		StreamOperator <?> op = new WindowGroupByStreamOp()
 			.setGroupByClause("f1")
-			.setSelectClause("sum(f2) as f2, f1").setWindowLength(1);
+			.setSelectClause("sum(f2) as f2, f1")
+            .setWindowLength(1);
 		stream_data = stream_data.link(op);
 		stream_data.print();
 		StreamOperator.execute();
@@ -116,14 +115,3 @@ public class WindowGroupByStreamOpTest {
 
 f2|f1|window_start|window_end
 ---|---|------------|----------
-5.0000|3.2000|1.2000|0.2000|Iris-setosa
-5.4000|3.9000|1.3000|0.4000|Iris-setosa
-5.5000|3.5000|1.3000|0.2000|Iris-setosa
-5.1000|3.5000|1.4000|0.3000|Iris-setosa
-4.9000|3.1000|1.5000|0.1000|Iris-setosa
-...|...|...|...|...
-5.5000|4.2000|1.4000|0.2000|Iris-setosa
-4.3000|3.0000|1.1000|0.1000|Iris-setosa
-5.8000|4.0000|1.2000|0.2000|Iris-setosa
-4.9000|3.1000|1.5000|0.1000|Iris-setosa
-5.7000|4.4000|1.5000|0.4000|Iris-setosa

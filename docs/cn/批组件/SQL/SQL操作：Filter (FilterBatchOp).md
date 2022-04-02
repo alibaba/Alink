@@ -5,7 +5,7 @@ Python 类名：FilterBatchOp
 
 
 ## 功能介绍
-提供sql的where语句功能
+对批式数据进行sql的FILTER操作。
 
 ## 参数说明
 

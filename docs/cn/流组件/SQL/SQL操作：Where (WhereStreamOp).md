@@ -5,7 +5,7 @@ Python 类名：WhereStreamOp
 
 
 ## 功能介绍
-提供sql的where语句功能
+对流式数据进行sql的WHERE操作。
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
@@ -23,50 +23,58 @@ import pandas as pd
 
 useLocalEnv(1)
 
-URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-data = CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR)
-data = data.link(WhereStreamOp().setClause("category='Iris-setosa'"))
-
+df = pd.DataFrame([
+    ["a", 1, 1.1, 1.2],
+    ["b", -2, 0.9, 1.0],
+    ["c", 100, -0.01, 1.0],
+    ["d", -99, 100.9, 0.1],
+    ["a", 1, 1.1, 1.2],
+    ["b", -2, 0.9, 1.0],
+    ["c", 100, -0.01, 0.2],
+    ["d", -99, 100.9, 0.3]
+])
+source = StreamOperator.fromDataframe(df, schemaStr='col1 string, col2 int, col3 double, col4 double')
+source.link(WhereStreamOp().setClause("col1='a'")).print()
 StreamOperator.execute()
 
 ```
 ### Java 代码
 ```java
+import org.apache.flink.types.Row;
+
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
-import com.alibaba.alink.operator.stream.sql.WhereStreamOp;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class WhereStreamOpTest {
+
 	@Test
 	public void testWhereStreamOp() throws Exception {
-		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
-		String SCHEMA_STR
-			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-		StreamOperator <?> data = new CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR);
-		data
-			.link(
-				new WhereStreamOp().setClause("category='Iris-setosa'")
-			)
-			.print();
-
+		List <Row> inputRows = Arrays.asList(
+			Row.of("a", 1, 1.1, 1.2),
+			Row.of("b", -2, 0.9, 1.0),
+			Row.of("c", 100, -0.01, 1.0),
+			Row.of("d", -99, 100.9, 0.1),
+			Row.of("a", 1, 1.1, 1.2),
+			Row.of("b", -2, 0.9, 1.0),
+			Row.of("c", 100, -0.01, 0.2),
+			Row.of("d", -99, 100.9, 0.3)
+		);
+		StreamOperator <?> source = new MemSourceStreamOp(inputRows,
+			"col1 string, col2 int, col3 double, col4 double");
+		StreamOperator <?> output = source.link(new WhereStreamOp().setClause("col1='a'"));
+		output.print();
 		StreamOperator.execute();
 	}
 }
 ```
 
 ### 运行结果
-sepal_length|sepal_width|petal_length|petal_width|category
-------------|-----------|------------|-----------|--------
-5.0000|3.2000|1.2000|0.2000|Iris-setosa
-5.1000|3.5000|1.4000|0.2000|Iris-setosa
-5.4000|3.9000|1.3000|0.4000|Iris-setosa
-5.1000|3.7000|1.5000|0.4000|Iris-setosa
-5.4000|3.9000|1.7000|0.4000|Iris-setosa
-... | ... | ... | ... | ... |
-4.4000|2.9000|1.4000|0.2000|Iris-setosa
-5.3000|3.7000|1.5000|0.2000|Iris-setosa
-4.7000|3.2000|1.6000|0.2000|Iris-setosa
-4.9000|3.1000|1.5000|0.1000|Iris-setosa
-4.8000|3.1000|1.6000|0.2000|Iris-setosa
+
+col1|col2|col3|col4
+----|----|----|----
+a|1|1.1000|1.2000
+a|1|1.1000|1.2000

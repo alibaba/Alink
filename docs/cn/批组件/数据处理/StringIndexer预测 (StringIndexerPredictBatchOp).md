@@ -5,7 +5,7 @@ Python 类名：StringIndexerPredictBatchOp
 
 
 ## 功能介绍
-基于StringIndexer模型，将一列字符串映射为整数。
+基于StringIndexer模型，将一列字符串映射为整数。该组件为批式组件。
 
 ## 参数说明
 

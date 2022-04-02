@@ -21,7 +21,7 @@ Python 类名：LineBatchOp
 | maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | 100 |
 | negative | 负采样大小 | 负采样大小 | Integer |  | 5 |
 | vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | 100 |
-| weightCol | 权重列名 | 用来指定权重列, 权重列的值必须为非负的浮点数, 否则算法抛异常。 | String |  | null |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | order | 阶数 | 选择一阶优化或是二阶优化 | String |  | "FirstOrder" |
 | rho | 学习率 | 学习率 | Double |  | 0.025 |
 | sampleRatioPerPartition | 采样率 | 每轮迭代在每个partition上采样样本的比率 | Double |  | 1.0 |

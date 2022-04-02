@@ -14,48 +14,7 @@ Python 类名：SessionTimeWindowStreamOp
 ### Clause
 clause当前支持全部flink支持的聚合函数，并在此基础上额外支持了一系列聚合函数。
 
-具体用法如下：
-
-
-| 聚合操作 | 表达式 | 含义 | 例子 |
-| :--- | --- | --- | --- |
-| count | count([all &#124; distinct] col) | 计算窗口内数据条数 | count(value) as result |
-| count_preceding | count_preceding([all &#124; distinct] col) | 计算窗口内数据条数（不包括当前值） | count_preceding(value) as result |
-| sum | sum([all &#124; distinct] col) | 计算窗口内指定列的和 | sum(value) as result |
-| sum_preceding | sum_preceding([all &#124; distinct] col) | 计算窗口内指定列的和（不包括当前值） | sum_preceding(value) as result |
-| avg | avg([all &#124; distinct] col) | 计算窗口内指定列的均值 | avg(value) as result |
-| avg_preceding | avg_preceding([all &#124; distinct] col) | 计算窗口内指定列的均值（不包括当前值） | avg_preceding(value) as result |
-| min | min([all &#124; distinct] col) | 计算窗口内指定列的最小值 | min(value) as result |
-| min_preceding | min_preceding([all &#124; distinct] col) | 计算窗口内指定列的最小值（不包括当前值） | min_preceding(value) as result |
-| max | max([all &#124; distinct] col) | 计算窗口内指定列的最大值 | max(value) as result |
-| max_preceding | max_preceding([all &#124; distinct] col) | 计算窗口内指定列的最大值（不包括当前值） | max_preceding(value) as result |
-| stddev_samp | stddev_samp([all &#124; distinct] col) | 计算窗口内指定列的样本标准差 | stddev_samp(value) as result |
-| stddev_samp_preceding | stddev_samp_preceding([all &#124; distinct] col) | 计算窗口内指定列的样本标准差（不包括当前值） | stddev_samp_preceding(value) as result |
-| stddev_pop | stddev_pop([all &#124; distinct] col) | 计算窗口内指定列的总体标准差 | stddev_pop(value) as result |
-| stddev_pop_preceding | stddev_pop_preceding([all &#124; distinct] col) | 计算窗口内指定列的总体标准差（不包括当前值） | stddev_pop_preceding(value) as result |
-| var_samp | var_samp([all &#124; distinct] col) | 计算窗口内指定列的样本方差 | var_samp(value) as result |
-| var_samp_preceding | var_samp_preceding([all &#124; distinct] col) | 计算窗口内指定列的样本方差（不包括当前值） | var_samp_preceding(value) as result |
-| var_pop | var_pop([all &#124; distinct] col) | 计算窗口内指定列的总体方差 | var_pop(value) as result |
-| var_pop_preceding | var_pop_preceding([all &#124; distinct] col) | 计算窗口内指定列的总体方差（不包括当前值） | var_pop_preceding(value) as result |
-| rank | rank() | 计算当前数据在窗口内的排名，生成序号不连续 | rank(value) as result |
-| dense_rank | dense_rank()  | 计算当前数据在窗口内的排名，生成序号连续 | dense_rank(value) as result |
-| lag | lag(expression [, offset] [, default]) | 计算当前值前offset个值，如果没有返回default | lag(value) as result |
-| last_distinct | last_distinct() | 返回窗口内上一个与当前值不同的值 | last_distinct(value) as result |
-| last_time | last_time() | 返回窗口内上一个数据的时间 | last_time(value) as result |
-| last_value | last_value() | 返回窗口内上一条数据 | last_value(value) as result |
-| listagg | listagg(value [, delimiter]) | 返回窗口内数据的拼接值 | listagg(value) as result |
-| listagg_preceding | listagg_preceding(value [, delimiter]) | 返回窗口内数据的拼接值（不包括当前值） | listagg_preceding(value) as result |
-| mode | mode() | 返回窗口内的众数 | mode(value) as result |
-| mode_preceding | mode_preceding() | 返回窗口内的众数（不包括当前值） | mode_preceding(value) as result |
-| sum_last | sum_last(value [, k]) | 返回窗口内最近k个值的和 | sum_last(value) as result |
-| square_sum | square_sum() | 返回窗口内的平方和 | square_sum(value) as result |
-| square_sum_preceding | square_sum_preceding() | 返回窗口内的平方和（不包括当前值） | square_sum_preceding(value) as result |
-| median | median() | 返回窗口内的均值 | median(value) as result |
-| median_preceding | median_preceding() | 返回窗口内的均值（不包括当前值） | median_preceding(value) as result |
-| freq | freq() | 返回当前数据在窗口内出现次数 | freq(value) as result |
-| freq_preceding | freq_preceding() | 返回当前数据在窗口内出现次数（不包括当前值） | freq_preceding(value) as result |
-| is_exist | is_exist() | 返回当前数据是否在窗口内出现过 | is_exist(value) as result |
-
+详细用法请参考 https://www.yuque.com/pinshu/alink_tutorial/list_aggregate_function
 
 ## 参数说明
 

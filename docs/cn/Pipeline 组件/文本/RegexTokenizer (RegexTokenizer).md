@@ -6,7 +6,15 @@ Python 类名：RegexTokenizer
 
 ## 功能介绍
 
-RegexTokenizer支持对文本的切分和匹配操作。
+通过正则表达式对文本进行切分或者匹配操作。
+
+### 使用方式
+
+文本列通过参数 selectedCol 指定，切分或者匹配用的正则表达式通过参数 pattern 指定。
+
+当参数 gaps 为 True 时，对文本进行切分操作（类似于分词）； 当参数 gaps 为 为 False 时，将提取匹配正则表达式的词语。
+
+对于处理后的结果，还可以通过参数 minTokenLength 根据长度筛掉词语，或者通过参数 toLowerCase 将所有词语转为小写。
 
 ## 参数说明
 
@@ -21,18 +29,11 @@ RegexTokenizer支持对文本的切分和匹配操作。
 | toLowerCase | 是否转换为小写 | 转换为小写 | Boolean |  | true |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
 
-
-
-
 ## 代码示例
+
 ### Python 代码
+
 ```python
-from pyalink.alink import *
-
-import pandas as pd
-
-useLocalEnv(1)
-
 df = pd.DataFrame([
     [0, 'That is an English Book!'],
     [1, 'Do you like math?'],
@@ -40,10 +41,13 @@ df = pd.DataFrame([
 ])
 
 inOp1 = BatchOperator.fromDataframe(df, schemaStr='id long, text string')
-op = RegexTokenizer().setSelectedCol("text").setGaps(False).setToLowerCase(True).setOutputCol("token").setPattern("\\w+")
+op = RegexTokenizer().setSelectedCol("text").setGaps(False).setToLowerCase(True).setOutputCol("token").setPattern(
+    "\\w+")
 op.transform(inOp1).print()
 ```
+
 ### Java 代码
+
 ```java
 import org.apache.flink.types.Row;
 
@@ -72,8 +76,9 @@ public class RegexTokenizerTest {
 ```
 
 ### 运行结果
-id|text|token
----|----|-----
-0|That is an English Book!|that is an english book
-1|Do you like math?|do you like math
-2|Have a good day!|have a good day
+
+| id  | text                     | token                   |
+|-----|--------------------------|-------------------------|
+| 0   | That is an English Book! | that is an english book |
+| 1   | Do you like math?        | do you like math        |
+| 2   | Have a good day!         | have a good day         |

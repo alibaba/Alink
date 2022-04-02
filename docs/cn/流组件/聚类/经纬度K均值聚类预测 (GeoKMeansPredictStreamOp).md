@@ -5,10 +5,7 @@ Python 类名：GeoKMeansPredictStreamOp
 
 
 ## 功能介绍
-
-KMeans 是一个经典的聚类算法。
-
-基本思想是：以空间中k个点为中心进行聚类，对最靠近他们的对象归类。通过迭代的方法，逐次更新各聚类中心的值，直至得到最好的聚类结果。
+KMeans 是一个经典的聚类算法。基本思想是：以空间中k个点为中心进行聚类，对最靠近他们的对象归类。通过迭代的方法，逐次更新各聚类中心的值，直至得到最好的聚类结果。
 
 本组件主要针对经纬度距离做Kmeans聚类，包括经纬度KMeans，经纬度KMeans预测, 经纬度KMeans流式预测。
 
@@ -60,7 +57,6 @@ kmeans = GeoKMeansTrainBatchOp()\
                 .setLatitudeCol("f1")\
                 .setK(2)\
                 .linkFrom(inOp1)
-
 kmeans.print()
 
 predict = GeoKMeansPredictBatchOp()\

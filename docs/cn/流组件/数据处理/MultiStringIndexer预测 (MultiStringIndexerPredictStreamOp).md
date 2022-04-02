@@ -5,7 +5,10 @@ Python 类名：MultiStringIndexerPredictStreamOp
 
 
 ## 功能介绍
-基于StringIndexer模型，将一列字符串映射为整数。
+多列字符串转换组件，输入的模型数据来自 MultiStringIndexerTrainBatchOp 组件的输出，训练的时候指定多个列，每个列单独编码。
+这个组件为流式预测组件，预测时需要指定列名，列名必须与训练时列名相同。如果转换时指定了训练时不存在的列名，会报异常。
+支持按照一定的次序编码。如随机、出现频次生序，出现频次降序、字符串生序、字符串降序5种方式。
+设置 setStringOrderType 参数时分别对应 random frequency_asc frequency_desc alphabet_asc alphabet_desc。
 
 ## 参数说明
 
@@ -31,27 +34,27 @@ import pandas as pd
 useLocalEnv(1)
 
 df_data = pd.DataFrame([
-    ["football"],
-    ["football"],
-    ["football"],
-    ["basketball"],
-    ["basketball"],
-    ["tennis"],
+    ["football", "apple"],
+    ["football", "banana"],
+    ["football", "banana"],
+    ["basketball", "orange"],
+    ["basketball", "grape"],
+    ["tennis", "grape"],
 ])
 
-data = BatchOperator.fromDataframe(df_data, schemaStr='f0 string')
+data = BatchOperator.fromDataframe(df_data, schemaStr='f0 string,f1 string')
 
-stream_data = StreamOperator.fromDataframe(df_data, schemaStr='f0 string')
+stream_data = StreamOperator.fromDataframe(df_data, schemaStr='f0 string,f1 string')
 
 stringindexer = MultiStringIndexerTrainBatchOp() \
-     .setSelectedCols(["f0"]) \
+     .setSelectedCols(["f0", "f1"]) \
      .setStringOrderType("frequency_asc")
 
 model = stringindexer.linkFrom(data)
 
 predictor = MultiStringIndexerPredictStreamOp(model)\
-     .setSelectedCols(["f0"])\
-     .setOutputCols(["f0_indexed"])
+     .setSelectedCols(["f0", "f1"])\
+     .setOutputCols(["f0_indexed", "f1_indexed"])
 
 predictor.linkFrom(stream_data).print()
 
@@ -76,22 +79,22 @@ public class MultiStringIndexerPredictStreamOpTest {
 	@Test
 	public void testMultiStringIndexerPredictStreamOp() throws Exception {
 		List <Row> df_data = Arrays.asList(
-			Row.of("football"),
-			Row.of("football"),
-			Row.of("football"),
-			Row.of("basketball"),
-			Row.of("basketball"),
-			Row.of("tennis")
+			Row.of("football", "apple"),
+			Row.of("football", "banana"),
+			Row.of("football", "banana"),
+			Row.of("basketball", "orange"),
+			Row.of("basketball", "grape"),
+			Row.of("tennis", "grape")
 		);
-		BatchOperator <?> data = new MemSourceBatchOp(df_data, "f0 string");
-		StreamOperator <?> stream_data = new MemSourceStreamOp(df_data, "f0 string");
+		BatchOperator <?> data = new MemSourceBatchOp(df_data, "f0 string,f1 string");
+		StreamOperator <?> stream_data = new MemSourceStreamOp(df_data, "f0 string,f1 string");
 		BatchOperator <?> stringindexer = new MultiStringIndexerTrainBatchOp()
-			.setSelectedCols("f0")
+			.setSelectedCols("f0", "f1")
 			.setStringOrderType("frequency_asc");
 		BatchOperator model = stringindexer.linkFrom(data);
 		StreamOperator <?> predictor = new MultiStringIndexerPredictStreamOp(model)
-			.setSelectedCols("f0")
-			.setOutputCols("f0_indexed");
+			.setSelectedCols("f0", "f1")
+			.setOutputCols("f0_indexed", "f1_indexed");
 		predictor.linkFrom(stream_data).print();
 		StreamOperator.execute();
 	}
@@ -100,11 +103,11 @@ public class MultiStringIndexerPredictStreamOpTest {
 
 ### 运行结果
 
-f0|f0_indexed
----|----------
-football|2
-tennis|0
-football|2
-basketball|1
-basketball|1
-football|2
+f0|f1|f0_indexed|f1_indexed
+---|---|----------|----------
+basketball|orange|1|0
+football|apple|2|1
+tennis|grape|0|3
+football|banana|2|2
+basketball|grape|1|3
+football|banana|2|2

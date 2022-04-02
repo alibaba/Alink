@@ -8,7 +8,10 @@ Python 类名：VectorStandardScalerPredictBatchOp
 
 标准化是对向量数据进行按正态化处理的组件
 
-加载VectorStandardScalerTrainBatchOp中生成的模型，对向量数据做标准化预处理。
+VectorStandardScalerTrainBatchOp 计算向量的每一列的均值和方差，组件可以指定默认均值为0，标准差为1。
+生成向量标准化的模型，在 VectorStandardScalerPredictBatchOp 中加载，对数据做标准化处理。
+
+输入的向量可以同时包含稀疏向量和稠密向量，向量维度也可以不相同。输入稠密向量维度不够时，没有的维度默认为0。
 
 ## 参数说明 
 

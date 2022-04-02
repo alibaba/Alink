@@ -34,13 +34,9 @@ Python 类名：KerasSequentialClassifierTrainBatchOp
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
 | layers | 各 layer 的描述 | 各 layer 的描述，使用 Python 语法，例如 "Conv1D(256, 5, padding='same', activation='relu')" | String[] | ✓ |  |
 | tensorCol | tensor列 | tensor列 | String | ✓ |  |
-| validationSplit | 验证集比例 | 验证集比例，当前需要总并发度为 1 | Double |  | 0.0 |
-| saveBestOnly | 是否导出最优的 checkpoint | 是否导出最优的 checkpoint | Boolean |  | false |
-| bestMetric | 指标 | 判断模型最优时用的指标。
- 都支持的有：loss；
- 二分类还支持：auc, precision, recall, binary_accuracy, false_negatives, false_positives, true_negatives, true_positives
- 多分类还支持：sparse_categorical_accuracy
- 回归还支持：mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, mean_squared_logarithmic_error, root_mean_squared_error | String |  | "loss" |
+| validationSplit | 验证集比例 | 验证集比例，仅在总并发度为 1 时生效 | Double |  | 0.0 |
+| saveBestOnly | 是否导出最优的 checkpoint | 是否导出最优的 checkpoint，仅在总并发度为 1 时生效 | Boolean |  | false |
+| bestMetric | 最优指标 | 判断模型最优时用的指标，仅在总并发度为 1 时起作用。都支持的有：loss； 二分类还支持：auc, precision, recall, binary_accuracy, false_negatives, false_positives, true_negatives, true_positives；多分类还支持：sparse_categorical_accuracy；回归还支持：mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, mean_squared_logarithmic_error, root_mean_squared_error | String |  | "loss" |
 | saveCheckpointsEpochs | 每隔多少 epochs 保存 checkpoints | 每隔多少 epochs 保存 checkpoints | Double |  | 1.0 |
 | saveCheckpointsSecs | 每隔多少秒保存 checkpoints | 每隔多少秒保存 checkpoints | Double |  |  |
 | batchSize | 数据批大小 | 数据批大小 | Integer |  | 128 |

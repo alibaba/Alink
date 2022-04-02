@@ -5,7 +5,7 @@ Python 类名：GmmPredictBatchOp
 
 
 ## 功能介绍
-基于GaussianMixture模型进行聚类预测。
+高斯混合模型对应的预测组件，基于训练好的高斯混合模型（Gaussian Mixture Model）进行聚类预测。
 
 ## 参数说明
 

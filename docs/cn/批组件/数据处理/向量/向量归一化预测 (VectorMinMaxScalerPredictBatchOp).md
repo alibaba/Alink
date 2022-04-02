@@ -8,7 +8,7 @@ Python 类名：VectorMinMaxScalerPredictBatchOp
 
 vector归一化是对vector数据进行归一化处理的组件, 将数据归一到minValue和maxValue之间，value最终结果为 (value - min) / (max - min) * (maxValue - minValue) + minValue，最终结果的范围为[minValue, maxValue]。
 
-minValue和maxValue由用户指定，默认为0和1。
+minValue和maxValue由用户指定，默认为0和1。输入的向量维度可以不相同。
 
 该组件为预测组件，加载模型后就可以处理数据
 
@@ -47,7 +47,7 @@ trainOp = VectorMinMaxScalerTrainBatchOp()\
 model = trainOp.linkFrom(data) 
 
 batchPredictOp = VectorMinMaxScalerPredictBatchOp()
-batchPredictOp.linkFrom(model, data).collectToDataframe()
+batchPredictOp.linkFrom(model, data).print()
 ```
 ### Java 代码
 ```java
@@ -85,14 +85,14 @@ public class VectorMinMaxScalerPredictBatchOpTest {
 ```
 ### 运行结果
 
-col1|vec
-----|---
-a|0.5473107569721115,1.0
-b|0.4850597609561753,0.08080808080808081
-c|0.9965139442231076,0.0
-d|0.0,1.0
-a|0.5044820717131474,0.0
-b|0.4865537848605578,0.08080808080808081
-c|1.0,0.0
+col|vec
+---|---
+a|0.5473107569721115 1.0
+b|0.4850597609561753 0.08080808080808081
+c|0.9965139442231076 0.0
+d|0.0 1.0
+a|0.5044820717131474 0.0
+b|0.4865537848605578 0.08080808080808081
+c|1.0 0.0
 
 

@@ -5,7 +5,7 @@ Python 类名：VectorNearestNeighborTrainBatchOp
 
 
 ## 功能介绍
-该组件为向量最近邻的训练过程
+该组件为向量最近邻的训练过程，在计算时与 VectorNearestNeighborPredictBatchOp 配合使用。
 
 支持的距离计算方式包含EUCLIDEAN，COSINE，INNERPRODUCT（内积），CITYBLOCK（曼哈顿距离），JACCARD，PEARSON
 

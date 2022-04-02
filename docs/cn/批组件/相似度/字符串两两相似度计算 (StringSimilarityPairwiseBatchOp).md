@@ -60,10 +60,10 @@ df = pd.DataFrame([
 inOp1 = BatchOperator.fromDataframe(df, schemaStr='id long, text1 string, text2 string')
 inOp2 = StreamOperator.fromDataframe(df, schemaStr='id long, text1 string, text2 string')
 
-batchOp = StringSimilarityPairwiseBatchOp().setSelectedCols(["text1", "text2"]).setMetric("LEVENSHTEIN").setOutputCol("output")
+batchOp = StringSimilarityPairwiseBatchOp().setSelectedCols(["text1", "text2"]).setMetric("LEVENSHTEIN").setOutputCol("LEVENSHTEIN")
 batchOp.linkFrom(inOp1).print()
 
-streamOp = StringSimilarityPairwiseStreamOp().setSelectedCols(["text1", "text2"]).setMetric("COSINE").setOutputCol("output")
+streamOp = StringSimilarityPairwiseStreamOp().setSelectedCols(["text1", "text2"]).setMetric("COSINE").setOutputCol("COSINE")
 streamOp.linkFrom(inOp2).print()
 StreamOperator.execute()
 ```
@@ -95,23 +95,28 @@ public class StringSimilarityPairwiseBatchOpTest {
 		BatchOperator <?> inOp1 = new MemSourceBatchOp(df, "id int, text1 string, text2 string");
 		StreamOperator <?> inOp2 = new MemSourceStreamOp(df, "id int, text1 string, text2 string");
 		BatchOperator <?> batchOp = new StringSimilarityPairwiseBatchOp().setSelectedCols("text1", "text2").setMetric(
-			"LEVENSHTEIN").setOutputCol("output");
+			"LEVENSHTEIN").setOutputCol("LEVENSHTEIN");
 		batchOp.linkFrom(inOp1).print();
 		StreamOperator <?> streamOp = new StringSimilarityPairwiseStreamOp().setSelectedCols("text1", "text2")
-			.setMetric("COSINE").setOutputCol("output");
+			.setMetric("COSINE").setOutputCol("COSINE");
 		streamOp.linkFrom(inOp2).print();
 		StreamOperator.execute();
 	}
 }
 ```
 ### 运行结果
-id|text1|text2|output
----|-----|-----|------
+id|text1|text2|LEVENSHTEIN
+---|-----|-----|-----------
 0|abcde|aabce|2.0000
 1|aacedw|aabbed|3.0000
 2|cdefa|bbcefa|3.0000
 3|bdefh|ddeac|3.0000
 4|acedm|aeefbc|4.0000
 
-
-
+id|text1|text2|COSINE
+---|-----|-----|------
+1|aacedw|aabbed|0.4000
+4|acedm|aeefbc|0.0000
+0|abcde|aabce|0.5000
+2|cdefa|bbcefa|0.4472
+3|bdefh|ddeac|0.2500

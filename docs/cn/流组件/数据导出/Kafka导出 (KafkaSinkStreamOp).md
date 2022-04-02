@@ -16,7 +16,7 @@ Python 类名：KafkaSinkStreamOp
 | topic | topic名称 | topic名称 | String | ✓ |  |
 | bootstrapServers | bootstrapServers | bootstrapServers | String | ✓ |  |
 | fieldDelimiter | 字段分隔符 | 字段分隔符 | String |  | "," |
-| properties | 用户自定义Kafka参数 | 用户自定义Kafka参数,形如: "prop1=val1,prop2=val2" | String |  | null |
+| properties | 用户自定义Kafka参数 | 用户自定义Kafka参数,形如: "prop1= val1, prop2 = val2" | String |  | null |
 
 
 

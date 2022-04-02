@@ -7,6 +7,9 @@ Python 类名：TripleToKvBatchOp
 ## 功能介绍
 将数据格式从 Triple 转成 Key-value
 
+三元组转换为key value对，setTripleRowCol 设置数据行信息的列名，这一列值相同的数据，会被合并成一个数据
+setTripleColumnCol 设置为key名称的列名
+setTripleValueCol 设置为value所在的列名
 
 ## 参数说明
 
@@ -64,7 +67,8 @@ public class TripleToKvBatchOpTest {
 		List <Row> df = Arrays.asList(
 			Row.of(1, "f1", 1.0),
 			Row.of(1, "f2", 2.0),
-			Row.of(2, "f1", 4.0)
+			Row.of(2, "f1", 4.0),
+			Row.of(2, "f2", 8.0)
 		);
 		BatchOperator <?> data = new MemSourceBatchOp(df, "row int, col string, val double");
 		BatchOperator <?> op = new TripleToKvBatchOp()

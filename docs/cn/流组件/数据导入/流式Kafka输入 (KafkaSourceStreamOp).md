@@ -15,10 +15,10 @@ Python 类名：KafkaSourceStreamOp
 | bootstrapServers | bootstrapServers | bootstrapServers | String | ✓ |  |
 | groupId | groupId | groupId | String | ✓ |  |
 | startupMode | startupMode | startupMode | String | ✓ |  |
-| properties | 用户自定义Kafka参数 | 用户自定义Kafka参数,形如: "prop1=val1,prop2=val2" | String |  | null |
+| properties | 用户自定义Kafka参数 | 用户自定义Kafka参数,形如: "prop1= val1, prop2 = val2" | String |  | null |
 | startTime | 起始时间 | 起始时间。默认从当前时刻开始读。 | String |  | null |
 | topic | topic名称 | topic名称 | String |  | null |
-| topicPattern | "topic pattern" | "topic pattern" | String |  | null |
+| topicPattern | topic pattern | topic pattern | String |  | null |
 
 
 

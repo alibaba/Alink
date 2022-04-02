@@ -5,7 +5,9 @@ Python 类名：SwingRecommStreamOp
 
 
 ## 功能介绍
-Swing 是一种被广泛使用的item召回算法
+Swing 是一种被广泛使用的item召回算法，算法详细介绍可以参考SwingTrainBatchOp组件。
+
+该组件为Swing的流处理预测组件，输入为 SwingTrainBatchOp 输出的模型和要预测的item列。
 
 ## 参数说明
 
@@ -17,6 +19,9 @@ Swing 是一种被广泛使用的item召回算法
 | k | 推荐TOP数量 | 推荐TOP数量 | Integer |  | 10 |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  | null |
+| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  | 10 |
+| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  | null |
 
 ## 代码示例
 ### Python 代码
@@ -47,11 +52,11 @@ data = BatchOperator.fromDataframe(df_data, schemaStr='user string, item string,
 model = SwingTrainBatchOp()\
     .setUserCol("user")\
     .setItemCol("item")\
-    .setRateCol("rating").linkFrom(data);
+    .linkFrom(data)
 
 predictor = SwingRecommBatchOp()\
     .setItemCol("item")\
-    .setRecommCol("prediction_result");
+    .setRecommCol("prediction_result")
 
 predictor.linkFrom(model, data).print()
 ```
@@ -89,7 +94,7 @@ public class SwingRecommStreamOpTest {
 		BatchOperator <?> model = new SwingTrainBatchOp()
 			.setUserCol("user")
 			.setItemCol("item")
-			.setRateCol("rating").linkFrom(data);
+			.linkFrom(data);
 		BatchOperator <?> predictor = new SwingRecommBatchOp()
 			.setItemCol("item")
 			.setRecommCol("prediction_result");

@@ -5,7 +5,27 @@ Python 类名：SwingTrainBatchOp
 
 
 ## 功能介绍
-Swing 是一种被广泛使用的item召回算法
+Swing 是一种被广泛使用的item召回算法，输入数据只包含user和item即可，使用简单。
+
+Swing算法原理比较简单，是阿里最早使用到的一种召回算法，在阿里多个业务被验证过非常有效的一种召回方式。 它认为 user-item-user 的结构比 itemCF 的单边结构更稳定。
+
+Swing指的是秋千，例如用户u和用户v，都购买过同一件商品i，则三者之间会构成一个类似秋千的关系图。
+若用户u和用户v之间除了购买过i外，还购买过商品j，则认为两件商品是具有某种程度上的相似的。
+也就是说，商品与商品之间的相似关系，是通过用户关系来传递的。为了衡量物品i和j的相似性，考察都购买了物品i和j的用户u和用户v，
+如果这两个用户共同购买的物品越少，则物品i和j的相似性越高。
+
+Swing算法的表达式如下：
+
+用户权重 w_u = 1 / (user_click_num + userAlpha) ^ userBeta
+
+score(item_i, item_j) = sum(wu * wv / (alpha + common_items(wu, wv)))
+
+其中userAlpha、userBeta和alpha，用户可以根据自己的数据情况设置。
+
+此外，可以通过设置maxUserItems和minUserItems，过滤掉关联item太多或者太少的用户信息。
+对于出现次数过多的item，设置maxItemNumber参数，当出现次数大于maxItemNumber时，算法从所有的user中随机抽取maxItemNumber个用户，计算结果，因此该算法两次执行的结果不一定相同。
+
+在电商场景中，user和item的关系可以为点击、购买、收藏等。在Feed流场景关系可以为点击、点赞、评论、收藏等，item可以为文章、博主、话题等。
 
 ## 参数说明
 
@@ -14,7 +34,6 @@ Swing 是一种被广泛使用的item召回算法
 | itemCol | Item列列名 | Item列列名 | String | ✓ |  |
 | userCol | User列列名 | User列列名 | String | ✓ |  |
 | alpha | alpha参数 | alpha参数，默认1.0 | Float |  | 1.0 |
-| rateCol | 打分列列名 | 打分列列名 | String |  | null |
 | userAlpha | 用户alpha参数 | 用户alpha参数，默认5.0, user weight = 1.0/(userAlpha + userClickCount)^userBeta | Float |  | 5.0 |
 | userBeta | 用户beta参数 | 用户beta参数，默认-0.35, user weight = 1.0/(userAlpha + userClickCount)^userBeta | Float |  | -0.35 |
 | resultNormalize | 结果是否归一化 | 是否归一化，默认False | Boolean |  | false |
@@ -53,7 +72,7 @@ model = SwingTrainBatchOp()\
     .setUserCol("user")\
     .setItemCol("item")\
     .setMinUserItems(1)\
-    .setRateCol("rating").linkFrom(data)
+    .linkFrom(data)
 
 model.print()
 
@@ -98,7 +117,7 @@ public class SwingTrainBatchOpTest {
 			.setUserCol("user")
 			.setItemCol("item")
             .setMinUserItems(1)
-			.setRateCol("rating").linkFrom(data);
+			.linkFrom(data);
 		model.print();
 		BatchOperator <?> predictor = new SwingRecommBatchOp()
 			.setItemCol("item")

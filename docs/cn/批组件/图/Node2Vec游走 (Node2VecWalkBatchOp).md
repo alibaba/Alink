@@ -15,7 +15,7 @@ Python 类名：Node2VecWalkBatchOp
 | delimiter | 分隔符 | 用来分割字符串 | String |  | " " |
 | isToUndigraph | 是否转无向图 | 选为true时，会将当前图转成无向图，然后再游走 | Boolean |  | false |
 | samplingMethod | 起始点列名 | 用来指定起始点列 | String |  | "ALIAS" |
-| weightCol | 权重列名 | 用来指定权重列, 权重列的值必须为非负的浮点数, 否则算法抛异常。 | String |  | null |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
 | p | 算法参数P | 控制随机游走序列的跳转概率 | Double |  | 1.0 |
 | q | 算法参数Q | 控制随机游走序列的跳转概率 | Double |  | 1.0 |
 

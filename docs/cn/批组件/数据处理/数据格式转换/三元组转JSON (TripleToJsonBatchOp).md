@@ -7,6 +7,9 @@ Python 类名：TripleToJsonBatchOp
 ## 功能介绍
 将数据格式从 Triple 转成 Json
 
+三元组转换为json，setTripleRowCol 设置数据行信息的列名，这一列值相同的数据，会被合并成一个数据
+setTripleColumnCol 设置为json中key所在的列名
+setTripleValueCol 设置为json中value所在的列名
 
 ## 参数说明
 
@@ -62,7 +65,8 @@ public class TripleToJsonBatchOpTest {
 		List <Row> df = Arrays.asList(
 			Row.of(1, "f1", 1.0),
 			Row.of(1, "f2", 2.0),
-			Row.of(2, "f1", 4.0)
+			Row.of(2, "f1", 4.0),
+			Row.of(2, "f2", 8.0)
 		);
 		BatchOperator <?> data = new MemSourceBatchOp(df, "row int, col string, val double");
 		BatchOperator <?> op = new TripleToJsonBatchOp()

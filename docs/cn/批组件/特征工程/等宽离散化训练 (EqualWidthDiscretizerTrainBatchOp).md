@@ -6,41 +6,9 @@ Python 类名：EqualWidthDiscretizerTrainBatchOp
 
 ## 功能介绍
 
-等宽离散可以计算选定数值列的分位点，每个区间都有相同的宽。然后使用这些分位点进行离散化。
-其中可以所有列指定一个，也可以每一列对应一个
-### 编码结果
-##### Encode ——> INDEX
-预测结果为单个token的index
-
-##### Encode ——> VECTOR
-预测结果为稀疏向量:
-
-    1. dropLast为true,向量中非零元个数为0或者1
-    2. dropLast为false,向量中非零元个数必定为1
-
-##### Encode ——> ASSEMBLED_VECTOR
-预测结果为稀疏向量,是预测选择列中,各列预测为VECTOR时,按照选择顺序ASSEMBLE的结果。
-
-#### 向量维度
-##### Encode ——> Vector
-$$ vectorSize = numBuckets - dropLast(true: 1, false: 0) + (handleInvalid: keep(1), skip(0), error(0)) $$
-
-
-    numBuckets: 训练参数
-
-    dropLast: 预测参数
-
-    handleInvalid: 预测参数
-
-#### Token index
-##### Encode ——> Vector
-
-    1. 正常数据: 唯一的非零元为数据所在的bucket,若 dropLast为true, 最大的bucket的值会被丢掉，预测结果为全零元
-
-    2. null: 
-        2.1 handleInvalid为keep: 唯一的非零元为:numBuckets - dropLast(true: 1, false: 0)
-        2.2 handleInvalid为skip: null
-        2.3 handleInvalid为error: 报错
+等宽离散可以计算选定数值列的分位点，每个区间都有相同的组距，也就是数据范围/组数，通过训练可以得到一系列分为点，
+然后使用这些分位点进行预测。
+其中可以所有列使用同一个分组数量，也可以每一列对应一个分组数量。预测结果可以是特征值或一系列0/1离散特征。
 
 ## 参数说明
 
@@ -73,21 +41,31 @@ df = pd.DataFrame([
 ])
 
 batchSource =  BatchOperator.fromDataframe(df,schemaStr="f_string string, f_long long, f_double double")
-streamSource = StreamOperator.fromDataframe(df,schemaStr="f_string string, f_long long, f_double double")
 
+trainOp = EqualWidthDiscretizerTrainBatchOp(). \
+setSelectedCols(['f_long', 'f_double']). \
+setNumBuckets(5). \
+linkFrom(batchSource)
 
-trainOp = EqualWidthDiscretizerTrainBatchOp().setSelectedCols(['f_long', 'f_double']).setNumBuckets(5).linkFrom(batchSource)
+EqualWidthDiscretizerPredictBatchOp(). \
+setSelectedCols(['f_long', 'f_double']). \
+linkFrom(trainOp,batchSource). \
+print()
 
+trainOp = EqualWidthDiscretizerTrainBatchOp().setSelectedCols(['f_long', 'f_double']). \
+setNumBucketsArray([5,3]). \
+linkFrom(batchSource)
 
-predictBatchOp = EqualWidthDiscretizerPredictBatchOp().setSelectedCols(['f_long', 'f_double'])
+EqualWidthDiscretizerPredictBatchOp(). \
+setSelectedCols(['f_long', 'f_double']). \
+linkFrom(trainOp,batchSource). \
+print()
 
-predictBatchOp.linkFrom(trainOp,batchSource).print()
-
-predictStreamOp = EqualWidthDiscretizerPredictStreamOp(trainOp).setSelectedCols(['f_long', 'f_double'])
-
-predictStreamOp.linkFrom(streamSource).print()
-
-StreamOperator.execute()
+EqualWidthDiscretizerPredictBatchOp(). \
+setEncode("ASSEMBLED_VECTOR"). \
+setSelectedCols(['f_long', 'f_double']). \
+setOutputCols(["assVec"]). \
+linkFrom(trainOp,batchSource).print()
 ```
 ### Java 代码
 ```java
@@ -100,6 +78,7 @@ import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.EqualWidthDiscretizerPredictStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
+import com.alibaba.alink.params.feature.HasEncodeWithoutWoe.Encode;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -107,7 +86,7 @@ import java.util.List;
 
 public class EqualWidthDiscretizerTrainBatchOpTest {
 	@Test
-	public void testEqualWidthDiscretizerTrainBatchOp() throws Exception {
+	public void testEqualWidthDiscretizerTrainBatchOp2() throws Exception {
 		List <Row> df = Arrays.asList(
 			Row.of("a", 1, 1.1),
 			Row.of("b", -2, 0.9),
@@ -119,17 +98,23 @@ public class EqualWidthDiscretizerTrainBatchOpTest {
 			Row.of("d", -99, 100.9)
 		);
 		BatchOperator <?> batchSource = new MemSourceBatchOp(df, "f_string string, f_long int, f_double double");
-		StreamOperator <?> streamSource = new MemSourceStreamOp(df, "f_string string, f_long int, f_double double");
+
 		BatchOperator <?> trainOp = new EqualWidthDiscretizerTrainBatchOp().setSelectedCols("f_long", "f_double")
 			.setNumBuckets(5).linkFrom(batchSource);
-		BatchOperator <?> predictBatchOp = new EqualWidthDiscretizerPredictBatchOp().setSelectedCols("f_long",
-			"f_double");
-		predictBatchOp.linkFrom(trainOp, batchSource).print();
-		StreamOperator <?> predictStreamOp = new EqualWidthDiscretizerPredictStreamOp(trainOp).setSelectedCols(
-			"f_long",
-			"f_double");
-		predictStreamOp.linkFrom(streamSource).print();
-		StreamOperator.execute();
+
+		new EqualWidthDiscretizerPredictBatchOp().setSelectedCols("f_long","f_double")
+			.linkFrom(trainOp, batchSource).print();
+
+		BatchOperator trainOp2 = new EqualWidthDiscretizerTrainBatchOp().setSelectedCols("f_long", "f_double")
+			.setNumBucketsArray(5,3).linkFrom(batchSource);
+
+		new EqualWidthDiscretizerPredictBatchOp().setSelectedCols("f_long","f_double")
+			.linkFrom(trainOp2,batchSource).print();
+
+		new EqualWidthDiscretizerPredictBatchOp().setSelectedCols("f_long","f_double")
+			.setEncode(Encode.ASSEMBLED_VECTOR)
+			.setOutputCols("assVec")
+			.linkFrom(trainOp2,batchSource).print();
 	}
 }
 ```
@@ -145,3 +130,25 @@ a|2|0
 b|2|0
 c|4|0
 d|0|4
+
+f_string|f_long|f_double
+--------|------|--------
+a|2|0
+b|2|0
+c|4|0
+d|0|2
+a|2|0
+b|2|0
+c|4|0
+d|0|2
+
+f_string|f_long|f_double|assVec
+--------|------|--------|------
+a|1|1.1000|$8$2:1.0 5:1.0
+b|-2|0.9000|$8$2:1.0 5:1.0
+c|100|-0.0100|$8$5:1.0
+d|-99|100.9000|$8$0:1.0
+a|1|1.1000|$8$2:1.0 5:1.0
+b|-2|0.9000|$8$2:1.0 5:1.0
+c|100|-0.0100|$8$5:1.0
+d|-99|100.9000|$8$0:1.0

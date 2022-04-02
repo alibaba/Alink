@@ -5,8 +5,36 @@ Python 类名：ProphetBatchOp
 
 
 ## 功能介绍
-使用Prophet进行时间序列预测。
+对每一行的MTable数据, 进行Prophet时间序列预测，给出下一时间段的预测结果。
 
+### 算法原理
+
+Prophet是facebook开源的一个时间序列预测算法, github地址：https://github.com/facebook/prophet.
+
+Prophet适用于具有明显的内在规律的数据, 例如：
+
+* 有一定的历史数据，有至少几个月的每小时、每天或每周观察的历史数据
+* 有较强的季节性趋势：每周的一些天，每年的一些时间
+* 有已知的以不定期的间隔发生的重要节假日（比如国庆节）
+* 缺失的历史数据或较大的异常数据的数量在合理范围内
+* 对于数据中蕴含的非线性增长的趋势都有一个自然极限或饱和状态
+
+### 使用方式
+* 第一步，将每组数据(时间列和数据列) 聚合成MTable.
+    ```python
+     GroupByBatchOp()
+        .setGroupByPredicate("id")
+        .setSelectClause("id, mtable_agg(ts, val) as data")
+    ```
+* 第二步，使用时间序列方法进行预测，预测结果也是MTable。
+* 第三步，使用FlattenMTableBatchOp，将MTable转换成列，
+   ```python
+      FlattenMTableBatchOp()
+          .setReservedCols(["id", "predict"])
+          .setSelectedCol("predict")
+          .setSchemaStr("ts timestamp, val double")
+   ```
+  
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |

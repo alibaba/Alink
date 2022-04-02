@@ -7,6 +7,8 @@ Python 类名：VectorElementwiseProductBatchOp
 ## 功能介绍
  Vector 中的每一个非零元素与scalingVector的每一个对应元素乘，返回乘积后的新vector。
 
+ScalingVector 通过参数单独指定。
+
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
@@ -28,8 +30,6 @@ import pandas as pd
 useLocalEnv(1)
 
 # load data
-
-
 df = pd.DataFrame([
     ["1:3,2:4,4:7", 1],
     ["0:3,5:5", 3],
@@ -40,7 +40,7 @@ data = BatchOperator.fromDataframe(df, schemaStr="vec string, id bigint")
 vecEP = VectorElementwiseProductBatchOp().setSelectedCol("vec") \
     .setOutputCol("vec1") \
     .setScalingVector("$8$1:3.0 3:3.0 5:4.6")
-data.link(vecEP).collectToDataframe()
+data.link(vecEP).print()
 ```
 ### Java 代码
 ```java
