@@ -3,6 +3,8 @@ package com.alibaba.alink.params.similarity;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.JaccardDistance;
@@ -17,10 +19,8 @@ import java.io.Serializable;
 public interface VectorApproxNearestNeighborTrainParams<T> extends
 	NearestNeighborTrainParams <T>,
 	VectorLSHParams <T> {
-	/**
-	 * @cn-name 距离度量方式
-	 * @cn 距离类型
-	 */
+	@NameCn("距离度量方式")
+	@DescCn("距离类型")
 	ParamInfo <Metric> METRIC = ParamInfoFactory
 		.createParamInfo("metric", Metric.class)
 		.setDescription("Distance type for clustering")
@@ -61,10 +61,8 @@ public interface VectorApproxNearestNeighborTrainParams<T> extends
 
 	}
 
-	/**
-	 * @cn-name 近似方法
-	 * @cn 近似方法，包括KDTREE和LSH
-	 */
+	@NameCn("近似方法")
+	@DescCn("近似方法，包括KDTREE和LSH")
 	ParamInfo <Solver> SOLVER = ParamInfoFactory
 		.createParamInfo("solver", Solver.class)
 		.setDescription("Method to calc approx topN.")

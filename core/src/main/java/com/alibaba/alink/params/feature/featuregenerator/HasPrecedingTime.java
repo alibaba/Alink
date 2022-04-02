@@ -4,22 +4,23 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasPrecedingTime<T> extends WithParams<T> {
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 
-    /**
-     * @cn-name 时间窗口大小
-     * @cn 时间窗口大小
-     */
-    ParamInfo<Double> PRECEDING_TIME = ParamInfoFactory
-        .createParamInfo("precedingTime", Double.class)
-        .setDescription("time interval")
-        .setHasDefaultValue(null)
-        .build();
+public interface HasPrecedingTime<T> extends WithParams <T> {
 
-    default Double getPrecedingTime() {return get(PRECEDING_TIME);}
+	@NameCn("时间窗口大小")
+	@DescCn("时间窗口大小")
+	ParamInfo <Double> PRECEDING_TIME = ParamInfoFactory
+		.createParamInfo("precedingTime", Double.class)
+		.setDescription("time interval")
+		.setHasDefaultValue(null)
+		.build();
 
-    default T setPrecedingTime(Double value) {return set(PRECEDING_TIME, value);}
+	default Double getPrecedingTime() {return get(PRECEDING_TIME);}
 
-    default T setPrecedingTime(int value) {return set(PRECEDING_TIME, (double) value);}
+	default T setPrecedingTime(Double value) {return set(PRECEDING_TIME, value);}
+
+	default T setPrecedingTime(int value) {return set(PRECEDING_TIME, (double) value);}
 
 }

@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.VectorType;
@@ -49,7 +49,7 @@ public class ToVectorMapperTest extends AlinkTestBase {
 		final Mapper mapper = new ToVectorMapper(
 			new TableSchema(
 				new String[] {"vec"},
-				new TypeInformation <?>[] {VectorTypes.VECTOR}
+				new TypeInformation <?>[] {AlinkTypes.VECTOR}
 			),
 			new Params()
 				.set(ToVectorParams.SELECTED_COL, "vec")
@@ -77,7 +77,7 @@ public class ToVectorMapperTest extends AlinkTestBase {
 				.set(ToVectorParams.VECTOR_TYPE, VectorType.DENSE)
 				.set(ToVectorParams.SELECTED_COL, "vec")
 		);
-		Assert.assertEquals(VectorTypes.DENSE_VECTOR, mapper.getOutputSchema().getFieldTypes()[0]);
+		Assert.assertEquals(AlinkTypes.DENSE_VECTOR, mapper.getOutputSchema().getFieldTypes()[0]);
 
 		mapper = new ToVectorMapper(
 			new TableSchema(
@@ -88,7 +88,7 @@ public class ToVectorMapperTest extends AlinkTestBase {
 				.set(ToVectorParams.VECTOR_TYPE, VectorType.SPARSE)
 				.set(ToVectorParams.SELECTED_COL, "vec")
 		);
-		Assert.assertEquals(VectorTypes.SPARSE_VECTOR, mapper.getOutputSchema().getFieldTypes()[0]);
+		Assert.assertEquals(AlinkTypes.SPARSE_VECTOR, mapper.getOutputSchema().getFieldTypes()[0]);
 
 		mapper = new ToVectorMapper(
 			new TableSchema(
@@ -98,7 +98,7 @@ public class ToVectorMapperTest extends AlinkTestBase {
 			new Params()
 				.set(ToVectorParams.SELECTED_COL, "vec")
 		);
-		Assert.assertEquals(VectorTypes.VECTOR, mapper.getOutputSchema().getFieldTypes()[0]);
+		Assert.assertEquals(AlinkTypes.VECTOR, mapper.getOutputSchema().getFieldTypes()[0]);
 	}
 
 	@Test

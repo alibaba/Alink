@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.clustering;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.KMeansTrainBatchOp;
@@ -16,6 +17,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * <p>
  * (https://en.wikipedia.org/wiki/K-means_clustering)
  */
+@NameCn("K均值聚类")
 public class KMeans extends Trainer <KMeans, KMeansModel> implements
 	KMeansTrainParams <KMeans>,
 	KMeansPredictParams <KMeans>,

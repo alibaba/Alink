@@ -11,6 +11,13 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -27,6 +34,17 @@ import com.alibaba.alink.params.regression.GlmTrainParams;
 /**
  * Generalized Linear Model. https://en.wikipedia.org/wiki/Generalized_linear_model.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {
+	@PortSpec(value = PortType.MODEL),
+	@PortSpec(value = PortType.DATA),
+	@PortSpec(value = PortType.DATA)
+})
+
+@ParamSelectColumnSpec(name = "featureCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "labelCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "weightCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("广义线性回归训练")
 public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 	implements GlmTrainParams <GlmTrainBatchOp>,
 	WithModelInfoBatchOp <GlmModelInfo, GlmTrainBatchOp, GlmModelInfoBatchOp> {
@@ -84,8 +102,8 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 			numFeature, familyLink, regParam, numIter, epsilon, fitIntercept);
 
 		this.setOutput(finalModel.mapPartition(
-			new BuildModel(featureColNames, offsetColName, weightColName, labelColName,
-				familyName, variancePower, linkName, linkPower, fitIntercept, numIter, epsilon))
+					new BuildModel(featureColNames, offsetColName, weightColName, labelColName,
+						familyName, variancePower, linkName, linkPower, fitIntercept, numIter, epsilon))
 				.setParallelism(1)
 				.withBroadcastSet(modelSummary, "summary"),
 			new GlmModelDataConverter().getModelSchema());
@@ -124,12 +142,12 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 			DataSetConversionUtil.toTable(getMLEnvironmentId(),
 				residual, residualColNames, residualColTypes),
 			DataSetConversionUtil.toTable(getMLEnvironmentId(), modelSummary.map(
-				new MapFunction <GlmModelSummary, Row>() {
-					@Override
-					public Row map(GlmModelSummary value) throws Exception {
-						return Row.of(JsonConverter.toJson(value));
-					}
-				}),
+					new MapFunction <GlmModelSummary, Row>() {
+						@Override
+						public Row map(GlmModelSummary value) throws Exception {
+							return Row.of(JsonConverter.toJson(value));
+						}
+					}),
 				summaryColNames, summaryColTypes)
 		});
 

@@ -1,23 +1,21 @@
 package com.alibaba.alink.common.dl.utils;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.dl.coding.ExampleCodingConfigV2;
 import com.alibaba.alink.common.dl.coding.ExampleCodingV2;
+import com.alibaba.alink.common.dl.data.DataTypesV2;
 import com.alibaba.alink.common.dl.data.TFRecordReaderImpl;
 import com.alibaba.alink.common.dl.data.TFRecordWriterImpl;
-import com.alibaba.alink.common.dl.data.DataTypesV2;
 import com.alibaba.flink.ml.cluster.node.MLContext;
 import com.alibaba.flink.ml.tensorflow2.client.DLConfig;
 import com.alibaba.flink.ml.tensorflow2.util.TFConstants;
 import com.alibaba.flink.ml.util.MLConstants;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,24 +31,24 @@ public class DLUtils implements Serializable {
     private static final Map<TypeInformation<?>, DataTypesV2> TYPE_INFO_TO_DATA_TYPE = new HashMap <>();
 
     static {
-        TYPE_INFO_TO_DATA_TYPE.put(Types.STRING, DataTypesV2.STRING);
-        TYPE_INFO_TO_DATA_TYPE.put(Types.FLOAT, DataTypesV2.FLOAT_32);
-        TYPE_INFO_TO_DATA_TYPE.put(Types.DOUBLE, DataTypesV2.FLOAT_64);
-        TYPE_INFO_TO_DATA_TYPE.put(Types.INT, DataTypesV2.INT_32);
-        TYPE_INFO_TO_DATA_TYPE.put(Types.LONG, DataTypesV2.INT_64);
-        TYPE_INFO_TO_DATA_TYPE.put(Types.SHORT, DataTypesV2.INT_16);
-        TYPE_INFO_TO_DATA_TYPE.put(Types.BYTE, DataTypesV2.INT_8);
-        TYPE_INFO_TO_DATA_TYPE.put(Types.BOOLEAN, DataTypesV2.BOOL);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.STRING, DataTypesV2.STRING);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.FLOAT, DataTypesV2.FLOAT_32);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.DOUBLE, DataTypesV2.FLOAT_64);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.INT, DataTypesV2.INT_32);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.LONG, DataTypesV2.INT_64);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.SHORT, DataTypesV2.INT_16);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.BYTE, DataTypesV2.INT_8);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.BOOLEAN, DataTypesV2.BOOL);
 
-        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.TENSOR, DataTypesV2.TENSOR);
-        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.FLOAT_TENSOR, DataTypesV2.FLOAT_TENSOR);
-        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.DOUBLE_TENSOR, DataTypesV2.DOUBLE_TENSOR);
-        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.INT_TENSOR, DataTypesV2.INT_TENSOR);
-        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.LONG_TENSOR, DataTypesV2.LONG_TENSOR);
-        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.BYTE_TENSOR, DataTypesV2.BYTE_TENSOR);
-        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.UBYTE_TENSOR, DataTypesV2.UBYTE_TENSOR);
-        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.BOOL_TENSOR, DataTypesV2.BOOLEAN_TENSOR);
-        TYPE_INFO_TO_DATA_TYPE.put(TensorTypes.STRING_TENSOR, DataTypesV2.STRING_TENSOR);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.TENSOR, DataTypesV2.TENSOR);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.FLOAT_TENSOR, DataTypesV2.FLOAT_TENSOR);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.DOUBLE_TENSOR, DataTypesV2.DOUBLE_TENSOR);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.INT_TENSOR, DataTypesV2.INT_TENSOR);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.LONG_TENSOR, DataTypesV2.LONG_TENSOR);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.BYTE_TENSOR, DataTypesV2.BYTE_TENSOR);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.UBYTE_TENSOR, DataTypesV2.UBYTE_TENSOR);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.BOOL_TENSOR, DataTypesV2.BOOLEAN_TENSOR);
+        TYPE_INFO_TO_DATA_TYPE.put(AlinkTypes.STRING_TENSOR, DataTypesV2.STRING_TENSOR);
     }
 
     public static void safePutProperties(MLContext mlContext, String k, String v) {
@@ -64,8 +62,8 @@ public class DLUtils implements Serializable {
     }
 
     private static void safePutProperties(Map<String, String> properties, String k, String v) {
-        Preconditions.checkArgument(v != null, "Null value encountered.");
-        properties.put(k, v);
+        Preconditions.checkArgument(v != null, String.format("Null value encountered for key %s.", k));
+		properties.put(k, v);
     }
 
     private static DataTypesV2 toFlinkAiExtendTypes(TypeInformation<?> typeInfo) {

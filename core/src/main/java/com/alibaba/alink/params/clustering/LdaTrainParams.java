@@ -3,6 +3,8 @@ package com.alibaba.alink.params.clustering;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.nlp.HasVocabSize;
 import com.alibaba.alink.params.shared.colname.HasSelectedCol;
@@ -16,19 +18,15 @@ public interface LdaTrainParams<T> extends
 	HasVocabSize <T>,
 	HasSelectedCol <T>,
 	HasRandomSeed <T> {
-	/**
-	 * @cn-name 主题个数
-	 * @cn 主题个数
-	 */
+	@NameCn("主题个数")
+	@DescCn("主题个数")
 	ParamInfo <Integer> TOPIC_NUM = ParamInfoFactory
 		.createParamInfo("topicNum", Integer.class)
 		.setDescription("Number of topic.")
 		.setRequired()
 		.build();
-	/**
-	 * @cn-name 文章的超参
-	 * @cn 文章的超参
-	 */
+	@NameCn("文章的超参")
+	@DescCn("文章的超参")
 	ParamInfo <Double> ALPHA = ParamInfoFactory
 		.createParamInfo("alpha", Double.class)
 		.setDescription(
@@ -36,10 +34,8 @@ public interface LdaTrainParams<T> extends
 				+ " over topics (\"beta\").")
 		.setHasDefaultValue(-1.0)
 		.build();
-	/**
-	 * @cn-name 词的超参
-	 * @cn 词的超参
-	 */
+	@NameCn("词的超参")
+	@DescCn("词的超参")
 	ParamInfo <Double> BETA = ParamInfoFactory
 		.createParamInfo("beta", Double.class)
 		.setDescription(
@@ -47,10 +43,8 @@ public interface LdaTrainParams<T> extends
 				+ "distributions over terms.")
 		.setHasDefaultValue(-1.0)
 		.build();
-	/**
-	 * @cn-name 优化方法
-	 * @cn 优化方法, 包含"em"和"online"两种。
-	 */
+	@NameCn("优化方法")
+	@DescCn("优化方法, 包含\"em\"和\"online\"两种。")
 	ParamInfo <Method> METHOD = ParamInfoFactory
 		.createParamInfo("method", Method.class)
 		.setDescription("optimizer: em, online")
@@ -63,10 +57,8 @@ public interface LdaTrainParams<T> extends
 		EM
 	}
 
-	/**
-	 * @cn-name 偏移量
-	 * @cn 偏移量
-	 */
+	@NameCn("偏移量")
+	@DescCn("偏移量")
 	ParamInfo <Double> ONLINE_LEARNING_OFFSET = ParamInfoFactory
 		.createParamInfo("onlineLearningOffset", Double.class)
 		.setDescription("(For online optimizer)" +
@@ -74,10 +66,8 @@ public interface LdaTrainParams<T> extends
 			" iterations count less.")
 		.setHasDefaultValue(1024.0)
 		.build();
-	/**
-	 * @cn-name 衰减率
-	 * @cn 衰减率
-	 */
+	@NameCn("衰减率")
+	@DescCn("衰减率")
 	ParamInfo <Double> LEARNING_DECAY = ParamInfoFactory
 		.createParamInfo("learningDecay", Double.class)
 		.setDescription("(For online optimizer) " +
@@ -85,10 +75,8 @@ public interface LdaTrainParams<T> extends
 			" guarantee asymptotic convergence.")
 		.setHasDefaultValue(0.51)
 		.build();
-	/**
-	 * @cn-name 采样率
-	 * @cn 采样率
-	 */
+	@NameCn("采样率")
+	@DescCn("采样率")
 	ParamInfo <Double> SUBSAMPLING_RATE = ParamInfoFactory
 		.createParamInfo("subsamplingRate", Double.class)
 		.setDescription("For online optimizer " +
@@ -96,10 +84,8 @@ public interface LdaTrainParams<T> extends
 			"gradient descent, in range (0, 1].")
 		.setHasDefaultValue(0.05)
 		.build();
-	/**
-	 * @cn-name 是否优化alpha
-	 * @cn 是否优化alpha
-	 */
+	@NameCn("是否优化alpha")
+	@DescCn("是否优化alpha")
 	ParamInfo <Boolean> OPTIMIZE_DOC_CONCENTRATION = ParamInfoFactory
 		.createParamInfo("optimizeDocConcentration", Boolean.class)
 		.setDescription("(For online optimizer only, currently) Indicates whether the docConcentration" +

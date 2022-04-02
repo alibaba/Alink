@@ -5,7 +5,6 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.catalog.AbstractCatalog;
 import org.apache.flink.table.catalog.ObjectPath;
 
-import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.CatalogAnnotationUtils;
 import com.alibaba.alink.params.io.HasIoName;
 import com.alibaba.alink.params.io.shared.HasCatalogName;

@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasTargetCol<T> extends WithParams <T> {
-	/**
-	 * @cn-name 中止点点列名
-	 * @cn 用来指定中止点列
-	 */
+	@NameCn("中止点点列名")
+	@DescCn("用来指定中止点列")
 	ParamInfo <String> TARGET_COL = ParamInfoFactory
 		.createParamInfo("targetCol", String.class)
 		.setDescription("target col name")

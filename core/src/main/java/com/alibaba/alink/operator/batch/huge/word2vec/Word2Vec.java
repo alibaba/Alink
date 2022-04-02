@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.huge.word2vec;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.utils.ExpTableArray;
 import com.alibaba.alink.operator.common.nlp.WordCountUtil;
 import com.alibaba.alink.params.nlp.Word2VecParams;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+@NameCn("Word2Vec")
 public class Word2Vec {
 	private final static Logger LOG = LoggerFactory.getLogger(Word2Vec.class);
 

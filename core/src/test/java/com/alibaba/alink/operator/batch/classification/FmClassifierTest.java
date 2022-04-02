@@ -47,7 +47,7 @@ public class FmClassifierTest extends AlinkTestBase {
 			.linkFrom(result)
 			.link(new JsonValueBatchOp()
 				.setSelectedCol("Data")
-				.setReservedCols(new String[] {"Statistics"})
+				.setReservedCols(new String[] {})
 				.setOutputCols(new String[] {"Accuracy", "AUC", "ConfusionMatrix"})
 				.setJsonPath("$.Accuracy", "$.AUC", "$.ConfusionMatrix"))
 			.collect();
@@ -84,7 +84,7 @@ public class FmClassifierTest extends AlinkTestBase {
 			.linkFrom(result)
 			.link(new JsonValueBatchOp()
 				.setSelectedCol("Data")
-				.setReservedCols(new String[] {"Statistics"})
+				.setReservedCols(new String[] {})
 				.setOutputCols(new String[] {"Accuracy", "AUC", "ConfusionMatrix"})
 				.setJsonPath("$.Accuracy", "$.AUC", "$.ConfusionMatrix"))
 			.collect();

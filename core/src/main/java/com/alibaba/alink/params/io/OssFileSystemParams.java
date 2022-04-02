@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.io.shared.HasAccessIdDefaultAsNull;
 import com.alibaba.alink.params.io.shared.HasAccessKeyDefaultAsNull;
 import com.alibaba.alink.params.io.shared.HasEndPoint;
@@ -15,12 +17,10 @@ public interface OssFileSystemParams<T> extends WithParams <T>,
 	HasAccessKeyDefaultAsNull <T>,
 	HasFileSystemUri <T>,
 	HasEndPoint <T>,
-	HasPluginVersion<T> {
+	HasPluginVersion <T> {
 
-	/**
-	 * @cn-name SecurityToken
-	 * @cn SecurityToken
-	 */
+	@NameCn("SecurityToken")
+	@DescCn("SecurityToken")
 	ParamInfo <String> SECURITY_TOKEN = ParamInfoFactory
 		.createParamInfo("securityToken", String.class)
 		.setDescription("security token")

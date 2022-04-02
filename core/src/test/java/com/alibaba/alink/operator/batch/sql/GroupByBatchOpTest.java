@@ -5,7 +5,8 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.dataproc.SortUtils.RowComparator;
@@ -37,7 +38,7 @@ public class GroupByBatchOpTest extends AlinkTestBase {
 	@Test
 	public void testPattern() {
 		TableSchema tableSchema = new TableSchema(new String[] {"val1", "g1", "val2", "g2"},
-			new TypeInformation[] {Types.STRING, Types.SQL_DATE, Types.DOUBLE, VectorTypes.SPARSE_VECTOR});
+			new TypeInformation[] {Types.STRING, Types.SQL_DATE, Types.DOUBLE, AlinkTypes.SPARSE_VECTOR});
 
 		String[] groupCols = new String[] {"g1","g2"};
 		String str = "mtable_agg(val1), cos(val), Mtable_AGG(val1,val2), mtable_Agg()";
@@ -81,10 +82,10 @@ public class GroupByBatchOpTest extends AlinkTestBase {
 		Assert.assertEquals("Nevada", rows.get(0).getField(0));
 		Assert.assertEquals("{\"data\":{\"f2\":[2001,2002,2003],\"f3\":[2.4,2.9,3.2]},\"schema\":\"f2 INT,f3 "
 				+ "DOUBLE\"}",
-			rows.get(0).getField(1).toString());
+			JsonConverter.toJson(rows.get(0).getField(1)));
 		Assert.assertEquals("Ohio", rows.get(1).getField(0));
 		Assert.assertEquals("{\"data\":{\"f2\":[2000,2001,2002],\"f3\":[1.5,1.7,3.6]},\"schema\":\"f2 INT,f3 "
 				+ "DOUBLE\"}",
-			rows.get(1).getField(1).toString());
+			JsonConverter.toJson(rows.get(1).getField(1)));
 	}
 }

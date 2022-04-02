@@ -3,6 +3,8 @@ package com.alibaba.alink.params.evaluation;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
 
@@ -12,10 +14,8 @@ import com.alibaba.alink.params.shared.colname.HasPredictionDetailCol;
 public interface EvalMultiClassParams<T> extends
 	HasLabelCol <T>,
 	HasPredictionDetailCol <T> {
-	/**
-	 * @cn-name 预测结果列名
-	 * @cn 预测结果列名
-	 */
+	@NameCn("预测结果列名")
+	@DescCn("预测结果列名")
 	ParamInfo <String> PREDICTION_COL = ParamInfoFactory
 		.createParamInfo("predictionCol", String.class)
 		.setDescription("Column name of prediction.")

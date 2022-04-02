@@ -53,7 +53,7 @@ public class SoftmaxTest extends AlinkTestBase {
 			.link(new EvalMultiClassBatchOp().setLabelCol("predLr").setPredictionDetailCol("predDetail"))
 			.link(new JsonValueBatchOp()
 				.setSelectedCol("Data")
-				.setReservedCols(new String[] {"Statistics"})
+				.setReservedCols(new String[] {})
 				.setOutputCols(new String[] {"Accuracy"})
 				.setJsonPath("$.Accuracy"))
 			.collect();
@@ -82,7 +82,7 @@ public class SoftmaxTest extends AlinkTestBase {
 			.link(new EvalMultiClassBatchOp().setLabelCol("predLr").setPredictionDetailCol("predDetail"))
 			.link(new JsonValueBatchOp()
 				.setSelectedCol("Data")
-				.setReservedCols(new String[] {"Statistics"})
+				.setReservedCols(new String[] {})
 				.setOutputCols(new String[] {"Accuracy"})
 				.setJsonPath("$.Accuracy"))
 			.collect();

@@ -92,12 +92,16 @@ public class AnnotationUtils {
 		Reflections reflections = new Reflections("com.alibaba.alink");
 		Table <String, IOType, Wrapper <AlgoOperator <?>>> table = HashBasedTable.create();
 		for (Class <?> clazz : reflections.getTypesAnnotatedWith(IoOpAnnotation.class)) {
-			if (!AlgoOperator.class.isAssignableFrom(clazz)) {
-				LOG.error("Class annotated with @IoOpAnnotation should be subclass of AlgoOperator: {}",
-					clazz.getCanonicalName());
+			try {
+				String name = clazz.getCanonicalName();
+				if (!AlgoOperator.class.isAssignableFrom(clazz)) {
+					LOG.error("Class annotated with @IoOpAnnotation should be subclass of AlgoOperator: {}", name);
+					continue;
+				}
+			} catch (Throwable th) {
+				LOG.info("Cannot load class {}, {}", clazz.getName(), th.getMessage());
 				continue;
 			}
-
 			IoOpAnnotation annotation = clazz.getAnnotation(IoOpAnnotation.class);
 			String name = annotation.name();
 			IOType ioType = annotation.ioType();

@@ -10,20 +10,26 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.FilePath;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.common.stream.model.FileModelStreamSink;
+import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.params.io.AppendModelStreamFileSinkParams;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 
 @IoOpAnnotation(name = "append_model_stream", ioType = IOType.SinkBatch)
+@InputPorts(values = {@PortSpec(PortType.MODEL)})
+@NameCn("模型流导出")
 public class AppendModelStreamFileSinkBatchOp extends BaseSinkBatchOp <AppendModelStreamFileSinkBatchOp>
 	implements AppendModelStreamFileSinkParams <AppendModelStreamFileSinkBatchOp> {
 
@@ -44,7 +50,7 @@ public class AppendModelStreamFileSinkBatchOp extends BaseSinkBatchOp <AppendMod
 		final TableSchema schema = in.getSchema();
 
 		final FileModelStreamSink sink = new FileModelStreamSink(
-			filePath, CsvUtil.schema2SchemaStr(schema)
+			filePath, TableUtil.schema2SchemaStr(schema)
 		);
 
 		try {

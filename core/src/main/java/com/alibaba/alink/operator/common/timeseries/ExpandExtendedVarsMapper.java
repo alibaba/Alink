@@ -5,7 +5,7 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.Mapper;
@@ -79,7 +79,7 @@ public class ExpandExtendedVarsMapper extends Mapper {
 				params.get(ExpandExtendedVarsParams.OUTPUT_COL)
 			},
 			new TypeInformation <?>[] {
-				VectorTypes.DENSE_VECTOR
+				AlinkTypes.DENSE_VECTOR
 			},
 			params.get(ExpandExtendedVarsParams.RESERVED_COLS)
 		);

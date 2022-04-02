@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.utils;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -17,6 +18,7 @@ import java.util.List;
  * Print batch op to std out.
  */
 @IoOpAnnotation(name = "print", ioType = IOType.SinkBatch)
+@NameCn("批式数据打印")
 public class PrintBatchOp extends BaseSinkBatchOp <PrintBatchOp> {
 
 	private static final long serialVersionUID = -8361687806231696283L;

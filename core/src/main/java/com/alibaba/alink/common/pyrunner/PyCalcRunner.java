@@ -12,12 +12,11 @@ import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge;
 import com.alibaba.alink.common.pyrunner.bridge.DedicatedPythonBridge;
+import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * A runner which calls Python code to do calculation.
@@ -30,32 +29,33 @@ public abstract class PyCalcRunner<IN, OUT, HANDLE extends PyObjHandle> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PyCalcRunner.class);
 
-	protected final Map <String, String> config;
+	protected final SerializableBiFunction <String, String, String> getConfigFn;
+
+	// Use Python env from plugin directory.
+	// PyScalar/TableFnRunner should not use plugin, as they are using cloudpickle for (de)serialization which requires
+	// the same Python version.
+	private final boolean usePluginPythonEnv;
 	private final String pythonClassName;
 	private final BasePythonBridge bridge = DedicatedPythonBridge.inst();
 
 	protected HANDLE handle;
 
-	public PyCalcRunner(String pythonClassName, Map <String, String> config) {
-		this.pythonClassName = pythonClassName;
-		this.config = config;
+	public PyCalcRunner(String pythonClassName, SerializableBiFunction <String, String, String> getConfigFn) {
+		this(pythonClassName, getConfigFn, true);
 	}
 
-	File extractVirtualEnv(File pluginDirectory) throws Exception {
-		File[] files = pluginDirectory.listFiles((dir, name) -> name.endsWith(".tar.gz"));
-		Preconditions.checkArgument(files != null && files.length == 1);
-		File envFile = files[0];
-		File dstDir = PythonFileUtils.createTempDir("python_env_").toFile();
-		TarFileUtil.unTar(envFile, dstDir);
-		File[] subdirs = dstDir.listFiles(File::isDirectory);
-		return null != subdirs && subdirs.length == 1 ? subdirs[0] : dstDir;
+	public PyCalcRunner(String pythonClassName, SerializableBiFunction <String, String, String> getConfigFn,
+						boolean usePluginPythonEnv) {
+		this.pythonClassName = pythonClassName;
+		this.getConfigFn = getConfigFn;
+		this.usePluginPythonEnv = usePluginPythonEnv;
 	}
 
 	/**
 	 * Start Python process if necessary and create the handle.
 	 */
 	public void open() {
-		String pythonEnv = config.get(BasePythonBridge.PY_VIRTUAL_ENV_KEY);
+		String pythonEnv = getConfigFn.apply(BasePythonBridge.PY_VIRTUAL_ENV_KEY, null);
 		if (null != pythonEnv) {
 			if (PythonFileUtils.isCompressedFile(pythonEnv)) {
 				String tempWorkDir = PythonFileUtils.createTempDir("python_env_").toString();
@@ -66,7 +66,7 @@ public abstract class PyCalcRunner<IN, OUT, HANDLE extends PyObjHandle> {
 					pythonEnv = pythonEnv.substring("file://".length());
 				}
 			}
-		} else {
+		} else if (usePluginPythonEnv) {
 			FilePath pluginFilePath = null;
 			RegisterKey tf1RegisterKey = DLEnvConfig.getRegisterKey(Version.TF115);
 			RegisterKey tf2RegisterKey = DLEnvConfig.getRegisterKey(Version.TF231);
@@ -87,11 +87,20 @@ public abstract class PyCalcRunner<IN, OUT, HANDLE extends PyObjHandle> {
 				Preconditions.checkArgument(null != dirs && dirs.length == 1,
 					String.format("There should be only 1 directory in plugin directory: %s.", pluginDirectory));
 				pythonEnv = dirs[0].getAbsolutePath();
-				LOG.info("Use virtual env in {}", pythonEnv);
 			}
 		}
-		config.put(BasePythonBridge.PY_VIRTUAL_ENV_KEY, pythonEnv);
-		bridge.open(getClass().getName(), config::getOrDefault, null);
+
+		String finalPythonEnv = pythonEnv;
+		LOG.info("Use virtual env in {}", pythonEnv);
+		if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+			System.out.println("Use virtual env in " + pythonEnv);
+		}
+		SerializableBiFunction <String, String, String> newGetConfigFn = (key, defaultValue) ->
+			BasePythonBridge.PY_VIRTUAL_ENV_KEY.equals(key)
+				? finalPythonEnv
+				: getConfigFn.apply(key, defaultValue);
+
+		bridge.open(getClass().getName(), newGetConfigFn, null);
 		this.handle = bridge.app().newobj(pythonClassName);
 	}
 

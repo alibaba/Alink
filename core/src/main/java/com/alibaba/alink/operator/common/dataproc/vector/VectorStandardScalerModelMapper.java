@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -43,7 +43,7 @@ public class VectorStandardScalerModelMapper extends SISOModelMapper {
 
 	@Override
 	protected TypeInformation initPredResultColType() {
-		return VectorTypes.VECTOR;
+		return AlinkTypes.VECTOR;
 	}
 
 	/**

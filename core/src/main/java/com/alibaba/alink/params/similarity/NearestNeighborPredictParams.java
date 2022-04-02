@@ -3,6 +3,8 @@ package com.alibaba.alink.params.similarity;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.mapper.SISOMapperParams;
 import com.alibaba.alink.params.validators.MinValidator;
 
@@ -11,10 +13,8 @@ import com.alibaba.alink.params.validators.MinValidator;
  */
 public interface NearestNeighborPredictParams<T> extends SISOMapperParams <T> {
 
-	/**
-	 * @cn-name radius值
-	 * @cn radius值
-	 */
+	@NameCn("radius值")
+	@DescCn("radius值")
 	ParamInfo <Double> RADIUS = ParamInfoFactory
 		.createParamInfo("radius", Double.class)
 		.setDescription("radius")
@@ -25,10 +25,8 @@ public interface NearestNeighborPredictParams<T> extends SISOMapperParams <T> {
 
 	default T setRadius(Double value) {return set(RADIUS, value);}
 
-	/**
-	 * @cn-name TopN的值
-	 * @cn TopN的值
-	 */
+	@NameCn("TopN的值")
+	@DescCn("TopN的值")
 	ParamInfo <Integer> TOP_N = ParamInfoFactory
 		.createParamInfo("topN", Integer.class)
 		.setDescription("top n")

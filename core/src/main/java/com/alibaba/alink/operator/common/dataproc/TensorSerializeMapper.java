@@ -7,7 +7,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.mapper.Mapper;
 
 import java.util.ArrayList;
@@ -33,14 +34,14 @@ public class TensorSerializeMapper extends Mapper {
 		TypeInformation <?>[] types = dataSchema.getFieldTypes();
 
 		for (int i = 0; i < types.length; i++) {
-			if (TensorTypes.TENSOR.equals(types[i]) ||
-				TensorTypes.BOOL_TENSOR.equals(types[i]) ||
-				TensorTypes.BYTE_TENSOR.equals(types[i]) ||
-				TensorTypes.INT_TENSOR.equals(types[i]) ||
-				TensorTypes.DOUBLE_TENSOR.equals(types[i]) ||
-				TensorTypes.FLOAT_TENSOR.equals(types[i]) ||
-				TensorTypes.LONG_TENSOR.equals(types[i]) ||
-				TensorTypes.STRING_TENSOR.equals(types[i])) {
+			if (AlinkTypes.TENSOR.equals(types[i]) ||
+				AlinkTypes.BOOL_TENSOR.equals(types[i]) ||
+				AlinkTypes.BYTE_TENSOR.equals(types[i]) ||
+				AlinkTypes.INT_TENSOR.equals(types[i]) ||
+				AlinkTypes.DOUBLE_TENSOR.equals(types[i]) ||
+				AlinkTypes.FLOAT_TENSOR.equals(types[i]) ||
+				AlinkTypes.LONG_TENSOR.equals(types[i]) ||
+				AlinkTypes.STRING_TENSOR.equals(types[i])) {
 
 				tensorCols.add(names[i]);
 				tensorColTypes.add(Types.STRING);
@@ -58,7 +59,7 @@ public class TensorSerializeMapper extends Mapper {
 		for (int i = 0; i < selection.length(); i++) {
 			Tensor <?> tensor = (Tensor <?>) selection.get(i);
 			if (null != tensor) {
-				result.set(i, tensor.toString());
+				result.set(i, TensorUtil.serialize(tensor));
 			}
 		}
 	}

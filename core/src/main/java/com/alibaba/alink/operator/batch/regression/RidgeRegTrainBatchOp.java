@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
@@ -11,6 +12,7 @@ import com.alibaba.alink.params.regression.RidgeRegTrainParams;
 /**
  * Train a regression model with L2-regularization.
  */
+@NameCn("岭回归训练")
 public final class RidgeRegTrainBatchOp extends BaseLinearModelTrainBatchOp <RidgeRegTrainBatchOp>
 	implements RidgeRegTrainParams <RidgeRegTrainBatchOp>,
 	WithModelInfoBatchOp <LinearRegressorModelInfo, RidgeRegTrainBatchOp, RidgeRegModelInfoBatchOp> {

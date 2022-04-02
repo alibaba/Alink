@@ -8,15 +8,13 @@ import org.apache.flink.util.Preconditions;
 import com.alibaba.alink.common.io.filesystem.binary.BinaryRecordReader;
 import com.alibaba.alink.common.io.filesystem.binary.BinaryRecordWriter;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
-import org.apache.commons.io.IOUtils;
+import com.alibaba.alink.common.utils.TableUtil;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -87,8 +85,8 @@ public class AkStream {
 			AkReadIterator() {
 				binaryRecordReader = new BinaryRecordReader(
 					inputStream,
-					CsvUtil.getColNames(AkStream.this.akMeta.schemaStr),
-					CsvUtil.getColTypes(AkStream.this.akMeta.schemaStr)
+					TableUtil.getColNames(AkStream.this.akMeta.schemaStr),
+					TableUtil.getColTypes(AkStream.this.akMeta.schemaStr)
 				);
 			}
 
@@ -176,8 +174,8 @@ public class AkStream {
 				zipOutputStream.putNextEntry(new ZipEntry(AkUtils.DATA_FILE));
 				binaryRecordWriter = new BinaryRecordWriter(
 					AkWriter.this.zipOutputStream,
-					CsvUtil.getColNames(AkStream.this.akMeta.schemaStr),
-					CsvUtil.getColTypes(AkStream.this.akMeta.schemaStr)
+					TableUtil.getColNames(AkStream.this.akMeta.schemaStr),
+					TableUtil.getColTypes(AkStream.this.akMeta.schemaStr)
 				);
 				binaryRecordWriter.writeHeader();
 			}

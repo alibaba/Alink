@@ -13,6 +13,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.HugeStringIndexerUtil;
@@ -34,6 +41,11 @@ import com.alibaba.alink.params.dataproc.StringIndexerTrainParams;
  * <li>alphabet_desc</li>
  * </ol>
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.INT_LONG_STRING_TYPES)
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.INT_LONG_STRING_TYPES)
+@NameCn("StringIndexer训练")
 public final class StringIndexerTrainBatchOp
 	extends BatchOperator <StringIndexerTrainBatchOp>
 	implements StringIndexerTrainParams <StringIndexerTrainBatchOp> {

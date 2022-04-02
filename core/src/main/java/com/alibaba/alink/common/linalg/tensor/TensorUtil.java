@@ -161,6 +161,13 @@ public class TensorUtil {
 		return sbd.toString();
 	}
 
+	/**
+	 * Serialize the tensor to a string.
+	 */
+	public static String serialize(Object tensor) {
+		return toString((Tensor<?>) tensor);
+	}
+
 	static Shape parseShapeStr(String s) {
 		if (s.isEmpty()) {
 			return new Shape();

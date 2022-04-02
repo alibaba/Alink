@@ -3,15 +3,15 @@ package com.alibaba.alink.params.timeseries;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.dl.HasPythonEnv;
 
 public interface ProphetParams<T> extends
-	TimeSeriesPredictParams <T> , HasPythonEnv <T> {
+	TimeSeriesPredictParams <T>, HasPythonEnv <T> {
 
-	/**
-	 * @cn-name 用来计算指标的采样数目
-	 * @cn 用来计算指标的采样数目，设置成0，不计算指标。
-	 */
+	@NameCn("用来计算指标的采样数目")
+	@DescCn("用来计算指标的采样数目，设置成0，不计算指标。")
 	ParamInfo <Integer> UNCERTAINTY_SAMPLES = ParamInfoFactory
 		.createParamInfo("uncertaintySamples", Integer.class)
 		.setDescription("uncertainty_samples")
@@ -26,10 +26,8 @@ public interface ProphetParams<T> extends
 		return set(UNCERTAINTY_SAMPLES, value);
 	}
 
-	/**
-	 * @cn-name 初始值
-	 * @cn 初始值
-	 */
+	@NameCn("初始值")
+	@DescCn("初始值")
 	ParamInfo <String> STAN_INIT = ParamInfoFactory
 		.createParamInfo("stanInit", String.class)
 		.setDescription("stan_init")

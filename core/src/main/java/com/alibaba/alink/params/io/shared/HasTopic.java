@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasTopic<T> extends WithParams <T> {
-	/**
-	 * @cn-name topic名称
-	 * @cn topic名称
-	 */
+	@NameCn("topic名称")
+	@DescCn("topic名称")
 	ParamInfo <String> TOPIC = ParamInfoFactory
 		.createParamInfo("topic", String.class)
 		.setDescription("topic")

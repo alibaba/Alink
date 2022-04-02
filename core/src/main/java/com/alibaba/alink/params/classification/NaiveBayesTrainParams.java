@@ -3,6 +3,8 @@ package com.alibaba.alink.params.classification;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.shared.colname.HasCategoricalCols;
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
@@ -17,10 +19,8 @@ public interface NaiveBayesTrainParams<T> extends
 	HasFeatureCols <T>,
 	HasLabelCol <T>,
 	HasWeightColDefaultAsNull <T> {
-	/**
-	 * @cn-name 算法参数
-	 * @cn 光滑因子，默认为0.0
-	 */
+	@NameCn("算法参数")
+	@DescCn("光滑因子，默认为0.0")
 	ParamInfo <Double> SMOOTHING = ParamInfoFactory
 		.createParamInfo("smoothing", Double.class)
 		.setDescription("the smoothing factor")

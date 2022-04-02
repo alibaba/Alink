@@ -2,12 +2,14 @@ package com.alibaba.alink.operator.batch.sql;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.sql.SelectParams;
 
 /**
  * Select the fields of a batch operator.
  */
+@NameCn("SQL操作：Select")
 public final class SelectBatchOp extends BaseSqlApiBatchOp <SelectBatchOp>
 	implements SelectParams <SelectBatchOp> {
 

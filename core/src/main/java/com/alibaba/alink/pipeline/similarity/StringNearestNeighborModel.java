@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.similarity;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.similarity.NearestNeighborsMapper;
 import com.alibaba.alink.params.similarity.NearestNeighborPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * String nearest neighbor pipeline model.
  */
+@NameCn("字符串最近邻模型")
 public class StringNearestNeighborModel extends MapModel <StringNearestNeighborModel>
 	implements NearestNeighborPredictParams <StringNearestNeighborModel> {
 

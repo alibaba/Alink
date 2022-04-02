@@ -10,7 +10,7 @@ import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
 import com.alibaba.alink.common.linalg.tensor.StringTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.mapper.SISOMapper;
 import com.alibaba.alink.params.dataproc.ToTensorParams;
@@ -124,26 +124,26 @@ public class ToTensorMapper extends SISOMapper {
 		}
 
 		if (targetDataType == null) {
-			return TensorTypes.TENSOR;
+			return AlinkTypes.TENSOR;
 		}
 
 		switch (targetDataType) {
 			case FLOAT:
-				return TensorTypes.FLOAT_TENSOR;
+				return AlinkTypes.FLOAT_TENSOR;
 			case DOUBLE:
-				return TensorTypes.DOUBLE_TENSOR;
+				return AlinkTypes.DOUBLE_TENSOR;
 			case STRING:
-				return TensorTypes.STRING_TENSOR;
+				return AlinkTypes.STRING_TENSOR;
 			case INT:
-				return TensorTypes.INT_TENSOR;
+				return AlinkTypes.INT_TENSOR;
 			case LONG:
-				return TensorTypes.LONG_TENSOR;
+				return AlinkTypes.LONG_TENSOR;
 			case BOOLEAN:
-				return TensorTypes.BOOL_TENSOR;
+				return AlinkTypes.BOOL_TENSOR;
 			case UBYTE:
-				return TensorTypes.UBYTE_TENSOR;
+				return AlinkTypes.UBYTE_TENSOR;
 			case BYTE:
-				return TensorTypes.BYTE_TENSOR;
+				return AlinkTypes.BYTE_TENSOR;
 			default:
 				throw new IllegalArgumentException("Unsupported tensor data type: " + targetDataType);
 		}

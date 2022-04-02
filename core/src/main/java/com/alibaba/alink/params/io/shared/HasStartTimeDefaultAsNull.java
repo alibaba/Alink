@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasStartTimeDefaultAsNull<T> extends WithParams <T> {
-	/**
-	 * @cn-name 起始时间
-	 * @cn 起始时间。默认从当前时刻开始读。
-	 */
+	@NameCn("起始时间")
+	@DescCn("起始时间。默认从当前时刻开始读。")
 	ParamInfo <String> START_TIME = ParamInfoFactory
 		.createParamInfo("startTime", String.class)
 		.setDescription("start time")

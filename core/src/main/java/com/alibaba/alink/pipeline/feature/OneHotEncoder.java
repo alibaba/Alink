@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.feature.OneHotTrainBatchOp;
@@ -12,6 +13,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * One hot pipeline op.
  */
+@NameCn("独热编码")
 public class OneHotEncoder extends Trainer <OneHotEncoder, OneHotEncoderModel> implements
 	OneHotTrainParams <OneHotEncoder>,
 	OneHotPredictParams <OneHotEncoder>,

@@ -1,0 +1,3 @@
+Tests in this directory are mainly used to validate that there is no problems when calling algorithms
+(batch/stream operators or pipeline stages) of the Java side.
+It is intentional not to check when the algorithm results are right or wrong.

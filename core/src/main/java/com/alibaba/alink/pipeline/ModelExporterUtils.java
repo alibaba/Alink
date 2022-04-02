@@ -33,7 +33,6 @@ import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.pipeline.recommendation.BaseRecommender;
@@ -757,7 +756,7 @@ public class ModelExporterUtils {
 
 			AkStream stream = new AkStream(filePath);
 
-			schema = CsvUtil.schemaStr2Schema(stream.getAkMeta().schemaStr);
+			schema = TableUtil.schemaStr2Schema(stream.getAkMeta().schemaStr);
 
 			final int idColIndex = TableUtil.findColIndexWithAssertAndHint(schema, ID_COL_NAME);
 

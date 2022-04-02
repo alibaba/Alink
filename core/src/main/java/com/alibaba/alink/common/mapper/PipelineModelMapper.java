@@ -68,6 +68,9 @@ public class PipelineModelMapper extends ComboModelMapper {
 			modelSchema = new TableSchema(colNames, colTypes);
 		}
 		mapperList = ModelExporterUtils.loadMapperListFromStages(modelRows, modelSchema, getDataSchema());
+		if (!getOutputSchema().equals(mapperList.getOutTableSchema())) {
+			throw new RuntimeException("Load pipeline model failed.");
+		}
 	}
 
 	private boolean isExtendModel(Params params) {

@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.stream.clustering;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.clustering.LdaModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -10,6 +13,8 @@ import com.alibaba.alink.params.clustering.LdaPredictParams;
 /**
  * Latent Dirichlet Allocation (LDA), a topic model designed for text documents.
  */
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("LDA预测")
 public final class LdaPredictStreamOp extends ModelMapStreamOp<LdaPredictStreamOp>
 	implements LdaPredictParams <LdaPredictStreamOp> {
 

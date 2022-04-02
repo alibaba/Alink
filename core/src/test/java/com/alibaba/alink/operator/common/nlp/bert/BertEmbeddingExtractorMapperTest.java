@@ -8,8 +8,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.IntTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
-import com.alibaba.alink.operator.common.nlp.bert.BertEmbeddingExtractorMapper;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.params.tensorflow.bert.HasLayer;
 import com.alibaba.alink.params.tensorflow.bert.HasHiddenStatesCol;
 import com.alibaba.alink.params.tensorflow.bert.HasLengthCol;
@@ -50,8 +49,8 @@ public class BertEmbeddingExtractorMapperTest extends AlinkTestBase {
 
 		TableSchema dataSchema = TableSchema.builder()
 			.field("text", Types.STRING)
-			.field("hidden_states", TensorTypes.FLOAT_TENSOR)
-			.field("length", TensorTypes.INT_TENSOR)
+			.field("hidden_states", AlinkTypes.FLOAT_TENSOR)
+			.field("length", AlinkTypes.INT_TENSOR)
 			.build();
 
 		BertEmbeddingExtractorMapper mapper = new BertEmbeddingExtractorMapper(dataSchema, params);

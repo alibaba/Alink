@@ -8,6 +8,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -16,6 +24,13 @@ import com.alibaba.alink.params.dataproc.LookupParams;
 /**
  * Huge Lookup BatchOp, find values by column value
  */
+@InputPorts(values = {@PortSpec(PortType.MODEL), @PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ReservedColsWithSecondInputSpec
+@ParamSelectColumnSpec(name="selectedCols")
+@ParamSelectColumnSpec(name="mapKeyCols")
+@ParamSelectColumnSpec(name="mapValueCols")
+@NameCn("HugeLookup")
 public class HugeLookupBatchOp extends BatchOperator <HugeLookupBatchOp>
 	implements LookupParams <HugeLookupBatchOp> {
 

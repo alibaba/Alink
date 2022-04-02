@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MinMaxScalerTrainBatchOp;
@@ -13,6 +14,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * MinMaxScaler transforms a dataset of Vector rows, rescaling each feature
  * to a specific range [min, max). (often [0, 1]).
  */
+@NameCn("归一化")
 public class MinMaxScaler extends Trainer <MinMaxScaler, MinMaxScalerModel> implements
 	MinMaxScalerTrainParams <MinMaxScaler>,
 	MinMaxScalerPredictParams <MinMaxScaler>,

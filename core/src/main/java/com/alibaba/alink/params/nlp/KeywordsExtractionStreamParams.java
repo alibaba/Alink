@@ -6,8 +6,8 @@ import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs100;
 
 public interface KeywordsExtractionStreamParams<T> extends
 	HasSelectedCol <T>,
-	HasTopNDv10 <T>,
-	HasWindowSize_2 <T>,
+	HasTopNDefaultAs10 <T>,
+	HasWindowSizeDefaultAs2 <T>,
 	HasDampingFactor <T>,
 	HasMaxIterDefaultAs100 <T>,
 	HasOutputColDefaultAsNull <T>,

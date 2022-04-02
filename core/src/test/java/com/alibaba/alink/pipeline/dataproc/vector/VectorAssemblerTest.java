@@ -83,4 +83,15 @@ public class VectorAssemblerTest extends AlinkTestBase {
 			new SparseVector(14, new int[] {1, 2, 7, 8, 9, 10, 11, 12, 13},
 				new double[] {2.0, 3.0, 4.3, 2.0, 3.0, 1.0, 4.0, 6.0, 8.0}));
 	}
+
+
+	@Test
+	public void formatTest() throws Exception {
+		StreamOperator streamOperator = new VectorAssembler()
+			.setSelectedCols(new String[] {"c0", "c1", "c2"})
+			.setOutputCol("table2vec").transform((StreamOperator) getData(false));
+		StreamOperator res = streamOperator.select("table2vec");
+		res.print();
+		StreamOperator.execute();
+	}
 }

@@ -3,15 +3,17 @@ package com.alibaba.alink.params.graph;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.nlp.HasBatchSize;
 import com.alibaba.alink.params.nlp.HasNegative;
 import com.alibaba.alink.params.nlp.walk.HasIsToUndigraph;
 import com.alibaba.alink.params.nlp.walk.HasSourceCol;
 import com.alibaba.alink.params.nlp.walk.HasTargetCol;
-import com.alibaba.alink.params.nlp.walk.HasWeightCol;
 import com.alibaba.alink.params.shared.HasNumThreads;
-import com.alibaba.alink.params.shared.HasVectorSizeDv100;
+import com.alibaba.alink.params.shared.HasVectorSizeDefaultAs100;
+import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
 import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs100;
 import com.alibaba.alink.params.validators.MinValidator;
 import com.alibaba.alink.params.validators.RangeValidator;
@@ -20,17 +22,15 @@ public interface LineParams<T> extends
 	HasSourceCol <T>,
 	HasTargetCol <T>,
 	HasIsToUndigraph <T>,
-	HasVectorSizeDv100 <T>,
-	HasWeightCol <T>,
+	HasVectorSizeDefaultAs100 <T>,
+	HasWeightColDefaultAsNull <T>,
 	HasMaxIterDefaultAs100 <T>,
 	HasNegative <T>,
 	HasNumThreads <T>,
 	HasBatchSize <T> {
 
-	/**
-	 * @cn-name 阶数
-	 * @cn 选择一阶优化或是二阶优化
-	 */
+	@NameCn("阶数")
+	@DescCn("选择一阶优化或是二阶优化")
 	ParamInfo <Order> ORDER = ParamInfoFactory
 		.createParamInfo("order", Order.class)
 		.setDescription("the order, choose from 1 or 2")
@@ -59,10 +59,8 @@ public interface LineParams<T> extends
 		}
 	}
 
-	/**
-	 * @cn-name 学习率
-	 * @cn 学习率
-	 */
+	@NameCn("学习率")
+	@DescCn("学习率")
 	ParamInfo <Double> RHO = ParamInfoFactory
 		.createParamInfo("rho", Double.class)
 		.setDescription("the learning rate")
@@ -74,10 +72,8 @@ public interface LineParams<T> extends
 
 	default T setRho(Double value) {return set(RHO, value);}
 
-	/**
-	 * @cn-name 采样率
-	 * @cn 每轮迭代在每个partition上采样样本的比率
-	 */
+	@NameCn("采样率")
+	@DescCn("每轮迭代在每个partition上采样样本的比率")
 	ParamInfo <Double> SAMPLE_RATIO_PER_PARTITION = ParamInfoFactory
 		.createParamInfo("sampleRatioPerPartition", Double.class)
 		.setDescription("sampleRatioPerPartition")
@@ -89,10 +85,8 @@ public interface LineParams<T> extends
 
 	default T setSampleRatioPerPartition(Double value) {return set(SAMPLE_RATIO_PER_PARTITION, value);}
 
-	/**
-	 * @cn-name 最小学习率的比例
-	 * @cn 最小学习率的比例
-	 */
+	@NameCn("最小学习率的比例")
+	@DescCn("最小学习率的比例")
 	ParamInfo <Double> MIN_RHO_RATE = ParamInfoFactory
 		.createParamInfo("minRhoRate", Double.class)
 		.setDescription("min rho rate")

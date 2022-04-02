@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.feature.featurebuilder.DateUtil;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil.ClauseInfo;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
  * This is the base stream feature builder for
  * tumble time window, hop time window and session time window.
  */
+@NameCn("")
 abstract class BaseGroupTimeWindowStreamOp<T extends BaseGroupTimeWindowStreamOp <T>>
 	extends BaseWindowStreamOp <T> implements GroupTimeWindowParams <T> {
 

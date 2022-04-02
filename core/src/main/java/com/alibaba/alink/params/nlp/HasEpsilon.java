@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.nlp.TextRankConst;
 
 public interface HasEpsilon<T> extends WithParams <T> {
-	/**
-	 * @cn-name 收敛阈值
-	 * @cn 收敛阈值
-	 */
+	@NameCn("收敛阈值")
+	@DescCn("收敛阈值")
 	ParamInfo <Double> EPSILON = ParamInfoFactory
 		.createParamInfo("epsilon", Double.class)
 		.setDescription("converge threshold")

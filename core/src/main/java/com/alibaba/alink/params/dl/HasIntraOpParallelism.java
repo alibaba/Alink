@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasIntraOpParallelism<T> extends WithParams <T> {
-	/**
-	 * @cn Op 间并发度
-	 * @cn-name Op 间并发度
-	 */
-	ParamInfo<Integer> INTRA_OP_PARALLELISM = ParamInfoFactory
+	@NameCn("Op 间并发度")
+	@DescCn("Op 间并发度")
+	ParamInfo <Integer> INTRA_OP_PARALLELISM = ParamInfoFactory
 		.createParamInfo("intraOpParallelism", Integer.class)
 		.setDescription("Intra-Op parallelism")
 		.setHasDefaultValue(4)

@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.dataproc.vector.VectorPolynomialExpandParams;
@@ -33,7 +33,7 @@ public class PolynomialExpansionMapperTest extends AlinkTestBase {
 		assertEquals(new DenseVector(new double[] {3.0, 9.0, 4.0, 12.0, 16.0}),
 			mapper.map(Row.of(new DenseVector(new double[] {3.0, 4.0}))).getField(0));
 		assertEquals(mapper.getOutputSchema(),
-			new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {VectorTypes.VECTOR}));
+			new TableSchema(new String[] {"vec"}, new TypeInformation <?>[] {AlinkTypes.VECTOR}));
 	}
 
 	@Test
@@ -50,7 +50,7 @@ public class PolynomialExpansionMapperTest extends AlinkTestBase {
 			mapper.map(Row.of(new SparseVector(3, new int[] {0, 2}, new double[] {2.0, 3.0}))).getField(1));
 		assertEquals(
 			mapper.getOutputSchema(),
-			new TableSchema(new String[] {"vec", "res"}, new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR})
+			new TableSchema(new String[] {"vec", "res"}, new TypeInformation <?>[] {Types.STRING, AlinkTypes.VECTOR})
 		);
 
 	}

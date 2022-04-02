@@ -8,7 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.mapper.ModelMapper;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
 
 import java.io.Serializable;
@@ -71,7 +71,7 @@ public class TFTableModelPredictModelMapper extends ModelMapper implements Seria
 			tfInputCols = dataSchema.getFieldNames();
 		}
 		String tfOutputSchemaStr = params.get(TFTableModelPredictParams.OUTPUT_SCHEMA_STR);
-		TableSchema tfOutputSchema = CsvUtil.schemaStr2Schema(tfOutputSchemaStr);
+		TableSchema tfOutputSchema = TableUtil.schemaStr2Schema(tfOutputSchemaStr);
 		String[] reservedCols = params.get(TFTableModelPredictParams.RESERVED_COLS);
 
 		return Tuple4.of(tfInputCols,

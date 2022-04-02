@@ -8,16 +8,13 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MTable;
-import com.alibaba.alink.common.MTableUtils;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.dataproc.FlattenMTableParams;
 import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 public class FlattenMTableMapper extends FlatMapper {
     private static final long serialVersionUID = 5345439790133072507L;
@@ -35,7 +32,7 @@ public class FlattenMTableMapper extends FlatMapper {
         selectIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema,
                 params.get(FlattenMTableParams.SELECTED_COL));
 
-        TableSchema schema = CsvUtil.schemaStr2Schema(params.get(FlattenMTableParams.SCHEMA_STR));
+        TableSchema schema = TableUtil.schemaStr2Schema(params.get(FlattenMTableParams.SCHEMA_STR));
         outputColNames = schema.getFieldNames();
         outputColTypes = schema.getFieldTypes();
         String[] reservedColNames = params.contains(FlattenMTableParams.RESERVED_COLS)
@@ -90,21 +87,24 @@ public class FlattenMTableMapper extends FlatMapper {
             }
         }
 
-        List<Object> firstUnEmpty = null;
+        int lastUnEmpty = -1;
         for (String name : outputColNames) {
-            firstUnEmpty = MTableUtils.getColumn(mTable, name);
+            lastUnEmpty = TableUtil.findColIndex(tmpTableNames, name);
         }
 
-        if (firstUnEmpty == null) {
+        if (lastUnEmpty == -1) {
             output.collect(outputColsHelper.getResultRow(row, Row.of(result)));
             return;
         }
 
-        for (int i = 0; i < firstUnEmpty.size(); ++i) {
+        int[] colIndices = TableUtil.findColIndices(mTable.getSchema(), outputColNames);
+        int mTableNumRow = mTable.getNumRow();
+        
+        for (int i = 0; i < mTableNumRow; ++i) {
+            Row rowData = mTable.getRow(i);
             for (int j = 0; j < outputColNames.length; ++j) {
-                List<Object> element = MTableUtils.getColumn(mTable, outputColNames[j]);
                 try {
-                    result[j] = typeConvert(element.get(i), j);
+                    result[j] = typeConvert(rowData.getField(colIndices[j]), j);
                 } catch (Throwable ex) {
                     switch (handleInvalidMethod) {
                         case SKIP:
@@ -115,11 +115,9 @@ public class FlattenMTableMapper extends FlatMapper {
                             throw ex;
                     }
                 }
-
             }
             output.collect(outputColsHelper.getResultRow(row, Row.of(result)));
         }
-
     }
 
     private Object typeConvert(Object ele, int idx) {

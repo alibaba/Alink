@@ -23,14 +23,18 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.FilePath;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.dummy.DummyOutputFormat;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.common.stream.model.FileModelStreamSink;
+import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.ModelStreamFileSinkParams;
 import org.apache.commons.lang3.ArrayUtils;
@@ -43,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 
 @IoOpAnnotation(name = "modelstream_file", ioType = IOType.SinkStream)
+@InputPorts(values = {@PortSpec(PortType.MODEL_STREAM)})
+@NameCn("模型流导出")
 public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelStreamFileSinkStreamOp>
 	implements ModelStreamFileSinkParams <ModelStreamFileSinkStreamOp> {
 
@@ -69,7 +75,7 @@ public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelSt
 			ArrayUtils.removeAll(schema.getFieldTypes(), timestampColIndex, countColIndex)
 		);
 
-		final String dataSchemaStr = CsvUtil.schema2SchemaStr(dataSchema);
+		final String dataSchemaStr = TableUtil.schema2SchemaStr(dataSchema);
 
 		final FilePath path = getFilePath();
 		final int numKeepModel = getNumKeepModel();

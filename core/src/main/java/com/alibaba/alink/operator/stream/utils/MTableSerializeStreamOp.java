@@ -1,8 +1,8 @@
 package com.alibaba.alink.operator.stream.utils;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.operator.common.dataproc.vector.MTableSerializeMapper;
 
 @Internal

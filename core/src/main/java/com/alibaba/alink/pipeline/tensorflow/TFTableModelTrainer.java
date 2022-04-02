@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.tensorflow;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.tensorflow.TFTableModelTrainBatchOp;
 import com.alibaba.alink.params.shared.colname.HasSelectedColsDefaultAsNull;
@@ -18,6 +19,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * different meanings. An additional parameter {@link HasInferSelectedColsDefaultAsNull} is added to specify inference
  * columns, and {@link TFTableModelTrainer#fit} is overridden for setting this parameter to the predictor.
  */
+@NameCn("TF 表模型")
 public class TFTableModelTrainer extends Trainer <TFTableModelTrainer, TFTableModelPredictor>
 	implements TFTableModelTrainParams <TFTableModelTrainer>, TFTableModelPredictParams <TFTableModelTrainer>,
 	HasInferSelectedColsDefaultAsNull <TFTableModelTrainer> {

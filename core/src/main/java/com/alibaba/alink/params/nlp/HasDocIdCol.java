@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasDocIdCol<T> extends WithParams <T> {
-	/**
-	 * @cn-name 文档ID列
-	 * @cn 文档ID列名
-	 */
+	@NameCn("文档ID列")
+	@DescCn("文档ID列名")
 	ParamInfo <String> DOC_ID_COL = ParamInfoFactory
 		.createParamInfo("docIdCol", String.class)
 		.setDescription("Name of the column indicating document ID.")

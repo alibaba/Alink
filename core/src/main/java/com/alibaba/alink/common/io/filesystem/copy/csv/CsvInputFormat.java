@@ -18,13 +18,13 @@
 
 package com.alibaba.alink.common.io.filesystem.copy.csv;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.core.fs.FileInputSplit;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 
 import java.io.IOException;

@@ -7,6 +7,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
@@ -18,6 +24,10 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCol;
 /**
  * Build the index the calculating the nearest neighbor of string.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA, opType = OpType.BATCH))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@ParamSelectColumnSpec(name = "idCol", portIndices = 0)
+@ParamSelectColumnSpec(name = "selectCol")
 public abstract class BaseNearestNeighborTrainBatchOp<T extends BaseNearestNeighborTrainBatchOp<T>>
 	extends BatchOperator <T> {
 	private static final long serialVersionUID = 8494407021938399142L;

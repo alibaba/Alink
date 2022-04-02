@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasNumCheckpoint<T> extends WithParams <T> {
-	/**
-	 * @cn-name checkPoint 数目
-	 * @cn checkPoint 数目
-	 */
+	@NameCn("checkPoint 数目")
+	@DescCn("checkPoint 数目")
 	ParamInfo <Integer> NUM_CHECKPOINT = ParamInfoFactory
 		.createParamInfo("numCheckpoint", Integer.class)
 		.setDescription("The number of checkpoint")

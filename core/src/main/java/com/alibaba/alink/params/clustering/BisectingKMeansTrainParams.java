@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.shared.clustering.HasKMeansDistanceType;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs10;
@@ -17,19 +19,15 @@ public interface BisectingKMeansTrainParams<T> extends WithParams <T>,
 	HasMaxIterDefaultAs10 <T>,
 	HasRandomSeed <T> {
 
-	/**
-	 * @cn-name 最小可分裂的聚类大小
-	 * @cn 最小可分裂的聚类大小
-	 */
+	@NameCn("最小可分裂的聚类大小")
+	@DescCn("最小可分裂的聚类大小")
 	ParamInfo <Integer> MIN_DIVISIBLE_CLUSTER_SIZE = ParamInfoFactory
 		.createParamInfo("minDivisibleClusterSize", Integer.class)
 		.setDescription("Minimum divisible cluster size")
 		.setHasDefaultValue(1)
 		.build();
-	/**
-	 * @cn-name 聚类中心点数目
-	 * @cn 聚类中心点数目
-	 */
+	@NameCn("聚类中心点数目")
+	@DescCn("聚类中心点数目")
 	ParamInfo <Integer> K = ParamInfoFactory
 		.createParamInfo("k", Integer.class)
 		.setDescription("Number of clusters.")

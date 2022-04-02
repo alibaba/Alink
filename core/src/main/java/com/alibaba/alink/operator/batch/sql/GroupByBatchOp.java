@@ -5,10 +5,10 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.sql.builtin.agg.MTableAgg;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
 import com.alibaba.alink.params.sql.GroupByParams;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 /**
  * Apply the "group by" operation on the input batch operator.
  */
+@NameCn("SQL操作：GroupBy")
 public final class GroupByBatchOp extends BaseSqlApiBatchOp <GroupByBatchOp>
 	implements GroupByParams <GroupByBatchOp> {
 
@@ -102,7 +103,7 @@ public final class GroupByBatchOp extends BaseSqlApiBatchOp <GroupByBatchOp>
 				zippedCols = zippedColsList.toArray(new String[0]);
 			}
 			TypeInformation <?>[] zipColTypes = TableUtil.findColTypes(tableSchema, zippedCols);
-			String mtableSchemaStr = CsvUtil.schema2SchemaStr(new TableSchema(zippedCols, zipColTypes));
+			String mtableSchemaStr = TableUtil.schema2SchemaStr(new TableSchema(zippedCols, zipColTypes));
 
 			MLEnvironmentFactory.get(this.getMLEnvironmentId())
 				.getBatchTableEnvironment().registerFunction(mTableAggNames[idx],

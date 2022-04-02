@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.stream.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.IndexToStringModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -10,6 +13,9 @@ import com.alibaba.alink.params.dataproc.IndexToStringPredictParams;
 /**
  * Map index to string.
  */
+@ParamSelectColumnSpec(name = "selectedCol",
+	allowedTypeCollections = TypeCollections.LONG_TYPES)
+@NameCn("IndexToString预测")
 public final class IndexToStringPredictStreamOp
 	extends ModelMapStreamOp <IndexToStringPredictStreamOp>
 	implements IndexToStringPredictParams <IndexToStringPredictStreamOp> {

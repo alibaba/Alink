@@ -4,14 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasArimaGarchMethod<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name arima garch方法
-	 * @cn arima garch方法
-	 */
+	@NameCn("arima garch方法")
+	@DescCn("arima garch方法")
 	ParamInfo <ArimaGarchMethod> ARIMA_GARCH_METHOD = ParamInfoFactory
 		.createParamInfo("arimaGarchMethod", ArimaGarchMethod.class)
 		.setDescription("arima garch method")

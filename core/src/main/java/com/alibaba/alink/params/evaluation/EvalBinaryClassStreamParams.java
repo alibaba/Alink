@@ -3,18 +3,18 @@ package com.alibaba.alink.params.evaluation;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
-import com.alibaba.alink.params.shared.HasTimeIntervalDv3;
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.params.shared.HasTimeIntervalDefaultAs3;
 
 /**
  * Params for binary classification evaluation.
  */
 public interface EvalBinaryClassStreamParams<T> extends
 	EvalBinaryClassParams <T>,
-	HasTimeIntervalDv3 <T> {
-	/**
-	 * @cn-name 预测结果列名
-	 * @cn 预测结果列名
-	 */
+	HasTimeIntervalDefaultAs3 <T> {
+	@NameCn("预测结果列名")
+	@DescCn("预测结果列名")
 	ParamInfo <String> PREDICTION_COL = ParamInfoFactory
 		.createParamInfo("predictionCol", String.class)
 		.setDescription("Column name of prediction.")

@@ -2,6 +2,10 @@ package com.alibaba.alink.operator.batch.similarity;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.similarity.NearestNeighborsMapper;
 import com.alibaba.alink.params.similarity.NearestNeighborPredictParams;
@@ -9,6 +13,8 @@ import com.alibaba.alink.params.similarity.NearestNeighborPredictParams;
 /**
  * Find the nearest neighbor of query texts.
  */
+@InputPorts(values = {@PortSpec(value = PortType.MODEL, suggestions = TextNearestNeighborTrainBatchOp.class), @PortSpec(PortType.DATA)})
+@NameCn("文本最近邻预测")
 public class TextNearestNeighborPredictBatchOp extends ModelMapBatchOp <TextNearestNeighborPredictBatchOp>
 	implements NearestNeighborPredictParams <TextNearestNeighborPredictBatchOp> {
 

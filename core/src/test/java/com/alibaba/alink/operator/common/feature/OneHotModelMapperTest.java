@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.HasEncodeWithoutWoe;
@@ -92,13 +92,15 @@ public class OneHotModelMapperTest extends AlinkTestBase {
 		OneHotModelMapper mapper = new OneHotModelMapper(modelSchema, dataSchema, params);
 		mapper.loadModel(model);
 
-		assertEquals(mapper.map(defaultRow).getField(0).toString(), "$21$2:1.0 10:1.0 16:1.0");
+		assertEquals(mapper.map(defaultRow).getField(0),
+			new SparseVector(21, new int[] {2, 10, 16}, new double[] {1.0, 1.0, 1.0}));
 		assertEquals(mapper.getOutputSchema(), new TableSchema(new String[] {"pred"},
-			new TypeInformation <?>[] {VectorTypes.SPARSE_VECTOR}));
+			new TypeInformation <?>[] {AlinkTypes.SPARSE_VECTOR}));
 
 		mapper.loadModel(newModel);
 
-		assertEquals(mapper.map(defaultRow).getField(0).toString(), "$18$2:1.0 9:1.0 14:1.0");
+		assertEquals(mapper.map(defaultRow).getField(0),
+			new SparseVector(18, new int[] {2, 9, 14}, new double[] {1.0, 1.0, 1.0}));
 	}
 
 	@Test
@@ -110,9 +112,10 @@ public class OneHotModelMapperTest extends AlinkTestBase {
 		OneHotModelMapper mapper = new OneHotModelMapper(modelSchema, dataSchema, params);
 		mapper.loadModel(model);
 
-		assertEquals(mapper.map(Row.of("doc0", "天", 4L)).getField(3).toString(), "$21$2:1.0 10:1.0 16:1.0");
+		assertEquals(mapper.map(Row.of("doc0", "天", 4L)).getField(3),
+			new SparseVector(21, new int[] {2, 10, 16}, new double[] {1.0, 1.0, 1.0}));
 		assertEquals(mapper.getOutputSchema(), new TableSchema(new String[] {"docid", "word", "cnt", "pred"},
-			new TypeInformation <?>[] {Types.STRING, Types.STRING, Types.LONG, VectorTypes.SPARSE_VECTOR}));
+			new TypeInformation <?>[] {Types.STRING, Types.STRING, Types.LONG, AlinkTypes.SPARSE_VECTOR}));
 	}
 
 	@Test
@@ -193,7 +196,8 @@ public class OneHotModelMapperTest extends AlinkTestBase {
 		OneHotModelMapper mapper = new OneHotModelMapper(modelSchema, dataSchema, params);
 		mapper.loadModel(model);
 
-		assertEquals(mapper.map(Row.of("doc0", "天", 4L)).getField(0).toString(), "$18$9:1.0 14:1.0");
+		assertEquals(mapper.map(Row.of("doc0", "天", 4L)).getField(0),
+			new SparseVector(18, new int[] {9, 14}, new double[] {1.0, 1.0}));
 	}
 
 	@Test

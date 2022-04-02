@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.common.io.csv;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
@@ -13,12 +12,14 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.filesystem.copy.csv.RowCsvInputFormat;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import com.alibaba.alink.params.io.CsvSourceParams;
@@ -51,7 +52,7 @@ public final class InternalCsvSourceBatchOp extends BaseSourceBatchOp <InternalC
 	public InternalCsvSourceBatchOp(String filePath, TableSchema schema) {
 		this(new Params()
 			.set(FILE_PATH, new FilePath(filePath).serialize())
-			.set(SCHEMA_STR, CsvUtil.schema2SchemaStr(schema))
+			.set(SCHEMA_STR, TableUtil.schema2SchemaStr(schema))
 		);
 	}
 
@@ -59,7 +60,7 @@ public final class InternalCsvSourceBatchOp extends BaseSourceBatchOp <InternalC
 									String fieldDelim, String rowDelim) {
 		this(new Params()
 			.set(FILE_PATH, new FilePath(filePath).serialize())
-			.set(SCHEMA_STR, CsvUtil.schema2SchemaStr(new TableSchema(colNames, colTypes)))
+			.set(SCHEMA_STR, TableUtil.schema2SchemaStr(new TableSchema(colNames, colTypes)))
 			.set(FIELD_DELIMITER, fieldDelim)
 			.set(ROW_DELIMITER, rowDelim)
 		);
@@ -75,8 +76,8 @@ public final class InternalCsvSourceBatchOp extends BaseSourceBatchOp <InternalC
 		final boolean skipBlankLine = getSkipBlankLine();
 		final boolean lenient = getLenient();
 
-		final String[] colNames = CsvUtil.getColNames(schemaStr);
-		final TypeInformation <?>[] colTypes = CsvUtil.getColTypes(schemaStr);
+		final String[] colNames = TableUtil.getColNames(schemaStr);
+		final TypeInformation <?>[] colTypes = TableUtil.getColTypes(schemaStr);
 
 		boolean ignoreFirstLine = getIgnoreFirstLine();
 		String protocol = "";

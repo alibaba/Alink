@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.dataproc.vector.PolynomialExpansionMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorPolynomialExpandParams;
 import com.alibaba.alink.pipeline.MapTransformer;
@@ -11,6 +12,7 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * n-degree combination of original dimensions. Take a 2-variable feature vector as an example: (x, y), if we want to
  * expand it with degree 2, then we get (x, x * x, y, x * y, y * y).
  */
+@NameCn("向量多项式展开")
 public class VectorPolynomialExpand extends MapTransformer <VectorPolynomialExpand>
 	implements VectorPolynomialExpandParams <VectorPolynomialExpand> {
 

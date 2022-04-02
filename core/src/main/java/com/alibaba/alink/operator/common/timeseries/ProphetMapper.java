@@ -52,7 +52,7 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 		}
 
 		PyMIMOCalcRunner <PyMIMOCalcHandle> runner =
-			new PyMIMOCalcRunner <>("algo.prophet.PyProphetCalc2", config);
+			new PyMIMOCalcRunner <>("algo.prophet.PyProphetCalc2", config::getOrDefault);
 		runner.open();
 		return runner;
 	}

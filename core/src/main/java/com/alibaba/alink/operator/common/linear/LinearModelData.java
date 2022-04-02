@@ -15,6 +15,7 @@ import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,7 +72,7 @@ public class LinearModelData implements Serializable {
 	 * @param labelType    label Type.
 	 * @param meta         meta information of model.
 	 * @param featureNames the feature column names.
-	 * @param coefVector
+	 * @param coefVector coefficient of model.
 	 */
 	public LinearModelData(TypeInformation labelType, Params meta, String[] featureNames, DenseVector coefVector) {
 		this.labelType = labelType;
@@ -149,10 +150,9 @@ public class LinearModelData implements Serializable {
 				sbd.append(strs[i]);
 			}
 			Params meta = Params.fromJson(metaStr);
-			List <String> data = Arrays.asList(sbd.toString());
+			List <String> data = Collections.singletonList(sbd.toString());
 			meta.set(ModelParamName.IS_OLD_FORMAT, true);
 			deserializeModel(meta, data, recoverLabelsFromOldFormatModel(meta));
-			return;
 		} else {
 			throw new RuntimeException("Not old format model");
 		}

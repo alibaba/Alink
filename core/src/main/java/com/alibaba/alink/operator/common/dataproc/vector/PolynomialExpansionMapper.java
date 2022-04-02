@@ -6,7 +6,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -75,7 +75,7 @@ public class PolynomialExpansionMapper extends SISOMapper {
 
 	@Override
 	protected TypeInformation initOutputColType() {
-		return VectorTypes.VECTOR;
+		return AlinkTypes.VECTOR;
 	}
 
 	@Override

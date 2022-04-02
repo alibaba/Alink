@@ -3,6 +3,9 @@ package com.alibaba.alink.params.feature;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Params for bucketizer.
  */
@@ -10,10 +13,8 @@ public interface BucketizerParams<T> extends
 	QuantileDiscretizerPredictParams <T>,
 	HasLeftOpen <T> {
 
-	/**
-	 * @cn-name 多列的切分点
-	 * @cn 多列的切分点
-	 */
+	@NameCn("多列的切分点")
+	@DescCn("多列的切分点")
 
 	ParamInfo <double[][]> CUTS_ARRAY = ParamInfoFactory
 		.createParamInfo("cutsArray", double[][].class)

@@ -159,4 +159,6 @@ public abstract class RecommKernel implements Serializable {
 			return outputColsHelper4RecommObjs.getResultSchema();
 		}
 	}
+
+	public abstract RecommKernel createNew();
 }

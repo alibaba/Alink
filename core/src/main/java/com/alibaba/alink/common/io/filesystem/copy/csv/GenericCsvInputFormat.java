@@ -18,7 +18,6 @@
 
 package com.alibaba.alink.common.io.filesystem.copy.csv;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.io.ParseException;
 import org.apache.flink.core.fs.FileInputSplit;
 import org.apache.flink.core.fs.Path;
@@ -27,6 +26,7 @@ import org.apache.flink.types.parser.StringParser;
 import org.apache.flink.types.parser.StringValueParser;
 import org.apache.flink.util.InstantiationUtil;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

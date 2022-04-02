@@ -1,13 +1,15 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.common.DataTypeDisplayInterface;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil.CoordInc;
+import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.tensorflow.ndarray.NdArray;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
 
-public abstract class Tensor<DT> implements Serializable {
+public abstract class Tensor<DT> implements Serializable, DataTypeDisplayInterface {
 	protected DataType type;
 	protected NdArray <DT> data;
 
@@ -30,7 +32,7 @@ public abstract class Tensor<DT> implements Serializable {
 
 	@Override
 	public String toString() {
-		return TensorUtil.toString(this);
+		return toDisplaySummary() +"\n" + toShortDisplayData();
 	}
 
 	public abstract Tensor <DT> reshape(Shape newShape);
@@ -76,6 +78,10 @@ public abstract class Tensor<DT> implements Serializable {
 		}
 
 		return reshape(new Shape(newShape));
+	}
+
+	public Tensor <DT> flatten() {
+		return flatten(0, -1);
 	}
 
 	@Override
@@ -268,4 +274,20 @@ public abstract class Tensor<DT> implements Serializable {
 	abstract void parseFromValueStrings(String[] valueStrings);
 
 	abstract String[] getValueStrings();
+
+	@Override
+	public String toDisplaySummary() {
+		return type.toString().substring(0,1) + type.toString().substring(1).toLowerCase() + "Tensor("
+			+ TensorUtil.toString(Shape.fromNdArrayShape(this.data.shape()))+")";
+	}
+
+	@Override
+	public String toDisplayData(int n) {
+		return PrettyDisplayUtils.displayTensor(shape(), getValueStrings(), n);
+	}
+
+	@Override
+	public String toShortDisplayData() {
+		return toDisplayData(3);
+	}
 }

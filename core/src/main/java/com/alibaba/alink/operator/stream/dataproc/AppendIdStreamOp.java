@@ -7,10 +7,19 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.dataproc.AppendIdStreamParams;
 import org.apache.commons.lang3.ArrayUtils;
 
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@NameCn("流式增加ID列")
 public class AppendIdStreamOp extends StreamOperator <AppendIdStreamOp>
 	implements AppendIdStreamParams <AppendIdStreamOp> {
 

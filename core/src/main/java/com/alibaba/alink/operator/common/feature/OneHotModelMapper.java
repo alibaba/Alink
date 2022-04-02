@@ -1,7 +1,6 @@
 package com.alibaba.alink.operator.common.feature;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -9,7 +8,6 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.VectorTypes;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.Functional;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -17,11 +15,9 @@ import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper.
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.HasEnableElse;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
-import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

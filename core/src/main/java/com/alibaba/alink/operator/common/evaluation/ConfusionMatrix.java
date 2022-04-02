@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.evaluation;
 import org.apache.flink.util.Preconditions;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Confusion matrix for classification evaluation.
@@ -146,5 +147,18 @@ public class ConfusionMatrix implements Serializable {
 			"labelIndex must be null or less than " + labelCnt);
 		return null == labelIndex ? fnCount : actualLabelFrequency[labelIndex] - longMatrix.getValue(labelIndex,
 			labelIndex);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof ConfusionMatrix)) {
+			return false;
+		}
+		ConfusionMatrix other = (ConfusionMatrix) obj;
+		return longMatrix.equals(other.longMatrix)
+			&& labelCnt == other.labelCnt
+			&& total == other.total
+			&& Arrays.equals(actualLabelFrequency, other.actualLabelFrequency)
+			&& Arrays.equals(predictLabelFrequency, other.predictLabelFrequency);
 	}
 }

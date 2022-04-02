@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.clustering;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.LdaTrainBatchOp;
@@ -12,6 +13,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * Latent Dirichlet Allocation (LDA), a topic model designed for text documents.
  */
+@NameCn("LDA")
 public class Lda extends Trainer <Lda, LdaModel> implements
 	LdaTrainParams <Lda>,
 	LdaPredictParams <Lda>, HasLazyPrintModelInfo <Lda> {

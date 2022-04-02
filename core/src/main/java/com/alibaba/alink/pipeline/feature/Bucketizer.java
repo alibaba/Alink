@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.feature.BucketizerMapper;
 import com.alibaba.alink.params.feature.BucketizerParams;
 import com.alibaba.alink.pipeline.MapTransformer;
@@ -17,6 +18,7 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * Split array must be strictly increasing and have at least three points. It's a string input with split points
  * segments with delimiter ",".
  */
+@NameCn("分桶")
 public class Bucketizer extends MapTransformer <Bucketizer>
 	implements BucketizerParams <Bucketizer> {
 

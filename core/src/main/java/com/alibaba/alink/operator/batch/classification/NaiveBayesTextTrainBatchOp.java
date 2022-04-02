@@ -14,6 +14,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -39,7 +46,12 @@ import java.util.ArrayList;
  * Details info of the algorithm:
  * https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-text-classification-1.html
  */
-
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
+@ParamSelectColumnSpec(name = "labelCol")
+@ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "weightCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("朴素贝叶斯文本分类训练")
 public class NaiveBayesTextTrainBatchOp
 	extends BatchOperator <NaiveBayesTextTrainBatchOp>
 	implements NaiveBayesTextTrainParams <NaiveBayesTextTrainBatchOp>,

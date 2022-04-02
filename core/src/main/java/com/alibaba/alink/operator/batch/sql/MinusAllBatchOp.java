@@ -2,11 +2,19 @@ package com.alibaba.alink.operator.batch.sql;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 
 /**
  * Minus another <code>BatchOperator</code>. The duplicated records are kept.
  */
+@InputPorts(values = {@PortSpec(PortType.DATA), @PortSpec(PortType.DATA)})
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@NameCn("SQL操作：MinusAll")
 public final class MinusAllBatchOp extends BatchOperator <MinusAllBatchOp> {
 
 	private static final long serialVersionUID = -7582100858266866075L;

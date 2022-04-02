@@ -2,6 +2,8 @@ package com.alibaba.alink.operator.stream.evaluation;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.operator.common.evaluation.BaseEvalClassStreamOp;
 import com.alibaba.alink.params.evaluation.EvalMultiClassStreamParams;
 
@@ -11,6 +13,9 @@ import com.alibaba.alink.params.evaluation.EvalMultiClassStreamParams;
  * Once predDetail column is given, the predResult column is ignored.
  * The labels are sorted in descending order in the output label array and confusion matrix..
  */
+@ParamSelectColumnSpec(name = "labelCol")
+@ParamSelectColumnSpec(name = "predictionCol")
+@NameCn("多分类评估")
 public class EvalMultiClassStreamOp extends BaseEvalClassStreamOp <EvalMultiClassStreamOp> implements
 	EvalMultiClassStreamParams <EvalMultiClassStreamOp> {
 

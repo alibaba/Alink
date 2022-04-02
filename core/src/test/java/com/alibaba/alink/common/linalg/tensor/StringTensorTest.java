@@ -98,11 +98,11 @@ public class StringTensorTest extends AlinkTestBase {
 	public void testSerDeNull() {
 		StringTensor tensor;
 		tensor = new StringTensor(new Shape(3, 4));
-		Assert.assertEquals("STRING#3,4#-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 #", tensor.toString());
+		Assert.assertEquals("STRING#3,4#-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 #", TensorUtil.toString(tensor));
 
-		StringTensor tensor2 = (StringTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		StringTensor tensor2 = (StringTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test
@@ -117,22 +117,22 @@ public class StringTensorTest extends AlinkTestBase {
 		}
 		StringTensor tensor = new StringTensor(arr);
 		String expected = "STRING#3,4#10 10 10 10 10 10 10 10 10 10 10 10 #b!ab BbBb1  ! A Bb ba !b1!bbBAAa aA AAB bA   ! 1a! A1  bbBAAB1!!  AA1!!1!!1  A AB!bA! A B! bB1ab!1 b!A!  b!!A AbB!A!A!ba  !aabb1!BB ";
-		Assert.assertEquals(expected, tensor.toString());
+		Assert.assertEquals(expected, TensorUtil.toString(tensor));
 
-		StringTensor tensor2 = (StringTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		StringTensor tensor2 = (StringTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test
 	public void testScalarSerDe() {
 		String v = RandomStringUtils.random(10, 0, charsets.length, false, false, charsets, random);
 		StringTensor tensor = new StringTensor(v);
-		Assert.assertEquals("STRING##10 #B!BBa A1b  ", tensor.toString());
+		Assert.assertEquals("STRING##10 #B!BBa A1b  ", TensorUtil.toString(tensor));
 
-		StringTensor tensor2 = (StringTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		StringTensor tensor2 = (StringTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test

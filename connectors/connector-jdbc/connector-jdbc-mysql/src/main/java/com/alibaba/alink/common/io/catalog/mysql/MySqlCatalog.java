@@ -609,7 +609,6 @@ public class MySqlCatalog extends JdbcCatalog {
 		}
 	}
 
-	@Override
 	protected int flinkType2JdbcType(DataType flinkType) {
 		return flinkType.getLogicalType().accept(new MySqlFlink2Jdbc());
 	}

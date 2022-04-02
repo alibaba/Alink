@@ -1,11 +1,8 @@
 import json
-import logging
-import sys
-
-from akdl.models.tf.keras_sequential import keras_sequential_main
-from akdl.runner.config import TrainTaskConfig
 
 import tensorflow as tf
+from akdl.models.tf.keras_sequential import keras_sequential_main
+from akdl.runner.config import TrainTaskConfig
 
 if tf.__version__ >= '2.0':
     tf = tf.compat.v1
@@ -307,6 +304,43 @@ def test_keras_sequential_classification_string(tmp_path):
     }
     args: TrainTaskConfig = TrainTaskConfig(
         dataset_file='binary_classification_string_data.tfrecords',
+        tf_context=None,
+        num_workers=1, cluster=None, task_type='chief', task_index=0,
+        work_dir=str(tmp_path),
+        dataset=None, dataset_length=100,
+        saved_model_dir=str(tmp_path / 'saved_model_dir'),
+        user_params=user_params)
+    keras_sequential_main.main(args)
+
+
+def test_auto_encoder(tmp_path):
+    print(tmp_path)
+    tensor_shapes = {'label': [28, 28], 'tensor': [28, 28]}
+    json.dump(tensor_shapes, open(tmp_path / 'tensor_shapes.txt', "w"))
+    tensor_types = {'label': 'float', 'tensor': 'float'}
+    json.dump(tensor_types, open(tmp_path / 'tensor_types.txt', "w"))
+
+    model_config = {
+        'layers': [
+            "tf.keras.Sequential([Flatten(),Dense(64, activation='relu'),])",
+            "tf.keras.Sequential([Dense(784, activation='sigmoid'),Reshape((28, 28))], name='output')"
+        ]
+    }
+
+    user_params = {
+        'tensor_cols': json.dumps(['tensor']),
+        'label_col': 'label',
+        'label_type': 'float',
+        'batch_size': '128',
+        'add_output_layer': 'false',
+        'num_epochs': '1',
+        'model_config': json.dumps(model_config),
+        'metrics': json.dumps(['mse', 'mae', 'tf.keras.metrics.RootMeanSquaredError()']),
+        'optimizer': 'Adam(learning_rate=0.1)',
+        'loss': 'tf.keras.losses.BinaryCrossentropy()',
+    }
+    args: TrainTaskConfig = TrainTaskConfig(
+        dataset_file='autoencoder.tfrecords',
         tf_context=None,
         num_workers=1, cluster=None, task_type='chief', task_index=0,
         work_dir=str(tmp_path),

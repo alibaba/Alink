@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorMaxAbsScalerTrainBatchOp;
@@ -14,6 +15,7 @@ import com.alibaba.alink.pipeline.Trainer;
  *
  * x_scaled = x / abs(X_max)
  */
+@NameCn("向量绝对值最大化")
 public class VectorMaxAbsScaler extends Trainer <VectorMaxAbsScaler, VectorMaxAbsScalerModel> implements
 	VectorMaxAbsScalerTrainParams <VectorMaxAbsScaler>,
 	VectorMaxAbsScalerPredictParams <VectorMaxAbsScaler>,

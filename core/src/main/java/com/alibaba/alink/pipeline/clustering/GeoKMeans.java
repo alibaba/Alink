@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.clustering;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.clustering.GeoKMeansTrainBatchOp;
 import com.alibaba.alink.params.clustering.GeoKMeansPredictParams;
@@ -13,6 +14,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * <p>
  * (https://en.wikipedia.org/wiki/Haversine_formula)
  */
+@NameCn("经纬度K均值聚类")
 public class GeoKMeans extends Trainer <GeoKMeans, KMeansModel> implements
 	GeoKMeansTrainParams <GeoKMeans>,
 	GeoKMeansPredictParams <GeoKMeans> {

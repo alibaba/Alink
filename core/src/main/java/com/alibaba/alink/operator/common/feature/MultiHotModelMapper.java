@@ -2,13 +2,12 @@ package com.alibaba.alink.operator.common.feature;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.ModelMapper;
 
@@ -64,7 +63,7 @@ public class MultiHotModelMapper extends ModelMapper {
 
 		String[] outputCols = params.get(MultiHotPredictParams.OUTPUT_COLS);
 		TypeInformation <?>[] outputTypes = new TypeInformation <?>[outputCols.length];
-		Arrays.fill(outputTypes, VectorTypes.SPARSE_VECTOR);
+		Arrays.fill(outputTypes, AlinkTypes.SPARSE_VECTOR);
 		return Tuple4.of(this.selectedCols, outputCols, outputTypes, reservedCols);
 	}
 

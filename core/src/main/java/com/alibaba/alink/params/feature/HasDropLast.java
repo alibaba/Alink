@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasDropLast<T> extends WithParams <T> {
-	/**
-	 * @cn-name 是否删除最后一个元素
-	 * @cn 删除最后一个元素是为了保证线性无关性。默认true
-	 */
+	@NameCn("是否删除最后一个元素")
+	@DescCn("删除最后一个元素是为了保证线性无关性。默认true")
 	ParamInfo <Boolean> DROP_LAST = ParamInfoFactory
 		.createParamInfo("dropLast", Boolean.class)
 		.setDescription("drop last")

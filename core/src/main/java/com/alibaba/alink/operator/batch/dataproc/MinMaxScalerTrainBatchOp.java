@@ -9,6 +9,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -23,6 +31,10 @@ import com.alibaba.alink.params.dataproc.MinMaxScalerTrainParams;
  * to a specific range [min, max). (often [0, 1]).
  * MinMaxScalerTrain will train a model.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA, opType = OpType.BATCH))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("归一化训练")
 public class MinMaxScalerTrainBatchOp extends BatchOperator <MinMaxScalerTrainBatchOp>
 	implements MinMaxScalerTrainParams <MinMaxScalerTrainBatchOp>,
 	WithModelInfoBatchOp <MinMaxScalerModelInfo, MinMaxScalerTrainBatchOp, MinMaxScalerModelInfoBatchOp> {

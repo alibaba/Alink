@@ -4,14 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 import java.util.Arrays;
 
 public interface HasTensorShape<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 张量形状
-	 * @cn 张量的形状，数组类型。
-	 */
+	@NameCn("张量形状")
+	@DescCn("张量的形状，数组类型。")
 	ParamInfo <Long[]> TENSOR_SHAPE = ParamInfoFactory
 		.createParamInfo("tensorShape", Long[].class)
 		.setOptional()

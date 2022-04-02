@@ -3,6 +3,8 @@ package com.alibaba.alink.params.nlp;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.mapper.SISOMapperParams;
 
 /**
@@ -10,19 +12,15 @@ import com.alibaba.alink.params.mapper.SISOMapperParams;
  */
 public interface StopWordsRemoverParams<T> extends SISOMapperParams <T> {
 
-	/**
-	 * @cn-name 是否大小写敏感
-	 * @cn 大小写敏感
-	 */
+	@NameCn("是否大小写敏感")
+	@DescCn("大小写敏感")
 	ParamInfo <Boolean> CASE_SENSITIVE = ParamInfoFactory
 		.createParamInfo("caseSensitive", Boolean.class)
 		.setDescription("If true, do a case sensitive comparison over the stop words")
 		.setHasDefaultValue(false)
 		.build();
-	/**
-	 * @cn-name 用户自定义停用词表
-	 * @cn 用户自定义停用词表
-	 */
+	@NameCn("用户自定义停用词表")
+	@DescCn("用户自定义停用词表")
 	ParamInfo <String[]> STOP_WORDS = ParamInfoFactory
 		.createParamInfo("stopWords", String[].class)
 		.setDescription("User defined stop words list。")

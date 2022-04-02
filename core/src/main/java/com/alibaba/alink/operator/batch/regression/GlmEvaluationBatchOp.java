@@ -8,6 +8,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -19,6 +26,17 @@ import com.alibaba.alink.params.regression.GlmTrainParams;
 /**
  * Generalized Linear Model. https://en.wikipedia.org/wiki/Generalized_linear_model.
  */
+@InputPorts(values = {
+	@PortSpec(PortType.MODEL),
+	@PortSpec(PortType.DATA)
+})
+@OutputPorts(values = {
+	@PortSpec(value = PortType.DATA)
+})
+@ParamSelectColumnSpec(name = "featureCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "labelCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "weightCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@NameCn("广义线性回归评估")
 public class GlmEvaluationBatchOp extends BatchOperator <GlmEvaluationBatchOp>
 	implements GlmTrainParams <GlmEvaluationBatchOp> {
 

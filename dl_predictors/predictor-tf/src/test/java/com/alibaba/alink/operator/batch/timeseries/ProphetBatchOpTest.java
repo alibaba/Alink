@@ -58,14 +58,14 @@ public class ProphetBatchOpTest {
 				Row.of("2", new Timestamp(117, 12, 8, 0, 0, 0, 0), 8.38251828808963),
 				Row.of("2", new Timestamp(117, 12, 9, 0, 0, 0, 0), 8.06965530688617)
 			};
-		String[] colNames = new String[] {"id", "ds1", "y1"};
+		String[] colNames = new String[] {"id", "ts", "val"};
 
 		//train batch model.
 		MemSourceBatchOp source = new MemSourceBatchOp(Arrays.asList(rowsData), colNames);
 
 		ProphetTrainBatchOp model = new ProphetTrainBatchOp()
-			.setTimeCol("ds1")
-			.setValueCol("y1");
+			.setTimeCol("ts")
+			.setValueCol("val");
 
 		source.link(model).print();
 
@@ -75,7 +75,7 @@ public class ProphetBatchOpTest {
 			.setSelectClause("mtable_agg(ts, val) as data");
 
 		ProphetPredictBatchOp prophetPredict = new ProphetPredictBatchOp()
-			.setValueCol("ts")
+			.setValueCol("data")
 			.setPredictNum(4)
 			.setPredictionCol("pred");
 

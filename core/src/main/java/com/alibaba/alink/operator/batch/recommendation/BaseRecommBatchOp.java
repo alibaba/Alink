@@ -1,11 +1,17 @@
 package com.alibaba.alink.operator.batch.recommendation;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.model.BroadcastVariableModelSource;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.recommendation.FourFunction;
@@ -21,6 +27,9 @@ import com.alibaba.alink.params.mapper.ModelMapperParams;
  */
 
 @Internal
+@InputPorts(values = {@PortSpec(PortType.MODEL), @PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ReservedColsWithSecondInputSpec
 public class BaseRecommBatchOp<T extends BaseRecommBatchOp <T>> extends BatchOperator <T> {
 
 	private static final String BROADCAST_MODEL_TABLE_NAME = "broadcastModelTable";

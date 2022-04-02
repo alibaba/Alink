@@ -7,6 +7,6 @@ import com.alibaba.alink.params.shared.tree.HasSeed;
  */
 public interface StringTextApproxParams<T> extends
 	HasNumBucket <T>,
-	HasNumHashTablesDV10 <T>,
+	HasNumHashTablesDefaultAs10 <T>,
 	HasSeed <T> {
 }

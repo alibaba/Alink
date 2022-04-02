@@ -22,6 +22,9 @@ import org.apache.flink.configuration.Configuration;
 
 import com.alibaba.alink.common.io.filesystem.FilePath;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -29,6 +32,8 @@ import java.util.Map;
  * Utility functions for the plugin mechanism.
  */
 public final class PluginUtils {
+
+	private static final Logger LOG = LoggerFactory.getLogger(PluginUtils.class);
 
 	private PluginUtils() {
 		throw new AssertionError("Singleton class.");
@@ -39,12 +44,15 @@ public final class PluginUtils {
 	}
 
 	private static JarsPluginManager createJarsPluginManagerFromRootFolder(PluginConfig pluginConfig) {
+
 		if (pluginConfig.getPluginsPath().isPresent()) {
+			LOG.info("In plugins path: {}", pluginConfig.getPluginsPath().get());
 			return new JarsPluginManager(
 				new JarsPluginDirectory(pluginConfig.getPluginsPath().get()),
 				pluginConfig.getAlwaysParentFirstPatterns()
 			);
 		} else {
+			LOG.info("In default plugins path: {}", PluginConfig.DEFAULT_ALINK_PLUGINS_DIRS);
 			return new JarsPluginManager(
 				new JarsPluginDirectory(Paths.get(PluginConfig.DEFAULT_ALINK_PLUGINS_DIRS)),
 				pluginConfig.getAlwaysParentFirstPatterns()
@@ -58,10 +66,12 @@ public final class PluginUtils {
 
 	private static ResourcesPluginManager createResourcesPluginManagerFromRootFolder(PluginConfig pluginConfig) {
 		if (pluginConfig.getPluginsPath().isPresent()) {
+			LOG.info("In plugins path: {}", pluginConfig.getPluginsPath().get());
 			return new ResourcesPluginManager(
 				new ResourcesPluginDirectory(new FilePath(pluginConfig.getPluginsPath().get().toString()))
 			);
 		} else {
+			LOG.info("In default plugins path: {}", PluginConfig.DEFAULT_ALINK_PLUGINS_DIRS);
 			return new ResourcesPluginManager(
 				new ResourcesPluginDirectory(
 					new FilePath(Paths.get(PluginConfig.DEFAULT_ALINK_PLUGINS_DIRS).toString()))

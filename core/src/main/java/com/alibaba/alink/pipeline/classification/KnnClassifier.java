@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.KnnTrainBatchOp;
 import com.alibaba.alink.params.classification.KnnPredictParams;
@@ -12,6 +13,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * KNN classifier is to classify unlabeled observations by assigning them to the class of the most similar
  * labeled examples.
  */
+@NameCn("最近邻分类")
 public class KnnClassifier extends Trainer <KnnClassifier, KnnClassificationModel> implements
 	KnnTrainParams <KnnClassifier>, KnnPredictParams <KnnClassifier> {
 

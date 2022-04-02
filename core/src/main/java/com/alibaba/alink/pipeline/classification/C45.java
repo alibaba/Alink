@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.C45TrainBatchOp;
@@ -12,6 +13,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * The pipeline for c45 model.
  */
+@NameCn("C45决策树分类")
 public class C45 extends Trainer <C45, C45Model> implements
 	C45TrainParams <C45>,
 	C45PredictParams <C45>, HasLazyPrintModelInfo <C45> {

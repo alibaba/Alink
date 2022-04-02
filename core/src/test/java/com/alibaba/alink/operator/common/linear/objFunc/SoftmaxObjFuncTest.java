@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 
 public class SoftmaxObjFuncTest extends AlinkTestBase {
 	private final static int FDIM = 10;
-	private final static double EPS = 1.0e-16;
+	private final static double EPS = 1.0e-6;
 
 	@Test
 	public void calcSearchValues() throws Exception {

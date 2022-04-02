@@ -5,11 +5,13 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.operator.batch.BatchOperator;
 
 /**
  * A BatchOperator that wraps a DataSet.
  */
+@Internal
 public final class DataSetWrapperBatchOp extends BatchOperator <DataSetWrapperBatchOp> {
 
 	private static final long serialVersionUID = -6352627701658703146L;

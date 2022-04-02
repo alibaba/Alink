@@ -99,6 +99,9 @@ class PyMain(object):
         implements = ["com.alibaba.alink.common.pyrunner.PyMainHandle"]
 
 
+gateway: JavaGateway = None
+
+
 def main():
     p = OptionParser()
     p.add_option('-j', '--jvm_port', help='the port for jvm side',
@@ -108,6 +111,7 @@ def main():
     (z, args) = p.parse_args()
 
     app = PyMain()
+    global gateway
     gateway = JavaGateway(
         gateway_parameters=GatewayParameters(port=z.jvm_port, auto_field=True, auto_convert=True),
         callback_server_parameters=CallbackServerParameters(

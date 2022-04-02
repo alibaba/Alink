@@ -69,8 +69,8 @@ public class SoftmaxModelMapper extends RichModelMapper {
 	}
 
 	@Override
-	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) throws Exception {
-		Object predResult;
+	protected Tuple2 <Object, String> predictResultDetail(SlicedSelectedSample selection) {
+		Object predictResult;
 		String jsonDetail;
 
 		Vector vec;
@@ -81,9 +81,8 @@ public class SoftmaxModelMapper extends RichModelMapper {
 			selection.fillDenseVector((DenseVector) vec, model.hasInterceptItem, featureIdx);
 		}
 
-
 		Tuple2 <Object, Double[]> result = predictSoftmaxWithProb(vec);
-		predResult = result.f0;
+		predictResult = result.f0;
 		Map <String, String> detail = new HashMap <>(0);
 		int labelSize = model.labelValues.length;
 		for (int i = 0; i < labelSize; ++i) {
@@ -91,7 +90,7 @@ public class SoftmaxModelMapper extends RichModelMapper {
 		}
 		jsonDetail = gson.toJson(detail);
 
-		return new Tuple2 <>(predResult, jsonDetail);
+		return new Tuple2 <>(predictResult, jsonDetail);
 	}
 
 	private Tuple2 <Object, Double[]> predictSoftmaxWithProb(Vector vector) {

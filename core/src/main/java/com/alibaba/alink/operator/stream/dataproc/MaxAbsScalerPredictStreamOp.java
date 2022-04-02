@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.stream.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.MaxAbsScalerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.dataproc.MaxAbsScalerPredictParams;
  * [-1, 1] by dividing through the maximum absolute value in each feature.
  * MaxAbsPredict will scale the dataset with model which trained from MaxAbsTrain.
  */
+@NameCn("绝对值最大化流预测")
 public class MaxAbsScalerPredictStreamOp extends ModelMapStreamOp <MaxAbsScalerPredictStreamOp>
 	implements MaxAbsScalerPredictParams <MaxAbsScalerPredictStreamOp> {
 

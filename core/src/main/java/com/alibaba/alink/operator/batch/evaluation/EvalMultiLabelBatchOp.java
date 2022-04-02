@@ -13,11 +13,15 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
-import com.alibaba.alink.operator.common.evaluation.BaseSimpleMultiLabelMetrics;
 import com.alibaba.alink.operator.common.evaluation.EvaluationMetricsCollector;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil.ReduceBaseMetrics;
@@ -31,6 +35,9 @@ import java.util.List;
 /**
  * Evaluation for multi-label classification task.
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
+@NameCn("多标签分类评估")
 public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 	implements EvalMultiLabelParams <EvalMultiLabelBatchOp>,
 	EvaluationMetricsCollector <MultiLabelMetrics, EvalMultiLabelBatchOp> {
@@ -84,7 +91,7 @@ public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 				private static final long serialVersionUID = -8707995574529447106L;
 
 				@Override
-				public Tuple3 <HashSet <Object>, Class, Integer> map(Row value) throws Exception {
+				public Tuple3 <HashSet <Object>, Class, Integer> map(Row value) {
 					HashSet <Object> hashSet = new HashSet <>();
 					if (!EvaluationUtil.checkRowFieldNotNull(value)) {
 						return Tuple3.of(hashSet, null, 0);
@@ -128,8 +135,7 @@ public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 
 				@Override
 				public Tuple3 <HashSet <Object>, Class, Integer> reduce(
-					Tuple3 <HashSet <Object>, Class, Integer> value1, Tuple3 <HashSet <Object>, Class, Integer> value2)
-					throws Exception {
+					Tuple3 <HashSet <Object>, Class, Integer> value1, Tuple3 <HashSet <Object>, Class, Integer> value2) {
 					if (null == value1) {
 						return value2;
 					} else if (null == value2) {
@@ -163,8 +169,7 @@ public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 				private static final long serialVersionUID = 3235026163541463499L;
 
 				@Override
-				public Tuple3 <Integer, Class, Integer> map(Tuple3 <HashSet <Object>, Class, Integer> value)
-					throws Exception {
+				public Tuple3 <Integer, Class, Integer> map(Tuple3 <HashSet <Object>, Class, Integer> value) {
 					Preconditions.checkState(value.f0.size() > 0,
 						"There is no valid data in the whole dataSet, please check the input for evaluation!");
 					return Tuple3.of(value.f0.size(), value.f1, value.f2);

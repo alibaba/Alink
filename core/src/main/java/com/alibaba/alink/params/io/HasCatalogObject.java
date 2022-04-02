@@ -6,6 +6,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.ml.api.misc.param.WithParams;
 import org.apache.flink.table.catalog.ObjectPath;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.catalog.BaseCatalog;
 import com.alibaba.alink.common.utils.JsonConverter;
 
@@ -13,6 +15,8 @@ import java.io.Serializable;
 
 public interface HasCatalogObject<T> extends WithParams <T> {
 
+	@NameCn("catalog object")
+	@DescCn("catalog object")
 	ParamInfo <String> CATALOG_OBJECT = ParamInfoFactory
 		.createParamInfo("catalogObject", String.class)
 		.setDescription("Object in catalog.")

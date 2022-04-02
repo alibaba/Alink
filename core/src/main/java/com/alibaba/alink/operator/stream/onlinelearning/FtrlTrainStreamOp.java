@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.stream.onlinelearning;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -11,17 +12,18 @@ import com.alibaba.alink.params.onlinelearning.FtrlTrainParams;
 /**
  * Stream train operation of FTRL Algorithm.
  */
+@NameCn("Ftrl在线训练")
 public class FtrlTrainStreamOp extends BaseOnlineTrainStreamOp <FtrlTrainStreamOp>
 	implements FtrlTrainParams <FtrlTrainStreamOp> {
 
 	private static final long serialVersionUID = 3688413917992858013L;
 
-	public FtrlTrainStreamOp(BatchOperator model) throws Exception {
+	public FtrlTrainStreamOp(BatchOperator<?> model) throws Exception {
 		super(model);
 		setLearningKernel(new FtrlLearningKernel());
 	}
 
-	public FtrlTrainStreamOp(BatchOperator model, Params params) throws Exception {
+	public FtrlTrainStreamOp(BatchOperator<?> model, Params params) throws Exception {
 		super(model, params);
 		setLearningKernel(new FtrlLearningKernel());
 	}

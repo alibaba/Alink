@@ -8,14 +8,12 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.dl.plugin.DLPredictorService;
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.common.dl.plugin.DLPredictorService;
-import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.dl.HasInferBatchSizeDefaultAs256;
-import com.alibaba.alink.params.dl.HasIntraOpParallelism;
 import com.alibaba.alink.params.dl.HasModelPath;
 import com.alibaba.alink.params.tensorflow.savedmodel.BaseTFSavedModelPredictParams;
 import org.apache.commons.lang3.tuple.Pair;
@@ -105,7 +103,7 @@ public class BaseTFSavedModelPredictRowFlatMapper extends FlatMapper implements 
 		Preconditions.checkArgument(params.contains(BaseTFSavedModelPredictParams.OUTPUT_SCHEMA_STR),
 			"Must set outputSchemaStr.");
 		String tfOutputSchemaStr = params.get(BaseTFSavedModelPredictParams.OUTPUT_SCHEMA_STR);
-		TableSchema tfOutputSchema = CsvUtil.schemaStr2Schema(tfOutputSchemaStr);
+		TableSchema tfOutputSchema = TableUtil.schemaStr2Schema(tfOutputSchemaStr);
 		tfOutputCols = tfOutputSchema.getFieldNames();
 		outputSignatureDefs = params.get(BaseTFSavedModelPredictParams.OUTPUT_SIGNATURE_DEFS);
 		if (null == outputSignatureDefs) {
@@ -142,8 +140,8 @@ public class BaseTFSavedModelPredictRowFlatMapper extends FlatMapper implements 
 	@Override
 	public void open() {
 		Preconditions.checkArgument(modelPath != null, "Model path is not set.");
-		Integer intraOpParallelism = params.contains(HasIntraOpParallelism.INTRA_OP_PARALLELISM)
-			? params.get(HasIntraOpParallelism.INTRA_OP_PARALLELISM)
+		Integer intraOpParallelism = params.contains(BaseTFSavedModelPredictParams.INTRA_OP_PARALLELISM)
+			? params.get(BaseTFSavedModelPredictParams.INTRA_OP_PARALLELISM)
 			: null;
 
 		try {

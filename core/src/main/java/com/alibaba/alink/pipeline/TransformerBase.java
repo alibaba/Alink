@@ -90,6 +90,7 @@ public abstract class TransformerBase<T extends TransformerBase <T>>
 	 */
 	public abstract BatchOperator <?> transform(BatchOperator <?> input);
 
+
 	/**
 	 * Applies the transformer on the input streaming data from StreamOperator, and returns the streaming result data
 	 * with StreamOperator.

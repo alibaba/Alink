@@ -1,7 +1,7 @@
 package com.alibaba.alink.params.timeseries;
 
 import com.alibaba.alink.params.nlp.HasWindow;
-import com.alibaba.alink.params.shared.HasTimeCol;
+import com.alibaba.alink.params.shared.colname.HasTimeCol;
 import com.alibaba.alink.params.shared.colname.HasOutputCols;
 import com.alibaba.alink.params.shared.colname.HasSelectedColDefaultAsNull;
 import com.alibaba.alink.params.shared.colname.HasVectorColDefaultAsNull;

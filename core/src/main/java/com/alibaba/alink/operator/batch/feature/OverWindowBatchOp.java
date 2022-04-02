@@ -12,6 +12,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
 import com.alibaba.alink.common.sql.builtin.agg.BaseRankUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.BaseUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.CountUdaf;
@@ -35,6 +42,11 @@ import static com.alibaba.alink.operator.common.feature.featurebuilder.WindowRes
 /**
  * Batch over window feature builder.
  */
+@NameCn("特征构造：OverWindow")
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.DATA))
+@ParamSelectColumnSpec(name = "partitionCols")
+@ReservedColsWithFirstInputSpec
 public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 	implements OverWindowParams <OverWindowBatchOp> {
 

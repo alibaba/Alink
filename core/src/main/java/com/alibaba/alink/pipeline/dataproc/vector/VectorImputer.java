@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorImputerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.vector.VectorImputerPredictParams;
@@ -17,6 +18,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * If mean, will replace missing value with mean of the column.
  * If value, will replace missing value with the value.
  */
+@NameCn("向量缺失值填充")
 public class VectorImputer extends Trainer <VectorImputer, VectorImputerModel> implements
 	VectorImputerTrainParams <VectorImputer>,
 	VectorImputerPredictParams <VectorImputer> {

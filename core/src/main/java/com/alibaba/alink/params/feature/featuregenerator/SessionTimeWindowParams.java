@@ -3,16 +3,16 @@ package com.alibaba.alink.params.feature.featuregenerator;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.dataproc.HasClause;
 
 public interface SessionTimeWindowParams<T> extends
 	GroupTimeWindowParams <T>,
 	HasClause <T> {
 
-	/**
-	 * @cn-name 会话窗口间隔大小
-	 * @cn 会话窗口间隔大小
-	 */
+	@NameCn("会话窗口间隔大小")
+	@DescCn("会话窗口间隔大小")
 	ParamInfo <Double> SESSION_GAP_TIME = ParamInfoFactory
 		.createParamInfo("sessionGapTime", Double.class)
 		.setDescription("session gap time")

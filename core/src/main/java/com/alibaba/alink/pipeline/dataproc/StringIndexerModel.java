@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.dataproc.StringIndexerModelMapper;
 import com.alibaba.alink.params.dataproc.StringIndexerPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -15,6 +16,7 @@ import java.util.Map;
  * <p>The model transforms one column of strings to indices based on the model
  * fitted by StringIndexer.
  */
+@NameCn("StringIndexer模型")
 public class StringIndexerModel extends MapModel <StringIndexerModel>
 	implements StringIndexerPredictParams <StringIndexerModel> {
 

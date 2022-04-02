@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.dataproc;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.pipeline.dataproc.AggLookup;
@@ -42,11 +43,11 @@ public class AggLookupTest extends AlinkTestBase {
 			.setReservedCols();
 		Row row = lookup.linkFrom(embedding, data).collect().get(0);
 
-		assert (row.getField(0).toString().equals("1.0 2.0 3.0 4.0 2.0 3.0 4.0 5.0 3.0 2.0 3.0 4.0"));
-		assert (row.getField(1).toString().equals("2.5 3.0 4.0 4.5"));
-		assert (row.getField(2).toString().equals("10.0 12.0 16.0 18.0"));
-		assert (row.getField(3).toString().equals("4.0 5.0 6.0 5.0"));
-		assert (row.getField(4).toString().equals("1.0 2.0 3.0 4.0"));
+		assert (VectorUtil.serialize(row.getField(0)).equals("1.0 2.0 3.0 4.0 2.0 3.0 4.0 5.0 3.0 2.0 3.0 4.0"));
+		assert (VectorUtil.serialize(row.getField(1)).equals("2.5 3.0 4.0 4.5"));
+		assert (VectorUtil.serialize(row.getField(2)).equals("10.0 12.0 16.0 18.0"));
+		assert (VectorUtil.serialize(row.getField(3)).equals("4.0 5.0 6.0 5.0"));
+		assert (VectorUtil.serialize(row.getField(4)).equals("1.0 2.0 3.0 4.0"));
 	}
 
 	@Test
@@ -57,11 +58,11 @@ public class AggLookupTest extends AlinkTestBase {
 			.setDelimiter(",")
 			.setReservedCols();
 		Row row = lookup.transform(data).collect().get(0);
-		assert (row.getField(0).toString().equals("1.0 2.0 3.0 4.0 2.0 3.0 4.0 5.0 3.0 2.0 3.0 4.0"));
-		assert (row.getField(1).toString().equals("2.5 3.0 4.0 4.5"));
-		assert (row.getField(2).toString().equals("10.0 12.0 16.0 18.0"));
-		assert (row.getField(3).toString().equals("4.0 5.0 6.0 5.0"));
-		assert (row.getField(4).toString().equals("1.0 2.0 3.0 4.0"));
+		assert (VectorUtil.serialize(row.getField(0)).equals("1.0 2.0 3.0 4.0 2.0 3.0 4.0 5.0 3.0 2.0 3.0 4.0"));
+		assert (VectorUtil.serialize(row.getField(1)).equals("2.5 3.0 4.0 4.5"));
+		assert (VectorUtil.serialize(row.getField(2)).equals("10.0 12.0 16.0 18.0"));
+		assert (VectorUtil.serialize(row.getField(3)).equals("4.0 5.0 6.0 5.0"));
+		assert (VectorUtil.serialize(row.getField(4)).equals("1.0 2.0 3.0 4.0"));
 	}
 
 	@Test

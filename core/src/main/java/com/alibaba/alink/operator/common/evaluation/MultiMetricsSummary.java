@@ -4,6 +4,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.Preconditions;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.setClassificationCommonParams;
 import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.setLoglossParams;
@@ -44,6 +49,17 @@ public final class MultiMetricsSummary implements BaseMetricsSummary <MultiClass
 		this.total = total;
 	}
 
+	private void mergeConfusionMatrix(LongMatrix matrix, Object[] labels,
+									  LongMatrix mergedMatrix, Map <Object, Integer> mergedLabelToIndex) {
+		for (int i = 0; i < matrix.getRowNum(); i += 1) {
+			int newI = mergedLabelToIndex.get(labels[i]);
+			for (int j = 0; j < matrix.getColNum(); j += 1) {
+				int newJ = mergedLabelToIndex.get(labels[j]);
+				mergedMatrix.setValue(newI, newJ, mergedMatrix.getValue(newI, newJ) + matrix.getValue(i, j));
+			}
+		}
+	}
+
 	/**
 	 * Merge the confusion matrix, and add the logLoss.
 	 *
@@ -55,8 +71,30 @@ public final class MultiMetricsSummary implements BaseMetricsSummary <MultiClass
 		if (null == multiClassMetrics) {
 			return this;
 		}
-		Preconditions.checkState(Arrays.equals(labels, multiClassMetrics.labels), "The labels are not the same!");
-		this.matrix.plusEqual(multiClassMetrics.matrix);
+		if (Arrays.equals(labels, multiClassMetrics.labels)) {
+			this.matrix.plusEqual(multiClassMetrics.matrix);
+		} else {
+			// Merge labels from two MultiMetricsSummary instances
+			HashSet <Object> allLabelSet = new HashSet <>();
+			allLabelSet.addAll(Arrays.asList(labels));
+			allLabelSet.addAll(Arrays.asList(multiClassMetrics.labels));
+			Object[] mergedLabels = allLabelSet.toArray();
+			Arrays.sort(mergedLabels, Collections.reverseOrder());
+
+			int numMergedLabels = mergedLabels.length;
+			Map <Object, Integer> mergedLabelToIndex = IntStream.range(0, numMergedLabels)
+				.boxed()
+				.collect(Collectors. <Integer, Object, Integer>toMap(d -> mergedLabels[d], d -> d));
+
+			// Merge confusion matrix from two MultiMetricsSummary instances
+			LongMatrix mergedMatrix = new LongMatrix(new long[numMergedLabels][numMergedLabels]);
+			mergeConfusionMatrix(matrix, labels, mergedMatrix, mergedLabelToIndex);
+			mergeConfusionMatrix(multiClassMetrics.matrix, multiClassMetrics.labels, mergedMatrix, mergedLabelToIndex);
+
+			// Re-assign labels and matrix of this
+			this.labels = mergedLabels;
+			this.matrix = mergedMatrix;
+		}
 		this.logLoss += multiClassMetrics.logLoss;
 		this.total += multiClassMetrics.total;
 		return this;

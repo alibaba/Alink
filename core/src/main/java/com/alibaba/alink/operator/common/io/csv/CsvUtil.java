@@ -6,23 +6,11 @@ import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.MTableTypes;
-import com.alibaba.alink.common.VectorTypes;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
-import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
 
@@ -32,132 +20,6 @@ import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_P
 public class CsvUtil {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CsvUtil.class);
-
-	private static final BiMap <String, TypeInformation <?>> STRING_TYPE_MAP = HashBiMap.create();
-	private static final Set <String> STRING_TYPE_SET = new HashSet <>();
-	static {
-		STRING_TYPE_MAP.put("VARBINARY", BYTE_PRIMITIVE_ARRAY_TYPE_INFO);
-		STRING_TYPE_MAP.put("VECTOR", VectorTypes.VECTOR);
-		STRING_TYPE_MAP.put("DENSE_VECTOR", VectorTypes.DENSE_VECTOR);
-		STRING_TYPE_MAP.put("SPARSE_VECTOR", VectorTypes.SPARSE_VECTOR);
-		STRING_TYPE_MAP.put("TENSOR", TensorTypes.TENSOR);
-		STRING_TYPE_MAP.put("BOOL_TENSOR", TensorTypes.BOOL_TENSOR);
-		STRING_TYPE_MAP.put("BYTE_TENSOR", TensorTypes.BYTE_TENSOR);
-		STRING_TYPE_MAP.put("DOUBLE_TENSOR", TensorTypes.DOUBLE_TENSOR);
-		STRING_TYPE_MAP.put("FLOAT_TENSOR", TensorTypes.FLOAT_TENSOR);
-		STRING_TYPE_MAP.put("INT_TENSOR", TensorTypes.INT_TENSOR);
-		STRING_TYPE_MAP.put("LONG_TENSOR", TensorTypes.LONG_TENSOR);
-		STRING_TYPE_MAP.put("STRING_TENSOR", TensorTypes.STRING_TENSOR);
-		STRING_TYPE_MAP.put("MTABLE", MTableTypes.M_TABLE);
-
-		STRING_TYPE_SET.add("VEC_TYPES_VECTOR");
-		STRING_TYPE_SET.add("VEC_TYPES_DENSE_VECTOR");
-		STRING_TYPE_SET.add("VEC_TYPES_SPARSE_VECTOR");
-		STRING_TYPE_SET.add("TENSOR_TYPES_TENSOR");
-		STRING_TYPE_SET.add("TENSOR_TYPES_BOOL_TENSOR");
-		STRING_TYPE_SET.add("TENSOR_TYPES_BYTE_TENSOR");
-		STRING_TYPE_SET.add("TENSOR_TYPES_DOUBLE_TENSOR");
-		STRING_TYPE_SET.add("TENSOR_TYPES_FLOAT_TENSOR");
-		STRING_TYPE_SET.add("TENSOR_TYPES_INT_TENSOR");
-		STRING_TYPE_SET.add("TENSOR_TYPES_LONG_TENSOR");
-		STRING_TYPE_SET.add("TENSOR_TYPES_STRING_TENSOR");
-	}
-
-	/**
-	 * Split a string by commas that are not inside parentheses or brackets.
-	 *
-	 * @param s string
-	 * @return split strings.
-	 */
-	private static String[] robustSpiltByComma(String s) {
-		List <String> splits = new ArrayList <>();
-		char[] chars = s.toCharArray();
-		int start = 0;
-		int parenthesesLevel = 0;
-		int angleBracketsLevel = 0;
-		for (int i = 0; i < chars.length; i += 1) {
-			char ch = chars[i];
-			if (ch == '(') {
-				parenthesesLevel += 1;
-			} else if (ch == ')') {
-				parenthesesLevel -= 1;
-			} else if (ch == '<') {
-				angleBracketsLevel += 1;
-			} else if (ch == '>') {
-				angleBracketsLevel -= 1;
-			}
-			if (ch == ',' && (parenthesesLevel == 0) && (angleBracketsLevel == 0)) {
-				splits.add(new String(chars, start, i - start));
-				start = i += 1;
-			}
-		}
-		if (start < s.length()) {
-			splits.add(new String(chars, start, s.length() - start));
-		}
-		return splits.toArray(new String[0]);
-	}
-
-	/**
-	 * Extract the TableSchema from a string. The format of the string is comma separated colName-colType pairs,
-	 * such as
-	 * "f0 int,f1 bigint,f2 string".
-	 *
-	 * @param schemaStr The formatted schema string.
-	 * @return TableSchema.
-	 */
-	public static TableSchema schemaStr2Schema(String schemaStr) {
-		String[] fields = robustSpiltByComma(schemaStr);
-		String[] colNames = new String[fields.length];
-		TypeInformation <?>[] colTypes = new TypeInformation[fields.length];
-		for (int i = 0; i < colNames.length; i++) {
-			String[] kv = fields[i].trim().split("\\s+", 2);
-			colNames[i] = kv[0];
-			if (STRING_TYPE_SET.contains(kv[1])) {
-				if (kv[1].startsWith("VEC_TYPES_")) {
-					kv[1] = kv[1].substring("VEC_TYPES_".length());
-				} else if (kv[1].startsWith("TENSOR_TYPES_")) {
-					kv[1] = kv[1].substring("TENSOR_TYPES_".length());
-				}
-			}
-			if (STRING_TYPE_MAP.containsKey(kv[1].toUpperCase())) {
-				colTypes[i] = STRING_TYPE_MAP.get(kv[1].toUpperCase());
-			} else {
-				if (kv[1].contains("<") && kv[1].contains(">")) {
-					colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1]);
-				} else {
-					colTypes[i] = FlinkTypeConverter.getFlinkType(kv[1].toUpperCase());
-				}
-			}
-		}
-		return new TableSchema(colNames, colTypes);
-	}
-
-	/**
-	 * Transform the TableSchema to a string. The format of the string is comma separated colName-colType pairs,
-	 * such as "f0 int,f1 bigint,f2 string".
-	 *
-	 * @param schema the TableSchema to transform.
-	 * @return a string.
-	 */
-	public static String schema2SchemaStr(TableSchema schema) {
-		String[] colNames = schema.getFieldNames();
-		TypeInformation <?>[] colTypes = schema.getFieldTypes();
-
-		StringBuilder sbd = new StringBuilder();
-		for (int i = 0; i < colNames.length; i++) {
-			if (i > 0) {
-				sbd.append(",");
-			}
-			String typeName;
-			if (STRING_TYPE_MAP.containsValue(colTypes[i])) {
-				typeName = STRING_TYPE_MAP.inverse().get(colTypes[i]);
-			} else {
-				typeName = FlinkTypeConverter.getTypeString(colTypes[i]);
-			}
-			sbd.append(colNames[i]).append(" ").append(typeName);
-		}
-		return sbd.toString();
-	}
 
 	/**
 	 * Parse a text line to a {@link Row}.
@@ -234,26 +96,6 @@ public class CsvUtil {
 		public Row map(Row row) throws Exception {
 			return Row.of(formatter.format(row));
 		}
-	}
-
-	/**
-	 * Get column names from a schema string.
-	 *
-	 * @param schemaStr The formatted schema string.
-	 * @return An array of column names.
-	 */
-	public static String[] getColNames(String schemaStr) {
-		return schemaStr2Schema(schemaStr).getFieldNames();
-	}
-
-	/**
-	 * Get column types from a schema string.
-	 *
-	 * @param schemaStr The formatted schema string.
-	 * @return An array of column types.
-	 */
-	public static TypeInformation <?>[] getColTypes(String schemaStr) {
-		return schemaStr2Schema(schemaStr).getFieldTypes();
 	}
 
 	/**

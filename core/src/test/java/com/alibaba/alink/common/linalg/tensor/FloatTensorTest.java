@@ -97,22 +97,22 @@ public class FloatTensorTest extends AlinkTestBase {
 	public void testSerDe() {
 		FloatTensor tensor;
 		tensor = new FloatTensor(new Shape(3, 4));
-		Assert.assertEquals("FLOAT#3,4#0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ", tensor.toString());
+		Assert.assertEquals("FLOAT#3,4#0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 ", TensorUtil.toString(tensor));
 
-		FloatTensor tensor2 = (FloatTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		FloatTensor tensor2 = (FloatTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test
 	public void testScalarSerDe() {
 		float v = random.nextFloat();
 		FloatTensor tensor = new FloatTensor(v);
-		Assert.assertEquals("FLOAT##0.73096776 ", tensor.toString());
+		Assert.assertEquals("FLOAT##0.73096776 ", TensorUtil.toString(tensor));
 
-		FloatTensor tensor2 = (FloatTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		FloatTensor tensor2 = (FloatTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test

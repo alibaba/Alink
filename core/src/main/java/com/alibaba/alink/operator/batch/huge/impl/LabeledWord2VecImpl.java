@@ -1,8 +1,15 @@
 package com.alibaba.alink.operator.batch.huge.impl;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.aps.ApsCheckpoint;
 import com.alibaba.alink.params.nlp.LabeledWord2VecParams;
@@ -10,6 +17,15 @@ import com.alibaba.alink.params.nlp.LabeledWord2VecParams;
 import java.util.ArrayList;
 import java.util.List;
 
+@InputPorts(values = {
+	@PortSpec(value = PortType.DATA, desc = PortDesc.CORPUS),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.NODE_TYPE_MAPPING),
+	@PortSpec(value = PortType.MODEL, isOptional = true, desc = PortDesc.INIT_MODEL)
+})
+@OutputPorts(values = @PortSpec(PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@ParamSelectColumnSpec(name = "vertexCol", portIndices = 1, allowedTypeCollections = TypeCollections.STRING_TYPES)
+@ParamSelectColumnSpec(name = "typeCol", portIndices = 1)
 @Internal
 public class LabeledWord2VecImpl<T extends LabeledWord2VecImpl <T>> extends BatchOperator <T>
 	implements LabeledWord2VecParams <T> {
