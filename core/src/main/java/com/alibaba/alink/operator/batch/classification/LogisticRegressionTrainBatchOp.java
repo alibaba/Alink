@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp;
 import com.alibaba.alink.operator.common.linear.LinearClassifierModelInfo;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
  * Logistic regression train batch operator. we use log loss func by setting LinearModelType = LR and model
  * name = "Logistic Regression".
  */
+@NameCn("逻辑回归训练")
 public final class LogisticRegressionTrainBatchOp extends BaseLinearModelTrainBatchOp <LogisticRegressionTrainBatchOp>
 	implements LinearBinaryClassTrainParams <LogisticRegressionTrainBatchOp>,
 	WithModelInfoBatchOp <LinearClassifierModelInfo, LogisticRegressionTrainBatchOp,

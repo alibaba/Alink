@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.params.feature.BinarizerParams;
 import com.alibaba.alink.testutil.AlinkTestBase;
@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNull;
 public class BinarizerMapperTest extends AlinkTestBase {
 	@Test
 	public void test1() throws Exception {
-		TableSchema schema = new TableSchema(new String[] {"feature"}, new TypeInformation <?>[] {VectorTypes.VECTOR});
+		TableSchema schema = new TableSchema(new String[] {"feature"}, new TypeInformation <?>[] {AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(BinarizerParams.SELECTED_COL, "feature");
@@ -33,12 +33,12 @@ public class BinarizerMapperTest extends AlinkTestBase {
 		assertEquals(mapper.map(Row.of(VectorUtil.getVector("$20$4:0.2 6:1.0 7:0.05"))).getField(0),
 			VectorUtil.getVector("$20$4:1.0 6:1.0 7:1.0"));
 		assertEquals(mapper.getOutputSchema(),
-			new TableSchema(new String[] {"feature"}, new TypeInformation <?>[] {VectorTypes.VECTOR}));
+			new TableSchema(new String[] {"feature"}, new TypeInformation <?>[] {AlinkTypes.VECTOR}));
 	}
 
 	@Test
 	public void test2() throws Exception {
-		TableSchema schema = new TableSchema(new String[] {"feature"}, new TypeInformation <?>[] {VectorTypes.VECTOR});
+		TableSchema schema = new TableSchema(new String[] {"feature"}, new TypeInformation <?>[] {AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(BinarizerParams.SELECTED_COL, "feature")
@@ -54,7 +54,7 @@ public class BinarizerMapperTest extends AlinkTestBase {
 			VectorUtil.getVector("$20$"));
 
 		assertEquals(mapper.getOutputSchema(),
-			new TableSchema(new String[] {"feature"}, new TypeInformation <?>[] {VectorTypes.VECTOR}));
+			new TableSchema(new String[] {"feature"}, new TypeInformation <?>[] {AlinkTypes.VECTOR}));
 	}
 
 	@Test

@@ -8,6 +8,14 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sql.JoinBatchOp;
@@ -17,6 +25,12 @@ import com.alibaba.alink.params.nlp.TfIdfParams;
  *The implementation of TFIDF based on the result of doc word count algorithm
  * we use table api to implement the algorithm
  */
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT))
+@ParamSelectColumnSpec(name = "wordCol", allowedTypeCollections = TypeCollections.STRING_TYPE)
+@ParamSelectColumnSpec(name = "countCol", allowedTypeCollections = TypeCollections.LONG_TYPES)
+@ParamSelectColumnSpec(name = "docIdCol")
+@NameCn("TF-IDF")
 public final class TfidfBatchOp extends BatchOperator <TfidfBatchOp>
 	implements TfIdfParams <TfidfBatchOp> {
 

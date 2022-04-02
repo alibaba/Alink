@@ -130,7 +130,7 @@ public class LSHModelDataConverter extends NearestNeighborDataConverter <LSHMode
 			@Override
 			public Row map(Tuple3 <Object, Vector, int[]> value) throws Exception {
 				Row row = new Row(ROW_SIZE);
-				row.setField(DATA_IDNEX, JsonConverter.toJson(Tuple2.of(value.f0, value.f1.toString())));
+				row.setField(DATA_IDNEX, JsonConverter.toJson(Tuple2.of(value.f0, VectorUtil.serialize(value.f1))));
 				return row;
 			}
 		});

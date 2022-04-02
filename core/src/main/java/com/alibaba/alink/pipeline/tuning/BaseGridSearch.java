@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.tuning;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.TransformerBase;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.TransformerBase;
 /**
  * BaseGridSearch.
  */
+@NameCn("")
 public abstract class BaseGridSearch<T extends BaseGridSearch <T, M>, M extends BaseTuningModel <M>>
 	extends BaseTuning <T, M> {
 	private static final long serialVersionUID = -548955496979331016L;

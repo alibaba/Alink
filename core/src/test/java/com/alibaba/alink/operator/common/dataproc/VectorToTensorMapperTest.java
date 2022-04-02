@@ -5,13 +5,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.tensor.DataType;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -31,7 +31,7 @@ public class VectorToTensorMapperTest extends AlinkTestBase {
 		final Mapper mapper = new VectorToTensorMapper(
 			new TableSchema(
 				new String[] {"vec"},
-				new TypeInformation <?>[] {VectorTypes.DENSE_VECTOR}
+				new TypeInformation <?>[] {AlinkTypes.DENSE_VECTOR}
 			),
 			new Params()
 				.set(VectorToTensorParams.SELECTED_COL, "vec")
@@ -48,7 +48,7 @@ public class VectorToTensorMapperTest extends AlinkTestBase {
 		final Mapper mapper = new VectorToTensorMapper(
 			new TableSchema(
 				new String[] {"vec"},
-				new TypeInformation <?>[] {VectorTypes.DENSE_VECTOR}
+				new TypeInformation <?>[] {AlinkTypes.DENSE_VECTOR}
 			),
 			new Params()
 				.set(VectorToTensorParams.SELECTED_COL, "vec")
@@ -68,7 +68,7 @@ public class VectorToTensorMapperTest extends AlinkTestBase {
 		final Mapper mapper = new VectorToTensorMapper(
 			new TableSchema(
 				new String[] {"vec"},
-				new TypeInformation <?>[] {VectorTypes.DENSE_VECTOR}
+				new TypeInformation <?>[] {AlinkTypes.DENSE_VECTOR}
 			),
 			new Params()
 				.set(VectorToTensorParams.SELECTED_COL, "vec")
@@ -76,7 +76,7 @@ public class VectorToTensorMapperTest extends AlinkTestBase {
 				.set(VectorToTensorParams.TENSOR_DATA_TYPE, DataType.FLOAT)
 		);
 
-		Assert.assertEquals(TensorTypes.FLOAT_TENSOR, mapper.getOutputSchema().getFieldTypes()[0]);
+		Assert.assertEquals(AlinkTypes.FLOAT_TENSOR, mapper.getOutputSchema().getFieldTypes()[0]);
 
 		final DoubleTensor tensor = DoubleTensor.of(TensorUtil.getTensor("FLOAT#6#0.0 0.1 1.0 1.1 2.0 2.1 "));
 		final FloatTensor expect = FloatTensor.of(tensor.reshape(new Shape(2L, 3L)));

@@ -63,6 +63,11 @@ public class TableSummarizer extends BaseSummarizer {
 	protected DenseVector squareSum;
 
 	/**
+	 * sum3_i = sum(x_i * x_i * x_i) when x_i is not null.
+	 */
+	protected DenseVector sum3;
+
+	/**
 	 * min_i = min(x_i) when x_i is not null.
 	 */
 	protected DenseVector min;
@@ -122,7 +127,11 @@ public class TableSummarizer extends BaseSummarizer {
 		for (int i = 0; i < numberN; i++) {
 			Object obj = row.getField(numericalColIndices[i]);
 			if (obj != null) {
-				vals[i] = ((Number) obj).doubleValue();
+				if (obj instanceof Boolean) {
+					vals[i] = (boolean) obj ? 1.0 : 0.0;
+				} else {
+					vals[i] = ((Number) obj).doubleValue();
+				}
 			} else {
 				vals[i] = null;
 			}
@@ -136,6 +145,7 @@ public class TableSummarizer extends BaseSummarizer {
 
 				sum.add(i, val);
 				squareSum.add(i, val * val);
+				sum3.add(i, val * val * val);
 
 				normL1.add(i, Math.abs(val));
 
@@ -169,6 +179,7 @@ public class TableSummarizer extends BaseSummarizer {
 		numMissingValue = new DenseVector(n);
 		sum = new DenseVector(numberN);
 		squareSum = new DenseVector(numberN);
+		sum3 = new DenseVector(numberN);
 		normL1 = new DenseVector(numberN);
 
 		double[] minVals = new double[numberN];
@@ -205,6 +216,7 @@ public class TableSummarizer extends BaseSummarizer {
 		left.numMissingValue.plusEqual(right.numMissingValue);
 		left.sum.plusEqual(right.sum);
 		left.squareSum.plusEqual(right.squareSum);
+		left.sum3.plusEqual(right.sum3);
 		left.normL1.plusEqual(right.normL1);
 		MatVecOp.apply(left.min, right.min, left.min, Math::min);
 		MatVecOp.apply(left.max, right.max, left.max, Math::max);
@@ -256,6 +268,7 @@ public class TableSummarizer extends BaseSummarizer {
 		summary.count = count;
 		summary.sum = sum;
 		summary.squareSum = squareSum;
+		summary.sum3 = sum3;
 		summary.normL1 = normL1;
 		summary.min = min;
 		summary.max = max;
@@ -365,6 +378,7 @@ public class TableSummarizer extends BaseSummarizer {
 			srt.numMissingValue = numMissingValue.clone();
 			srt.sum = sum.clone();
 			srt.squareSum = squareSum.clone();
+			srt.sum3 = sum3.clone();
 			srt.normL1 = normL1.clone();
 			srt.min = min.clone();
 			srt.max = max.clone();

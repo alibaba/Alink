@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>alink_plugins</artifactId>
+        <groupId>com.alibaba.alink</groupId>
+        <version>1.5-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>alink_xgboost_bridge_flink-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
+    <packaging>jar</packaging>
+    <name>alink-xgboost-bridge</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <xgboost4j.scala.version>2.12</xgboost4j.scala.version>
+        <xgboost4j.version>1.5.1</xgboost4j.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.alink</groupId>
+            <artifactId>alink_core_flink-${alink.flink.major.version}_${alink.scala.major.version}</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-core</artifactId>
+            <version>${flink.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>ml.dmlc</groupId>
+            <artifactId>xgboost4j_${xgboost4j.scala.version}</artifactId>
+            <version>${xgboost4j.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>3.3.2</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

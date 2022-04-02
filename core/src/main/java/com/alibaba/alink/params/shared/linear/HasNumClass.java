@@ -4,14 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * num class of multi class train.
  */
 public interface HasNumClass<T> extends WithParams <T> {
-	/**
-	 * @cn-name 类别数
-	 * @cn 多分类的类别数，必选
-	 */
+	@NameCn("类别数")
+	@DescCn("多分类的类别数，必选")
 	ParamInfo <Integer> NUM_CLASS = ParamInfoFactory
 		.createParamInfo("numClass", Integer.class)
 		.setDescription("num class of multi class train.")

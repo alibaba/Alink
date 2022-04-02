@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasMaxBins<T> extends WithParams <T> {
-	/**
-	 * @cn-name 连续特征进行分箱的最大个数
-	 * @cn 连续特征进行分箱的最大个数。
-	 */
+	@NameCn("连续特征进行分箱的最大个数")
+	@DescCn("连续特征进行分箱的最大个数。")
 	ParamInfo <Integer> MAX_BINS = ParamInfoFactory
 		.createParamInfo("maxBins", Integer.class)
 		.setDescription("MAX number of bins for continuous feature")

@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.GbdtTrainBatchOp;
@@ -29,6 +30,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * "A communication-efficient parallel algorithm for decision tree", Qi Meng et al., NIPS 2016
  * for an introduction on data-parallel, feature-parallel, etc., algorithms to construct decision forests.
  */
+@NameCn("GBDT分类器")
 public class GbdtClassifier extends Trainer <GbdtClassifier, GbdtClassificationModel> implements
 	GbdtTrainParams <GbdtClassifier>,
 	GbdtPredictParams <GbdtClassifier>,

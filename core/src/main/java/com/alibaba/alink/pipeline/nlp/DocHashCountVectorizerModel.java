@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.nlp.DocHashCountVectorizerModelMapper;
 import com.alibaba.alink.params.nlp.DocHashCountVectorizerPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -10,6 +11,7 @@ import com.alibaba.alink.pipeline.MapModel;
  * DocCountVectorizerModel saves the document frequency, word count and inverse document
  * frequency of every word in the dataset.
  */
+@NameCn("文本哈希特征生成模型")
 public class DocHashCountVectorizerModel extends MapModel <DocHashCountVectorizerModel>
 	implements DocHashCountVectorizerPredictParams <DocHashCountVectorizerModel> {
 

@@ -96,22 +96,22 @@ public class ByteTensorTest extends AlinkTestBase {
 	public void testSerDe() {
 		ByteTensor tensor;
 		tensor = new ByteTensor(new Shape(3, 4));
-		Assert.assertEquals("BYTE#3,4#0 0 0 0 0 0 0 0 0 0 0 0 ", tensor.toString());
+		Assert.assertEquals("BYTE#3,4#0 0 0 0 0 0 0 0 0 0 0 0 ", TensorUtil.toString(tensor));
 
-		ByteTensor tensor2 = (ByteTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		ByteTensor tensor2 = (ByteTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test
 	public void testScalarSerDe() {
 		byte v = (byte) random.nextInt();
 		ByteTensor tensor = new ByteTensor(v);
-		Assert.assertEquals("BYTE##96 ", tensor.toString());
+		Assert.assertEquals("BYTE##96 ", TensorUtil.toString(tensor));
 
-		ByteTensor tensor2 = (ByteTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		ByteTensor tensor2 = (ByteTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test

@@ -11,7 +11,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.StringUtils;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -26,6 +27,7 @@ import com.alibaba.alink.params.io.LibSvmSourceParams;
  * A data source that reads libsvm format data.
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SourceBatch)
+@NameCn("LibSvm文件读入")
 public final class LibSvmSourceBatchOp extends BaseSourceBatchOp <LibSvmSourceBatchOp>
 	implements LibSvmSourceParams <LibSvmSourceBatchOp> {
 
@@ -60,7 +62,7 @@ public final class LibSvmSourceBatchOp extends BaseSourceBatchOp <LibSvmSourceBa
 	}
 
 	public static final TableSchema LIB_SVM_TABLE_SCHEMA = new TableSchema(new String[] {"label", "features"},
-		new TypeInformation[] {Types.DOUBLE(), VectorTypes.VECTOR});
+		new TypeInformation[] {Types.DOUBLE(), AlinkTypes.VECTOR});
 
 	@Override
 	public Table initializeDataSource() {

@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.feature.HasEncodeWithoutWoe;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
@@ -55,9 +55,9 @@ public class QuantileDiscretizerModelMapperTest extends AlinkTestBase {
 		QuantileDiscretizerModelMapper mapper = new QuantileDiscretizerModelMapper(modelSchema, dataSchema, params);
 		mapper.loadModel(model);
 
-		assertEquals(mapper.map(defaultRow).getField(0).toString(), "$8$0:1.0 6:1.0");
+		assertEquals(mapper.map(defaultRow).getField(0).toString(), "SparseVector(size = 8, nnz = 2) 0:1.0 6:1.0");
 		assertEquals(mapper.getOutputSchema(), new TableSchema(new String[] {"pred"},
-			new TypeInformation <?>[] {VectorTypes.SPARSE_VECTOR}));
+			new TypeInformation <?>[] {AlinkTypes.SPARSE_VECTOR}));
 	}
 
 	@Test
@@ -71,9 +71,9 @@ public class QuantileDiscretizerModelMapperTest extends AlinkTestBase {
 		QuantileDiscretizerModelMapper mapper = new QuantileDiscretizerModelMapper(modelSchema, dataSchema, params);
 		mapper.loadModel(model);
 
-		assertEquals(mapper.map(defaultRow).getField(3).toString(), "$8$0:1.0 6:1.0");
+		assertEquals(mapper.map(defaultRow).getField(3).toString(), "SparseVector(size = 8, nnz = 2) 0:1.0 6:1.0");
 		assertEquals(mapper.getOutputSchema(), new TableSchema(new String[] {"col1", "col2", "col3", "pred"},
-			new TypeInformation <?>[] {Types.STRING, Types.LONG, Types.DOUBLE, VectorTypes.SPARSE_VECTOR}));
+			new TypeInformation <?>[] {Types.STRING, Types.LONG, Types.DOUBLE, AlinkTypes.SPARSE_VECTOR}));
 	}
 
 	@Test

@@ -67,7 +67,7 @@ public class FastDistanceVectorData extends FastDistanceData {
 	@Override
 	public String toString() {
 		Params params = new Params();
-		params.set("vector", vector.toString());
+		params.set("vector", VectorUtil.serialize(vector));
 		params.set("label", label);
 		if (rows != null) {
 			params.set("rows", rows[0]);

@@ -18,6 +18,13 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.SelectedColsWithFirstInputSpec;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -42,6 +49,10 @@ import java.util.List;
  * One-hot maps a serial of columns of category indices to a column of sparse binary vector. It will produce a model of
  * one hot, and then it can transform data to binary format using this model.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA, opType = OpType.BATCH))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@SelectedColsWithFirstInputSpec
+@NameCn("独热编码训练")
 public final class OneHotTrainBatchOp extends BatchOperator <OneHotTrainBatchOp>
 	implements OneHotTrainParams <OneHotTrainBatchOp>,
 	WithModelInfoBatchOp <OneHotModelInfo, OneHotTrainBatchOp, OneHotModelInfoBatchOp> {

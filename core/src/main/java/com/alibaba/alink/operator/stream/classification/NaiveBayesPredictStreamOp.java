@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.stream.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.classification.NaiveBayesModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -10,6 +11,7 @@ import com.alibaba.alink.params.classification.NaiveBayesPredictParams;
 /**
  * Naive Bayes Predictor.
  */
+@NameCn("朴素贝叶斯预测")
 public class NaiveBayesPredictStreamOp extends ModelMapStreamOp <NaiveBayesPredictStreamOp>
 	implements NaiveBayesPredictParams <NaiveBayesPredictStreamOp> {
 

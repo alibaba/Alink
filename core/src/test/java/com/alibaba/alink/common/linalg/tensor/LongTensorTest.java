@@ -96,22 +96,22 @@ public class LongTensorTest extends AlinkTestBase {
 	public void testSerDe() {
 		LongTensor tensor;
 		tensor = new LongTensor(new Shape(3, 4));
-		Assert.assertEquals("LONG#3,4#0 0 0 0 0 0 0 0 0 0 0 0 ", tensor.toString());
+		Assert.assertEquals("LONG#3,4#0 0 0 0 0 0 0 0 0 0 0 0 ", TensorUtil.toString(tensor));
 
-		LongTensor tensor2 = (LongTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		LongTensor tensor2 = (LongTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test
 	public void testScalarSerDe() {
 		long v = random.nextLong();
 		LongTensor tensor = new LongTensor(v);
-		Assert.assertEquals("LONG##-4962768465676381896 ", tensor.toString());
+		Assert.assertEquals("LONG##-4962768465676381896 ", TensorUtil.toString(tensor));
 
-		LongTensor tensor2 = (LongTensor) TensorUtil.getTensor(tensor.toString());
-		System.out.println(tensor2.toString());
-		Assert.assertEquals(tensor.toString(), tensor2.toString());
+		LongTensor tensor2 = (LongTensor) TensorUtil.getTensor(TensorUtil.toString(tensor));
+		System.out.println(TensorUtil.toString(tensor2));
+		Assert.assertEquals(TensorUtil.toString(tensor), TensorUtil.toString(tensor2));
 	}
 
 	@Test

@@ -182,6 +182,8 @@
         <module>dl_predictors</module>
         <module>connectors</module>
         <module>examples</module>
+        <module>python</module>
+        <module>plugins</module>
     </modules>
 
     <build>

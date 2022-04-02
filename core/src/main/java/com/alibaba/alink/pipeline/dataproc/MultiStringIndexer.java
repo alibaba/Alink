@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
@@ -22,6 +23,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * <li>alphabet_desc</li>
  * </ol>
  */
+@NameCn("MultiStringIndexer")
 public class MultiStringIndexer extends Trainer <MultiStringIndexer, MultiStringIndexerModel> implements
 	MultiStringIndexerTrainParams <MultiStringIndexer>,
 	MultiStringIndexerPredictParams <MultiStringIndexer> {

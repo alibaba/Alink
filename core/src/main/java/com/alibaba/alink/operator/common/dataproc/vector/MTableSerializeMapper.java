@@ -7,8 +7,10 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MTable;
-import com.alibaba.alink.common.MTableTypes;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.mapper.Mapper;
+import com.alibaba.alink.common.utils.JsonConverter;
 
 import java.util.ArrayList;
 
@@ -33,7 +35,7 @@ public class MTableSerializeMapper extends Mapper {
 		TypeInformation <?>[] types = dataSchema.getFieldTypes();
 
 		for (int i = 0; i < types.length; i++) {
-			if (MTableTypes.M_TABLE.equals(types[i])) {
+			if (AlinkTypes.M_TABLE.equals(types[i])) {
 
 				mTableCols.add(names[i]);
 				mTableColTypes.add(Types.STRING);
@@ -51,7 +53,7 @@ public class MTableSerializeMapper extends Mapper {
 		for (int i = 0; i < selection.length(); i++) {
 			MTable mTable = (MTable) selection.get(i);
 			if (null != mTable) {
-				result.set(i, mTable.toString());
+				result.set(i, JsonConverter.toJson(mTable));
 			}
 		}
 	}

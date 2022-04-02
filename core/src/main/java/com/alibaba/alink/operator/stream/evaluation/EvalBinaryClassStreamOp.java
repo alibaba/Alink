@@ -2,6 +2,9 @@ package com.alibaba.alink.operator.stream.evaluation;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.evaluation.BaseEvalClassStreamOp;
 import com.alibaba.alink.params.evaluation.EvalBinaryClassStreamParams;
 
@@ -12,6 +15,10 @@ import com.alibaba.alink.params.evaluation.EvalBinaryClassStreamParams;
  * PositiveValue is optional, if given, it will placed at the first position in the output label Array.
  * If not given, the labels are sorted in descending order.
  */
+@ParamSelectColumnSpec(name = "labelCol")
+@ParamSelectColumnSpec(name = "predictionDetailCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@ParamSelectColumnSpec(name = "predictionCol")
+@NameCn("二分类评估")
 public class EvalBinaryClassStreamOp extends BaseEvalClassStreamOp <EvalBinaryClassStreamOp> implements
 	EvalBinaryClassStreamParams <EvalBinaryClassStreamOp> {
 

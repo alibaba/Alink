@@ -4,6 +4,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * An interface for classes with a parameter specifying names of multiple output columns.
  *
@@ -13,10 +16,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasOutputCols<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 输出结果列列名数组
-	 * @cn 输出结果列列名数组，必选
-	 */
+	@NameCn("输出结果列列名数组")
+	@DescCn("输出结果列列名数组，必选")
 	ParamInfo <String[]> OUTPUT_COLS = ParamInfoFactory
 		.createParamInfo("outputCols", String[].class)
 		.setDescription("Names of the output columns")

@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.nlp;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.nlp.DocHashCountVectorizerTrainBatchOp;
 import com.alibaba.alink.params.nlp.DocHashCountVectorizerPredictParams;
@@ -13,6 +14,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * the document.
  * Different from DocCountVectorizer, it used the hash value of the word as index.
  */
+@NameCn("文本哈希特征生成")
 public class DocHashCountVectorizer extends Trainer <DocHashCountVectorizer, DocHashCountVectorizerModel>
 	implements DocHashCountVectorizerPredictParams <DocHashCountVectorizer>,
 	DocHashCountVectorizerTrainParams <DocHashCountVectorizer> {

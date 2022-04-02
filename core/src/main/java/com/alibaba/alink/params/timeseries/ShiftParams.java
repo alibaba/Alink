@@ -3,13 +3,14 @@ package com.alibaba.alink.params.timeseries;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface ShiftParams<T> extends
 	TimeSeriesPredictParams <T> {
 
-	/**
-	 * @cn-name shift个数
-	 * @cn shift个数
-	 */
+	@NameCn("shift个数")
+	@DescCn("shift个数")
 	ParamInfo <Integer> SHIFT_NUM = ParamInfoFactory
 		.createParamInfo("shiftNum", Integer.class)
 		.setDescription("shift number")

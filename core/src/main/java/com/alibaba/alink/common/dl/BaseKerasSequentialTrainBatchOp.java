@@ -1,8 +1,6 @@
 package com.alibaba.alink.common.dl;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -10,15 +8,19 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.operators.FlatMapOperator;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
-import com.alibaba.alink.common.MLEnvironment;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
-import com.alibaba.alink.common.linalg.tensor.TensorUtil;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -35,15 +37,25 @@ import com.alibaba.alink.params.dl.HasPythonEnv;
 import com.alibaba.alink.params.dl.HasTaskType;
 import com.alibaba.alink.params.tensorflow.kerasequential.BaseKerasSequentialTrainParams;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.MODEL))
+@ParamSelectColumnSpec(name = "tensorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "labelCol")
 @Internal
 public class BaseKerasSequentialTrainBatchOp<T extends BaseKerasSequentialTrainBatchOp <T>> extends BatchOperator <T>
 	implements BaseKerasSequentialTrainParams <T> {
 
 	static final String TF_OUTPUT_SIGNATURE_DEF_CLASSIFICATION = "logits";
 	static final String TF_OUTPUT_SIGNATURE_DEF_REGRESSION = "y";
-	static final TypeInformation <?> TF_OUTPUT_SIGNATURE_TYPE = TensorTypes.FLOAT_TENSOR;
+	static final TypeInformation <?> TF_OUTPUT_SIGNATURE_TYPE = AlinkTypes.FLOAT_TENSOR;
 
 	private static final String[] RES_PY_FILES = new String[] {
 		"res:///tf_algos/train_keras_sequential.py"

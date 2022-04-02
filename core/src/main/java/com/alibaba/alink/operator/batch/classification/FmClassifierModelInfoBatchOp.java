@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.batch.classification;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
@@ -16,12 +15,6 @@ import java.util.List;
 public class FmClassifierModelInfoBatchOp
 	extends ExtractModelInfoBatchOp <FmClassifierModelInfo, FmClassifierModelInfoBatchOp> {
 	private static final long serialVersionUID = -1834964301108717272L;
-	private TypeInformation labelType;
-
-	public FmClassifierModelInfoBatchOp(TypeInformation labelType) {
-		this(new Params());
-		this.labelType = labelType;
-	}
 
 	public FmClassifierModelInfoBatchOp() {
 		this(new Params());
@@ -30,7 +23,7 @@ public class FmClassifierModelInfoBatchOp
 	/**
 	 * construct function.
 	 *
-	 * @param params
+	 * @param params Parameters of batchOp.
 	 */
 	public FmClassifierModelInfoBatchOp(Params params) {
 		super(params);

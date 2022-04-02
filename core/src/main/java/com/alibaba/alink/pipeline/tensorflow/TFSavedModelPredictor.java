@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.tensorflow;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.tensorflow.TFSavedModelPredictMapper;
 import com.alibaba.alink.params.tensorflow.savedmodel.TFSavedModelPredictParams;
 import com.alibaba.alink.pipeline.MapTransformer;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapTransformer;
 /**
  * This operator loads a tensorflow SavedModel, and performs prediction with Tensorflow's Java sdk.
  */
+@NameCn("TF SavedModel 模型预测")
 public class TFSavedModelPredictor extends MapTransformer <TFSavedModelPredictor>
 	implements TFSavedModelPredictParams <TFSavedModelPredictor> {
 

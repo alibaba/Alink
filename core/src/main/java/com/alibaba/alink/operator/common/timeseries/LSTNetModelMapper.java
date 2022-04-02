@@ -11,7 +11,7 @@ import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.operator.common.tensorflow.TFTableModelPredictModelMapper;
 import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
@@ -25,7 +25,7 @@ public class LSTNetModelMapper extends TimeSeriesModelMapper {
 	private static final String[] TF_MODEL_MAPPER_INPUT_COL_NAMES
 		= new String[] {"agg_to_tensor_tensor_col_internal_impl"};
 	private static final TypeInformation <?>[] TF_MODEL_MAPPER_INPUT_COL_TYPES
-		= new TypeInformation <?>[] {TensorTypes.FLOAT_TENSOR};
+		= new TypeInformation <?>[] {AlinkTypes.FLOAT_TENSOR};
 
 	private static Params createTfModelMapperParams() {
 		return new Params()

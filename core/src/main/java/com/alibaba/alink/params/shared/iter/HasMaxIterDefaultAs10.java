@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasMaxIterDefaultAs10<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 最大迭代步数
-	 * @cn 最大迭代步数，默认为 10。
-	 */
+	@NameCn("最大迭代步数")
+	@DescCn("最大迭代步数，默认为 10。")
 	ParamInfo <Integer> MAX_ITER = ParamInfoFactory
 		.createParamInfo("maxIter", Integer.class)
 		.setDescription("Maximum iterations, The default value is 10")

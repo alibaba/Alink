@@ -8,6 +8,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -22,6 +30,10 @@ import java.util.Map;
 /**
  * Multi hot encoding train process.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA, opType = OpType.BATCH))
+@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.STRING_TYPES)
+@NameCn("多热编码训练")
 public final class MultiHotTrainBatchOp extends BatchOperator <MultiHotTrainBatchOp>
 	implements MultiHotTrainParams <MultiHotTrainBatchOp>,
 	WithModelInfoBatchOp <MultiHotModelInfo, MultiHotTrainBatchOp, MultiHotModelInfoBatchOp> {

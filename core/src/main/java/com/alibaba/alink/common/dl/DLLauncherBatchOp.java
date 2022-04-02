@@ -1,6 +1,5 @@
 package com.alibaba.alink.common.dl;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
@@ -10,6 +9,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.api.java.io.DiscardingOutputFormat;
 import org.apache.flink.api.java.operators.IterativeDataSet;
 import org.apache.flink.api.java.operators.MapPartitionOperator;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -20,20 +20,27 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.io.plugin.OsType;
-import com.alibaba.alink.common.io.plugin.OsUtils;
-import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.utils.DataSetUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.common.dl.utils.DLUtils;
-import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.dl.coding.ExampleCodingV2;
 import com.alibaba.alink.common.dl.data.TFRecordReaderImpl;
 import com.alibaba.alink.common.dl.data.TFRecordWriterImpl;
 import com.alibaba.alink.common.dl.utils.DLLauncherUtils;
 import com.alibaba.alink.common.dl.utils.DLTypeUtils;
+import com.alibaba.alink.common.dl.utils.DLUtils;
 import com.alibaba.alink.common.dl.utils.DataSetDiskDownloader;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.io.plugin.OsType;
+import com.alibaba.alink.common.io.plugin.OsUtils;
+import com.alibaba.alink.common.linalg.tensor.Tensor;
+import com.alibaba.alink.common.utils.DataSetUtil;
+import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.FirstReducer;
 import com.alibaba.alink.params.dl.DLLauncherParams;
 import com.alibaba.flink.ml.tensorflow2.client.DLConfig;
 import com.alibaba.flink.ml.util.MLConstants;
@@ -51,6 +58,11 @@ import java.util.Map;
  * <p>
  * This operator uses many of the technologies of the project: https://github.com/alibaba/flink-ai-extended
  */
+@InputPorts(values = {
+	@PortSpec(PortType.DATA),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.DL_BC_DATA, isRepeated = true)}
+)
+@OutputPorts(values = @PortSpec(PortType.DATA))
 @Internal
 public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 	implements DLLauncherParams <DLLauncherBatchOp> {
@@ -71,7 +83,11 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 		DLConfig config = new DLConfig(numWorkers, numPSs, new HashMap <>(), (String) null, getEntryFunc(), null);
 		DLUtils.setExampleCodingType(config, inputSchema, outputSchema);
 
-		DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, getPythonEnv());
+		if (!StringUtils.isNullOrWhitespaceOnly(getPythonEnv())) {
+			DLUtils.safePutProperties(config, DLConstants.PYTHON_ENV, getPythonEnv());
+		} else if (null != getEnvVersion()) {
+			DLUtils.safePutProperties(config, DLConstants.ENV_VERSION, getEnvVersion().name());
+		}
 		DLUtils.safePutProperties(config, DLConstants.ENTRY_SCRIPT, getMainScriptFile());
 		DLUtils.safePutProperties(config, DLConstants.ENTRY_FUNC, getEntryFunc());
 		DLUtils.safePutProperties(config, DLConstants.USER_DEFINED_PARAMS, getUserParams());
@@ -157,7 +173,7 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 		final int numPSs = getNumPSs();
 
 		String outputSchemaStr = getOutputSchemaStr();
-		TableSchema outputSchema = CsvUtil.schemaStr2Schema(outputSchemaStr);
+		TableSchema outputSchema = TableUtil.schemaStr2Schema(outputSchemaStr);
 		DLConfig config = setupDLConfig(in.getSchema(), outputSchema);
 
 		ExternalFilesConfig externalFiles = getUserFiles();
@@ -185,6 +201,13 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 		} else {
 			input = dataSetFirstNPartitionStrictRebalance(input, numWorkers + numPSs);
 		}
+
+		// When feeding a dataset to iteration, Flink may reset its parallelism to default parallelism (See
+		// {@link GraphCreatingVisitor#preVisit})
+		// Yet, it will not happen if the dataset is visited before the iterative dataset.
+		// Adding a sink to the dataset seems to force the dataset to be visited earlier.
+		// May need to confirm, but it works for now.
+		input.output(new DiscardingOutputFormat <>());
 
 		// In this MapPartition operator, python processes are launched, data are sent to
 		// and collect from them.
@@ -259,7 +282,7 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 	}
 
 	private DataSet <Map <String, long[]>> extractTensorShapes(DataSet <Row> dataSet, String[] colNames) {
-		return dataSet.first(1)
+		return dataSet.reduceGroup(new FirstReducer <>(1))
 			.flatMap(new FlatMapFunction <Row, Map <String, long[]>>() {
 				@Override
 				public void flatMap(Row value, Collector <Map <String, long[]>> out) throws Exception {
@@ -275,7 +298,7 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 	}
 
 	private DataSet <Map <String, String>> extractTensorTypes(DataSet <Row> dataSet, String[] colNames) {
-		return dataSet.first(1)
+		return dataSet.reduceGroup(new FirstReducer <>(1))
 			.flatMap(new FlatMapFunction <Row, Map <String, String>>() {
 				@Override
 				public void flatMap(Row value, Collector <Map <String, String>> out) {

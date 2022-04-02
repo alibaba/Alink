@@ -9,6 +9,7 @@ import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
+import com.alibaba.alink.common.utils.JsonConverter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,24 +26,25 @@ public class DLEnvConfig {
 	private final static Logger LOG = LoggerFactory.getLogger(DLEnvConfig.class);
 
 	static String REGISTER_KEY_TEMPLATE = "%s_python_env_%s";
-	static String PLUGIN_VERSION = "0.03";
+	static String PLUGIN_VERSION = "0.04";
 
 	static Map <Pair <OsType, Version>, String> PYTHON_ENV_PATH_MAP = new HashMap <>();
 	static Map <Version, String> PYTHON_ENV_KEY = new HashMap <>();
 
 	static {
 		PYTHON_ENV_PATH_MAP.put(Pair.of(LINUX, TF115),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf115_python_env_linux-0.03/tf115-ai030-py36-linux.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf115_python_env_linux-0.04/tf115-ai030-py36-linux.tar.gz");
 		PYTHON_ENV_PATH_MAP.put(Pair.of(MACOSX, TF115),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf115_python_env_macosx-0.03/tf115-ai030-py36-mac.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf115_python_env_macosx-0.04/tf115-ai030-py36-mac.tar.gz");
 		PYTHON_ENV_PATH_MAP.put(Pair.of(WINDOWS, TF115),
-			"http://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf115_python_env_windows-0.03/tf115-ai030-py36-windows.zip");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf115_python_env_windows-0.04/tf115-ai030-py36-windows.zip");
 		PYTHON_ENV_PATH_MAP.put(Pair.of(LINUX, TF231),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf231_python_env_linux-0.03/tf231-ai030-py36-linux.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf231_python_env_linux-0.04/tf231-ai030-py36-linux.tar.gz");
 		PYTHON_ENV_PATH_MAP.put(Pair.of(MACOSX, TF231),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf231_python_env_macosx-0.03/tf231-ai030-py36-mac.tar.gz");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf231_python_env_macosx-0.04/tf231-ai030-py36-mac.tar.gz");
 		PYTHON_ENV_PATH_MAP.put(Pair.of(WINDOWS, TF231),
-			"http://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf231_python_env_windows-0.03/tf231-ai030-py36-windows.zip");
+			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/tf231_python_env_windows-0.04/tf231-ai030-py36-windows.zip");
+
 		PYTHON_ENV_KEY.put(TF115, "TF115_PYTHON_ENV_PATH");
 		PYTHON_ENV_KEY.put(TF231, "TF231_PYTHON_ENV_PATH");
 	}
@@ -60,6 +62,8 @@ public class DLEnvConfig {
 
 	static String getDefaultPythonEnv(Version version) {
 		String pythonEnv = null;
+
+		LOG.info("Start to prepare default python env: {}", JsonConverter.toJson(version));
 
 		// Try to get PythonEnv from environment variables
 		String pythonEnvKey = PYTHON_ENV_KEY.get(version);

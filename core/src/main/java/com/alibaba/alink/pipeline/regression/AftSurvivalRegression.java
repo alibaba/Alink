@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -16,6 +17,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * <p>
  * (https://en.wikipedia.org/wiki/Accelerated_failure_time_model)
  */
+@NameCn("生存回归")
 public class AftSurvivalRegression extends Trainer <AftSurvivalRegression, AftSurvivalRegressionModel> implements
 	AftRegTrainParams <AftSurvivalRegression>,
 	AftRegPredictParams <AftSurvivalRegression>,

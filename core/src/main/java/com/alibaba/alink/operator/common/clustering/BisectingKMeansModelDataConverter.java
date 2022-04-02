@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
 import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelData.ClusterSummary;
 import com.alibaba.alink.params.clustering.BisectingKMeansTrainParams;
-import com.alibaba.alink.params.shared.HasVectorSizeDv100;
+import com.alibaba.alink.params.shared.HasVectorSizeDefaultAs100;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ public class BisectingKMeansModelDataConverter
 		});
 		Params meta = new Params().set(BisectingKMeansTrainParams.DISTANCE_TYPE, modelData.distanceType)
 			.set(BisectingKMeansTrainParams.K, modelData.k)
-			.set(HasVectorSizeDv100.VECTOR_SIZE, modelData.vectorSize)
+			.set(HasVectorSizeDefaultAs100.VECTOR_SIZE, modelData.vectorSize)
 			.set(BisectingKMeansTrainParams.VECTOR_COL, modelData.vectorColName);
 		return Tuple2.of(meta, modelRows);
 	}
@@ -38,7 +38,7 @@ public class BisectingKMeansModelDataConverter
 	public BisectingKMeansModelData deserializeModel(Params meta, Iterable <String> data) {
 		BisectingKMeansModelData modelData = new BisectingKMeansModelData();
 		modelData.k = meta.get(BisectingKMeansTrainParams.K);
-		modelData.vectorSize = meta.get(HasVectorSizeDv100.VECTOR_SIZE);
+		modelData.vectorSize = meta.get(HasVectorSizeDefaultAs100.VECTOR_SIZE);
 		modelData.distanceType = meta.get(BisectingKMeansTrainParams.DISTANCE_TYPE);
 		modelData.vectorColName = meta.get(BisectingKMeansTrainParams.VECTOR_COL);
 		modelData.summaries = new HashMap <>();

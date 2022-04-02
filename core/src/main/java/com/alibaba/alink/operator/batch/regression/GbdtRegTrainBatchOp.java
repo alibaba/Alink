@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
 import com.alibaba.alink.operator.common.tree.parallelcart.BaseGbdtTrainBatchOp;
@@ -29,6 +30,7 @@ import com.alibaba.alink.params.regression.GbdtRegTrainParams;
  * "A communication-efficient parallel algorithm for decision tree", Qi Meng et al., NIPS 2016
  * for an introduction on data-parallel, feature-parallel, etc., algorithms to construct decision forests.
  */
+@NameCn("GBDT回归训练")
 public final class GbdtRegTrainBatchOp extends BaseGbdtTrainBatchOp <GbdtRegTrainBatchOp>
 	implements GbdtRegTrainParams <GbdtRegTrainBatchOp>,
 	WithModelInfoBatchOp <TreeModelInfo.GbdtModelInfo, GbdtRegTrainBatchOp, GbdtRegModelInfoBatchOp> {

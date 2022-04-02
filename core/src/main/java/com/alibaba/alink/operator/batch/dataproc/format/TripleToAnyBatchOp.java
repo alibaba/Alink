@@ -12,6 +12,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -29,6 +36,9 @@ import java.util.HashMap;
 /**
  * The base class of transform triple to other types.
  */
+@InputPorts(values = {@PortSpec(value = PortType.DATA, opType = OpType.BATCH)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@NameCn("")
 class TripleToAnyBatchOp<T extends TripleToAnyBatchOp <T>> extends BatchOperator <T>
 	implements FromTripleParams <T> {
 

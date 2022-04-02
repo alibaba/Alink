@@ -24,8 +24,9 @@ public class PluginDistributeCache extends DistributeCache {
 		String name = context.get("name");
 		String version = context.get("version");
 		String pluginDir = context.get(PluginConfig.ENV_ALINK_PLUGINS_DIR);
+		String pluginUrl = context.get(AlinkGlobalConfiguration.ALINK_PLUGIN_URL);
 
-		PluginDownloader downloader = new PluginDownloader(pluginDir);
+		PluginDownloader downloader = new PluginDownloader(pluginUrl, pluginDir);
 
 		if (downloader.checkPluginExistRoughly(name, version)) {
 			return;
@@ -50,6 +51,7 @@ public class PluginDistributeCache extends DistributeCache {
 				.put("version", pluginVersion)
 				.put(PluginConfig.ENV_ALINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir())
 				.put("autoPluginDownload", Boolean.toString(AlinkGlobalConfiguration.getAutoPluginDownload()))
+				.put(AlinkGlobalConfiguration.ALINK_PLUGIN_URL, AlinkGlobalConfiguration.getPluginUrl())
 				.build()
 		);
 	}

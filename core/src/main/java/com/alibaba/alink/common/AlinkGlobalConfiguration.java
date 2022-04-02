@@ -92,14 +92,7 @@ public final class AlinkGlobalConfiguration {
 	}
 
 	public static String getFlinkVersion() {
-		String flinkVersion = EnvironmentInformation.getVersion();
-		int lastDotIndex = flinkVersion.lastIndexOf(".");
-
-		if (lastDotIndex < 0) {
-			return flinkVersion;
-		}
-
-		return String.format("flink-%s", flinkVersion.substring(0, lastDotIndex));
+		return "flink-1.13";
 	}
 
 	public static PluginDownloader getPluginDownloader() {

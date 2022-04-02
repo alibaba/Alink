@@ -24,7 +24,7 @@ public class PythonMIMOUdaf<HANDLER extends PyMIMOCalcHandle>
 
     @Override
     public List<Row> getValue(ItemAccumulator acc) {
-        PyMIMOCalcRunner<HANDLER> runner = new PyMIMOCalcRunner<>(pythonClassName, config);
+        PyMIMOCalcRunner<HANDLER> runner = new PyMIMOCalcRunner<>(pythonClassName, config::getOrDefault);
         List<Row> inputs = acc.items;
         runner.open();
         List<Row> outputs = runner.calc(inputs);

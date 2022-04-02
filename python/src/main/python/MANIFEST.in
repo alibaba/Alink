@@ -1,0 +1,4 @@
+global-exclude *.py[cod] __pycache__ .DS_Store
+recursive-include pyalink lib/*.jar
+include pyalink/LICENSE
+include requirements.txt

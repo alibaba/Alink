@@ -2,12 +2,14 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.GbdtTrainBatchOp;
 import com.alibaba.alink.params.classification.GbdtTrainParams;
 import com.alibaba.alink.params.feature.GbdtEncoderParams;
 import com.alibaba.alink.pipeline.Trainer;
 
+@NameCn("GBDT编码")
 public class GbdtEncoder extends Trainer <GbdtEncoder, GbdtEncoderModel> implements
 	GbdtTrainParams <GbdtEncoder>,
 	GbdtEncoderParams <GbdtEncoder> {

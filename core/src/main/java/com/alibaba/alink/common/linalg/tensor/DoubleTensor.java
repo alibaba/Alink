@@ -39,7 +39,7 @@ public final class DoubleTensor extends NumericalTensor <Double> {
 		this(StdArrays.ndCopyOf(data));
 	}
 
-	DoubleTensor(DoubleNdArray data) {
+	public DoubleTensor(DoubleNdArray data) {
 		super(data, DataType.DOUBLE);
 	}
 

@@ -97,4 +97,9 @@ public class UserCfRecommKernel extends RecommKernel implements Cloneable {
 	public MTable recommendSimilarUsers(Object userId) {
 		return ItemCfRecommKernel.findSimilarItems(userId, model.get(), topN, userColName, recommObjType);
 	}
+
+	@Override
+	public RecommKernel createNew() {
+		return new UserCfRecommKernel(getModelSchema(), getDataSchema(), params.clone(), recommType);
+	}
 }

@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasFrom<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 开始
-	 * @cn 开始
-	 */
+	@NameCn("开始")
+	@DescCn("开始")
 	ParamInfo <Long> FROM = ParamInfoFactory
 		.createParamInfo("from", Long.class)
 		.setRequired()

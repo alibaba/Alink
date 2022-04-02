@@ -7,6 +7,7 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -23,6 +24,7 @@ import com.alibaba.alink.params.io.LibSvmSinkParams;
  * Sink the data to files in libsvm format.
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SinkBatch)
+@NameCn("LibSvm文件导出")
 public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
 	implements LibSvmSinkParams <LibSvmSinkBatchOp> {
 
@@ -56,7 +58,7 @@ public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
 			for (int i = 0; i < indices.length; i++) {
 				indices[i] = indices[i] + startIndex;
 			}
-			vectorStr = v.toString();
+			vectorStr = VectorUtil.serialize(v);
 		}
 		return labelStr + " " + vectorStr;
 	}

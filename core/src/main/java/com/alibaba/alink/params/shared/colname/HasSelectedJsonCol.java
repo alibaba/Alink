@@ -4,6 +4,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * An interface for classes with a parameter specifying the name of the table column.
  *
@@ -13,10 +16,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
  */
 public interface HasSelectedJsonCol<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 选中的Json列名
-	 * @cn 计算列对应的Json列名
-	 */
+	@NameCn("选中的Json列名")
+	@DescCn("计算列对应的Json列名")
 	ParamInfo <String> SELECTED_JSON_COL = ParamInfoFactory
 		.createParamInfo("selectedJsonCol", String.class)
 		.setDescription("Name of the selected json column used for processing")

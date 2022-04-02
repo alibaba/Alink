@@ -26,7 +26,6 @@ public class ClassLoaderContainer {
 		return INSTANCE;
 	}
 
-	private JarsPluginManager pluginManager;
 	private final Map <RegisterKey, ClassLoader> registeredClassLoaders = new HashMap <>();
 
 	private ClassLoaderContainer() {
@@ -119,15 +118,11 @@ public class ClassLoaderContainer {
 
 		final List <Tuple2 <T, PluginDescriptor>> loadedServices = new ArrayList <>();
 
-		// from plugin
-		if (pluginManager == null) {
-			distributeCache.distributeAsLocalFile();
-			pluginManager = PluginUtils.createJarsPluginManagerFromRootFolder(
-				PluginUtils.readPluginConf(distributeCache.context())
-			);
-		}
+		distributeCache.distributeAsLocalFile();
 
-		pluginManager
+		PluginUtils.createJarsPluginManagerFromRootFolder(
+				PluginUtils.readPluginConf(distributeCache.context())
+			)
 			.load(service, AlinkGlobalConfiguration.getFlinkVersion(), key.getName(), key.getVersion())
 			.forEachRemaining(t -> {
 				if (serviceFilter.test(t.f0)) {

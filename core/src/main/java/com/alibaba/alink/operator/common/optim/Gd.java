@@ -24,7 +24,7 @@ import com.alibaba.alink.operator.common.optim.subfunc.PreallocateConvergenceInf
 import com.alibaba.alink.operator.common.optim.subfunc.PreallocateVector;
 import com.alibaba.alink.operator.common.optim.subfunc.UpdateModel;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
-import com.alibaba.alink.params.shared.optim.HasNumSearchStepDv4;
+import com.alibaba.alink.params.shared.optim.HasNumSearchStepDefaultAs4;
 
 /**
  * The algorithm of GD.
@@ -55,7 +55,7 @@ public class Gd extends Optimizer {
 		int maxIter = params.get(LinearTrainParams.MAX_ITER);
 		checkInitCoef();
 
-		int numSearchStep = params.get(HasNumSearchStepDv4.NUM_SEARCH_STEP);
+		int numSearchStep = params.get(HasNumSearchStepDefaultAs4.NUM_SEARCH_STEP);
 
 		/**
 		 * solve problem using iteration.

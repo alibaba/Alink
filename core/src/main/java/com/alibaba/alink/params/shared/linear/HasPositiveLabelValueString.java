@@ -4,14 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * positive label value with string format.
  */
 public interface HasPositiveLabelValueString<T> extends WithParams <T> {
-	/**
-	 * @cn-name 正样本
-	 * @cn 正样本对应的字符串格式。
-	 */
+	@NameCn("正样本")
+	@DescCn("正样本对应的字符串格式。")
 	ParamInfo <String> POS_LABEL_VAL_STR = ParamInfoFactory
 		.createParamInfo("positiveLabelValueString", String.class)
 		.setDescription("positive label value with string format.")

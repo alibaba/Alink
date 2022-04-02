@@ -1,10 +1,10 @@
 package com.alibaba.alink.operator.batch.tensorflow;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.dl.BaseDLBatchOp;
-import com.alibaba.alink.common.dl.DLEnvConfig;
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.params.tensorflow.TensorFlowParams;
 
 import java.util.Collections;
@@ -13,6 +13,7 @@ import java.util.Collections;
  * A general stream op to run custom TensorFlow (version 2.3.1) scripts for stream datasets.
  * Any number of outputs are allowed from TF scripts, even no outputs.
  */
+@NameCn("TensorFlow2自定义脚本")
 public class TensorFlow2BatchOp extends BaseDLBatchOp <TensorFlow2BatchOp> implements
 	TensorFlowParams <TensorFlow2BatchOp> {
 
@@ -30,9 +31,6 @@ public class TensorFlow2BatchOp extends BaseDLBatchOp <TensorFlow2BatchOp> imple
 		mainScriptFileName = "res:///entries/tf2_batch_entry.py";
 		userScriptMainFileName = "tf_user_main.py";
 		numPss = getNumPSs();
-
-		if (StringUtils.isNullOrWhitespaceOnly(getPythonEnv())) {
-			setPythonEnv(DLEnvConfig.getTF231DefaultPythonEnv());
-		}
+		version = Version.TF231;
 	}
 }

@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.classification.NaiveBayesModelMapper;
 import com.alibaba.alink.params.classification.NaiveBayesPredictParams;
@@ -9,6 +10,7 @@ import com.alibaba.alink.params.classification.NaiveBayesPredictParams;
 /**
  * Naive Bayes Predictor.
  */
+@NameCn("朴素贝叶斯预测")
 public class NaiveBayesPredictBatchOp extends ModelMapBatchOp <NaiveBayesPredictBatchOp>
 	implements NaiveBayesPredictParams <NaiveBayesPredictBatchOp> {
 

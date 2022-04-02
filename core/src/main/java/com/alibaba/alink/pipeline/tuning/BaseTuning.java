@@ -18,6 +18,7 @@ import org.apache.flink.util.ExceptionUtils;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
@@ -41,6 +42,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * BaseTuning.
  */
+@NameCn("")
 public abstract class BaseTuning<T extends BaseTuning <T, M>, M extends BaseTuningModel <M>>
 	extends EstimatorBase <T, M> implements HasLazyPrintTrainInfo <T> {
 

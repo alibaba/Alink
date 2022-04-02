@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.regression.GlmTrainBatchOp;
@@ -12,6 +13,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * Generalized Linear Model. https://en.wikipedia.org/wiki/Generalized_linear_model.
  */
+@NameCn("广义线性回归")
 public class GeneralizedLinearRegression
 	extends Trainer <GeneralizedLinearRegression, GeneralizedLinearRegressionModel>
 	implements GlmTrainParams <GeneralizedLinearRegression>,

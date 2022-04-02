@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.source;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.io.TsvSourceParams;
  * A data source that reads data with tab-separated values.
  */
 @IoOpAnnotation(name = "tsv", ioType = IOType.SourceBatch)
+@NameCn("TSV文件读入")
 public final class TsvSourceBatchOp extends BaseSourceBatchOp <TsvSourceBatchOp>
 	implements TsvSourceParams <TsvSourceBatchOp> {
 

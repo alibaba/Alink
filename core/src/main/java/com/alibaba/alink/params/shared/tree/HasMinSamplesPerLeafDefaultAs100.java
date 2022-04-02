@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasMinSamplesPerLeafDefaultAs100<T> extends WithParams <T> {
-	/**
-	 * @cn-name 叶节点的最小样本个数
-	 * @cn 叶节点的最小样本个数
-	 */
+	@NameCn("叶节点的最小样本个数")
+	@DescCn("叶节点的最小样本个数")
 	ParamInfo <Integer> MIN_SAMPLES_PER_LEAF = ParamInfoFactory
 		.createParamInfo("minSamplesPerLeaf", Integer.class)
 		.setDescription("Minimal number of sample in one leaf.")

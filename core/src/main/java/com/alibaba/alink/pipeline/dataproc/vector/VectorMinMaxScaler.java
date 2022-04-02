@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorMinMaxScalerTrainBatchOp;
@@ -14,6 +15,7 @@ import com.alibaba.alink.pipeline.Trainer;
  *
  * x_scaled = (x - eMin) / (eMax - eMin) * (maxV - minV) + minV;
  */
+@NameCn("向量归一化")
 public class VectorMinMaxScaler extends Trainer <VectorMinMaxScaler, VectorMinMaxScalerModel> implements
 	VectorMinMaxScalerTrainParams <VectorMinMaxScaler>,
 	VectorMinMaxScalerPredictParams <VectorMinMaxScaler>,

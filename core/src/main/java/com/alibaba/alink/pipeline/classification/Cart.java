@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.CartTrainBatchOp;
@@ -12,6 +13,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * The pipeline for cart model.
  */
+@NameCn("CART决策树分类")
 public class Cart extends Trainer <Cart, CartModel> implements
 	CartTrainParams <Cart>,
 	CartPredictParams <Cart>, HasLazyPrintModelInfo <Cart> {

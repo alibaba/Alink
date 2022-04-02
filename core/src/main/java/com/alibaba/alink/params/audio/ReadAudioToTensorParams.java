@@ -3,6 +3,8 @@ package com.alibaba.alink.params.audio;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.image.HasRelativeFilePathCol;
 import com.alibaba.alink.params.io.HasRootFilePath;
 import com.alibaba.alink.params.mapper.MapperParams;
@@ -16,18 +18,14 @@ public interface ReadAudioToTensorParams<T> extends
 	HasRootFilePath <T>,
 	HasOutputCol <T>,
 	HasReservedColsDefaultAsNull <T> {
-	/**
-	 * @cn-name 采样持续时间
-	 * @cn 采样持续时间
-	 */
+	@NameCn("采样持续时间")
+	@DescCn("采样持续时间")
 	ParamInfo <Double> DURATION = ParamInfoFactory
 		.createParamInfo("duration", Double.class)
 		.setDescription("only load up to this much audio (in seconds)")
 		.build();
-	/**
-	 * @cn-name 采样开始时刻
-	 * @cn 采样开始时刻
-	 */
+	@NameCn("采样开始时刻")
+	@DescCn("采样开始时刻")
 	ParamInfo <Double> OFFSET = ParamInfoFactory
 		.createParamInfo("offset", Double.class)
 		.setDescription("start reading after this time (in seconds)")

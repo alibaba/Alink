@@ -14,8 +14,8 @@ import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvParser;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.shared.HasMLEnvironmentId;
 import com.jayway.jsonpath.JsonPath;
 
@@ -33,12 +33,12 @@ public class LocalPredictorLoader implements Serializable {
 	@Deprecated
 	public static LocalPredictor loadFromPipelineModelPath(String pipelineModelPath, String inputSchemaStr)
 		throws Exception {
-		return load(new FilePath(pipelineModelPath), CsvUtil.schemaStr2Schema(inputSchemaStr));
+		return load(new FilePath(pipelineModelPath), TableUtil.schemaStr2Schema(inputSchemaStr));
 	}
 
 	@Deprecated
 	public static LocalPredictor load(FilePath pipelineModelPath, String inputSchemaStr) throws Exception {
-		return load(pipelineModelPath, CsvUtil.schemaStr2Schema(inputSchemaStr));
+		return load(pipelineModelPath, TableUtil.schemaStr2Schema(inputSchemaStr));
 	}
 
 	@Deprecated
@@ -60,7 +60,7 @@ public class LocalPredictorLoader implements Serializable {
 
 	@Deprecated
 	public static LocalPredictor load(String modelPath, String inputSchemaStr) throws Exception {
-		return loadLocalPredictor(modelPath, CsvUtil.schemaStr2Schema(inputSchemaStr));
+		return loadLocalPredictor(modelPath, TableUtil.schemaStr2Schema(inputSchemaStr));
 	}
 
 	/**
@@ -93,8 +93,8 @@ public class LocalPredictorLoader implements Serializable {
 				MapModel <?> mapModel = (MapModel) transformer;
 				ModelMapper mapper = mapModel
 					.mapperBuilder
-					.apply(CsvUtil.schemaStr2Schema(modelSchemaStr[i]), schema, mapModel.getParams());
-				CsvParser csvParser = new CsvParser(CsvUtil.getColTypes(modelSchemaStr[i]), "^", '\'');
+					.apply(TableUtil.schemaStr2Schema(modelSchemaStr[i]), schema, mapModel.getParams());
+				CsvParser csvParser = new CsvParser(TableUtil.getColTypes(modelSchemaStr[i]), "^", '\'');
 				List <Row> modelRows = rows.get((long) i);
 				int s = modelRows.size();
 				for (int j = 0; j < s; j++) {
@@ -145,8 +145,8 @@ public class LocalPredictorLoader implements Serializable {
 				MapModel <?> mapModel = (MapModel) transformer;
 				ModelMapper mapper = mapModel
 					.mapperBuilder
-					.apply(CsvUtil.schemaStr2Schema(modelSchemaStr[i]), schema, mapModel.getParams());
-				CsvParser csvParser = new CsvParser(CsvUtil.getColTypes(modelSchemaStr[i]), "^", '\'');
+					.apply(TableUtil.schemaStr2Schema(modelSchemaStr[i]), schema, mapModel.getParams());
+				CsvParser csvParser = new CsvParser(TableUtil.getColTypes(modelSchemaStr[i]), "^", '\'');
 				List <Row> singleModelRows = mapRows.get((long) i);
 				int s = singleModelRows.size();
 				for (int j = 0; j < s; j++) {
@@ -208,7 +208,7 @@ public class LocalPredictorLoader implements Serializable {
 		}
 		for (int i = 0; i < schemas0.length; i++) {
 			if (!StringUtils.isNullOrWhitespaceOnly(schemas0[i])) {
-				schemas[i] = CsvUtil.schemaStr2Schema(schemas0[i]);
+				schemas[i] = TableUtil.schemaStr2Schema(schemas0[i]);
 			}
 		}
 

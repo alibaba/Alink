@@ -9,9 +9,22 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamCond;
+import com.alibaba.alink.common.annotation.ParamCond.CondType;
+import com.alibaba.alink.common.annotation.ParamCond.CondValue;
+import com.alibaba.alink.common.annotation.ParamCond.CondValueType;
+import com.alibaba.alink.common.annotation.ParamMutexRule;
+import com.alibaba.alink.common.annotation.ParamMutexRule.ActionType;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -27,6 +40,28 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.MODEL))
+@ParamSelectColumnSpec(name = "timeCol", allowedTypeCollections = TypeCollections.TIMESTAMP_TYPES)
+@ParamSelectColumnSpec(name = "selectedCol")
+@ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamMutexRule(
+	name = "vectorCol", type = ActionType.DISABLE,
+	cond = @ParamCond(
+		name = "selectedCol",
+		type = CondType.WHEN_VALUES_NOT_IN,
+		values = {@CondValue(type = CondValueType.NULL), @CondValue("")}
+	)
+)
+@ParamMutexRule(
+	name = "selectedCol", type = ActionType.DISABLE,
+	cond = @ParamCond(
+		name = "vectorCol",
+		type = CondType.WHEN_VALUES_NOT_IN,
+		values = {@CondValue(type = CondValueType.NULL), @CondValue("")}
+	)
+)
+@NameCn("LSTNet训练")
 public class LSTNetTrainBatchOp extends BatchOperator <LSTNetTrainBatchOp>
 	implements LSTNetTrainParams <LSTNetTrainBatchOp> {
 
@@ -109,8 +144,8 @@ public class LSTNetTrainBatchOp extends BatchOperator <LSTNetTrainBatchOp>
 			final boolean genY = outputColNames.length == 2;
 
 			TypeInformation <?>[] outputColTypes = genY ?
-				new TypeInformation <?>[] {TensorTypes.FLOAT_TENSOR, TensorTypes.FLOAT_TENSOR} :
-				new TypeInformation <?>[] {TensorTypes.FLOAT_TENSOR};
+				new TypeInformation <?>[] {AlinkTypes.FLOAT_TENSOR, AlinkTypes.FLOAT_TENSOR} :
+				new TypeInformation <?>[] {AlinkTypes.FLOAT_TENSOR};
 
 			setOutput(
 				sorted.f0

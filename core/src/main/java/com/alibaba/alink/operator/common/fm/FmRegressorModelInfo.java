@@ -82,17 +82,17 @@ public class FmRegressorModelInfo implements Serializable {
 		map.put("numFactor", String.valueOf(numFactor));
 		double bias = factors.bias;
 		map.put("bias", String.valueOf(bias));
-		sbd.append(PrettyDisplayUtils.displayMap(map, 3, false) + "\n");
+		sbd.append(PrettyDisplayUtils.displayMap(map, 3, false)).append("\n");
 
 		if (labelValues != null && labelValues.length > 1) {
 			sbd.append(PrettyDisplayUtils.displayHeadline("model label values", '-'));
-			sbd.append(PrettyDisplayUtils.displayList(java.util.Arrays.asList(labelValues)) + "\n");
+			sbd.append(PrettyDisplayUtils.displayList(java.util.Arrays.asList(labelValues))).append("\n");
 		}
 
 		sbd.append(PrettyDisplayUtils.displayHeadline("model info", '-'));
 		int k = numFactor;
 		if (featureColNames != null) {
-			int printSize = featureColNames.length < 10 ? featureColNames.length : 10;
+			int printSize = Math.min(featureColNames.length, 10);
 			Object[][] out = new Object[printSize + 1][3];
 
 			for (int i = 0; i < printSize; ++i) {
@@ -102,12 +102,12 @@ public class FmRegressorModelInfo implements Serializable {
 				} else {
 					out[i][1] = df.format(0.0);
 				}
-				String factor = "";
+				StringBuilder factor = new StringBuilder();
 
 				for (int j = 0; j < k; ++j) {
-					factor += df.format(factors.factors[i][j]) + " ";
+					factor.append(df.format(factors.factors[i][j])).append(" ");
 				}
-				out[i][2] = factor;
+				out[i][2] = factor.toString();
 			}
 			if (featureColNames.length >= 10) {
 				for (int i = 0; i < 3; ++i) {
@@ -119,7 +119,7 @@ public class FmRegressorModelInfo implements Serializable {
 				new String[] {"colName", "linearItem", "factor"}, null,
 				printSize, 3));
 		} else {
-			int printSize = numFeature < 10 ? numFeature : 10;
+			int printSize = Math.min(numFeature, 10);
 			Object[][] out = new Object[printSize + 1][3];
 
 			for (int i = 0; i < printSize; ++i) {
@@ -129,12 +129,12 @@ public class FmRegressorModelInfo implements Serializable {
 				} else {
 					out[i][1] = df.format(0.0);
 				}
-				String factor = "";
+				StringBuilder factor = new StringBuilder();
 
 				for (int j = 0; j < k; ++j) {
-					factor += df.format(factors.factors[i][j]) + " ";
+					factor.append(df.format(factors.factors[i][j])).append(" ");
 				}
-				out[i][2] = factor;
+				out[i][2] = factor.toString();
 			}
 			if (numFeature >= 10) {
 				for (int i = 0; i < 3; ++i) {

@@ -89,7 +89,9 @@ public class OverTimeWindowStreamOpTest extends AlinkTestBase {
 			new OverTimeWindowStreamOp()
 				.setTimeCol("sell_time")
 				.setPrecedingTime(120)
-				.setClause("listagg_preceding(price) as list_price, is_exist(price) as is_exist_p")
+				.setClause("listagg_preceding(price) as list_price, "
+					+ "is_exist(price) as is_exist_p,"
+					+ "last_value(price, 1) as last_price")
 		).link(
 			new CollectSinkStreamOp()
 		);

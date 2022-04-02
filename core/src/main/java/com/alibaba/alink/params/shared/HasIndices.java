@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasIndices<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 需要被提取的索引数组
-	 * @cn 需要被提取的索引数组
-	 */
+	@NameCn("需要被提取的索引数组")
+	@DescCn("需要被提取的索引数组")
 	ParamInfo <int[]> INDICES = ParamInfoFactory
 		.createParamInfo("indices", int[].class)
 		.setDescription("indices of a vector to be sliced")

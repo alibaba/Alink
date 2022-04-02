@@ -3,7 +3,6 @@ package com.alibaba.alink.operator.stream.onlinelearning;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.AlgoOperator;
@@ -11,7 +10,6 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.LogisticRegressionTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.onlinelearning.FtrlTrainStreamOp.FtrlLearningKernel;
-import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,25 +18,20 @@ import java.util.Arrays;
 
 public class OnlineLearningTest extends AlinkTestBase {
 
-	AlgoOperator getData(boolean isBatch) {
+	AlgoOperator getData() {
 		Row[] array = new Row[] {
-			Row.of(new Object[] {"$31$0:1.0 1:1.0 2:1.0 30:1.0", "1.0  1.0  1.0  1.0", 1.0, 1.0, 1.0, 1.0, 1}),
-			Row.of(new Object[] {"$31$0:1.0 1:1.0 2:0.0 30:1.0", "1.0  1.0  0.0  1.0", 1.0, 1.0, 0.0, 1.0, 1}),
-			Row.of(new Object[] {"$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1.0, 0.0, 1.0, 1.0, 1}),
-			Row.of(new Object[] {"$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1.0, 0.0, 1.0, 1.0, 1}),
-			Row.of(new Object[] {"$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0}),
-			Row.of(new Object[] {"$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0}),
-			Row.of(new Object[] {"$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0}),
-			Row.of(new Object[] {"$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0})
+			Row.of("$31$0:1.0 1:1.0 2:1.0 30:1.0", "1.0  1.0  1.0  1.0", 1.0, 1.0, 1.0, 1.0, 1),
+			Row.of("$31$0:1.0 1:1.0 2:0.0 30:1.0", "1.0  1.0  0.0  1.0", 1.0, 1.0, 0.0, 1.0, 1),
+			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1.0, 0.0, 1.0, 1.0, 1),
+			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1.0, 0.0, 1.0, 1.0, 1),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0)
 		};
 
-		if (isBatch) {
-			return new MemSourceBatchOp(
-				Arrays.asList(array), new String[] {"svec", "vec", "f0", "f1", "f2", "f3", "labels"});
-		} else {
-			return new MemSourceStreamOp(
-				Arrays.asList(array), new String[] {"svec", "vec", "f0", "f1", "f2", "f3", "labels"});
-		}
+		return new MemSourceBatchOp(
+			Arrays.asList(array), new String[] {"svec", "vec", "f0", "f1", "f2", "f3", "labels"});
 	}
 
 	@Test
@@ -46,7 +39,7 @@ public class OnlineLearningTest extends AlinkTestBase {
 		String[] xVars = new String[] {"f0", "f1", "f2", "f3"};
 		String yVar = "labels";
 
-		BatchOperator trainData = (BatchOperator) getData(true);
+		BatchOperator trainData = (BatchOperator) getData();
 
 		LogisticRegressionTrainBatchOp lr = new LogisticRegressionTrainBatchOp()
 			.setLabelCol(yVar)
@@ -71,12 +64,5 @@ public class OnlineLearningTest extends AlinkTestBase {
 		ftrl.setLearningKernel(kernel);
 		Assert.assertEquals(coef[0], -0.08761006569007045, 0.0001);
 		Assert.assertEquals(coef[1], -0.08761006569007045, 0.0001);
-		FtrlTrainStreamOp ftrlw = new FtrlTrainStreamOp(lr, new Params()).setAlpha(0.1).setBeta(0.1).setL1(0.1)
-			.setL2(0.1).setFeatureCols(xVars).setLabelCol(yVar).setTimeInterval(1).setWithIntercept(false);
-
-		FtrlPredictStreamOp pred = new FtrlPredictStreamOp(lr).setPredictionCol("pred")
-			.setVectorCol("vec");
-		FtrlPredictStreamOp predp = new FtrlPredictStreamOp(lr, new Params()).setPredictionCol("pred")
-			.setVectorCol("vec");
 	}
 }

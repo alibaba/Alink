@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.RandomForestTrainBatchOp;
@@ -29,6 +30,7 @@ import com.alibaba.alink.pipeline.Trainer;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
+@NameCn("随机森林分类器")
 public class RandomForestClassifier extends Trainer <RandomForestClassifier, RandomForestClassificationModel>
 	implements RandomForestTrainParams <RandomForestClassifier>,
 	RandomForestPredictParams <RandomForestClassifier>,

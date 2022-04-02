@@ -3,14 +3,15 @@ package com.alibaba.alink.params.recommendation;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface LeaveTopKObjectOutParams<T> extends
 	LeaveKObjectOutParams <T>,
 	HasRateCol <T> {
 
-	/**
-	 * @cn-name 打分阈值
-	 * @cn 打分阈值
-	 */
+	@NameCn("打分阈值")
+	@DescCn("打分阈值")
 	ParamInfo <Double> RATE_THRESHOLD = ParamInfoFactory
 		.createParamInfo("rateThreshold", Double.class)
 		.setDescription("rate threshold")

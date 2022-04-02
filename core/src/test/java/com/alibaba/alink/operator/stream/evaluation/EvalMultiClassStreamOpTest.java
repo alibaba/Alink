@@ -115,7 +115,38 @@ public class EvalMultiClassStreamOpTest extends AlinkTestBase {
 			new String[] {"label", "pred"});
 
 		EvalMultiClassStreamOp op1 = new EvalMultiClassStreamOp()
-			.setTimeInterval(0.5)
+			.setTimeInterval(0.01)
+			.setLabelCol("label")
+			.setPredictionCol("pred")
+			.linkFrom(predMultiTmp);
+		CollectSinkStreamOp sink = new CollectSinkStreamOp()
+			.linkFrom(op1);
+		StreamOperator.execute();
+		System.out.println(sink.getAndRemoveValues());
+	}
+
+	/**
+	 * In multi-classification evaluation, it is possible, in some time windows, only one label is encountered (both
+	 * true value and prediction value).
+	 * This case tests such situation.
+	 * @throws Exception
+	 */
+	@Test
+	public void testPredMultiOnlyOneLabel() throws Exception {
+		Row[] predMultiArray =
+			new Row[] {
+				Row.of("prefix1", "prefix1"),
+			};
+
+		for (int i = 0; i < 10; i += 1) {    // 2 ^ 10 = 1024 times
+			predMultiArray = ArrayUtils.addAll(predMultiArray, predMultiArray);
+		}
+
+		MemSourceStreamOp predMultiTmp = new MemSourceStreamOp(Arrays.asList(predMultiArray),
+			new String[] {"label", "pred"});
+
+		EvalMultiClassStreamOp op1 = new EvalMultiClassStreamOp()
+			.setTimeInterval(0.01)
 			.setLabelCol("label")
 			.setPredictionCol("pred")
 			.linkFrom(predMultiTmp);

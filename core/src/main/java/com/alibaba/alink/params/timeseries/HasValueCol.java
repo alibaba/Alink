@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasValueCol<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name value列，类型为MTable
-	 * @cn value列，类型为MTable
-	 */
+	@NameCn("value列，类型为MTable")
+	@DescCn("value列，类型为MTable")
 	ParamInfo <String> VALUE_COL = ParamInfoFactory
 		.createParamInfo("valueCol", String.class)
 		.setDescription("The value col.")

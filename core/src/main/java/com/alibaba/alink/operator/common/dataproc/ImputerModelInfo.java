@@ -5,10 +5,8 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import com.alibaba.alink.params.dataproc.HasStrategy.Strategy;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.alibaba.alink.operator.common.utils.PrettyDisplayUtils.displayList;

@@ -4,15 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.linalg.tensor.DataType;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasTensorDataType<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 要转换的张量数据类型
-	 * @cn 要转换的张量数据类型。
-	 */
+	@NameCn("要转换的张量数据类型")
+	@DescCn("要转换的张量数据类型。")
 	ParamInfo <DataType> TENSOR_DATA_TYPE = ParamInfoFactory
 		.createParamInfo("tensorDataType", DataType.class)
 		.setDescription("Tensor data type to convert.")

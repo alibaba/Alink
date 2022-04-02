@@ -4,14 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasSeasonalPeriod<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 季节周期
-	 * @cn 季节周期
-	 */
+	@NameCn("季节周期")
+	@DescCn("季节周期")
 	ParamInfo <Integer> SEASONAL_PERIOD = ParamInfoFactory
 		.createParamInfo("seasonalPeriod", Integer.class)
 		.setDescription("The seasonalPeriod period.")

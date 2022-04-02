@@ -4,22 +4,21 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface Node2VecWalkParams<T> extends WithParams <T>,
-	BaseWalkParams <T>, HasSamplingMethod<T> {
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 
-	/**
-	 * @cn-name 算法参数P
-	 * @cn 控制随机游走序列的跳转概率
-	 */
+public interface Node2VecWalkParams<T> extends WithParams <T>,
+	BaseWalkParams <T>, HasSamplingMethod <T> {
+
+	@NameCn("算法参数P")
+	@DescCn("控制随机游走序列的跳转概率")
 	ParamInfo <Double> P = ParamInfoFactory
 		.createParamInfo("p", Double.class)
 		.setDescription("p")
 		.setHasDefaultValue(1.)
 		.build();
-	/**
-	 * @cn-name 算法参数Q
-	 * @cn 控制随机游走序列的跳转概率
-	 */
+	@NameCn("算法参数Q")
+	@DescCn("控制随机游走序列的跳转概率")
 	ParamInfo <Double> Q = ParamInfoFactory
 		.createParamInfo("q", Double.class)
 		.setDescription("q")

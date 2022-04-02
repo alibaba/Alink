@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseOperator;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil.ClauseInfo;
@@ -15,6 +16,8 @@ import org.apache.commons.lang3.EnumUtils;
  * This is the base stream feature builder
  * for over count window and over time window.
  */
+
+@NameCn("")
 abstract class BaseOverWindowStreamOp<T extends BaseOverWindowStreamOp <T>>
 	extends BaseWindowStreamOp <T> {
 

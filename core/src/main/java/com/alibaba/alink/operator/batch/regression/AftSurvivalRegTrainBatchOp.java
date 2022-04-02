@@ -15,6 +15,15 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -29,6 +38,8 @@ import com.alibaba.alink.operator.common.linear.LinearModelTrainInfo;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
 import com.alibaba.alink.operator.common.linear.LinearRegressorModelInfo;
 import com.alibaba.alink.params.regression.AftRegTrainParams;
+import com.alibaba.alink.params.shared.colname.HasFeatureCols;
+import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.params.shared.linear.HasWithIntercept;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
@@ -41,6 +52,25 @@ import java.util.List;
  * <p>
  * (https://en.wikipedia.org/wiki/Accelerated_failure_time_model)
  */
+
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = {
+	@PortSpec(PortType.MODEL),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.MODEL_INFO),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.FEATURE_IMPORTANCE),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.MODEL_WEIGHT)
+})
+
+@ParamSelectColumnSpec(name = "featureCols",
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "vectorCol",
+	allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "labelCol")
+@ParamSelectColumnSpec(name = "censorCol",
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@FeatureColsVectorColMutexRule
+
+@NameCn("生存回归训练")
 public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTrainBatchOp>
 	implements AftRegTrainParams <AftSurvivalRegTrainBatchOp>,
 	WithTrainInfo <LinearModelTrainInfo, AftSurvivalRegTrainBatchOp>,
@@ -75,12 +105,13 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 			initModel = inputs[1];
 		}
 		String[] featureColNames = this.getFeatureCols();
-
 		TypeInformation<?> labelType = Types.DOUBLE;
 		DataSet <Object> labelValues = MLEnvironmentFactory.get(getMLEnvironmentId()).getExecutionEnvironment()
 			.fromElements(new Object());
-
 		Params params = getParams();
+		if (params.contains(HasFeatureCols.FEATURE_COLS) && params.contains(HasVectorCol.VECTOR_COL)) {
+			throw new RuntimeException("featureCols and vectorCol cannot be set at the same time.");
+		}
 		params.set(LinearTrainParams.WEIGHT_COL, this.getCensorCol());
 		DataSet <Tuple3 <Double, Object, Vector>> initData = BaseLinearModelTrainBatchOp
 			.transform(in, params, true, true);
@@ -92,8 +123,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 				private static final long serialVersionUID = -7070926092286155032L;
 
 				@Override
-				public double[] map(Tuple3 <DenseVector[], Object[], Integer[]> value)
-					throws Exception {
+				public double[] map(Tuple3 <DenseVector[], Object[], Integer[]> value) {
 					return value.f0[1].getData();
 				}
 			});
@@ -103,8 +133,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 				private static final long serialVersionUID = 5463028282798602155L;
 
 				@Override
-				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value)
-					throws Exception {
+				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value) {
 					return value.f2[0];
 				}
 			});
@@ -118,7 +147,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 			private static final long serialVersionUID = -1563051729748477019L;
 
 			@Override
-			public Object[] map(Object value) throws Exception {
+			public Object[] map(Object value) {
 				return new Object[0];
 			}
 		})
@@ -128,7 +157,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 		DataSet <DenseVector> initModelDataSet = initModel == null ? null : initModel.getDataSet().reduceGroup(
 			new GroupReduceFunction <Row, DenseVector>() {
 				@Override
-				public void reduce(Iterable <Row> values, Collector <DenseVector> out) throws Exception {
+				public void reduce(Iterable <Row> values, Collector <DenseVector> out) {
 					List <Row> modelRows = new ArrayList <>(0);
 					for (Row row : values) {
 						modelRows.add(row);
@@ -163,8 +192,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 				private static final long serialVersionUID = 2773811388068064638L;
 
 				@Override
-				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value)
-					throws Exception {
+				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value) {
 					return value.f2[0];
 				}
 			});

@@ -4,7 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.NumericalTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
@@ -57,6 +57,6 @@ public class TensorToVectorMapper extends SISOMapper {
 
 	@Override
 	protected TypeInformation initOutputColType() {
-		return VectorTypes.DENSE_VECTOR;
+		return AlinkTypes.DENSE_VECTOR;
 	}
 }

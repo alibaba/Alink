@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.shaded.guava18.com.google.common.hash.HashFunction;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -64,7 +64,7 @@ public class FeatureHasherMapper extends Mapper {
 
 		return Tuple4.of(this.params.get(FeatureHasherParams.SELECTED_COLS),
 			new String[] {this.params.get(FeatureHasherParams.OUTPUT_COL)},
-			new TypeInformation<?>[] {VectorTypes.VECTOR},
+			new TypeInformation<?>[] {AlinkTypes.VECTOR},
 			this.params.get(FeatureHasherParams.RESERVED_COLS)
 		);
 	}

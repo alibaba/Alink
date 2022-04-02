@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasHiddenStatesCol<T> extends WithParams <T> {
-	/**
-	 * @cn 隐状态列名
-	 * @cn-name 隐状态列名
-	 */
+	@NameCn("隐状态列名")
+	@DescCn("隐状态列名")
 	ParamInfo <String> HIDDEN_STATES_COL = ParamInfoFactory
 		.createParamInfo("hiddenState", String.class)
 		.setDescription("Name of the hidden states column")

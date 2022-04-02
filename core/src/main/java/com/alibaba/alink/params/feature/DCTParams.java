@@ -3,14 +3,14 @@ package com.alibaba.alink.params.feature;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.mapper.SISOMapperParams;
 
 public interface DCTParams<T> extends SISOMapperParams <T> {
 
-	/**
-	 * @cn-name 是否为逆变换
-	 * @cn 是否为逆变换，false表示正变换，true表示逆变换。默认正变换。
-	 */
+	@NameCn("是否为逆变换")
+	@DescCn("是否为逆变换，false表示正变换，true表示逆变换。默认正变换。")
 	ParamInfo <Boolean> INVERSE = ParamInfoFactory
 		.createParamInfo("inverse", Boolean.class)
 		.setDescription(

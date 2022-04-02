@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorSizeHintMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorSizeHintParams;
@@ -11,6 +12,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorSizeHintParams;
  * If error, will throw exception if the vector is null or the vector size doesn't match the given one.
  * If optimistic, will accept the vector if it is not null.
  */
+@NameCn("向量长度检验")
 public final class VectorSizeHintBatchOp extends MapBatchOp <VectorSizeHintBatchOp>
 	implements VectorSizeHintParams <VectorSizeHintBatchOp> {
 

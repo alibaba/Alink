@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.source;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -14,6 +15,7 @@ import com.alibaba.alink.params.io.RandomVectorSourceBatchParams;
  * Generate vector with random values.
  */
 @IoOpAnnotation(name = "random_vector", ioType = IOType.SourceBatch)
+@NameCn("随机生成向量数据源")
 public final class RandomVectorSourceBatchOp extends BaseSourceBatchOp <RandomVectorSourceBatchOp>
 	implements RandomVectorSourceBatchParams <RandomVectorSourceBatchOp> {
 

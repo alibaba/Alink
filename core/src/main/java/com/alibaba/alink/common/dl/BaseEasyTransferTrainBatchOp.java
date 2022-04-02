@@ -1,6 +1,5 @@
 package com.alibaba.alink.common.dl;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.DataSet;
@@ -10,22 +9,26 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.classification.tensorflow.TFTableModelClassificationModelDataConverter;
 import com.alibaba.alink.operator.common.nlp.bert.BertTokenizerMapper;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.EncodingKeys;
-import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.operator.common.tensorflow.CommonUtils.ConstructModelMapPartitionFunction;
 import com.alibaba.alink.operator.common.tensorflow.CommonUtils.SortLabelsReduceGroupFunction;
 import com.alibaba.alink.params.dl.HasBatchSizeDefaultAs32;
 import com.alibaba.alink.params.dl.HasCheckpointFilePathDefaultAsNull;
 import com.alibaba.alink.params.dl.HasIntraOpParallelism;
 import com.alibaba.alink.params.dl.HasLearningRateDefaultAs0001;
-import com.alibaba.alink.operator.common.classification.tensorflow.TFTableModelClassificationModelDataConverter;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.params.dl.HasModelPath;
 import com.alibaba.alink.params.dl.HasNumPssDefaultAsNull;
 import com.alibaba.alink.params.dl.HasNumWorkersDefaultAsNull;
@@ -62,6 +65,8 @@ import static com.alibaba.alink.common.dl.EasyTransferUtils.mapLabelToIntIndex;
 import static com.alibaba.alink.operator.common.tensorflow.CommonUtils.PREPROCESS_PIPELINE_MODEL_BC_NAME;
 import static com.alibaba.alink.operator.common.tensorflow.CommonUtils.SORTED_LABELS_BC_NAME;
 
+@InputPorts(values = @PortSpec(PortType.DATA))
+@OutputPorts(values = @PortSpec(PortType.MODEL))
 @Internal
 public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp <T>> extends BatchOperator <T> {
 
@@ -248,15 +253,15 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		PipelineModel preprocessPipelineMode = new PipelineModel(bertTokenizer);
 		in = preprocessPipelineMode.transform(in);
 		BatchOperator <?> preprocessPipelineModelOp = preprocessPipelineMode.save();
-		String preprocessPipelineModelSchemaStr = CsvUtil.schema2SchemaStr(preprocessPipelineModelOp.getSchema());
+		String preprocessPipelineModelSchemaStr = TableUtil.schema2SchemaStr(preprocessPipelineModelOp.getSchema());
 
 		Map <String, String> userParams = new HashMap <>();
 
 		String bertModelName = params.get(HasBertModelName.BERT_MODEL_NAME);
 		String bertModelCkptPath =
 			params.contains(HasModelPath.MODEL_PATH) && (null != params.get(HasModelPath.MODEL_PATH))
-			? params.get(HasModelPath.MODEL_PATH)
-			: BertResources.getBertModelCkpt(bertModelName);
+				? params.get(HasModelPath.MODEL_PATH)
+				: BertResources.getBertModelCkpt(bertModelName);
 
 		String checkpointFilePath = params.get(HasCheckpointFilePathDefaultAsNull.CHECKPOINT_FILE_PATH);
 		if (!StringUtils.isNullOrWhitespaceOnly(checkpointFilePath)) {

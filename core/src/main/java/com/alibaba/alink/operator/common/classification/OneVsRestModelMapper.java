@@ -10,7 +10,7 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeRefe
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.ComboModelMapper;
@@ -205,7 +205,7 @@ public class OneVsRestModelMapper extends ComboModelMapper {
 			return Tuple4.of(
 				dataSchema.getFieldNames(),
 				new String[] {params.get(HasOutputCol.OUTPUT_COL)},
-				new TypeInformation <?>[] {VectorTypes.DENSE_VECTOR},
+				new TypeInformation <?>[] {AlinkTypes.DENSE_VECTOR},
 				params.get(HasReservedColsDefaultAsNull.RESERVED_COLS)
 			);
 		}
@@ -247,7 +247,7 @@ public class OneVsRestModelMapper extends ComboModelMapper {
 					params.get(HasVectorCol.VECTOR_COL)
 				},
 				new String[] {params.get(HasOutputCol.OUTPUT_COL)},
-				new TypeInformation <?>[] {VectorTypes.DENSE_VECTOR},
+				new TypeInformation <?>[] {AlinkTypes.DENSE_VECTOR},
 				params.get(HasReservedColsDefaultAsNull.RESERVED_COLS)
 			);
 		}

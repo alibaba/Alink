@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasNegative<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 负采样大小
-	 * @cn 负采样大小
-	 */
+	@NameCn("负采样大小")
+	@DescCn("负采样大小")
 	ParamInfo <Integer> NEGATIVE = ParamInfoFactory
 		.createParamInfo("negative", Integer.class)
 		.setDescription("The negative sampling size")

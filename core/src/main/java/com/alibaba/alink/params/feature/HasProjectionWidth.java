@@ -4,14 +4,15 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * Param: Projection length, used in bucket random projection LSH.
  */
 public interface HasProjectionWidth<T> extends WithParams <T> {
-	/**
-	 * @cn-name 桶的宽度
-	 * @cn 桶的宽度
-	 */
+	@NameCn("桶的宽度")
+	@DescCn("桶的宽度")
 	ParamInfo <Double> PROJECTION_WIDTH = ParamInfoFactory
 		.createParamInfo("projectionWidth", Double.class)
 		.setDescription("Bucket length, used in bucket random projection LSH.")

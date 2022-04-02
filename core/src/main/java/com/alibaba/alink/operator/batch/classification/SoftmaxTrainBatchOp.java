@@ -21,6 +21,15 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -44,17 +53,37 @@ import com.alibaba.alink.operator.common.optim.OptimizerFactory;
 import com.alibaba.alink.operator.common.optim.Owlqn;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
 import com.alibaba.alink.params.classification.SoftmaxTrainParams;
+import com.alibaba.alink.params.shared.colname.HasFeatureCols;
+import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.params.shared.linear.HasL1;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 /**
  * Softmax is a classifier for multi-class problem.
  */
+@InputPorts(values = {
+	@PortSpec(PortType.DATA),
+	@PortSpec(value = PortType.MODEL, isOptional = true)
+})
+@OutputPorts(values = {
+	@PortSpec(PortType.MODEL),
+	@PortSpec(value = PortType.DATA, desc = PortDesc.MODEL_INFO)
+})
+
+@ParamSelectColumnSpec(name = "featureCols",
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@ParamSelectColumnSpec(name = "vectorCol",
+	allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "labelCol")
+@ParamSelectColumnSpec(name = "weightCol",
+	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
+@FeatureColsVectorColMutexRule
+
+@NameCn("Softmax训练")
 public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchOp>
 	implements SoftmaxTrainParams <SoftmaxTrainBatchOp>, WithTrainInfo <LinearModelTrainInfo, SoftmaxTrainBatchOp>,
 	WithModelInfoBatchOp <SoftmaxModelInfo, SoftmaxTrainBatchOp, SoftmaxModelInfoBatchOp> {
@@ -89,6 +118,9 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 		String labelName = getLabelCol();
 		TypeInformation <?> labelType;
 		String vectorColName = getVectorCol();
+		if (getParams().contains(HasFeatureCols.FEATURE_COLS) && getParams().contains(HasVectorCol.VECTOR_COL)) {
+			throw new RuntimeException("featureCols and vectorCol cannot be set at the same time.");
+		}
 		TableSchema dataSchema = in.getSchema();
 		if (null == featureColNames && null == vectorColName) {
 			featureColNames = TableUtil.getNumericCols(in.getSchema(), new String[] {labelName});
@@ -108,14 +140,13 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 				private static final long serialVersionUID = 6773656778135257500L;
 
 				@Override
-				public void flatMap(Tuple3 <DenseVector[], Object[], Integer[]> value, Collector <Row> out)
-					throws Exception {
+				public void flatMap(Tuple3 <DenseVector[], Object[], Integer[]> value, Collector <Row> out) {
 					List <Row> rows = new ArrayList <>();
 					for (Object obj : value.f1) {
 						rows.add(Row.of(obj));
 					}
 					RowComparator rowComparator = new RowComparator(0);
-					Collections.sort(rows, rowComparator);
+					rows.sort(rowComparator);
 
 					final int maxLabels = 1000;
 					final double labelRatio = 0.5;
@@ -138,8 +169,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 				private static final long serialVersionUID = 2633660310293456071L;
 
 				@Override
-				public DenseVector[] map(Tuple3 <DenseVector[], Object[], Integer[]> value)
-					throws Exception {
+				public DenseVector[] map(Tuple3 <DenseVector[], Object[], Integer[]> value) {
 					return value.f0;
 				}
 			});
@@ -149,8 +179,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 				private static final long serialVersionUID = -8902907232968104891L;
 
 				@Override
-				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value)
-					throws Exception {
+				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value) {
 					return value.f2[0];
 				}
 			});
@@ -164,7 +193,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 		DataSet <DenseVector> initModelDataSet = initModel == null ? null : initModel.getDataSet().reduceGroup(
 			new RichGroupReduceFunction <Row, DenseVector>() {
 				@Override
-				public void reduce(Iterable <Row> values, Collector <DenseVector> out) throws Exception {
+				public void reduce(Iterable <Row> values, Collector <DenseVector> out) {
 					List <Row> modelRows = new ArrayList <>(0);
 					DenseVector[]
 						meanVar = (DenseVector[]) getRuntimeContext().getBroadcastVariable("meanVar").get(0);
@@ -239,9 +268,9 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 			private static final long serialVersionUID = -8665284351311032858L;
 
 			@Override
-			public void reduce(Iterable <Row> values, Collector <Integer> out) throws Exception {
+			public void reduce(Iterable <Row> values, Collector <Integer> out) {
 				int nClass = 0;
-				for (Row row : values) {
+				for (Row ignored : values) {
 					nClass++;
 				}
 				out.collect(nClass);
@@ -262,7 +291,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 				}
 
 				@Override
-				public Integer map(Integer value) throws Exception {
+				public Integer map(Integer value) {
 					return k1 * value;
 				}
 			}).withBroadcastSet(numClass, "numClass");
@@ -281,7 +310,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 						}
 
 						@Override
-						public Integer map(Integer value) throws Exception {
+						public Integer map(Integer value) {
 							return k1 * value;
 						}
 					}).withBroadcastSet(numClass, "numClass");
@@ -291,7 +320,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 			private static final long serialVersionUID = -4647154716237314079L;
 
 			@Override
-			public void reduce(Iterable <Integer> values, Collector <OptimObjFunc> out) throws Exception {
+			public void reduce(Iterable <Integer> values, Collector <OptimObjFunc> out) {
 				int nClass = 0;
 				for (Integer ele : values) {
 					nClass = ele;
@@ -487,7 +516,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 			private static final long serialVersionUID = 2063366042018382802L;
 
 			@Override
-			public void mapPartition(Iterable <Row> values, Collector <LinearModelData> out) throws Exception {
+			public void mapPartition(Iterable <Row> values, Collector <LinearModelData> out) {
 				List <Row> rows = new ArrayList <>();
 				for (Row row : values) {
 					rows.add(row);
@@ -502,7 +531,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 					private static final long serialVersionUID = 8785824618242390100L;
 
 					@Override
-					public void mapPartition(Iterable <LinearModelData> values, Collector <Row> out) throws Exception {
+					public void mapPartition(Iterable <LinearModelData> values, Collector <Row> out) {
 
 						LinearModelData model = values.iterator().next();
 						double[] cinfo = model.convergenceInfo;

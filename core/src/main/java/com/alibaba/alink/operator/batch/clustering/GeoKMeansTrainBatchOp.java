@@ -6,6 +6,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -25,6 +33,11 @@ import static com.alibaba.alink.operator.common.clustering.kmeans.KMeansInitCent
  * <p>
  * (https://en.wikipedia.org/wiki/Haversine_formula)
  */
+@InputPorts(values = {@PortSpec(PortType.DATA)})
+@OutputPorts(values = {@PortSpec(value = PortType.MODEL, desc = PortDesc.KMEANS_MODEL)})
+@ParamSelectColumnSpec(name = "latitudeCol", portIndices = 0, allowedTypeCollections = {TypeCollections.NUMERIC_TYPES})
+@ParamSelectColumnSpec(name = "longitudeCol", portIndices = 0, allowedTypeCollections = {TypeCollections.NUMERIC_TYPES})
+@NameCn("经纬度K均值聚类训练")
 public final class GeoKMeansTrainBatchOp extends BatchOperator <GeoKMeansTrainBatchOp>
 	implements GeoKMeansTrainParams <GeoKMeansTrainBatchOp> {
 	private static final long serialVersionUID = 1190784726768283432L;

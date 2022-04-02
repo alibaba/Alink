@@ -18,6 +18,15 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortSpec.OpType;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -41,6 +50,14 @@ import java.util.Set;
  * The FP-Growth algorithm is described in <a href="http://dx.doi.org/10.1145/335191.335372">
  * Han et al., Mining frequent patterns without candidate generation</a>.
  */
+@InputPorts(values = @PortSpec(value = PortType.DATA, opType = OpType.BATCH))
+@OutputPorts(values = {
+	@PortSpec(value = PortType.MODEL, desc = PortDesc.ASSOCIATION_PATTERNS),
+	@PortSpec(value = PortType.MODEL, desc = PortDesc.ASSOCIATION_RULES),
+})
+@ParamSelectColumnSpec(name = "itemsCol",
+	allowedTypeCollections = TypeCollections.STRING_TYPE)
+@NameCn("FpGrowth")
 public final class FpGrowthBatchOp
 	extends BatchOperator <FpGrowthBatchOp>
 	implements FpGrowthParams <FpGrowthBatchOp> {

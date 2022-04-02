@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.batch.regression;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
@@ -16,12 +15,6 @@ import java.util.List;
 public class FmRegressorModelInfoBatchOp
 	extends ExtractModelInfoBatchOp <FmRegressorModelInfo, FmRegressorModelInfoBatchOp> {
 	private static final long serialVersionUID = 7904342526890917457L;
-	private TypeInformation labelType;
-
-	public FmRegressorModelInfoBatchOp(TypeInformation labelType) {
-		this(new Params());
-		this.labelType = labelType;
-	}
 
 	public FmRegressorModelInfoBatchOp() {
 		this(new Params());

@@ -9,12 +9,14 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
+import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.common.dl.utils.DLUtils;
+import com.alibaba.alink.common.dl.utils.DataSetDiskDownloader;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.common.dl.utils.DataSetDiskDownloader;
 import com.alibaba.flink.ml.cluster.ExecutionMode;
 import com.alibaba.flink.ml.cluster.MLConfig;
 import com.alibaba.flink.ml.cluster.node.MLContext;
@@ -102,59 +104,68 @@ public class DLFlatMapFunction implements Closeable, Serializable {
      * @throws Exception
      */
     public void open(RuntimeContext runtimeContext) throws Exception {
-        int numWorkers = Integer.parseInt(this.config.getProperties().get(DLConstants.NUM_WORKERS));
-        int numPSs = Integer.parseInt(this.config.getProperties().get(DLConstants.NUM_PSS));
-        List<Row> bc = runtimeContext.getBroadcastVariable(DLConstants.IP_PORT_BC_NAME);
-        Preconditions.checkArgument(bc.size() == (numWorkers + numPSs), "Some IPs and ports are missing.");
-        List<Tuple3<Integer, String, Integer>> taskIpPorts = new ArrayList<>(bc.size());
-        bc.forEach(row -> {
-            String info = (String) row.getField(numOutputFields);
-            String[] splited = info.split("-");
-            taskIpPorts.add(Tuple3.of(Integer.parseInt(splited[0]), splited[1], Integer.parseInt(splited[2])));
-        });
+		int numWorkers = Integer.parseInt(this.config.getProperties().get(DLConstants.NUM_WORKERS));
+		int numPSs = Integer.parseInt(this.config.getProperties().get(DLConstants.NUM_PSS));
+		List <Row> bc = runtimeContext.getBroadcastVariable(DLConstants.IP_PORT_BC_NAME);
+		Preconditions.checkArgument(bc.size() == (numWorkers + numPSs), "Some IPs and ports are missing.");
+		List <Tuple3 <Integer, String, Integer>> taskIpPorts = new ArrayList <>(bc.size());
+		bc.forEach(row -> {
+			String info = (String) row.getField(numOutputFields);
+			String[] splited = info.split("-");
+			taskIpPorts.add(Tuple3.of(Integer.parseInt(splited[0]), splited[1], Integer.parseInt(splited[2])));
+		});
 
-        int thisTaskIndex = runtimeContext.getIndexOfThisSubtask();
-        Tuple2<BaseRole, Integer> roleAndIndex = DLRunner.getRoleAndIndex(thisTaskIndex, numWorkers);
+		int thisTaskIndex = runtimeContext.getIndexOfThisSubtask();
+		Tuple2 <BaseRole, Integer> roleAndIndex = DLRunner.getRoleAndIndex(thisTaskIndex, numWorkers);
 
-        String[] downloadPathCandidates = runtimeContext.getBroadcastVariable(DLConstants.BC_NAME_DOWNLOAD_PATHS)
-            .stream()
-            .map(d -> (String) ((Row) d).getField(0))
-            .toArray(String[]::new);
-        String workDir = DataSetDiskDownloader.getDownloadPath(downloadPathCandidates);
-        LOG.info("Worker {} uses download path: {}", runtimeContext.getIndexOfThisSubtask(), workDir);
-        if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-            System.out.println(String.format("worker %d use download path: %s",
-                runtimeContext.getIndexOfThisSubtask(), workDir));
-        }
+		String[] downloadPathCandidates = runtimeContext.getBroadcastVariable(DLConstants.BC_NAME_DOWNLOAD_PATHS)
+			.stream()
+			.map(d -> (String) ((Row) d).getField(0))
+			.toArray(String[]::new);
+		String workDir = DataSetDiskDownloader.getDownloadPath(downloadPathCandidates);
+		LOG.info("Worker {} uses download path: {}", runtimeContext.getIndexOfThisSubtask(), workDir);
+		if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+			System.out.println(String.format("worker %d use download path: %s",
+				runtimeContext.getIndexOfThisSubtask(), workDir));
+		}
 
-        Map <String, String> properties = config.getProperties();
-        properties.put(MLConstants.WORK_DIR, workDir);
-        properties.put(DLConstants.WORK_DIR, workDir);
+		Map <String, String> properties = config.getProperties();
+		properties.put(MLConstants.WORK_DIR, workDir);
+		properties.put(DLConstants.WORK_DIR, workDir);
 
-        mlContext = new MLContext(mode, config, roleAndIndex.f0.name(), roleAndIndex.f1,
-            config.getEnvPath(), null);
+		mlContext = new MLContext(mode, config, roleAndIndex.f0.name(), roleAndIndex.f1,
+			config.getEnvPath(), null);
 
-        // Update external files-related properties according to workDir
-        {
-            String pythonEnv = properties.get(DLConstants.PYTHON_ENV);
-            if (PythonFileUtils.isLocalFile(pythonEnv)) {
-                properties.put(MLConstants.VIRTUAL_ENV_DIR, pythonEnv.substring("file://".length()));
-            } else {
-                properties.put(MLConstants.VIRTUAL_ENV_DIR, new File(workDir, pythonEnv).getAbsolutePath());
-            }
-            String entryScriptFileName = PythonFileUtils.getFileName(properties.get(DLConstants.ENTRY_SCRIPT));
-            mlContext.setPythonDir(new File(workDir).toPath());
-            mlContext.setPythonFiles(new String[] {new File(workDir, entryScriptFileName).getAbsolutePath()});
-        }
+		// Update external files-related properties according to workDir
+		{
+			String pythonEnv = properties.get(DLConstants.PYTHON_ENV);
+			if (StringUtils.isNullOrWhitespaceOnly(pythonEnv)) {
+				Version version = Version.valueOf(properties.get(DLConstants.ENV_VERSION));
+				LOG.info(String.format("Use pythonEnv from plugin: %s", version));
+				pythonEnv = DLEnvConfig.getDefaultPythonEnv(version);
+				properties.put(MLConstants.VIRTUAL_ENV_DIR, pythonEnv.substring("file://".length()));
+			} else {
+				if (PythonFileUtils.isLocalFile(pythonEnv)) {
+					LOG.info(String.format("Use pythonEnv from local file: %s", pythonEnv));
+					properties.put(MLConstants.VIRTUAL_ENV_DIR, pythonEnv.substring("file://".length()));
+				} else {
+					LOG.info(String.format("Use pythonEnv from local file: %s", pythonEnv));
+					properties.put(MLConstants.VIRTUAL_ENV_DIR, new File(workDir, pythonEnv).getAbsolutePath());
+				}
+			}
+			String entryScriptFileName = PythonFileUtils.getFileName(properties.get(DLConstants.ENTRY_SCRIPT));
+			mlContext.setPythonDir(new File(workDir).toPath());
+			mlContext.setPythonFiles(new String[] {new File(workDir, entryScriptFileName).getAbsolutePath()});
+		}
 
-        if (runtimeContext.hasBroadcastVariable(DLConstants.BC_NAME_TENSOR_SHAPES)) {
-            @SuppressWarnings("unchecked")
+		if (runtimeContext.hasBroadcastVariable(DLConstants.BC_NAME_TENSOR_SHAPES)) {
+			@SuppressWarnings("unchecked")
 			Map <String, long[]> tensorShapeMap =
-                (Map <String, long[]>) (runtimeContext.getBroadcastVariable(DLConstants.BC_NAME_TENSOR_SHAPES)).get(0);
-            File fn = new File(workDir, "tensor_shapes.txt");
+				(Map <String, long[]>) (runtimeContext.getBroadcastVariable(DLConstants.BC_NAME_TENSOR_SHAPES)).get(0);
+			File fn = new File(workDir, "tensor_shapes.txt");
 			FileUtils.write(fn, JsonConverter.toJson(tensorShapeMap));
-            LOG.info("Succ in writing tensor shape map to {}", fn.getAbsolutePath());
-        }
+			LOG.info("Succ in writing tensor shape map to {}", fn.getAbsolutePath());
+		}
 
 		if (runtimeContext.hasBroadcastVariable(DLConstants.BC_NAME_TENSOR_TYPES)) {
 			@SuppressWarnings("unchecked")

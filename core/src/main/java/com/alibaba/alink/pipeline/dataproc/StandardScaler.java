@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.StandardScalerTrainBatchOp;
@@ -12,6 +13,7 @@ import com.alibaba.alink.pipeline.Trainer;
 /**
  * StandardScaler transforms a dataset, normalizing each feature to have unit standard deviation and/or zero mean.
  */
+@NameCn("标准化")
 public class StandardScaler extends Trainer <StandardScaler, StandardScalerModel> implements
 	StandardTrainParams <StandardScaler>,
 	StandardPredictParams <StandardScaler>,

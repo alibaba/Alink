@@ -190,4 +190,9 @@ public class AlsRecommKernel extends RecommKernel {
 		List <Row> rows = priorQueue.getOrderedRows();
 		return new MTable(rows, objectColName + " " + FlinkTypeConverter.getTypeString(recommObjType) + "," + resultName + " DOUBLE");
 	}
+
+	@Override
+	public RecommKernel createNew() {
+		return new AlsRecommKernel(getModelSchema(), getDataSchema(), params.clone(), recommType);
+	}
 }

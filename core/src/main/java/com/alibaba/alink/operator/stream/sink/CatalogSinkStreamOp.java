@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.stream.sink;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.io.HasCatalogObject;
  * catalog sink stream op for Hive, Derby, Mysql, Sqlite.
  */
 @IoOpAnnotation(name = "catalog", ioType = IOType.SinkStream)
+@NameCn("Catalog数据表导出")
 public class CatalogSinkStreamOp extends BaseSinkStreamOp <CatalogSinkStreamOp>
 	implements HasCatalogObject <CatalogSinkStreamOp> {
 

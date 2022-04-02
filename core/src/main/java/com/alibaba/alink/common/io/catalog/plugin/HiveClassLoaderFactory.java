@@ -9,24 +9,28 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.factories.Factory;
 
-import com.alibaba.alink.common.io.catalog.HiveCatalog;
+import com.alibaba.alink.common.io.catalog.HiveBaseUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
-import com.alibaba.alink.common.io.plugin.PluginDescriptor;
 import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
+import com.alibaba.alink.common.io.plugin.PluginDescriptor;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.params.io.HiveCatalogParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.PrivilegedExceptionAction;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -61,12 +65,14 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 			}
 
 			if (internal == null) {
+				setupKrb5Conf(FilePath.deserialize(actionContext.get(HiveCatalogParams.HIVE_CONF_DIR)));
+
 				String kerberosPrincipal = actionContext.get(HiveCatalogParams.KERBEROS_PRINCIPAL);
 				FilePath filePath = FilePath.deserialize(actionContext.get(HiveCatalogParams.KERBEROS_KEYTAB));
 
 				String kerberosKeytab;
 				kerberosKeytab = new Path(
-					HiveCatalog.downloadFolder(
+					HiveBaseUtils.downloadFolder(
 						new FilePath(filePath.getPath().getParent(), filePath.getFileSystem()),
 						filePath.getPath().getName()
 					),
@@ -78,6 +84,37 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 
 			return (T) internal.map((PrivilegedExceptionAction <Object>) action);
 		}
+	}
+
+	private static final String KRB5_CONF_KEY = "java.security.krb5.conf";
+	private static final String KRB5_CONF_FILE_NAME = "krb5.conf";
+
+	private void setupKrb5Conf(FilePath hiveConfDir) {
+		final String oldValue = System.getProperty(KRB5_CONF_KEY, "");
+		if (oldValue != null && oldValue.length() > 0 && Files.exists(Paths.get(oldValue))) {
+			// the krb5.conf already exists in System.Properties
+			return;
+		}
+		try {
+			if (!HiveBaseUtils.fileExists(hiveConfDir, KRB5_CONF_FILE_NAME)) {
+				LOG.warn("failed to find {} in {}, ignore it", KRB5_CONF_FILE_NAME, hiveConfDir.getPath());
+				return;
+			}
+		} catch (IOException e) {
+			LOG.warn("failed to find {} in {}", KRB5_CONF_FILE_NAME, hiveConfDir.getPath(), e);
+			return;
+		}
+
+		final String localConfDir;
+		try {
+			localConfDir = HiveBaseUtils.downloadFolder(hiveConfDir, KRB5_CONF_FILE_NAME);
+		} catch (IOException e) {
+			LOG.warn("failed to download {} in {}", KRB5_CONF_FILE_NAME, hiveConfDir, e);
+			return;
+		}
+		final String localKrb5File = new File(localConfDir, KRB5_CONF_FILE_NAME).getAbsolutePath();
+		System.setProperty(KRB5_CONF_KEY, localKrb5File);
+		LOG.info("reset {} to {} with remoteDir:{}", KRB5_CONF_KEY, localKrb5File, hiveConfDir.getPath());
 	}
 
 	@Override
@@ -96,46 +133,15 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 		return classLoader;
 	}
 
-	private transient Boolean installed = null;
+	private transient Map <ClassLoader, Boolean> installed;
 
 	private void installSecurity(ClassLoader classLoader) {
-		if (installed == null || !installed) {
-			try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
+		if (installed == null) {
+			installed = new HashMap <>();
+		}
 
-				if (System.getProperties().containsKey("java.security.krb5.conf") &&
-					Files.exists(Paths.get(System.getProperty("java.security.krb5.conf")))) {
-
-					Configuration configuration = GlobalConfiguration.loadConfiguration();
-
-					if (!(configuration.containsKey(ConfigConstants.PATH_HADOOP_CONFIG))) {
-						LOG.warn("Could not find hadoop configure, but the krb file has been set.");
-
-						installed = true;
-
-						return;
-					}
-
-					try {
-
-						Class <?> initializer = Class.forName(
-							"com.alibaba.alink.common.io.catalog.hive.plugin.initializer.HivePluginInitializer",
-							true, classLoader
-						);
-
-						Method method = initializer.getMethod("initialize", String.class);
-
-						method.invoke(null, configuration.getString(ConfigConstants.PATH_HADOOP_CONFIG, null));
-					} catch (ClassNotFoundException e) {
-						LOG.warn("Could not find HivePluginInitializer.", e);
-					} catch (NoSuchMethodException e) {
-						LOG.warn("Could not find the initialize method.", e);
-					} catch (IllegalAccessException | InvocationTargetException e) {
-						LOG.warn("Invoke the initialize error.", e);
-					}
-				}
-			}
-
-			installed = true;
+		if (!installed.computeIfAbsent(classLoader, HiveClassLoaderFactory::loginClassLoader)) {
+			throw new IllegalStateException("Could not install security.");
 		}
 	}
 
@@ -183,6 +189,56 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 			throw new IllegalArgumentException(
 				String.format("Create LoginUgi error. Init kerberos error, Principal: %s", kerberosPrincipal), e);
 		}
+	}
+
+	private static final String HIVE_HDFS_CONFIG_KEY = "ALINK_HIVE_HDFS_CONFIG";
+
+	private static Boolean loginClassLoader(ClassLoader classLoader) {
+		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
+
+			if (System.getProperties().containsKey("java.security.krb5.conf") &&
+				Files.exists(Paths.get(System.getProperty("java.security.krb5.conf")))) {
+
+				Configuration configuration = GlobalConfiguration.loadConfiguration();
+
+				if (!(configuration.containsKey(ConfigConstants.PATH_HADOOP_CONFIG))) {
+					if (System.getProperties().containsKey(HIVE_HDFS_CONFIG_KEY)) {
+						configuration.setString(
+							ConfigConstants.PATH_HADOOP_CONFIG,
+							System.getProperty(HIVE_HDFS_CONFIG_KEY)
+						);
+					} else if (System.getenv().containsKey(HIVE_HDFS_CONFIG_KEY)) {
+						configuration.setString(
+							ConfigConstants.PATH_HADOOP_CONFIG,
+							System.getenv(HIVE_HDFS_CONFIG_KEY)
+						);
+					} else {
+						throw new IllegalStateException(
+							"There should config the PATH_HADOOP_CONFIG in flink configure.");
+					}
+				}
+
+				try {
+
+					Class <?> initializer = Class.forName(
+						"com.alibaba.alink.common.io.plugin.initializer.HivePluginInitializer",
+						true, classLoader
+					);
+
+					Method method = initializer.getMethod("initialize", String.class);
+
+					method.invoke(null, configuration.getString(ConfigConstants.PATH_HADOOP_CONFIG, null));
+				} catch (ClassNotFoundException
+					| NoSuchMethodException
+					| IllegalAccessException
+					| InvocationTargetException e) {
+
+					throw new RuntimeException(e);
+				}
+			}
+		}
+
+		return true;
 	}
 
 	private static class HiveVersionGetter implements Function <Tuple2 <Factory, PluginDescriptor>, String> {

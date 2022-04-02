@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.params.classification.DecisionTreePredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * The model of decision tree classification.
  */
+@NameCn("决策树分类器模型")
 public class DecisionTreeClassificationModel extends MapModel <DecisionTreeClassificationModel>
 	implements DecisionTreePredictParams <DecisionTreeClassificationModel> {
 

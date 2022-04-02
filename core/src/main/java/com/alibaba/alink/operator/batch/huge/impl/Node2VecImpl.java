@@ -1,8 +1,15 @@
 package com.alibaba.alink.operator.batch.huge.impl;
 
-import org.apache.flink.annotation.Internal;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.graph.Node2VecWalkBatchOp;
 import com.alibaba.alink.operator.batch.sql.JoinBatchOp;
@@ -10,6 +17,11 @@ import com.alibaba.alink.operator.common.aps.ApsCheckpoint;
 import com.alibaba.alink.operator.common.graph.GraphEmbedding;
 import com.alibaba.alink.params.nlp.Node2VecParams;
 
+@InputPorts(values = @PortSpec(value = PortType.DATA, desc = PortDesc.GRAPH))
+@OutputPorts(values = @PortSpec(PortType.MODEL))
+@ParamSelectColumnSpec(name = "sourceCol")
+@ParamSelectColumnSpec(name = "targetCol")
+@ParamSelectColumnSpec(name = "weightCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @Internal
 public abstract class Node2VecImpl<T extends Node2VecImpl <T>> extends BatchOperator <T>
 	implements Node2VecParams <T> {

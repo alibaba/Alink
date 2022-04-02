@@ -3,13 +3,14 @@ package com.alibaba.alink.params.recommendation;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface AlsImplicitTrainParams<T> extends
 	AlsTrainParams <T> {
 
-	/**
-	 * @cn-name 隐式偏好模型系数alpha
-	 * @cn 隐式偏好模型系数alpha
-	 */
+	@NameCn("隐式偏好模型系数alpha")
+	@DescCn("隐式偏好模型系数alpha")
 	ParamInfo <Double> ALPHA = ParamInfoFactory
 		.createParamInfo("alpha", Double.class)
 		.setDescription("The alpha in implicit preference model.")

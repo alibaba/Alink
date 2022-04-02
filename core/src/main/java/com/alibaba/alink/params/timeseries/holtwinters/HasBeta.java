@@ -4,13 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasBeta<T> extends WithParams <T> {
 
-
-	/**
-	 * @cn-name beta
-	 * @cn beta
-	 */
+	@NameCn("beta")
+	@DescCn("beta")
 	ParamInfo <Double> BETA = ParamInfoFactory
 		.createParamInfo("beta", Double.class)
 		.setDescription("The beta.")

@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
@@ -9,6 +10,7 @@ import com.alibaba.alink.pipeline.MapModel;
 /**
  * Vector MinMax pipeline model.
  */
+@NameCn("向量归一化模型")
 public class VectorMinMaxScalerModel extends MapModel <VectorMinMaxScalerModel>
 	implements VectorMinMaxScalerPredictParams <VectorMinMaxScalerModel> {
 

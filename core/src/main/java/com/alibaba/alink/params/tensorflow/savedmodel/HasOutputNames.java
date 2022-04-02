@@ -4,12 +4,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasOutputNames<T> extends WithParams<T> {
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 
-	/**
-	 * @cn-name signature中的输出名
-	 * @cn signature中的输出名，多个输出时用逗号分隔
-	 */
+public interface HasOutputNames<T> extends WithParams <T> {
+
+	@NameCn("signature中的输出名")
+	@DescCn("signature中的输出名，多个输出时用逗号分隔")
 	ParamInfo <String[]> OUTPUT_NAMES = ParamInfoFactory
 		.createParamInfo("outputNames", String[].class)
 		.setDescription("output names")

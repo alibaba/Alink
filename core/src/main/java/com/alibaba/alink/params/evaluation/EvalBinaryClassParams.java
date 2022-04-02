@@ -3,6 +3,8 @@ package com.alibaba.alink.params.evaluation;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
 import com.alibaba.alink.params.shared.linear.HasPositiveLabelValueString;
 
@@ -12,10 +14,8 @@ import com.alibaba.alink.params.shared.linear.HasPositiveLabelValueString;
 public interface EvalBinaryClassParams<T> extends
 	HasLabelCol <T>,
 	HasPositiveLabelValueString <T> {
-	/**
-	 * @cn-name 预测详细信息列名
-	 * @cn 预测详细信息列名
-	 */
+	@NameCn("预测详细信息列名")
+	@DescCn("预测详细信息列名")
 	ParamInfo <String> PREDICTION_DETAIL_COL = ParamInfoFactory
 		.createParamInfo("predictionDetailCol", String.class)
 		.setDescription("Column name of prediction result, it will include detailed info.")

@@ -2,7 +2,6 @@ package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -173,7 +172,7 @@ public class LogisticRegressionTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void incrementalVectorTest() throws Exception {
+	public void incrementalVectorTest() {
 		String yVar = "labels";
 
 		BatchOperator<?> trainData = (BatchOperator<?>) getData(true);

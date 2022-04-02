@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.stream.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.tree.predictors.GbdtModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -27,6 +28,7 @@ import com.alibaba.alink.params.regression.GbdtRegPredictParams;
  * "A communication-efficient parallel algorithm for decision tree", Qi Meng et al., NIPS 2016
  * for an introduction on data-parallel, feature-parallel, etc., algorithms to construct decision forests.
  */
+@NameCn("GBDT排序预测")
 public class GbdtRegPredictStreamOp extends ModelMapStreamOp <GbdtRegPredictStreamOp>
 	implements GbdtRegPredictParams <GbdtRegPredictStreamOp> {
 	private static final long serialVersionUID = -6779607293487430112L;

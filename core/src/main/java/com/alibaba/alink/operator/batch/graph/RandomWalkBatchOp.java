@@ -17,26 +17,34 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.NumberSequenceIterator;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.graph.storage.GraphEdge;
 import com.alibaba.alink.operator.batch.graph.storage.HomoGraphEngine;
+import com.alibaba.alink.operator.batch.graph.utils.ComputeGraphStatistics;
 import com.alibaba.alink.operator.batch.graph.utils.ConstructHomoEdge;
 import com.alibaba.alink.operator.batch.graph.utils.EndWritingRandomWalks;
-import com.alibaba.alink.operator.batch.graph.utils.IDMappingUtils;
-import com.alibaba.alink.operator.batch.graph.utils.LongArrayToRow;
-import com.alibaba.alink.operator.batch.graph.utils.ParseGraphData;
-import com.alibaba.alink.operator.batch.graph.utils.ComputeGraphStatistics;
 import com.alibaba.alink.operator.batch.graph.utils.GraphPartition.GraphPartitionFunction;
 import com.alibaba.alink.operator.batch.graph.utils.GraphPartition.GraphPartitionHashFunction;
 import com.alibaba.alink.operator.batch.graph.utils.GraphPartition.GraphPartitioner;
 import com.alibaba.alink.operator.batch.graph.utils.GraphStatistics;
+import com.alibaba.alink.operator.batch.graph.utils.HandleReceivedMessage;
+import com.alibaba.alink.operator.batch.graph.utils.IDMappingUtils;
+import com.alibaba.alink.operator.batch.graph.utils.LongArrayToRow;
+import com.alibaba.alink.operator.batch.graph.utils.ParseGraphData;
 import com.alibaba.alink.operator.batch.graph.utils.RandomWalkMemoryBuffer;
 import com.alibaba.alink.operator.batch.graph.utils.ReadFromBufferAndRemoveStaticObject;
 import com.alibaba.alink.operator.batch.graph.utils.RecvRequestKeySelector;
 import com.alibaba.alink.operator.batch.graph.utils.SendRequestKeySelector;
-import com.alibaba.alink.operator.batch.graph.utils.HandleReceivedMessage;
 import com.alibaba.alink.operator.batch.graph.walkpath.RandomWalkPathEngine;
 import com.alibaba.alink.params.nlp.walk.RandomWalkParams;
 
@@ -55,7 +63,12 @@ import java.util.Map;
  * If a random walk terminals before reach the walk length, it won't continue and we only need to return this short
  * walk.
  */
-
+@InputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.GRAPH)})
+@OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
+@ParamSelectColumnSpec(name = "sourceCol", portIndices = 0, allowedTypeCollections = {TypeCollections.INT_LONG_TYPES, TypeCollections.STRING_TYPES})
+@ParamSelectColumnSpec(name = "targetCol", portIndices = 0, allowedTypeCollections = {TypeCollections.INT_LONG_TYPES, TypeCollections.STRING_TYPES})
+@ParamSelectColumnSpec(name = "weightCol", portIndices = 0, allowedTypeCollections = {TypeCollections.NUMERIC_TYPES})
+@NameCn("随机游走")
 public final class RandomWalkBatchOp extends BatchOperator <RandomWalkBatchOp>
 	implements RandomWalkParams <RandomWalkBatchOp> {
 

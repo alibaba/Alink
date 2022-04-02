@@ -4,11 +4,9 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.common.MTableTypes;
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.VectorType;
 import com.alibaba.alink.common.linalg.tensor.DataType;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
 import com.alibaba.alink.params.dataproc.ToTensorParams;
 import com.alibaba.alink.params.dataproc.ToVectorParams;
 import com.alibaba.alink.pipeline.PipelineModel;
@@ -27,9 +25,9 @@ public class CsvTypeConverter {
 
 		// rewrite schema
 		for (int i = 0; i < colTypes.length; ++i) {
-			if (TensorTypes.isTensorType(colTypes[i])
-				|| VectorTypes.isVectorType(colTypes[i])
-				|| MTableTypes.isMTableType(colTypes[i])) {
+			if (AlinkTypes.isTensorType(colTypes[i])
+				|| AlinkTypes.isVectorType(colTypes[i])
+				|| AlinkTypes.isMTableType(colTypes[i])) {
 
 				rewriteColTypes[i] = Types.STRING;
 			} else {
@@ -42,39 +40,39 @@ public class CsvTypeConverter {
 
 	public static DataType tensorTypeInformationToTensorType(TypeInformation <?> typeInformation) {
 
-		if (TensorTypes.TENSOR.equals(typeInformation)) {
+		if (AlinkTypes.TENSOR.equals(typeInformation)) {
 			return null;
 		}
 
-		if (TensorTypes.FLOAT_TENSOR.equals(typeInformation)) {
+		if (AlinkTypes.FLOAT_TENSOR.equals(typeInformation)) {
 			return DataType.FLOAT;
 		}
 
-		if (TensorTypes.DOUBLE_TENSOR.equals(typeInformation)) {
+		if (AlinkTypes.DOUBLE_TENSOR.equals(typeInformation)) {
 			return DataType.DOUBLE;
 		}
 
-		if (TensorTypes.INT_TENSOR.equals(typeInformation)) {
+		if (AlinkTypes.INT_TENSOR.equals(typeInformation)) {
 			return DataType.INT;
 		}
 
-		if (TensorTypes.LONG_TENSOR.equals(typeInformation)) {
+		if (AlinkTypes.LONG_TENSOR.equals(typeInformation)) {
 			return DataType.LONG;
 		}
 
-		if (TensorTypes.STRING_TENSOR.equals(typeInformation)) {
+		if (AlinkTypes.STRING_TENSOR.equals(typeInformation)) {
 			return DataType.STRING;
 		}
 
-		if (TensorTypes.BYTE_TENSOR.equals(typeInformation)) {
+		if (AlinkTypes.BYTE_TENSOR.equals(typeInformation)) {
 			return DataType.BYTE;
 		}
 
-		if (TensorTypes.UBYTE_TENSOR.equals(typeInformation)) {
+		if (AlinkTypes.UBYTE_TENSOR.equals(typeInformation)) {
 			return DataType.UBYTE;
 		}
 
-		if (TensorTypes.BOOL_TENSOR.equals(typeInformation)) {
+		if (AlinkTypes.BOOL_TENSOR.equals(typeInformation)) {
 			return DataType.BOOLEAN;
 		}
 
@@ -87,7 +85,7 @@ public class CsvTypeConverter {
 		List <TransformerBase <?>> toTensorList = new ArrayList <>();
 
 		for (int i = 0; i < colTypes.length; ++i) {
-			if (TensorTypes.isTensorType(colTypes[i])) {
+			if (AlinkTypes.isTensorType(colTypes[i])) {
 
 				Params localParam = params.clone();
 
@@ -107,15 +105,15 @@ public class CsvTypeConverter {
 	}
 
 	public static VectorType vectorTypeInformationToVectorType(TypeInformation <?> typeInformation) {
-		if (VectorTypes.VECTOR.equals(typeInformation)) {
+		if (AlinkTypes.VECTOR.equals(typeInformation)) {
 			return null;
 		}
 
-		if (VectorTypes.DENSE_VECTOR.equals(typeInformation)) {
+		if (AlinkTypes.DENSE_VECTOR.equals(typeInformation)) {
 			return VectorType.DENSE;
 		}
 
-		if (VectorTypes.SPARSE_VECTOR.equals(typeInformation)) {
+		if (AlinkTypes.SPARSE_VECTOR.equals(typeInformation)) {
 			return VectorType.SPARSE;
 		}
 
@@ -128,7 +126,7 @@ public class CsvTypeConverter {
 		List <TransformerBase <?>> toVectorList = new ArrayList <>();
 
 		for (int i = 0; i < colTypes.length; ++i) {
-			if (VectorTypes.isVectorType(colTypes[i])) {
+			if (AlinkTypes.isVectorType(colTypes[i])) {
 
 				Params localParam = params.clone();
 
@@ -153,7 +151,7 @@ public class CsvTypeConverter {
 		List <TransformerBase <?>> toMTableList = new ArrayList <>();
 
 		for (int i = 0; i < colTypes.length; ++i) {
-			if (MTableTypes.isMTableType(colTypes[i])) {
+			if (AlinkTypes.isMTableType(colTypes[i])) {
 				toMTableList.add(new ToMTable(params.clone().set(ToTensorParams.SELECTED_COL, colNames[i])));
 			}
 		}

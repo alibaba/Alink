@@ -5,10 +5,9 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.sql.builtin.BuildInAggRegister;
-import com.alibaba.alink.common.sql.builtin.BuildInAggRegister.UdafName;
+import com.alibaba.alink.common.sql.builtin.UdafName;
 import com.alibaba.alink.common.sql.builtin.agg.MTableAgg;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import org.apache.commons.lang3.EnumUtils;
 
 import java.util.ArrayList;
@@ -54,8 +53,8 @@ public class FeatureClauseUtil {
 					for (int j = 1; j < inputColAndParams.length; j++) {
 						String temp = inputColAndParams[j].trim();
 						int tempSize = temp.length();
-						if (temp.charAt(0) == "\"".charAt(0) && temp.charAt(tempSize - 1) == "\"".charAt(0) ||
-							temp.charAt(0) == "\'".charAt(0) && temp.charAt(tempSize - 1) == "\'".charAt(0)) {
+						if (temp.charAt(0) == "\"" .charAt(0) && temp.charAt(tempSize - 1) == "\"" .charAt(0) ||
+							temp.charAt(0) == "\'" .charAt(0) && temp.charAt(tempSize - 1) == "\'" .charAt(0)) {
 							featureClause.inputParams[j - 1] = inputColAndParams[j].trim().substring(1, tempSize - 1);
 						} else {
 							featureClause.inputParams[j - 1] = inputColAndParams[j].trim();
@@ -142,7 +141,7 @@ public class FeatureClauseUtil {
 
 	public static boolean isLastTime(String clause) {
 		String lowerClause = clause.toLowerCase(Locale.ROOT);
-		return lowerClause.contains(BuildInAggRegister.UdafName.LAST_TIME.name);
+		return lowerClause.contains(UdafName.LAST_TIME.name);
 	}
 
 	public static boolean isGroupWindowTimeCol(String operaFunc) {
@@ -289,6 +288,11 @@ public class FeatureClauseUtil {
 			operators[clauseIndex] = operatorFunc[clauseIndex] + "(unix_timestamp(" + timeCol + "))";
 		} else if (operatorFunc[clauseIndex].startsWith("MTABLE_AGG")) {
 			operators[clauseIndex] = registMTableAgg(operator, operatorFunc[clauseIndex], env, tableSchema, timeCol);
+		} else if (operatorFunc[clauseIndex].equals("LAST_VALUE")) {
+			String[] components = operator.split("\\(");
+			String[] components2 = components[1].split("\\)");
+			operators[clauseIndex] = UdafName.LAST_VALUE.name + "(" +
+				components2[0] + ", " + timeCol + ", " + timeInterval + ")";
 		} else {
 			operators[clauseIndex] = operator;
 		}
@@ -298,7 +302,7 @@ public class FeatureClauseUtil {
 										 MLEnvironment mlEnv, TableSchema tableSchema, String timeCol) {
 		String aggName = "mtable_agg_" + UUID.randomUUID().toString().replace("-", "");
 
-		if ("MTABLE_AGG".equals(operatorFunc)) {
+		if ("MTABLE_AGG" .equals(operatorFunc)) {
 			mlEnv.getStreamTableEnvironment().registerFunction(aggName,
 				new MTableAgg(false, getMTableSchema(clause, tableSchema), timeCol));
 		} else {
@@ -314,7 +318,7 @@ public class FeatureClauseUtil {
 		String[] colNames = clause.split("\\(")[1].split("\\)")[0].split(",");
 		Arrays.setAll(colNames, i -> colNames[i].trim());
 		TypeInformation[] newTypes = TableUtil.findColTypes(tableSchema, colNames);
-		return CsvUtil.schema2SchemaStr(new TableSchema(colNames, newTypes));
+		return TableUtil.schema2SchemaStr(new TableSchema(colNames, newTypes));
 	}
 
 	//considering "," may be used in operator param. When splitting, we have to consider this situation.

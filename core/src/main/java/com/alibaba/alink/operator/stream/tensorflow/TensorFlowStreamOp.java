@@ -2,11 +2,11 @@ package com.alibaba.alink.operator.stream.tensorflow;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.dl.DLEnvConfig;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.dl.BaseDLStreamOp;
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.params.tensorflow.TensorFlowParams;
 
 import java.util.Collections;
@@ -18,6 +18,7 @@ import static com.alibaba.alink.common.dl.utils.DLLauncherUtils.adjustNumWorkers
  * By default, the dataset can only be accesses once, unless explicitly saved.
  * Any number of outputs are allowed from TF scripts, even no outputs.
  */
+@NameCn("TensorFlow自定义脚本")
 public class TensorFlowStreamOp extends BaseDLStreamOp <TensorFlowStreamOp>
 	implements TensorFlowParams <TensorFlowStreamOp> {
 
@@ -40,9 +41,6 @@ public class TensorFlowStreamOp extends BaseDLStreamOp <TensorFlowStreamOp>
 			MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment().getParallelism());
 		setNumWorkers(numWorkersPSsTuple.f0);
 		numPss = numWorkersPSsTuple.f1;
-
-		if (StringUtils.isNullOrWhitespaceOnly(getPythonEnv())) {
-			setPythonEnv(DLEnvConfig.getTF115DefaultPythonEnv());
-		}
+		version = Version.TF115;
 	}
 }

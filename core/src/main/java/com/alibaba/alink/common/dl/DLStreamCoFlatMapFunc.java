@@ -5,7 +5,9 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.RichCoFlatMapFunction;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
+import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.common.dl.utils.DLClusterUtils;
 import com.alibaba.alink.common.dl.utils.DLUtils;
 import com.alibaba.alink.common.dl.utils.ExternalFilesUtils;
@@ -142,10 +144,17 @@ public class DLStreamCoFlatMapFunc extends RichCoFlatMapFunction <Row, Row, Row>
 			// Update external files-related properties according to workDir
 			{
 				String pythonEnv = properties.get(DLConstants.PYTHON_ENV);
-				if (PythonFileUtils.isLocalFile(pythonEnv)) {
+				if (StringUtils.isNullOrWhitespaceOnly(pythonEnv)) {
+					Version version = Version.valueOf(properties.get(DLConstants.ENV_VERSION));
+					LOG.info(String.format("Use pythonEnv from plugin: %s", version));
+					pythonEnv = DLEnvConfig.getDefaultPythonEnv(version);
 					properties.put(MLConstants.VIRTUAL_ENV_DIR, pythonEnv.substring("file://".length()));
 				} else {
-					properties.put(MLConstants.VIRTUAL_ENV_DIR, new File(workDir, pythonEnv).getAbsolutePath());
+					if (PythonFileUtils.isLocalFile(pythonEnv)) {
+						properties.put(MLConstants.VIRTUAL_ENV_DIR, pythonEnv.substring("file://".length()));
+					} else {
+						properties.put(MLConstants.VIRTUAL_ENV_DIR, new File(workDir, pythonEnv).getAbsolutePath());
+					}
 				}
 				String entryScriptFileName = PythonFileUtils.getFileName(properties.get(DLConstants.ENTRY_SCRIPT));
 				mlContext.setPythonDir(new File(workDir).toPath());

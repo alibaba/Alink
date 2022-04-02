@@ -6,7 +6,8 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.timeseries.DeepARModelDataConverter.DeepARModelData;
 
 import java.util.Collections;
@@ -20,10 +21,10 @@ public class DeepARModelDataConverter extends SimpleModelDataConverter <DeepARMo
 		return Tuple2.of(
 			modelData.meta,
 			Collections.singletonList(
-				new MTable(
+				JsonConverter.toJson(new MTable(
 					modelData.deepModel,
-					CsvUtil.schemaStr2Schema(DEEP_AR_INTERNAL_SCHEMA)
-				).toString())
+					TableUtil.schemaStr2Schema(DEEP_AR_INTERNAL_SCHEMA)
+				)))
 		);
 	}
 
@@ -31,7 +32,7 @@ public class DeepARModelDataConverter extends SimpleModelDataConverter <DeepARMo
 	public DeepARModelData deserializeModel(Params meta, Iterable <String> data) {
 		return new DeepARModelData(
 			meta,
-			new MTable(data.iterator().next()).getTable()
+			new MTable(data.iterator().next()).getRows()
 		);
 	}
 

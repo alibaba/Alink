@@ -6,7 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.dataproc.vector.VectorAssemblerParams;
@@ -26,7 +26,7 @@ public class VectorAssemblerMapperTest extends AlinkTestBase {
 			new TypeInformation <?>[] {Types.STRING, Types.DOUBLE, Types.STRING});
 
 		TableSchema outSchema = new TableSchema(new String[] {"c0", "c1", "c2", "out"},
-			new TypeInformation <?>[] {Types.STRING, Types.DOUBLE, Types.STRING, VectorTypes.VECTOR});
+			new TypeInformation <?>[] {Types.STRING, Types.DOUBLE, Types.STRING, AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(VectorAssemblerParams.SELECTED_COLS, new String[] {"c0", "c1", "c2"})
@@ -46,7 +46,7 @@ public class VectorAssemblerMapperTest extends AlinkTestBase {
 			new TypeInformation <?>[] {Types.STRING, Types.DOUBLE, Types.STRING});
 
 		TableSchema outSchema = new TableSchema(new String[] {"c0", "out"},
-			new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR});
+			new TypeInformation <?>[] {Types.STRING, AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(VectorAssemblerParams.SELECTED_COLS, new String[] {"c0", "c1", "c2"})
@@ -67,7 +67,7 @@ public class VectorAssemblerMapperTest extends AlinkTestBase {
 			new TypeInformation <?>[] {Types.STRING, Types.DOUBLE});
 
 		TableSchema outSchema = new TableSchema(new String[] {"c0", "out"},
-			new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR});
+			new TypeInformation <?>[] {Types.STRING, AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(VectorAssemblerParams.SELECTED_COLS, new String[] {"c0", "c1"})
@@ -89,7 +89,7 @@ public class VectorAssemblerMapperTest extends AlinkTestBase {
 			new TypeInformation <?>[] {Types.STRING, Types.DOUBLE, Types.STRING});
 
 		TableSchema outSchema = new TableSchema(new String[] {"c0", "out"},
-			new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR});
+			new TypeInformation <?>[] {Types.STRING, AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(VectorAssemblerParams.SELECTED_COLS, new String[] {"c0", "c1", "c2"})
@@ -111,7 +111,7 @@ public class VectorAssemblerMapperTest extends AlinkTestBase {
 			new TypeInformation <?>[] {Types.STRING, Types.DOUBLE, Types.STRING});
 
 		TableSchema outSchema = new TableSchema(new String[] {"c0", "out"},
-			new TypeInformation <?>[] {Types.STRING, VectorTypes.VECTOR});
+			new TypeInformation <?>[] {Types.STRING, AlinkTypes.VECTOR});
 
 		Params params = new Params()
 			.set(VectorAssemblerParams.SELECTED_COLS, new String[] {"c0", "c1", "c2"})

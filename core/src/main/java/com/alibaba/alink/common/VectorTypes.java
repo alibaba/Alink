@@ -11,6 +11,7 @@ import com.google.common.collect.HashBiMap;
  * Built-in vector types. <br/>
  * This class contains bi-direction mapping between <code>TypeInformation</code>s and their names.
  */
+@Deprecated
 public class VectorTypes {
 	private static final HashBiMap <String, TypeInformation> TYPES = HashBiMap.create();
 

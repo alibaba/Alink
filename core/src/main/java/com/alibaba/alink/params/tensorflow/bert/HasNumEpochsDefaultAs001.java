@@ -4,11 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasNumEpochsDefaultAs001<T> extends WithParams <T> {
-	/**
-	 * @cn-name epoch 数
-	 * @cn epoch 数
-	 */
+	@NameCn("epoch 数")
+	@DescCn("epoch 数")
 	ParamInfo <Double> NUM_EPOCHS = ParamInfoFactory
 		.createParamInfo("numEpochs", Double.class)
 		.setDescription("num epochs")

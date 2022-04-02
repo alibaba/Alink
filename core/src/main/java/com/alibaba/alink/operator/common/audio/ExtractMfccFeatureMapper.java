@@ -9,7 +9,7 @@ import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.mapper.SISOMapper;
 import com.alibaba.alink.operator.common.dataproc.MFCC;
 import com.alibaba.alink.params.audio.ExtractMfccFeatureParams;
@@ -30,7 +30,7 @@ public class ExtractMfccFeatureMapper extends SISOMapper {
 
 	@Override
 	protected TypeInformation initOutputColType() {
-		return TensorTypes.FLOAT_TENSOR;
+		return AlinkTypes.FLOAT_TENSOR;
 	}
 
 	@Override

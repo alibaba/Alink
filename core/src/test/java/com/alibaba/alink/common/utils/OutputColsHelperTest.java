@@ -200,7 +200,7 @@ public class OutputColsHelperTest extends AlinkTestBase {
 				TypeInformation.of(Integer.class),
 				TypeInformation.of(String.class)
 			},
-			new String[] {"res", "res2"}
+			new String[] {}
 		);
 		Assert.assertEquals(expectSchema, helper.getResultSchema());
 
@@ -218,7 +218,7 @@ public class OutputColsHelperTest extends AlinkTestBase {
 				TypeInformation.of(Integer.class),
 				TypeInformation.of(String.class)
 			},
-			new String[] {"f1", "res"}
+			new String[] {"f1"}
 		);
 		Assert.assertEquals(expectSchema, helper.getResultSchema());
 
@@ -237,7 +237,7 @@ public class OutputColsHelperTest extends AlinkTestBase {
 				TypeInformation.of(String.class),
 				TypeInformation.of(Double.class)
 			},
-			new String[] {"f1", "res"}
+			new String[] {"f1"}
 		);
 		Assert.assertEquals(expectSchema, helper.getResultSchema());
 	}

@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.validators.MinValidator;
 
 /**
@@ -11,10 +13,8 @@ import com.alibaba.alink.params.validators.MinValidator;
  */
 public interface HasSmoothing<T> extends WithParams <T> {
 
-	/**
-	 * @cn-name 算法参数
-	 * @cn 光滑因子，默认为1.0
-	 */
+	@NameCn("算法参数")
+	@DescCn("光滑因子，默认为1.0")
 	ParamInfo <Double> SMOOTHING = ParamInfoFactory
 		.createParamInfo("smoothing", Double.class)
 		.setDescription("the smoothing factor")

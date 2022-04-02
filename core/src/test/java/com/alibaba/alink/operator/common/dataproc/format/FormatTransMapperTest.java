@@ -3,7 +3,8 @@ package com.alibaba.alink.operator.common.dataproc.format;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dataproc.format.ColumnsToVectorParams;
 import com.alibaba.alink.params.dataproc.format.CsvToKvParams;
 import com.alibaba.alink.params.dataproc.format.JsonToColumnsParams;
@@ -35,7 +36,7 @@ public class FormatTransMapperTest extends AlinkTestBase {
 		String schemaStr = "f1 double, f2 double, f3 double, f4 double, f5 double";
 
 		FormatTransMapper transVectorToColumns = new FormatTransMapper(
-			CsvUtil.schemaStr2Schema("vec string"),
+			TableUtil.schemaStr2Schema("vec string"),
 			//new TableSchema(new String[]{"vec"}, new TypeInformation<?>[]{Types.})
 			new Params()
 				.set(FormatTransParams.FROM_FORMAT, FormatType.VECTOR)
@@ -54,7 +55,7 @@ public class FormatTransMapperTest extends AlinkTestBase {
 		);
 
 		FormatTransMapper transColumnsToVector = new FormatTransMapper(
-			CsvUtil.schemaStr2Schema(schemaStr),
+			TableUtil.schemaStr2Schema(schemaStr),
 			new Params()
 				.set(FormatTransParams.FROM_FORMAT, FormatType.COLUMNS)
 				.set(FormatTransParams.TO_FORMAT, FormatType.VECTOR)
@@ -68,11 +69,10 @@ public class FormatTransMapperTest extends AlinkTestBase {
 		System.out.println(resultColumnsToVector);
 		Assert.assertEquals(
 			"1.1 2.2 3.3 4.4 5.5",
-			resultColumnsToVector.getField(resultColumnsToVector.getArity() - 1).toString()
-		);
+			VectorUtil.serialize(resultColumnsToVector.getField(resultColumnsToVector.getArity() - 1)));
 
 		FormatTransMapper transKvToVector = new FormatTransMapper(
-			CsvUtil.schemaStr2Schema("kv string"),
+			TableUtil.schemaStr2Schema("kv string"),
 			new Params()
 				.set(FormatTransParams.FROM_FORMAT, FormatType.KV)
 				.set(FormatTransParams.TO_FORMAT, FormatType.VECTOR)
@@ -89,11 +89,11 @@ public class FormatTransMapperTest extends AlinkTestBase {
 		System.out.println(resultKvToVector);
 		Assert.assertEquals(
 			vecStr.length(),
-			resultKvToVector.getField(resultKvToVector.getArity() - 1).toString().length()
+			VectorUtil.serialize(resultKvToVector.getField(resultKvToVector.getArity() - 1)).length()
 		);
 
 		FormatTransMapper transVectorToKv = new FormatTransMapper(
-			CsvUtil.schemaStr2Schema("vec string"),
+			TableUtil.schemaStr2Schema("vec string"),
 			new Params()
 				.set(FormatTransParams.FROM_FORMAT, FormatType.VECTOR)
 				.set(FormatTransParams.TO_FORMAT, FormatType.KV)
@@ -124,7 +124,7 @@ public class FormatTransMapperTest extends AlinkTestBase {
 		String schemaStr = "f1 bigint, f2 double, f3 boolean, f4 string, f5 date, f6 time, f7 timestamp";
 
 		FormatTransMapper transJsonToColumns = new FormatTransMapper(
-			CsvUtil.schemaStr2Schema("json string"),
+			TableUtil.schemaStr2Schema("json string"),
 			new Params()
 				.set(FormatTransParams.FROM_FORMAT, FormatType.JSON)
 				.set(FormatTransParams.TO_FORMAT, FormatType.COLUMNS)
@@ -142,7 +142,7 @@ public class FormatTransMapperTest extends AlinkTestBase {
 		);
 
 		FormatTransMapper transKvToColumns = new FormatTransMapper(
-			CsvUtil.schemaStr2Schema("kv string"),
+			TableUtil.schemaStr2Schema("kv string"),
 			new Params()
 				.set(FormatTransParams.FROM_FORMAT, FormatType.KV)
 				.set(FormatTransParams.TO_FORMAT, FormatType.COLUMNS)
@@ -162,7 +162,7 @@ public class FormatTransMapperTest extends AlinkTestBase {
 		);
 
 		FormatTransMapper transKvToCsv = new FormatTransMapper(
-			CsvUtil.schemaStr2Schema("kv string"),
+			TableUtil.schemaStr2Schema("kv string"),
 			new Params()
 				.set(FormatTransParams.FROM_FORMAT, FormatType.KV)
 				.set(FormatTransParams.TO_FORMAT, FormatType.CSV)
@@ -181,7 +181,7 @@ public class FormatTransMapperTest extends AlinkTestBase {
 		Assert.assertEquals(csvStr, resultKvToCsv.getField(resultKvToCsv.getArity() - 1));
 
 		FormatTransMapper transCsvToKv = new FormatTransMapper(
-			CsvUtil.schemaStr2Schema("csv string"),
+			TableUtil.schemaStr2Schema("csv string"),
 			new Params()
 				.set(FormatTransParams.FROM_FORMAT, FormatType.CSV)
 				.set(FormatTransParams.TO_FORMAT, FormatType.KV)
@@ -203,7 +203,7 @@ public class FormatTransMapperTest extends AlinkTestBase {
 		);
 
 		FormatTransMapper transKvToJson = new FormatTransMapper(
-			CsvUtil.schemaStr2Schema("kv string"),
+			TableUtil.schemaStr2Schema("kv string"),
 			new Params()
 				.set(FormatTransParams.FROM_FORMAT, FormatType.KV)
 				.set(FormatTransParams.TO_FORMAT, FormatType.JSON)

@@ -2,12 +2,14 @@ package com.alibaba.alink.pipeline.feature;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.C45TrainBatchOp;
 import com.alibaba.alink.params.classification.C45TrainParams;
 import com.alibaba.alink.params.feature.C45EncoderParams;
 import com.alibaba.alink.pipeline.Trainer;
 
+@NameCn("C45编码")
 public class C45Encoder extends Trainer <C45Encoder, C45EncoderModel> implements
 	C45TrainParams <C45Encoder>,
 	C45EncoderParams <C45Encoder> {

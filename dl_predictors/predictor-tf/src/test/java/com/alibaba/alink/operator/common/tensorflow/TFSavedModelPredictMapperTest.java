@@ -13,7 +13,7 @@ import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.LongTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
-import com.alibaba.alink.common.linalg.tensor.TensorTypes;
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -96,10 +96,10 @@ public class TFSavedModelPredictMapperTest {
 			data.getSchema(), params);
 		tfSavedModelPredictMapper.open();
 		Assert.assertEquals(TableSchema.builder()
-			.field("label", TensorTypes.LONG_TENSOR)
-			.field("image", TensorTypes.FLOAT_TENSOR)
-			.field("classes", TensorTypes.LONG_TENSOR)
-			.field("probabilities", TensorTypes.FLOAT_TENSOR)
+			.field("label", AlinkTypes.LONG_TENSOR)
+			.field("image", AlinkTypes.FLOAT_TENSOR)
+			.field("classes", AlinkTypes.LONG_TENSOR)
+			.field("probabilities", AlinkTypes.FLOAT_TENSOR)
 			.build(), tfSavedModelPredictMapper.getOutputSchema()
 		);
 		for (Row row : rows) {

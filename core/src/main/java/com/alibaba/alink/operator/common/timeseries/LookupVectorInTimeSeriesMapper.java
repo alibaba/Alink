@@ -6,10 +6,9 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MTable;
-import com.alibaba.alink.common.MTableTypes;
-import com.alibaba.alink.common.MTableUtils;
-import com.alibaba.alink.common.VectorTypes;
+import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -32,7 +31,7 @@ public class LookupVectorInTimeSeriesMapper extends Mapper {
 
 		String timeSeriesCol = params.get(LookupVectorInTimeSeriesParams.TIME_SERIES_COL);
 		TypeInformation<?> typeTS = TableUtil.findColType(dataSchema, timeSeriesCol);
-		if (!MTableTypes.M_TABLE.equals(typeTS) && Types.STRING != typeTime) {
+		if (!AlinkTypes.M_TABLE.equals(typeTS) && Types.STRING != typeTime) {
 			throw new IllegalArgumentException("Type of column '" + timeSeriesCol + "' must be MTable!");
 		}
 	}
@@ -57,7 +56,7 @@ public class LookupVectorInTimeSeriesMapper extends Mapper {
 
 		Timestamp lookupTime = (Timestamp) selection.get(0);
 
-		TableSchema schema = mTable.getTableSchema();
+		TableSchema schema = mTable.getSchema();
 		String timeCol = null;
 		String vectorCol = null;
 		int timeIdx = -1;
@@ -67,14 +66,14 @@ public class LookupVectorInTimeSeriesMapper extends Mapper {
 				timeCol = schema.getFieldNames()[i];
 				timeIdx = i;
 			}
-			if (colTypes[i] == VectorTypes.VECTOR || colTypes[i] == VectorTypes.DENSE_VECTOR
-					|| colTypes[i] == VectorTypes.SPARSE_VECTOR) {
+			if (colTypes[i] == AlinkTypes.VECTOR || colTypes[i] == AlinkTypes.DENSE_VECTOR
+					|| colTypes[i] == AlinkTypes.SPARSE_VECTOR) {
 				vectorCol = schema.getFieldNames()[i];
 			}
 		}
 
 		if (null != timeCol && null != vectorCol) {
-			List<Object> times = MTableUtils.getColumn(mTable, timeCol);
+			List<Object> times = MTableUtil.getColumn(mTable, timeCol);
 			int idxRow = times.indexOf(lookupTime);
 			int idxCol = TableUtil.findColIndex(schema, vectorCol);
 			if (idxRow >= 0) {
@@ -82,7 +81,7 @@ public class LookupVectorInTimeSeriesMapper extends Mapper {
 				return;
 			} else {
 				mTable.orderBy(timeIdx);
-				Timestamp[] timesArr = MTableUtils.getColumn(mTable, timeCol).toArray(new Timestamp[]{});
+				Timestamp[] timesArr = MTableUtil.getColumn(mTable, timeCol).toArray(new Timestamp[]{});
 				int pos = Arrays.binarySearch(timesArr, lookupTime);
 				if (pos == -1) {
 					result.set(0, mTable.getEntry(0, idxCol));
@@ -115,7 +114,7 @@ public class LookupVectorInTimeSeriesMapper extends Mapper {
 						params.get(LookupVectorInTimeSeriesParams.TIME_SERIES_COL),
 				},
 				new String[]{params.get(LookupVectorInTimeSeriesParams.OUTPUT_COL)},
-				new TypeInformation<?>[]{VectorTypes.VECTOR},
+				new TypeInformation<?>[]{AlinkTypes.VECTOR},
 				params.get(LookupVectorInTimeSeriesParams.RESERVED_COLS)
 		);
 	}

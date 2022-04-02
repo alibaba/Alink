@@ -6,6 +6,7 @@ import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
@@ -47,7 +48,7 @@ public class FlattenMTableStreamTest extends AlinkTestBase {
 			+ ", tensor FLOAT_TENSOR";
 		MTable mTable = new MTable(rows, schemaStr);
 		List <Row> table = new ArrayList <>();
-		table.add(Row.of("id", mTable.toString()));
+		table.add(Row.of("id", JsonConverter.toJson(mTable)));
 
 		StreamOperator <?> op = new MemSourceStreamOp(table, new String[] {"id","mTable"});
 		StreamOperator <?> res = op.link(new FlattenMTableStreamOp().setSchemaStr(schemaStr)

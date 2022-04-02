@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.dataproc;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.IndexToStringModelMapper;
 import com.alibaba.alink.params.dataproc.IndexToStringPredictParams;
@@ -53,6 +54,7 @@ import com.alibaba.alink.pipeline.Pipeline;
  * pipeline.fit(...);
  * </code>
  */
+@NameCn("IndexToString")
 public class IndexToString extends MapModel <IndexToString>
 	implements IndexToStringPredictParams <IndexToString> {
 

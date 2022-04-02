@@ -4,14 +4,15 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
+import com.alibaba.alink.common.source.RandomTableSourceUtils;
 import com.alibaba.alink.operator.common.dataproc.RandomTable;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.RandomTableSourceStreamParams;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,6 +25,7 @@ import java.util.Map;
  * poisson(0.5): generate data from poisson distribution with lambda = 0.5 .
  */
 @IoOpAnnotation(name = "random_table", ioType = IOType.SourceStream)
+@NameCn("随机生成结构数据源")
 public final class RandomTableSourceStreamOp extends BaseSourceStreamOp <RandomTableSourceStreamOp>
 	implements RandomTableSourceStreamParams <RandomTableSourceStreamOp> {
 
@@ -40,69 +42,6 @@ public final class RandomTableSourceStreamOp extends BaseSourceStreamOp <RandomT
 
 	public RandomTableSourceStreamOp(Params params) {
 		super(AnnotationUtils.annotatedName(RandomTableSourceStreamOp.class), params);
-	}
-
-	/**
-	 * example of confs string : 'col0:uniform(0,1,nullper=0.1);col1:uniform_open(0,1)'
-	 */
-	Map <String, Tuple3 <String, Double[], Double>> parseColConfs(String confString, String[] colNames) {
-		Map <String, Tuple3 <String, Double[], Double>> confs = new HashMap <>(0);
-		if (confString != null) {
-			String[] items = confString.split(";");
-			for (String conf : items) {
-				int idx = conf.indexOf(':');
-				String colName = conf.substring(0, idx);
-				String distInfo = conf.substring(idx + 1, conf.length());
-				String method = distInfo.substring(0, distInfo.indexOf("(")).trim();
-
-				String val = distInfo.substring(distInfo.indexOf("(") + 1, distInfo.indexOf(")"));
-
-				String[] vals = val.split(",");
-
-				if (("uniform").equals(method) || "uniform_open".equals(method)
-					|| "gauss".equals(method) || "weight_set".equals(method)) {
-					if (vals.length % 2 == 0) {
-						Double[] values = new Double[vals.length];
-						for (int i = 0; i < vals.length; ++i) {
-							values[i] = Double.parseDouble(vals[i]);
-						}
-						confs.put(colName, Tuple3.of(method, values, -1.0));
-					} else {
-						Double[] values = new Double[vals.length - 1];
-						for (int i = 0; i < vals.length - 1; ++i) {
-							values[i] = Double.parseDouble(vals[i]);
-						}
-						String str = vals[vals.length - 1];
-						Double nullper = Double.parseDouble(str.substring(str.indexOf("=") + 1, str.length()));
-						confs.put(colName, Tuple3.of(method, values, nullper));
-					}
-				} else if ("poisson".equals(method)) {
-					if (vals.length == 1) {
-						Double[] values = new Double[vals.length];
-						for (int i = 0; i < vals.length; ++i) {
-							values[i] = Double.parseDouble(vals[i]);
-						}
-						confs.put(colName, Tuple3.of(method, values, -1.0));
-					} else if (vals.length == 2) {
-						Double[] values = new Double[vals.length - 1];
-						for (int i = 0; i < vals.length - 1; ++i) {
-							values[i] = Double.parseDouble(vals[i]);
-						}
-						String str = vals[vals.length - 1];
-						Double nullper = Double.parseDouble(str.substring(str.indexOf("=") + 1, str.length() - 1));
-						confs.put(colName, Tuple3.of(method, values, nullper));
-					} else {
-						throw (new RuntimeException("poisson distribution parameter error."));
-					}
-				}
-			}
-		}
-		for (String name : colNames) {
-			if (!confs.containsKey(name)) {
-				confs.put(name, Tuple3.of("uniform", new Double[] {0.0, 1.0}, -1.0));
-			}
-		}
-		return confs;
 	}
 
 	@Override
@@ -128,7 +67,8 @@ public final class RandomTableSourceStreamOp extends BaseSourceStreamOp <RandomT
 			colNames[i] = colNames[i].trim();
 		}
 
-		Map <String, Tuple3 <String, Double[], Double>> colConfs = parseColConfs(colConfsString, colNames);
+		Map <String, Tuple3 <String, Double[], Double>> colConfs = RandomTableSourceUtils.parseColConfs(
+			colConfsString, colNames);
 		StreamOperator<?> initData;
 		if (timePerSample != null && idColName != null) {
 			initData = new NumSeqSourceStreamOp(1, maxRows, idColName, timePerSample, getParams());
