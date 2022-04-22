@@ -19,6 +19,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.NumberSequenceIterator;
+import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -346,7 +347,7 @@ public class MetaPathWalkBatchOp extends BatchOperator <MetaPathWalkBatchOp>
 						logical2physical.getDstPartitionId());
 				}
 				HeteGraphEngine heteGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				assert null != heteGraphEngine;
+				Preconditions.checkNotNull(heteGraphEngine);
 				heteGraphEngine.setLogicalWorkerIdToPhysicalWorkerId(workerIdMapping);
 			} else {
 				// do nothing here.
@@ -393,9 +394,9 @@ public class MetaPathWalkBatchOp extends BatchOperator <MetaPathWalkBatchOp>
 				MetaPathWalkPathEngine heteWalkPath = IterTaskObjKeeper.get(randomWalkStorageHandler, partitionId);
 				RandomWalkMemoryBuffer randomWalkMemoryBuffer = IterTaskObjKeeper.get(walkWriteBufferHandler,
 					partitionId);
-				assert null != heteGraphEngine;
-				assert null != heteWalkPath;
-				assert null != randomWalkMemoryBuffer;
+				Preconditions.checkNotNull(heteGraphEngine);
+				Preconditions.checkNotNull(heteWalkPath);
+				Preconditions.checkNotNull(randomWalkMemoryBuffer);
 				Tuple2 <long[], Character[]> nextBatchOfVerticesToSampleFrom =
 					heteWalkPath.getNextBatchOfVerticesToSampleFrom();
 
@@ -501,9 +502,9 @@ public class MetaPathWalkBatchOp extends BatchOperator <MetaPathWalkBatchOp>
 				}
 			} else {
 				HeteGraphEngine heteGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				assert null != heteGraphEngine;
+				Preconditions.checkNotNull(heteGraphEngine);
 				for (MetaPathCommunicationUnit metaPathCommunicationUnit : values) {
-					assert metaPathCommunicationUnit.getDstPartitionId() == partitionId;
+					Preconditions.checkState(metaPathCommunicationUnit.getDstPartitionId() == partitionId);
 					Long[] verticesToSample = metaPathCommunicationUnit.getRequestedVertexIds();
 					Character[] typesToSample = metaPathCommunicationUnit.getVertexTypes();
 					for (int vertexCnt = 0; vertexCnt < verticesToSample.length; vertexCnt++) {

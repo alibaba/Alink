@@ -7,6 +7,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.clustering.GmmModelMapper;
+import com.alibaba.alink.operator.common.regression.GlmModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.clustering.GmmPredictParams;
 
@@ -20,6 +21,14 @@ public final class GmmPredictStreamOp extends ModelMapStreamOp <GmmPredictStream
 	implements GmmPredictParams <GmmPredictStreamOp> {
 
 	private static final long serialVersionUID = -6737997176873713411L;
+
+	public GmmPredictStreamOp() {
+		super(GmmModelMapper::new, new Params());
+	}
+
+	public GmmPredictStreamOp(Params params) {
+		super(GmmModelMapper::new, params);
+	}
 
 	public GmmPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

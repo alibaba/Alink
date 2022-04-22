@@ -6,7 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.common.outlier.BaseOutlierBatchOp;
 import com.alibaba.alink.operator.common.outlier.BoxPlotDetector;
-import com.alibaba.alink.operator.common.outlier.BoxPlotDetectorParams;
+import com.alibaba.alink.params.outlier.BoxPlotDetectorParams;
 
 @NameCn("BoxPlot异常检测")
 @NameEn("BoxPlot Outlier")

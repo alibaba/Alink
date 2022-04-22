@@ -5,6 +5,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.params.outlier.HasInputMTableCol;
+import com.alibaba.alink.params.outlier.HasOutputMTableCol;
+import com.alibaba.alink.params.outlier.IForestDetectorParams;
 import org.junit.Assert;
 import org.junit.Test;
 

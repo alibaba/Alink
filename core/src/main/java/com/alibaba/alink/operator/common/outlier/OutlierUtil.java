@@ -14,7 +14,10 @@ import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
+import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.params.outlier.WithMultiVarParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,13 +39,7 @@ public class OutlierUtil {
 	public static Vector[] getVectors(MTable series, Params params) {
 		int n = series.getNumRow();
 		Vector[] vectors = new Vector[n];
-		if (params.contains(WithMultiVarParams.VECTOR_COL)) {
-			int colIndex =
-				TableUtil.findColIndex(series.getSchema(), params.get(WithMultiVarParams.VECTOR_COL));
-			for (int i = 0; i < n; i++) {
-				vectors[i] = VectorUtil.getVector(series.getEntry(i, colIndex));
-			}
-		} else {
+		if (params.contains(WithMultiVarParams.FEATURE_COLS)) {
 			String[] features = uniformFeatureColsDefaultAsAll(
 				series.getColNames(), params.get(WithMultiVarParams.FEATURE_COLS)
 			);
@@ -51,7 +48,23 @@ public class OutlierUtil {
 			for (int i = 0; i < n; i++) {
 				vectors[i] = rowToDenseVector(series.getRow(i), indexes, m);
 			}
+		} else if (params.contains(WithMultiVarParams.VECTOR_COL)) {
+			int colIndex =
+				TableUtil.findColIndex(series.getSchema(), params.get(WithMultiVarParams.VECTOR_COL));
+			for (int i = 0; i < n; i++) {
+				vectors[i] = VectorUtil.getVector(series.getEntry(i, colIndex));
+			}
+		} else if (params.contains(WithMultiVarParams.TENSOR_COL)) {
+			int colIndex =
+				TableUtil.findColIndex(series.getSchema(), params.get(WithMultiVarParams.TENSOR_COL));
+			for (int i = 0; i < n; i++) {
+				vectors[i] = DoubleTensor.of(TensorUtil.getTensor(series.getEntry(i, colIndex)).flatten(0, -1))
+					.toVector();
+			}
+		} else {
+			throw new IllegalArgumentException("Must input one of these params {featureCols, vectorCol, tensorCol}.");
 		}
+
 		return vectors;
 	}
 
@@ -143,17 +156,17 @@ public class OutlierUtil {
 		.build();
 
 	public static MTable getMTable(MTable series, Params params) {
-
-		if (params.contains(WithMultiVarParams.VECTOR_COL)) {
-
-			Tuple2 <Vector[], Integer> vectorsAndShape = selectVectorCol(
-				series, params.get(WithMultiVarParams.VECTOR_COL)
-			);
-
-			return vectorsToMTable(vectorsAndShape.f0, vectorsAndShape.f1);
-		} else {
-
+		if (params.contains(WithMultiVarParams.FEATURE_COLS)) {
 			return selectFeatures(series, fillFeatures(series.getColNames(), params));
+		} else if (params.contains(WithMultiVarParams.VECTOR_COL) || params.contains(WithMultiVarParams.TENSOR_COL)) {
+			Vector[] vectors = getVectors(series, params);
+			int m = 0;
+			for (Vector vector : vectors) {
+				m = Math.max(m, vectorSize(vector));
+			}
+			return vectorsToMTable(vectors, m);
+		} else {
+			throw new IllegalArgumentException("Must input one of these params {featureCols, vectorCol, tensorCol}.");
 		}
 	}
 
@@ -163,16 +176,6 @@ public class OutlierUtil {
 		double[] values = new double[n];
 		for (int i = 0; i < n; i++) {
 			values[i] = ((Number) series.getEntry(i, colIndex)).doubleValue();
-		}
-		return values;
-	}
-
-	static Vector[] getVectors(MTable series, String vectorCol) {
-		int colIndex = TableUtil.findColIndex(series.getSchema(), vectorCol);
-		int n = series.getNumRow();
-		Vector[] values = new Vector[n];
-		for (int i = 0; i < n; i++) {
-			values[i] = VectorUtil.getVector(series.getEntry(i, colIndex));
 		}
 		return values;
 	}

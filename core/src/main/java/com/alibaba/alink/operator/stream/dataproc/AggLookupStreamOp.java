@@ -14,6 +14,14 @@ import com.alibaba.alink.params.dataproc.AggLookupParams;
 public class AggLookupStreamOp extends ModelMapStreamOp <AggLookupStreamOp>
 	implements AggLookupParams <AggLookupStreamOp> {
 
+	public AggLookupStreamOp() {
+		super(AggLookupModelMapper::new, new Params());
+	}
+
+	public AggLookupStreamOp(Params params) {
+		super(AggLookupModelMapper::new, params);
+	}
+
 	public AggLookupStreamOp(BatchOperator model) {
 		this(model, null);
 	}

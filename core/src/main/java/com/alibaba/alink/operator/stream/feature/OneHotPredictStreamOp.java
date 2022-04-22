@@ -31,6 +31,14 @@ public final class OneHotPredictStreamOp extends ModelMapStreamOp <OneHotPredict
 
 	private static final long serialVersionUID = 3986423530880867993L;
 
+	public OneHotPredictStreamOp() {
+		super(OneHotModelMapper::new, new Params());
+	}
+
+	public OneHotPredictStreamOp(Params params) {
+		super(OneHotModelMapper::new, params);
+	}
+
 	/**
 	 * constructor.
 	 *

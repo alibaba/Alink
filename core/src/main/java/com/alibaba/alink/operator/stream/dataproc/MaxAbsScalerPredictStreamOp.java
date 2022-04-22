@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.MaxAbsScalerModelMapper;
+import com.alibaba.alink.operator.common.timeseries.LSTNetModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.dataproc.MaxAbsScalerPredictParams;
 
@@ -18,6 +19,14 @@ public class MaxAbsScalerPredictStreamOp extends ModelMapStreamOp <MaxAbsScalerP
 	implements MaxAbsScalerPredictParams <MaxAbsScalerPredictStreamOp> {
 
 	private static final long serialVersionUID = -766923466534304512L;
+
+	public MaxAbsScalerPredictStreamOp() {
+		super(MaxAbsScalerModelMapper::new, new Params());
+	}
+
+	public MaxAbsScalerPredictStreamOp(Params params) {
+		super(MaxAbsScalerModelMapper::new, params);
+	}
 
 	public MaxAbsScalerPredictStreamOp(BatchOperator srt) {
 		this(srt, new Params());

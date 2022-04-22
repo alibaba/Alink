@@ -214,9 +214,20 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 		model = ThreadLocal.withInitial(() -> new ItemCfRecommModelDataConverter(recommType).load(modelRows));
 		scores = ThreadLocal.withInitial(() -> new double[model.get().items.length]);
 
-		recommObjType = FlinkTypeConverter.getFlinkType(
-			model.get().meta.get(ItemCfRecommModelDataConverter.ITEM_TYPE)
-		);
+		switch (recommType) {
+			case ITEMS_PER_USER:
+			case SIMILAR_ITEMS: {
+				recommObjType = FlinkTypeConverter.getFlinkType(
+					model.get().meta.get(ItemCfRecommModelDataConverter.ITEM_TYPE));
+				break;
+			}
+			case SIMILAR_USERS:
+			case USERS_PER_ITEM: {
+				recommObjType = FlinkTypeConverter.getFlinkType(
+					model.get().meta.get(ItemCfRecommModelDataConverter.USER_TYPE));
+			}
+		}
+
 	}
 
 	@Override

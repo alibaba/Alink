@@ -5,6 +5,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.util.function.TriFunction;
 
 import com.alibaba.alink.common.mapper.ModelMapper;
+import com.alibaba.alink.params.outlier.ModelOutlierParams;
 import com.alibaba.alink.pipeline.MapModel;
 
 public abstract class BaseModelOutlierModel<T extends BaseModelOutlierModel <T>> extends MapModel <T>

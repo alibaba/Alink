@@ -6,6 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.SelectedColsWithSecondInputSpec;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
+import com.alibaba.alink.operator.common.nlp.Word2VecModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 
@@ -20,6 +21,14 @@ public class EqualWidthDiscretizerPredictStreamOp extends ModelMapStreamOp <Equa
 	implements QuantileDiscretizerPredictParams <EqualWidthDiscretizerPredictStreamOp> {
 
 	private static final long serialVersionUID = -4788685477954335971L;
+
+	public EqualWidthDiscretizerPredictStreamOp() {
+		super(QuantileDiscretizerModelMapper::new, new Params());
+	}
+
+	public EqualWidthDiscretizerPredictStreamOp(Params params) {
+		super(QuantileDiscretizerModelMapper::new, params);
+	}
 
 	public EqualWidthDiscretizerPredictStreamOp(BatchOperator model) {
 		this(model, null);

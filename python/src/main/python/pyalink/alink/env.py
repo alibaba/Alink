@@ -1,8 +1,7 @@
 import collections
 import os
-from typing import Union, Optional
-
 from py4j.java_gateway import JavaGateway, CallbackServerParameters
+from typing import Union, Optional
 
 from .common.types.conversion.type_converters import py_list_to_j_array
 from .common.utils.packages import is_flink_1_9
@@ -74,11 +73,7 @@ def setup_py_flink_env(gateway: JavaGateway, j_benv: object, j_senv: object) -> 
     senv = StreamExecutionEnvironment(j_senv)
     # noinspection PyDeprecation
     btenv = BatchTableEnvironment.create(benv)
-
-    from pyflink.table import EnvironmentSettings
-    # noinspection PyDeprecation
-    stenv_settings = EnvironmentSettings.new_instance().use_old_planner().in_streaming_mode().build()
-    stenv = StreamTableEnvironment.create(senv, environment_settings=stenv_settings)
+    stenv = StreamTableEnvironment.create(senv)
     return benv, btenv, senv, stenv
 
 

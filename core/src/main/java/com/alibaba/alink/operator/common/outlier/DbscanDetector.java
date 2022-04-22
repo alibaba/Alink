@@ -11,6 +11,7 @@ import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
 import com.alibaba.alink.operator.common.similarity.KDTree;
+import com.alibaba.alink.params.outlier.DbscanDetectorParams;
 import com.alibaba.alink.params.shared.clustering.HasFastDistanceType.DistanceType;
 
 import java.util.ArrayList;

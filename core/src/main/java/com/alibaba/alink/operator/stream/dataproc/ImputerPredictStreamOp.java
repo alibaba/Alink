@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.ImputerModelMapper;
+import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.dataproc.ImputerPredictParams;
 
@@ -22,6 +23,14 @@ public class ImputerPredictStreamOp extends ModelMapStreamOp <ImputerPredictStre
 	implements ImputerPredictParams <ImputerPredictStreamOp> {
 
 	private static final long serialVersionUID = -9068184308819465206L;
+
+	public ImputerPredictStreamOp() {
+		super(ImputerModelMapper::new, new Params());
+	}
+
+	public ImputerPredictStreamOp(Params params) {
+		super(ImputerModelMapper::new, params);
+	}
 
 	public ImputerPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

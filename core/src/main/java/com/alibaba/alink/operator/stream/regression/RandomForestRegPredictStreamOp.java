@@ -33,6 +33,14 @@ public final class RandomForestRegPredictStreamOp extends ModelMapStreamOp <Rand
 	implements RandomForestRegPredictParams <RandomForestRegPredictStreamOp> {
 	private static final long serialVersionUID = -3161797668236111772L;
 
+	public RandomForestRegPredictStreamOp() {
+		super(RandomForestModelMapper::new, new Params());
+	}
+
+	public RandomForestRegPredictStreamOp(Params params) {
+		super(RandomForestModelMapper::new, params);
+	}
+
 	public RandomForestRegPredictStreamOp(BatchOperator model) {
 		this(model, null);
 	}

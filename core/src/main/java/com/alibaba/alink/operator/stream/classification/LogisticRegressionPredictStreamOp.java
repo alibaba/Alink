@@ -21,6 +21,14 @@ public final class LogisticRegressionPredictStreamOp extends ModelMapStreamOp <L
 
 	private static final long serialVersionUID = 7364058085791363663L;
 
+	public LogisticRegressionPredictStreamOp() {
+		super(LinearModelMapper::new, new Params());
+	}
+
+	public LogisticRegressionPredictStreamOp(Params params) {
+		super(LinearModelMapper::new, params);
+	}
+
 	public LogisticRegressionPredictStreamOp(BatchOperator model) {
 		this(model, new Params());
 	}

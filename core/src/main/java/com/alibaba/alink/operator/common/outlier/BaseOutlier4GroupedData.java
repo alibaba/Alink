@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.mapper.Mapper;
+import com.alibaba.alink.params.outlier.Outlier4GroupedDataParams;
 import com.alibaba.alink.pipeline.MapTransformer;
 
 import java.util.function.BiFunction;

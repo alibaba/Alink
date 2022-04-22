@@ -1,10 +1,13 @@
 package com.alibaba.alink.operator.stream.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.util.function.TriFunction;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.regression.AFTModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -23,6 +26,14 @@ public class AftSurvivalRegPredictStreamOp extends ModelMapStreamOp <AftSurvival
 	implements AftRegPredictParams <AftSurvivalRegPredictStreamOp> {
 
 	private static final long serialVersionUID = -4560738919934088694L;
+
+	public AftSurvivalRegPredictStreamOp() {
+		super(AFTModelMapper::new, new Params());
+	}
+
+	public AftSurvivalRegPredictStreamOp(Params params) {
+		super(AFTModelMapper::new, params);
+	}
 
 	/**
 	 * Constructor.

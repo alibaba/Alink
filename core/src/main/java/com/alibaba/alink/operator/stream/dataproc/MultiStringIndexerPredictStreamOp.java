@@ -12,6 +12,7 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerTrainBatchOp;
+import com.alibaba.alink.operator.common.classification.ann.MlpcModelMapper;
 import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
@@ -31,6 +32,14 @@ public final class MultiStringIndexerPredictStreamOp
 	implements MultiStringIndexerPredictParams <MultiStringIndexerPredictStreamOp> {
 
 	private static final long serialVersionUID = 8426930716606704994L;
+
+	public MultiStringIndexerPredictStreamOp() {
+		super(MultiStringIndexerModelMapper::new, new Params());
+	}
+
+	public MultiStringIndexerPredictStreamOp(Params params) {
+		super(MultiStringIndexerModelMapper::new, params);
+	}
 
 	public MultiStringIndexerPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

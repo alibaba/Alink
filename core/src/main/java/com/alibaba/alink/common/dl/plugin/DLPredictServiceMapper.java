@@ -4,15 +4,23 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.util.FileUtils;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.dl.utils.FileDownloadUtils;
+import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.common.mapper.Mapper;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dl.HasModelPath;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
 import com.alibaba.alink.params.shared.colname.HasSelectedColsDefaultAsNull;
 import com.alibaba.alink.params.tensorflow.savedmodel.HasOutputSchemaStr;
+import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,7 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public abstract class DLPredictServiceMapper<FACTORY> extends Mapper implements Serializable {
+public abstract class DLPredictServiceMapper<FACTORY extends ClassLoaderFactory> extends Mapper
+	implements Serializable {
 
 	protected final FACTORY factory;
 	protected final String[] outputCols;
@@ -29,6 +38,8 @@ public abstract class DLPredictServiceMapper<FACTORY> extends Mapper implements 
 	protected String[] inputCols;
 	protected String modelPath;
 	protected DLPredictorService predictor;
+	protected String localModelPath;
+	protected File workDir;
 
 	public DLPredictServiceMapper(TableSchema dataSchema, Params params, FACTORY factory) {
 		super(dataSchema, params);
@@ -61,11 +72,16 @@ public abstract class DLPredictServiceMapper<FACTORY> extends Mapper implements 
 		return this;
 	}
 
-	protected abstract Map <String, Object> getPredictorConfig();
+	protected abstract PredictorConfig getPredictorConfig();
 
 	@Override
 	public void open() {
 		Preconditions.checkArgument(modelPath != null, "Model path is not set.");
+		workDir = PythonFileUtils.createTempDir("temp_d_").toFile();
+		File modelFile = new File(workDir, "model");
+		FileDownloadUtils.downloadFile(modelPath, modelFile);
+		localModelPath = modelFile.getAbsolutePath();
+
 		try {
 			Method createMethod = factory.getClass().getMethod("create", factory.getClass());
 			predictor = (DLPredictorService) createMethod.invoke(null, factory);
@@ -73,7 +89,9 @@ public abstract class DLPredictServiceMapper<FACTORY> extends Mapper implements 
 			throw new RuntimeException(
 				String.format("Failed to call %s#create(factory).", factory.getClass().getCanonicalName()), e);
 		}
-		predictor.open(getPredictorConfig());
+		try (TemporaryClassLoaderContext ignored = TemporaryClassLoaderContext.of(factory.create())) {
+			predictor.open(getPredictorConfig().toMap());
+		}
 	}
 
 	@Override
@@ -83,6 +101,7 @@ public abstract class DLPredictServiceMapper<FACTORY> extends Mapper implements 
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to close predictor", e);
 		}
+		FileUtils.deleteDirectoryQuietly(workDir);
 	}
 
 	@Override
@@ -107,6 +126,30 @@ public abstract class DLPredictServiceMapper<FACTORY> extends Mapper implements 
 		List <?> outputs = predictor.predict(inputs);
 		for (int i = 0; i < result.length(); i += 1) {
 			result.set(i, outputs.get(i));
+		}
+	}
+
+	public static class PredictorConfig {
+		public String modelPath;
+		public Class <?>[] outputTypeClasses;
+
+		public String[] inputNames;
+		public String[] outputNames;
+		public Integer intraOpNumThreads;
+		public Integer interOpNumThreads;
+		public Integer cudaDeviceNum;
+		public boolean threadMode = true;
+
+		// Define conversion methods for compatibility with previous definition.
+		// NOTE: `fromMap` only supports maps obtained from `toMap`.
+		public Map <String, Object> toMap() {
+			return JsonConverter.fromJson(JsonConverter.toJson(this),
+				new TypeToken <Map <String, Object>>() {}.getType());
+		}
+
+		public static PredictorConfig fromMap(Map <String, Object> m) {
+			return JsonConverter.fromJson(JsonConverter.toJson(m),
+				PredictorConfig.class);
 		}
 	}
 }

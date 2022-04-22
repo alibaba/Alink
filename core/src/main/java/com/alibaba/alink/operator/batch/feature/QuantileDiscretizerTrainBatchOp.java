@@ -22,8 +22,6 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamCond;
 import com.alibaba.alink.common.annotation.ParamCond.CondType;
-import com.alibaba.alink.common.annotation.ParamCond.CondValue;
-import com.alibaba.alink.common.annotation.ParamCond.CondValueType;
 import com.alibaba.alink.common.annotation.ParamMutexRule;
 import com.alibaba.alink.common.annotation.ParamMutexRule.ActionType;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
@@ -70,8 +68,7 @@ import java.util.stream.StreamSupport;
 	type = ActionType.DISABLE,
 	cond = @ParamCond(
 		name = "numBucketsArray",
-		type = CondType.WHEN_VALUES_NOT_IN,
-		values = {@CondValue(type = CondValueType.NULL), @CondValue("[]")}
+		type = CondType.WHEN_NOT_NULL
 	)
 )
 @ParamMutexRule(
@@ -79,8 +76,7 @@ import java.util.stream.StreamSupport;
 	type = ActionType.DISABLE,
 	cond = @ParamCond(
 		name = "numBuckets",
-		type = CondType.WHEN_VALUES_NOT_IN,
-		values = {@CondValue(type = CondValueType.NULL), @CondValue()}
+		type = CondType.WHEN_NOT_NULL
 	)
 )
 @NameCn("分位数离散化训练")

@@ -132,7 +132,7 @@ public class ModelStreamUtils {
 	}
 
 	public static Tuple2 <TableSchema, List <Row>> readModelRows(FilePath filePath, Timestamp modelId)
-		throws IOException {
+		throws Exception {
 		Tuple3 <Timestamp, Long, FilePath> modelDesc = ModelStreamUtils.descModel(filePath, modelId);
 
 		return AkUtils.readFromPath(modelDesc.f2);

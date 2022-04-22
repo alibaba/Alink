@@ -15,6 +15,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.NumberSequenceIterator;
+import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -308,7 +309,7 @@ public final class RandomWalkBatchOp extends BatchOperator <RandomWalkBatchOp>
 						logical2physical.getDstPartitionId());
 				}
 				HomoGraphEngine homoGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				assert null != homoGraphEngine;
+				Preconditions.checkNotNull(homoGraphEngine);
 				homoGraphEngine.setLogicalWorkerIdToPhysicalWorkerId(workerIdMapping);
 			} else {
 				// do nothing here.
@@ -354,9 +355,9 @@ public final class RandomWalkBatchOp extends BatchOperator <RandomWalkBatchOp>
 				RandomWalkPathEngine randomWalkPathEngine = IterTaskObjKeeper.get(randomWalkStorageHandler,
 					partitionId);
 				RandomWalkMemoryBuffer randomWalkMemoryBuffer = IterTaskObjKeeper.get(walkBufferHandler, partitionId);
-				assert null != homoGraphEngine;
-				assert null != randomWalkPathEngine;
-				assert null != randomWalkMemoryBuffer;
+				Preconditions.checkNotNull(homoGraphEngine);
+				Preconditions.checkNotNull(randomWalkPathEngine);
+				Preconditions.checkNotNull(randomWalkMemoryBuffer);
 
 				long[] nextBatchOfVerticesToSampleFrom = randomWalkPathEngine.getNextBatchOfVerticesToSampleFrom();
 
@@ -443,9 +444,9 @@ public final class RandomWalkBatchOp extends BatchOperator <RandomWalkBatchOp>
 			} else {
 				int partitionId = getRuntimeContext().getIndexOfThisSubtask();
 				HomoGraphEngine homoGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				assert null != homoGraphEngine;
+				Preconditions.checkNotNull(homoGraphEngine);
 				for (RandomWalkCommunicationUnit randomWalkCommunicationUnit : values) {
-					assert randomWalkCommunicationUnit.getDstPartitionId() == partitionId;
+					Preconditions.checkState(randomWalkCommunicationUnit.getDstPartitionId() == partitionId);
 					Long[] verticesToSample = randomWalkCommunicationUnit.getRequestedVertexIds();
 					for (int vertexCnt = 0; vertexCnt < verticesToSample.length; vertexCnt++) {
 						if (homoGraphEngine.containsVertex(verticesToSample[vertexCnt])) {

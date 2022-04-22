@@ -4,13 +4,14 @@ import org.apache.flink.ml.api.core.Estimator;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
+import com.alibaba.alink.params.io.ModelFileSinkParams;
 
 /**
  * The base class for estimator implementations.
@@ -20,7 +21,7 @@ import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
  * @param <M> class type of the {@link ModelBase} this Estimator produces.
  */
 public abstract class EstimatorBase<E extends EstimatorBase <E, M>, M extends ModelBase <M>>
-	extends PipelineStageBase <E> implements Estimator <E, M> {
+	extends PipelineStageBase <E> implements Estimator <E, M>, ModelFileSinkParams <E> {
 
 	private static final long serialVersionUID = -6404177394828818348L;
 
