@@ -10,13 +10,13 @@ Python 类名：VectorAssemblerBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| handleInvalidMethod | 处理无效值的方法 | 处理无效值的方法，可取 error, skip | String |  | "ERROR" |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
+| handleInvalidMethod | 处理无效值的方法 | 处理无效值的方法，可取 error, skip | String |  | "ERROR", "SKIP" | "ERROR" |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 ## 代码示例

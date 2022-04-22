@@ -9,13 +9,14 @@ Python 类名：RecommendationRankingBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| mTableCol | Not available! | Not available! | String | ✓ |  |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| topN | 前N的数据 | 挑选最近的N个数据 | Integer |  | 10 |
-| rankingCol | 用来排序的得分列 | 用来排序的得分列 | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| mTableCol | Not available! | Not available! | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
+| rankingCol | 用来排序的得分列 | 用来排序的得分列 | String |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| topN | 前N的数据 | 挑选最近的N个数据 | Integer |  | [1, +inf) | 10 |
 
 
 ## 代码示例

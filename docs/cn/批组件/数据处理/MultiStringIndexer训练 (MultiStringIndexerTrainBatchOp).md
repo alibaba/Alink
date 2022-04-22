@@ -12,10 +12,10 @@ MultiStringIndexer 训练组件的作用是训练一个模型用于将多列字�
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| stringOrderType | Token排序方法 | Token排序方法 | String |  | "RANDOM" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
+| stringOrderType | Token排序方法 | Token排序方法 | String |  | "RANDOM", "FREQUENCY_ASC", "FREQUENCY_DESC", "ALPHABET_ASC", "ALPHABET_DESC" | "RANDOM" |
 
 
 

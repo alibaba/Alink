@@ -204,11 +204,11 @@ $$ vectorSize = distinct token Number - dropLast(true: 1, false: 0) + enableElse
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| discreteThresholds | 离散个数阈值 | 离散个数阈值，低于该阈值的离散样本将不会单独成一个组别。 | Integer |  | -2147483648 |
-| discreteThresholdsArray | 离散个数阈值 | 离散个数阈值，每一列对应数组中一个元素。 | Integer[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
+| discreteThresholds | 离散个数阈值 | 离散个数阈值，低于该阈值的离散样本将不会单独成一个组别。 | Integer |  |  | -2147483648 |
+| discreteThresholdsArray | 离散个数阈值 | 离散个数阈值，每一列对应数组中一个元素。 | Integer[] |  |  | null |
 
 
 ## 代码示例

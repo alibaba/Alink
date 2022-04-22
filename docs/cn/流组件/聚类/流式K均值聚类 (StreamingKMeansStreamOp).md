@@ -17,14 +17,14 @@ Python 类名：StreamingKMeansStreamOp
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| halfLife | 半生命周期 | 半生命周期 | Integer | ✓ |  |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| timeInterval | 时间间隔 | 时间间隔，单位秒 | Long | ✓ |  |
-| predictionClusterCol | 预测距离列名 | 预测距离列名 | String |  |  |
-| predictionDistanceCol | 预测距离列名 | 预测距离列名 | String |  |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| halfLife | 半生命周期 | 半生命周期 | Integer | ✓ |  |  |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| timeInterval | 时间间隔 | 时间间隔，单位秒 | Long | ✓ |  |  |
+| predictionClusterCol | 预测距离列名 | 预测距离列名 | String |  |  |  |
+| predictionDistanceCol | 预测距离列名 | 预测距离列名 | String |  |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 
 

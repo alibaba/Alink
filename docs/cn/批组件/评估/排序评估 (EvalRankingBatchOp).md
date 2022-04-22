@@ -49,12 +49,12 @@ $$ explained Variance=\dfrac{SSR}{N} $$
 
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| labelRankingInfo | Object列列名 | Object列列名 | String |  | "object" |
-| predictionRankingInfo | Object列列名 | Object列列名 | String |  | "object" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| labelRankingInfo | Object列列名 | Object列列名 | String |  |  | "object" |
+| predictionRankingInfo | Object列列名 | Object列列名 | String |  |  | "object" |
 
 
 

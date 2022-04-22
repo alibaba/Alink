@@ -1,28 +1,28 @@
-#  (RedisSinkStreamOp)
-Java 类名：com.alibaba.alink.operator.stream.sink.RedisSinkStreamOp
+# 导出到Redis (RedisSinkBatchOp)
+Java 类名：com.alibaba.alink.operator.batch.sink.RedisSinkBatchOp
 
-Python 类名：RedisSinkStreamOp
+Python 类名：RedisSinkBatchOp
 
 
 ## 功能介绍
-将一个流式数据，按行写到Redis里。
+将一个批式数据，按行写到Redis里。
 
 在使用时，需要先下载插件，详情请看https://www.yuque.com/pinshu/alink_guide/czg4cx
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |
-| keyCols | 多键值列 | 多键值列 | String[] |  | null |
-| valueCols | 多数值列 | 多数值列 | String[] |  | null |
-| redisPassword | Not available! | Not available! | String |  |  |
-| redisIP | Not available! | Not available! | String |  |  |
-| redisPort | Not available! | Not available! | Integer |  | 6379 |
-| databaseIndex | Not available! | Not available! | Long |  |  |
-| timeout | Not available! | Not available! | Integer |  |  |
-| redisIPs | Not available! | Not available! | String[] |  |  |
-| clusterMode | Not available! | Not available! | Boolean |  | false |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |  |
+| clusterMode | Not available! | Not available! | Boolean |  |  | false |
+| databaseIndex | Not available! | Not available! | Long |  |  |  |
+| keyCols | 多键值列 | 多键值列 | String[] |  |  | null |
+| redisIP | Not available! | Not available! | String |  |  |  |
+| redisIPs | Not available! | Not available! | String[] |  |  |  |
+| redisPassword | Not available! | Not available! | String |  |  |  |
+| redisPort | Not available! | Not available! | Integer |  |  | 6379 |
+| timeout | Not available! | Not available! | Integer |  |  |  |
+| valueCols | 多数值列 | 多数值列 | String[] |  |  | null |
 
 ## 代码示例
 
@@ -45,20 +45,20 @@ df = pd.DataFrame([
     ["pingpang", 9.0],
     ["baseball", 10.0]])
 
-streamData = StreamOperator.fromDataframe(df, schemaStr='id string,val double')
+batchData = BatchOperator.fromDataframe(df, schemaStr='id string,val double')
 
-streamData.link(RedisSinkStreamOp()\
+batchData.link(RedisSinkBatchOp()\
 			.setRedisIP(redisIP)\
 			.setRedisPort(redisPort)\
 			.setKeyCols(["id"])\
 			.setValueCols(["val"])\
 			.setPluginVersion("2.9.0"))
 			
-StreamOperator.execute()
+BatchOperator.execute()
 ```
 ### Java 代码
 ```java
-package com.alibaba.alink.operator.stream.sink;
+package com.alibaba.alink.operator.batch.sink;
 
 import org.apache.flink.types.Row;
 
@@ -70,7 +70,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
-public class RedisSinkStreamOpTest extends AlinkTestBase {
+public class RedisSinkBatchOpTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 		String redisIP = "*";
@@ -89,9 +89,9 @@ public class RedisSinkStreamOpTest extends AlinkTestBase {
 			Row.of("baseball", 10.0)
 		);
 
-		StreamOperator <?> data = new MemSourceStreamOp(df, "id string,val double");
+		BatchOperator <?> data = new MemSourceBatchOp(df, "id string,val double");
 
-		RedisSinkStreamOp sink = new RedisSinkStreamOp()
+		RedisSinkBatchOp sink = new RedisSinkBatchOp()
 			.setRedisIP(redisIP)
 			.setRedisPort(redisPort)
 			.setKeyCols("id")
@@ -100,7 +100,7 @@ public class RedisSinkStreamOpTest extends AlinkTestBase {
 
 		data.link(sink);
 
-		StreamOperator.execute();
+		BatchOperator.execute();
 	}
 
 }

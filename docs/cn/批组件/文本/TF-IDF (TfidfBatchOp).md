@@ -33,11 +33,11 @@ TF-IDF: [https://en.wikipedia.org/wiki/Tf%E2%80%93idf](https://en.wikipedia.org/
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| docIdCol | 文档ID列 | 文档ID列名 | String | ✓ |  |
-| wordCol | 单词列 | 单词列名 | String | ✓ |  |
-| countCol | 词频列 | 词频列名 | String | ✓ |  |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| countCol | 词频列 | 词频列名 | String | ✓ | 所选列类型为 [LONG] |  |
+| docIdCol | 文档ID列 | 文档ID列名 | String | ✓ |  |  |
+| wordCol | 单词列 | 单词列名 | String | ✓ | 所选列类型为 [STRING] |  |
 
 ## 代码示例
 

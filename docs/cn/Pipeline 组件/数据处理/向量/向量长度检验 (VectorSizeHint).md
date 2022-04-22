@@ -7,14 +7,14 @@ Python 类名：VectorSizeHint
 ## 功能介绍
 取出Vector 的size进行检测，并进行处理。
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| size | 向量大小 | 用于判断向量的大小是否和设置的一致 | Integer | ✓ |  |
-| handleInvalidMethod | 处理无效值的方法 | 处理无效值的方法，可取 error, skip | String |  | "ERROR" |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |  |
+| size | 向量大小 | 用于判断向量的大小是否和设置的一致 | Integer | ✓ |  |  |
+| handleInvalidMethod | 处理无效值的方法 | 处理无效值的方法，可取 error, skip | String |  | "ERROR", "SKIP" | "ERROR" |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 ## 代码示例

@@ -9,13 +9,13 @@ Python 类名：FtrlModelFilterStreamOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| aucThreshold | 模型过滤的Auc阈值 | 模型过滤的Auc阈值 | Double |  | 0.5 |
-| accuracyThreshold | 模型过滤的Accuracy阈值 | 模型过滤的Accuracy阈值 | Double |  | 0.5 |
-| positiveLabelValueString | 正样本 | 正样本对应的字符串格式。 | String |  | null |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| accuracyThreshold | 模型过滤的Accuracy阈值 | 模型过滤的Accuracy阈值 | Double |  |  | 0.5 |
+| aucThreshold | 模型过滤的Auc阈值 | 模型过滤的Auc阈值 | Double |  |  | 0.5 |
+| positiveLabelValueString | 正样本 | 正样本对应的字符串格式。 | String |  |  | null |
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
 
 
 

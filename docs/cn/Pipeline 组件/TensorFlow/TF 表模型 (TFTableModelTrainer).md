@@ -18,26 +18,28 @@ Python 类名：TFTableModelTrainer
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| mainScriptFile | 主脚本文件路径 | 主脚本文件路径，需要是参数 userFiles 中的一项，并且包含 main 函数 | String | ✓ |  |
-| outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如 "f0 string, f1 bigint, f2 double" | String | ✓ |  |
-| userFiles | 所有自定义脚本文件的路径 | 所有自定义脚本文件的路径 | String | ✓ |  |
-| graphDefTag | graph标签 | graph标签 | String |  | "serve" |
-| inferSelectedCols | 用于推理的列名数组 | 用于推理的列名列表 | String[] |  | null |
-| inputSignatureDefs | 输入 SignatureDef | SavedModel 模型的输入 SignatureDef 名，用逗号分隔，需要与输入列一一对应，默认与选择列相同 | String[] |  | null |
-| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  | 4 |
-| numPSs | PS 角色数 | PS 角色的数量。值未设置时，如果 Worker 角色数也未设置，则为作业总并发度的 1/4（需要取整），否则为总并发度减去 Worker 角色数。 | Integer |  | null |
-| numWorkers | Worker 角色数 | Worker 角色的数量。值未设置时，如果 PS 角色数也未设置，则为作业总并发度的 3/4（需要取整），否则为总并发度减去 PS 角色数。 | Integer |  | null |
-| outputSignatureDefs | TF 输出 SignatureDef 名 | 模型的输出 SignatureDef 名，多个输出时用逗号分隔，并且与输出 Schema 一一对应，默认与输出 Schema 中的列名相同 | String[] |  | null |
-| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
-| signatureDefKey | signature标签 | signature标签 | String |  | "serving_default" |
-| userParams | 自定义参数 | 用户自定义参数，JSON 字典格式的字符串 | String |  | "{}" |
-| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  | null |
-| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  | 10 |
-| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| mainScriptFile | 主脚本文件路径 | 主脚本文件路径，需要是参数 userFiles 中的一项，并且包含 main 函数 | String | ✓ |  |  |
+| outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如 "f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
+| userFiles | 所有自定义脚本文件的路径 | 所有自定义脚本文件的路径 | String | ✓ |  |  |
+| graphDefTag | graph标签 | graph标签 | String |  |  | "serve" |
+| inferSelectedCols | 用于推理的列名数组 | 用于推理的列名列表 | String[] |  |  | null |
+| inputSignatureDefs | 输入 SignatureDef | SavedModel 模型的输入 SignatureDef 名，用逗号分隔，需要与输入列一一对应，默认与选择列相同 | String[] |  |  | null |
+| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  |  | 4 |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| numPSs | PS 角色数 | PS 角色的数量。值未设置时，如果 Worker 角色数也未设置，则为作业总并发度的 1/4（需要取整），否则为总并发度减去 Worker 角色数。 | Integer |  |  | null |
+| numWorkers | Worker 角色数 | Worker 角色的数量。值未设置时，如果 PS 角色数也未设置，则为作业总并发度的 3/4（需要取整），否则为总并发度减去 PS 角色数。 | Integer |  |  | null |
+| outputSignatureDefs | TF 输出 SignatureDef 名 | 模型的输出 SignatureDef 名，多个输出时用逗号分隔，并且与输出 Schema 一一对应，默认与输出 Schema 中的列名相同 | String[] |  |  | null |
+| overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  |  | "" |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  |  | null |
+| signatureDefKey | signature标签 | signature标签 | String |  |  | "serving_default" |
+| userParams | 自定义参数 | 用户自定义参数，JSON 字典格式的字符串 | String |  |  | "{}" |
+| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
+| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |
+| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  |  | null |
 
 
 ### 脚本路径说明

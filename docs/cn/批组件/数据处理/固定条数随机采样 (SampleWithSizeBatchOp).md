@@ -9,10 +9,10 @@ Python 类名：SampleWithSizeBatchOp
 
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| size | 采样个数 | 采样个数 | Integer | ✓ |  |
-| withReplacement | 是否放回 | 是否有放回的采样，默认不放回 | Boolean |  | false |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| size | 采样个数 | 采样个数 | Integer | ✓ |  |  |
+| withReplacement | 是否放回 | 是否有放回的采样，默认不放回 | Boolean |  |  | false |
 
 
 ## 代码示例

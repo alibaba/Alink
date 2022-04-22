@@ -1,7 +1,7 @@
-# 张量转图片 (WriteTensorToImage)
-Java 类名：com.alibaba.alink.pipeline.image.WriteTensorToImage
+# 张量转图片 (WriteTensorToImageStreamOp)
+Java 类名：com.alibaba.alink.operator.stream.image.WriteTensorToImageStreamOp
 
-Python 类名：WriteTensorToImage
+Python 类名：WriteTensorToImageStreamOp
 
 
 ## 功能介绍
@@ -10,13 +10,13 @@ Python 类名：WriteTensorToImage
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ |  |
-| rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |
-| tensorCol | tensor列 | tensor列 | String | ✓ |  |
-| imageType | 图片类型 | 图片类型 | String |  | "PNG" |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ | 所选列类型为 [STRING] |  |
+| rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |  |
+| tensorCol | tensor列 | tensor列 | String | ✓ | 所选列类型为 [BOOL_TENSOR, BYTE_TENSOR, DOUBLE_TENSOR, FLOAT_TENSOR, INT_TENSOR, LONG_TENSOR, STRING, STRING_TENSOR, TENSOR, UBYTE_TENSOR] |  |
+| imageType | 图片类型 | 图片类型 | String |  | "PNG", "JPEG" | "PNG" |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ## 代码示例
 
@@ -27,59 +27,61 @@ df_data = pd.DataFrame([
     'sphx_glr_plot_scripted_tensor_transforms_001.png'
 ])
 
-batch_data = BatchOperator.fromDataframe(df_data, schemaStr = 'path string')
+stream_data = StreamOperator.fromDataframe(df_data, schemaStr = 'path string')
 
-readImageToTensorBatchOp = ReadImageToTensorBatchOp()\
+readImageToTensorStreamOp = ReadImageToTensorStreamOp()\
     .setRootFilePath("https://pytorch.org/vision/stable/_images/")\
 	.setRelativeFilePathCol("path")\
 	.setOutputCol("tensor")
 
-writeTensorToImageBatchOp = WriteTensorToImageBatchOp()\
+writeTensorToImageStreamOp = WriteTensorToImageStreamOp()\
 			.setRootFilePath("/tmp/write_tensor_to_image")\
 			.setTensorCol("tensor")\
 			.setImageType("png")\
 			.setRelativeFilePathCol("path")
 
-batch_data.link(readImageToTensorBatchOp).link(writeTensorToImageBatchOp).print()
+stream_data.link(readImageToTensorStreamOp).link(writeTensorToImageStreamOp).print()
 
+StreamOperator.execute()
 ```
 ### Java 代码
 ```java
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.params.image.HasImageType.ImageType;
-import com.alibaba.alink.pipeline.image.WriteTensorToImage;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 
-public class WriteTensorToImageTest {
+public class WriteTensorToImageStreamOpTest {
 
 	@Test
-	public void testWriteTensorToImage() throws Exception {
+	public void testWriteTensorToImageStreamOp() throws Exception {
 
 		List <Row> data = Collections.singletonList(
 			Row.of("sphx_glr_plot_scripted_tensor_transforms_001.png")
 		);
 
-		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(data, "path string");
+		MemSourceStreamOp memSourceStreamOp = new MemSourceStreamOp(data, "path string");
 
-		ReadImageToTensorBatchOp readImageToTensorBatchOp = new ReadImageToTensorBatchOp()
+		ReadImageToTensorStreamOp readImageToTensorStreamOp = new ReadImageToTensorStreamOp()
 			.setRootFilePath("https://pytorch.org/vision/stable/_images/")
 			.setRelativeFilePathCol("path")
 			.setOutputCol("tensor");
 
-		WriteTensorToImage writeTensorToImageBatchOp = new WriteTensorToImage()
+		WriteTensorToImageStreamOp writeTensorToImageStreamOp = new WriteTensorToImageStreamOp()
 			.setRootFilePath("/tmp/write_tensor_to_image")
 			.setTensorCol("tensor")
 			.setImageType(ImageType.PNG)
 			.setRelativeFilePathCol("path");
 
-		writeTensorToImageBatchOp.transform(memSourceBatchOp.link(readImageToTensorBatchOp)).print();
-	}
+		memSourceStreamOp.link(readImageToTensorStreamOp).link(writeTensorToImageStreamOp).print();
 
+		StreamOperator.execute();
+	}
 }
 ```
 

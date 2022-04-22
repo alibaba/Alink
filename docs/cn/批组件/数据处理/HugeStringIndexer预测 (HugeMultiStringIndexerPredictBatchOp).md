@@ -5,20 +5,22 @@ Python 类名：HugeMultiStringIndexerPredictBatchOp
 
 
 ## 功能介绍
-提供字符串ID化处理功能
+根据词典（由 MultiStringIndexerTrainBatchOp 组件生成）将字符串转换为ID，组件可同时处理多列数据。
 
-由MultiStringIndexerTrainBatchOp生成词典模型，将输入数据的字符串转化成词典模型中的ID
+由 MultiStringIndexerTrainBatchOp 生成词典模型，将输入数据的字符串转化成词典模型中的ID
 
 对于词典模型中不存在的字符串，提供了三种处理策略，"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常
 
+当词典的数据规模较大时，建议使用该组件。词典规模较小时，可以使用 MultiStringIndexerPredictBatchOp 组件。
+
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| handleInvalid | 未知token处理策略 | 未知token处理策略。"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常 | String |  | "KEEP" |
-| outputCols | 输出结果列列名数组 | 输出结果列列名数组，可选，默认null | String[] |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
+| handleInvalid | 未知token处理策略 | 未知token处理策略。"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常 | String |  | "KEEP", "ERROR", "SKIP" | "KEEP" |
+| outputCols | 输出结果列列名数组 | 输出结果列列名数组，可选，默认null | String[] |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 
 ## 代码示例

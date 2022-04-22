@@ -278,12 +278,13 @@ Auc:1	Accuracy:0.9995	Precision:0.9965	Recall:1	F1:0.9982	LogLoss:0.2584
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 ## 代码示例
 ### Python 代码

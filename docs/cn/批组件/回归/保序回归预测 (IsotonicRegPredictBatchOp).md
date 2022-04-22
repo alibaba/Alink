@@ -9,10 +9,11 @@ Python 类名：IsotonicRegPredictBatchOp
 保序回归在观念上是寻找一组非递减的片段连续线性函数（piecewise linear continuous functions），即保序函数，使其与样本尽可能的接近。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 ## 代码示例

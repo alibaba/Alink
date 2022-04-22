@@ -9,12 +9,12 @@ Python 类名：FlattenMTableBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| handleInvalidMethod | 处理无效值的方法 | 处理无效值的方法，可取 error, skip | String |  | "ERROR" |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| handleInvalidMethod | 处理无效值的方法 | 处理无效值的方法，可取 error, skip | String |  | "ERROR", "SKIP" | "ERROR" |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 
 ## 代码示例

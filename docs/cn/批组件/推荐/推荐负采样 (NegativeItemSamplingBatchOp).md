@@ -10,9 +10,9 @@ Python 类名：NegativeItemSamplingBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| samplingFactor | 采样因子 | 采样因子 | Integer |  | 3 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| samplingFactor | 采样因子 | 采样因子 | Integer |  |  | 3 |
 
 ## 代码示例
 ### Python 代码

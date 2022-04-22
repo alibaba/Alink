@@ -29,17 +29,17 @@ score(item_i, item_j) = sum(wu * wv / (alpha + common_items(wu, wv)))
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| itemCol | Item列列名 | Item列列名 | String | ✓ |  |
-| userCol | User列列名 | User列列名 | String | ✓ |  |
-| alpha | alpha参数 | alpha参数，默认1.0 | Float |  | 1.0 |
-| userAlpha | 用户alpha参数 | 用户alpha参数，默认5.0, user weight = 1.0/(userAlpha + userClickCount)^userBeta | Float |  | 5.0 |
-| userBeta | 用户beta参数 | 用户beta参数，默认-0.35, user weight = 1.0/(userAlpha + userClickCount)^userBeta | Float |  | -0.35 |
-| resultNormalize | 结果是否归一化 | 是否归一化，默认False | Boolean |  | false |
-| maxItemNumber | item参与计算的人数最大值 | 如果item出现次数大于该次数，会随机选择该次数的用户数据，默认1000 | Integer |  | 1000 |
-| minUserItems | 用户互动的最小Item数量 | 如果用户互动Item数量小于该次数，该用户数据不参与计算过程，默认10 | Integer |  | 10 |
-| maxUserItems | 用户互动的最大Item数量 | 如果用户互动Item数量大于该次数，该用户数据不参与计算过程，默认1000 | Integer |  | 1000 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| itemCol | Item列列名 | Item列列名 | String | ✓ |  |  |
+| userCol | User列列名 | User列列名 | String | ✓ |  |  |
+| alpha | alpha参数 | alpha参数，默认1.0 | Float |  |  | 1.0 |
+| maxItemNumber | item参与计算的人数最大值 | 如果item出现次数大于该次数，会随机选择该次数的用户数据，默认1000 | Integer |  |  | 1000 |
+| maxUserItems | 用户互动的最大Item数量 | 如果用户互动Item数量大于该次数，该用户数据不参与计算过程，默认1000 | Integer |  |  | 1000 |
+| minUserItems | 用户互动的最小Item数量 | 如果用户互动Item数量小于该次数，该用户数据不参与计算过程，默认10 | Integer |  |  | 10 |
+| resultNormalize | 结果是否归一化 | 是否归一化，默认False | Boolean |  |  | false |
+| userAlpha | 用户alpha参数 | 用户alpha参数，默认5.0, user weight = 1.0/(userAlpha + userClickCount)^userBeta | Float |  |  | 5.0 |
+| userBeta | 用户beta参数 | 用户beta参数，默认-0.35, user weight = 1.0/(userAlpha + userClickCount)^userBeta | Float |  |  | -0.35 |
 
 ## 代码示例
 ### Python 代码

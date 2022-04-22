@@ -17,11 +17,11 @@ Python 类名：DocWordCountBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| contentCol | 文本列 | 文本列名 | String | ✓ |  |
-| docIdCol | 文档ID列 | 文档ID列名 | String | ✓ |  |
-| wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  | " " |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| contentCol | 文本列 | 文本列名 | String | ✓ | 所选列类型为 [STRING] |  |
+| docIdCol | 文档ID列 | 文档ID列名 | String | ✓ |  |  |
+| wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  |  | " " |
 
 ## 代码示例
 ### Python 代码

@@ -9,11 +9,11 @@ Python 类名：WeightSampleBatchOp
 - 本算子是按照数据点的权重对数据按照比例进行加权采样，权重越大的数据点被采样的可能性越大。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| weightCol | 权重列名 | 权重列对应的列名 | String | ✓ |  |
-| ratio | 采样比例 | 采样率，范围为[0, 1] | Double | ✓ |  |
-| withReplacement | 是否放回 | 是否有放回的采样，默认不放回 | Boolean |  | false |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| ratio | 采样比例 | 采样率，范围为[0, 1] | Double | ✓ | [0.0, 1.0] |  |
+| weightCol | 权重列名 | 权重列对应的列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
+| withReplacement | 是否放回 | 是否有放回的采样，默认不放回 | Boolean |  |  | false |
 
 
 ## 代码示例

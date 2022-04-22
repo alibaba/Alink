@@ -17,12 +17,12 @@ StringIndexer训练组件的作用是训练一个模型用于将单列字符串�
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
-| stringOrderType | Token排序方法 | Token排序方法 | String |  | "RANDOM" |
-| modelName | 模型名字 | 模型名字 | String |  |  |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [INTEGER, LONG, STRING] |  |
+| modelName | 模型名字 | 模型名字 | String |  |  |  |
+| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | 所选列类型为 [INTEGER, LONG, STRING] | null |
+| stringOrderType | Token排序方法 | Token排序方法 | String |  | "RANDOM", "FREQUENCY_ASC", "FREQUENCY_DESC", "ALPHABET_ASC", "ALPHABET_DESC" | "RANDOM" |
 
 
 

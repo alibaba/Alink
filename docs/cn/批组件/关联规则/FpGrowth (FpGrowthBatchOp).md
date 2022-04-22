@@ -15,15 +15,15 @@ FP Growth(Frequent Pattern growth)算法是一种非时序的关联分析算法.
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| itemsCol | 项集列名 | 项集列名 | String | ✓ |  |
-| maxConsequentLength | 最大关联规则后继长度 | 最大关联规则后继(consequent)长度 | Integer |  | 1 |
-| maxPatternLength | 最大频繁项集长度 | 最大频繁项集长度 | Integer |  | 10 |
-| minConfidence | 最小置信度 | 最小置信度，同时包含X和Y的样本与包含X的样本之比，反映了当样本中包含项集X时，项集Y同时出现的概率。 | Double |  | 0.05 |
-| minLift | 最小提升度 | 最小提升度，提升度是用来衡量A出现的情况下，是否会对B出现的概率有所提升。 | Double |  | 1.0 |
-| minSupportCount | 最小支持度数目 | 最小支持度目，当取值大于或等于0时起作用，当小于0时参数minSupportPercent起作用 | Integer |  | -1 |
-| minSupportPercent | 最小支持度占比 | 最小支持度占比，当minSupportCount取值小于0时起作用，当minSupportCount大于或等于0时该参数不起作用 | Double |  | 0.02 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| itemsCol | 项集列名 | 项集列名 | String | ✓ | 所选列类型为 [STRING] |  |
+| maxConsequentLength | 最大关联规则后继长度 | 最大关联规则后继(consequent)长度 | Integer |  |  | 1 |
+| maxPatternLength | 最大频繁项集长度 | 最大频繁项集长度 | Integer |  |  | 10 |
+| minConfidence | 最小置信度 | 最小置信度，同时包含X和Y的样本与包含X的样本之比，反映了当样本中包含项集X时，项集Y同时出现的概率。 | Double |  |  | 0.05 |
+| minLift | 最小提升度 | 最小提升度，提升度是用来衡量A出现的情况下，是否会对B出现的概率有所提升。 | Double |  |  | 1.0 |
+| minSupportCount | 最小支持度数目 | 最小支持度目，当取值大于或等于0时起作用，当小于0时参数minSupportPercent起作用 | Integer |  |  | -1 |
+| minSupportPercent | 最小支持度占比 | 最小支持度占比，当minSupportCount取值小于0时起作用，当minSupportCount大于或等于0时该参数不起作用 | Double |  |  | 0.02 |
 
 
 

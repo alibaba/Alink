@@ -10,12 +10,12 @@ Python 类名：HashCrossFeatureStreamOp
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| numFeatures | 向量维度 | 生成向量长度 | Integer |  | 262144 |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
+| numFeatures | 向量维度 | 生成向量长度 | Integer |  |  | 262144 |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 
 ## 代码示例

@@ -10,14 +10,14 @@ Python 类名：ReadImageToTensorStreamOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ |  |
-| rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| imageWidth | 图片宽度 | 图片宽度 | Integer |  |  |
-| imageHeight | 图片高度 | 图片高度 | Integer |  |  |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
+| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ | 所选列类型为 [STRING] |  |
+| rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |  |
+| imageHeight | 图片高度 | 图片高度 | Integer |  |  |  |
+| imageWidth | 图片宽度 | 图片宽度 | Integer |  |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ## 代码示例
 

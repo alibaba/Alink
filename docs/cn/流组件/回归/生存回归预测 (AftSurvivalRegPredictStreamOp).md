@@ -19,17 +19,18 @@ AFT模型将线性回归模型的建模方法引人到生存分析的领域， �
 [2] https://spark.apache.org/docs/latest/ml-classification-regression.html#survival-regression
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| quantileProbabilities | 分位数概率数组 | 分位数概率数组 | double[] |  | [0.01,0.05,0.1,0.25,0.5,0.75,0.9,0.95,0.99] |
-| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
-| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  | null |
-| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  | 10 |
-| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
+| quantileProbabilities | 分位数概率数组 | 分位数概率数组 | double[] |  |  | [0.01,0.05,0.1,0.25,0.5,0.75,0.9,0.95,0.99] |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
+| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
+| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |
+| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  |  | null |
 
 
 

@@ -10,13 +10,13 @@ Python 类名：VectorBiFunctionBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| biFuncName | 函数名字 | 函数操作名称, 可取minus(减),plus(加),dot(内积),merge(拼接),EuclidDistance(欧式距离),Cosine(cos值), ElementWiseMultiply(点乘). | String | ✓ |  |
-| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| biFuncName | 函数名字 | 函数操作名称, 可取minus(减),plus(加),dot(内积),merge(拼接),EuclidDistance(欧式距离),Cosine(cos值), ElementWiseMultiply(点乘). | String | ✓ | "Minus", "Dot", "Plus", "Merge", "EuclidDistance", "Cosine", "ElementWiseMultiply" |  |
+| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 ## 代码示例
 ### Python 代码

@@ -9,12 +9,12 @@ Python 类名：TsvSourceStreamOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| filePath | 文件路径 | 文件路径 | String | ✓ |  |
-| schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |
-| ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  | false |
-| skipBlankLine | 是否忽略空行 | 是否忽略空行 | Boolean |  | true |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| filePath | 文件路径 | 文件路径 | String | ✓ |  |  |
+| schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
+| ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  |  | false |
+| skipBlankLine | 是否忽略空行 | 是否忽略空行 | Boolean |  |  | true |
 
 
 ## 代码示例

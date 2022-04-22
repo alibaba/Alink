@@ -18,14 +18,14 @@ clause当前支持全部flink支持的聚合函数，并在此基础上额外支
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| clause | 运算语句 | 运算语句 | String | ✓ |  |
-| timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String | ✓ |  |
-| windowTime | 窗口大小 | 窗口大小 | Double | ✓ |  |
-| latency | 水位线的延迟 | 水位线的延迟，默认0.0 | Double |  | 0.0 |
-| watermarkType | 水位线的类别 | 水位线的类别 | String |  | "PERIOD" |
-| partitionCols | 分组列名数组 | 分组列名，多列，可选，必选 | String[] |  | [] |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| clause | 运算语句 | 运算语句 | String | ✓ |  |  |
+| timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String | ✓ | 所选列类型为 [TIMESTAMP] |  |
+| windowTime | 窗口大小 | 窗口大小 | Double | ✓ |  |  |
+| latency | 水位线的延迟 | 水位线的延迟，默认0.0 | Double |  |  | 0.0 |
+| partitionCols | 分组列名数组 | 分组列名，多列，可选，必选 | String[] |  |  | [] |
+| watermarkType | 水位线的类别 | 水位线的类别 | String |  | "PERIOD", "PUNCTUATED" | "PERIOD" |
 
 
 ## 代码示例

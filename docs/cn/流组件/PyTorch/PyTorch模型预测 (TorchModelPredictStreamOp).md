@@ -22,23 +22,17 @@ Python 类名：TorchModelPredictStreamOp
 - 输出列的数量需要与模型输出结果匹配。
 - 输出类型可以是 Alink ```Tensor``` 类型或者 Alink 支持的类型，如果从模型预测输出的结果转换到指定类型失败那么将报错；暂不支持列表或字典类型。
 
-组件使用的是 PyTorch 1.8.1 版本，使用 CPU 进行推理。
-如果需要使用 GPU 进行推理，需要：
-1. 首先找到 Alink 的插件目录，然后进入到 resources 目录；
-2. 如果之前运行过一次该组件，那么应该可以找到 libtorch_(macosx|linux|windows)-1.8.1 目录，否则根据系统类型新建一个目录；
-3. 删除掉这个目录内的 libtorch 目录；
-4. 从官网下载 libtorch 相应版本的 zip 文件（旧版本的 URL 链接可以参考这个 [issue](https://github.com/pytorch/pytorch/issues/40961) ）；
-5. 将所下载的 zip 文件解压到 libtorch_(macosx|linux|windows)-1.8.1 目录下。
+组件使用的是 PyTorch 1.8.1 版本，当有 GPU 时，自动使用 GPU 进行推理，否则使用 CPU 进行推理。
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| modelPath | 模型的URL路径 | 模型的URL路径 | String | ✓ |  |
-| outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如 "f0 string, f1 bigint, f2 double" | String | ✓ |  |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  | 4 |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| modelPath | 模型的URL路径 | 模型的URL路径 | String | ✓ |  |  |
+| outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如 "f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
+| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  |  | 4 |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ### 模型路径说明
 

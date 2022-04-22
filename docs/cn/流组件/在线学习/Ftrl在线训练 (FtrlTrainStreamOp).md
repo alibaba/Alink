@@ -9,18 +9,18 @@ Python 类名：FtrlTrainStreamOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| vectorSize | 向量长度 | 向量的长度 | Integer | ✓ |  |
-| alpha | 希腊字母：阿尔法 | 经常用来表示算法特殊的参数 | Double |  | 0.1 |
-| beta | 希腊字母：贝塔 | 经常用来表示算法特殊的参数 | Double |  | 1.0 |
-| featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | null |
-| l1 | L1 正则化系数 | L1 正则化系数，默认为0。 | Double |  | 0.0 |
-| l2 | 正则化系数 | L2 正则化系数，默认为0。 | Double |  | 0.0 |
-| timeInterval | 时间间隔 | 数据流流动过程中时间的间隔 | Integer |  | 1800 |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| withIntercept | 是否有常数项 | 是否有常数项，默认true | Boolean |  | true |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| vectorSize | 向量长度 | 向量的长度 | Integer | ✓ |  |  |
+| alpha | 希腊字母：阿尔法 | 经常用来表示算法特殊的参数 | Double |  |  | 0.1 |
+| beta | 希腊字母：贝塔 | 经常用来表示算法特殊的参数 | Double |  |  | 1.0 |
+| featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+| l1 | L1 正则化系数 | L1 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
+| l2 | 正则化系数 | L2 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
+| timeInterval | 时间间隔 | 数据流流动过程中时间的间隔 | Integer |  |  | 1800 |
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
+| withIntercept | 是否有常数项 | 是否有常数项，默认true | Boolean |  |  | true |
 
 
 

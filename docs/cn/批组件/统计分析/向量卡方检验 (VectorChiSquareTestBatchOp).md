@@ -10,10 +10,10 @@ Python 类名：VectorChiSquareTestBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
 
 
 

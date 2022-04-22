@@ -11,11 +11,11 @@ Python 类名：BertTextPairRegressorPredictBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| inferBatchSize | 推理数据批大小 | 推理数据批大小 | Integer |  | 256 |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| inferBatchSize | 推理数据批大小 | 推理数据批大小 | Integer |  |  | 256 |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ## 代码示例
 

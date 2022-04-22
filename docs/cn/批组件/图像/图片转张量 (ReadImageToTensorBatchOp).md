@@ -1,7 +1,7 @@
-# 图片转张量 (ReadImageToTensor)
-Java 类名：com.alibaba.alink.pipeline.image.ReadImageToTensor
+# 图片转张量 (ReadImageToTensorBatchOp)
+Java 类名：com.alibaba.alink.operator.batch.image.ReadImageToTensorBatchOp
 
-Python 类名：ReadImageToTensor
+Python 类名：ReadImageToTensorBatchOp
 
 
 ## 功能介绍
@@ -10,14 +10,14 @@ Python 类名：ReadImageToTensor
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ |  |
-| rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| imageWidth | 图片宽度 | 图片宽度 | Integer |  |  |
-| imageHeight | 图片高度 | 图片高度 | Integer |  |  |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
+| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ | 所选列类型为 [STRING] |  |
+| rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |  |
+| imageHeight | 图片高度 | 图片高度 | Integer |  |  |  |
+| imageWidth | 图片宽度 | 图片宽度 | Integer |  |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ## 代码示例
 
@@ -30,11 +30,11 @@ df_data = pd.DataFrame([
 
 batch_data = BatchOperator.fromDataframe(df_data, schemaStr = 'path string')
 
-ReadImageToTensor()\
+ReadImageToTensorBatchOp()\
     .setRootFilePath("https://pytorch.org/vision/stable/_images/")\
 	.setRelativeFilePathCol("path")\
 	.setOutputCol("tensor")\
-    .transform(batch_data)\
+    .linkFrom(batch_data)\
     .print()
 
 ```
@@ -43,16 +43,15 @@ ReadImageToTensor()\
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.pipeline.image.ReadImageToTensor;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 
-public class ReadImageToTensorTest {
+public class ReadImageToTensorBatchOpTest {
 
 	@Test
-	public void testReadImageToTensor() throws Exception {
+	public void testReadImageToTensorBatchOp() throws Exception {
 
 		List <Row> data = Collections.singletonList(
 			Row.of("sphx_glr_plot_scripted_tensor_transforms_001.png")
@@ -60,11 +59,11 @@ public class ReadImageToTensorTest {
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(data, "path string");
 
-		new ReadImageToTensor()
+		new ReadImageToTensorBatchOp()
 			.setRootFilePath("https://pytorch.org/vision/stable/_images/")
 			.setRelativeFilePathCol("path")
 			.setOutputCol("tensor")
-			.transform(memSourceBatchOp)
+			.linkFrom(memSourceBatchOp)
 			.print();
 	}
 

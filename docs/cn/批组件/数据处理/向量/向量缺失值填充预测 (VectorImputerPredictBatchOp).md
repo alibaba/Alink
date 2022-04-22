@@ -10,10 +10,11 @@ Python 类名：VectorImputerPredictBatchOp
 输入数据包含 VectorImputerTrainBatchOp 输出的模型和要处理的数据。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 ## 代码示例

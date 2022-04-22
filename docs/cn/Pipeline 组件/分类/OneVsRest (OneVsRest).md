@@ -10,13 +10,15 @@ Python 类名：OneVsRest
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| numClass | 类别数 | 多分类的类别数，必选 | Integer | ✓ |  |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| numClass | 类别数 | 多分类的类别数，必选 | Integer | ✓ |  |  |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 ## 代码示例

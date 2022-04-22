@@ -9,14 +9,14 @@ Python 类名：RandomVectorSourceStreamOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| size | 张量size | 整型数组，张量的size | Integer[] | ✓ |  |
-| maxRows | 最大行数 | 输出数据流的行数目的最大值 | Long | ✓ |  |
-| sparsity | 稀疏度 | 非零元素在所有张量数据中的占比 | Double | ✓ |  |
-| idCol | id 列名 | 列名，若列名非空，表示输出表中包含一个整形序列id列，否则无该列 | String |  | "alink_id" |
-| outputCol | 输出列名 | 输出随机生成的数据存储列名 | String |  | "tensor" |
-| timePerSample | 稀疏度 | 整型数组，张量的size | Double |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| maxRows | 最大行数 | 输出数据流的行数目的最大值 | Long | ✓ |  |  |
+| size | 张量size | 整型数组，张量的size | Integer[] | ✓ |  |  |
+| sparsity | 稀疏度 | 非零元素在所有张量数据中的占比 | Double | ✓ |  |  |
+| idCol | id 列名 | 列名，若列名非空，表示输出表中包含一个整形序列id列，否则无该列 | String |  |  | "alink_id" |
+| outputCol | 输出列名 | 输出随机生成的数据存储列名 | String |  |  | "tensor" |
+| timePerSample | 稀疏度 | 整型数组，张量的size | Double |  |  | null |
 
 
 ## 代码示例

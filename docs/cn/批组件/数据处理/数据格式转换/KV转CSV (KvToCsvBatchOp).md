@@ -10,17 +10,17 @@ setSchemaStr 设置csv每一列的key值。如果指定的key不在输入的KV�
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| csvCol | CSV列名 | CSV列的列名 | String | ✓ |  |
-| kvCol | KV列名 | KV列的列名 | String | ✓ |  |
-| schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |
-| csvFieldDelimiter | 字段分隔符 | 字段分隔符 | String |  | "," |
-| handleInvalid | 解析异常处理策略 | 解析异常处理策略，可选为ERROR（抛出异常）或者SKIP（输出NULL） | String |  | "ERROR" |
-| kvColDelimiter | 分隔符 | 当输入数据为稀疏格式时，key-value对之间的分隔符 | String |  | "," |
-| kvValDelimiter | 分隔符 | 当输入数据为稀疏格式时，key和value的分割符 | String |  | ":" |
-| quoteChar | 引号字符 | 引号字符 | Character |  | "\"" |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| csvCol | CSV列名 | CSV列的列名 | String | ✓ |  |  |
+| kvCol | KV列名 | KV列的列名 | String | ✓ | 所选列类型为 [STRING] |  |
+| schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
+| csvFieldDelimiter | 字段分隔符 | 字段分隔符 | String |  |  | "," |
+| handleInvalid | 解析异常处理策略 | 解析异常处理策略，可选为ERROR（抛出异常）或者SKIP（输出NULL） | String |  | "ERROR", "SKIP" | "ERROR" |
+| kvColDelimiter | 分隔符 | 当输入数据为稀疏格式时，key-value对之间的分隔符 | String |  |  | "," |
+| kvValDelimiter | 分隔符 | 当输入数据为稀疏格式时，key和value的分割符 | String |  |  | ":" |
+| quoteChar | 引号字符 | 引号字符 | Character |  |  | "\"" |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ## 代码示例
 ### Python 代码

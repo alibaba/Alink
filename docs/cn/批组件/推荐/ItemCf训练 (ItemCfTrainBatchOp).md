@@ -11,14 +11,14 @@ ItemCF 是一种被广泛使用的推荐算法，用给定打分数据训练一�
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| itemCol | Item列列名 | Item列列名 | String | ✓ |  |
-| userCol | User列列名 | User列列名 | String | ✓ |  |
-| rateCol | 打分列列名 | 打分列列名 | String |  | null |
-| similarityThreshold | 相似阈值 | 只有大于该阈值的Object才会被计算 | Double |  | 1.0E-4 |
-| similarityType | 距离度量方式 | 聚类使用的距离类型 | String |  | "COSINE" |
-| maxNeighborNumber | 保存相似item的数目 | 保存相似item的数目，该参数设置后将降低内存使用量，同时可能会降低训练速度 | Integer |  | 64 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| itemCol | Item列列名 | Item列列名 | String | ✓ |  |  |
+| userCol | User列列名 | User列列名 | String | ✓ |  |  |
+| maxNeighborNumber | 保存相似item的数目 | 保存相似item的数目，该参数设置后将降低内存使用量，同时可能会降低训练速度 | Integer |  |  | 64 |
+| rateCol | 打分列列名 | 打分列列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+| similarityThreshold | 相似阈值 | 只有大于该阈值的Object才会被计算 | Double |  |  | 1.0E-4 |
+| similarityType | 距离度量方式 | 聚类使用的距离类型 | String |  | "COSINE", "JACCARD", "PEARSON" | "COSINE" |
 
 ## 代码示例
 ### Python 代码

@@ -9,22 +9,22 @@ Python 类名：LSTNetTrainBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| checkpointFilePath | 保存 checkpoint 的路径 | 用于保存中间结果的路径，将作为 TensorFlow 中 `Estimator` 的 `model_dir` 传入，需要为所有 worker 都能访问到的目录 | String | ✓ |  |
-| timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String | ✓ |  |
-| batchSize | 数据批大小 | 数据批大小 | Integer |  | 128 |
-| horizon | horizon大小 | horizon大小 | Integer |  | 12 |
-| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  | 4 |
-| learningRate | 学习率 | 学习率 | Double |  | 0.001 |
-| numEpochs | epoch数 | epoch数 | Integer |  | 10 |
-| numPSs | PS 角色数 | PS 角色的数量。值未设置时，如果 Worker 角色数也未设置，则为作业总并发度的 1/4（需要取整），否则为总并发度减去 Worker 角色数。 | Integer |  | null |
-| numWorkers | Worker 角色数 | Worker 角色的数量。值未设置时，如果 PS 角色数也未设置，则为作业总并发度的 3/4（需要取整），否则为总并发度减去 PS 角色数。 | Integer |  | null |
-| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
-| removeCheckpointBeforeTraining | 是否在训练前移除 checkpoint 相关文件 | 是否在训练前移除 checkpoint 相关文件用于重新训练，只会删除必要的文件 | Boolean |  | null |
-| selectedCol | 计算列对应的列名 | 计算列对应的列名, 默认值是null | String |  | null |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| window | 窗口大小 | 窗口大小 | Integer |  | 5 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| checkpointFilePath | 保存 checkpoint 的路径 | 用于保存中间结果的路径，将作为 TensorFlow 中 `Estimator` 的 `model_dir` 传入，需要为所有 worker 都能访问到的目录 | String | ✓ |  |  |
+| timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String | ✓ | 所选列类型为 [TIMESTAMP] |  |
+| batchSize | 数据批大小 | 数据批大小 | Integer |  |  | 128 |
+| horizon | horizon大小 | horizon大小 | Integer |  | [1, +inf) | 12 |
+| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  |  | 4 |
+| learningRate | 学习率 | 学习率 | Double |  |  | 0.001 |
+| numEpochs | epoch数 | epoch数 | Integer |  |  | 10 |
+| numPSs | PS 角色数 | PS 角色的数量。值未设置时，如果 Worker 角色数也未设置，则为作业总并发度的 1/4（需要取整），否则为总并发度减去 Worker 角色数。 | Integer |  |  | null |
+| numWorkers | Worker 角色数 | Worker 角色的数量。值未设置时，如果 PS 角色数也未设置，则为作业总并发度的 3/4（需要取整），否则为总并发度减去 PS 角色数。 | Integer |  |  | null |
+| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  |  | "" |
+| removeCheckpointBeforeTraining | 是否在训练前移除 checkpoint 相关文件 | 是否在训练前移除 checkpoint 相关文件用于重新训练，只会删除必要的文件 | Boolean |  |  | null |
+| selectedCol | 计算列对应的列名 | 计算列对应的列名, 默认值是null | String |  |  | null |
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
+| window | 窗口大小 | 窗口大小 | Integer |  |  | 5 |
 
 ## 代码示例
 ### Python 代码

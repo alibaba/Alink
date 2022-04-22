@@ -10,12 +10,12 @@ Python 类名：PcaTrainBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| k | 降维后的维度 | 降维后的维度 | Integer | ✓ |  |
-| calculationType | 计算类型 | 计算类型，包含"CORR", "COV"两种。 | String |  | "CORR" |
-| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| k | 降维后的维度 | 降维后的维度 | Integer | ✓ | [1, +inf) |  |
+| calculationType | 计算类型 | 计算类型，包含"CORR", "COV"两种。 | String |  | "CORR", "COV" | "CORR" |
+| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
 
 
 

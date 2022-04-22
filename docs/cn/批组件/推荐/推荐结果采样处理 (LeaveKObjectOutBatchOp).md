@@ -9,13 +9,13 @@ Python 类名：LeaveKObjectOutBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| groupCol | 分组列 | 分组单列名，必选 | String | ✓ |  |
-| objectCol | Object列列名 | Object列列名 | String | ✓ |  |
-| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| fraction | 拆分到测试集最大数据比例 | 拆分到测试集最大数据比例 | Double |  | 1.0 |
-| k | 推荐TOP数量 | 推荐TOP数量 | Integer |  | 10 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| groupCol | 分组列 | 分组单列名，必选 | String | ✓ |  |  |
+| objectCol | Object列列名 | Object列列名 | String | ✓ |  |  |
+| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
+| fraction | 拆分到测试集最大数据比例 | 拆分到测试集最大数据比例 | Double |  | [0.0, 1.0] | 1.0 |
+| k | 推荐TOP数量 | 推荐TOP数量 | Integer |  |  | 10 |
 
 ## 代码示例
 ### Python 代码

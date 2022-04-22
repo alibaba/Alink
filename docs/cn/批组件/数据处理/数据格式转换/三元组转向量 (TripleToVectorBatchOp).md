@@ -13,14 +13,14 @@ setTripleValueCol 设置向量的值所在列，因此该列必须为数值类�
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| tripleColumnCol | 三元组结构中列信息的列名 | 三元组结构中列信息的列名 | String | ✓ |  |
-| tripleValueCol | 三元组结构中数据信息的列名 | 三元组结构中数据信息的列名 | String | ✓ |  |
-| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
-| handleInvalid | 解析异常处理策略 | 解析异常处理策略，可选为ERROR（抛出异常）或者SKIP（输出NULL） | String |  | "ERROR" |
-| tripleRowCol | 三元组结构中行信息的列名 | 三元组结构中行信息的列名 | String |  | null |
-| vectorSize | 向量长度 | 向量长度 | Long |  | -1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| tripleColumnCol | 三元组结构中列信息的列名 | 三元组结构中列信息的列名 | String | ✓ | 所选列类型为 [INTEGER, LONG] |  |
+| tripleValueCol | 三元组结构中数据信息的列名 | 三元组结构中数据信息的列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
+| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |  |
+| handleInvalid | 解析异常处理策略 | 解析异常处理策略，可选为ERROR（抛出异常）或者SKIP（输出NULL） | String |  | "ERROR", "SKIP" | "ERROR" |
+| tripleRowCol | 三元组结构中行信息的列名 | 三元组结构中行信息的列名 | String |  |  | null |
+| vectorSize | 向量长度 | 向量长度 | Long |  |  | -1 |
 
 ## 代码示例
 ### Python 代码

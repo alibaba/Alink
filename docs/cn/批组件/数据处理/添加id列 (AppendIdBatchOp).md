@@ -11,10 +11,10 @@ Python 类名：AppendIdBatchOp
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| appendType | append类型 | append类型，"UNIQUE"和"DENSE"，分别为稀疏和稠密，稀疏的为非连续唯一id，稠密的为连续唯一id | String |  | "DENSE" |
-| idCol | ID列名 | ID列名 | String |  | "append_id" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| appendType | append类型 | append类型，"UNIQUE"和"DENSE"，分别为稀疏和稠密，稀疏的为非连续唯一id，稠密的为连续唯一id | String |  | "DENSE", "UNIQUE" | "DENSE" |
+| idCol | ID列名 | ID列名 | String |  |  | "append_id" |
 
 
 

@@ -15,11 +15,11 @@ VectorStandardScalerTrainBatchOp 计算向量的每一列的均值和方差，�
  
 ## 参数说明 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| withMean | 是否使用均值 | 是否使用均值，默认使用 | Boolean |  | true |
-| withStd | 是否使用标准差 | 是否使用标准差，默认使用 | Boolean |  | true |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
+| withMean | 是否使用均值 | 是否使用均值，默认使用 | Boolean |  |  | true |
+| withStd | 是否使用标准差 | 是否使用标准差，默认使用 | Boolean |  |  | true |
 
 
 ## 代码示例

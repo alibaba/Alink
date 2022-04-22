@@ -53,12 +53,12 @@ $$ logloss=- \dfrac{1}{N}\sum_{i=1}^N \sum_{j=1}^My_{i,j}log(p_{i,j}) $$
 
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| predictionCol | 预测结果列名 | 预测结果列名 | String |  |  |
-| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
-| timeInterval | 时间间隔 | 流式数据统计的时间间隔 | Double |  | 3.0 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| predictionCol | 预测结果列名 | 预测结果列名 | String |  |  |  |
+| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
+| timeInterval | 时间间隔 | 流式数据统计的时间间隔 | Double |  |  | 3.0 |
 
 
 

@@ -16,11 +16,11 @@ minValue和maxValue由用户指定，默认为0和1。
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| max | 归一化的上界 | 归一化的上界 | Double |  | 1.0 |
-| min | 归一化的下界 | 归一化的下界 | Double |  | 0.0 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
+| max | 归一化的上界 | 归一化的上界 | Double |  |  | 1.0 |
+| min | 归一化的下界 | 归一化的下界 | Double |  |  | 0.0 |
 
 
 

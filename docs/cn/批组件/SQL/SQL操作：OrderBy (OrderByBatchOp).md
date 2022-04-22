@@ -9,13 +9,13 @@ Python 类名：OrderByBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| clause | 运算语句 | 运算语句 | String | ✓ |  |
-| fetch | fetch的record数目 | fetch的record数目 | Integer |  |  |
-| limit | record的limit数 | record的limit数 | Integer |  |  |
-| offset | fetch的偏移值 | fetch的偏移值 | Integer |  |  |
-| order | 排序方法 | 排序方法 | String |  | "asc" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| clause | 运算语句 | 运算语句 | String | ✓ |  |  |
+| fetch | fetch的record数目 | fetch的record数目 | Integer |  |  |  |
+| limit | record的limit数 | record的limit数 | Integer |  |  |  |
+| offset | fetch的偏移值 | fetch的偏移值 | Integer |  |  |  |
+| order | 排序方法 | 排序方法 | String |  |  | "asc" |
 
 
 

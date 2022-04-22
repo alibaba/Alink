@@ -14,16 +14,16 @@ Kmeans算法的训练组件。KMeans是一个经典的聚类算法。该算法�
 | COSINE | <img src="https://img.alicdn.com/tfs/TB1P9Iqa7H0gK0jSZPiXXavapXa-263-61.png"> | 夹角余弦距离 |
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 50。 | Integer |  | 50 |
-| initMode | 中心点初始化方法 | 初始化中心点的方法，支持"K_MEANS_PARALLEL"和"RANDOM" | String |  | "RANDOM" |
-| initSteps | k-means++初始化迭代步数 | k-means初始化中心点时迭代的步数 | Integer |  | 2 |
-| epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  | 1.0E-4 |
-| k | 聚类中心点数量 | 聚类中心点数量 | Integer |  | 2 |
-| distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN" |
-| randomSeed | 随机数种子 | 随机数种子 | Integer |  | 0 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
+| distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN", "COSINE" | "EUCLIDEAN" |
+| epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  |  | 1.0E-4 |
+| initMode | 中心点初始化方法 | 初始化中心点的方法，支持"K_MEANS_PARALLEL"和"RANDOM" | String |  | "RANDOM", "K_MEANS_PARALLEL" | "RANDOM" |
+| initSteps | k-means++初始化迭代步数 | k-means初始化中心点时迭代的步数 | Integer |  |  | 2 |
+| k | 聚类中心点数量 | 聚类中心点数量 | Integer |  |  | 2 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 50。 | Integer |  |  | 50 |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  |  | 0 |
 
 
 ## 代码示例

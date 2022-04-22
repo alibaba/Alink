@@ -11,14 +11,14 @@ Python 类名：BisectingKMeansTrainBatchOp
 
 ## 参数说明
 #### 训练
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
-| minDivisibleClusterSize | 最小可分裂的聚类大小 | 最小可分裂的聚类大小 | Integer |  | 1 |
-| k | 聚类中心点数目 | 聚类中心点数目 | Integer |  | 4 |
-| distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN" |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  | 10 |
-| randomSeed | 随机数种子 | 随机数种子 | Integer |  | 0 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
+| distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN", "COSINE" | "EUCLIDEAN" |
+| k | 聚类中心点数目 | 聚类中心点数目 | Integer |  |  | 4 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  |  | 10 |
+| minDivisibleClusterSize | 最小可分裂的聚类大小 | 最小可分裂的聚类大小 | Integer |  |  | 1 |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  |  | 0 |
 
 
 ## 代码示例

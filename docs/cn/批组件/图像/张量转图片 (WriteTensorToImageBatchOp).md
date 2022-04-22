@@ -10,13 +10,13 @@ Python 类名：WriteTensorToImageBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ |  |
-| rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |
-| tensorCol | tensor列 | tensor列 | String | ✓ |  |
-| imageType | 图片类型 | 图片类型 | String |  | "PNG" |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ | 所选列类型为 [STRING] |  |
+| rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |  |
+| tensorCol | tensor列 | tensor列 | String | ✓ | 所选列类型为 [BOOL_TENSOR, BYTE_TENSOR, DOUBLE_TENSOR, FLOAT_TENSOR, INT_TENSOR, LONG_TENSOR, STRING, STRING_TENSOR, TENSOR, UBYTE_TENSOR] |  |
+| imageType | 图片类型 | 图片类型 | String |  | "PNG", "JPEG" | "PNG" |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ## 代码示例
 

@@ -12,27 +12,27 @@ Python 类名：HugeMetaPath2VecTrainBatchOp
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| metaPath | 游走的模式 | 一般为用字符串表示，例如 "ABDFA" | String | ✓ |  |
-| sourceCol | 起始点列名 | 用来指定起始点列 | String | ✓ |  |
-| targetCol | 中止点点列名 | 用来指定中止点列 | String | ✓ |  |
-| typeCol | 节点类型列名 | 用来指定节点类型列 | String | ✓ |  |
-| vertexCol | 节点列名 | 用来指定节点列 | String | ✓ |  |
-| walkLength | 游走的长度 | 随机游走完向量的长度 | Integer | ✓ |  |
-| walkNum | 路径数目 | 每一个起始点游走出多少条路径 | Integer | ✓ |  |
-| alpha | 学习率 | 学习率 | Double |  | 0.025 |
-| batchSize | batch大小 | batch大小, 按行计算 | Integer |  |  |
-| isToUndigraph | 是否转无向图 | 选为true时，会将当前图转成无向图，然后再游走 | Boolean |  | false |
-| minCount | 最小词频 | 最小词频 | Integer |  | 5 |
-| mode | metapath中word2vec的模式，分别为metapath2vec和metapath2vecpp | metapath的模式 | String |  | "METAPATH2VEC" |
-| negative | 负采样大小 | 负采样大小 | Integer |  | 5 |
-| numCheckpoint | checkPoint 数目 | checkPoint 数目 | Integer |  | 1 |
-| numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  | 1 |
-| randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  | "true" |
-| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | 100 |
-| weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
-| window | 窗口大小 | 窗口大小 | Integer |  | 5 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| metaPath | 游走的模式 | 一般为用字符串表示，例如 "ABDFA" | String | ✓ |  |  |
+| sourceCol | 起始点列名 | 用来指定起始点列 | String | ✓ |  |  |
+| targetCol | 中止点点列名 | 用来指定中止点列 | String | ✓ |  |  |
+| typeCol | 节点类型列名 | 用来指定节点类型列 | String | ✓ |  |  |
+| vertexCol | 节点列名 | 用来指定节点列 | String | ✓ | 所选列类型为 [STRING] |  |
+| walkLength | 游走的长度 | 随机游走完向量的长度 | Integer | ✓ |  |  |
+| walkNum | 路径数目 | 每一个起始点游走出多少条路径 | Integer | ✓ |  |  |
+| alpha | 学习率 | 学习率 | Double |  |  | 0.025 |
+| batchSize | batch大小 | batch大小, 按行计算 | Integer |  | [1, +inf) |  |
+| isToUndigraph | 是否转无向图 | 选为true时，会将当前图转成无向图，然后再游走 | Boolean |  |  | false |
+| minCount | 最小词频 | 最小词频 | Integer |  |  | 5 |
+| mode | metapath中word2vec的模式，分别为metapath2vec和metapath2vecpp | metapath的模式 | String |  | "METAPATH2VEC", "METAPATH2VECPP" | "METAPATH2VEC" |
+| negative | 负采样大小 | 负采样大小 | Integer |  |  | 5 |
+| numCheckpoint | checkPoint 数目 | checkPoint 数目 | Integer |  |  | 1 |
+| numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  |  | 1 |
+| randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  |  | "true" |
+| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | [1, +inf) | 100 |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+| window | 窗口大小 | 窗口大小 | Integer |  |  | 5 |
 
 
 

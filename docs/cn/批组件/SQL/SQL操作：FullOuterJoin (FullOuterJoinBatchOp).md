@@ -9,11 +9,11 @@ Python 类名：FullOuterJoinBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| joinPredicate | where语句 | where语句 | String | ✓ |  |
-| selectClause | select语句 | select语句 | String | ✓ |  |
-| type | join类型 | join类型: "join", "leftOuterJoin", "rightOuterJoin" 或 "fullOuterJoin" | String |  | "JOIN" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| joinPredicate | where语句 | where语句 | String | ✓ |  |  |
+| selectClause | select语句 | select语句 | String | ✓ |  |  |
+| type | join类型 | join类型: "join", "leftOuterJoin", "rightOuterJoin" 或 "fullOuterJoin" | String |  | "JOIN", "LEFTOUTERJOIN", "RIGHTOUTERJOIN", "FULLOUTERJOIN" | "JOIN" |
 
 ## 代码示例
 ### Python 代码

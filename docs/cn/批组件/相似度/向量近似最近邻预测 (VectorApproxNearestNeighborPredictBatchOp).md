@@ -10,14 +10,15 @@ Python 类名：VectorApproxNearestNeighborPredictBatchOp
 该功能由预测时候的topN和radius参数控制, 如果填写了topN，则输出最近邻，如果填写了radius，则输出radius范围内的邻居。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| radius | radius值 | radius值 | Double |  | null |
-| topN | TopN的值 | TopN的值 | Integer |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |  |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
+| radius | radius值 | radius值 | Double |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| topN | TopN的值 | TopN的值 | Integer |  | [1, +inf) | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 ## 代码示例

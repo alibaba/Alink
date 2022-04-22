@@ -9,12 +9,12 @@ Python 类名：FlattenKObjectStreamOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCols | 输出结果列列名数组 | 输出结果列列名数组，必选 | String[] | ✓ |  |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| outputColTypes | 输出结果列列类型数组 | 输出结果列类型数组，必选 | String[] |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outputCols | 输出结果列列名数组 | 输出结果列列名数组，必选 | String[] | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [STRING] |  |
+| outputColTypes | 输出结果列列类型数组 | 输出结果列类型数组 | String[] |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ## 代码示例
 ### Python 代码

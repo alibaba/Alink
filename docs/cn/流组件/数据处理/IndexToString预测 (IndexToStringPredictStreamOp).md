@@ -5,19 +5,24 @@ Python 类名：IndexToStringPredictStreamOp
 
 
 ## 功能介绍
-基于StringIndexer模型，将一列整数映射为字符串。
+基于 StringIndexer 模型，将一列整数映射为字符串。
+
+在流式预测中，IndexToStringPredictStreamOp 在创建对象时，需要指定模型数据
+（StringIndexer的getModelData()获取，或者直接输入StringIndexerTrainBatchOp）。
+在LinkFrom中指定流式数据。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| modelName | 模型名字 | 模型名字 | String | ✓ |  |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
-| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  | null |
-| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  | 10 |
-| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| modelName | 模型名字 | 模型名字 | String | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [LONG] |  |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
+| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
+| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |
+| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  |  | null |
 
 ## 代码示例
 ### Python 代码
@@ -46,10 +51,9 @@ stringIndexer = StringIndexer() \
     .setOutputCol("f0_indexed") \
     .setStringOrderType("frequency_asc").fit(train_data)
 
-batch_model = stringIndexer.transform(train_data)
 indexed = stringIndexer.transform(data)
 
-indexToStrings = IndexToStringPredictStreamOp(batch_model) \
+indexToStrings = IndexToStringPredictStreamOp(stringIndexer.getModelData()) \
     .setSelectedCol("f0_indexed") \
     .setOutputCol("f0_indxed_unindexed")
 
@@ -91,9 +95,8 @@ public class IndexToStringPredictStreamOpTest {
 			.setSelectedCol("f0")
 			.setOutputCol("f0_indexed")
 			.setStringOrderType("frequency_asc").fit(train_data);
-		BatchOperator batch_model = stringIndexer.transform(train_data);
 		StreamOperator indexed = stringIndexer.transform(data);
-		StreamOperator <?> indexToStrings = new IndexToStringPredictStreamOp(batch_model)
+		StreamOperator <?> indexToStrings = new IndexToStringPredictStreamOp(stringIndexer.getModelData())
 			.setSelectedCol("f0_indexed")
 			.setOutputCol("f0_indxed_unindexed");
 		indexToStrings.linkFrom(indexed).print();

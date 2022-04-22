@@ -13,17 +13,17 @@ Python 类名：AlsImplicitTrainBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| itemCol | Item列列名 | Item列列名 | String | ✓ |  |
-| rateCol | 打分列列名 | 打分列列名 | String | ✓ |  |
-| userCol | User列列名 | User列列名 | String | ✓ |  |
-| alpha | 隐式偏好模型系数alpha | 隐式偏好模型系数alpha | Double |  | 40.0 |
-| rank | 因子数 | 因子数 | Integer |  | 10 |
-| lambda | 正则化系数 | 正则化系数 | Double |  | 0.1 |
-| nonnegative | 是否约束因子非负 | 是否约束因子非负 | Boolean |  | false |
-| numBlocks | 分块数目 | 分块数目 | Integer |  | 1 |
-| numIter | 迭代次数 | 迭代次数，默认为10 | Integer |  | 10 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| itemCol | Item列列名 | Item列列名 | String | ✓ |  |  |
+| rateCol | 打分列列名 | 打分列列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
+| userCol | User列列名 | User列列名 | String | ✓ |  |  |
+| alpha | 隐式偏好模型系数alpha | 隐式偏好模型系数alpha | Double |  |  | 40.0 |
+| lambda | 正则化系数 | 正则化系数 | Double |  |  | 0.1 |
+| nonnegative | 是否约束因子非负 | 是否约束因子非负 | Boolean |  |  | false |
+| numBlocks | 分块数目 | 分块数目 | Integer |  |  | 1 |
+| numIter | 迭代次数 | 迭代次数，默认为10 | Integer |  |  | 10 |
+| rank | 因子数 | 因子数 | Integer |  |  | 10 |
 
 
 

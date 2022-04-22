@@ -17,14 +17,14 @@ MinHash应选择metric的参数为MINHASH_SIM。
 Jaccard应选择metric的参数为JACCARD_SIM。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| idCol | id列名 | id列名 | String | ✓ |  |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| numBucket | 分桶个数 | 分桶个数 | Integer |  | 10 |
-| numHashTables | 哈希表个数 | 哈希表的数目 | Integer |  | 10 |
-| seed | 采样种子 | 采样种子 | Long |  | 0 |
-| metric | 距离类型 | 用于计算的距离类型 | String |  | "SIMHASH_HAMMING_SIM" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| idCol | id列名 | id列名 | String | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |  |
+| metric | 距离类型 | 用于计算的距离类型 | String |  | "SIMHASH_HAMMING_SIM", "SIMHASH_HAMMING", "MINHASH_JACCARD_SIM", "JACCARD_SIM" | "SIMHASH_HAMMING_SIM" |
+| numBucket | 分桶个数 | 分桶个数 | Integer |  |  | 10 |
+| numHashTables | 哈希表个数 | 哈希表的数目 | Integer |  |  | 10 |
+| seed | 采样种子 | 采样种子 | Long |  |  | 0 |
 
 
 

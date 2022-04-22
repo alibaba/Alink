@@ -10,20 +10,20 @@ Python 类名：GlmEvaluationBatchOp
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ |  |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| family | 分布族 | 分布族，包含gaussian, Binomial, Poisson, Gamma and Tweedie，默认值gaussian。 | String |  | "Gaussian" |
-| variancePower | 分布族的超参 | 分布族的超参，默认值是0.0 | Double |  | 0.0 |
-| link | 连接函数 | 连接函数，包含cloglog, Identity, Inverse, log, logit, power, probit和sqrt，默认值是指数分布族对应的连接函数。 | String |  | null |
-| linkPower | 连接函数的超参 | 连接函数的超参 | Double |  | 1.0 |
-| offsetCol | 偏移列 | 偏移列 | String |  | null |
-| fitIntercept | 是否拟合常数项 | 是否拟合常数项，默认是拟合 | Boolean |  | true |
-| regParam | l2正则系数 | l2正则系数 | Double |  | 0.0 |
-| epsilon | 收敛精度 | 收敛精度 | Double |  | 1.0E-5 |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  | 10 |
-| weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
+| epsilon | 收敛精度 | 收敛精度 | Double |  |  | 1.0E-5 |
+| family | 分布族 | 分布族，包含gaussian, Binomial, Poisson, Gamma and Tweedie，默认值gaussian。 | String |  | "Gamma", "Binomial", "Gaussian", "Poisson", "Tweedie" | "Gaussian" |
+| fitIntercept | 是否拟合常数项 | 是否拟合常数项，默认是拟合 | Boolean |  |  | true |
+| link | 连接函数 | 连接函数，包含cloglog, Identity, Inverse, log, logit, power, probit和sqrt，默认值是指数分布族对应的连接函数。 | String |  | "CLogLog", "Identity", "Inverse", "Log", "Logit", "Power", "Probit", "Sqrt" | null |
+| linkPower | 连接函数的超参 | 连接函数的超参 | Double |  |  | 1.0 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  |  | 10 |
+| offsetCol | 偏移列 | 偏移列 | String |  |  | null |
+| regParam | l2正则系数 | l2正则系数 | Double |  |  | 0.0 |
+| variancePower | 分布族的超参 | 分布族的超参，默认值是0.0 | Double |  |  | 0.0 |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 
 
 

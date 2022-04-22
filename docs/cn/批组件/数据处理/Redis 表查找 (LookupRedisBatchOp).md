@@ -11,19 +11,19 @@ Python 类名：LookupRedisBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| redisPassword | Not available! | Not available! | String |  |  |
-| redisIP | Not available! | Not available! | String |  |  |
-| redisPort | Not available! | Not available! | Integer |  | 6379 |
-| databaseIndex | Not available! | Not available! | Long |  |  |
-| timeout | Not available! | Not available! | Integer |  |  |
-| redisIPs | Not available! | Not available! | String[] |  |  |
-| clusterMode | Not available! | Not available! | Boolean |  | false |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
+| pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |  |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
+| clusterMode | Not available! | Not available! | Boolean |  |  | false |
+| databaseIndex | Not available! | Not available! | Long |  |  |  |
+| redisIP | Not available! | Not available! | String |  |  |  |
+| redisIPs | Not available! | Not available! | String[] |  |  |  |
+| redisPassword | Not available! | Not available! | String |  |  |  |
+| redisPort | Not available! | Not available! | Integer |  |  | 6379 |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| timeout | Not available! | Not available! | Integer |  |  |  |
 
 
 ## 代码示例

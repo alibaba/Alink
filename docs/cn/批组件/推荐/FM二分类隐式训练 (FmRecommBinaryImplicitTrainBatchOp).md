@@ -11,24 +11,24 @@ Fm 隐式推荐是使用Fm算法在推荐场景的一种扩展，用给定user-i
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| itemCol | Item列列名 | Item列列名 | String | ✓ |  |
-| userCol | User列列名 | User列列名 | String | ✓ |  |
-| userFeatureCols | 用户特征列名字数组 | 用户特征列名字数组 | String[] |  | [] |
-| userCategoricalFeatureCols | 用户离散值列名字数组 | 用户离散值列名字数组 | String[] |  | [] |
-| itemFeatureCols | item特征列名字数组 | item特征列名字数组 | String[] |  | [] |
-| itemCategoricalFeatureCols | item离散值列名字数组 | item离散值列名字数组 | String[] |  | [] |
-| initStdev | 初始化参数的标准差 | 初始化参数的标准差 | Double |  | 0.05 |
-| lambda0 | 常数项正则化系数 | 常数项正则化系数 | Double |  | 0.0 |
-| lambda1 | 线性项正则化系数 | 线性项正则化系数 | Double |  | 0.0 |
-| lambda2 | 二次项正则化系数 | 二次项正则化系数 | Double |  | 0.0 |
-| learnRate | 学习率 | 学习率 | Double |  | 0.01 |
-| withLinearItem | 是否含有线性项 | 是否含有线性项 | Boolean |  | true |
-| numEpochs | epoch数 | epoch数 | Integer |  | 10 |
-| numFactor | 因子数 | 因子数 | Integer |  | 10 |
-| rateCol | 打分列列名 | 打分列列名 | String |  | null |
-| withIntercept | 是否有常数项 | 是否有常数项，默认true | Boolean |  | true |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| itemCol | Item列列名 | Item列列名 | String | ✓ |  |  |
+| userCol | User列列名 | User列列名 | String | ✓ |  |  |
+| initStdev | 初始化参数的标准差 | 初始化参数的标准差 | Double |  |  | 0.05 |
+| itemCategoricalFeatureCols | item离散值列名字数组 | item离散值列名字数组 | String[] |  |  | [] |
+| itemFeatureCols | item特征列名字数组 | item特征列名字数组 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | [] |
+| lambda0 | 常数项正则化系数 | 常数项正则化系数 | Double |  |  | 0.0 |
+| lambda1 | 线性项正则化系数 | 线性项正则化系数 | Double |  |  | 0.0 |
+| lambda2 | 二次项正则化系数 | 二次项正则化系数 | Double |  |  | 0.0 |
+| learnRate | 学习率 | 学习率 | Double |  |  | 0.01 |
+| numEpochs | epoch数 | epoch数 | Integer |  |  | 10 |
+| numFactor | 因子数 | 因子数 | Integer |  |  | 10 |
+| rateCol | 打分列列名 | 打分列列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+| userCategoricalFeatureCols | 用户离散值列名字数组 | 用户离散值列名字数组 | String[] |  |  | [] |
+| userFeatureCols | 用户特征列名字数组 | 用户特征列名字数组 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | [] |
+| withIntercept | 是否有常数项 | 是否有常数项，默认true | Boolean |  |  | true |
+| withLinearItem | 是否含有线性项 | 是否含有线性项 | Boolean |  |  | true |
 
 ## 代码示例
 ### Python 代码

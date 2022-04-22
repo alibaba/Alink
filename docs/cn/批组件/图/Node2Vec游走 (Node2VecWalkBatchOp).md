@@ -6,18 +6,18 @@ Python 类名：Node2VecWalkBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| sourceCol | 起始点列名 | 用来指定起始点列 | String | ✓ |  |
-| targetCol | 中止点点列名 | 用来指定中止点列 | String | ✓ |  |
-| walkLength | 游走的长度 | 随机游走完向量的长度 | Integer | ✓ |  |
-| walkNum | 路径数目 | 每一个起始点游走出多少条路径 | Integer | ✓ |  |
-| delimiter | 分隔符 | 用来分割字符串 | String |  | " " |
-| isToUndigraph | 是否转无向图 | 选为true时，会将当前图转成无向图，然后再游走 | Boolean |  | false |
-| samplingMethod | 起始点列名 | 用来指定起始点列 | String |  | "ALIAS" |
-| weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
-| p | 算法参数P | 控制随机游走序列的跳转概率 | Double |  | 1.0 |
-| q | 算法参数Q | 控制随机游走序列的跳转概率 | Double |  | 1.0 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| sourceCol | 起始点列名 | 用来指定起始点列 | String | ✓ | 所选列类型为 [INTEGER, LONG, STRING] |  |
+| targetCol | 中止点点列名 | 用来指定中止点列 | String | ✓ | 所选列类型为 [INTEGER, LONG, STRING] |  |
+| walkLength | 游走的长度 | 随机游走完向量的长度 | Integer | ✓ |  |  |
+| walkNum | 路径数目 | 每一个起始点游走出多少条路径 | Integer | ✓ |  |  |
+| delimiter | 分隔符 | 用来分割字符串 | String |  |  | " " |
+| isToUndigraph | 是否转无向图 | 选为true时，会将当前图转成无向图，然后再游走 | Boolean |  |  | false |
+| p | 算法参数P | 控制随机游走序列的跳转概率 | Double |  |  | 1.0 |
+| q | 算法参数Q | 控制随机游走序列的跳转概率 | Double |  |  | 1.0 |
+| samplingMethod | 起始点列名 | 用来指定起始点列 | String |  |  | "ALIAS" |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 
 
 

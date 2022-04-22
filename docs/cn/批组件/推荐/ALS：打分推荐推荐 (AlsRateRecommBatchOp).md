@@ -9,13 +9,13 @@ ALS预测，可进行评分预测。
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| itemCol | Item列列名 | Item列列名 | String | ✓ |  |
-| recommCol | 推荐结果列名 | 推荐结果列名 | String | ✓ |  |
-| userCol | User列列名 | User列列名 | String | ✓ |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| itemCol | Item列列名 | Item列列名 | String | ✓ |  |  |
+| recommCol | 推荐结果列名 | 推荐结果列名 | String | ✓ |  |  |
+| userCol | User列列名 | User列列名 | String | ✓ |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 

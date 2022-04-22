@@ -25,18 +25,18 @@ Jaccard 支持相似度计算，应选择metric的参数为JACCARD_SIM。
 Alink上字符相似度算法包括Batch组件和Stream组件。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| metric | 度量类型 | 计算距离时，可以取不同的度量 | String |  | "LEVENSHTEIN_SIM" |
-| numBucket | 分桶个数 | 分桶个数 | Integer |  | 10 |
-| numHashTables | 哈希表个数 | 哈希表的数目 | Integer |  | 10 |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| seed | 采样种子 | 采样种子 | Long |  | 0 |
-| windowSize | 窗口大小 | 窗口大小 | Integer |  | 2 |
-| lambda | 匹配字符权重 | 匹配字符权重，SSK中使用 | Double |  | 0.5 |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ | 所选列类型为 [STRING] |  |
+| lambda | 匹配字符权重 | 匹配字符权重，SSK中使用 | Double |  |  | 0.5 |
+| metric | 度量类型 | 计算距离时，可以取不同的度量 | String |  | "LEVENSHTEIN", "LEVENSHTEIN_SIM", "LCS", "LCS_SIM", "SSK", "COSINE", "SIMHASH_HAMMING", "SIMHASH_HAMMING_SIM", "JACCARD_SIM" | "LEVENSHTEIN_SIM" |
+| numBucket | 分桶个数 | 分桶个数 | Integer |  |  | 10 |
+| numHashTables | 哈希表个数 | 哈希表的数目 | Integer |  |  | 10 |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| seed | 采样种子 | 采样种子 | Long |  |  | 0 |
+| windowSize | 窗口大小 | 窗口大小 | Integer |  | [1, +inf) | 2 |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 

@@ -15,19 +15,21 @@ Python 类名：IsotonicRegression
 ![isotonic.png](https://intranetproxy.alipay.com/skylark/lark/0/2022/png/17357000/1642558915236-d33cb8f3-3ea8-4282-a621-e7ff50c443db.png#clientId=u97fe9e46-e3c1-4&crop=0&crop=0.0889&crop=1&crop=1&from=ui&height=360&id=ua83fdaf8&margin=%5Bobject%20Object%5D&name=isotonic.png&originHeight=960&originWidth=1280&originalType=binary&ratio=1&rotation=0&showTitle=false&size=42838&status=done&style=none&taskId=u70106ba9-a7fd-4136-adbb-a8b04b196f3&title=&width=480)
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
-| featureCol | 特征列名 | 特征列的名称 | String |  | null |
-| isotonic | 输出序列是否 | 输出序列是否递增 | Boolean |  | true |
-| featureIndex | 训练特征所在维度 | 训练特征在输入向量的维度索引 | Integer |  | 0 |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
-| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  | null |
-| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  | 10 |
-| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| featureCol | 特征列名 | 特征列的名称 | String |  |  | null |
+| featureIndex | 训练特征所在维度 | 训练特征在输入向量的维度索引 | Integer |  | [0, +inf) | 0 |
+| isotonic | 输出序列是否 | 输出序列是否递增 | Boolean |  |  | true |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  |  | null |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
+| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
+| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |
+| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  |  | null |
 
 
 ## 代码示例

@@ -18,13 +18,13 @@ KNN的训练与一般机器学习模型的训练过程不同：在KNN训练中�
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | null |
-| distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN" |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN", "COSINE" | "EUCLIDEAN" |
+| featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  |  | null |
 
 
 ## 代码示例

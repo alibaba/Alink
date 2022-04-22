@@ -10,15 +10,15 @@ Python 类名：KafkaSourceStreamOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| bootstrapServers | bootstrapServers | bootstrapServers | String | ✓ |  |
-| groupId | groupId | groupId | String | ✓ |  |
-| startupMode | startupMode | startupMode | String | ✓ |  |
-| properties | 用户自定义Kafka参数 | 用户自定义Kafka参数,形如: "prop1= val1, prop2 = val2" | String |  | null |
-| startTime | 起始时间 | 起始时间。默认从当前时刻开始读。 | String |  | null |
-| topic | topic名称 | topic名称 | String |  | null |
-| topicPattern | topic pattern | topic pattern | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| bootstrapServers | bootstrapServers | bootstrapServers | String | ✓ |  |  |
+| groupId | groupId | groupId | String | ✓ |  |  |
+| startupMode | startupMode | startupMode | String | ✓ | "EARLIEST", "GROUP_OFFSETS", "LATEST", "TIMESTAMP" |  |
+| properties | 用户自定义Kafka参数 | 用户自定义Kafka参数,形如: "prop1= val1, prop2 = val2" | String |  |  | null |
+| startTime | 起始时间 | 起始时间。默认从当前时刻开始读。 | String |  |  | null |
+| topic | topic名称 | topic名称 | String |  |  | null |
+| topicPattern | topic pattern | topic pattern | String |  |  | null |
 
 
 

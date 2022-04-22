@@ -10,12 +10,12 @@ Python 类名：OverWindowBatchOp
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| clause | 运算语句 | 运算语句 | String | ✓ |  |
-| orderBy | 排序列 | 排序列 | String | ✓ |  |
-| partitionCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| clause | 运算语句 | 运算语句 | String | ✓ |  |  |
+| orderBy | 排序列 | 排序列 | String | ✓ |  |  |
+| partitionCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 
 

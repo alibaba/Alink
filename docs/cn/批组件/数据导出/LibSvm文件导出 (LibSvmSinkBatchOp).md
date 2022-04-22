@@ -11,13 +11,13 @@ Python 类名：LibSvmSinkBatchOp
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| filePath | 文件路径 | 文件路径 | String | ✓ |  |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
-| overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  | false |
-| startIndex | 起始索引 | 起始索引 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| filePath | 文件路径 | 文件路径 | String | ✓ |  |  |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |  |
+| overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| startIndex | 起始索引 | 起始索引 | Integer |  |  | 1 |
 
 
 

@@ -14,14 +14,15 @@ Word2Vec的工具包相关链接：[https://code.google.com/p/word2vec/](https:/
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| predMethod | 向量组合方法 | 预测文档向量时，需要用到的方法。支持三种方法：平均（avg），最小（min）和最大（max），默认值为平均 | String |  | "AVG" |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  | " " |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |  |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
+| predMethod | 向量组合方法 | 预测文档向量时，需要用到的方法。支持三种方法：平均（avg），最小（min）和最大（max），默认值为平均 | String |  | "AVG", "SUM", "MIN", "MAX" | "AVG" |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  |  | " " |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 

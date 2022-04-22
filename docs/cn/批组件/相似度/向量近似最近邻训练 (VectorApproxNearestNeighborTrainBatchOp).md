@@ -10,16 +10,16 @@ Python 类名：VectorApproxNearestNeighborTrainBatchOp
 可选择的距离计算方式包含EUCLIDEAN和JACCARD两种，同时支持KDTREE和LSH两种近似方法。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| idCol | id列名 | id列名 | String | ✓ |  |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| numHashTables | 哈希表的数目 | 哈希表的数目 | Integer |  | 1 |
-| numProjectionsPerTable | 每个哈希表中的哈希函数个数 | 每个哈希表中的哈希函数个数 | Integer |  | 1 |
-| projectionWidth | 桶的宽度 | 桶的宽度 | Double |  | 1.0 |
-| seed | 采样种子 | 采样种子 | Long |  | 0 |
-| metric | 距离度量方式 | 距离类型 | String |  | "EUCLIDEAN" |
-| solver | 近似方法 | 近似方法，包括KDTREE和LSH | String |  | "KDTREE" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| idCol | id列名 | id列名 | String | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
+| metric | 距离度量方式 | 距离类型 | String |  | "EUCLIDEAN", "JACCARD" | "EUCLIDEAN" |
+| numHashTables | 哈希表的数目 | 哈希表的数目 | Integer |  |  | 1 |
+| numProjectionsPerTable | 每个哈希表中的哈希函数个数 | 每个哈希表中的哈希函数个数 | Integer |  |  | 1 |
+| projectionWidth | 桶的宽度 | 桶的宽度 | Double |  |  | 1.0 |
+| seed | 采样种子 | 采样种子 | Long |  |  | 0 |
+| solver | 近似方法 | 近似方法，包括KDTREE和LSH | String |  | "KDTREE", "LSH" | "KDTREE" |
 
 
 ## 代码示例

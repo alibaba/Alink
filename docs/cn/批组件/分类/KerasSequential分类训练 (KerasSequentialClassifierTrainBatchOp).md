@@ -29,26 +29,26 @@ Python 类名：KerasSequentialClassifierTrainBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| layers | 各 layer 的描述 | 各 layer 的描述，使用 Python 语法，例如 "Conv1D(256, 5, padding='same', activation='relu')" | String[] | ✓ |  |
-| tensorCol | tensor列 | tensor列 | String | ✓ |  |
-| validationSplit | 验证集比例 | 验证集比例，仅在总并发度为 1 时生效 | Double |  | 0.0 |
-| saveBestOnly | 是否导出最优的 checkpoint | 是否导出最优的 checkpoint，仅在总并发度为 1 时生效 | Boolean |  | false |
-| bestMetric | 最优指标 | 判断模型最优时用的指标，仅在总并发度为 1 时起作用。都支持的有：loss； 二分类还支持：auc, precision, recall, binary_accuracy, false_negatives, false_positives, true_negatives, true_positives；多分类还支持：sparse_categorical_accuracy；回归还支持：mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, mean_squared_logarithmic_error, root_mean_squared_error | String |  | "loss" |
-| saveCheckpointsEpochs | 每隔多少 epochs 保存 checkpoints | 每隔多少 epochs 保存 checkpoints | Double |  | 1.0 |
-| saveCheckpointsSecs | 每隔多少秒保存 checkpoints | 每隔多少秒保存 checkpoints | Double |  |  |
-| batchSize | 数据批大小 | 数据批大小 | Integer |  | 128 |
-| checkpointFilePath | 保存 checkpoint 的路径 | 用于保存中间结果的路径，将作为 TensorFlow 中 `Estimator` 的 `model_dir` 传入，需要为所有 worker 都能访问到的目录 | String |  | null |
-| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  | 4 |
-| learningRate | 学习率 | 学习率 | Double |  | 0.001 |
-| numEpochs | epoch数 | epoch数 | Integer |  | 10 |
-| numPSs | PS 角色数 | PS 角色的数量。值未设置时，如果 Worker 角色数也未设置，则为作业总并发度的 1/4（需要取整），否则为总并发度减去 Worker 角色数。 | Integer |  | null |
-| numWorkers | Worker 角色数 | Worker 角色的数量。值未设置时，如果 PS 角色数也未设置，则为作业总并发度的 3/4（需要取整），否则为总并发度减去 PS 角色数。 | Integer |  | null |
-| optimizer | 优化器 | 优化器，使用 Python 语法，例如 "Adam(learning_rate=0.1)" | String |  | "Adam()" |
-| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  | "" |
-| removeCheckpointBeforeTraining | 是否在训练前移除 checkpoint 相关文件 | 是否在训练前移除 checkpoint 相关文件用于重新训练，只会删除必要的文件 | Boolean |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| layers | 各 layer 的描述 | 各 layer 的描述，使用 Python 语法，例如 "Conv1D(256, 5, padding='same', activation='relu')" | String[] | ✓ |  |  |
+| tensorCol | tensor列 | tensor列 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
+| batchSize | 数据批大小 | 数据批大小 | Integer |  |  | 128 |
+| bestMetric | 最优指标 | 判断模型最优时用的指标，仅在总并发度为 1 时起作用。都支持的有：loss； 二分类还支持：auc, precision, recall, binary_accuracy, false_negatives, false_positives, true_negatives, true_positives；多分类还支持：sparse_categorical_accuracy；回归还支持：mean_absolute_error, mean_absolute_percentage_error, mean_squared_error, mean_squared_logarithmic_error, root_mean_squared_error | String |  |  | "loss" |
+| checkpointFilePath | 保存 checkpoint 的路径 | 用于保存中间结果的路径，将作为 TensorFlow 中 `Estimator` 的 `model_dir` 传入，需要为所有 worker 都能访问到的目录 | String |  |  | null |
+| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  |  | 4 |
+| learningRate | 学习率 | 学习率 | Double |  |  | 0.001 |
+| numEpochs | epoch数 | epoch数 | Integer |  |  | 10 |
+| numPSs | PS 角色数 | PS 角色的数量。值未设置时，如果 Worker 角色数也未设置，则为作业总并发度的 1/4（需要取整），否则为总并发度减去 Worker 角色数。 | Integer |  |  | null |
+| numWorkers | Worker 角色数 | Worker 角色的数量。值未设置时，如果 PS 角色数也未设置，则为作业总并发度的 3/4（需要取整），否则为总并发度减去 PS 角色数。 | Integer |  |  | null |
+| optimizer | 优化器 | 优化器，使用 Python 语法，例如 "Adam(learning_rate=0.1)" | String |  |  | "Adam()" |
+| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  |  | "" |
+| removeCheckpointBeforeTraining | 是否在训练前移除 checkpoint 相关文件 | 是否在训练前移除 checkpoint 相关文件用于重新训练，只会删除必要的文件 | Boolean |  |  | null |
+| saveBestOnly | 是否导出最优的 checkpoint | 是否导出最优的 checkpoint，仅在总并发度为 1 时生效 | Boolean |  |  | false |
+| saveCheckpointsEpochs | 每隔多少 epochs 保存 checkpoints | 每隔多少 epochs 保存 checkpoints | Double |  |  | 1.0 |
+| saveCheckpointsSecs | 每隔多少秒保存 checkpoints | 每隔多少秒保存 checkpoints | Double |  |  |  |
+| validationSplit | 验证集比例 | 验证集比例，仅在总并发度为 1 时生效 | Double |  |  | 0.0 |
 
 
 ## 代码示例

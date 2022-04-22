@@ -10,13 +10,13 @@ Python 类名：GmmTrainBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |
-| epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  | 1.0E-4 |
-| k | 聚类中心点数量 | 聚类中心点数量 | Integer |  | 2 |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | 100 |
-| randomSeed | 随机数种子 | 随机数种子 | Integer |  | 0 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
+| epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  |  | 1.0E-4 |
+| k | 聚类中心点数量 | 聚类中心点数量 | Integer |  |  | 2 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  |  | 0 |
 
 ## 代码示例
 ### Python 代码

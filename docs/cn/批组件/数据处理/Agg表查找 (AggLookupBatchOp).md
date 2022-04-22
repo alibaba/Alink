@@ -13,12 +13,13 @@ Python 类名：AggLookupBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| clause | 运算语句 | 运算语句 | String | ✓ |  |
-| delimiter | 分隔符 | 用来分割字符串 | String |  | " " |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| clause | 运算语句 | 运算语句 | String | ✓ |  |  |
+| delimiter | 分隔符 | 用来分割字符串 | String |  |  | " " |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 ## 代码示例

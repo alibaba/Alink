@@ -25,23 +25,23 @@ FM算法是推荐领域被验证的效果较好的推荐方案之一，在电商
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| batchSize | 迭代数据batch size | 数据batch size | Integer |  | -1 |
-| epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | 1.0E-6 |
-| featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | null |
-| initStdev | 初始化参数的标准差 | 初始化参数的标准差 | Double |  | 0.05 |
-| lambda0 | 常数项正则化系数 | 常数项正则化系数 | Double |  | 0.0 |
-| lambda1 | 线性项正则化系数 | 线性项正则化系数 | Double |  | 0.0 |
-| lambda2 | 二次项正则化系数 | 二次项正则化系数 | Double |  | 0.0 |
-| learnRate | 学习率 | 学习率 | Double |  | 0.01 |
-| withLinearItem | 是否含有线性项 | 是否含有线性项 | Boolean |  | true |
-| numEpochs | epoch数 | epoch数 | Integer |  | 10 |
-| numFactor | 因子数 | 因子数 | Integer |  | 10 |
-| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | null |
-| weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
-| withIntercept | 是否有常数项 | 是否有常数项，默认true | Boolean |  | true |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| batchSize | 迭代数据batch size | 数据batch size | Integer |  |  | -1 |
+| epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | [0.0, +inf) | 1.0E-6 |
+| featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+| initStdev | 初始化参数的标准差 | 初始化参数的标准差 | Double |  |  | 0.05 |
+| lambda0 | 常数项正则化系数 | 常数项正则化系数 | Double |  |  | 0.0 |
+| lambda1 | 线性项正则化系数 | 线性项正则化系数 | Double |  |  | 0.0 |
+| lambda2 | 二次项正则化系数 | 二次项正则化系数 | Double |  |  | 0.0 |
+| learnRate | 学习率 | 学习率 | Double |  |  | 0.01 |
+| numEpochs | epoch数 | epoch数 | Integer |  |  | 10 |
+| numFactor | 因子数 | 因子数 | Integer |  |  | 10 |
+| vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+| withIntercept | 是否有常数项 | 是否有常数项，默认true | Boolean |  |  | true |
+| withLinearItem | 是否含有线性项 | 是否含有线性项 | Boolean |  |  | true |
 
 ## 代码示例
 ### Python 代码

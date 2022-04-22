@@ -10,11 +10,11 @@ Python 类名：StratifiedSampleStreamOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| strataCol | 分层列 | 分层列 | String | ✓ |  |
-| strataRatios | 采用比率 | 采用比率, eg, a:0.1,b:0.3 | String | ✓ |  |
-| strataRatio | 采用比率 | 采用比率 | Double |  | -1.0 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| strataCol | 分层列 | 分层列 | String | ✓ |  |  |
+| strataRatios | 采用比率 | 采用比率, eg, a:0.1,b:0.3 | String | ✓ |  |  |
+| strataRatio | 采用比率 | 采用比率 | Double |  |  | -1.0 |
 
 
 ## 代码示例

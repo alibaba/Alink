@@ -12,11 +12,11 @@ Python 类名：StandardScalerTrainBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| withMean | 是否使用均值 | 是否使用均值，默认使用 | Boolean |  | true |
-| withStd | 是否使用标准差 | 是否使用标准差，默认使用 | Boolean |  | true |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
+| withMean | 是否使用均值 | 是否使用均值，默认使用 | Boolean |  |  | true |
+| withStd | 是否使用标准差 | 是否使用标准差，默认使用 | Boolean |  |  | true |
 
 
 

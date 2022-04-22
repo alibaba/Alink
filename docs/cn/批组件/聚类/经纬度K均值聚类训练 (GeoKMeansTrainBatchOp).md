@@ -20,16 +20,16 @@ KMeans 是一个经典的聚类算法。
 输入数据中的经度和纬度使用`度数`表示，得到的距离单位为千米(km)。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| latitudeCol | 经度列名 | 经度列名 | String | ✓ |  |
-| longitudeCol | 纬度列名 | 纬度列名 | String | ✓ |  |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 50。 | Integer |  | 50 |
-| initMode | 中心点初始化方法 | 初始化中心点的方法，支持"K_MEANS_PARALLEL"和"RANDOM" | String |  | "RANDOM" |
-| initSteps | k-means++初始化迭代步数 | k-means初始化中心点时迭代的步数 | Integer |  | 2 |
-| epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  | 1.0E-4 |
-| k | 聚类中心点数量 | 聚类中心点数量 | Integer |  | 2 |
-| randomSeed | 随机数种子 | 随机数种子 | Integer |  | 0 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| latitudeCol | 经度列名 | 经度列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
+| longitudeCol | 纬度列名 | 纬度列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
+| epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  |  | 1.0E-4 |
+| initMode | 中心点初始化方法 | 初始化中心点的方法，支持"K_MEANS_PARALLEL"和"RANDOM" | String |  | "RANDOM", "K_MEANS_PARALLEL" | "RANDOM" |
+| initSteps | k-means++初始化迭代步数 | k-means初始化中心点时迭代的步数 | Integer |  |  | 2 |
+| k | 聚类中心点数量 | 聚类中心点数量 | Integer |  |  | 2 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 50。 | Integer |  |  | 50 |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  |  | 0 |
 
 
 

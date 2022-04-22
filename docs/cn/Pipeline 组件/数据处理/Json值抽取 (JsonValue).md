@@ -10,15 +10,15 @@ Python 类名：JsonValue
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCols | 输出结果列列名数组 | 输出结果列列名数组，必选 | String[] | ✓ |  |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| jsonPath | Json 路径数组 | 用来指定 Json 抽取的内容。 | String[] | ✓ |  |
-| outputColTypes | 输出结果列列类型数组 | 输出结果列类型数组，必选 | String[] |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| skipFailed | 是否跳过错误 | 当遇到抽取值为null 时是否跳过 | boolean |  | false |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| jsonPath | Json 路径数组 | 用来指定 Json 抽取的内容。 | String[] | ✓ |  |  |
+| outputCols | 输出结果列列名数组 | 输出结果列列名数组，必选 | String[] | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |  |
+| outputColTypes | 输出结果列列类型数组 | 输出结果列类型数组 | String[] |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| skipFailed | 是否跳过错误 | 当遇到抽取值为null 时是否跳过 | boolean |  |  | false |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 ## 代码示例
 ### Python 代码

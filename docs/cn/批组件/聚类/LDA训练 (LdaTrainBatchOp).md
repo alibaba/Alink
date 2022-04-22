@@ -10,20 +10,20 @@ LDA是一种文档主题生成模型。LDA是一种非监督机器学习技术�
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| topicNum | 主题个数 | 主题个数 | Integer | ✓ |  |
-| numIter | 迭代次数 | 迭代次数，默认为10 | Integer |  | 10 |
-| randomSeed | 随机数种子 | 随机数种子 | Integer |  | 0 |
-| vocabSize | 字典库大小 | 字典库大小，如果总词数目大于这个值，那个文档频率低的词会被过滤掉。 | Integer |  | 262144 |
-| alpha | 文章的超参 | 文章的超参 | Double |  | -1.0 |
-| beta | 词的超参 | 词的超参 | Double |  | -1.0 |
-| method | 优化方法 | 优化方法, 包含"em"和"online"两种。 | String |  | "EM" |
-| onlineLearningOffset | 偏移量 | 偏移量 | Double |  | 1024.0 |
-| learningDecay | 衰减率 | 衰减率 | Double |  | 0.51 |
-| subsamplingRate | 采样率 | 采样率 | Double |  | 0.05 |
-| optimizeDocConcentration | 是否优化alpha | 是否优化alpha | Boolean |  | true |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
+| topicNum | 主题个数 | 主题个数 | Integer | ✓ |  |  |
+| alpha | 文章的超参 | 文章的超参 | Double |  |  | -1.0 |
+| beta | 词的超参 | 词的超参 | Double |  |  | -1.0 |
+| learningDecay | 衰减率 | 衰减率 | Double |  |  | 0.51 |
+| method | 优化方法 | 优化方法, 包含"em"和"online"两种。 | String |  | "Online", "EM" | "EM" |
+| numIter | 迭代次数 | 迭代次数，默认为10 | Integer |  |  | 10 |
+| onlineLearningOffset | 偏移量 | 偏移量 | Double |  |  | 1024.0 |
+| optimizeDocConcentration | 是否优化alpha | 是否优化alpha | Boolean |  |  | true |
+| randomSeed | 随机数种子 | 随机数种子 | Integer |  |  | 0 |
+| subsamplingRate | 采样率 | 采样率 | Double |  |  | 0.05 |
+| vocabSize | 字典库大小 | 字典库大小，如果总词数目大于这个值，那个文档频率低的词会被过滤掉。 | Integer |  |  | 262144 |
 
 
 ## 代码示例

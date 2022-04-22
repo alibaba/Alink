@@ -10,16 +10,16 @@ Python 类名：TFTableModelPredictBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如 "f0 string, f1 bigint, f2 double" | String | ✓ |  |
-| graphDefTag | graph标签 | graph标签 | String |  | "serve" |
-| inputSignatureDefs | 输入 SignatureDef | SavedModel 模型的输入 SignatureDef 名，用逗号分隔，需要与输入列一一对应，默认与选择列相同 | String[] |  | null |
-| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  | 4 |
-| outputSignatureDefs | TF 输出 SignatureDef 名 | 模型的输出 SignatureDef 名，多个输出时用逗号分隔，并且与输出 Schema 一一对应，默认与输出 Schema 中的列名相同 | String[] |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | null |
-| signatureDefKey | signature标签 | signature标签 | String |  | "serving_default" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如 "f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
+| graphDefTag | graph标签 | graph标签 | String |  |  | "serve" |
+| inputSignatureDefs | 输入 SignatureDef | SavedModel 模型的输入 SignatureDef 名，用逗号分隔，需要与输入列一一对应，默认与选择列相同 | String[] |  |  | null |
+| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  |  | 4 |
+| outputSignatureDefs | TF 输出 SignatureDef 名 | 模型的输出 SignatureDef 名，多个输出时用逗号分隔，并且与输出 Schema 一一对应，默认与输出 Schema 中的列名相同 | String[] |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  |  | null |
+| signatureDefKey | signature标签 | signature标签 | String |  |  | "serving_default" |
 
 ## 代码示例
 

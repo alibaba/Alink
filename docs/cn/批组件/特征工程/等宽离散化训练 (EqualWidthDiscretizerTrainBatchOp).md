@@ -12,12 +12,12 @@ Python 类名：EqualWidthDiscretizerTrainBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |
-| leftOpen | 是否左开右闭 | 左开右闭为true，左闭右开为false | Boolean |  | true |
-| numBuckets | quantile个数 | quantile个数，对所有列有效。 | Integer |  | 2 |
-| numBucketsArray | quantile个数 | quantile个数，每一列对应数组中一个元素。 | Integer[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
+| leftOpen | 是否左开右闭 | 左开右闭为true，左闭右开为false | Boolean |  |  | true |
+| numBuckets | quantile个数 | quantile个数，对所有列有效。 | Integer |  |  | 2 |
+| numBucketsArray | quantile个数 | quantile个数，每一列对应数组中一个元素。 | Integer[] |  |  | null |
 
 
 ## 代码示例

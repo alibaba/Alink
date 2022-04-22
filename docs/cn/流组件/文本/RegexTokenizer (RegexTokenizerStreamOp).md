@@ -18,16 +18,16 @@ Python 类名：RegexTokenizerStreamOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| pattern | 分隔符/正则匹配符 | 如果gaps为True，pattern用于切分文档；如果gaps为False，会提取出匹配pattern的词。 | String |  | "\\s+" |
-| gaps | 切分/匹配 | 如果gaps为True，pattern用于切分文档；如果gaps为False，会提取出匹配pattern的词。 | Boolean |  | true |
-| minTokenLength | 词语最短长度 | 词语的最短长度，小于这个值的词语会被过滤掉 | Integer |  | 1 |
-| toLowerCase | 是否转换为小写 | 转换为小写 | Boolean |  | true |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [STRING] |  |
+| gaps | 切分/匹配 | 如果gaps为True，pattern用于切分文档；如果gaps为False，会提取出匹配pattern的词。 | Boolean |  |  | true |
+| minTokenLength | 词语最短长度 | 词语的最短长度，小于这个值的词语会被过滤掉 | Integer |  |  | 1 |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
+| pattern | 分隔符/正则匹配符 | 如果gaps为True，pattern用于切分文档；如果gaps为False，会提取出匹配pattern的词。 | String |  |  | "\\s+" |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| toLowerCase | 是否转换为小写 | 转换为小写 | Boolean |  |  | true |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 ## 代码示例
 

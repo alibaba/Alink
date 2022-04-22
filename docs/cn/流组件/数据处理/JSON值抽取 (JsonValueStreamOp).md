@@ -8,7 +8,7 @@ Python 类名：JsonValueStreamOp
 
 该组件完成json字符串中的信息抽取，按照用户给定的Path 抓取出相应的信息。该组件支持
 - 按照多JsonPath规则编写的多条抽取规则。
-- 指定输出列的数据类型
+- 默认输出类型为string，也可以根据实际情况指定数据类型
 
 ### JsonPath表达式
 
@@ -25,15 +25,15 @@ Python 类名：JsonValueStreamOp
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCols | 输出结果列列名数组 | 输出结果列列名数组，必选 | String[] | ✓ |  |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| jsonPath | Json 路径数组 | 用来指定 Json 抽取的内容。 | String[] | ✓ |  |
-| outputColTypes | 输出结果列列类型数组 | 输出结果列类型数组，必选 | String[] |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| skipFailed | 是否跳过错误 | 当遇到抽取值为null 时是否跳过 | boolean |  | false |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| jsonPath | Json 路径数组 | 用来指定 Json 抽取的内容。 | String[] | ✓ |  |  |
+| outputCols | 输出结果列列名数组 | 输出结果列列名数组，必选 | String[] | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [STRING] |  |
+| outputColTypes | 输出结果列列类型数组 | 输出结果列类型数组 | String[] |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| skipFailed | 是否跳过错误 | 当遇到抽取值为null 时是否跳过 | boolean |  |  | false |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 
@@ -57,6 +57,7 @@ JsonValueStreamOp()\
      .setJsonPath(["$.a", "$.b.b1[0]","$.b.b2"])\
      .setSelectedCol("str")\
      .setOutputCols(["f0","f1","f2"])\
+     .setOutputColTypes(["string", "int", "long"])\
      .linkFrom(streamData)\
      .print()
      
@@ -85,7 +86,8 @@ public class JsonValueStreamOpTest {
 		new JsonValueStreamOp()
 			.setJsonPath("$.a", "$.b.b1[0]","$.b.b2")
 			.setSelectedCol("str")
-			.setOutputCols("f0", "f1","f2")
+			.setOutputCols("f0", "f1", "f2")
+			.setOutputColTypes("string", "int", "long")
 			.linkFrom(streamData)
 			.print();
 		StreamOperator.execute();

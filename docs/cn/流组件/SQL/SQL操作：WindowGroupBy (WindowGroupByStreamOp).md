@@ -10,15 +10,15 @@ Python 类名：WindowGroupByStreamOp
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| selectClause | select语句 | select语句 | String | ✓ |  |
-| sessionGap | session间隔长度 | session间隔长度 | Integer | ✓ |  |
-| slidingLength | 滑动窗口滑动长度 | 滑动窗口滑动长度 | Integer | ✓ |  |
-| windowLength | 窗口长度 | 窗口长度 | Integer | ✓ |  |
-| groupByClause | groupby语句 | groupby语句 | String |  | null |
-| intervalUnit | 时间长度单位 | 时间长度单位 | String |  | "SECOND" |
-| windowType | 窗口类型 | 窗口类型 | String |  | "TUMBLE" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| selectClause | select语句 | select语句 | String | ✓ |  |  |
+| sessionGap | session间隔长度 | session间隔长度 | Integer | ✓ |  |  |
+| slidingLength | 滑动窗口滑动长度 | 滑动窗口滑动长度 | Integer | ✓ |  |  |
+| windowLength | 窗口长度 | 窗口长度 | Integer | ✓ |  |  |
+| groupByClause | groupby语句 | groupby语句 | String |  |  | null |
+| intervalUnit | 时间长度单位 | 时间长度单位 | String |  | "SECOND", "MINUTE", "HOUR", "DAY", "MONTH" | "SECOND" |
+| windowType | 窗口类型 | 窗口类型 | String |  | "TUMBLE", "HOP", "SESSION" | "TUMBLE" |
 
 
 

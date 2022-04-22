@@ -10,16 +10,16 @@ Python 类名：BertTextEmbeddingBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| bertModelName | BERT模型名字 | BERT模型名字： Base-Chinese,Base-Multilingual-Cased,Base-Uncased,Base-Cased | String |  | "Base-Chinese" |
-| doLowerCase | 是否将文本转换为小写 | 是否将文本转换为小写，默认根据模型自动决定 | Boolean |  | null |
-| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  | 4 |
-| layer | 输出第几层 encoder layer 的结果 | 输出第几层 encoder layer 的结果， -1 表示最后一层，-2 表示倒数第2层，以此类推 | Integer |  | -1 |
-| maxSeqLength | 句子截断长度 | 句子截断长度 | Integer |  | 128 |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [STRING] |  |
+| bertModelName | BERT模型名字 | BERT模型名字： Base-Chinese,Base-Multilingual-Cased,Base-Uncased,Base-Cased | String |  |  | "Base-Chinese" |
+| doLowerCase | 是否将文本转换为小写 | 是否将文本转换为小写，默认根据模型自动决定 | Boolean |  |  | null |
+| intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  |  | 4 |
+| layer | 输出第几层 encoder layer 的结果 | 输出第几层 encoder layer 的结果， -1 表示最后一层，-2 表示倒数第2层，以此类推 | Integer |  |  | -1 |
+| maxSeqLength | 句子截断长度 | 句子截断长度 | Integer |  |  | 128 |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ## 代码示例
 ### Python 代码

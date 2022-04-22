@@ -8,14 +8,14 @@ Python 类名：CsvSinkStreamOp
 写CSV文件
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| filePath | 文件路径 | 文件路径 | String | ✓ |  |
-| fieldDelimiter | 字段分隔符 | 字段分隔符 | String |  | "," |
-| numFiles | 文件数目 | 文件数目 | Integer |  | 1 |
-| overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  | false |
-| quoteChar | 引号字符 | 引号字符 | Character |  | "\"" |
-| rowDelimiter | 行分隔符 | 行分隔符 | String |  | "\n" |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| filePath | 文件路径 | 文件路径 | String | ✓ |  |  |
+| fieldDelimiter | 字段分隔符 | 字段分隔符 | String |  |  | "," |
+| numFiles | 文件数目 | 文件数目 | Integer |  |  | 1 |
+| overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| quoteChar | 引号字符 | 引号字符 | Character |  |  | "\"" |
+| rowDelimiter | 行分隔符 | 行分隔符 | String |  |  | "\n" |
 
 ## 代码示例
 

@@ -9,12 +9,12 @@ Python 类名：AppendModelStreamFileSinkBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| filePath | 文件路径 | 文件路径 | String | ✓ |  |
-| modelTime | 批模型时间戳 | 模型时间戳。默认当前时间。 使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  | null |
-| numFiles | 文件数目 | 文件数目 | Integer |  | 1 |
-| numKeepModel | 保存模型的数目 | 实时写出模型的数目上限 | Integer |  | 2147483647 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| filePath | 文件路径 | 文件路径 | String | ✓ |  |  |
+| modelTime | 批模型时间戳 | 模型时间戳。默认当前时间。 使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  |  | null |
+| numFiles | 文件数目 | 文件数目 | Integer |  |  | 1 |
+| numKeepModel | 保存模型的数目 | 实时写出模型的数目上限 | Integer |  |  | 2147483647 |
 
 ## 代码示例
 ### Python 代码

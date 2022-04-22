@@ -32,20 +32,20 @@ AutoArima是只需要指定MaxOrder, 不需要指定p/d/q, 对每个分组分别
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ |  |
-| d | d | d | Integer |  | -1 |
-| estMethod | 估计方法 | 估计方法 | String |  | "CssMle" |
-| icType | 评价指标 | 评价指标 | String |  | "AIC" |
-| maxOrder | 模型(p, q)上限 | 模型(p, q)上限 | Integer |  | 10 |
-| maxSeasonalOrder | 季节模型(p, q)上限 | 季节模型(p, q)上限 | Integer |  | 1 |
-| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| seasonalPeriod | 季节周期 | 季节周期 | Integer |  | 1 |
-| predictNum | 预测条数 | 预测条数 | Integer |  | 1 |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| d | d | d | Integer |  |  | -1 |
+| estMethod | 估计方法 | 估计方法 | String |  | "Mom", "Hr", "Css", "CssMle" | "CssMle" |
+| icType | 评价指标 | 评价指标 | String |  | "AIC", "BIC", "HQIC" | "AIC" |
+| maxOrder | 模型(p, q)上限 | 模型(p, q)上限 | Integer |  |  | 10 |
+| maxSeasonalOrder | 季节模型(p, q)上限 | 季节模型(p, q)上限 | Integer |  |  | 1 |
+| predictNum | 预测条数 | 预测条数 | Integer |  |  | 1 |
+| predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| seasonalPeriod | 季节周期 | 季节周期 | Integer |  | [1, +inf) | 1 |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 ## 代码示例
 ### Python 代码

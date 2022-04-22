@@ -15,22 +15,24 @@ MinHash应选择metric的参数为MINHASH_SIM。
 Jaccard应选择metric的参数为JACCARD_SIM。
 
 ## 参数说明
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| idCol | id列名 | id列名 | String | ✓ |  |
-| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |
-| numBucket | 分桶个数 | 分桶个数 | Integer |  | 10 |
-| numHashTables | 哈希表个数 | 哈希表的数目 | Integer |  | 10 |
-| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  | null |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| seed | 采样种子 | 采样种子 | Long |  | 0 |
-| radius | radius值 | radius值 | Double |  | null |
-| topN | TopN的值 | TopN的值 | Integer |  | null |
-| metric | 距离类型 | 用于计算的距离类型 | String |  | "SIMHASH_HAMMING_SIM" |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
-| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  | null |
-| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  | 10 |
-| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| idCol | id列名 | id列名 | String | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |  |
+| metric | 距离类型 | 用于计算的距离类型 | String |  | "SIMHASH_HAMMING_SIM", "SIMHASH_HAMMING", "MINHASH_JACCARD_SIM", "JACCARD_SIM" | "SIMHASH_HAMMING_SIM" |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| numBucket | 分桶个数 | 分桶个数 | Integer |  |  | 10 |
+| numHashTables | 哈希表个数 | 哈希表的数目 | Integer |  |  | 10 |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
+| overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| radius | radius值 | radius值 | Double |  |  | null |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| seed | 采样种子 | 采样种子 | Long |  |  | 0 |
+| topN | TopN的值 | TopN的值 | Integer |  | [1, +inf) | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
+| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
+| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |
+| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  |  | null |
 
 
 

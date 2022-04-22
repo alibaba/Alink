@@ -10,14 +10,14 @@ Python 类名：ItemCfSimilarItemsRecommBatchOp
 
 ## 参数说明
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| itemCol | Item列列名 | Item列列名 | String | ✓ |  |
-| recommCol | 推荐结果列名 | 推荐结果列名 | String | ✓ |  |
-| initRecommCol | 初始推荐列列名 | 初始推荐列列名 | String |  | null |
-| k | 推荐TOP数量 | 推荐TOP数量 | Integer |  | 10 |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| itemCol | Item列列名 | Item列列名 | String | ✓ |  |  |
+| recommCol | 推荐结果列名 | 推荐结果列名 | String | ✓ |  |  |
+| initRecommCol | 初始推荐列列名 | 初始推荐列列名 | String |  | 所选列类型为 [M_TABLE] | null |
+| k | 推荐TOP数量 | 推荐TOP数量 | Integer |  |  | 10 |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 ## 代码示例
 ### Python 代码

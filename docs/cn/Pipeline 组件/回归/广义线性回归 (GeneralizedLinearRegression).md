@@ -10,27 +10,29 @@ Python 类名：GeneralizedLinearRegression
 ## 参数说明
 
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 默认值 |
-| --- | --- | --- | --- | --- | --- |
-| featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ |  |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |
-| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |
-| linkPredResultCol | 连接函数结果的列名 | 连接函数结果的列名 | String |  | null |
-| family | 分布族 | 分布族，包含gaussian, Binomial, Poisson, Gamma and Tweedie，默认值gaussian。 | String |  | "Gaussian" |
-| variancePower | 分布族的超参 | 分布族的超参，默认值是0.0 | Double |  | 0.0 |
-| link | 连接函数 | 连接函数，包含cloglog, Identity, Inverse, log, logit, power, probit和sqrt，默认值是指数分布族对应的连接函数。 | String |  | null |
-| linkPower | 连接函数的超参 | 连接函数的超参 | Double |  | 1.0 |
-| offsetCol | 偏移列 | 偏移列 | String |  | null |
-| fitIntercept | 是否拟合常数项 | 是否拟合常数项，默认是拟合 | Boolean |  | true |
-| regParam | l2正则系数 | l2正则系数 | Double |  | 0.0 |
-| epsilon | 收敛精度 | 收敛精度 | Double |  | 1.0E-5 |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  | 10 |
-| reservedCols | 算法保留列名 | 算法保留列 | String[] |  | null |
-| weightCol | 权重列名 | 权重列对应的列名 | String |  | null |
-| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  | 1 |
-| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  | null |
-| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  | 10 |
-| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  | null |
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ |  |  |
+| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
+| predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
+| epsilon | 收敛精度 | 收敛精度 | Double |  |  | 1.0E-5 |
+| family | 分布族 | 分布族，包含gaussian, Binomial, Poisson, Gamma and Tweedie，默认值gaussian。 | String |  | "Gamma", "Binomial", "Gaussian", "Poisson", "Tweedie" | "Gaussian" |
+| fitIntercept | 是否拟合常数项 | 是否拟合常数项，默认是拟合 | Boolean |  |  | true |
+| link | 连接函数 | 连接函数，包含cloglog, Identity, Inverse, log, logit, power, probit和sqrt，默认值是指数分布族对应的连接函数。 | String |  | "CLogLog", "Identity", "Inverse", "Log", "Logit", "Power", "Probit", "Sqrt" | null |
+| linkPower | 连接函数的超参 | 连接函数的超参 | Double |  |  | 1.0 |
+| linkPredResultCol | 连接函数结果的列名 | 连接函数结果的列名 | String |  |  | null |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  |  | 10 |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| offsetCol | 偏移列 | 偏移列 | String |  |  | null |
+| overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| regParam | l2正则系数 | l2正则系数 | Double |  |  | 0.0 |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| variancePower | 分布族的超参 | 分布族的超参，默认值是0.0 | Double |  |  | 0.0 |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
+| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
+| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |
+| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  |  | null |
 
 
 
