@@ -13,8 +13,12 @@ import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.RowUtil;
+import com.alibaba.alink.params.outlier.HasDetectLast;
+import com.alibaba.alink.params.outlier.HasInputMTableCol;
 import com.alibaba.alink.params.outlier.HasMaxOutlierNumPerGroup;
 import com.alibaba.alink.params.outlier.HasMaxOutlierRatio;
+import com.alibaba.alink.params.outlier.HasOutputMTableCol;
+import com.alibaba.alink.params.outlier.OutlierDetectorParams;
 
 import java.util.ArrayList;
 import java.util.Comparator;

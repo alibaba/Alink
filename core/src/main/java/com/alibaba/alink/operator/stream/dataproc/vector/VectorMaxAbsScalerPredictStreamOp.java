@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorImputerModelMapper;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMaxAbsScalerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.dataproc.vector.VectorMaxAbsScalerPredictParams;
@@ -18,6 +19,14 @@ public class VectorMaxAbsScalerPredictStreamOp extends ModelMapStreamOp <VectorM
 	implements VectorMaxAbsScalerPredictParams <VectorMaxAbsScalerPredictStreamOp> {
 
 	private static final long serialVersionUID = 1839539414612336143L;
+
+	public VectorMaxAbsScalerPredictStreamOp() {
+		super(VectorMaxAbsScalerModelMapper::new, new Params());
+	}
+
+	public VectorMaxAbsScalerPredictStreamOp(Params params) {
+		super(VectorMaxAbsScalerModelMapper::new, params);
+	}
 
 	public VectorMaxAbsScalerPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

@@ -33,6 +33,14 @@ public final class DecisionTreeRegPredictStreamOp extends ModelMapStreamOp <Deci
 	implements DecisionTreeRegPredictParams <DecisionTreeRegPredictStreamOp> {
 	private static final long serialVersionUID = 1886411464321075840L;
 
+	public DecisionTreeRegPredictStreamOp() {
+		super(RandomForestModelMapper::new, new Params());
+	}
+
+	public DecisionTreeRegPredictStreamOp(Params params) {
+		super(RandomForestModelMapper::new, params);
+	}
+
 	public DecisionTreeRegPredictStreamOp(BatchOperator model) {
 		this(model, null);
 	}

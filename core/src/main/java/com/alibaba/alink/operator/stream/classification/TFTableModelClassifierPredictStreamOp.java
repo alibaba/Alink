@@ -14,6 +14,14 @@ import com.alibaba.alink.params.classification.TFTableModelClassificationPredict
 public class TFTableModelClassifierPredictStreamOp<T extends TFTableModelClassifierPredictStreamOp <T>>
 	extends ModelMapStreamOp <T> implements TFTableModelClassificationPredictParams <T> {
 
+	public TFTableModelClassifierPredictStreamOp() {
+		super(TFTableModelClassificationModelMapper::new, new Params());
+	}
+
+	public TFTableModelClassifierPredictStreamOp(Params params) {
+		super(TFTableModelClassificationModelMapper::new, params);
+	}
+
 	public TFTableModelClassifierPredictStreamOp(BatchOperator <?> model) {
 		this(model, new Params());
 	}

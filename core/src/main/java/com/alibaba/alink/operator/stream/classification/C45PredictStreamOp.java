@@ -16,6 +16,14 @@ public final class C45PredictStreamOp extends ModelMapStreamOp <C45PredictStream
 	implements C45PredictParams <C45PredictStreamOp> {
 	private static final long serialVersionUID = -520190769859999252L;
 
+	public C45PredictStreamOp() {
+		super(RandomForestModelMapper::new, new Params());
+	}
+
+	public C45PredictStreamOp(Params params) {
+		super(RandomForestModelMapper::new, params);
+	}
+
 	public C45PredictStreamOp(BatchOperator model) {
 		this(model, null);
 	}

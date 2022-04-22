@@ -277,13 +277,16 @@ public class HttpFileReadOnlyFileSystem extends BaseFileSystem <HttpFileReadOnly
 		}
 
 		private void createInternal(long start, long end) throws IOException {
+			if(start>=end){
+				throw new IllegalArgumentException("start position of http file is is lager than end position");
+			}
 			connection = (HttpURLConnection) path.toUri().toURL().openConnection();
 
 			connection.setDoInput(true);
 			connection.setConnectTimeout(CONNECTION_TIMEOUT);
 			connection.setReadTimeout(READ_TIMEOUT);
 			connection.setRequestMethod("GET");
-			connection.setRequestProperty("Range", String.format("bytes=%d-%d", start, end));
+			connection.setRequestProperty("Range", String.format("bytes=%d-%d", start, end-1));
 			connection.connect();
 
 			internal = connection.getInputStream();

@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.classification.tensorflow.TFTableModelClassificationModelMapper;
 import com.alibaba.alink.operator.common.tensorflow.TFTableModelPredictModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
@@ -17,6 +18,14 @@ import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
 @NameCn("TF表模型预测")
 public final class TFTableModelPredictStreamOp extends ModelMapStreamOp <TFTableModelPredictStreamOp>
 	implements TFTableModelPredictParams <TFTableModelPredictStreamOp> {
+
+	public TFTableModelPredictStreamOp() {
+		super(TFTableModelPredictModelMapper::new, new Params());
+	}
+
+	public TFTableModelPredictStreamOp(Params params) {
+		super(TFTableModelPredictModelMapper::new, params);
+	}
 
 	public TFTableModelPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

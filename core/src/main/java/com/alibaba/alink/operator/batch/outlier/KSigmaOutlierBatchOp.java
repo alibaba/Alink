@@ -6,7 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.common.outlier.BaseOutlierBatchOp;
 import com.alibaba.alink.operator.common.outlier.KSigmaDetector;
-import com.alibaba.alink.operator.common.outlier.KSigmaDetectorParams;
+import com.alibaba.alink.params.outlier.KSigmaDetectorParams;
 
 @NameCn("KSigma异常检测")
 @NameEn("KSigma Outlier")

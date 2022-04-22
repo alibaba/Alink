@@ -8,10 +8,17 @@ import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
+import com.alibaba.alink.params.outlier.ModelOutlierParams;
 
 @Internal
 public class BaseModelOutlierPredictStreamOp<T extends BaseModelOutlierPredictStreamOp <T>>
 	extends ModelMapStreamOp <T> implements ModelOutlierParams <T> {
+
+	public BaseModelOutlierPredictStreamOp(
+		TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder,
+		Params params) {
+		super(mapperBuilder, params);
+	}
 
 	public BaseModelOutlierPredictStreamOp(
 		BatchOperator <?> model,

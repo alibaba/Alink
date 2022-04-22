@@ -7,7 +7,6 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeRefe
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.model.RichModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -17,6 +16,7 @@ import com.alibaba.alink.operator.common.outlier.IForestDetector.IForestPredict;
 import com.alibaba.alink.operator.common.outlier.IForestDetector.Node;
 import com.alibaba.alink.params.dataproc.HasTargetType.TargetType;
 import com.alibaba.alink.params.dataproc.NumericalTypeCastParams;
+import com.alibaba.alink.params.outlier.WithMultiVarParams;
 
 import java.io.Serializable;
 import java.util.ArrayList;

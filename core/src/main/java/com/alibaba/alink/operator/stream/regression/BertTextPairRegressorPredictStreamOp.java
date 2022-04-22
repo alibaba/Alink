@@ -12,6 +12,14 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 public class BertTextPairRegressorPredictStreamOp extends
 	TFTableModelRegressorPredictStreamOp <BertTextPairRegressorPredictStreamOp> {
 
+	public BertTextPairRegressorPredictStreamOp() {
+		super();
+	}
+
+	public BertTextPairRegressorPredictStreamOp(Params params) {
+		super(params);
+	}
+
 	public BertTextPairRegressorPredictStreamOp(BatchOperator <?> model) {
 		this(model, new Params());
 	}

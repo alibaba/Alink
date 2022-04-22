@@ -18,7 +18,7 @@ import com.alibaba.alink.params.io.RedisSinkParams;
 @IoOpAnnotation(name = "redis_stream_sink", ioType = IOType.SinkStream)
 @ParamSelectColumnSpec(name = "keyCols")
 @ParamSelectColumnSpec(name = "valueCols")
-@NameCn("")
+@NameCn("导出到Redis")
 public final class RedisSinkStreamOp extends BaseSinkStreamOp <RedisSinkStreamOp>
 	implements RedisSinkParams <RedisSinkStreamOp> {
 

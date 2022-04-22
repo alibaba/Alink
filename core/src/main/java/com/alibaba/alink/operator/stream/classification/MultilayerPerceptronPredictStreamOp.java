@@ -7,6 +7,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.classification.ann.MlpcModelMapper;
+import com.alibaba.alink.operator.common.feature.MultiHotModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.classification.MultilayerPerceptronPredictParams;
 
@@ -21,6 +22,14 @@ public final class MultilayerPerceptronPredictStreamOp
 	implements MultilayerPerceptronPredictParams <MultilayerPerceptronPredictStreamOp> {
 
 	private static final long serialVersionUID = 8204591230800526497L;
+
+	public MultilayerPerceptronPredictStreamOp() {
+		super(MlpcModelMapper::new, new Params());
+	}
+
+	public MultilayerPerceptronPredictStreamOp(Params params) {
+		super(MlpcModelMapper::new, params);
+	}
 
 	public MultilayerPerceptronPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

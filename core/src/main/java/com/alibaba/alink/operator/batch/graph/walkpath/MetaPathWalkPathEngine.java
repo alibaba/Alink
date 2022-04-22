@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.batch.graph.walkpath;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.util.Preconditions;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -136,7 +137,7 @@ public class MetaPathWalkPathEngine extends BaseWalkPathEngine {
 			localEnd --;
 		}
 		int validLen = localEnd - localStart;
-		assert validLen > 0;
+		Preconditions.checkState(validLen > 0, "walkLen should be greater than zero.");
 		long[] finishedRandomWalk = new long[validLen];
 		System.arraycopy(walks, localStart, finishedRandomWalk, 0, validLen);
 		Arrays.fill(walks, localStart, localStart + walkLen, -1L);

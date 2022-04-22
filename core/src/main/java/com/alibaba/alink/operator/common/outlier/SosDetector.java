@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.params.outlier.SosDetectorParams;
 
 import java.util.Map;
 

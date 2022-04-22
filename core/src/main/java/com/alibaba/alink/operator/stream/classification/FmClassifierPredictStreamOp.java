@@ -6,6 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
 import com.alibaba.alink.operator.common.fm.FmModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.recommendation.FmPredictParams;
@@ -20,6 +21,14 @@ public final class FmClassifierPredictStreamOp extends ModelMapStreamOp <FmClass
 	implements FmPredictParams <FmClassifierPredictStreamOp> {
 
 	private static final long serialVersionUID = 392898558835257506L;
+
+	public FmClassifierPredictStreamOp() {
+		super(FmModelMapper::new, new Params());
+	}
+
+	public FmClassifierPredictStreamOp(Params params) {
+		super(FmModelMapper::new, params);
+	}
 
 	public FmClassifierPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

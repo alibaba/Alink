@@ -7,6 +7,7 @@ import org.apache.flink.util.function.TriFunction;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.params.outlier.ModelOutlierParams;
 
 @Internal
 public class BaseModelOutlierPredictBatchOp<T extends BaseModelOutlierPredictBatchOp <T>>

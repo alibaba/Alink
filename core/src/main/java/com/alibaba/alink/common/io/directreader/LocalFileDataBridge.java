@@ -36,7 +36,7 @@ public class LocalFileDataBridge implements DataBridge {
 					}
 				})
 				.collect(Collectors.toList());
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
