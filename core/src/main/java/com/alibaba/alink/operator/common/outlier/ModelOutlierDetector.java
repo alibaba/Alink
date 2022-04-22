@@ -9,6 +9,7 @@ import org.apache.flink.table.api.TableSchema;
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.params.outlier.ModelOutlierParams;
 
 import java.util.HashMap;
 import java.util.Map;

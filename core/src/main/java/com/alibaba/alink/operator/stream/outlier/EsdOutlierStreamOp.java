@@ -6,7 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.common.outlier.BaseOutlierStreamOp;
 import com.alibaba.alink.operator.common.outlier.EsdDetector;
-import com.alibaba.alink.operator.common.outlier.EsdDetectorParams;
+import com.alibaba.alink.params.outlier.EsdDetectorParams;
 
 @NameCn("ESD异常检测")
 @NameEn("ESD Outlier")

@@ -2,31 +2,17 @@ package com.alibaba.alink.common.annotation;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
-import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
-import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.BertTextPairClassifierTrainBatchOp;
 import com.alibaba.alink.operator.common.outlier.BaseOutlierBatchOp;
-import com.alibaba.alink.operator.stream.StreamOperator;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PortAnnotationUtilsTest {
-
-	final static String BASE_PKG_NAME = "com.alibaba.alink";
-
-	final static List <Class <?>> BASES = Arrays.asList(BatchOperator.class, StreamOperator.class);
-	final static List <Class <? extends Annotation>> PORT_ANNOTATIONS =
-		Arrays.asList(InputPorts.class, OutputPorts.class);
 
 	@Test
 	public void printAnnotations() {
@@ -79,32 +65,11 @@ public class PortAnnotationUtilsTest {
 		Assert.assertEquals(PortType.DATA, outputPorts.values()[0].value());
 	}
 
-	public static List<Class <?>> getAllOperator() {
-		Reflections ref = new Reflections(BASE_PKG_NAME);
-		List <Class <?>> operators = new ArrayList <>();
-		for (Class <?> base : BASES) {
-			operators.addAll(ref.getSubTypesOf(base));
-		}
-
-		return operators
-			.stream()
-			.filter(aClass -> !(
-				!Modifier.isPublic(aClass.getModifiers())
-					|| aClass.getEnclosingClass() != null
-					|| Modifier.isAbstract(aClass.getModifiers())
-					|| ExtractModelInfoBatchOp.class.isAssignableFrom(aClass)
-					|| Arrays.stream(aClass.getAnnotations()).anyMatch(
-						annotation -> annotation.annotationType().equals(Internal.class))
-			))
-			.sorted(Comparator.comparing(Class::toString))
-			.collect(Collectors.toList());
-	}
-
 	@Ignore
 	@Test
 	public void testCoverage() {
 		List <Class <?>> notCovered = new ArrayList <>();
-		for (Class <?> operator : getAllOperator()) {
+		for (Class <?> operator : PublicOperatorUtils.listAlgoOperators()) {
 			Tuple2 <InputPorts, OutputPorts> inputOutputPorts = PortAnnotationUtils.getInputOutputPorts(operator);
 			if (null == inputOutputPorts) {
 				notCovered.add(operator);

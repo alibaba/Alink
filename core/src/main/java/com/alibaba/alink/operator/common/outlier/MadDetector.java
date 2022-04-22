@@ -6,6 +6,7 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.params.outlier.HasDirection.Direction;
+import com.alibaba.alink.params.outlier.MadDetectorParams;
 
 import java.util.Arrays;
 import java.util.HashMap;

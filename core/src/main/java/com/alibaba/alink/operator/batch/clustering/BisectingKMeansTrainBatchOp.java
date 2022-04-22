@@ -732,7 +732,8 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator <BisectingK
 			if (distanceType == DistanceType.EUCLIDEAN) {
 				BLAS.axpy(1., v, sum);
 			} else {
-				Preconditions.checkArgument(norm > 0, "Cosine Distance is not defined for zero-length vectors.");
+				Preconditions.checkArgument(norm > 0,
+					"The L2 norm must not be zero when using cosine distance.");
 				BLAS.axpy(1. / Math.sqrt(norm), v, sum);
 			}
 		}

@@ -181,12 +181,14 @@ public class HeteGraphEngine extends BaseCSRGraph {
 		} else if (useAliasTable) {
 			// alias sampling
 			int k = random.nextInt(end - start);
-			resLocalId = random.nextDouble() < prob[start + k] ? start + k : alias[start + k];
+			resLocalId = random.nextDouble() < prob[start + k] ? start + k : alias[start + k] + start;
 		} else {
 			// partialSum sampling
 			double next = random.nextDouble();
 			resLocalId = Arrays.binarySearch(partialSum, start, end, next);
-			resLocalId = Math.abs(resLocalId) - 1;
+			if (resLocalId < 0) {
+				resLocalId = -resLocalId - 1;
+			}
 		}
 		return dst[resLocalId];
 	}

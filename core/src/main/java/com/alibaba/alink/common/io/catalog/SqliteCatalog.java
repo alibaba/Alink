@@ -25,8 +25,8 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.io.annotations.CatalogAnnotation;
 import com.alibaba.alink.common.io.catalog.plugin.JdbcCatalogClassLoaderFactory;
-import com.alibaba.alink.common.io.catalog.plugin.RichInputFormatWithClassLoader;
-import com.alibaba.alink.common.io.catalog.plugin.RichOutputFormatWithClassLoader;
+import com.alibaba.alink.common.io.plugin.wrapper.RichInputFormatWithClassLoader;
+import com.alibaba.alink.common.io.plugin.wrapper.RichOutputFormatWithClassLoader;
 import com.alibaba.alink.params.io.SqliteCatalogParams;
 
 import java.lang.reflect.InvocationTargetException;

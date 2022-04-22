@@ -6,6 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelMapper;
 import com.alibaba.alink.operator.common.nlp.Word2VecModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.nlp.Word2VecPredictParams;
@@ -27,6 +28,14 @@ import com.alibaba.alink.params.nlp.Word2VecPredictParams;
 public class Word2VecPredictStreamOp extends ModelMapStreamOp <Word2VecPredictStreamOp>
 	implements Word2VecPredictParams <Word2VecPredictStreamOp> {
 	private static final long serialVersionUID = 329339396597412614L;
+
+	public Word2VecPredictStreamOp() {
+		super(Word2VecModelMapper::new, new Params());
+	}
+
+	public Word2VecPredictStreamOp(Params params) {
+		super(Word2VecModelMapper::new, params);
+	}
 
 	public Word2VecPredictStreamOp(BatchOperator model) {
 		this(model, null);

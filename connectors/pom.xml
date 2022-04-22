@@ -21,6 +21,7 @@
         <module>connector-hive</module>
         <module>connector-redis</module>
         <module>filesystem</module>
+        <module>connector-parquet-0.11</module>
     </modules>
 
 </project>

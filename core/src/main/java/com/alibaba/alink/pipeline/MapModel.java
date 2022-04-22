@@ -12,6 +12,7 @@ import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
+import com.alibaba.alink.params.io.ModelFileSinkParams;
 
 import java.util.List;
 

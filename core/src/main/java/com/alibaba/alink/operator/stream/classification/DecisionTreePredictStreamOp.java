@@ -33,6 +33,14 @@ public final class DecisionTreePredictStreamOp extends ModelMapStreamOp <Decisio
 	DecisionTreePredictParams <DecisionTreePredictStreamOp> {
 	private static final long serialVersionUID = -746782128171077666L;
 
+	public DecisionTreePredictStreamOp() {
+		super(RandomForestModelMapper::new, new Params());
+	}
+
+	public DecisionTreePredictStreamOp(Params params) {
+		super(RandomForestModelMapper::new, params);
+	}
+
 	public DecisionTreePredictStreamOp(BatchOperator model) {
 		this(model, null);
 	}

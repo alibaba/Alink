@@ -13,6 +13,8 @@ import com.alibaba.alink.operator.batch.regression.DecisionTreeRegPredictBatchOp
 import com.alibaba.alink.operator.batch.regression.DecisionTreeRegTrainBatchOp;
 import com.alibaba.alink.operator.batch.regression.RandomForestRegPredictBatchOp;
 import com.alibaba.alink.operator.batch.regression.RandomForestRegTrainBatchOp;
+import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
+import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.evaluation.RegressionMetrics;
 import com.alibaba.alink.operator.stream.StreamOperator;
@@ -25,13 +27,16 @@ import com.alibaba.alink.operator.stream.regression.CartRegPredictStreamOp;
 import com.alibaba.alink.operator.stream.regression.RandomForestRegPredictStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.pipeline.Pipeline;
+import com.alibaba.alink.pipeline.PipelineModel;
 import com.alibaba.alink.pipeline.classification.C45;
 import com.alibaba.alink.pipeline.classification.Cart;
 import com.alibaba.alink.pipeline.classification.Id3;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -840,5 +845,125 @@ public class RandomForestTrainBatchOpTest extends AlinkTestBase {
 		outputStream.print();
 
 		MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute();
+	}
+
+	@Rule
+	public TemporaryFolder folder = new TemporaryFolder();
+
+	@Test
+	public void testCartPipelineWithModel() throws Exception {
+		String pipelineFile = folder.newFile().getAbsolutePath();
+		String modelFile = folder.newFile().getAbsolutePath();
+
+		Cart cart = new Cart()
+			.setModelFilePath(modelFile)
+			.setOverwriteSink(true)
+			.setFeatureCols(featureColNames)
+			.setCategoricalCols(categoricalColNames)
+			.setLabelCol(labelColName)
+			.setPredictionCol("cart_test_result")
+			.setPredictionDetailCol("cart_test_detail");
+
+		Pipeline pipeline = new Pipeline().add(cart);
+
+		PipelineModel pipelineModel = pipeline.fit(input);
+
+		pipelineModel.save(pipelineFile, true);
+
+		BatchOperator.execute();
+
+		pipelineModel = PipelineModel.load(pipelineFile);
+
+		StreamOperator <?> outputStream = pipelineModel.transform(inputStream);
+
+		outputStream.print();
+
+		StreamOperator.execute();
+	}
+
+	@Test
+	public void testCartWithModel() throws Exception {
+		String modelFile = folder.newFile().getAbsolutePath();
+
+		CartTrainBatchOp cartTrainBatchOp = new CartTrainBatchOp()
+			.setFeatureCols(featureColNames)
+			.setCategoricalCols(categoricalColNames)
+			.setLabelCol(labelColName);
+
+		input
+			.link(cartTrainBatchOp)
+			.link(
+				new AkSinkBatchOp()
+					.setFilePath(modelFile)
+					.setOverwriteSink(true)
+			);
+
+		BatchOperator.execute();
+
+		CartPredictStreamOp cartPredictStreamOp = new CartPredictStreamOp()
+			.setPredictionCol("cart_test_result")
+			.setPredictionDetailCol("cart_test_detail")
+			.setModelFilePath(modelFile);
+
+		inputStream.link(cartPredictStreamOp).print();
+
+		StreamOperator.execute();
+	}
+
+
+	@Test
+	public void testCartWithAkSourceModel() throws Exception {
+		String modelFile = folder.newFile().getAbsolutePath();
+
+		CartTrainBatchOp cartTrainBatchOp = new CartTrainBatchOp()
+			.setFeatureCols(featureColNames)
+			.setCategoricalCols(categoricalColNames)
+			.setLabelCol(labelColName);
+
+		input
+			.link(cartTrainBatchOp)
+			.link(
+				new AkSinkBatchOp()
+					.setFilePath(modelFile)
+					.setOverwriteSink(true)
+			);
+
+		BatchOperator.execute();
+
+		CartPredictStreamOp cartPredictStreamOp = new CartPredictStreamOp(new AkSourceBatchOp().setFilePath(modelFile))
+			.setPredictionCol("cart_test_result")
+			.setPredictionDetailCol("cart_test_detail")
+			.setModelFilePath(modelFile);
+
+		inputStream.link(cartPredictStreamOp).print();
+
+		StreamOperator.execute();
+	}
+
+	@Test
+	public void testCartWithPipelineModel() throws Exception {
+		String pipelineFile = folder.newFile().getAbsolutePath();
+		String modelFile = folder.newFile().getAbsolutePath();
+
+		Cart cart = new Cart()
+			.setModelFilePath(modelFile)
+			.setOverwriteSink(true)
+			.setFeatureCols(featureColNames)
+			.setCategoricalCols(categoricalColNames)
+			.setLabelCol(labelColName)
+			.setPredictionCol("cart_test_result")
+			.setPredictionDetailCol("cart_test_detail");
+
+		Pipeline pipeline = new Pipeline().add(cart);
+
+		PipelineModel pipelineModel = pipeline.fit(input);
+
+		pipelineModel.save(pipelineFile, true);
+
+		BatchOperator.execute();
+
+		pipelineModel = PipelineModel.load(pipelineFile);
+
+		pipelineModel.transform(input).print();
 	}
 }

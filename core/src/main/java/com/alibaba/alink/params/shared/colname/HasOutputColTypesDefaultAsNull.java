@@ -13,7 +13,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 public interface HasOutputColTypesDefaultAsNull<T> extends WithParams <T> {
 
 	@NameCn("输出结果列列类型数组")
-	@DescCn("输出结果列类型数组，必选")
+	@DescCn("输出结果列类型数组")
 	ParamInfo <String[]> OUTPUT_COL_TYPES = ParamInfoFactory
 		.createParamInfo("outputColTypes", String[].class)
 		.setDescription("Types of the output columns")

@@ -16,6 +16,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.NumberSequenceIterator;
+import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -274,7 +275,7 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 					}
 				}
 				boolean useAlias = false;
-				assert null != myStatistics;
+				Preconditions.checkNotNull(myStatistics);
 				final String ALIAS_NAME = "ALIAS";
 				if (samplingMethod.equalsIgnoreCase(ALIAS_NAME)) {
 					useAlias = true;
@@ -319,7 +320,7 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 						logical2physical.getDstPartitionId());
 				}
 				HomoGraphEngine homoGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				assert null != homoGraphEngine;
+				Preconditions.checkNotNull(homoGraphEngine);
 				homoGraphEngine.setLogicalWorkerIdToPhysicalWorkerId(workerIdMapping);
 			} else {
 				// do nothing here.
@@ -370,9 +371,9 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 					partitionId);
 				RandomWalkMemoryBuffer randomWalkMemoryBuffer = IterTaskObjKeeper.get(walkWriteBufferHandler,
 					partitionId);
-				assert null != homoGraphEngine;
-				assert null != node2VecWalkPathEngine;
-				assert null != randomWalkMemoryBuffer;
+				Preconditions.checkNotNull(homoGraphEngine);
+				Preconditions.checkNotNull(node2VecWalkPathEngine);
+				Preconditions.checkNotNull(randomWalkMemoryBuffer);
 
 				long[] nextBatchOfVerticesToSampleFrom = node2VecWalkPathEngine.getNextBatchOfVerticesToSampleFrom();
 
@@ -500,10 +501,10 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 				int partitionId = getRuntimeContext().getIndexOfThisSubtask();
 				HomoGraphEngine homoGraphEngine = IterTaskObjKeeper.get(graphStorageHandler,
 					partitionId);
-				assert null != homoGraphEngine;
+				Preconditions.checkNotNull(homoGraphEngine);
 
 				for (Node2VecCommunicationUnit node2VecCommunicationUnit : values) {
-					assert node2VecCommunicationUnit.getDstPartitionId() == partitionId;
+					Preconditions.checkState(node2VecCommunicationUnit.getDstPartitionId() == partitionId);
 					Long[] requestedVertexIds = node2VecCommunicationUnit.getRequestedVertexIds();
 					Long[] prevVertexIdsOrContainsPrevVertexIds
 						= node2VecCommunicationUnit.getPrevVertexIdsOrContainsPrevVertexIds();
@@ -577,11 +578,11 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 			} else {
 				Node2VecWalkPathEngine node2VecWalkPathEngine = IterTaskObjKeeper.get(randomWalkStorageHandler,
 					partitionId);
-				assert null != node2VecWalkPathEngine;
+				Preconditions.checkNotNull(node2VecWalkPathEngine);
 
 				for (Node2VecCommunicationUnit node2VecCommunicationUnit : values) {
 					int srcPartitionId = node2VecCommunicationUnit.getSrcPartitionId();
-					assert srcPartitionId == partitionId;
+					Preconditions.checkState(srcPartitionId == partitionId);
 					Long[] recvResults = node2VecCommunicationUnit.getRequestedVertexIds();
 					Integer[] walkIds = node2VecCommunicationUnit.getWalkIds();
 					Node2VecState[] messageTypes = node2VecCommunicationUnit.getMessageTypes();

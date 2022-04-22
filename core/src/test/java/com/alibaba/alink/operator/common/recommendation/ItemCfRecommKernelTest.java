@@ -29,7 +29,7 @@ public class ItemCfRecommKernelTest extends AlinkTestBase {
 		Row.of(0L, null, "$4$0:1.0 1:3.0 2:2.0"),
 		Row.of(1L, null, "$4$0:5.0 1:4.0"),
 		Row.of(2L, null, "$4$1:1.0 2:4.0 3:3.0"),
-		Row.of(null, null, "{\"itemType\":\"\\\"VARCHAR\\\"\",\"items\":\"[\\\"a\\\",\\\"b\\\",\\\"c\\\","
+		Row.of(null, null, "{\"userType\":\"\\\"VARCHAR\\\"\",\"itemType\":\"\\\"VARCHAR\\\"\",\"items\":\"[\\\"a\\\",\\\"b\\\",\\\"c\\\","
 			+ "\\\"d\\\"]\",\"rateCol\":\"\\\"rate\\\"\",\"userCol\":\"\\\"user_id\\\"\",\"itemCol\":\"\\\"item_id\\\"\"}"),
 		Row.of(null, 0L, "$4$1:0.8846153846153848 2:0.08770580193070288"),
 		Row.of(null, 1L, "$4$0:0.8846153846153848 2:0.4385290096535146 3:0.19611613513818404"),
@@ -38,7 +38,7 @@ public class ItemCfRecommKernelTest extends AlinkTestBase {
 	};
 
 	private Row[] jaccardModel = new Row[] {
-		Row.of(null, null, "{\"itemType\":\"\\\"VARCHAR\\\"\",\"items\":\"[\\\"a\\\",\\\"b\\\",\\\"c\\\","
+		Row.of(null, null, "{\"userType\":\"\\\"VARCHAR\\\"\",\"itemType\":\"\\\"VARCHAR\\\"\",\"items\":\"[\\\"a\\\",\\\"b\\\",\\\"c\\\","
 			+ "\\\"d\\\"]\",\"rateCol\":null,\"userCol\":\"\\\"user_id\\\"\",\"itemCol\":\"\\\"item_id\\\"\"}"),
 		Row.of(0L, null, "$4$0:1.0 1:1.0 2:1.0"),
 		Row.of(1L, null, "$4$0:1.0 1:1.0"),

@@ -6,6 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelMapper;
 import com.alibaba.alink.operator.common.feature.MultiHotModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.feature.MultiHotPredictParams;
@@ -19,6 +20,14 @@ public class MultiHotPredictStreamOp extends ModelMapStreamOp <MultiHotPredictSt
 	implements MultiHotPredictParams <MultiHotPredictStreamOp> {
 
 	private static final long serialVersionUID = 3986423530880867993L;
+
+	public MultiHotPredictStreamOp() {
+		super(MultiHotModelMapper::new, new Params());
+	}
+
+	public MultiHotPredictStreamOp(Params params) {
+		super(MultiHotModelMapper::new, params);
+	}
 
 	/**
 	 * constructor.

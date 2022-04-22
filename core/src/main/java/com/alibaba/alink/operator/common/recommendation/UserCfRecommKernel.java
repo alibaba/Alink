@@ -5,6 +5,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 import com.alibaba.alink.params.recommendation.BaseSimilarItemsRecommParams;
 import com.alibaba.alink.params.recommendation.BaseUsersPerItemRecommParams;
@@ -25,18 +26,15 @@ public class UserCfRecommKernel extends RecommKernel implements Cloneable {
 		switch (recommType) {
 			case SIMILAR_USERS: {
 				this.topN = this.params.get(BaseSimilarItemsRecommParams.K);
-				this.recommObjType = modelSchema.getFieldTypes()[1];
 				break;
 			}
 			case USERS_PER_ITEM: {
 				this.topN = this.params.get(BaseUsersPerItemRecommParams.K);
 				this.excludeKnown = this.params.get(BaseUsersPerItemRecommParams.EXCLUDE_KNOWN);
-				this.recommObjType = modelSchema.getFieldTypes()[1];
 				break;
 			}
 			case ITEMS_PER_USER: {
 				this.topN = this.params.get(BaseItemsPerUserRecommParams.K);
-				this.recommObjType = modelSchema.getFieldTypes()[2];
 				break;
 			}
 			case RATE: {
@@ -68,6 +66,20 @@ public class UserCfRecommKernel extends RecommKernel implements Cloneable {
 				-> new ItemCfRecommModelDataConverter(recommType).load(modelRows));
 		}
 		scores = ThreadLocal.withInitial(() -> new double[model.get().items.length]);
+		switch (recommType) {
+			case ITEMS_PER_USER:
+			case SIMILAR_ITEMS: {
+				recommObjType = FlinkTypeConverter.getFlinkType(
+					model.get().meta.get(ItemCfRecommModelDataConverter.USER_TYPE));
+				break;
+			}
+			case SIMILAR_USERS:
+			case USERS_PER_ITEM: {
+				recommObjType = FlinkTypeConverter.getFlinkType(
+					model.get().meta.get(ItemCfRecommModelDataConverter.ITEM_TYPE));
+			}
+		}
+
 	}
 
 	@Override

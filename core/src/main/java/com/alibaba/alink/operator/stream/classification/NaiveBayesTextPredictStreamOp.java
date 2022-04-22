@@ -6,6 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.classification.NaiveBayesModelMapper;
 import com.alibaba.alink.operator.common.classification.NaiveBayesTextModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.classification.NaiveBayesTextPredictParams;
@@ -25,6 +26,14 @@ public final class NaiveBayesTextPredictStreamOp extends ModelMapStreamOp <Naive
 	implements NaiveBayesTextPredictParams <NaiveBayesTextPredictStreamOp> {
 
 	private static final long serialVersionUID = -2382102179447174346L;
+
+	public NaiveBayesTextPredictStreamOp() {
+		super(NaiveBayesTextModelMapper::new, new Params());
+	}
+
+	public NaiveBayesTextPredictStreamOp(Params params) {
+		super(NaiveBayesTextModelMapper::new, params);
+	}
 
 	public NaiveBayesTextPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

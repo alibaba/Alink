@@ -16,6 +16,8 @@ import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.outlier.DbscanOutlierStreamOp;
 import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
+import com.alibaba.alink.params.outlier.DbscanDetectorParams;
+import com.alibaba.alink.params.outlier.OutlierDetectorParams;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
+import com.alibaba.alink.params.outlier.CopodDetectorParams;
 
 import java.util.Arrays;
 import java.util.List;

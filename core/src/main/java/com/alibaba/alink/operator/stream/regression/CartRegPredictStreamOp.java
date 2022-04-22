@@ -16,6 +16,14 @@ public final class CartRegPredictStreamOp extends ModelMapStreamOp <CartRegPredi
 	implements CartRegPredictParams <CartRegPredictStreamOp> {
 	private static final long serialVersionUID = 4303341187252058311L;
 
+	public CartRegPredictStreamOp() {
+		super(RandomForestModelMapper::new, new Params());
+	}
+
+	public CartRegPredictStreamOp(Params params) {
+		super(RandomForestModelMapper::new, params);
+	}
+
 	public CartRegPredictStreamOp(BatchOperator model) {
 		this(model, null);
 	}

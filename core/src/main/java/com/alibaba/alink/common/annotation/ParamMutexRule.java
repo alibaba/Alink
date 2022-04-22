@@ -37,7 +37,7 @@ public @interface ParamMutexRule {
 			INVERTED_ACTION_MAP.put(HIDE, SHOW);
 		}
 
-		ActionType invert() {
+		public ActionType invert() {
 			return INVERTED_ACTION_MAP.get(this);
 		}
 	}

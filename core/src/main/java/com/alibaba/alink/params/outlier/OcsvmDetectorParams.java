@@ -5,7 +5,6 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.operator.common.outlier.WithMultiVarParams;
 import com.alibaba.alink.params.shared.HasDegreeDefaultAs2;
 import com.alibaba.alink.params.shared.linear.HasEpsilonDefaultAs0000001;
 

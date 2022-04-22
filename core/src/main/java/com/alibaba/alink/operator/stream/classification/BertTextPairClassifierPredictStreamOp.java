@@ -12,6 +12,14 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 public class BertTextPairClassifierPredictStreamOp extends
 	TFTableModelClassifierPredictStreamOp <BertTextPairClassifierPredictStreamOp> {
 
+	public BertTextPairClassifierPredictStreamOp() {
+		super();
+	}
+
+	public BertTextPairClassifierPredictStreamOp(Params params) {
+		super(params);
+	}
+
 	public BertTextPairClassifierPredictStreamOp(BatchOperator <?> model) {
 		this(model, new Params());
 	}

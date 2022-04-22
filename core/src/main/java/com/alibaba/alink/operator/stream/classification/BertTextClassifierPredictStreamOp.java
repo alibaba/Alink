@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.classification.tensorflow.TFTableModelClassificationModelMapper;
 
 /**
  * Predict with a text classifier using Bert models.
@@ -11,6 +12,14 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 @NameCn("Bert文本分类预测")
 public class BertTextClassifierPredictStreamOp extends
 	TFTableModelClassifierPredictStreamOp <BertTextClassifierPredictStreamOp> {
+
+	public BertTextClassifierPredictStreamOp() {
+		super();
+	}
+
+	public BertTextClassifierPredictStreamOp(Params params) {
+		super(params);
+	}
 
 	public BertTextClassifierPredictStreamOp(BatchOperator <?> model) {
 		this(model, new Params());

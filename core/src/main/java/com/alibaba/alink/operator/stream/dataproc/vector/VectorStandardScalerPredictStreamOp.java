@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelMapper;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.dataproc.vector.VectorStandardPredictParams;
@@ -16,6 +17,14 @@ public class VectorStandardScalerPredictStreamOp extends ModelMapStreamOp <Vecto
 	implements VectorStandardPredictParams <VectorStandardScalerPredictStreamOp> {
 
 	private static final long serialVersionUID = -8439975525324629930L;
+
+	public VectorStandardScalerPredictStreamOp() {
+		super(VectorStandardScalerModelMapper::new, new Params());
+	}
+
+	public VectorStandardScalerPredictStreamOp(Params params) {
+		super(VectorStandardScalerModelMapper::new, params);
+	}
 
 	public VectorStandardScalerPredictStreamOp(BatchOperator srt) {
 		this(srt, new Params());

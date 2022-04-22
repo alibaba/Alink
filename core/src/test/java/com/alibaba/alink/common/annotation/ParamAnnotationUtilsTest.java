@@ -1,7 +1,7 @@
 package com.alibaba.alink.common.annotation;
 
 import com.alibaba.alink.operator.batch.outlier.LofOutlierBatchOp;
-import com.alibaba.alink.operator.common.outlier.WithMultiVarParams;
+import com.alibaba.alink.params.outlier.WithMultiVarParams;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -9,7 +9,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.alibaba.alink.common.annotation.PortAnnotationUtilsTest.getAllOperator;
+import static com.alibaba.alink.common.annotation.PublicOperatorUtils.listAlgoOperators;
 
 public class ParamAnnotationUtilsTest {
 	@Test
@@ -41,7 +41,7 @@ public class ParamAnnotationUtilsTest {
 	public void testCoverage() {
 		List <Class <?>> notCovered = new ArrayList <>();
 
-		for (Class <?> operator : getAllOperator()) {
+		for (Class <?> operator : listAlgoOperators()) {
 			List <ParamSelectColumnSpec> paramSelectColumnSpecs = ParamAnnotationUtils
 				.getParamSelectColumnSpecs(operator);
 
@@ -65,7 +65,7 @@ public class ParamAnnotationUtilsTest {
 	public void testParamMutexRuleCoverage() {
 		List <Class <?>> notCovered = new ArrayList <>();
 
-		for (Class <?> operator : getAllOperator()) {
+		for (Class <?> operator : listAlgoOperators()) {
 			List <ParamMutexRule> paramMutexRules = ParamAnnotationUtils
 				.getParamMutexRules(operator);
 

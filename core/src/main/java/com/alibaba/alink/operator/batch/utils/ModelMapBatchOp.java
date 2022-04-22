@@ -24,6 +24,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.IterableModelLoader;
 import com.alibaba.alink.common.mapper.IterableModelLoaderModelMapperAdapter;
 import com.alibaba.alink.common.mapper.IterableModelLoaderModelMapperAdapterMT;
@@ -33,8 +34,10 @@ import com.alibaba.alink.common.mapper.ModelMapperAdapterMT;
 import com.alibaba.alink.common.mapper.ModelStreamModelMapperAdapter;
 import com.alibaba.alink.common.model.BroadcastVariableModelSource;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.params.mapper.ModelMapperParams;
+import com.alibaba.alink.params.shared.HasModelFilePath;
 
 import java.util.List;
 
@@ -48,7 +51,7 @@ import java.util.List;
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @ReservedColsWithSecondInputSpec
 @Internal
-public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperator <T> {
+public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperator <T> implements HasModelFilePath<T> {
 
 	private static final String BROADCAST_MODEL_TABLE_NAME = "broadcastModelTable";
 	private static final long serialVersionUID = 3479332090254995273L;
@@ -67,13 +70,26 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 	@Override
 	public T linkFrom(BatchOperator <?>... inputs) {
 		checkOpSize(2, inputs);
+
+		BatchOperator<?> model = inputs[0];
+		BatchOperator<?> input = inputs[1];
+
+		if (model == null && getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
+			model = new AkSourceBatchOp()
+				.setFilePath(FilePath.deserialize(getParams().get(HasModelFilePath.MODEL_FILE_PATH)))
+				.setMLEnvironmentId(getMLEnvironmentId());
+		} else if (model == null) {
+			throw new IllegalArgumentException("One of model or modelFilePath should be set.");
+		}
+
 		try {
 			final ModelMapper mapper = mapperBuilder.apply(
-				inputs[0].getSchema(),
-				inputs[1].getSchema(),
-				getParams());
+				model.getSchema(),
+				input.getSchema(),
+				getParams()
+			);
 
-			DataSet <Row> resultRows = calcResultRows(inputs[0], inputs[1], mapper, getParams());
+			DataSet <Row> resultRows = calcResultRows(model, input, mapper, getParams());
 
 			TableSchema outputSchema = mapper.getOutputSchema();
 			setOutput(resultRows, outputSchema);
