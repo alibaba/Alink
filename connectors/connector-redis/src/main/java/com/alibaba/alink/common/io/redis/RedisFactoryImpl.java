@@ -12,7 +12,9 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class RedisFactoryImpl implements RedisFactory {
@@ -87,7 +89,18 @@ public class RedisFactoryImpl implements RedisFactory {
 
 			@Override
 			public byte[] get(byte[] key) {
+				
 				return redis.get(key);
+			}
+			
+			@Override
+			public List<byte[]> getKeys(){
+				Set<String> keySet = redis.keys("*");
+				List<byte[]> result = new ArrayList<>(keySet.size());
+				for(String s:keySet){
+					result.add(s.getBytes());
+				}
+				return result;
 			}
 		};
 	}
@@ -138,6 +151,16 @@ public class RedisFactoryImpl implements RedisFactory {
 			@Override
 			public byte[] get(byte[] key) {
 				return jedisCluster.get(key);
+			}
+
+			@Override
+			public List<byte[]> getKeys(){
+				Set<String> keySet = jedisCluster.hkeys("*");
+				List<byte[]> result = new ArrayList<>(keySet.size());
+				for(String s:keySet){
+					result.add(s.getBytes());
+				}
+				return result;
 			}
 		};
 	}

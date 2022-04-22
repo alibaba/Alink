@@ -48,11 +48,7 @@ class AlgoOperator(WithParams):
 
     def getOutputTable(self):
         from pyflink.table import Table
-        # noinspection PyProtectedMember
-        from ....env import _mlenv
-        _, btenv, _, stenv = _mlenv
-        tenv = self._choose_by_op_type(btenv, stenv)
-        return Table(self.get_j_obj().getOutputTable(), tenv)
+        return Table(self.get_j_obj().getOutputTable())
 
     @abstractmethod
     def linkFrom(self, *args):

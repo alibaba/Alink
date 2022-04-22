@@ -181,7 +181,7 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 	}
 
 	@Override
-	public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
+	public void dropDatabase(String name, boolean ignoreIfNotExists)
 		throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
 
 		throw new UnsupportedOperationException();
@@ -317,7 +317,7 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 	public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists)
 		throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
 
-		String partition = table.getOptions().get(OdpsSinkParams.PARTITION.getName());
+		String partition = table.getProperties().get(OdpsSinkParams.PARTITION.getName());
 		partition = checkAndConvertPartitionSpecFormat(partition);
 
 		if (!StringUtils.isNullOrWhitespaceOnly(partition) && tableExists(tablePath)) {
@@ -339,7 +339,7 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 			}
 		}
 
-		String lifeCycleStr = table.getOptions().get(OdpsSinkParams.LIFE_CYCLE.getName());
+		String lifeCycleStr = table.getProperties().get(OdpsSinkParams.LIFE_CYCLE.getName());
 
 		try {
 			if (lifeCycleStr == null || Long.parseLong(lifeCycleStr) <= 0) {
@@ -426,7 +426,7 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 
 	@Override
 	public List <CatalogPartitionSpec> listPartitions(ObjectPath tablePath, CatalogPartitionSpec partitionSpec)
-		throws TableNotExistException, TableNotPartitionedException, PartitionSpecInvalidException, CatalogException {
+		throws TableNotExistException, TableNotPartitionedException, CatalogException {
 		try {
 			Iterator <Partition> partitionIterator = getCurrentOdps()
 				.tables().get(tablePath.getDatabaseName(), tablePath.getObjectName())
@@ -453,13 +453,6 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
-	}
-
-	@Override
-	public List <CatalogPartitionSpec> listPartitionsByFilter(ObjectPath tablePath, List <Expression> filters)
-		throws TableNotExistException, TableNotPartitionedException, CatalogException {
-
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -540,7 +533,7 @@ public final class OdpsCatalog extends InputOutputFormatCatalog {
 			.functions()
 			.get(functionPath.getDatabaseName(), functionPath.getObjectName());
 
-		return new CatalogFunctionImpl(odpsFunction.getClassPath());
+		return new CatalogFunctionImpl(odpsFunction.getClassPath(), new HashMap <>());
 	}
 
 	@Override

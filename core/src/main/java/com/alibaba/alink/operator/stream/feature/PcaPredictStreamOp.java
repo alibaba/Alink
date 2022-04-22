@@ -20,6 +20,14 @@ public final class PcaPredictStreamOp extends ModelMapStreamOp <PcaPredictStream
 
 	private static final long serialVersionUID = 3407264784386721759L;
 
+	public PcaPredictStreamOp() {
+		super(PcaModelMapper::new, new Params());
+	}
+
+	public PcaPredictStreamOp(Params params) {
+		super(PcaModelMapper::new, params);
+	}
+
 	/**
 	 * default constructor
 	 *

@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.stream.utils;
 
+import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.TableSchema;
@@ -16,18 +18,27 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
+import com.alibaba.alink.common.io.filesystem.AkUtils;
+import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.ModelMapperAdapter;
 import com.alibaba.alink.common.mapper.ModelMapperAdapterMT;
 import com.alibaba.alink.common.model.DataBridgeModelSource;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.common.stream.model.PredictProcess;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
+import com.alibaba.alink.params.io.AkSourceParams;
+import com.alibaba.alink.params.io.ModelFileSinkParams;
 import com.alibaba.alink.params.mapper.ModelMapperParams;
+import com.alibaba.alink.params.shared.HasModelFilePath;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * *
@@ -41,7 +52,7 @@ import com.alibaba.alink.params.mapper.ModelMapperParams;
 @ReservedColsWithSecondInputSpec
 @Internal
 public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOperator <T>
-	implements ModelStreamScanParams <T> {
+	implements ModelStreamScanParams <T>, HasModelFilePath <T> {
 
 	private static final long serialVersionUID = -6591412871091394859L;
 	protected final BatchOperator <?> model;
@@ -51,10 +62,18 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 	 */
 	protected final TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder;
 
+	public ModelMapStreamOp(TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder, Params params) {
+		super(params);
+
+		this.model = null;
+		this.mapperBuilder = mapperBuilder;
+	}
+
 	public ModelMapStreamOp(BatchOperator <?> model,
 							TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder,
 							Params params) {
 		super(params);
+
 		this.model = model;
 		this.mapperBuilder = mapperBuilder;
 	}
@@ -69,10 +88,15 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 
 		try {
 
-			final ModelMapper mapper = mapperBuilder.apply(model.getSchema(), inputData.getSchema(),
+			Tuple2 <DataBridge, TableSchema> dataBridge = createDataBridge(
+				getParams().get(ModelFileSinkParams.MODEL_FILE_PATH),
+				model
+			);
+
+			final ModelMapper mapper = mapperBuilder.apply(dataBridge.f1, inputData.getSchema(),
 				getParams());
 
-			DataStream <Row> resultRows = calcResultRows(model, inputData, inputModelStream,
+			DataStream <Row> resultRows = calcResultRows(dataBridge.f0, dataBridge.f1, inputData, inputModelStream,
 				mapper, getParams(), getMLEnvironmentId(), mapperBuilder);
 
 			TableSchema resultSchema = mapper.getOutputSchema();
@@ -84,13 +108,30 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 		}
 	}
 
-	public static DataStream <Row> calcResultRows(BatchOperator <?> model, StreamOperator <?> input_data,
+	private static final class FilePathDataBridge implements DataBridge {
+		private final FilePath filePath;
+
+		private FilePathDataBridge(FilePath filePath) {
+			this.filePath = filePath;
+		}
+
+		@Override
+		public List <Row> read(FilterFunction <Row> filter) {
+			try {
+				return AkUtils.readFromPath(filePath, filter).f1;
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	public static DataStream <Row> calcResultRows(DataBridge modelDataBridge, TableSchema modelSchema,
+												  StreamOperator <?> input_data,
 												  StreamOperator <?> input_model_stream,
 												  ModelMapper mapper, Params params, Long mlEnvironmentId,
 												  TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder) {
-		DataBridge modelDataBridge = DirectReader.collect(model);
+
 		final DataBridgeModelSource modelSource = new DataBridgeModelSource(modelDataBridge);
-		TableSchema modelSchema = model.getSchema();
 
 		DataStream <Row> modelStream = null;
 		TableSchema modelStreamSchema = null;
@@ -138,6 +179,37 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 			return input_data.getDataStream().flatMap(
 				new ModelMapperAdapterMT(mapper, modelSource, params.get(ModelMapperParams.NUM_THREADS)));
 		}
+	}
+
+	public static Tuple2 <DataBridge, TableSchema> createDataBridge(String modelFilePath, BatchOperator <?> model)
+		throws IOException {
+
+		if (modelFilePath == null && model == null) {
+			throw new IllegalArgumentException("One of model or modelFilePath should be set.");
+		}
+
+		if (model != null && !(model instanceof AkSourceBatchOp)) {
+			return Tuple2.of(DirectReader.collect(model), model.getSchema());
+		}
+
+		FilePath modelFile;
+
+		if (model != null) {
+			modelFile = FilePath.deserialize(model.getParams().get(AkSourceParams.FILE_PATH));
+		} else {
+			modelFile = FilePath.deserialize(modelFilePath);
+		}
+
+		if (!modelFile.getFileSystem().exists(modelFile.getPath())) {
+			throw new IllegalArgumentException(
+				"When use model file path, the model should be sink first. "
+					+ "If using pipeline model, it should be save model first.");
+		}
+
+		return Tuple2.of(
+			new FilePathDataBridge(modelFile),
+			TableUtil.schemaStr2Schema(AkUtils.getMetaFromPath(modelFile).schemaStr)
+		);
 	}
 
 }

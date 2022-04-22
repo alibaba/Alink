@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.io.filesystem;
 
+import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.common.io.FilePathFilter;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.core.fs.FileInputSplit;
@@ -16,6 +18,8 @@ import com.alibaba.alink.common.io.filesystem.copy.FileInputFormat;
 import com.alibaba.alink.common.io.filesystem.copy.FileOutputFormat;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.stream.sink.Export2FileSinkStreamOp;
+import com.alibaba.alink.operator.stream.sink.Export2FileSinkStreamOp.Export2FileOutputFormat;
 import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedInputStream;
@@ -103,15 +107,29 @@ public class AkUtils {
 		return meta;
 	}
 
-	public static Tuple2 <TableSchema, List <Row>> readFromPath(FilePath filePath) throws IOException {
+	public static Tuple2 <TableSchema, List <Row>> readFromPath(FilePath filePath) throws Exception {
+		return readFromPath(filePath, null);
+	}
+
+	public static Tuple2 <TableSchema, List <Row>> readFromPath(
+		FilePath filePath, FilterFunction<Row> filterFunction) throws Exception {
+
 		FileForEachReaderIterable reader = new FileForEachReaderIterable();
 
 		getFromFolderForEach(filePath, reader);
 
 		List <Row> content = new ArrayList <>();
 
-		for (Row row : reader) {
-			content.add(row);
+		if (filterFunction == null) {
+			for (Row row : reader) {
+				content.add(row);
+			}
+		} else {
+			for (Row row : reader) {
+				if (filterFunction.filter(row)) {
+					content.add(row);
+				}
+			}
 		}
 
 		return Tuple2.of(reader.getSchema(), content);
@@ -268,6 +286,13 @@ public class AkUtils {
 		public AkInputFormat(FilePath filePath, AkMeta meta) {
 			super(filePath.getPath(), filePath.getFileSystem());
 			this.meta = meta;
+
+			setFilesFilter(new FilePathFilter() {
+				@Override
+				public boolean filterPath(Path filePath) {
+					return filePath.getPath().endsWith(Export2FileOutputFormat.IN_PROGRESS_FILE_SUFFIX);
+				}
+			});
 		}
 
 		@Override

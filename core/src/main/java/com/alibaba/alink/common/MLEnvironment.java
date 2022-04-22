@@ -7,10 +7,9 @@ import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.Table;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable.MTableKryoSerializer;
@@ -131,21 +130,14 @@ public class MLEnvironment {
 	public ExecutionEnvironment getExecutionEnvironment() {
 		if (null == env) {
 			if (ExecutionEnvironment.areExplicitEnvironmentsAllowed()) {
-				final int managedMemPerCoreInMB = 64;
-				final int networkMemPerCoreInMB = 64;
-				final int core = Runtime.getRuntime().availableProcessors();
-
 				Configuration conf = new Configuration();
-				conf.setString(
-					"taskmanager.memory.managed.size",
-					String.format("%dm", managedMemPerCoreInMB * core)
-				);
-				conf.setString(
-					"taskmanager.memory.network.min",
-					String.format("%dm", networkMemPerCoreInMB * core)
-				);
+				conf.setBoolean("taskmanager.memory.preallocate", true);
+				conf.setBoolean("taskmanager.memory.off-heap", true);
+				conf.setFloat("taskmanager.memory.fraction", 0.3f);
+				conf.setString("taskmanager.memory.network.max", "128m");
+				conf.setLong("slot.idle.timeout", Long.MAX_VALUE);
 				env = ExecutionEnvironment.createLocalEnvironment(conf);
-				env.setParallelism(core);
+				env.setParallelism(Runtime.getRuntime().availableProcessors());
 			} else {
 				env = ExecutionEnvironment.getExecutionEnvironment();
 			}
@@ -182,8 +174,8 @@ public class MLEnvironment {
 	public BatchTableEnvironment getBatchTableEnvironment() {
 		if (null == batchTableEnv) {
 			batchTableEnv = BatchTableEnvironment.create(getExecutionEnvironment());
-			BuildInAggRegister.registerUdf(this.batchTableEnv);
-			BuildInAggRegister.registerUdaf(this.batchTableEnv);
+			BuildInAggRegister.registerUdf(batchTableEnv);
+			BuildInAggRegister.registerUdaf(batchTableEnv);
 		}
 		return batchTableEnv;
 	}
@@ -197,16 +189,9 @@ public class MLEnvironment {
 	 */
 	public StreamTableEnvironment getStreamTableEnvironment() {
 		if (null == streamTableEnv) {
-			streamTableEnv = StreamTableEnvironment
-				.create(
-					getStreamExecutionEnvironment(),
-					EnvironmentSettings
-						.newInstance()
-						.useOldPlanner()
-						.build()
-				);
-			BuildInAggRegister.registerUdf(this.streamTableEnv);
-			BuildInAggRegister.registerUdaf(this.streamTableEnv);
+			streamTableEnv = StreamTableEnvironment.create(getStreamExecutionEnvironment());
+			BuildInAggRegister.registerUdf(streamTableEnv);
+			BuildInAggRegister.registerUdaf(streamTableEnv);
 		}
 		return streamTableEnv;
 	}

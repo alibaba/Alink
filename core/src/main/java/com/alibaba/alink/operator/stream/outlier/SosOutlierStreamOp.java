@@ -4,7 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.outlier.BaseOutlierStreamOp;
 import com.alibaba.alink.operator.common.outlier.SosDetector;
-import com.alibaba.alink.operator.common.outlier.SosDetectorParams;
+import com.alibaba.alink.params.outlier.SosDetectorParams;
 
 public class SosOutlierStreamOp extends BaseOutlierStreamOp <SosOutlierStreamOp>
 	implements SosDetectorParams <SosOutlierStreamOp> {

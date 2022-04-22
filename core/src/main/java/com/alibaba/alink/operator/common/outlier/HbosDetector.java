@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.params.outlier.HbosDetectorParams;
 
 import java.util.Arrays;
 import java.util.HashMap;

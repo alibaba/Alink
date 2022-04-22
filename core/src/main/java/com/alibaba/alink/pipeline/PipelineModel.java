@@ -18,6 +18,7 @@ import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import com.alibaba.alink.operator.common.linear.LinearModelMapper;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -457,6 +458,14 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 
 	static class PipelinePredictStreamOp extends ModelMapStreamOp <PipelinePredictStreamOp>
 		implements MapperParams <PipelinePredictStreamOp> {
+
+		PipelinePredictStreamOp() {
+			super(LinearModelMapper::new, new Params());
+		}
+
+		PipelinePredictStreamOp(Params params) {
+			super(LinearModelMapper::new, params);
+		}
 
 		PipelinePredictStreamOp(BatchOperator <?> model) {
 			this(model, new Params());

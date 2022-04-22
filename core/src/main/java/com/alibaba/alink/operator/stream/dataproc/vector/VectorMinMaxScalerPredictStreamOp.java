@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.dataproc.vector.VectorMaxAbsScalerModelMapper;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerPredictParams;
@@ -18,6 +19,14 @@ public class VectorMinMaxScalerPredictStreamOp extends ModelMapStreamOp <VectorM
 	implements VectorMinMaxScalerPredictParams <VectorMinMaxScalerPredictStreamOp> {
 
 	private static final long serialVersionUID = -4616069594976834612L;
+
+	public VectorMinMaxScalerPredictStreamOp() {
+		super(VectorMinMaxScalerModelMapper::new, new Params());
+	}
+
+	public VectorMinMaxScalerPredictStreamOp(Params params) {
+		super(VectorMinMaxScalerModelMapper::new, params);
+	}
 
 	public VectorMinMaxScalerPredictStreamOp(BatchOperator srt) {
 		this(srt, new Params());

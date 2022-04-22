@@ -18,6 +18,14 @@ public class IsotonicRegPredictStreamOp extends ModelMapStreamOp <IsotonicRegPre
 	implements IsotonicRegPredictParams <IsotonicRegPredictStreamOp> {
 	private static final long serialVersionUID = -6758622543294398134L;
 
+	public IsotonicRegPredictStreamOp() {
+		super(IsotonicRegressionModelMapper::new, new Params());
+	}
+
+	public IsotonicRegPredictStreamOp(Params params) {
+		super(IsotonicRegressionModelMapper::new, params);
+	}
+
 	public IsotonicRegPredictStreamOp(BatchOperator model) {
 		this(model, new Params());
 	}

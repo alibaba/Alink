@@ -17,6 +17,14 @@ public class TreeModelEncoderStreamOp extends ModelMapStreamOp <TreeModelEncoder
 	implements TreeModelEncoderParams <TreeModelEncoderStreamOp> {
 	private static final long serialVersionUID = -6491544498862384079L;
 
+	public TreeModelEncoderStreamOp() {
+		super(TreeModelEncoderModelMapper::new, new Params());
+	}
+
+	public TreeModelEncoderStreamOp(Params params) {
+		super(TreeModelEncoderModelMapper::new, params);
+	}
+
 	public TreeModelEncoderStreamOp(BatchOperator model) {
 		this(model, null);
 	}

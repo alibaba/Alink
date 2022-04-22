@@ -6,6 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.nlp.DocCountVectorizerModelMapper;
 import com.alibaba.alink.operator.common.nlp.DocHashCountVectorizerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.nlp.DocHashCountVectorizerPredictParams;
@@ -19,6 +20,14 @@ import com.alibaba.alink.params.nlp.DocHashCountVectorizerPredictParams;
 public class DocHashCountVectorizerPredictStreamOp extends ModelMapStreamOp <DocHashCountVectorizerPredictStreamOp>
 	implements DocHashCountVectorizerPredictParams <DocHashCountVectorizerPredictStreamOp> {
 	private static final long serialVersionUID = 2575430297675390769L;
+
+	public DocHashCountVectorizerPredictStreamOp() {
+		super(DocHashCountVectorizerModelMapper::new, new Params());
+	}
+
+	public DocHashCountVectorizerPredictStreamOp(Params params) {
+		super(DocHashCountVectorizerModelMapper::new, params);
+	}
 
 	public DocHashCountVectorizerPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

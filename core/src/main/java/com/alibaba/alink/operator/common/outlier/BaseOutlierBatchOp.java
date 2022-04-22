@@ -27,9 +27,14 @@ import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.FlattenMTableMapper;
 import com.alibaba.alink.params.dataproc.FlattenMTableParams;
+import com.alibaba.alink.params.outlier.HasDetectLast;
+import com.alibaba.alink.params.outlier.HasInputMTableCol;
 import com.alibaba.alink.params.outlier.HasMaxOutlierNumPerGroup;
 import com.alibaba.alink.params.outlier.HasMaxOutlierRatio;
 import com.alibaba.alink.params.outlier.HasMaxSampleNumPerGroup;
+import com.alibaba.alink.params.outlier.HasOutputMTableCol;
+import com.alibaba.alink.params.outlier.OutlierDetectorParams;
+import com.alibaba.alink.params.outlier.OutlierParams;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang3.ArrayUtils;
 

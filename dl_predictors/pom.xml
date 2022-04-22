@@ -18,6 +18,7 @@
     <modules>
         <module>predictor-tf</module>
         <module>predictor-torch</module>
+        <module>predictor-onnx</module>
     </modules>
 
 </project>

@@ -7,6 +7,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.SelectedColsWithSecondInputSpec;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.LookupModelMapper;
+import com.alibaba.alink.operator.common.linear.LinearModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.dataproc.LookupParams;
 
@@ -19,6 +20,14 @@ import com.alibaba.alink.params.dataproc.LookupParams;
 @NameCn("表查找")
 public class LookupStreamOp extends ModelMapStreamOp <LookupStreamOp>
 	implements LookupParams<LookupStreamOp> {
+
+	public LookupStreamOp() {
+		super(LookupModelMapper::new, new Params());
+	}
+
+	public LookupStreamOp(Params params) {
+		super(LookupModelMapper::new, params);
+	}
 
 	public LookupStreamOp(BatchOperator model) {
 		this(model, new Params());

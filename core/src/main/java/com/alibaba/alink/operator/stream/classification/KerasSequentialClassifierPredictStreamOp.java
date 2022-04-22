@@ -12,6 +12,14 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 public class KerasSequentialClassifierPredictStreamOp
 	extends TFTableModelClassifierPredictStreamOp <KerasSequentialClassifierPredictStreamOp> {
 
+	public KerasSequentialClassifierPredictStreamOp() {
+		super();
+	}
+
+	public KerasSequentialClassifierPredictStreamOp(Params params) {
+		super(params);
+	}
+
 	public KerasSequentialClassifierPredictStreamOp(BatchOperator <?> model) {
 		this(model, new Params());
 	}

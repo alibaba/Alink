@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.params.outlier.BoxPlotDetectorParams;
 import com.alibaba.alink.params.outlier.HasDirection.Direction;
 
 import java.util.ArrayList;
@@ -82,9 +83,9 @@ public class BoxPlotDetector extends OutlierDetector {
 					break;
 			}
 			if (isPredDetail) {
-				results[i] = Tuple3.of(outlier_score > K, outlier_score, null);
+				results[i - iStart] = Tuple3.of(outlier_score > K, outlier_score, null);
 			} else {
-				results[i] = Tuple3.of(outlier_score > K, null, null);
+				results[i - iStart] = Tuple3.of(outlier_score > K, null, null);
 			}
 		}
 		return results;

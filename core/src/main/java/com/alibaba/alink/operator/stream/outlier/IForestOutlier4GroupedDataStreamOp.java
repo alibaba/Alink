@@ -4,7 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.outlier.BaseOutlier4GroupedDataStreamOp;
 import com.alibaba.alink.operator.common.outlier.IForestDetector;
-import com.alibaba.alink.operator.common.outlier.IForestDetectorParams;
+import com.alibaba.alink.params.outlier.IForestDetectorParams;
 
 public class IForestOutlier4GroupedDataStreamOp extends BaseOutlier4GroupedDataStreamOp <IForestOutlier4GroupedDataStreamOp>
 	implements IForestDetectorParams <IForestOutlier4GroupedDataStreamOp> {

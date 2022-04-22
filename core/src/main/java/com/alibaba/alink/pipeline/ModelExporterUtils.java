@@ -31,10 +31,13 @@ import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.ModelStreamScanParams;
+import com.alibaba.alink.params.io.ModelFileSinkParams;
+import com.alibaba.alink.params.shared.HasOverwriteSink;
 import com.alibaba.alink.pipeline.recommendation.BaseRecommender;
 import com.alibaba.alink.pipeline.recommendation.RecommenderUtil;
 import org.apache.commons.lang3.ArrayUtils;
@@ -52,8 +55,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static com.alibaba.alink.common.mapper.PipelineModelMapper.getExtendModelSchema;
 
 /**
  * A utility class for exporting {@link PipelineModel}.
@@ -232,6 +233,25 @@ public class ModelExporterUtils {
 				"Error pipeline stage. Could not get column types from pipeline model."
 			);
 		} else if (stage instanceof ModelBase) {
+			ModelBase<?> model = (ModelBase <?>) stage;
+
+			Params params = model.getParams();
+
+			if (params.get(ModelFileSinkParams.MODEL_FILE_PATH) != null) {
+				FilePath modelFilePath = FilePath.deserialize(params.get(ModelFileSinkParams.MODEL_FILE_PATH));
+
+				model
+					.getModelData()
+					.link(
+						new AkSinkBatchOp()
+							.setFilePath(modelFilePath)
+							.setMLEnvironmentId(model.getModelData().getMLEnvironmentId())
+							.setOverwriteSink(params.get(HasOverwriteSink.OVERWRITE_SINK))
+					);
+
+				return null;
+			}
+
 			return ((ModelBase <?>) stage).getModelData().getColTypes();
 		} else if (stage instanceof Pipeline) {
 			throw new IllegalArgumentException(
@@ -413,11 +433,13 @@ public class ModelExporterUtils {
 				&& stageNode.children == null
 				&& stageNode.stage instanceof ModelBase <?>) {
 
+				ModelBase <?> model = ((ModelBase <?>) stageNode.stage);
+
 				final long localId = id[0];
 				final int[] localSchemaIndices = stageNode.schemaIndices;
 
 				DataSet <Row> modelData =
-					((ModelBase <?>) stageNode.stage)
+					model
 						.getModelData()
 						.getDataSet()
 						.map(new MapFunction <Row, Row>() {

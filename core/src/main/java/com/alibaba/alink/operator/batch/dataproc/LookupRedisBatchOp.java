@@ -9,7 +9,7 @@ import com.alibaba.alink.operator.common.dataproc.LookupRedisMapper;
 import com.alibaba.alink.params.dataproc.LookupRedisParams;
 
 /**
- * stream op for lookup from redis.
+ * batch op for lookup from redis.
  */
 @SelectedColsWithFirstInputSpec
 @NameCn("Redis 表查找")

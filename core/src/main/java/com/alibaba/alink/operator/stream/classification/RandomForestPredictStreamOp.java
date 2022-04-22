@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.classification.RandomForestPredictParams;
@@ -32,6 +33,14 @@ import com.alibaba.alink.params.classification.RandomForestPredictParams;
 public final class RandomForestPredictStreamOp extends ModelMapStreamOp <RandomForestPredictStreamOp>
 	implements RandomForestPredictParams <RandomForestPredictStreamOp> {
 	private static final long serialVersionUID = 7003225554629532400L;
+
+	public RandomForestPredictStreamOp() {
+		super(RandomForestModelMapper::new, new Params());
+	}
+
+	public RandomForestPredictStreamOp(Params params) {
+		super(RandomForestModelMapper::new, params);
+	}
 
 	public RandomForestPredictStreamOp(BatchOperator model) {
 		this(model, null);

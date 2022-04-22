@@ -21,6 +21,14 @@ public final class FmRegressorPredictStreamOp extends ModelMapStreamOp <FmRegres
 
 	private static final long serialVersionUID = -3923538036043466470L;
 
+	public FmRegressorPredictStreamOp() {
+		super(FmModelMapper::new, new Params());
+	}
+
+	public FmRegressorPredictStreamOp(Params params) {
+		super(FmModelMapper::new, params);
+	}
+
 	public FmRegressorPredictStreamOp(BatchOperator model) {
 		this(model, new Params());
 	}

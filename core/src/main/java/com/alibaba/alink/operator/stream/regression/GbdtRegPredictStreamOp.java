@@ -33,6 +33,14 @@ public class GbdtRegPredictStreamOp extends ModelMapStreamOp <GbdtRegPredictStre
 	implements GbdtRegPredictParams <GbdtRegPredictStreamOp> {
 	private static final long serialVersionUID = -6779607293487430112L;
 
+	public GbdtRegPredictStreamOp() {
+		super(GbdtModelMapper::new, new Params());
+	}
+
+	public GbdtRegPredictStreamOp(Params params) {
+		super(GbdtModelMapper::new, params);
+	}
+
 	public GbdtRegPredictStreamOp(BatchOperator model) {
 		this(model, null);
 	}
