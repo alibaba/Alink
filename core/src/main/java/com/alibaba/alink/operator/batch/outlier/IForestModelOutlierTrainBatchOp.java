@@ -19,11 +19,11 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
-import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
-import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -32,9 +32,9 @@ import com.alibaba.alink.operator.common.outlier.IForestDetector.IForestTrain;
 import com.alibaba.alink.operator.common.outlier.IForestDetector.Node;
 import com.alibaba.alink.operator.common.outlier.IForestModelDetector.IForestModel;
 import com.alibaba.alink.operator.common.outlier.IForestModelDetector.IForestModelDataConverter;
-import com.alibaba.alink.operator.common.outlier.IForestTrainParams;
+import com.alibaba.alink.params.outlier.IForestTrainParams;
 import com.alibaba.alink.operator.common.outlier.OutlierUtil;
-import com.alibaba.alink.operator.common.outlier.WithMultiVarParams;
+import com.alibaba.alink.params.outlier.WithMultiVarParams;
 import com.alibaba.alink.params.dataproc.HasTargetType.TargetType;
 import com.alibaba.alink.params.dataproc.NumericalTypeCastParams;
 import org.apache.commons.lang3.SerializationUtils;
@@ -52,6 +52,8 @@ import java.util.stream.Collectors;
 
 @InputPorts(values = @PortSpec(value = PortType.DATA))
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@NameCn("IForest模型异常检测训练")
+@NameEn("IForest model outlier")
 public class IForestModelOutlierTrainBatchOp
 	extends BatchOperator <IForestModelOutlierTrainBatchOp>
 	implements IForestTrainParams <IForestModelOutlierTrainBatchOp> {

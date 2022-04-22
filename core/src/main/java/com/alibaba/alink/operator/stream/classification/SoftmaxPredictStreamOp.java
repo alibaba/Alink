@@ -21,6 +21,14 @@ public final class SoftmaxPredictStreamOp extends ModelMapStreamOp <SoftmaxPredi
 
 	private static final long serialVersionUID = -5703624582223381415L;
 
+	public SoftmaxPredictStreamOp() {
+		super(SoftmaxModelMapper::new, new Params());
+	}
+
+	public SoftmaxPredictStreamOp(Params params) {
+		super(SoftmaxModelMapper::new, params);
+	}
+
 	public SoftmaxPredictStreamOp(BatchOperator model) {
 		this(model, null);
 	}

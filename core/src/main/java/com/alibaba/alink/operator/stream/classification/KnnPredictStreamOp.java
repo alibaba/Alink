@@ -15,6 +15,14 @@ import com.alibaba.alink.params.classification.KnnPredictParams;
 public final class KnnPredictStreamOp extends ModelMapStreamOp <KnnPredictStreamOp>
 	implements KnnPredictParams <KnnPredictStreamOp> {
 
+	public KnnPredictStreamOp() {
+		super(KnnMapper::new, new Params());
+	}
+
+	public KnnPredictStreamOp(Params params) {
+		super(KnnMapper::new, params);
+	}
+
 	public KnnPredictStreamOp(BatchOperator<?> model) {
 		this(model, null);
 	}

@@ -15,8 +15,6 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamCond;
 import com.alibaba.alink.common.annotation.ParamCond.CondType;
-import com.alibaba.alink.common.annotation.ParamCond.CondValue;
-import com.alibaba.alink.common.annotation.ParamCond.CondValueType;
 import com.alibaba.alink.common.annotation.ParamMutexRule;
 import com.alibaba.alink.common.annotation.ParamMutexRule.ActionType;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
@@ -49,21 +47,27 @@ import java.util.Map;
 	name = "vectorCol", type = ActionType.DISABLE,
 	cond = @ParamCond(
 		name = "selectedCol",
-		type = CondType.WHEN_VALUES_NOT_IN,
-		values = {@CondValue(type = CondValueType.NULL), @CondValue("")}
+		type = CondType.WHEN_NOT_NULL
 	)
 )
 @ParamMutexRule(
 	name = "selectedCol", type = ActionType.DISABLE,
 	cond = @ParamCond(
 		name = "vectorCol",
-		type = CondType.WHEN_VALUES_NOT_IN,
-		values = {@CondValue(type = CondValueType.NULL), @CondValue("")}
+		type = CondType.WHEN_NOT_NULL
 	)
 )
 @NameCn("LSTNet训练")
 public class LSTNetTrainBatchOp extends BatchOperator <LSTNetTrainBatchOp>
 	implements LSTNetTrainParams <LSTNetTrainBatchOp> {
+
+	public LSTNetTrainBatchOp() {
+		this(new Params());
+	}
+
+	public LSTNetTrainBatchOp(Params params) {
+		super(params);
+	}
 
 	@Override
 	public LSTNetTrainBatchOp linkFrom(BatchOperator <?>... inputs) {

@@ -6,6 +6,7 @@ import org.apache.flink.table.api.TableSchema;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.params.outlier.Outlier4GroupedDataParams;
 
 import java.util.function.BiFunction;
 

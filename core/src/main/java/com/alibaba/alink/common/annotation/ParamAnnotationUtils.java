@@ -29,12 +29,14 @@ public class ParamAnnotationUtils {
 	}
 
 	public static List <ParamSelectColumnSpec> getParamSelectColumnSpecs(Class <?> clz) {
-		List <ParamSelectColumnSpec> specs = new ArrayList <>();
+		List <ParamSelectColumnSpec> validSpecs = new ArrayList <>();
 		List <Class <?>> interfaces = getAllInterfaces(clz);
 		Queue <Annotation> q = new LinkedBlockingDeque <>();
 		for (Class <?> anInterface : interfaces) {
 			q.addAll(Arrays.asList(anInterface.getAnnotations()));
 		}
+		// If a same parameters was specified more than once, only use the first encountered one
+		Set <String> names = new HashSet <>();
 		while (!q.isEmpty()) {
 			Annotation annotation = q.poll();
 			Class <? extends Annotation> annotationType = annotation.annotationType();
@@ -42,15 +44,25 @@ public class ParamAnnotationUtils {
 				continue;
 			}
 			if (annotationType.equals(ParamSelectColumnSpec.class)) {
-				specs.add((ParamSelectColumnSpec) annotation);
+				ParamSelectColumnSpec spec = (ParamSelectColumnSpec) annotation;
+				if (!names.contains(spec.name())) {
+					validSpecs.add(spec);
+					names.add(spec.name());
+				}
 			}
 			if (annotationType.equals(ParamSelectColumnSpecs.class)) {
-				specs.addAll(Arrays.asList(((ParamSelectColumnSpecs) annotation).value()));
+				ParamSelectColumnSpecs specs = (ParamSelectColumnSpecs) annotation;
+				for (ParamSelectColumnSpec spec : specs.value()) {
+					if (!names.contains(spec.name())) {
+						validSpecs.add(spec);
+						names.add(spec.name());
+					}
+				}
 			} else {
 				q.addAll(Arrays.asList(annotationType.getAnnotations()));
 			}
 		}
-		return specs;
+		return validSpecs;
 	}
 
 	public static List <ParamMutexRule> getParamMutexRules(Class <?> clz) {

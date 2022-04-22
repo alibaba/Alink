@@ -13,7 +13,7 @@ import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.kafka.plugin.KafkaClassLoaderFactory;
-import com.alibaba.alink.common.io.kafka.plugin.RichParallelSourceFunctionWithClassLoader;
+import com.alibaba.alink.common.io.plugin.wrapper.RichParallelSourceFunctionWithClassLoader;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.params.io.KafkaSourceParams;
 

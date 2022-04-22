@@ -5,7 +5,6 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
@@ -73,10 +72,9 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 				LabelPredictionWindow predMultiWindowFunction = new LabelPredictionWindow(binary, positiveValue,
 					labelType);
-				statistics = in
-					.select(new String[] {labelColName, predResultColName})
+				statistics = in.select(new String[] {labelColName, predResultColName})
 					.getDataStream()
-					.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+					.timeWindowAll(TimeUtil.convertTime(timeInterval))
 					.apply(predMultiWindowFunction);
 				break;
 			}
@@ -88,7 +86,7 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 				statistics = in.select(new String[] {labelColName, predDetailColName})
 					.getDataStream()
-					.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+					.timeWindowAll(TimeUtil.convertTime(timeInterval))
 					.apply(eval);
 				break;
 			}

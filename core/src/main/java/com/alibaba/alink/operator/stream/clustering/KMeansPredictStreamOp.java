@@ -17,6 +17,14 @@ public final class KMeansPredictStreamOp extends ModelMapStreamOp <KMeansPredict
 
 	private static final long serialVersionUID = -7696194188126101276L;
 
+	public KMeansPredictStreamOp() {
+		super(KMeansModelMapper::new, new Params());
+	}
+
+	public KMeansPredictStreamOp(Params params) {
+		super(KMeansModelMapper::new, params);
+	}
+
 	/**
 	 * default constructor
 	 *

@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.classification.NaiveBayesModelMapper;
+import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.classification.NaiveBayesPredictParams;
 
@@ -16,6 +17,14 @@ public class NaiveBayesPredictStreamOp extends ModelMapStreamOp <NaiveBayesPredi
 	implements NaiveBayesPredictParams <NaiveBayesPredictStreamOp> {
 
 	private static final long serialVersionUID = 4270879350303750921L;
+
+	public NaiveBayesPredictStreamOp() {
+		super(NaiveBayesModelMapper::new, new Params());
+	}
+
+	public NaiveBayesPredictStreamOp(Params params) {
+		super(NaiveBayesModelMapper::new, params);
+	}
 
 	public NaiveBayesPredictStreamOp(BatchOperator model) {
 		this(model, new Params());

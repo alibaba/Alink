@@ -6,7 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.common.outlier.BaseOutlierBatchOp;
 import com.alibaba.alink.operator.common.outlier.LofDetector;
-import com.alibaba.alink.operator.common.outlier.LofDetectorParams;
+import com.alibaba.alink.params.outlier.LofDetectorParams;
 
 @NameCn("局部异常因子异常检测")
 @NameEn("LOF (Local Outlier Factor) Outlier Detection")

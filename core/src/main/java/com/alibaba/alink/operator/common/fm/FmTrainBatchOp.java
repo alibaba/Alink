@@ -11,6 +11,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.operator.common.optim.FmOptimizer;
@@ -19,6 +20,7 @@ import com.alibaba.alink.params.recommendation.FmTrainParams;
 /**
  * FM model training.
  */
+@Internal
 public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatchOp<T> {
 
     private static final long serialVersionUID = -3985394692845121356L;

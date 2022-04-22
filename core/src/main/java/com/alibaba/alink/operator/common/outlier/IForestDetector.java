@@ -11,6 +11,7 @@ import com.alibaba.alink.operator.common.dataproc.NumericalTypeCastMapper;
 import com.alibaba.alink.operator.common.outlier.IForestModelDetector.IForestModel;
 import com.alibaba.alink.params.dataproc.HasTargetType.TargetType;
 import com.alibaba.alink.params.dataproc.NumericalTypeCastParams;
+import com.alibaba.alink.params.outlier.IForestTrainParams;
 
 import java.io.Serializable;
 import java.util.ArrayList;

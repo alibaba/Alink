@@ -210,9 +210,21 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 		return srt.toSummary();
 	}
 
+	//summary for data from fromId line to endId line, include fromId and exclude endId.
+	public TableSummary subSummary(String[] selectedColNames, int fromId, int endId) {
+		TableSchema schema = getSchema();
+		TableSummarizer srt = new TableSummarizer(
+			selectedColNames.length == 0 ? schema.getFieldNames() : selectedColNames,
+			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema)), true);
+		for (int i = Math.max(fromId, 0); i < Math.min(endId, this.getNumRow()); i++) {
+			srt.visit(this.rows.get(i));
+		}
+		return srt.toSummary();
+	}
+
 	private static String[] getCalcCols(TableSchema tableSchema) {
 		ArrayList <String> calcCols = new ArrayList <>();
-			String[] inColNames = tableSchema.getFieldNames();
+		String[] inColNames = tableSchema.getFieldNames();
 		TypeInformation <?>[] inColTypes = tableSchema.getFieldTypes();
 
 		for (int i = 0; i < inColNames.length; i++) {

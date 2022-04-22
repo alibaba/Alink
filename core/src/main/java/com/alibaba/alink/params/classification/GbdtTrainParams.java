@@ -8,7 +8,6 @@ import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.ParamCond;
 import com.alibaba.alink.common.annotation.ParamCond.CondType;
-import com.alibaba.alink.common.annotation.ParamCond.CondValue;
 import com.alibaba.alink.common.annotation.ParamMutexRule;
 import com.alibaba.alink.common.annotation.ParamMutexRule.ActionType;
 import com.alibaba.alink.params.ParamUtil;
@@ -31,8 +30,8 @@ import com.alibaba.alink.params.shared.tree.TreeTrainParams;
 	type = ActionType.HIDE,
 	cond = @ParamCond(
 		name = "criteria",
-		type = CondType.WHEN_VALUES_NOT_IN,
-		values = {@CondValue("XGBOOST")}
+		type = CondType.WHEN_NOT_IN_VALUES,
+		values = "XGBOOST"
 	)
 )
 @ParamMutexRule(
@@ -40,8 +39,8 @@ import com.alibaba.alink.params.shared.tree.TreeTrainParams;
 	type = ActionType.HIDE,
 	cond = @ParamCond(
 		name = "criteria",
-		type = CondType.WHEN_VALUES_NOT_IN,
-		values = {@CondValue("XGBOOST")}
+		type = CondType.WHEN_NOT_IN_VALUES,
+		values = "XGBOOST"
 	)
 )
 public interface GbdtTrainParams<T> extends

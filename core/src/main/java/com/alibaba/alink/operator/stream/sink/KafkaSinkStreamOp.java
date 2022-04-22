@@ -7,7 +7,7 @@ import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.kafka.plugin.KafkaClassLoaderFactory;
-import com.alibaba.alink.common.io.kafka.plugin.RichSinkFunctionWithClassLoader;
+import com.alibaba.alink.common.io.plugin.wrapper.RichSinkFunctionWithClassLoader;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.KafkaSinkParams;
 

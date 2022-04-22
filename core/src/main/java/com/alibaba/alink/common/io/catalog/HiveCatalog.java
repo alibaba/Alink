@@ -24,8 +24,7 @@ import org.apache.flink.table.catalog.CatalogTable;
 import org.apache.flink.table.catalog.CatalogTableImpl;
 import org.apache.flink.table.catalog.ObjectIdentifier;
 import org.apache.flink.table.catalog.ObjectPath;
-import org.apache.flink.table.catalog.ResolvedCatalogTable;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.catalog.config.CatalogConfig;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotEmptyException;
@@ -46,9 +45,8 @@ import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.binary.BinaryStringData;
 import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.CatalogFactory;
-import org.apache.flink.table.factories.DynamicTableFactory;
-import org.apache.flink.table.factories.FactoryUtil;
-import org.apache.flink.table.factories.FactoryUtil.DefaultCatalogContext;
+import org.apache.flink.table.factories.TableSinkFactory;
+import org.apache.flink.table.factories.TableSinkFactoryContextImpl;
 import org.apache.flink.table.factories.TableSourceFactory.Context;
 import org.apache.flink.table.factories.TableSourceFactoryContextImpl;
 import org.apache.flink.table.types.DataType;
@@ -60,8 +58,8 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.annotations.CatalogAnnotation;
 import com.alibaba.alink.common.io.catalog.HiveBaseUtils.HiveConfFolderStructure;
 import com.alibaba.alink.common.io.catalog.plugin.HiveClassLoaderFactory;
-import com.alibaba.alink.common.io.catalog.plugin.RichInputFormatWithClassLoader;
-import com.alibaba.alink.common.io.catalog.plugin.RichOutputFormatWithClassLoader;
+import com.alibaba.alink.common.io.plugin.wrapper.RichInputFormatWithClassLoader;
+import com.alibaba.alink.common.io.plugin.wrapper.RichOutputFormatWithClassLoader;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
@@ -76,6 +74,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -631,9 +631,7 @@ public class HiveCatalog extends BaseCatalog {
 				if (baseRow.isNullAt(i)) {
 					row.setField(i, null);
 				} else {
-					Object o = RowData
-						.createFieldGetter(dataTypes[i].getLogicalType(), i)
-						.getFieldOrNull(baseRow);
+					Object o = RowData.get(baseRow, i, dataTypes[i].getLogicalType());
 
 					if (o instanceof BinaryStringData) {
 						o = o.toString();
@@ -677,7 +675,7 @@ public class HiveCatalog extends BaseCatalog {
 		}
 
 		Map <String, String> properties = new HashMap <>();
-		properties.put(FactoryUtil.CONNECTOR.key(), "hive");
+		properties.put(CatalogConfig.IS_GENERIC, "false");
 
 		return new CatalogTableImpl(schema, Arrays.asList(partitionCols), properties, objectPath.getFullName());
 	}
@@ -700,6 +698,17 @@ public class HiveCatalog extends BaseCatalog {
 
 		CatalogFactory factory = createCatalogFactory(classLoader);
 
+		List <String> supportedKeys = factory.supportedProperties();
+
+		if (!supportedKeys.contains(CATALOG_HIVE_VERSION)
+			|| !supportedKeys.contains(CATALOG_HIVE_CONF_DIR)
+			|| !supportedKeys.contains(CATALOG_DEFAULT_DATABASE)) {
+
+			throw new IllegalStateException(
+				"Incorrect hive dependency. Please check the configure of hive environment."
+			);
+		}
+
 		String localHiveConfDir;
 
 		try {
@@ -719,9 +728,9 @@ public class HiveCatalog extends BaseCatalog {
 			properties.put(CATALOG_DEFAULT_DATABASE, params.get(HiveCatalogParams.DEFAULT_DATABASE));
 		}
 
-		CatalogFactory.Context context = new DefaultCatalogContext(catalogName, properties, null, null);
+		properties.putAll(factory.requiredContext());
 
-		return factory.createCatalog(context);
+		return factory.createCatalog(catalogName, properties);
 	}
 
 	public static List <Map <String, String>> getSelectedPartitions(String[] partitionSpecs) {
@@ -749,8 +758,7 @@ public class HiveCatalog extends BaseCatalog {
 				objectPath.getObjectName()
 			),
 			getCatalogTable(objectPath, catalog, factory),
-			config,
-			false
+			config
 		);
 
 		return factory.doAsThrowRuntime(() -> {
@@ -779,56 +787,17 @@ public class HiveCatalog extends BaseCatalog {
 
 	private RichOutputFormatWithClassLoader createOutput(
 		ObjectPath objectPath, final Params params, Catalog catalog,
-		final ReadableConfig config, HiveClassLoaderFactory factory, boolean isStream) {
+		ReadableConfig config, HiveClassLoaderFactory factory, boolean isStream) {
 
-		final ObjectIdentifier identifier = ObjectIdentifier.of(
-			"default",
-			objectPath.getDatabaseName(),
-			objectPath.getObjectName()
+		TableSinkFactory.Context context = new TableSinkFactoryContextImpl(
+			ObjectIdentifier.of(
+				"default",
+				objectPath.getDatabaseName(),
+				objectPath.getObjectName()
+			),
+			getCatalogTable(objectPath, catalog, factory),
+			config, !isStream
 		);
-
-		final CatalogTable table = getCatalogTable(objectPath, catalog, factory);
-
-		final ClassLoader classLoader = factory.create();
-
-		final DynamicTableFactory.Context context = new DynamicTableFactory.Context() {
-			@Override
-			public ObjectIdentifier getObjectIdentifier() {
-				return identifier;
-			}
-
-			@Override
-			public ResolvedCatalogTable getCatalogTable() {
-				if (table instanceof ResolvedCatalogTable) {
-					return (ResolvedCatalogTable) table;
-				}
-
-				if (table.getSchema() != null) {
-					TableSchema schema = table.getSchema();
-
-					return new ResolvedCatalogTable(table,
-						ResolvedSchema.physical(schema.getFieldNames(), schema.getFieldDataTypes())
-					);
-				}
-
-				throw new IllegalArgumentException("Catalog table must be the ResolvedCatalogTable");
-			}
-
-			@Override
-			public ReadableConfig getConfiguration() {
-				return config;
-			}
-
-			@Override
-			public ClassLoader getClassLoader() {
-				return classLoader;
-			}
-
-			@Override
-			public boolean isTemporary() {
-				return false;
-			}
-		};
 
 		return factory.doAsThrowRuntime(() -> {
 
@@ -844,7 +813,7 @@ public class HiveCatalog extends BaseCatalog {
 				true, Thread.currentThread().getContextClassLoader()
 			);
 
-			Method method = inputOutputFormat.getMethod("createOutputFormat", Catalog.class, DynamicTableFactory.Context.class, Map.class);
+			Method method = inputOutputFormat.getMethod("createOutputFormat", Catalog.class, TableSinkFactory.Context.class, Map.class);
 
 			OutputFormat<Row> internalRet =
 				(OutputFormat <Row>) method.invoke(null, catalog, context, partitions);

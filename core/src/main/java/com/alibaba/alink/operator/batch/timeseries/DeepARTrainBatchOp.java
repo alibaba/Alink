@@ -25,8 +25,6 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamCond;
 import com.alibaba.alink.common.annotation.ParamCond.CondType;
-import com.alibaba.alink.common.annotation.ParamCond.CondValue;
-import com.alibaba.alink.common.annotation.ParamCond.CondValueType;
 import com.alibaba.alink.common.annotation.ParamMutexRule;
 import com.alibaba.alink.common.annotation.ParamMutexRule.ActionType;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
@@ -72,21 +70,27 @@ import java.util.Map;
 	name = "vectorCol", type = ActionType.DISABLE,
 	cond = @ParamCond(
 		name = "selectedCol",
-		type = CondType.WHEN_VALUES_NOT_IN,
-		values = {@CondValue(type = CondValueType.NULL), @CondValue("")}
+		type = CondType.WHEN_NOT_NULL
 	)
 )
 @ParamMutexRule(
 	name = "selectedCol", type = ActionType.DISABLE,
 	cond = @ParamCond(
 		name = "vectorCol",
-		type = CondType.WHEN_VALUES_NOT_IN,
-		values = {@CondValue(type = CondValueType.NULL), @CondValue("")}
+		type = CondType.WHEN_NOT_NULL
 	)
 )
 @NameCn("DeepAR训练")
 public class DeepARTrainBatchOp extends BatchOperator <DeepARTrainBatchOp>
 	implements DeepARTrainParams <DeepARTrainBatchOp> {
+
+	public DeepARTrainBatchOp() {
+		this(new Params());
+	}
+
+	public DeepARTrainBatchOp(Params params) {
+		super(params);
+	}
 
 	@Override
 	public DeepARTrainBatchOp linkFrom(BatchOperator <?>... inputs) {

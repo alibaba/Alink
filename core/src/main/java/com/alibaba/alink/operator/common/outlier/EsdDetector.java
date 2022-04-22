@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.probabilistic.CDF;
 import com.alibaba.alink.common.probabilistic.IDF;
+import com.alibaba.alink.params.outlier.EsdDetectorParams;
 import com.alibaba.alink.params.outlier.HasDirection.Direction;
 
 import java.util.HashMap;

@@ -4,7 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.common.outlier.BaseOutlierStreamOp;
 import com.alibaba.alink.operator.common.outlier.HbosDetector;
-import com.alibaba.alink.operator.common.outlier.HbosDetectorParams;
+import com.alibaba.alink.params.outlier.HbosDetectorParams;
 
 public class HbosOutlierStreamOp extends BaseOutlierStreamOp <HbosOutlierStreamOp>
 	implements HbosDetectorParams <HbosOutlierStreamOp> {
