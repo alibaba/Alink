@@ -1,5 +1,9 @@
 package com.alibaba.alink;
 
+import com.alibaba.alink.operator.batch.source.*;
+import com.alibaba.alink.operator.stream.sink.Export2FileSinkStreamOp;
+import com.alibaba.alink.operator.stream.source.ParquetSourceStreamOp;
+import com.alibaba.alink.operator.stream.source.TsvSourceStreamOp;
 import org.apache.flink.core.fs.FileStatus;
 import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
@@ -14,11 +18,6 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorNormalizeBatchOp;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.sink.CsvSinkBatchOp;
-import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
-import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
-import com.alibaba.alink.operator.batch.source.LibSvmSourceBatchOp;
-import com.alibaba.alink.operator.batch.source.TextSourceBatchOp;
-import com.alibaba.alink.operator.batch.source.TsvSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.sink.AkSinkStreamOp;
 import com.alibaba.alink.operator.stream.sink.CsvSinkStreamOp;
@@ -26,6 +25,7 @@ import com.alibaba.alink.operator.stream.source.AkSourceStreamOp;
 import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.flink.table.functions.ScalarFunction;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,6 +105,11 @@ public class Chap03 {
 
 		c_2_3_1();
 
+		c_2_4();
+
+		c_2_5_1();
+
+		c_2_5_2();
 	}
 
 	static void c_1_1() throws Exception {
@@ -436,4 +441,90 @@ public class Chap03 {
 			StreamOperator.execute();
 		}
 	}
+
+	static void c_2_4() throws Exception {
+
+		new ParquetSourceBatchOp()
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.parquet")
+			.lazyPrintStatistics()
+			.print();
+
+		new ParquetSourceStreamOp()
+			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.parquet")
+			.print();
+		StreamOperator.execute();
+
+	}
+
+	static void c_2_5_1() throws Exception {
+
+		StreamOperator <?> source = new TsvSourceStreamOp()
+			.setFilePath("http://files.grouplens.org/datasets/movielens/ml-100k/u.data")
+			.setSchemaStr("user_id long, item_id long, rating float, ts long")
+			.udf("ts", "ts", new FromUnixTimestamp());
+
+		source.link(
+			new Export2FileSinkStreamOp()
+				.setFilePath(LOCAL_DIR + "with_local_time")
+				.setWindowTime(5)
+				.setOverwriteSink(true)
+		);
+
+		source.link(
+			new AkSinkStreamOp()
+				.setFilePath(LOCAL_DIR + "ratings.ak")
+				.setOverwriteSink(true)
+		);
+
+		StreamOperator.execute();
+
+		new AkSourceBatchOp()
+			.setFilePath(LOCAL_DIR + "with_local_time")
+			.lazyPrintStatistics("Statistics for data in the folder 'with_local_time' : ");
+		BatchOperator.execute();
+
+	}
+
+	static void c_2_5_2() throws Exception {
+
+		new AkSourceBatchOp()
+			.setFilePath(LOCAL_DIR + "ratings.ak")
+			.orderBy("ts", 1000000)
+			.lazyPrintStatistics("Statistics for data in the file 'ratings.ak' : ")
+			.link(
+				new AkSinkBatchOp()
+					.setFilePath(LOCAL_DIR + "ratings_ordered.ak")
+					.setOverwriteSink(true)
+			);
+		BatchOperator.execute();
+
+		new AkSourceStreamOp()
+			.setFilePath(LOCAL_DIR + "ratings_ordered.ak")
+			.link(
+				new Export2FileSinkStreamOp()
+					.setFilePath(LOCAL_DIR + "with_ts_time")
+					.setTimeCol("ts")
+					.setWindowTime(3600 * 24)
+					.setOverwriteSink(true)
+			);
+		StreamOperator.execute();
+
+		new AkSourceBatchOp()
+			.setFilePath(LOCAL_DIR + "with_ts_time")
+			.lazyPrintStatistics("Statistics for data in the folder 'with_ts_time' : ");
+
+		new AkSourceBatchOp()
+			.setFilePath(LOCAL_DIR + "with_ts_time" + File.separator + "199709210000000")
+			.print();
+
+	}
+
+	public static class FromUnixTimestamp extends ScalarFunction {
+
+		public java.sql.Timestamp eval(Long ts) {
+			return new java.sql.Timestamp(ts * 1000);
+		}
+
+	}
+
 }
