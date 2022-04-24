@@ -22,7 +22,8 @@
 - 源代码地址：https://github.com/alibaba/Alink/tree/master/tutorial
 - Java版的数据和资料链接：https://www.yuque.com/pinshu/alink_tutorial/book_java_reference
 - Python版的数据和资料链接：https://www.yuque.com/pinshu/alink_tutorial/book_python_reference
-- 下载部分示例数据的Java代码：https://www.yuque.com/pinshu/alink_tutorial/book_java_download_some_data
+- Alink教程(Java版)代码的运行攻略：https://www.yuque.com/pinshu/alink_tutorial/book_java_code_help
+- Alink教程(Python版)代码的运行攻略：https://www.yuque.com/pinshu/alink_tutorial/book_python_code_help
 
 #### 开源算法列表
 
