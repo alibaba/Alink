@@ -10,6 +10,7 @@ import com.alibaba.alink.operator.batch.dataproc.VectorToTensorBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorFunctionBatchOp;
 import com.alibaba.alink.operator.batch.evaluation.EvalMultiClassBatchOp;
 import com.alibaba.alink.operator.batch.evaluation.EvalRegressionBatchOp;
+import com.alibaba.alink.operator.batch.onnx.OnnxModelPredictBatchOp;
 import com.alibaba.alink.operator.batch.pytorch.TorchModelPredictBatchOp;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.RandomTableSourceBatchOp;
@@ -19,6 +20,7 @@ import com.alibaba.alink.operator.batch.utils.UDFBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.dataproc.VectorToTensorStreamOp;
 import com.alibaba.alink.operator.stream.dataproc.vector.VectorFunctionStreamOp;
+import com.alibaba.alink.operator.stream.onnx.OnnxModelPredictStreamOp;
 import com.alibaba.alink.operator.stream.pytorch.TorchModelPredictStreamOp;
 import com.alibaba.alink.operator.stream.source.AkSourceStreamOp;
 import com.alibaba.alink.operator.stream.tensorflow.TFSavedModelPredictStreamOp;
@@ -32,6 +34,7 @@ import com.alibaba.alink.pipeline.dataproc.StandardScaler;
 import com.alibaba.alink.pipeline.dataproc.VectorToTensor;
 import com.alibaba.alink.pipeline.dataproc.vector.VectorAssembler;
 import com.alibaba.alink.pipeline.dataproc.vector.VectorFunction;
+import com.alibaba.alink.pipeline.onnx.OnnxModelPredictor;
 import com.alibaba.alink.pipeline.pytorch.TorchModelPredictor;
 import com.alibaba.alink.pipeline.regression.KerasSequentialRegressor;
 import com.alibaba.alink.pipeline.regression.LinearRegression;
@@ -46,6 +49,7 @@ public class Chap25 {
 
     static String PIPELINE_TF_MODEL = "pipeline_tf_model.ak";
     static String PIPELINE_PYTORCH_MODEL = "pipeline_pytorch_model.ak";
+    static String PIPELINE_ONNX_MODEL = "pipeline_onnx_model.ak";
 
     public static void main(String[] args) throws Exception {
 
@@ -77,6 +81,14 @@ public class Chap25 {
         c_5_5();
 
         c_6_2();
+
+        c_7_1();
+
+        c_7_2();
+
+        c_7_3();
+
+        c_7_4();
 
     }
 
@@ -599,4 +611,130 @@ public class Chap25 {
             .link(tensorFlowBatchOp)
             .print();
     }
+
+    static void c_7_1() throws Exception {
+        new AkSourceBatchOp()
+            .setFilePath(Chap13.DATA_DIR + Chap13.DENSE_TEST_FILE)
+            .link(
+                new VectorToTensorBatchOp()
+                    .setTensorDataType("float")
+                    .setTensorShape(1, 1, 28, 28)
+                    .setSelectedCol("vec")
+                    .setOutputCol("tensor")
+                    .setReservedCols("label")
+            )
+            .link(
+                new OnnxModelPredictBatchOp()
+                    .setModelPath(
+                        "https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/cnn_mnist_pytorch.onnx")
+                    .setSelectedCols("tensor")
+                    .setInputNames("0")
+                    .setOutputNames("21")
+                    .setOutputSchemaStr("probabilities FLOAT_TENSOR")
+            )
+            .link(
+                new UDFBatchOp()
+                    .setFunc(new GetMaxIndex())
+                    .setSelectedCols("probabilities")
+                    .setOutputCol("pred")
+            )
+            .lazyPrint(3)
+            .link(
+                new EvalMultiClassBatchOp()
+                    .setLabelCol("label")
+                    .setPredictionCol("pred")
+                    .lazyPrintMetrics()
+            );
+
+        BatchOperator.execute();
+    }
+
+    static void c_7_2() throws Exception {
+
+        new AkSourceStreamOp()
+            .setFilePath(Chap13.DATA_DIR + Chap13.DENSE_TEST_FILE)
+            .link(
+                new VectorToTensorStreamOp()
+                    .setTensorDataType("float")
+                    .setTensorShape(1, 1, 28, 28)
+                    .setSelectedCol("vec")
+                    .setOutputCol("tensor")
+                    .setReservedCols("label")
+            )
+            .link(
+                new OnnxModelPredictStreamOp()
+                    .setModelPath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/cnn_mnist_pytorch"
+                        + ".onnx")
+                    .setSelectedCols("tensor")
+                    .setInputNames("0")
+                    .setOutputNames("21")
+                    .setOutputSchemaStr("probabilities FLOAT_TENSOR")
+            )
+            .link(
+                new UDFStreamOp()
+                    .setFunc(new GetMaxIndex())
+                    .setSelectedCols("probabilities")
+                    .setOutputCol("pred")
+            )
+            .sample(0.001)
+            .print();
+
+        StreamOperator.execute();
+    }
+
+    static void c_7_3() throws Exception {
+
+        new PipelineModel(
+            new VectorToTensor()
+                .setTensorDataType("float")
+                .setTensorShape(1, 1, 28, 28)
+                .setSelectedCol("vec")
+                .setOutputCol("tensor")
+                .setReservedCols("label"),
+            new OnnxModelPredictor()
+                .setModelPath("https://alink-release.oss-cn-beijing.aliyuncs.com/data-files/cnn_mnist_pytorch.onnx")
+                .setSelectedCols("tensor")
+                .setInputNames("0")
+                .setOutputNames("21")
+                .setOutputSchemaStr("probabilities FLOAT_TENSOR")
+        ).save(Chap13.DATA_DIR + PIPELINE_ONNX_MODEL, true);
+        BatchOperator.execute();
+
+        PipelineModel
+            .load(Chap13.DATA_DIR + PIPELINE_ONNX_MODEL)
+            .transform(
+                new AkSourceStreamOp()
+                    .setFilePath(Chap13.DATA_DIR + Chap13.DENSE_TEST_FILE)
+            )
+            .link(
+                new UDFStreamOp()
+                    .setFunc(new GetMaxIndex())
+                    .setSelectedCols("probabilities")
+                    .setOutputCol("pred")
+            )
+            .sample(0.001)
+            .print();
+        StreamOperator.execute();
+    }
+
+    static void c_7_4() throws Exception {
+
+        AkSourceBatchOp source = new AkSourceBatchOp()
+            .setFilePath(Chap13.DATA_DIR + Chap13.DENSE_TEST_FILE);
+
+        System.out.println(source.getSchema());
+
+        Row row = source.firstN(1).collect().get(0);
+
+        LocalPredictor localPredictor
+            = new LocalPredictor(Chap13.DATA_DIR + PIPELINE_ONNX_MODEL, "vec string, label int");
+
+        System.out.println(localPredictor.getOutputSchema());
+
+        Row r = localPredictor.map(row);
+        System.out.println(r.getField(0).toString() + " | " + r.getField(2).toString());
+
+        localPredictor.close();
+    }
+
 }
