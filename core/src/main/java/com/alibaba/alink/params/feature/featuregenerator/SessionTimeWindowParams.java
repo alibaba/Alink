@@ -13,17 +13,22 @@ public interface SessionTimeWindowParams<T> extends
 
 	@NameCn("会话窗口间隔大小")
 	@DescCn("会话窗口间隔大小")
-	ParamInfo <Double> SESSION_GAP_TIME = ParamInfoFactory
-		.createParamInfo("sessionGapTime", Double.class)
+	ParamInfo <String> SESSION_GAP_TIME = ParamInfoFactory
+		.createParamInfo("sessionGapTime", String.class)
 		.setDescription("session gap time")
 		.setRequired()
 		.build();
 
-	default Double getSessionGapTime() {return get(SESSION_GAP_TIME);}
+	default String getSessionGapTime() {return get(SESSION_GAP_TIME);}
 
-	default T setSessionGapTime(Double value) {return set(SESSION_GAP_TIME, value);}
+	default T setSessionGapTime(Double value) {return set(SESSION_GAP_TIME, value.toString());}
 
 	default T setSessionGapTime(Integer value) {
-		return set(SESSION_GAP_TIME, (double) value);
+		return set(SESSION_GAP_TIME, value.toString());
 	}
+
+	default T setSessionGapTime(String value) {
+		return set(SESSION_GAP_TIME, value);
+	}
+
 }

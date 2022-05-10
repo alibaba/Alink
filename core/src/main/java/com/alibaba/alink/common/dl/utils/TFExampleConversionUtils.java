@@ -275,7 +275,7 @@ public class TFExampleConversionUtils {
 		for (int i = 0; i < names.length; i++) {
 			String name = names[i];
 			if (!featureMap.containsKey(name)) {
-				throw new RuntimeException("No feature named %s in the example.");
+				throw new RuntimeException(String.format("No feature named %s in the example.", name));
 			}
 			Object obj = fromFeature(featureMap.get(name), types[i]);
 			row.setField(i, obj);

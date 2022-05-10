@@ -48,7 +48,7 @@ public class MTableUtil implements Serializable {
 		if (obj instanceof MTable) {
 			return (MTable) obj;
 		} else if (obj instanceof String) {
-			return new MTable((String) obj);
+			return MTable.fromJson((String) obj);
 		} else {
 			throw new RuntimeException("Type must be string or mtable");
 		}

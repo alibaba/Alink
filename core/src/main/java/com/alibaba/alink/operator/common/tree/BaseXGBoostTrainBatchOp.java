@@ -86,6 +86,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 
 		final Params params = getParams().clone();
 		final Objective objective = params.get(XGBoostLearningTaskParams.OBJECTIVE);
+
 		final XGBoostClassLoaderFactory xgBoostClassLoaderFactory = new XGBoostClassLoaderFactory(
 			params.get(XGBoostTrainParams.PLUGIN_VERSION)
 		);

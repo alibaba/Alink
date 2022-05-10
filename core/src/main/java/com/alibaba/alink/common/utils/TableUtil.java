@@ -613,6 +613,11 @@ public class TableUtil {
 			}
 
 			sbd.append(colNames[i]);
+			if (null != colNames[i] && colNames[i].length() < 3) {
+				for (int j = colNames[i].length(); j < 3; j++) {
+					sbd.append(" ");
+				}
+			}
 
 			int t = null == colNames[i] ? 4 : Math.max(colNames[i].length(), 3);
 			for (int j = 0; j < t; j++) {

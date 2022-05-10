@@ -73,13 +73,6 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 	private final String schemaStr;
 	private final int displaySize = 5;
 
-	public MTable(String json) {
-		MTable mTable = deserialize(json);
-
-		this.rows = mTable.rows;
-		this.schemaStr = mTable.schemaStr;
-	}
-
 	public MTable(Object[] vals, String colName) {
 		rows = new ArrayList <>(vals.length);
 		for (Object val : vals) {
@@ -202,8 +195,9 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 	public TableSummary summary(String... selectedColNames) {
 		TableSchema schema = getSchema();
 		TableSummarizer srt = new TableSummarizer(
-			selectedColNames.length == 0 ? schema.getFieldNames() : selectedColNames,
-			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema)), true);
+			//selectedColNames.length == 0 ? schema.getFieldNames() : selectedColNames,
+			schema.getFieldNames(),
+			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema, selectedColNames)), true);
 		for (Row row : this.rows) {
 			srt.visit(row);
 		}
@@ -214,21 +208,23 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 	public TableSummary subSummary(String[] selectedColNames, int fromId, int endId) {
 		TableSchema schema = getSchema();
 		TableSummarizer srt = new TableSummarizer(
-			selectedColNames.length == 0 ? schema.getFieldNames() : selectedColNames,
-			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema)), true);
+			//	selectedColNames.length == 0 ? schema.getFieldNames() : selectedColNames,
+			schema.getFieldNames(),
+			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema, selectedColNames)), true);
 		for (int i = Math.max(fromId, 0); i < Math.min(endId, this.getNumRow()); i++) {
 			srt.visit(this.rows.get(i));
 		}
 		return srt.toSummary();
 	}
 
-	private static String[] getCalcCols(TableSchema tableSchema) {
+	private static String[] getCalcCols(TableSchema tableSchema, String[] selectedColNames) {
 		ArrayList <String> calcCols = new ArrayList <>();
-		String[] inColNames = tableSchema.getFieldNames();
+		String[] inColNames = selectedColNames.length == 0 ? tableSchema.getFieldNames() : selectedColNames;
+		int[] colIndices = TableUtil.findColIndices(tableSchema,inColNames);
 		TypeInformation <?>[] inColTypes = tableSchema.getFieldTypes();
 
 		for (int i = 0; i < inColNames.length; i++) {
-			if (isSupportedType(inColTypes[i])) {
+			if (isSupportedType(inColTypes[colIndices[i]])) {
 				calcCols.add(inColNames[i]);
 			}
 		}
@@ -402,7 +398,11 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 		return toDisplaySummary() + "\n" + toShortDisplayData();
 	}
 
-	private static MTable deserialize(String json) {
+	public String toJson() {
+		return JsonConverter.toJson(this);
+	}
+
+	public static MTable fromJson(String json) {
 		return JsonConverter.fromJson(json, MTable.class);
 	}
 

@@ -2,10 +2,12 @@ package com.alibaba.alink.pipeline.regression;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.tree.predictors.XGBoostModelMapper;
 import com.alibaba.alink.params.xgboost.XGBoostRegPredictParams;
 import com.alibaba.alink.pipeline.MapModel;
 
+@NameCn("XGBoost回归模型")
 public class XGBoostRegressionModel extends MapModel <XGBoostRegressionModel>
 	implements XGBoostRegPredictParams <XGBoostRegressionModel> {
 

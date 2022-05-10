@@ -490,7 +490,7 @@ public final class OnlineFmTrainStreamOp extends StreamOperator<OnlineFmTrainStr
                             TypeInformation.of(new TypeHint<double[][]>() {
                             }));
 
-            modelState = context.getOperatorStateStore().getListState(descriptor);
+            modelState = context.getOperatorStateStore().getOperatorState(descriptor);
             isRestartFromCheckPoint = context.isRestored();
             if (isRestartFromCheckPoint) {
                 for (double[][] state : modelState.get()) {
