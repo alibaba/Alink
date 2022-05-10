@@ -18,7 +18,7 @@ with io.open(os.path.join(this_directory, 'README.md'), 'r', encoding='utf-8') a
     long_description = f.read()
 
 setuptools.setup(
-    name="pyalink",
+    name="pyalink-flink-1.10",
     version=version,
     author="xuyang1706,chengscu,Fanoid,hapsunday,liulfy,lqb11,Xiafei Qiu,shaomengwang,cainingnk,weibo.zwb",
     author_email="xuyang1706@gmail.com,chengscu@qq.com,hongfanxo@gmail.com,hapsunday@gmail.com,2691140740@qq.com,liqianbing11@163.com,qiuxiafei@gmail.com,shaomeng.wang.w@gmail.com,cainingnk@gmail.com,weibo.zwb@alibaba-inc.com",

@@ -80,7 +80,7 @@ public class BaseOutlierStreamOp<T extends BaseOutlierStreamOp <T>> extends MapS
 					+ ") AS " + OutlierDetector.TEMP_MTABLE_COL
 			);
 		if (params.contains(OutlierParams.GROUP_COLS)) {
-			cur_params.set(OverCountWindowParams.PARTITION_COLS, params.get(OutlierParams.GROUP_COLS));
+			cur_params.set(OverCountWindowParams.GROUP_COLS, params.get(OutlierParams.GROUP_COLS));
 		}
 
 		return input_data.link(

@@ -14,7 +14,7 @@ public interface XGBoostRegTrainParams<T> extends
 	XGBoostTreeBoosterParams <T>,
 	HasTweedieVariancePower <T>,
 	HasBaseScore <T>,
-	HasPluginVersion <T>,
+	HasXGBoostPluginVersion<T>,
 	XGBoostDebugParams<T> {
 
 	@NameCn("objective")

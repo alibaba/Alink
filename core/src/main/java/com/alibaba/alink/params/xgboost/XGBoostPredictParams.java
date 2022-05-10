@@ -6,5 +6,5 @@ import com.alibaba.alink.params.shared.colname.HasVectorCol;
 
 public interface XGBoostPredictParams<T> extends
 	RichModelMapperParams <T>,
-	HasPluginVersion <T> {
+	HasXGBoostPluginVersion <T> {
 }

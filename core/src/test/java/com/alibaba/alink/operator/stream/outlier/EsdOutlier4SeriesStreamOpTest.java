@@ -35,7 +35,7 @@ public class EsdOutlier4SeriesStreamOpTest extends AlinkTestBase {
 
 		CollectSinkStreamOp coSinkOp = dataOp.link(
 			new OverCountWindowStreamOp()
-				.setPartitionCols("id")
+				.setGroupCols("id")
 				.setTimeCol("ts")
 				.setPrecedingRows(5)
 				.setClause("MTABLE_AGG_PRECEDING(ts, val) as series_data")

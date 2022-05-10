@@ -32,7 +32,7 @@ public class DeepARModelDataConverter extends SimpleModelDataConverter <DeepARMo
 	public DeepARModelData deserializeModel(Params meta, Iterable <String> data) {
 		return new DeepARModelData(
 			meta,
-			new MTable(data.iterator().next()).getRows()
+			MTable.fromJson(data.iterator().next()).getRows()
 		);
 	}
 

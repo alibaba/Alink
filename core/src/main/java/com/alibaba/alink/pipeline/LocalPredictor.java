@@ -36,11 +36,11 @@ public class LocalPredictor {
 		this(
 			Preconditions.checkNotNull(
 				ModelExporterUtils
-					.loadLocalPredictorFromPipelineModel(
+					.loadLocalPredictorFromPipelineModelAsMappers(
 						pipelineModelPath, inputSchema
 					),
 				"The input mappers can not be empty."
-			).mappers.toArray(new Mapper[0])
+			)
 		);
 	}
 

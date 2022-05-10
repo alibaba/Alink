@@ -37,7 +37,7 @@ public final class AkSinkStreamOp extends BaseSinkStreamOp <AkSinkStreamOp>
 	}
 
 	@Override
-	public AkSinkStreamOp sinkFrom(StreamOperator<?> in) {
+	public AkSinkStreamOp sinkFrom(StreamOperator <?> in) {
 		in.getDataStream()
 			.addSink(
 				new OutputFormatSinkFunction <>(
@@ -49,7 +49,6 @@ public final class AkSinkStreamOp extends BaseSinkStreamOp <AkSinkStreamOp>
 			)
 			.setParallelism(getNumFiles())
 			.name("AkSink");
-
 		return this;
 	}
 }

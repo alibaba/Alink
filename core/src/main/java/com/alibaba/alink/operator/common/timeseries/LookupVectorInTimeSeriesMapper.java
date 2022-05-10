@@ -46,7 +46,7 @@ public class LookupVectorInTimeSeriesMapper extends Mapper {
 		if (selection.get(1) instanceof MTable) {
 			mTable = (MTable) selection.get(1);
 		} else {
-			mTable = new MTable((String) selection.get(1));
+			mTable = MTable.fromJson((String) selection.get(1));
 		}
 
 		if (mTable.getNumRow() == 0) {

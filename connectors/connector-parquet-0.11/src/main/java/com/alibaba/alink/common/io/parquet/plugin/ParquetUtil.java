@@ -4,11 +4,14 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.core.fs.FSDataInputStream;
+import org.apache.flink.core.fs.FileStatus;
+import org.apache.flink.core.fs.Path;
 import org.apache.flink.formats.parquet.utils.ParquetSchemaConverter;
 import org.apache.flink.shaded.guava18.com.google.common.collect.BiMap;
 import org.apache.flink.shaded.guava18.com.google.common.collect.HashBiMap;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.hadoop.ParquetFileReader;
@@ -62,11 +65,28 @@ public class ParquetUtil {
 	;
 
 	public static MessageType readSchemaFromFile(FilePath filePath) throws IOException {
+		BaseFileSystem fs = filePath.getFileSystem();
+		Path path = filePath.getPath();
+		FileStatus pathFile = fs.getFileStatus(path);
 
-		try (ParquetFileReader fileReader
-				 = new ParquetFileReader(new ParquetInputFile(filePath), ParquetReadOptions.builder().build())) {
-			return fileReader.getFileMetaData().getSchema();
+		if (pathFile.isDir()) {
+			for (FileStatus fileStatus : fs.listStatus(path)) {
+				MessageType messageType = readSchemaFromFile(new FilePath(fileStatus.getPath(), fs));
+				if (messageType != null) {
+					return messageType;
+				}
+			}
+		} else {
+			if(!path.getName().endsWith(".parquet")) {
+				return null;
+			}
+			try (ParquetFileReader fileReader
+					 = new ParquetFileReader(new ParquetInputFile(filePath),
+				ParquetReadOptions.builder().build())) {
+				return fileReader.getFileMetaData().getSchema();
+			}
 		}
+		return null;
 	}
 
 	public static class ParquetInputFile implements InputFile {
