@@ -986,7 +986,7 @@ public class ModelExporterUtils {
 		return mapper;
 	}
 
-	static LocalPredictor loadLocalPredictorFromPipelineModel(
+	static Mapper[] loadLocalPredictorFromPipelineModelAsMappers(
 		FilePath filePath, TableSchema inputSchema) throws Exception {
 		Tuple2 <TableSchema, List <Row>> readed = AkUtils.readFromPath(filePath);
 		Tuple2 <TableSchema, Row> schemaAndMeta = ModelExporterUtils.loadMetaFromAkFile(filePath);
@@ -1002,9 +1002,9 @@ public class ModelExporterUtils {
 			PipelineModelMapper pipelineModelMapper
 				= new PipelineModelMapper(readed.f0, inputSchema, params);
 			pipelineModelMapper.loadModel(readed.f1);
-			return new LocalPredictor(pipelineModelMapper);
+			return new Mapper[]{pipelineModelMapper};
 		}
-		return new LocalPredictor(mappers);
+		return mappers;
 	}
 
 	private static int next(List <Row> all, Integer[] order, int cursor, int field) {

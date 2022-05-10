@@ -63,7 +63,7 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 		BatchOperator <?> in = checkAndGetFirst(inputs);
 		String[] inputColNames = in.getColNames();
 		TypeInformation <?>[] inputColTypes = in.getColTypes();
-		String[] partitionBys = getPartitionCols();
+		String[] partitionBys = getGroupCols();
 		int[] partitionByIndices;
 		if (partitionBys == null) {
 			partitionByIndices = null;

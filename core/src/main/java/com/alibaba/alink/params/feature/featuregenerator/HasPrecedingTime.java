@@ -11,16 +11,18 @@ public interface HasPrecedingTime<T> extends WithParams <T> {
 
 	@NameCn("时间窗口大小")
 	@DescCn("时间窗口大小")
-	ParamInfo <Double> PRECEDING_TIME = ParamInfoFactory
-		.createParamInfo("precedingTime", Double.class)
+	ParamInfo <String> PRECEDING_TIME = ParamInfoFactory
+		.createParamInfo("precedingTime", String.class)
 		.setDescription("time interval")
-		.setHasDefaultValue(null)
+		.setRequired()
 		.build();
 
-	default Double getPrecedingTime() {return get(PRECEDING_TIME);}
+	default String getPrecedingTime() {return get(PRECEDING_TIME);}
 
-	default T setPrecedingTime(Double value) {return set(PRECEDING_TIME, value);}
+	default T setPrecedingTime(double value) {return set(PRECEDING_TIME, String.valueOf(value));}
 
-	default T setPrecedingTime(int value) {return set(PRECEDING_TIME, (double) value);}
+	default T setPrecedingTime(int value) {return set(PRECEDING_TIME, String.valueOf(value));}
+
+	default T setPrecedingTime(String value) {return set(PRECEDING_TIME, value);}
 
 }

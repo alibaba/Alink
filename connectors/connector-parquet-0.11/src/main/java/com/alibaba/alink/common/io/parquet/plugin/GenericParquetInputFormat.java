@@ -74,9 +74,9 @@ public class GenericParquetInputFormat extends FileInputFormat<Row>
 		// reset the flag when open a new split
 		this.skipThisSplit = false;
 		org.apache.hadoop.conf.Configuration configuration = new org.apache.hadoop.conf.Configuration();
-		InputFile inputFile = new ParquetInputFile(parquetFilePath);
+		InputFile inputFile = new ParquetInputFile(new FilePath(split.getPath(),parquetFilePath.getFileSystem()));
 
-		readSchema = ParquetUtil.getReadSchemaFromParquetFile(parquetFilePath);
+		readSchema = ParquetUtil.getReadSchemaFromParquetFile(new FilePath(split.getPath(),parquetFilePath.getFileSystem()));
 
 		ParquetReadOptions options = ParquetReadOptions.builder().build();
 		ParquetFileReader fileReader = new ParquetFileReader(inputFile, options);

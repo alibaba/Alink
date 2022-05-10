@@ -4,6 +4,5 @@ Alink is the Machine Learning algorithm platform based on Flink, developed by th
 
 More information about Alink and PyAlink tutorials can be found at [https://github.com/alibaba/Alink](https://github.com/alibaba/Alink).
 
-This package **pyalink** always maintains Alink Python API against the latest Flink version that Alink supports, which is Flink-1.13 now. 
-To use PyAlink with older-version Flink, please check package pyalink-flink-[version]. 
-Right now, **pyalink-flink-1.9**, **pyalink-flink-1.10**, **pyalink-flink-1.11** and **pyalink-flink-1.12** are provided.
+This package maintains Alink Python API against Flink 1.12.
+To use PyAlink with latest Flink version, please check package **pyalink**.

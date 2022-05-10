@@ -65,7 +65,7 @@ public class FlattenMTableMapper extends FlatMapper {
             return;
         }
 
-        MTable mTable = s instanceof String ? new MTable((String) s) : (MTable) s;
+        MTable mTable = s instanceof String ? MTable.fromJson((String) s) : (MTable) s;
         if (mTable.getNumRow() == 0) {
             return;
         }

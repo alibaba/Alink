@@ -6,5 +6,5 @@ import com.alibaba.alink.params.shared.colname.HasVectorCol;
 
 public interface XGBoostRegPredictParams<T> extends
 	RegPredictParams <T>,
-	HasPluginVersion <T> {
+	HasXGBoostPluginVersion <T> {
 }
