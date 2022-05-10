@@ -37,7 +37,7 @@ public class AutoArimaStreamOpTest extends AlinkTestBase {
 		CollectSinkStreamOp resultOp =
 			source.link(
 				new OverCountWindowStreamOp()
-					.setPartitionCols("id")
+					.setGroupCols("id")
 					.setTimeCol("ts")
 					.setPrecedingRows(5)
 					.setClause("mtable_agg_preceding(ts, val) as data")

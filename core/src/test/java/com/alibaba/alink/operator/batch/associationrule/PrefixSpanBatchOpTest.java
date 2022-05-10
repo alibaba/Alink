@@ -1,13 +1,14 @@
 package com.alibaba.alink.operator.batch.associationrule;
 
-import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 public class PrefixSpanBatchOpTest extends AlinkTestBase {
 	@Test
@@ -19,14 +20,13 @@ public class PrefixSpanBatchOpTest extends AlinkTestBase {
 			Row.of("e;g;a,f;c;b;c"),
 		};
 
-		Table data = MLEnvironmentFactory.getDefault().createBatchTable(rows, new String[] {"sequence"});
+		BatchOperator<?> data = new MemSourceBatchOp(Arrays.asList(rows), new String[] {"sequence"});
 
 		PrefixSpanBatchOp prefixSpan = new PrefixSpanBatchOp()
 			.setItemsCol("sequence")
 			.setMinSupportCount(2);
 
-		prefixSpan.linkFrom(BatchOperator.fromTable(data));
+		prefixSpan.linkFrom(data);
 		Assert.assertEquals(prefixSpan.count(), 53);
 	}
-
 }

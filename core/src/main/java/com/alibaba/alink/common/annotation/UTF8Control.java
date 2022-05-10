@@ -13,10 +13,11 @@ import java.util.ResourceBundle.Control;
 
 /**
  * Make resource bundle able to load UTF-8 encoding property files. See
- * <a href="https://stackoverflow.com/questions/4659929/how-to-use-utf-8-in-resource-properties-with-resourcebundle">this
+ * <a
+ * href="https://stackoverflow.com/questions/4659929/how-to-use-utf-8-in-resource-properties-with-resourcebundle">this
  * page</a>.
  */
-class UTF8Control extends Control {
+public class UTF8Control extends Control {
 	@Override
 	public ResourceBundle newBundle
 		(String baseName, Locale locale, String format, ClassLoader loader, boolean reload) throws IOException {

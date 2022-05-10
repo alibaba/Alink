@@ -8,13 +8,14 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -52,6 +53,8 @@ import static com.alibaba.alink.operator.common.evaluation.EvalOutlierUtils.extr
  */
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
+@NameCn("异常检测评估")
+@NameEn("Evaluation of Outlier Detection")
 public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 	implements EvalOutlierStreamParams <EvalOutlierStreamOp> {
 
@@ -174,7 +177,7 @@ public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 		data = data.map(new ReplaceLabelMapFunction(outlierValueSet, 1, 0));
 
 		DataStream <OutlierMetricsSummary> windowsStatistics = data
-			.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+			.timeWindowAll(TimeUtil.convertTime(timeInterval))
 			.apply(new CalcOutlierMetricsSummaryWindowFunction(outlierValues));
 
 		DataStream <OutlierMetricsSummary> allStatistics = windowsStatistics

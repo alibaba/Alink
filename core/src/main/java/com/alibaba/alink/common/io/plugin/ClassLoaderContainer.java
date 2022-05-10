@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -45,6 +47,12 @@ public class ClassLoaderContainer {
 		}
 
 		hit = registeredClassLoaders.get(new RegisterKey(key.getName(), null));
+
+		if (hit != null) {
+			return hit;
+		}
+
+		hit = loadFromThreadContext(key, service, serviceFilter);
 
 		if (hit != null) {
 			return hit;
@@ -107,6 +115,22 @@ public class ClassLoaderContainer {
 		throw new PluginNotExistException(
 			String.format("Could not find the appropriate service. %s", JsonConverter.toJson(key))
 		);
+	}
+
+	private <T> ClassLoader loadFromThreadContext(
+		RegisterKey key, Class <T> service, Predicate <T> serviceFilter) {
+
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+		Iterable<T> services = ServiceLoader.load(service, classLoader);
+
+		for (T s : services) {
+			if (serviceFilter.test(s)) {
+				return classLoader;
+			}
+		}
+
+		return null;
 	}
 
 	private <T> ClassLoader loadFromPlugin(

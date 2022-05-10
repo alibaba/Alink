@@ -8,8 +8,11 @@ public interface Redis {
 	String ping();
 
 	String set(final byte[] key, final byte[] value);
+	String set(final String key, final String value);
 
 	byte[] get(final byte[] key);
+
+	String get(final String key);
 	
 	List<byte[]> getKeys();
 }
