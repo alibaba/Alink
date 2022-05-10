@@ -5,7 +5,7 @@ Python 类名：AlsRateRecommStreamOp
 
 
 ## 功能介绍
-ALS预测，可进行评分流预测。
+使用ALS (Alternating Lease Square）训练的模型对（user，item）输入流对进行实时评分预测。这里的ALS模型可以是隐式模型，也可以是显式模型。
 
 ## 参数说明
 

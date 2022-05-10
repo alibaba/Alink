@@ -5,8 +5,7 @@ Python 类名：TextSinkBatchOp
 
 
 ## 功能介绍
-
-按行写出到文件
+按行写出到文件。
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
@@ -16,40 +15,59 @@ Python 类名：TextSinkBatchOp
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
 
 ## 代码示例
+
 ### Python 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```python
-from pyalink.alink import *
+df_data = pd.DataFrame([
+   ['changjiang', 2000, 1.5],
+    ['huanghe', 2001, 1.7],
+    ['zhujiang', 2002, 3.6],
+    ['changjiang', 2001, 2.4],
+    ['huanghe', 2002, 2.9],
+    ['zhujiang', 2003, 3.2]
+])
+    
+batch_data = BatchOperator.fromDataframe(df_data, schemaStr='f1 string, f2 bigint, f3 double')
 
-import pandas as pd
-
-useLocalEnv(1)
-
-URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string"
-
-data = CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR).select("category")
-
-sink = TextSinkBatchOp().setFilePath('/tmp/text.csv').setOverwriteSink(True)
-data.link(sink)
+TextSinkBatchOp().setFilePath('yourFilePath').setOverwriteSink(True).linkFrom(batch_data)
 BatchOperator.execute()
 ```
 ### Java 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```java
+import org.apache.flink.types.Row;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sink.TextSinkBatchOp;
-import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class TextSinkBatchOpTest {
 	@Test
 	public void testTextSinkBatchOp() throws Exception {
-		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
-		String SCHEMA_STR
-			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-		BatchOperator <?> data = new CsvSourceBatchOp().setFilePath(URL).setSchemaStr(SCHEMA_STR).select("category");
-		BatchOperator <?> sink = new TextSinkBatchOp().setFilePath("/tmp/text.csv").setOverwriteSink(true);
-		data.link(sink);
+		List <Row> inputRows = Arrays.asList(
+			Row.of("changjiang", 2000, 1.5),
+        	Row.of("huanghe", 2001, 1.7),
+        	Row.of("zhujiang", 2002, 3.6),
+       		Row.of("changjiang", 2001, 2.4),
+   			Row.of("huanghe", 2002, 2.9),
+  			Row.of("zhujiang", 2003, 3.2)
+        );
+        
+        BatchOperator <?> dataOp = new MemSourceBatchOp(inputRows, "f1 string, f2 int, f3 double");
+
+		new TextSinkBatchOp()
+            .setFilePath("yourFilePath")
+            .setOverwriteSink(true)
+            .linkFrom(dataOp);
+		dataOp.link(sink);
 		BatchOperator.execute();
 	}
 }
 ```
+
+### 运行结果

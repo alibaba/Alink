@@ -5,7 +5,7 @@ Python 类名：AlsRateRecommBatchOp
 
 
 ## 功能介绍
-ALS预测，可进行评分预测。
+ALS打分预测，可对每一个（user，item）输入对进行评分预测。这里的ALS模型可以是隐式模型，也可以是显式模型。
 
 ## 参数说明
 

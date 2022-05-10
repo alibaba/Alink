@@ -14,6 +14,10 @@ Arima 详细介绍请见链接 https://en.wikipedia.org/wiki/Autoregressive_inte
 
 AutoArima是只需要指定MaxOrder, 不需要指定p/d/q, 对每个分组分别计算出最优的参数，给出预测结果。
 
+### 使用方式
+
+参考文档 https://www.yuque.com/pinshu/alink_guide/xbp5ky
+
 ## 参数说明
 
 ## 代码示例
@@ -46,7 +50,7 @@ source = dataframeToOperator(data, schemaStr='id int, ts timestamp, val double',
 
 source.link(
 			OverCountWindowStreamOp()
-				.setPartitionCols(["id"])
+				.setGroupCols(["id"])
 				.setTimeCol("ts")
 				.setPrecedingRows(5)
 				.setClause("mtable_agg_preceding(ts, val) as data")
@@ -102,7 +106,7 @@ public class AutoArimaStreamOpTest extends AlinkTestBase {
 
 		source.link(
 			new OverCountWindowStreamOp()
-				.setPartitionCols("id")
+				.setGroupCols("id")
 				.setTimeCol("ts")
 				.setPrecedingRows(5)
 				.setClause("mtable_agg(ts, val) as data")

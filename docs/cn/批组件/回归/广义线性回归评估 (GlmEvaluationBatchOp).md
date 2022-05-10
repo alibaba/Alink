@@ -5,25 +5,22 @@ Python 类名：GlmEvaluationBatchOp
 
 
 ## 功能介绍
-使用新数据集，对GLM模型进行评估
+GLM(Generalized Linear Model)又称为广义线性回归模型，是一种常用的统计模型，也是一种非线性模型族，许多常用的模型都属于广义线性回归。
 
-## 参数说明
+它描述了响应和预测因子之间的非线性关系。广义线性回归模型具有线性回归模型的广义特征。响应变量遵循正态、二项式、泊松分布、伽马分布或逆高斯分布，链接函数f定义了μ和预测值的线性组合之间的关系。
 
+GLM功能包括GLM训练，GLM预测(批和流)和GLM评估, 其中训练使用迭代最小二乘方法。
 
-| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
-| --- | --- | --- | --- | --- | --- | --- |
-| featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
-| labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
-| epsilon | 收敛精度 | 收敛精度 | Double |  |  | 1.0E-5 |
-| family | 分布族 | 分布族，包含gaussian, Binomial, Poisson, Gamma and Tweedie，默认值gaussian。 | String |  | "Gamma", "Binomial", "Gaussian", "Poisson", "Tweedie" | "Gaussian" |
-| fitIntercept | 是否拟合常数项 | 是否拟合常数项，默认是拟合 | Boolean |  |  | true |
-| link | 连接函数 | 连接函数，包含cloglog, Identity, Inverse, log, logit, power, probit和sqrt，默认值是指数分布族对应的连接函数。 | String |  | "CLogLog", "Identity", "Inverse", "Log", "Logit", "Power", "Probit", "Sqrt" | null |
-| linkPower | 连接函数的超参 | 连接函数的超参 | Double |  |  | 1.0 |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 10。 | Integer |  |  | 10 |
-| offsetCol | 偏移列 | 偏移列 | String |  |  | null |
-| regParam | l2正则系数 | l2正则系数 | Double |  |  | 0.0 |
-| variancePower | 分布族的超参 | 分布族的超参，默认值是0.0 | Double |  |  | 0.0 |
-| weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+### 算法使用
+| 分布 | 连接函数 | 对应算法 |
+|:----|:---|:---|
+| 二项分布 | Logit | 逻辑回归 |
+| 多项分布 | Logit | softmax| 
+| 高斯分布 | Identity | 线性回归 | 
+| Poisson分布 | Log | Possion回归 |
+
+### 文献或出处
+[1] https://en.wikipedia.org/wiki/Generalized_linear_model
 
 
 

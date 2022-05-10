@@ -7,6 +7,10 @@ Python 类名：LookupVectorInTimeSeriesBatchOp
 ## 功能介绍
 在时间序列中查找对应时间的值。
 
+### 注意事项
+- 时间序列列，是特殊的MTable类型，一列是时间，一列是值，参考运行结果的data列。
+- 查找的时间在数据列中不存在时，用相邻时刻的值差值得到结果。
+
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
@@ -101,7 +105,7 @@ public class LookupVectorInTimeSeriesBatchOpTest {
 			Row.of(new Timestamp(10), "19.0 30.0")
 		);
 
-		MTable mtable = new MTable(mTableData, "ts timestamp, val string");
+		MTable mtable = new MTable(mTableData, "ts timestamp, val vector");
 
 		MemSourceBatchOp source = new MemSourceBatchOp(
 			new Object[][] {
@@ -121,17 +125,6 @@ public class LookupVectorInTimeSeriesBatchOpTest {
 ```
 
 ### 运行结果
-   |id|	out  |
-   |:----:|:----:|
-|	1|	13.0 13.0 |
-|	1|	14.0 14.0 |
-|	1|	15.0 15.0 |
-|	1|	16.0 16.0 |
-|	1|	17.0 17.0 |
-|	1|	18.0 18.0 |
-|	1|	19.0 19.0 |
-|	1|	13.0 13.0 |
-|	1|	14.0 14.0 |
-|	1|	15.0 15.0 |
-|	1|	16.0 16.0 |
-|	1|	17.0 17.0 |
+id|ts|data|out
+---|---|----|---
+1|1970-01-01 08:00:00.005|MTable(10,2)(ts,val)<br> 1970-01-01 08:00:00.001 &#124; 10.0 21.0 <br> 1970-01-01 08:00:00.002 &#124; 11.0 22.0 <br>1970-01-01 08:00:00.003 &#124; 12.0 23.0 <br> 1970-01-01 08:00:00.004 &#124; 13.0 24.0 <br> 1970-01-01 08:00:00.005 &#124; 14.0 25.0|14.0 25.0

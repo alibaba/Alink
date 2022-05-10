@@ -5,8 +5,7 @@ Python 类名：VectorAssemblerStreamOp
 
 
 ## 功能介绍
-* 数据结构转换组件，将Table格式的数据转成tensor格式数据。
-* 支持table中的多个 vetor 列和数值列合并成一个vector 列。
+特征拼接组件。支持table中的多个 vector 列和数值列合并成一个vector 列。
 
 ## 参数说明
 
@@ -90,8 +89,3 @@ f0 | f1 | f2 | out
 4|3|2|4.0,3.0,2.0
 1|2|1|1.0,2.0,1.0
 5|3|3|5.0,3.0,3.0
-
-
-
-
-

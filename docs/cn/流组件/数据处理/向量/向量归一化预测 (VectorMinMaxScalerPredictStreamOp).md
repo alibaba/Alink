@@ -10,7 +10,7 @@ vector归一化是对vector数据进行归一化处理的组件, 将数据归一
 
 minValue和maxValue由用户指定，默认为0和1。
 
-该组件为预测组件，加载模型后就可以处理数据
+该组件为预测组件，加载模型后就可以处理数据。
 
 ## 参数说明
 
@@ -48,8 +48,6 @@ dataStream = StreamOperator.fromDataframe(df, schemaStr="col string, vec string"
 trainOp = VectorMinMaxScalerTrainBatchOp()\
            .setSelectedCol("vec")
 model = trainOp.linkFrom(data) 
-
-
 
 streamPredictOp = VectorMinMaxScalerPredictStreamOp(model)
 streamPredictOp.linkFrom(dataStream).print()

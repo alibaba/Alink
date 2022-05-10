@@ -5,8 +5,30 @@ Python 类名：LookupStreamOp
 
 
 ## 功能介绍
-支持数据查找功能，支持多个key的查找，并将查找后的结果中的value列添加到待查询数据后面。
+支持数据查找功能，支持多个key的查找，并将查找后的结果中的value列添加到待查询数据后面。与SQl语法中的inner join功能类似，当不存在重复的key时
+LookupBatchOp().setMapKeyCols("key_col_A").setMapValueCols("value_col").setSelectedCols("key_col_B").linkFrom(A, B)与
+"SELECT A.value_col FROM A INNER JOIN B ON A.key_col_A = B.key_col_B"，但是需要注意：当数据B中存在多行相同的key时，只保留一个value，不会找到所有的value。
 
+ Table A
+ 
+| key_col_A | value_col |
+--- | ---
+| Bob | 98 |
+| Tom | 72 |
+
+ Table B
+ 
+| key_col_B | age |
+--- | ---
+| Bob | 11 |
+| Denny | 10 |
+
+查找结果
+
+| key_col_B | age |value_col |
+--- | --- | ---
+| Bob | 11 | 98
+| Denny | 10 | null
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |

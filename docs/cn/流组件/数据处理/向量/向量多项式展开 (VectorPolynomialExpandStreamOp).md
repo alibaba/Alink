@@ -5,7 +5,8 @@ Python 类名：VectorPolynomialExpandStreamOp
 
 
 ## 功能介绍
-对 Vector 进行多项式展开，组成一个新的Vector。
+对 Vector 进行多项式展开，组成一个新的Vector。多项式展开是一个对原始特征进行变换的过程。
+例如输入向量为2维，它的值为(x, y), 那么进行多项式展开后，它的值为(x, x * x, y, x * y, y * y).
 
 ## 参数说明
 

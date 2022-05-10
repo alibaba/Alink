@@ -5,7 +5,7 @@ Python 类名：LibSvmSourceBatchOp
 
 
 ## 功能介绍
-读LibSVM文件。支持从本地、hdfs读取。
+读LibSVM文件。支持从本地、hdfs、oss、http等读取。
 
 ## 参数说明
 

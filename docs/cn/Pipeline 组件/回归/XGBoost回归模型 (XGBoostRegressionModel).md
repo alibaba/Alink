@@ -11,10 +11,10 @@ Python 类名：XGBoostRegressionModel
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| pluginVersion | 插件版本号 | 插件版本号 | String |  |  | "1.5.1" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 | modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |

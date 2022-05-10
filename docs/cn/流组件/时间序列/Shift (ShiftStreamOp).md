@@ -7,6 +7,10 @@ Python 类名：ShiftStreamOp
 ## 功能介绍
 给定分组，对每一组的数据使用Shift进行时间序列预测,使用ShiftNum之前的数据作为预测结果。
 
+### 使用方式
+
+参考文档 https://www.yuque.com/pinshu/alink_guide/xbp5ky
+
 
 ## 参数说明
 
@@ -50,7 +54,7 @@ source = dataframeToOperator(data, schemaStr='id int, ts timestamp, val string',
 
 source.link(
 			OverCountWindowStreamOp()
-				.setPartitionCols(["id"])
+				.setGroupCols(["id"])
 				.setTimeCol("ts")
 				.setPrecedingRows(5)
 				.setClause("mtable_agg_preceding(ts, val) as data")
@@ -108,7 +112,7 @@ public class ShiftStreamOpTest {
 
 		source.link(
 			new OverCountWindowStreamOp()
-				.setPartitionCols("id")
+				.setGroupCols("id")
 				.setTimeCol("ts")
 				.setPrecedingRows(5)
 				.setClause("mtable_agg(ts, val) as data")

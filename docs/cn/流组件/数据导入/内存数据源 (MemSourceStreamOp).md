@@ -5,9 +5,7 @@ Python 类名：MemSourceStreamOp
 
 
 ## 功能介绍
-从内存中读取数据生成表
-
-MemSourceStreamOp支持多个构造函数
+从内存中读取数据生成表。MemSourceStreamOp支持多个构造函数：
 
 |构造函数|参数| 示例 |
 |:------|:----|:----|
@@ -27,6 +25,8 @@ MemSourceStreamOp支持多个构造函数
 
 
 ## 代码示例
+
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 
 ### Python 代码
 无，仅在Java中使用

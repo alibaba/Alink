@@ -90,6 +90,52 @@ public class FpGrowthBatchOpTest {
 	}
 }
 ```
+### 二元组作为输入
+```java
+import org.apache.flink.types.Row;
+
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import org.junit.Test;
+
+public class FpGrowthBatchOpTest {
+	@Test
+	public void testFpGrowth() throws Exception {
+		Row[] rows = new Row[] {
+			Row.of(1, "A"),
+			Row.of(1, "B"),
+			Row.of(1, "C"),
+			Row.of(1, "D"),
+			Row.of(2, "B"),
+			Row.of(2, "C"),
+			Row.of(2, "E"),
+			Row.of(3, "A"),
+			Row.of(3, "B"),
+			Row.of(3, "C"),
+			Row.of(3, "E"),
+			Row.of(4, "B"),
+			Row.of(4, "D"),
+			Row.of(4, "E"),
+			Row.of(5, "A"),
+			Row.of(5, "B"),
+			Row.of(5, "C"),
+			Row.of(5, "D"),
+		};
+
+		BatchOperator data = new MemSourceBatchOp(rows, "id int, item string")
+			.groupBy("id", "id,CONCAT_AGG(item) AS items");
+
+		FpGrowthBatchOp fpGrowth = new FpGrowthBatchOp()
+			.setItemsCol("items")
+			.setMinSupportPercent(0.4)
+			.setMinConfidence(0.6);
+
+		fpGrowth.linkFrom(data);
+		fpGrowth.print();
+		fpGrowth.getSideOutputAssociationRules().print();
+	}
+}
+```
 
 ### 运行结果
 

@@ -5,7 +5,14 @@ Python 类名：CrossFeatureTrainBatchOp
 
 
 ## 功能介绍
-特征列组合算法能够将选定的离散列组合成单列的向量类型的数据。
+
+将选定的特征列组合成单个向量类型的特征。
+
+### 使用方式
+
+该组件是训练组件，需要配合预测组件 CrossFeaturePredictBatch/StreamOp 使用。
+
+为了训练模型，需要指定参与组合的特征列名（selectedCols）。
 
 ## 参数说明
 

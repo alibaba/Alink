@@ -14,7 +14,7 @@ Python 类名：OverWindowBatchOp
 | --- | --- | --- | --- | --- | --- | --- |
 | clause | 运算语句 | 运算语句 | String | ✓ |  |  |
 | orderBy | 排序列 | 排序列 | String | ✓ |  |  |
-| partitionCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |
+| groupCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 

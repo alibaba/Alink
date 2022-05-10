@@ -37,6 +37,7 @@ vecSlice = VectorSliceStreamOp().setSelectedCol("vec").setOutputCol("vec_slice")
 vecSlice.linkFrom(data).print()
 StreamOperator.execute()
 ```
+
 ### Java 代码
 ```java
 import org.apache.flink.types.Row;

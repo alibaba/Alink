@@ -5,7 +5,7 @@ Python 类名：TreeModelEncoderStreamOp
 
 
 ## 功能介绍
-使用树模型，将输入数据编码为特征。
+使用树模型，将输入数据编码为特征.
 
 ## 参数说明
 

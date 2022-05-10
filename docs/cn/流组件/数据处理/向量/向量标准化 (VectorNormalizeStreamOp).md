@@ -39,6 +39,7 @@ data = StreamOperator.fromDataframe(df, schemaStr="vec string, id bigint")
 VectorNormalizeStreamOp().setSelectedCol("vec").setOutputCol("vec_norm").linkFrom(data).print()
 StreamOperator.execute()
 ```
+
 ### Java 代码
 ```java
 import org.apache.flink.types.Row;

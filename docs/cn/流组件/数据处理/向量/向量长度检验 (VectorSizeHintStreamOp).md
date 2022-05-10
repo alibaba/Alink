@@ -36,6 +36,7 @@ data = StreamOperator.fromDataframe(df, schemaStr="vec string")
 VectorSizeHintStreamOp().setSelectedCol("vec").setOutputCol("vec_hint").setHandleInvalidMethod("Skip").setSize(3).linkFrom(data).print()
 StreamOperator.execute()
 ```
+
 ### Java 代码
 ```java
 import org.apache.flink.types.Row;

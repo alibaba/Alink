@@ -7,6 +7,10 @@ Python 类名：ProphetStreamOp
 ## 功能介绍
 对每一行的MTable数据, 进行Prophet时间序列预测，给出下一时间段的预测结果。
 
+### 使用方式
+
+参考文档 https://www.yuque.com/pinshu/alink_guide/xbp5ky
+
 ### 算法原理
 
 Prophet是facebook开源的一个时间序列预测算法, github地址：https://github.com/facebook/prophet.
@@ -20,51 +24,8 @@ Prophet适用于具有明显的内在规律的数据, 例如：
 * 对于数据中蕴含的非线性增长的趋势都有一个自然极限或饱和状态
 
 ### 使用方式
-* 第一步，时间序列方法需要指定TimeStamp类型的时间列。如果数据中没有，有两种方式构造，
-    1. 如果数据中有字符串类型的时间列，使用TO_TIMESTAMP('2021-12-03 00:00:00')，将数据转成TimeStamp类型。
-      
-         ```python
-         # ts_string是String类型，数据形式是'2021-12-03 00:00:00'
-         sourceOp.select('TO_TIMESTAMP(ts_string) as ts, id, val')
-         ```
-  
-    3. 如果数据没有时间列，使用CURRENT_TIMESTAMP, 以数据进入任务时间作为时间列。
-         ```python
-         sourceOp.select('CURRENT_TIMESTAMP as ts, id, val')
-         ```
-* 第二步，使用窗口函数的mtable_agg_preceding，将窗口内的函数聚合成MTable, 参考文档 https://www.yuque.com/pinshu/alink_tutorial/list_aggregate_function
-    ```python
-    over = OverCountWindowStreamOp()\
-         .setTimeCol("ts")\
-         .setPrecedingRows(4)\
-         .setClause("mtable_agg_preceding(ts,val) as mtable_data")
-    ```
-  
-* 第三步，使用时间序列方法，输出MTable(一列预测时间，一列预测数据)
-    ```python
-    tsOp = ProphetStreamOp()\
-        .setValueCol("mtable_data")\
-        .setPredictNum(1)\
-        .setPredictionCol("pred")\
-        .setPredictionDetailCol("pred_detail")
-    ```
-* 第四步， 时间序列方法输出的结果是两列的MTable(一列时间，一列数据)，如果想拆分成两列，有两种方式，
-      
-    1. 可以使用MTable展开组件，将MTable直接展开
-    ```python
-    flatten = FlattenMTableStreamOp()\
-        .setReservedCols(["id"])\
-        .setSelectedCol("mt")\
-        .setSchemaStr('ts TIMESTAMP, val double')
-    ```
-   
-    2. 使用时间序列查找组件，指定时间列进行查找
-    ```python
-    LookupVectorInTimeSeriesStreamOp()\
-        .setTimeCol("ts")
-        .setTimeSeriesCol("predict")
-        .setOutputCol("out")
-    ```
+
+参考文档 https://www.yuque.com/pinshu/alink_guide/xbp5ky
 
 ## 参数说明
 

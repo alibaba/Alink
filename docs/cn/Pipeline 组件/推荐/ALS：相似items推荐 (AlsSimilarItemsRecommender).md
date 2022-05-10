@@ -5,7 +5,7 @@ Python 类名：AlsSimilarItemsRecommender
 
 
 ## 功能介绍
-使用ALS (Alternating Lease Square）model 对相似的item的进行实时推荐。
+使用ALS (Alternating Lease Square）训练的模型对相似的item的进行实时推荐。这里的ALS模型可以是隐式模型，也可以是显式模型。
 
 ## 参数说明
 

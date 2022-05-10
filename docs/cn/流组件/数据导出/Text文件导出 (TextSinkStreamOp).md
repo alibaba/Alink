@@ -5,8 +5,7 @@ Python 类名：TextSinkStreamOp
 
 
 ## 功能介绍
-
-按行写出到文件
+按行写出到文件。
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
@@ -17,23 +16,25 @@ Python 类名：TextSinkStreamOp
 
 ## 代码示例
 ### Python 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```python
-from pyalink.alink import *
+df = pd.DataFrame([
+                ["0L", "1L", 0.6],
+                ["2L", "2L", 0.8],
+                ["2L", "4L", 0.6],
+                ["3L", "1L", 0.6],
+                ["3L", "2L", 0.3],
+                ["3L", "4L", 0.4]
+        ])
 
-import pandas as pd
+data = StreamOperator.fromDataframe(df, schemaStr='uid string, iid string, label double')
 
-useLocalEnv(1)
-
-URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv"
-SCHEMA_STR = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string"
-
-data = CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR).select("category")
-
-sink = TextSinkStreamOp().setFilePath('/tmp/text.csv').setOverwriteSink(True)
+sink = TextSinkStreamOp().setFilePath('yourFilePath').setOverwriteSink(True)
 data.link(sink)
 StreamOperator.execute()
 ```
 ### Java 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```java
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.sink.TextSinkStreamOp;
@@ -43,11 +44,16 @@ import org.junit.Test;
 public class TextSinkStreamOpTest {
 	@Test
 	public void testTextSinkStreamOp() throws Exception {
-		String URL = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv";
-		String SCHEMA_STR
-			= "sepal_length double, sepal_width double, petal_length double, petal_width double, category string";
-		StreamOperator <?> data = new CsvSourceStreamOp().setFilePath(URL).setSchemaStr(SCHEMA_STR).select("category");
-		StreamOperator <?> sink = new TextSinkStreamOp().setFilePath("/tmp/text.csv").setOverwriteSink(true);
+		List <Row> df = Arrays.asList(
+        			Row.of("0L", "1L", 0.6),
+        			Row.of("2L", "2L", 0.8),
+        			Row.of("2L", "4L", 0.6),
+        			Row.of("3L", "1L", 0.6),
+        			Row.of("3L", "2L", 0.3),
+        			Row.of("3L", "4L", 0.4)
+        		);
+		StreamOperator <?> data = new MemSourceStreamOp(df, "uid string, iid string, label double");
+		StreamOperator <?> sink = new TextSinkStreamOp().setFilePath("yourFilePath").setOverwriteSink(true);
 		data.link(sink);
 		StreamOperator.execute();
 	}

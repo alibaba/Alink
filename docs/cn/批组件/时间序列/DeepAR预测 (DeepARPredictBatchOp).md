@@ -7,6 +7,10 @@ Python 类名：DeepARPredictBatchOp
 ## 功能介绍
 使用 DeepAR 进行时间序列训练和预测。
 
+### 使用方式
+
+参考文档 https://www.yuque.com/pinshu/alink_guide/xbp5ky
+
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |

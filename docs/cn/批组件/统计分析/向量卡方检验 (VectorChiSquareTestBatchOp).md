@@ -18,6 +18,9 @@ Python 类名：VectorChiSquareTestBatchOp
 
 
 ## 代码示例
+
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
+
 ### Python 代码
 无python接口
  

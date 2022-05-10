@@ -5,7 +5,7 @@ Python 类名：AlsUsersPerItemRecommBatchOp
 
 
 ## 功能介绍
-使用ALS (Alternating Lease Square）model 为item 推荐users。
+使用ALS (Alternating Lease Square）model 为item 推荐users。这里的ALS模型可以是隐式模型，也可以是显式模型，输出格式是MTable。
 
 ## 参数说明
 

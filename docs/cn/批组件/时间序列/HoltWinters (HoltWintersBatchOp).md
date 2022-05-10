@@ -7,6 +7,10 @@ Python 类名：HoltWintersBatchOp
 ## 功能介绍
 给定分组，对每一组的数据使用HoltWinters进行时间序列预测。
 
+### 使用方式
+
+参考文档 https://www.yuque.com/pinshu/alink_guide/xbp5ky
+
 ### 算法原理
 
 HoltWinters由Holt和Winters提出的三次指数平滑算法，又称holt-winters,

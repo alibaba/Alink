@@ -5,8 +5,7 @@ Python 类名：TsvSinkBatchOp
 
 
 ## 功能介绍
-
-写Tsv文件，Tsv文件是以tab为分隔符
+写Tsv文件，Tsv文件是以tab为分隔符。
 
 ## 参数说明
 
@@ -18,14 +17,9 @@ Python 类名：TsvSinkBatchOp
 
 
 ## 代码示例
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ### Python 代码
 ```python
-from pyalink.alink import *
-
-import pandas as pd
-
-useLocalEnv(1)
-
 df = pd.DataFrame([
                 ["0L", "1L", 0.6],
                 ["2L", "2L", 0.8],
@@ -37,19 +31,13 @@ df = pd.DataFrame([
 
 source = BatchOperator.fromDataframe(df, schemaStr='uid string, iid string, label double')
 
-filepath = '*'
-tsvSink = TsvSinkBatchOp()\
-    .setFilePath(filepath)
-
-source.link(tsvSink)
+tsvSink = TsvSinkBatchOp().setFilePath('yourFilePath').linkFrom(source)
 
 BatchOperator.execute()
-
-tsvSource = TsvSourceBatchOp().setFilePath(filepath).setSchemaStr("f string");
-tsvSource.print()
-
 ```
+
 ### Java 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```java
 import org.apache.flink.types.Row;
 
@@ -74,14 +62,13 @@ public class TsvSinkBatchOpTest {
 			Row.of("3L", "4L", 0.4)
 		);
 		BatchOperator <?> source = new MemSourceBatchOp(df, "uid string, iid string, label double");
-		String filepath = "*";
 		BatchOperator <?> tsvSink = new TsvSinkBatchOp()
-			.setFilePath(filepath)
+			.setFilePath("yourFilePath")
 			.setOverwriteSink(true);
 		source.link(tsvSink);
 		BatchOperator.execute();
-		BatchOperator <?> tsvSource = new TsvSourceBatchOp().setFilePath(filepath).setSchemaStr("f string");
-		tsvSource.print();
 	}
 }
 ```
+
+### 运行结果

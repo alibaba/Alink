@@ -13,6 +13,10 @@ Arima全称为自回归积分滑动平均模型(Autoregressive Integrated Moving
 
 Arima 详细介绍请见链接 https://en.wikipedia.org/wiki/Autoregressive_integrated_moving_average
 
+### 使用方式
+
+参考文档 https://www.yuque.com/pinshu/alink_guide/xbp5ky
+
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
@@ -58,7 +62,7 @@ source = dataframeToOperator(data, schemaStr='id int, ts timestamp, val double',
 
 source.link(
 			OverCountWindowStreamOp()
-				.setPartitionCols(["id"])
+				.setGroupCols(["id"])
 				.setTimeCol("ts")
 				.setPrecedingRows(5)
 				.setClause("mtable_agg_preceding(ts, val) as data")
@@ -114,7 +118,7 @@ public class ArimaStreamOpTest extends AlinkTestBase {
 
 		source.link(
 			new OverCountWindowStreamOp()
-				.setPartitionCols("id")
+				.setGroupCols("id")
 				.setTimeCol("ts")
 				.setPrecedingRows(5)
 				.setClause("mtable_agg(ts, val) as data")

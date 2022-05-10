@@ -5,7 +5,7 @@ Python 类名：AlsSimilarUsersRecommBatchOp
 
 
 ## 功能介绍
-使用ALS (Alternating Lease Square）model 对相似的user的进行推荐。
+使用ALS (Alternating Lease Square）model 对相似的user的进行推荐。这里的ALS模型可以是隐式模型，也可以是显式模型，输出格式是MTable。
 
 ## 参数说明
 

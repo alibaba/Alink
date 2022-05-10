@@ -5,8 +5,7 @@ Python 类名：TsvSourceBatchOp
 
 
 ## 功能介绍
-
-读Tsv文件，Tsv文件是以tab为分隔符
+读Tsv文件，Tsv文件是以tab为分隔符。文件来源可以是本地，oss，http，hdfs等。
 
 ## 参数说明
 

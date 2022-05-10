@@ -41,6 +41,7 @@ vecEP = VectorElementwiseProductStreamOp().setSelectedCol("vec") \
 data.link(vecEP).print()
 StreamOperator.execute()
 ```
+
 ### Java 代码
 ```java
 import org.apache.flink.types.Row;

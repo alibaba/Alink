@@ -7,6 +7,10 @@ Python 类名：ProphetBatchOp
 ## 功能介绍
 对每一行的MTable数据, 进行Prophet时间序列预测，给出下一时间段的预测结果。
 
+### 使用方式
+
+参考文档 https://www.yuque.com/pinshu/alink_guide/xbp5ky
+
 ### 算法原理
 
 Prophet是facebook开源的一个时间序列预测算法, github地址：https://github.com/facebook/prophet.

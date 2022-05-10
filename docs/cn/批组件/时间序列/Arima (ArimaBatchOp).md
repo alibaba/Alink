@@ -14,21 +14,8 @@ Arima全称为自回归积分滑动平均模型(Autoregressive Integrated Moving
 Arima 详细介绍请见链接 https://en.wikipedia.org/wiki/Autoregressive_integrated_moving_average
 
 ### 使用方式
-* 第一步，将每组数据(时间列和数据列) 聚合成MTable.
-    ```python
-     GroupByBatchOp()
-        .setGroupByPredicate("id")
-        .setSelectClause("id, mtable_agg(ts, val) as data")
-    ```
-* 第二步，使用时间序列方法进行预测，预测结果也是MTable。
-* 第三步，使用FlattenMTableBatchOp，将MTable转换成列，
-   ```python
-      FlattenMTableBatchOp()
-          .setReservedCols(["id", "predict"])
-          .setSelectedCol("predict")
-          .setSchemaStr("ts timestamp, val double")
-   ```
- 
+
+参考文档 https://www.yuque.com/pinshu/alink_guide/xbp5ky
      
 
 
