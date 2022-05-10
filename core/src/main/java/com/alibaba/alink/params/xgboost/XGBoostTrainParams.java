@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.io.plugin.PluginUtils;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.io.shared.HasPluginVersion;
 
@@ -13,7 +14,7 @@ public interface XGBoostTrainParams<T> extends
 	XGBoostInputParams <T>,
 	XGBoostTreeBoosterParams <T>,
 	HasBaseScore <T>,
-	HasPluginVersion <T>,
+	HasXGBoostPluginVersion<T>,
 	XGBoostDebugParams<T> {
 
 	@NameCn("objective")

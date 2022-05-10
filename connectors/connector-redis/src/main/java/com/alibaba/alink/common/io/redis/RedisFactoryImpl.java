@@ -88,11 +88,19 @@ public class RedisFactoryImpl implements RedisFactory {
 			}
 
 			@Override
+			public 	String set(final String key, final String value){
+				return redis.set(key,value);
+			}
+			@Override
 			public byte[] get(byte[] key) {
-				
+
 				return redis.get(key);
 			}
-			
+
+			@Override
+			public String get(String key){
+				return redis.get(key);
+			}
 			@Override
 			public List<byte[]> getKeys(){
 				Set<String> keySet = redis.keys("*");
@@ -149,7 +157,17 @@ public class RedisFactoryImpl implements RedisFactory {
 			}
 
 			@Override
+			public 	String set(final String key, final String value){
+				return jedisCluster.set(key,value);
+			}
+
+			@Override
 			public byte[] get(byte[] key) {
+				return jedisCluster.get(key);
+			}
+
+			@Override
+			public String get(String key){
 				return jedisCluster.get(key);
 			}
 

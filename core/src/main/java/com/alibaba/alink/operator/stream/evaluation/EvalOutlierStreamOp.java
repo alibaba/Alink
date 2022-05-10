@@ -15,6 +15,8 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -52,6 +54,8 @@ import static com.alibaba.alink.operator.common.evaluation.EvalOutlierUtils.extr
  */
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
+@NameCn("异常检测评估")
+@NameEn("Evaluation of Outlier Detection")
 public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 	implements EvalOutlierStreamParams <EvalOutlierStreamOp> {
 
