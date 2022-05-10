@@ -3,6 +3,8 @@ package com.alibaba.alink.operator.stream.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.operator.common.feature.featurebuilder.BaseGroupTimeWindowStreamOp;
+import com.alibaba.alink.operator.common.feature.featurebuilder.GroupWindowType;
 import com.alibaba.alink.params.feature.featuregenerator.SessionTimeWindowParams;
 
 /**

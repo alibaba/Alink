@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class NameCnTest {
 	public void testCoverage(List <Class <?>> operators) {
@@ -23,16 +24,20 @@ public class NameCnTest {
 		}
 
 		if (!notCovered.isEmpty()) {
-			System.err.printf("%d operators not covered by @NameCn:%n", notCovered.size());
-			for (Class <?> element : notCovered) {
-				System.err.printf("%s%n", element);
-			}
+			throw new RuntimeException(
+				String.format("%d operators not annotated by @NameCn: %s",
+					notCovered.size(),
+					notCovered.stream().map(Class::getSimpleName).collect(Collectors.joining(", "))
+				)
+			);
 		}
 		if (!hasColon.isEmpty()) {
-			System.err.printf("%d operators has colon in @NameCn:%n", hasColon.size());
-			for (Class <?> element : hasColon) {
-				System.err.printf("%s%n", element);
-			}
+			throw new RuntimeException(
+				String.format("%d operators has colon in @NameCn: %s",
+					hasColon.size(),
+					hasColon.stream().map(Class::getSimpleName).collect(Collectors.joining(", "))
+				)
+			);
 		}
 	}
 

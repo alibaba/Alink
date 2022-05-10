@@ -119,7 +119,7 @@ public abstract class TimeSeriesMapper extends Mapper {
 					result.set(1, t2.f1);
 				}
 			} else if (obj instanceof String) {
-				MTable a = new MTable((String) obj);
+				MTable a = MTable.fromJson((String) obj);
 				Tuple2 <MTable, String> t2 = predictor.apply(a, this.predictNum);
 				result.set(0, t2.f0);
 				if (withPredDetail) {

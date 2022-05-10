@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.stream.dataproc.format;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.SelectedColsWithFirstInputSpec;
 import com.alibaba.alink.operator.common.dataproc.format.FormatTransMapper;
@@ -15,6 +16,7 @@ import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
  */
 @SelectedColsWithFirstInputSpec
 @NameCn("")
+@Internal
 public class BaseFormatTransStreamOp<T extends BaseFormatTransStreamOp <T>>
 	extends MapStreamOp <T> implements HasReservedColsDefaultAsNull<T> {
 

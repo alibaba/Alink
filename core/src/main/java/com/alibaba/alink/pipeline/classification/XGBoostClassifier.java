@@ -2,12 +2,14 @@ package com.alibaba.alink.pipeline.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.XGBoostTrainBatchOp;
 import com.alibaba.alink.params.xgboost.XGBoostPredictParams;
 import com.alibaba.alink.params.xgboost.XGBoostTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
 
+@NameCn("XGBoost二分类训练")
 public class XGBoostClassifier extends Trainer <XGBoostClassifier, XGBoostClassificationModel> implements
 	XGBoostTrainParams <XGBoostClassifier>,
 	XGBoostPredictParams <XGBoostClassifier> {

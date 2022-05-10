@@ -27,7 +27,7 @@ public class ToMTableMapper extends SISOMapper {
 		MTable mTable = null;
 		try {
 			if (input instanceof String) {
-				mTable = new MTable((String) input);
+				mTable = MTable.fromJson((String) input);
 			} else if (input instanceof MTable) {
 				mTable = (MTable) input;
 			} else {

@@ -51,7 +51,7 @@ public class MTableTest {
 		System.out.println(mTable);
 		System.out.println(new SparseVector(3, new int[] {1}, new double[] {2.0}).toString());
 		System.out.println(new DenseVector(new double[] {0.0, 1.0}).toString());
-		System.out.println(new MTable(JsonConverter.toJson(mTable)));
+		System.out.println(MTable.fromJson(JsonConverter.toJson(mTable)));
 
 		List <Object> objects = MTableUtil.getColumn(mTable, "col0");
 		System.out.println(objects);
@@ -217,7 +217,7 @@ public class MTableTest {
 			DataSet <Row> ret = data.map(new MapFunction <Row, Row>() {
 				@Override
 				public Row map(Row value) throws Exception {
-					MTable mTable = new MTable(JsonConverter.toJson(value.getField(0)));
+					MTable mTable = MTable.fromJson(JsonConverter.toJson(value.getField(0)));
 					return Row.of(mTable);
 				}
 			});
