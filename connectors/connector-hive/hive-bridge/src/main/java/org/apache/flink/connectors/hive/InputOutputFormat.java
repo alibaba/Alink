@@ -54,7 +54,7 @@ public class InputOutputFormat {
 	}
 
 	public static OutputFormat <Row> createOutputFormat(
-		Catalog catalog, DynamicTableFactory.Context context, Map <String, String> partitions) {
+		Catalog catalog, DynamicTableFactory.Context context, Map <String, String> partitions, Boolean overwriteSink) {
 
 		if (!(catalog instanceof HiveCatalog)) {
 			throw new RuntimeException("Catalog should be hive catalog.");
@@ -71,6 +71,8 @@ public class InputOutputFormat {
 		if (partitions != null) {
 			hiveTableSink.applyStaticPartition(partitions);
 		}
+
+        hiveTableSink.applyOverwrite(overwriteSink);
 
 		return hiveTableSink.getOutputFormat();
 	}

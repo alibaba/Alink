@@ -833,6 +833,7 @@ public class HiveCatalog extends BaseCatalog {
 		return factory.doAsThrowRuntime(() -> {
 
 			String partitionSpec = params.get(HiveCatalogParams.PARTITION);
+            boolean overwriteSink = params.get(HiveCatalogParams.OVERWRITE_SINK);
 
 			Map <String, String> partitions = null;
 			if (!StringUtils.isNullOrWhitespaceOnly(partitionSpec)) {
@@ -844,10 +845,10 @@ public class HiveCatalog extends BaseCatalog {
 				true, Thread.currentThread().getContextClassLoader()
 			);
 
-			Method method = inputOutputFormat.getMethod("createOutputFormat", Catalog.class, DynamicTableFactory.Context.class, Map.class);
+			Method method = inputOutputFormat.getMethod("createOutputFormat", Catalog.class, DynamicTableFactory.Context.class, Map.class, Boolean.class);
 
 			OutputFormat<Row> internalRet =
-				(OutputFormat <Row>) method.invoke(null, catalog, context, partitions);
+				(OutputFormat <Row>) method.invoke(null, catalog, context, partitions, overwriteSink);
 
 			return new RichOutputFormatWithClassLoader(factory, internalRet);
 		});
