@@ -69,6 +69,25 @@ public class Export2FileSinkStreamOpTest extends AlinkTestBase {
 		export2FileSinkStreamOp.linkFrom(randomTableSourceStreamOp);
 
 		StreamOperator.execute();
+
+		new AkSourceStreamOp()
+			.setFilePath(filePath)
+			.setPartitions("second='56'")
+			.print();
+		StreamOperator.execute();
+
+		new AkSourceStreamOp()
+			.setFilePath(filePath)
+			.setPartitions("second <= '60'")
+			.print();
+		StreamOperator.execute();
+
+		new AkSourceStreamOp()
+			.setFilePath(filePath)
+			.setPartitions("second BETWEEN '10' AND '60'")
+			.print();
+		
+		StreamOperator.execute();
 	}
 
 	@Ignore
@@ -78,7 +97,7 @@ public class Export2FileSinkStreamOpTest extends AlinkTestBase {
 
 		new AkSourceBatchOp()
 			.setFilePath(filePath)
-			.setPartitions("second='56'")
+			.setPartitions("second=56")
 			.print();
 	}
 
@@ -89,7 +108,7 @@ public class Export2FileSinkStreamOpTest extends AlinkTestBase {
 
 		new AkSourceStreamOp()
 			.setFilePath(filePath)
-			.setPartitions("second='56'")
+			.setPartitions("second=56")
 			.print();
 
 		StreamOperator.execute();

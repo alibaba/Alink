@@ -7,22 +7,11 @@ import com.alibaba.alink.params.io.shared.HasPluginVersion;
 
 public interface RedisParams<T> extends HasPluginVersion <T> {
 	/**
-	 * REDIS_IP, REDIS_PORT, DATABASE_INDEX and TIMEOUT only works in cluster mode 
+	 * REDIS_IP, REDIS_PORT, DATABASE_INDEX and TIMEOUT only works in cluster mode
 	 * REDIS_IPS only works in cluster mode, the format is "ip:port,ip:port,..."
 	 */
 	ParamInfo <String> REDIS_PASSWORD = ParamInfoFactory.createParamInfo("redisPassword", String.class)
 		.setDescription("the password of the Redis server.")
-		.build();
-
-	@Deprecated
-	ParamInfo <String> REDIS_IP = ParamInfoFactory.createParamInfo("redisIP", String.class)
-		.setDescription("the IPs of the Redis server.")
-		.build();
-
-	@Deprecated
-	ParamInfo <Integer> REDIS_PORT = ParamInfoFactory.createParamInfo("redisPort", Integer.class)
-		.setDescription("the port of the Redis server.")
-		.setHasDefaultValue(6379)
 		.build();
 
 	ParamInfo <Long> DATABASE_INDEX = ParamInfoFactory.createParamInfo("databaseIndex", Long.class)
@@ -43,6 +32,11 @@ public interface RedisParams<T> extends HasPluginVersion <T> {
 		.setHasDefaultValue(false)
 		.build();
 
+	ParamInfo <Integer> PIPELINE_SIZE = ParamInfoFactory.createParamInfo("pipelineSize", Integer.class)
+		.setDescription("Redis sends commands using pipelining.")
+		.setHasDefaultValue(1)
+		.build();
+
 	default Boolean getClusterMode() {
 		return get(CLUSTER_MODE);
 	}
@@ -57,22 +51,6 @@ public interface RedisParams<T> extends HasPluginVersion <T> {
 
 	default T setRedisIPs(String... value) {
 		return set(REDIS_IPS, value);
-	}
-
-	default String getRedisIP() {
-		return get(REDIS_IP);
-	}
-
-	default T setRedisIP(String value) {
-		return set(REDIS_IP, value);
-	}
-
-	default Integer getRedisPort() {
-		return get(REDIS_PORT);
-	}
-
-	default T setRedisPort(int value) {
-		return set(REDIS_PORT, value);
 	}
 
 	default String getRedisPassword() {
@@ -98,4 +76,6 @@ public interface RedisParams<T> extends HasPluginVersion <T> {
 		return set(TIMEOUT, value);
 	}
 
+	default T setPipelineSize(int value) {return set(PIPELINE_SIZE, value);}
+	default int getPipelineSize() {return get(PIPELINE_SIZE);}
 }

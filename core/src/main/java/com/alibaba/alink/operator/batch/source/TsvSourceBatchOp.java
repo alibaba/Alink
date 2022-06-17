@@ -37,6 +37,7 @@ public final class TsvSourceBatchOp extends BaseSourceBatchOp <TsvSourceBatchOp>
 			.setIgnoreFirstLine(getIgnoreFirstLine())
 			.setSchemaStr(getSchemaStr())
 			.setSkipBlankLine(getSkipBlankLine())
+			.setPartitions(getPartitions())
 			.getOutputTable();
 	}
 }

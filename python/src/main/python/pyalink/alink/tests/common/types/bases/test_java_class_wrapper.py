@@ -3,11 +3,9 @@ import unittest
 from py4j.java_gateway import JavaClass
 
 from pyalink.alink import *
-
-
-def get_all_subclasses(cls):
-    return set(cls.__subclasses__()).union(
-        [s for c in cls.__subclasses__() for s in get_all_subclasses(c)])
+from pyalink.alink.common.types.bases.j_obj_wrapper import JavaObjectWrapperWithAutoTypeConversion
+from pyalink.alink.common.types.conversion.type_converters import get_all_subclasses
+from pyalink.alink.py4j_util import get_java_class
 
 
 class TestJavaClassWrapper(unittest.TestCase):

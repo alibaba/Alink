@@ -27,11 +27,11 @@ public class LibtorchUtils {
 
 	static {
 		LIBTORCH_PATH_MAP.put(Pair.of(OsType.MACOSX, "1.8.1"),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/libtorch_macosx-1.8.1/libtorch-macos-1.8.1.zip");
+			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/alink-plugins/resources/libtorch_macosx-1.8.1/libtorch-macos-1.8.1.zip");
 		LIBTORCH_PATH_MAP.put(Pair.of(OsType.LINUX, "1.8.1"),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/libtorch_linux-1.8.1/libtorch-shared-with-deps-1.8.1-cpu.zip");
+			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/alink-plugins/resources/libtorch_linux-1.8.1/libtorch-shared-with-deps-1.8.1-cpu.zip");
 		LIBTORCH_PATH_MAP.put(Pair.of(OsType.WINDOWS, "1.8.1"),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/libtorch_windows-1.8.1/libtorch-shared-with-deps-1.8.1-cpu.zip");
+			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/alink-plugins/resources/libtorch_windows-1.8.1/libtorch-win-shared-with-deps-1.8.1-cpu.zip");
 	}
 
 	static RegisterKey getRegisterKey(OsType systemType, String pluginVersion) {
@@ -45,7 +45,7 @@ public class LibtorchUtils {
 		return getRegisterKey(OsUtils.getSystemType(), pluginVersion);
 	}
 
-	public static String getLibtorchPath(String pluginVersion) {
+	public static String getLibtorchPath(ResourcePluginFactory factory, String pluginVersion) {
 		OsType systemType = OsUtils.getSystemType();
 		String remotePath = LIBTORCH_PATH_MAP.get(Pair.of(systemType, pluginVersion));
 
@@ -53,7 +53,7 @@ public class LibtorchUtils {
 		FilePath pluginFilePath = null;
 		RegisterKey registerKey = getRegisterKey(pluginVersion);
 		try {
-			pluginFilePath = ResourcePluginFactory.getResourcePluginPath(registerKey);
+			pluginFilePath = factory.getResourcePluginPath(registerKey);
 		} catch (Exception e) {
 			String info = String.format("Cannot prepare plugin for %s-%s, fallback to direct downloading from %s.",
 				registerKey.getName(), registerKey.getVersion(), remotePath);

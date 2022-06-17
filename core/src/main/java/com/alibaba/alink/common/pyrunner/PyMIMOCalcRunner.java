@@ -2,6 +2,7 @@ package com.alibaba.alink.common.pyrunner;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,12 @@ public class PyMIMOCalcRunner<HANDLE extends PyMIMOCalcHandle> extends PyCalcRun
 	private static final Logger LOG = LoggerFactory.getLogger(PyMIMOCalcRunner.class);
 
 	public PyMIMOCalcRunner(String pythonClassName, SerializableBiFunction <String, String, String> getConfigFn) {
-		super(pythonClassName, getConfigFn);
+		this(pythonClassName, getConfigFn, new ResourcePluginFactory());
+	}
+
+	public PyMIMOCalcRunner(String pythonClassName, SerializableBiFunction <String, String, String> getConfigFn,
+							ResourcePluginFactory factory) {
+		super(pythonClassName, getConfigFn, factory);
 	}
 
 	static Object[] rowToObjectArray(Row row) {

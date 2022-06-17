@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.dl.plugin;
 
+import com.alibaba.alink.common.dl.plugin.DLPredictServiceMapper.PredictorConfig;
 import com.alibaba.alink.common.linalg.tensor.BoolTensor;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.LongTensor;
@@ -12,7 +13,7 @@ import org.pytorch.Tensor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
+import java.io.Closeable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -25,22 +26,12 @@ import static com.alibaba.alink.common.dl.utils.PyTorchTensorConversionUtils.toP
 /**
  * This class provides a base wrapper for PyTorch predictor. This class is not thread-safe, as {@link Module} not.
  */
-public class TorchJavaPredictor implements Serializable {
+public class TorchJavaPredictor implements DLPredictorService, Closeable {
 	private static final Logger LOG = LoggerFactory.getLogger(TorchJavaPredictor.class);
 
-	private final String modelPath;
-	private final Class <?>[] outputTypeClasses;
+	private Class <?>[] outputTypeClasses;
 	private Module module;
 	private long counter = 0;
-
-	public TorchJavaPredictor(String modelPath, Class <?>[] outputTypeClasses) {
-		this.modelPath = modelPath;
-		this.outputTypeClasses = outputTypeClasses;
-	}
-
-	public void open() {
-		module = Module.load(this.modelPath);
-	}
 
 	public List <?> predict(List <?> inputs) {
 		int numInputs = inputs.size();
@@ -58,6 +49,18 @@ public class TorchJavaPredictor implements Serializable {
 		}
 		counter += 1;
 		return outputs;
+	}
+
+	@Override
+	public List <List <?>> predictRows(List <List <?>> inputs, int batchSize) {
+		throw new UnsupportedOperationException("Not supported batch inference yet.");
+	}
+
+	@Override
+	public void open(PredictorConfig config) {
+		String modelPath = config.modelPath;
+		outputTypeClasses = config.outputTypeClasses;
+		module = Module.load(modelPath);
 	}
 
 	public void close() {

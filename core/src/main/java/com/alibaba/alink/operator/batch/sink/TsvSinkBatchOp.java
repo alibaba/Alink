@@ -7,7 +7,7 @@ import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.io.TsvSinkParams;
+import com.alibaba.alink.params.io.TsvSinkBatchParams;
 
 /**
  * Sink data to files in tab-separated values.
@@ -15,7 +15,7 @@ import com.alibaba.alink.params.io.TsvSinkParams;
 @IoOpAnnotation(name = "tsv", ioType = IOType.SinkBatch)
 @NameCn("TSV文件导出")
 public final class TsvSinkBatchOp extends BaseSinkBatchOp <TsvSinkBatchOp>
-	implements TsvSinkParams <TsvSinkBatchOp> {
+	implements TsvSinkBatchParams <TsvSinkBatchOp> {
 
 	private static final long serialVersionUID = 6164316647487307444L;
 
@@ -28,7 +28,7 @@ public final class TsvSinkBatchOp extends BaseSinkBatchOp <TsvSinkBatchOp>
 	}
 
 	@Override
-	public TsvSinkBatchOp sinkFrom(BatchOperator<?> in) {
+	public TsvSinkBatchOp sinkFrom(BatchOperator <?> in) {
 		in.link(
 			new CsvSinkBatchOp()
 				.setMLEnvironmentId(getMLEnvironmentId())
@@ -37,6 +37,7 @@ public final class TsvSinkBatchOp extends BaseSinkBatchOp <TsvSinkBatchOp>
 				.setFieldDelimiter("\t")
 				.setQuoteChar(null)
 				.setNumFiles(getNumFiles())
+				.setPartitionCols(getPartitionCols())
 		);
 		return this;
 	}

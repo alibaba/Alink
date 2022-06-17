@@ -113,7 +113,7 @@ public final class Export2FileSinkStreamOp extends BaseSinkStreamOp <Export2File
 			cols.append(",").append(names[i]);
 		}
 
-		final String windowEndCol = "window_end";
+		final String windowStartCol = "window_start";
 		final String mTableCol = "mt";
 
 		StreamOperator <?> stream;
@@ -129,7 +129,7 @@ public final class Export2FileSinkStreamOp extends BaseSinkStreamOp <Export2File
 						.setTimeCol(timeCol)
 						.setWindowTime(windowTime)
 						.setClause(
-							String.format("TUMBLE_END() as %s, MTABLE_AGG( %s ) AS %s", windowEndCol, cols, mTableCol)
+							String.format("TUMBLE_START() as %s, MTABLE_AGG( %s ) AS %s", windowStartCol, cols, mTableCol)
 						)
 				);
 		} else {
@@ -139,12 +139,12 @@ public final class Export2FileSinkStreamOp extends BaseSinkStreamOp <Export2File
 						.setTimeCol(timeCol)
 						.setWindowTime(windowTime)
 						.setClause(
-							String.format("TUMBLE_END() as %s, MTABLE_AGG( %s ) AS %s", windowEndCol, cols, mTableCol)
+							String.format("TUMBLE_START() as %s, MTABLE_AGG( %s ) AS %s", windowStartCol, cols, mTableCol)
 						)
 				);
 		}
 
-		final int windowEndColIndex = TableUtil.findColIndexWithAssert(stream.getSchema(), windowEndCol);
+		final int windowStartColIndex = TableUtil.findColIndexWithAssert(stream.getSchema(), windowStartCol);
 		final int mTableColIndex = TableUtil.findColIndexWithAssert(stream.getSchema(), mTableCol);
 
 		stream
@@ -154,7 +154,7 @@ public final class Export2FileSinkStreamOp extends BaseSinkStreamOp <Export2File
 					getFilePath(),
 					getOverwriteSink() ? FileSystem.WriteMode.OVERWRITE : FileSystem.WriteMode.NO_OVERWRITE,
 					dateFormats,
-					windowEndColIndex,
+					windowStartColIndex,
 					mTableColIndex
 				)
 			))

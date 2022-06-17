@@ -64,11 +64,11 @@ public abstract class BaseRecommender<T extends BaseRecommender <T>>
 
 	@Override
 	public LocalPredictor collectLocalPredictor(TableSchema inputSchema) {
-		List <Row> modelRows = this.modelData.collect();
+		List <Row> modelRows = this.getModelData().collect();
 		ModelMapper mapper =
 			new RecommMapper(
 				this.recommKernelBuilder, this.recommType,
-				modelData.getSchema(), inputSchema, this.getParams()
+				getModelData().getSchema(), inputSchema, this.getParams()
 			);
 
 		mapper.loadModel(modelRows);

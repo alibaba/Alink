@@ -30,7 +30,7 @@ public class OnnxJavaPredictorTest {
 		config.outputNames = new String[] {"21"};
 		config.outputTypeClasses = new Class <?>[] {FloatTensor.class};
 		config.threadMode = false;
-		predictor.open(config.toMap());
+		predictor.open(config);
 
 		FloatTensor input = new FloatTensor(new Shape(1, 1, 28, 28));
 		List <?> outputs = predictor.predict(Collections.singletonList(input));

@@ -13,7 +13,7 @@ public class OnnxPredictorClassLoaderFactory extends ClassLoaderFactory {
 
 	private static final String BASENAME = "onnx_predictor";
 
-	private static final String VERSION = "1.11.0";
+	private static final String VERSION = "1.11.0r1";
 
 	public OnnxPredictorClassLoaderFactory() {
 		this(VERSION);

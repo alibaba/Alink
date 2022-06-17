@@ -20,7 +20,9 @@ import java.util.Map;
 
 import static com.alibaba.alink.common.dl.DLEnvConfig.Version.TF115;
 import static com.alibaba.alink.common.dl.DLEnvConfig.Version.TF231;
-import static com.alibaba.alink.common.io.plugin.OsType.*;
+import static com.alibaba.alink.common.io.plugin.OsType.LINUX;
+import static com.alibaba.alink.common.io.plugin.OsType.MACOSX;
+import static com.alibaba.alink.common.io.plugin.OsType.WINDOWS;
 
 public class DLEnvConfig {
 	private final static Logger LOG = LoggerFactory.getLogger(DLEnvConfig.class);
@@ -60,8 +62,8 @@ public class DLEnvConfig {
 		return getRegisterKey(version, OsUtils.getSystemType());
 	}
 
-	static String getDefaultPythonEnv(Version version) {
-		String pythonEnv = null;
+	static String getDefaultPythonEnv(ResourcePluginFactory factory, Version version) {
+		String pythonEnv;
 
 		LOG.info("Start to prepare default python env: {}", JsonConverter.toJson(version));
 
@@ -87,7 +89,7 @@ public class DLEnvConfig {
 		FilePath pluginFilePath = null;
 		RegisterKey registerKey = getRegisterKey(version);
 		try {
-			pluginFilePath = ResourcePluginFactory.getResourcePluginPath(registerKey);
+			pluginFilePath = factory.getResourcePluginPath(registerKey);
 		} catch (Exception e) {
 			String info = String.format("Cannot prepare plugin for %s-%s, fallback to direct downloading from %s.",
 				registerKey.getName(), registerKey.getVersion(), remotePath);
@@ -112,12 +114,12 @@ public class DLEnvConfig {
 		return remotePath;
 	}
 
-	public static String getTF115DefaultPythonEnv() {
-		return getDefaultPythonEnv(TF115);
+	public static String getTF115DefaultPythonEnv(ResourcePluginFactory factory) {
+		return getDefaultPythonEnv(factory, TF115);
 	}
 
-	public static String getTF231DefaultPythonEnv() {
-		return getDefaultPythonEnv(TF231);
+	public static String getTF231DefaultPythonEnv(ResourcePluginFactory factory) {
+		return getDefaultPythonEnv(factory, TF231);
 	}
 
 	public enum Version {

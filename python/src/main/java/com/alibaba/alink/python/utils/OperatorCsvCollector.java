@@ -1,5 +1,6 @@
 package com.alibaba.alink.python.utils;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.lazy.LazyEvaluation;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.utils.MTableSerializeBatchOp;
@@ -7,6 +8,8 @@ import com.alibaba.alink.operator.batch.utils.TensorSerializeBatchOp;
 import com.alibaba.alink.operator.batch.utils.VectorSerializeBatchOp;
 import com.alibaba.alink.operator.common.io.csv.CsvFormatter;
 
+import java.io.BufferedWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,5 +63,15 @@ public class OperatorCsvCollector {
 			});
 			return lazyCsv;
 		}).collect(Collectors.toList());
+	}
+
+	public static String mtableToCsv(MTable mTable, String lineTerminator, String fieldDelimiter,
+									 Character quoteChar) throws Exception {
+		try (StringWriter stringWriter = new StringWriter();
+			 BufferedWriter bufferedWriter = new BufferedWriter(stringWriter)) {
+			mTable.writeCsvToFile(bufferedWriter);
+			bufferedWriter.flush();
+			return stringWriter.toString();
+		}
 	}
 }

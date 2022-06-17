@@ -4,7 +4,9 @@ import org.apache.flink.ml.api.core.Model;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.params.io.ModelFileSinkParams;
+import com.alibaba.alink.params.shared.HasModelFilePath;
 
 /**
  * The base class for a machine learning model.
@@ -31,7 +33,15 @@ public abstract class ModelBase<M extends ModelBase <M>> extends TransformerBase
 	 * @return the Table
 	 */
 	public BatchOperator <?> getModelData() {
-		return this.modelData;
+		if (this.modelData != null) {
+			return this.modelData;
+		} else if (getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
+			return new AkSourceBatchOp()
+				.setFilePath(getModelFilePath())
+				.setMLEnvironmentId(getMLEnvironmentId());
+		} else {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	/**

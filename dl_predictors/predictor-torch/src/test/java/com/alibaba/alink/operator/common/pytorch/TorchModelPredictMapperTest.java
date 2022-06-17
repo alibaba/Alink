@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.linalg.tensor.IntTensor;
 import com.alibaba.alink.common.linalg.tensor.LongTensor;
 import com.alibaba.alink.common.linalg.tensor.TensorInternalUtils;
@@ -87,6 +88,7 @@ public class TorchModelPredictMapperTest {
 
 	@Test
 	public void testMapMultiThread() throws Throwable {
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
 		Row item = Row.of(new LongTensor(new long[][] {{1, 2, 3}, {4, 5, 6}}), new IntTensor(3));
 		int numItems = 100;
 		Row[] rows = new Row[numItems];

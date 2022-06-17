@@ -5,6 +5,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.pyrunner.fn.DataConversionUtils;
 
+@SuppressWarnings("unused")
 public class RowTypeAdapter {
 
 	/**
@@ -33,9 +34,9 @@ public class RowTypeAdapter {
 		for (int k = 0; k < row.getArity(); k += 1) {
 			Object field = row.getField(k);
 			assert null != field;
-			if (!field.getClass().equals(fieldTypes[k].getTypeClass())) {
+			if (!fieldTypes[k].getTypeClass().isAssignableFrom(field.getClass())) {
 				throw new RuntimeException(String.format(
-					"Type not equal at %d: %s - %s", k,
+					"Value type is not equal or a subclass of specific field type at %d: %s - %s", k,
 					field.getClass().getName(),
 					fieldTypes[k].getTypeClass().getName()));
 			}

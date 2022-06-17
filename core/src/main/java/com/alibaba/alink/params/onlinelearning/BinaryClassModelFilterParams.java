@@ -36,4 +36,17 @@ public interface BinaryClassModelFilterParams<T> extends WithParams <T>,
 	default Double getAccuracyThreshold() {return get(ACCURACY_THRESHOLD);}
 
 	default T setAccuracyThreshold(Double value) {return set(ACCURACY_THRESHOLD, value);}
+
+
+	@NameCn("模型过滤的LogLoss阈值")
+	@DescCn("模型过滤的LogLoss阈值")
+	ParamInfo <Double> LOG_LOSS = ParamInfoFactory
+		.createParamInfo("logLoss", Double.class)
+		.setDescription("logLoss threshold")
+		.setHasDefaultValue(Double.MAX_VALUE)
+		.build();
+
+	default Double getLogLossThreshold() {return get(LOG_LOSS);}
+
+	default T setLogLossThreshold(Double value) {return set(LOG_LOSS, value);}
 }

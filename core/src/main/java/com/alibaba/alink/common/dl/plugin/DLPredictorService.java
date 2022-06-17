@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.dl.plugin;
 
+import com.alibaba.alink.common.dl.plugin.DLPredictServiceMapper.PredictorConfig;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +9,15 @@ import java.util.stream.Collectors;
 
 public interface DLPredictorService {
 
-	void open(Map <String, Object> config);
+	// only used by TF now
+	@Deprecated
+	default void open(Map <String, Object> config) {
+		throw new UnsupportedOperationException();
+	}
+
+	default void open(PredictorConfig config) {
+		throw new UnsupportedOperationException();
+	}
 
 	void close();
 

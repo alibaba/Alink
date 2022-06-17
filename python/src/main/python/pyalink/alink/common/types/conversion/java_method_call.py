@@ -1,27 +1,10 @@
 import functools
+from functools import wraps
 
-from .type_converters import py_obj_to_j_obj, j_value_to_py_value, py_list_to_j_array
+from .type_converters import py_obj_to_j_obj, j_value_to_py_value, py_list_to_j_array, get_all_subclasses
 from ....py4j_util import get_java_class
 
 __all__ = ['call_java_method', 'auto_convert_java_type']
-
-j_type_candidates = dict()
-
-j_type_candidates[int] = [
-    "java.lang.Integer",
-    "java.lang.Long",
-    "int",
-    "long"
-]
-j_type_candidates[float] = [
-    "java.lang.Float",
-    "java.lang.Double",
-    "float",
-    "double",
-]
-j_type_candidates[str] = ["java.lang.String"]
-
-all_candidates = [*j_type_candidates[int], *j_type_candidates[float], *j_type_candidates[str]]
 
 
 def call_java_method_recursive(func, *args):
@@ -40,6 +23,7 @@ def call_java_method_recursive(func, *args):
     :param args: arguments
     :return: a tuple indicating whether the function is called successfully, and the return value upon success.
     """
+
     def _get_first_elem(lst_or_item):
         if not isinstance(lst_or_item, (list, tuple,)):
             return lst_or_item
@@ -49,6 +33,34 @@ def call_java_method_recursive(func, *args):
             if not retval:
                 break
         return retval
+
+    def _setup_j_type_candidates():
+        j_type_candidates = dict()
+
+        j_type_candidates[int] = [
+            "java.lang.Integer",
+            "java.lang.Long",
+            "int",
+            "long"
+        ]
+        j_type_candidates[float] = [
+            "java.lang.Float",
+            "java.lang.Double",
+            "float",
+            "double",
+        ]
+        j_type_candidates[str] = ["java.lang.String"]
+        j_type_candidates[bool] = ['boolean', 'java.lang.Boolean']
+
+        # noinspection PyProtectedMember
+        from ..tensor import Tensor, NumericalTensor
+        for tensor_cls in get_all_subclasses(Tensor):
+            if tensor_cls == NumericalTensor:
+                continue
+            # noinspection PyProtectedMember
+            j_type_candidates[tensor_cls] = [tensor_cls._j_cls_name, Tensor._j_cls_name]
+
+        return j_type_candidates
 
     if len(args) == 0:
         try:
@@ -66,13 +78,25 @@ def call_java_method_recursive(func, *args):
         partial_f = functools.partial(func, arg)
         return call_java_method_recursive(partial_f, *args[1:])
     else:
+        if not hasattr(call_java_method_recursive, 'j_type_candidates'):
+            call_java_method_recursive.j_type_candidates = _setup_j_type_candidates()
+            call_java_method_recursive.all_candidates = [
+                *call_java_method_recursive.j_type_candidates[int],
+                *call_java_method_recursive.j_type_candidates[float],
+                *call_java_method_recursive.j_type_candidates[str]
+            ]
+
         first_elem = _get_first_elem(arg)
         if first_elem is not None:
             # TODO: fix for arrays of non-primitive types
             arg_type = type(first_elem)
-            candidates = j_type_candidates.get(arg_type, all_candidates)
+            from ..bases.j_obj_wrapper import JavaObjectWrapper
+            if issubclass(arg_type, (JavaObjectWrapper,)):
+                arg = list(map(lambda d: d.get_j_obj(), arg))
+            candidates = call_java_method_recursive.j_type_candidates.get(arg_type,
+                                                                          call_java_method_recursive.all_candidates)
         else:
-            candidates = all_candidates
+            candidates = call_java_method_recursive.all_candidates
         candidates = [*candidates, "Object"]
 
         for candidate in candidates:
@@ -122,6 +146,7 @@ def auto_convert_java_type(f):
     :return: the return value
     """
 
+    @wraps(f)
     def decorated_f(*args):
         return call_java_method(f, *args)
 

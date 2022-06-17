@@ -6,6 +6,8 @@ from .bases.j_obj_wrapper import JavaObjectWrapperWithAutoTypeConversion
 from .conversion.java_method_call import auto_convert_java_type, call_java_method
 from .data_type_display import DataTypeDisplay
 
+__all__ = ['Vector', 'DenseVector', 'SparseVector', 'DenseMatrix']
+
 
 class Vector(JavaObjectWrapperWithAutoTypeConversion, ABC):
     """

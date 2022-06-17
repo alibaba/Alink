@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.io.csv;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -20,10 +21,13 @@ import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.filesystem.copy.csv.RowCsvInputFormat;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.common.io.partition.CsvSourceCollectorCreator;
+import com.alibaba.alink.operator.common.io.partition.Utils;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import com.alibaba.alink.operator.stream.source.BaseSourceStreamOp;
 import com.alibaba.alink.params.io.CsvSourceParams;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -75,23 +79,40 @@ public final class InternalCsvSourceStreamOp extends BaseSourceStreamOp <Interna
 		StreamExecutionEnvironment execEnv =
 			MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment();
 		TableSchema dummySchema = new TableSchema(new String[] {"f1"}, new TypeInformation[] {Types.STRING});
+		String partitions = getPartitions();
 
-		if (protocol.equalsIgnoreCase("http") || protocol.equalsIgnoreCase("https")) {
-			HttpFileSplitReader reader = new HttpFileSplitReader(filePath);
-			rows = execEnv
-				.createInput(
-					new GenericCsvInputFormat(reader, dummySchema.getFieldTypes(), rowDelim, rowDelim,
-						ignoreFirstLine),
-					new RowTypeInfo(dummySchema.getFieldTypes(), dummySchema.getFieldNames()))
-				.name("http_csv_source");
+		if (partitions == null) {
+			if (protocol.equalsIgnoreCase("http") || protocol.equalsIgnoreCase("https")) {
+				HttpFileSplitReader reader = new HttpFileSplitReader(filePath);
+				rows = execEnv
+					.createInput(
+						new GenericCsvInputFormat(reader, dummySchema.getFieldTypes(), rowDelim, rowDelim,
+							ignoreFirstLine),
+						new RowTypeInfo(dummySchema.getFieldTypes(), dummySchema.getFieldNames()))
+					.name("http_csv_source");
+			} else {
+				RowCsvInputFormat inputFormat = new RowCsvInputFormat(
+					new Path(filePath), dummySchema.getFieldTypes(),
+					rowDelim, rowDelim, new int[] {0}, true,
+					getFilePath().getFileSystem()
+				);
+				inputFormat.setSkipFirstLineAsHeader(ignoreFirstLine);
+				rows = execEnv.createInput(inputFormat).name("csv_source");
+			}
 		} else {
-			RowCsvInputFormat inputFormat = new RowCsvInputFormat(
-				new Path(filePath), dummySchema.getFieldTypes(),
-				rowDelim, rowDelim, new int[] {0}, true,
-				getFilePath().getFileSystem()
-			);
-			inputFormat.setSkipFirstLineAsHeader(ignoreFirstLine);
-			rows = execEnv.createInput(inputFormat).name("csv_source");
+
+			Tuple2 <DataStream <Row>, TableSchema> schemaAndData;
+
+			try {
+				schemaAndData = Utils.readFromPartitionStream(
+					getParams(), getMLEnvironmentId(),
+					new CsvSourceCollectorCreator(dummySchema, rowDelim, ignoreFirstLine)
+				);
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+
+			rows = schemaAndData.f0;
 		}
 
 		rows = rows.flatMap(new CsvUtil.ParseCsvFunc(colTypes, fieldDelim, quoteChar, skipBlankLine, lenient));

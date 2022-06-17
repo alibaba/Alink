@@ -64,7 +64,7 @@ public class EvalOutlierBatchOpTest extends AlinkTestBase {
 		metrics.saveRocCurveAsImage(folder.getRoot().toPath() + "rocCurve.png", true);
 		metrics.saveKSAsImage(folder.getRoot().toPath() + "ks.png", true);
 		metrics.saveLiftChartAsImage(folder.getRoot().toPath() + "liftchart.png", true);
-		metrics.saveRecallPrecisionCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
+		metrics.savePrecisionRecallCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
 		metrics.saveLorenzCurveAsImage(folder.getRoot().toPath() + "lorenzCurve.png", true);
 	}
 
@@ -110,7 +110,7 @@ public class EvalOutlierBatchOpTest extends AlinkTestBase {
 		metrics.saveRocCurveAsImage(folder.getRoot().toPath() + "rocCurve.png", true);
 		metrics.saveKSAsImage(folder.getRoot().toPath() + "ks.png", true);
 		metrics.saveLiftChartAsImage(folder.getRoot().toPath() + "liftchart.png", true);
-		metrics.saveRecallPrecisionCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
+		metrics.savePrecisionRecallCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
 		metrics.saveLorenzCurveAsImage(folder.getRoot().toPath() + "lorenzCurve.png", true);
 	}
 
@@ -157,7 +157,7 @@ public class EvalOutlierBatchOpTest extends AlinkTestBase {
 		metrics.saveRocCurveAsImage(folder.getRoot().toPath() + "rocCurve.png", true);
 		metrics.saveKSAsImage(folder.getRoot().toPath() + "ks.png", true);
 		metrics.saveLiftChartAsImage(folder.getRoot().toPath() + "liftchart.png", true);
-		metrics.saveRecallPrecisionCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
+		metrics.savePrecisionRecallCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
 		metrics.saveLorenzCurveAsImage(folder.getRoot().toPath() + "lorenzCurve.png", true);
 	}
 
@@ -226,7 +226,7 @@ public class EvalOutlierBatchOpTest extends AlinkTestBase {
 		metrics.saveRocCurveAsImage(folder.getRoot().toPath() + "rocCurve.png", true);
 		metrics.saveKSAsImage(folder.getRoot().toPath() + "ks.png", true);
 		metrics.saveLiftChartAsImage(folder.getRoot().toPath() + "liftchart.png", true);
-		metrics.saveRecallPrecisionCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
+		metrics.savePrecisionRecallCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
 		metrics.saveLorenzCurveAsImage(folder.getRoot().toPath() + "lorenzCurve.png", true);
 	}
 
@@ -270,7 +270,7 @@ public class EvalOutlierBatchOpTest extends AlinkTestBase {
 		metrics.saveRocCurveAsImage(folder.getRoot().toPath() + "rocCurve.png", true);
 		metrics.saveKSAsImage(folder.getRoot().toPath() + "ks.png", true);
 		metrics.saveLiftChartAsImage(folder.getRoot().toPath() + "liftchart.png", true);
-		metrics.saveRecallPrecisionCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
+		metrics.savePrecisionRecallCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
 		metrics.saveLorenzCurveAsImage(folder.getRoot().toPath() + "lorenzCurve.png", true);
 	}
 
@@ -305,7 +305,7 @@ public class EvalOutlierBatchOpTest extends AlinkTestBase {
 		metrics.saveRocCurveAsImage(folder.getRoot().toPath() + "rocCurve.png", true);
 		metrics.saveKSAsImage(folder.getRoot().toPath() + "ks.png", true);
 		metrics.saveLiftChartAsImage(folder.getRoot().toPath() + "liftchart.png", true);
-		metrics.saveRecallPrecisionCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
+		metrics.savePrecisionRecallCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
 		metrics.saveLorenzCurveAsImage(folder.getRoot().toPath() + "lorenzCurve.png", true);
 	}
 
@@ -350,7 +350,7 @@ public class EvalOutlierBatchOpTest extends AlinkTestBase {
 		metrics.saveRocCurveAsImage(folder.getRoot().toPath() + "rocCurve.png", true);
 		metrics.saveKSAsImage(folder.getRoot().toPath() + "ks.png", true);
 		metrics.saveLiftChartAsImage(folder.getRoot().toPath() + "liftchart.png", true);
-		metrics.saveRecallPrecisionCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
+		metrics.savePrecisionRecallCurveAsImage(folder.getRoot().toPath() + "recallPrecision.png", true);
 		metrics.saveLorenzCurveAsImage(folder.getRoot().toPath() + "lorenzCurve.png", true);
 	}
 }

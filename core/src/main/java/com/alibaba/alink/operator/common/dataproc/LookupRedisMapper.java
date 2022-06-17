@@ -6,9 +6,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.io.filesystem.binary.RowSerializer;
-import com.alibaba.alink.common.io.redis.RedisClassLoaderFactory;
+import com.alibaba.alink.common.io.filesystem.binary.RowSerializerV2;
 import com.alibaba.alink.common.io.redis.Redis;
+import com.alibaba.alink.common.io.redis.RedisClassLoaderFactory;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dataproc.LookupRedisParams;
@@ -19,8 +19,8 @@ import com.alibaba.alink.params.dataproc.LookupRedisParams;
 public class LookupRedisMapper extends Mapper {
 	private final RedisClassLoaderFactory factory;
 
-	private transient RowSerializer keyRowSerializer;
-	private transient RowSerializer valueRowSerializer;
+	private transient RowSerializerV2 keyRowSerializer;
+	private transient RowSerializerV2 valueRowSerializer;
 	private transient Redis redis;
 
 	public LookupRedisMapper(TableSchema dataSchema, Params params) {
@@ -34,12 +34,12 @@ public class LookupRedisMapper extends Mapper {
 		super.open();
 		TableSchema valuesSchema = TableUtil.schemaStr2Schema(params.get(LookupRedisParams.OUTPUT_SCHEMA_STR));
 		String[] selectedColNames = params.get(LookupRedisParams.SELECTED_COLS);
-		keyRowSerializer = new RowSerializer(
+		keyRowSerializer = new RowSerializerV2(
 			selectedColNames,
 			TableUtil.findColTypesWithAssertAndHint(getDataSchema(), selectedColNames)
 		);
 
-		valueRowSerializer = new RowSerializer(
+		valueRowSerializer = new RowSerializerV2(
 			valuesSchema.getFieldNames(),
 			valuesSchema.getFieldTypes()
 		);
