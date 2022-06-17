@@ -3,9 +3,7 @@ import sys
 from threading import RLock
 from typing import Optional, List
 
-from py4j.java_gateway import GatewayParameters, CallbackServerParameters
-from py4j.java_gateway import JavaGateway
-from py4j.java_gateway import launch_gateway
+from py4j.java_gateway import GatewayParameters, CallbackServerParameters, is_instance_of, JavaGateway, launch_gateway
 from py4j.protocol import Py4JNetworkError
 
 from .common.utils.packages import in_ipython
@@ -45,6 +43,10 @@ def get_java_gateway():
 
 def get_java_class(name: str):
     return get_java_gateway().jvm.__getattr__(name)
+
+
+def is_java_instance(java_object, java_class):
+    return is_instance_of(get_java_gateway(), java_object, java_class)
 
 
 def list_all_jars() -> List[str]:

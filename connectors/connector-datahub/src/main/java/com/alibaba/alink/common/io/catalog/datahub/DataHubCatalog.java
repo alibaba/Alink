@@ -29,7 +29,6 @@ import org.apache.flink.table.catalog.exceptions.TableNotPartitionedException;
 import org.apache.flink.table.catalog.exceptions.TablePartitionedException;
 import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
-import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.io.catalog.SourceSinkFunctionCatalog;
@@ -189,7 +188,7 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 	}
 
 	@Override
-	public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
+	public void dropDatabase(String name, boolean ignoreIfNotExists)
 		throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
 		boolean exist = databaseExists(name);
 
@@ -308,7 +307,7 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 
 		String comment = table.getComment();
 
-		String sharedCountStr = table.getOptions().get("shareCount");
+		String sharedCountStr = table.getProperties().get("shareCount");
 
 		if (sharedCountStr == null) {
 			sharedCountStr = "1";
@@ -316,7 +315,7 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 
 		int sharedCount = Integer.parseInt(sharedCountStr);
 
-		String lifeCycleStr = table.getOptions().get("lifeCycle");
+		String lifeCycleStr = table.getProperties().get("lifeCycle");
 
 		if (lifeCycleStr == null) {
 			lifeCycleStr = "3";
@@ -352,12 +351,6 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 	public List <CatalogPartitionSpec> listPartitions(ObjectPath tablePath, CatalogPartitionSpec partitionSpec)
 		throws TableNotExistException, TableNotPartitionedException, CatalogException {
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public List <CatalogPartitionSpec> listPartitionsByFilter(ObjectPath tablePath, List <Expression> filters)
-		throws TableNotExistException, TableNotPartitionedException, CatalogException {
-		return null;
 	}
 
 	@Override

@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParquetUtil {
-	private static final BiMap<PrimitiveTypeName, TypeInformation<?>> PRIMITIVE_TYPE_MAP = HashBiMap.create();
+	private static final BiMap <PrimitiveTypeName, TypeInformation <?>> PRIMITIVE_TYPE_MAP = HashBiMap.create();
 
 	static {
 		PRIMITIVE_TYPE_MAP.put(PrimitiveTypeName.BOOLEAN, Types.BOOLEAN);
@@ -39,37 +39,33 @@ public class ParquetUtil {
 		PRIMITIVE_TYPE_MAP.put(PrimitiveTypeName.FLOAT, Types.FLOAT);
 	}
 
-	public static MessageType getReadSchemaFromParquetFile(FilePath filePath) throws IOException {
-		MessageType messageType = readSchemaFromFile(filePath);
+	public static MessageType getReadSchemaFromParquetFile(FilePath filePath) {
+		MessageType messageType;
+		try {
+			messageType = readSchemaFromFile(filePath);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("cannot read parquet footer");
+		}
+		if (messageType == null) {return null;}
 		RowTypeInfo schema = (RowTypeInfo) ParquetSchemaConverter.fromParquetType(messageType);
-		List<String[]> paths = messageType.getPaths();
-		List<Type> types = new ArrayList<>();
+		List <String[]> paths = messageType.getPaths();
+		List <Type> types = new ArrayList <>();
 
 		for (int i = 0; i < paths.size(); i++) {
 			String[] path = paths.get(i);
 			Type type = messageType.getType(path);
-			if(PRIMITIVE_TYPE_MAP.containsKey(type.asPrimitiveType().getPrimitiveTypeName())){
+			if (PRIMITIVE_TYPE_MAP.containsKey(type.asPrimitiveType().getPrimitiveTypeName())) {
 				types.add(type);
 			}
 		}
-		MessageType readMessageType = new MessageType("alink_parquet_source",types);
+		MessageType readMessageType = new MessageType("alink_parquet_source", types);
 		return readMessageType;
 	}
-
-	public static TableSchema getTableSchemaFromParquetFile(FilePath filePath) throws IOException {
-		MessageType messageType = getReadSchemaFromParquetFile(filePath);
-		RowTypeInfo schema = (RowTypeInfo) ParquetSchemaConverter.fromParquetType(messageType);
-		return new TableSchema(schema.getFieldNames(),schema.getFieldTypes());
-	}
-
-	;
 
 	public static MessageType readSchemaFromFile(FilePath filePath) throws IOException {
 		BaseFileSystem fs = filePath.getFileSystem();
 		Path path = filePath.getPath();
-		FileStatus pathFile = fs.getFileStatus(path);
-
-		if (pathFile.isDir()) {
+		if (fs.getFileStatus(path).isDir()) {
 			for (FileStatus fileStatus : fs.listStatus(path)) {
 				MessageType messageType = readSchemaFromFile(new FilePath(fileStatus.getPath(), fs));
 				if (messageType != null) {
@@ -77,13 +73,12 @@ public class ParquetUtil {
 				}
 			}
 		} else {
-			if(!path.getName().endsWith(".parquet")) {
-				return null;
-			}
 			try (ParquetFileReader fileReader
 					 = new ParquetFileReader(new ParquetInputFile(filePath),
 				ParquetReadOptions.builder().build())) {
 				return fileReader.getFileMetaData().getSchema();
+			}catch (IOException e){
+				return null;
 			}
 		}
 		return null;
@@ -92,7 +87,7 @@ public class ParquetUtil {
 	public static class ParquetInputFile implements InputFile {
 		private FilePath filePath;
 
-		public ParquetInputFile(FilePath filePath) throws IOException {
+		public ParquetInputFile(FilePath filePath) {
 			this.filePath = filePath;
 		}
 

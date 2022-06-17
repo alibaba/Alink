@@ -27,6 +27,7 @@ import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.common.dl.utils.DLTypeUtils;
 import com.alibaba.alink.common.dl.utils.DLUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.dl.DLLauncherParams;
@@ -55,10 +56,12 @@ import static com.alibaba.alink.common.dl.utils.DLLauncherUtils.adjustNumWorkers
 public final class DLLauncherStreamOp extends StreamOperator <DLLauncherStreamOp>
 	implements DLLauncherParams <DLLauncherStreamOp> {
 
+	private static final Logger LOG = LoggerFactory.getLogger(DLLauncherStreamOp.class);
+
 	// All IPs and ports are supposed to be collected within this time limit.
 	public static long DL_CLUSTER_START_TIME = 3 * 60 * 1000; // milliseconds
 
-	private static final Logger LOG = LoggerFactory.getLogger(DLLauncherStreamOp.class);
+	private final ResourcePluginFactory factory;
 
 	public DLLauncherStreamOp() {
 		this(new Params());
@@ -66,6 +69,7 @@ public final class DLLauncherStreamOp extends StreamOperator <DLLauncherStreamOp
 
 	public DLLauncherStreamOp(Params params) {
 		super(params);
+		factory = new ResourcePluginFactory();
 	}
 
 	private DLConfig setupDLConfig(TableSchema inputSchema, TableSchema outputSchema) {
@@ -201,7 +205,7 @@ public final class DLLauncherStreamOp extends StreamOperator <DLLauncherStreamOp
 			.withFeedbackType(TypeInformation.of(new TypeHint <Row>() {}));
 
 		DataStream <Row> iterationBody = iteration
-			.flatMap(new DLStreamCoFlatMapFunc(config.getMlConfig(), numWorkers, numPSs))
+			.flatMap(new DLStreamCoFlatMapFunc(config.getMlConfig(), numWorkers, numPSs, factory))
 			.name("DL_CLUSTER");
 
 		DataStream <Row> ipPortsStream = iterationBody.filter(new FilterFunction <Row>() {

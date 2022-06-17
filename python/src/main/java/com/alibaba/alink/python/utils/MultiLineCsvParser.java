@@ -4,6 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.io.csv.CsvParser;
@@ -48,5 +49,15 @@ public class MultiLineCsvParser {
 		TableSchema tableSchema = TableUtil.schemaStr2Schema(schemaStr);
 		List <Row> rows = csvToRows(content, schemaStr, lineTerminator, fieldDelimiter, quoteChar);
 		return new MemSourceStreamOp(rows, tableSchema);
+	}
+
+	@SuppressWarnings("unused")
+	public static MTable csvToMTable(String content, String schemaStr,
+									 String lineTerminator, String fieldDelimiter,
+									 Character quoteChar) {
+		@SuppressWarnings("deprecation")
+		TableSchema tableSchema = TableUtil.schemaStr2Schema(schemaStr);
+		List <Row> rows = csvToRows(content, schemaStr, lineTerminator, fieldDelimiter, quoteChar);
+		return new MTable(rows, tableSchema);
 	}
 }

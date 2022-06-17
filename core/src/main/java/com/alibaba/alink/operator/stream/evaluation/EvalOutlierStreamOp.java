@@ -8,7 +8,6 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
@@ -178,7 +177,7 @@ public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 		data = data.map(new ReplaceLabelMapFunction(outlierValueSet, 1, 0));
 
 		DataStream <OutlierMetricsSummary> windowsStatistics = data
-			.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+			.timeWindowAll(TimeUtil.convertTime(timeInterval))
 			.apply(new CalcOutlierMetricsSummaryWindowFunction(outlierValues));
 
 		DataStream <OutlierMetricsSummary> allStatistics = windowsStatistics

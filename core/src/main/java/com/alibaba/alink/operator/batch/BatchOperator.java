@@ -36,7 +36,9 @@ import com.alibaba.alink.operator.batch.sink.BaseSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
+import com.alibaba.alink.operator.batch.statistics.InternalFullStatsBatchOp;
 import com.alibaba.alink.operator.batch.statistics.SummarizerBatchOp;
+import com.alibaba.alink.operator.batch.utils.DiveVisualizer.DiveVisualizerConsumer;
 import com.alibaba.alink.operator.batch.utils.UDFBatchOp;
 import com.alibaba.alink.operator.batch.utils.UDTFBatchOp;
 import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
@@ -599,6 +601,22 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		for (Consumer <MTable> callback : callbacks) {
 			lazyRowOps.addCallback(d -> callback.accept(new MTable(d.getRight(), getSchema())));
 		}
+		return (T) this;
+	}
+
+	public final T lazyVizDive() {
+		sampleWithSize(10000).lazyCollect(new DiveVisualizerConsumer(getColNames()));
+		return (T) this;
+	}
+
+	public final T lazyVizStatistics() {
+		return lazyVizStatistics(getOutputTable().toString());
+	}
+
+	public final T lazyVizStatistics(String tableName) {
+		InternalFullStatsBatchOp internalFullStatsBatchOp = new InternalFullStatsBatchOp().linkFrom(this);
+		internalFullStatsBatchOp.lazyVizFullStats(new String[] {tableName});
+		//noinspection unchecked
 		return (T) this;
 	}
 

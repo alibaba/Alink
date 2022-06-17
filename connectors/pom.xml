@@ -20,6 +20,7 @@
         <module>connector-jdbc</module>
         <module>connector-hive</module>
         <module>connector-redis</module>
+        <module>connector-hbase</module>
         <module>filesystem</module>
         <module>connector-parquet-0.11</module>
         <module>connector-datahub</module>

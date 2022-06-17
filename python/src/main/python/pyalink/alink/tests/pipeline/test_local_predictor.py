@@ -4,8 +4,10 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from py4j.java_gateway import JavaObject
 
 from pyalink.alink import *
+from pyalink.alink.py4j_util import get_java_class
 
 
 class TestLocalPredictor(unittest.TestCase):
@@ -18,6 +20,34 @@ class TestLocalPredictor(unittest.TestCase):
         j_row = LocalPredictor._create_input_j_row(values, j_input_col_types)
         j_row_type_adapter = get_java_class("com.alibaba.alink.python.utils.RowTypeAdapter")
         j_row_type_adapter.checkRowType(j_row, j_input_col_types)
+
+    def test_tensor_vector_mtable_input_output(self):
+        input_schema_str = "col0 TENSOR, col1 DENSE_VECTOR, col2 MTABLE"
+        t = Tensor.fromNdarray(np.array([[1, 2], [3, 4]], dtype=np.int32))
+        v = DenseVector.ones(10)
+        m = MTable.fromDataframe(pd.DataFrame([
+            [1.0, "A", 0, 0, 0],
+            [2.0, "B", 1, 1, 0],
+            [3.0, "C", 2, 2, 1],
+            [4.0, "D", 3, 3, 1]
+        ]), 'f0 double, f1 string, f2 int, f3 int, label int')
+        values = [t, v, m]
+
+        # input
+        j_csv_util_cls = get_java_class("com.alibaba.alink.common.utils.TableUtil")
+        j_input_col_types: List[JavaObject] = j_csv_util_cls.getColTypes(input_schema_str)
+        j_row = LocalPredictor._create_input_j_row(values, j_input_col_types)
+        j_row_type_adapter = get_java_class("com.alibaba.alink.python.utils.RowTypeAdapter")
+        j_row_type_adapter.checkRowType(j_row, j_input_col_types)
+
+        # output
+        arr = LocalPredictor._j_row_to_arr(j_row)
+        self.assertEqual(3, len(arr))
+        self.assertTrue(isinstance(arr[0], (Tensor,)))
+        self.assertTrue(isinstance(arr[0], (IntTensor,)))
+        self.assertTrue(isinstance(arr[1], (DenseVector,)))
+        self.assertTrue(isinstance(arr[1], (Vector,)))
+        self.assertTrue(isinstance(arr[2], (MTable,)))
 
     def test_numeric_results(self):
         data = np.array([

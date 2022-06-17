@@ -11,6 +11,8 @@ import com.alibaba.alink.common.pyrunner.fn.conversion.DenseVectorWrapper;
 import com.alibaba.alink.common.pyrunner.fn.conversion.MTableWrapper;
 import com.alibaba.alink.common.pyrunner.fn.conversion.SparseVectorWrapper;
 import com.alibaba.alink.common.pyrunner.fn.conversion.TensorWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -24,6 +26,8 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 
 public class DataConversionUtils {
+
+	private static final Logger LOG = LoggerFactory.getLogger(DataConversionUtils.class);
 
 	/**
 	 * Convert a Java object to another one from which Py4j can easily construct a pure-Python equivalent for UDF/UDTF
@@ -157,7 +161,8 @@ public class DataConversionUtils {
 			}
 			return Timestamp.valueOf(obj.toString());
 		} else {
-			throw new RuntimeException("unsupported type: " + t.getClass().getName());
+			LOG.info("Unsupported type: " + t);
+			return obj;
 		}
 	}
 }

@@ -1,9 +1,12 @@
 package com.alibaba.alink.common.io.filesystem;
 
 import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.io.FilePathFilter;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.core.fs.FileInputSplit;
 import org.apache.flink.core.fs.FileStatus;
@@ -11,20 +14,25 @@ import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
+import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader.AkReadIterator;
 import com.alibaba.alink.common.io.filesystem.copy.FileInputFormat;
 import com.alibaba.alink.common.io.filesystem.copy.FileOutputFormat;
+import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.WhereBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.sink.Export2FileSinkStreamOp.Export2FileOutputFormat;
-import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
+import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
 import com.alibaba.alink.operator.stream.sql.WhereStreamOp;
 import org.apache.commons.io.IOUtils;
 
@@ -33,6 +41,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -120,7 +129,7 @@ public class AkUtils {
 	}
 
 	public static Tuple2 <TableSchema, List <Row>> readFromPath(
-		FilePath filePath, FilterFunction<Row> filterFunction) throws Exception {
+		FilePath filePath, FilterFunction <Row> filterFunction) throws Exception {
 
 		FileForEachReaderIterable reader = new FileForEachReaderIterable();
 
@@ -350,6 +359,10 @@ public class AkUtils {
 		private static final long serialVersionUID = 7495725429804084574L;
 		private AkMeta meta;
 
+		private final FilePath filePath;
+
+		private final WriteMode writeMode;
+
 		private transient AkStream.AkWriter.AkCollector collector;
 
 		public AkOutputFormat(FilePath filePath, AkMeta meta, WriteMode writeMode) {
@@ -359,46 +372,49 @@ public class AkUtils {
 
 			setWriteMode(writeMode);
 
-			// hack for initial stage of local filesystem.
-			if (filePath.getFileSystem().isDistributedFS()) {
-				return;
-			}
+			this.filePath = filePath;
 
-			// check if path exists
-			try {
-				if (filePath.getFileSystem().exists(filePath.getPath())) {
-					// path exists, check write mode
-					switch (writeMode) {
-
-						case NO_OVERWRITE:
-							// file or directory may not be overwritten
-							throw new RuntimeException(
-								"File or directory already exists. Existing files and directories are not overwritten "
-									+ "in "
-									+
-									WriteMode.NO_OVERWRITE.name() + " mode. Use " + WriteMode.OVERWRITE.name() +
-									" mode to overwrite existing files and directories.");
-
-						case OVERWRITE:
-							// output path exists. We delete it and all contained files in case of a directory.
-							filePath.getFileSystem().delete(filePath.getPath(), true);
-							break;
-
-						default:
-							throw new IllegalArgumentException("Invalid write mode: " + writeMode);
-					}
-				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			this.writeMode = writeMode;
 		}
 
 		@Override
 		public void open(int taskNumber, int numTasks) throws IOException {
 			super.open(taskNumber, numTasks);
+
 			collector = new AkStream(meta)
 				.getWriter(stream)
 				.getCollector();
+		}
+
+		@Override
+		public void initializeGlobal(int parallelism) throws IOException {
+
+			if (!filePath.getFileSystem().isDistributedFS() && filePath.getFileSystem().exists(filePath.getPath())) {
+				// path exists, check write mode
+				switch (writeMode) {
+
+					case NO_OVERWRITE:
+						// file or directory may not be overwritten
+						throw new RuntimeException(
+							"File or directory already exists. Existing files and directories are not overwritten "
+								+ "in "
+								+
+								WriteMode.NO_OVERWRITE.name() + " mode. Use " + WriteMode.OVERWRITE.name() +
+								" mode to overwrite existing files and directories.");
+
+					case OVERWRITE:
+
+						// output path exists. We delete it and all contained files in case of a directory.
+						filePath.getFileSystem().delete(filePath.getPath(), true);
+
+						break;
+
+					default:
+						throw new IllegalArgumentException("Invalid write mode: " + writeMode);
+				}
+			}
+
+			super.initializeGlobal(parallelism);
 		}
 
 		@Override
@@ -407,6 +423,7 @@ public class AkUtils {
 				collector.close();
 				collector = null;
 			}
+
 			super.close();
 		}
 
@@ -416,92 +433,146 @@ public class AkUtils {
 		}
 	}
 
-	public static Tuple3 <List<Row>, String, String> listPartitions(FilePath filePath, String pattern) throws IOException {
-		List<String> columns = getPartitionColumns(filePath);
-		String transPattern = transformPattern(pattern, columns);
-		int maxDepth = 0;
-		for (int i = 0; i < columns.size(); i++) {
-			if (pattern.contains(columns.get(i))) {
-				maxDepth = i + 1;
-			}
-		}
-		if (maxDepth == 0) {
-			throw new RuntimeException(String.format("cannot find partition column in pattern %s", pattern));
-		}
+	public static List <Row> listPartitions(FilePath filePath, int numCols) throws IOException {
+
+		int currentDepth = filePath.getPathStr().split(Path.SEPARATOR).length;
 		BaseFileSystem <?> baseFileSystem = filePath.getFileSystem();
 		Path rootPath = filePath.getPath();
-		List<String> pathDirectories = new ArrayList <>();
-		getRecursionDirectories(baseFileSystem, rootPath, pathDirectories, maxDepth, 0);
+		List <String> pathDirectories = new ArrayList <>();
+
+		getRecursionDirectories(baseFileSystem, rootPath, pathDirectories);
+
 		if (pathDirectories.size() == 0) {
-			throw new RuntimeException(String.format("no data in path %s", rootPath.getPath()));
+			throw new IllegalArgumentException(String.format("no data in path %s", rootPath.getPath()));
 		}
-		List<Row> rows = new ArrayList <>(pathDirectories.size());
+
+		List <Row> rows = new ArrayList <>(pathDirectories.size());
 		for (String pathDirectory : pathDirectories) {
 			String[] dirPaths = pathDirectory.split(Path.SEPARATOR);
-			Row row = new Row(maxDepth);
-			for (int j = 0; j < maxDepth; j++) {
-				String[] columnValues = splitPath(dirPaths[dirPaths.length - j - 1]);
-				row.setField(maxDepth - j - 1, columnValues[1]);
+			Row row = new Row(numCols);
+			for (int j = 0; j < numCols && j + currentDepth < dirPaths.length; j++) {
+				String[] columnValues = splitPath(dirPaths[currentDepth + j]);
+				row.setField(j, columnValues[1]);
 			}
 			rows.add(row);
 		}
-		StringBuilder buffer = new StringBuilder();
-		for (int i = 0; i < maxDepth; i++) {
-			buffer.append(columns.get(i));
-			buffer.append(" string");
-			if (i != maxDepth -1) {
-				buffer.append(",");
-			}
-		}
-		String schema = buffer.toString();
 
-		return Tuple3.of(rows, schema, transPattern);
+		return rows;
 	}
 
-	public static BatchOperator<?> selectPartitionBatchOp(Long mlEnvId, FilePath filePath, String pattern) throws IOException {
-		Tuple3<List<Row>, String, String> partitions = listPartitions(filePath, pattern);
-		BatchOperator<?> op = new MemSourceBatchOp(partitions.f0, partitions.f1)
-			.setMLEnvironmentId(mlEnvId);
-		return new WhereBatchOp()
-			.setClause(partitions.f2)
-			.setMLEnvironmentId(mlEnvId)
-			.linkFrom(op);
-	}
 
-	public static StreamOperator<?> selectPartitionStreamOp(
+	public static BatchOperator <?> selectPartitionBatchOp(
 		Long mlEnvId, FilePath filePath, String pattern) throws IOException {
 
-		Tuple3<List<Row>, String, String> partitions = listPartitions(filePath, pattern);
-		System.out.println(JsonConverter.toJson(partitions));
-		StreamOperator <?> op = new MemSourceStreamOp(partitions.f0, partitions.f1);
-		return new WhereStreamOp()
-			.setClause(partitions.f2)
-			.setMLEnvironmentId(mlEnvId)
-			.linkFrom(op);
+		return selectPartitionBatchOp(mlEnvId, filePath, pattern, null);
 	}
 
-	public static void getRecursionDirectories(BaseFileSystem <?> baseFileSystem,
-											   Path p,
-											   List<String> pathNames,
-											   int maxDepth, int currentDepth) throws IOException {
-		List<Path> paths = baseFileSystem.listDirectories(p);
-		if (currentDepth + 1 == maxDepth) {
-			for (Path path : paths) {
-				pathNames.add(path.getPath());
-			}
+	public static BatchOperator <?> selectPartitionBatchOp(
+		Long mlEnvId, FilePath filePath, String pattern, String[] colNames) throws IOException {
+
+		if (colNames == null) {
+			colNames = getPartitionColumns(filePath);
+		}
+		final int numCols = colNames.length;
+		final TypeInformation<?>[] colTypes = new TypeInformation<?>[colNames.length];
+		for (int i = 0; i < colNames.length; ++i) {
+			colTypes[i] = AlinkTypes.STRING;
+		}
+		final TableSchema schema = new TableSchema(colNames, colTypes);
+
+		return new TableSourceBatchOp(
+			DataSetConversionUtil.toTable(
+				mlEnvId,
+				MLEnvironmentFactory
+					.get(mlEnvId)
+					.getExecutionEnvironment()
+					.fromElements(0)
+					.reduceGroup(new GroupReduceFunction <Integer, Row>() {
+						@Override
+						public void reduce(Iterable <Integer> values, Collector <Row> out) throws Exception {
+							for (Row row : listPartitions(filePath, numCols)) {
+								out.collect(row);
+							}
+						}
+					})
+					.returns(new RowTypeInfo(schema.getFieldTypes()))
+					.rebalance(),
+				schema
+			))
+			.setMLEnvironmentId(mlEnvId)
+			.link(
+				new WhereBatchOp()
+					.setClause(transformPattern(pattern, colNames))
+					.setMLEnvironmentId(mlEnvId)
+			);
+	}
+
+	public static StreamOperator <?> selectPartitionStreamOp(
+		Long mlEnvId, FilePath filePath, String pattern) throws IOException {
+
+		return selectPartitionStreamOp(mlEnvId, filePath, pattern, null);
+	}
+
+	public static StreamOperator <?> selectPartitionStreamOp(
+		Long mlEnvId, FilePath filePath, String pattern, String[] colNames) throws IOException {
+
+		if (colNames == null) {
+			colNames = getPartitionColumns(filePath);
+		}
+		final int numCols = colNames.length;
+		final TypeInformation<?>[] colTypes = new TypeInformation<?>[colNames.length];
+		for (int i = 0; i < colNames.length; ++i) {
+			colTypes[i] = AlinkTypes.STRING;
+		}
+		final TableSchema schema = new TableSchema(colNames, colTypes);
+
+		return new TableSourceStreamOp(
+			DataStreamConversionUtil.toTable(
+				mlEnvId,
+				MLEnvironmentFactory
+					.get(mlEnvId)
+					.getStreamExecutionEnvironment()
+					.fromElements(0)
+					.flatMap(new RichFlatMapFunction <Integer, Row>() {
+						@Override
+						public void flatMap(Integer value, Collector <Row> out) throws Exception {
+							if (value == 0) {
+								for (Row row : listPartitions(filePath, numCols)) {
+									out.collect(row);
+								}
+							}
+						}
+					})
+					.returns(new RowTypeInfo(colTypes))
+					.rebalance(),
+				schema
+			))
+			.setMLEnvironmentId(mlEnvId)
+			.link(
+				new WhereStreamOp()
+					.setClause(transformPattern(pattern, colNames))
+					.setMLEnvironmentId(mlEnvId)
+			);
+	}
+
+	public static void getRecursionDirectories(BaseFileSystem <?> baseFileSystem, Path p, List <String> pathNames)
+		throws IOException {
+		List <Path> paths = baseFileSystem.listDirectories(p);
+		if (paths.size() == 0) {
+			pathNames.add(p.getPath());
 			return;
 		}
 		for (Path path : paths) {
-			getRecursionDirectories(baseFileSystem, path, pathNames, maxDepth, currentDepth + 1);
+			getRecursionDirectories(baseFileSystem, path, pathNames);
 		}
 	}
 
-	public static List<String> getPartitionColumns(FilePath filePath) throws IOException {
+	public static String[] getPartitionColumns(FilePath filePath) throws IOException {
 		BaseFileSystem <?> baseFileSystem = filePath.getFileSystem();
-		List<String> columns = new ArrayList <>();
+		List <String> columns = new ArrayList <>();
 		Path currentPath = filePath.getPath();
 		while (true) {
-			List<Path> subdirs = baseFileSystem.listDirectories(currentPath);
+			List <Path> subdirs = baseFileSystem.listDirectories(currentPath);
 			if (subdirs.size() == 0) {
 				break;
 			}
@@ -509,7 +580,7 @@ public class AkUtils {
 			String[] splitValues = splitPath(currentPath.getName());
 			columns.add(splitValues[0]);
 		}
-		return columns;
+		return columns.toArray(new String[0]);
 	}
 
 	public static String[] splitPath(String dirname) {
@@ -520,40 +591,37 @@ public class AkUtils {
 		return splits;
 	}
 
-	public static String transformPattern(String pattern, List<String> columns) {
-		String lower = pattern.toLowerCase();
-		HashSet<String> columnSet = new HashSet<>(columns);
+	public static String transformPattern(String pattern, String[] colNames) {
+		HashSet <String> columnSet = new HashSet <>(Arrays.asList(colNames));
+
 		StringBuilder buffer = new StringBuilder();
-		int start = 0, end = -1;
-		for (int i = 0; i < lower.length(); i++) {
-			if (lower.charAt(i) < 'a' || lower.charAt(i) > 'z') {
-				if (end > start) {
-					String column = lower.substring(start, end + 1);
-					if (columnSet.contains(column)) {
-						buffer.append('`');
-						buffer.append(column);
-						buffer.append('`');
-					} else {
-						buffer.append(column);
-					}
-				}
-				buffer.append(lower.charAt(i));
-				start = i + 1;
+		StringBuilder tempBuffer = new StringBuilder();
+		for (int i = 0; i < pattern.length(); i++) {
+			char currentChar = pattern.charAt(i);
+			if (currentChar >= 'a' && currentChar <= 'z' || currentChar >= '0' && currentChar <= '9') {
+				tempBuffer.append(currentChar);
 			} else {
-				end = i;
+				if (tempBuffer.length() > 0) {
+					String value = tempBuffer.toString();
+					if (columnSet.contains(value)) {
+						buffer.append("`").append(value).append("`");
+					} else {
+						buffer.append(value);
+					}
+					tempBuffer.setLength(0);
+				}
+				buffer.append(currentChar);
 			}
 		}
-		if (end > start) {
-			String column = lower.substring(start, end + 1);
-			if (columnSet.contains(column)) {
-				buffer.append('`');
-				buffer.append(column);
-				buffer.append('`');
+		if (tempBuffer.length() > 0) {
+			String value = tempBuffer.toString();
+			if (columnSet.contains(value)) {
+				buffer.append("`").append(value).append("`");
 			} else {
-				buffer.append(column);
+				buffer.append(value);
 			}
+			tempBuffer.setLength(0);
 		}
 		return buffer.toString();
 	}
-
 }

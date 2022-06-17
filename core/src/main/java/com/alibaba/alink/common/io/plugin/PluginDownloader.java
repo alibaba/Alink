@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -530,7 +529,7 @@ public class PluginDownloader {
 
 		Path lockFile = new Path(
 			System.getProperty("java.io.tmpdir"),
-			Paths.get(root, filePath + ".lock").normalize().toAbsolutePath().toString()
+			filePath + ".lock"
 		);
 
 		LOG.info("Lock file {} in plugin downloader.", lockFile);

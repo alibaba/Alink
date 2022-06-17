@@ -3,6 +3,7 @@ import sys
 import unittest
 
 from pyalink.alink import *
+from pyalink.alink.common.utils.printing import print_with_title
 
 
 class TestLazyModelTrainInfo(unittest.TestCase):

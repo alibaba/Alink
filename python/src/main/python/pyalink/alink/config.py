@@ -4,8 +4,6 @@ import subprocess
 from .common.utils.packages import get_alink_lib_path, get_pyflink_path, get_alink_plugins_path
 from .py4j_util import get_java_class
 
-__all__ = ['AlinkGlobalConfiguration']
-
 
 def _get_default_local_ip():
     cmd = '''ifconfig eth0|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"'''

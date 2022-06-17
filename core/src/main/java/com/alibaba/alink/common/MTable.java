@@ -24,7 +24,9 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MTable.MTableDeserializer;
 import com.alibaba.alink.common.MTable.MTableSerializer;
 import com.alibaba.alink.common.exceptions.MTableSerializerException;
+import com.alibaba.alink.common.io.filesystem.binary.BaseStreamRowSerializer;
 import com.alibaba.alink.common.io.filesystem.binary.RowStreamSerializer;
+import com.alibaba.alink.common.io.filesystem.binary.RowStreamSerializerV2;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -232,7 +234,7 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 		return calcCols.toArray(new String[0]);
 	}
 
-	public static boolean isSupportedType(TypeInformation <?> dataType) {
+	private static boolean isSupportedType(TypeInformation <?> dataType) {
 		return Types.DOUBLE.equals(dataType)
 			|| Types.LONG.equals(dataType)
 			|| Types.BYTE.equals(dataType)
@@ -590,182 +592,229 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 
 		@Override
 		public void write(Kryo kryo, Output output, MTable mTable) {
-			String schemaStr = mTable.getSchemaStr();
-			List <Row> data = mTable.getRows();
-
-			// null mask, 2-bits
-			byte nullMask = 0x0;
-
-			if (schemaStr == null) {
-				nullMask |= 0x1;
-			}
-
-			if (data == null) {
-				nullMask |= 0x2;
-			}
-
-			output.writeByte(nullMask);
-
-			// schema str is null and data is null
-			if (schemaStr == null && data == null) {
-				output.flush();
-				return;
-			}
-
-			// schema str is null and data is not null
-			if (schemaStr == null) {
-				kryo.writeClassAndObject(output, data);
-				output.flush();
-				return;
-			}
-
-			// schema str is not null and data is null
-			if (data == null) {
-				byte[] schemaStrBytes = schemaStr.getBytes(StandardCharsets.UTF_8);
-
-				int schemaLen = schemaStrBytes.length;
-
-				output.writeInt(schemaLen);
-
-				output.write(schemaStrBytes);
-
-				output.flush();
-
-				return;
-			}
-
-			// schema str is not null and data is not null
-			TableSchema tableSchema = mTable.getSchema();
-
-			byte[] schemaStrBytes = schemaStr.getBytes(StandardCharsets.UTF_8);
-			int schemaLen = schemaStrBytes.length;
-			int dataLen = data.size();
-
-			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-			try (GZIPOutputStream gzOut = new GZIPOutputStream(byteArrayOutputStream)) {
-
-				// write the length of schema.
-				writeInt(schemaLen, gzOut);
-
-				// write schema
-				gzOut.write(schemaStrBytes);
-
-				// write the length of data.
-				writeInt(dataLen, gzOut);
-
-				// write rows
-				RowStreamSerializer rowSerializer = new RowStreamSerializer(
-					tableSchema.getFieldNames(), tableSchema.getFieldTypes(), null, gzOut
-				);
-
-				for (Row row : data) {
-					rowSerializer.serialize(row);
-				}
-
-			} catch (IOException e) {
-				throw new MTableSerializerException("Write gzip output stream in MTable serializer error.", e);
-			}
-
-			output.writeInt(byteArrayOutputStream.size());
-
-			try {
-				byteArrayOutputStream.writeTo(output);
-			} catch (IOException e) {
-				throw new MTableSerializerException("Write data to output stream in MTable serializer error.", e);
-			}
-
-			output.flush();
+			mTableKyroSerializerWrite(kryo, output, mTable, new RowStreamSerializerFactoryV1());
 		}
 
 		@Override
 		public MTable read(Kryo kryo, Input input, Class <MTable> type) {
+			return mTableKyroSerializerRead(kryo, input, type, new RowStreamSerializerFactoryV1());
+		}
+	}
 
-			// read mask
-			byte nullMask = input.readByte();
+	public static class MTableKryoSerializerV2 extends Serializer <MTable> implements Serializable {
 
-			boolean schemaIsNull = (nullMask & 0x1) > 0;
-			boolean dataIsNull = (nullMask & 0x2) > 0;
+		@Override
+		public void write(Kryo kryo, Output output, MTable mTable) {
+			mTableKyroSerializerWrite(kryo, output, mTable, new RowStreamSerializerFactoryV2());
+		}
 
-			// schema is null and data is null
-			if (schemaIsNull && dataIsNull) {
-				return new MTable((List <Row>) null, (String) null);
+		@Override
+		public MTable read(Kryo kryo, Input input, Class <MTable> type) {
+			return mTableKyroSerializerRead(kryo, input, type, new RowStreamSerializerFactoryV2());
+		}
+	}
+
+	private static void mTableKyroSerializerWrite(Kryo kryo, Output output, MTable mTable,
+												  RowStreamSerializerFactory factory) {
+		String schemaStr = mTable.getSchemaStr();
+		List <Row> data = mTable.getRows();
+
+		// null mask, 2-bits
+		byte nullMask = 0x0;
+
+		if (schemaStr == null) {
+			nullMask |= 0x1;
+		}
+
+		if (data == null) {
+			nullMask |= 0x2;
+		}
+
+		output.writeByte(nullMask);
+
+		// schema str is null and data is null
+		if (schemaStr == null && data == null) {
+			output.flush();
+			return;
+		}
+
+		// schema str is null and data is not null
+		if (schemaStr == null) {
+			kryo.writeClassAndObject(output, data);
+			output.flush();
+			return;
+		}
+
+		// schema str is not null and data is null
+		if (data == null) {
+			byte[] schemaStrBytes = schemaStr.getBytes(StandardCharsets.UTF_8);
+
+			int schemaLen = schemaStrBytes.length;
+
+			output.writeInt(schemaLen);
+
+			output.write(schemaStrBytes);
+
+			output.flush();
+
+			return;
+		}
+
+		// schema str is not null and data is not null
+		TableSchema tableSchema = mTable.getSchema();
+
+		byte[] schemaStrBytes = schemaStr.getBytes(StandardCharsets.UTF_8);
+		int schemaLen = schemaStrBytes.length;
+		int dataLen = data.size();
+
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+		try (GZIPOutputStream gzOut = new GZIPOutputStream(byteArrayOutputStream)) {
+
+			// write the length of schema.
+			writeInt(schemaLen, gzOut);
+
+			// write schema
+			gzOut.write(schemaStrBytes);
+
+			// write the length of data.
+			writeInt(dataLen, gzOut);
+
+			// write rows
+			BaseStreamRowSerializer rowSerializer = factory.create(
+				tableSchema.getFieldNames(), tableSchema.getFieldTypes(), null, gzOut
+			);
+
+			for (Row row : data) {
+				rowSerializer.serialize(row);
 			}
 
-			// schema is null and data is not null
-			if (schemaIsNull) {
-				return new MTable((List <Row>) kryo.readClassAndObject(input), (String) null);
-			}
+		} catch (IOException e) {
+			throw new MTableSerializerException("Write gzip output stream in MTable serializer error.", e);
+		}
 
-			// schema is not null and data is null
-			if (dataIsNull) {
-				byte[] buffer = new byte[input.readInt()];
-				try {
-					IOUtils.readFully(input, buffer, 0, buffer.length);
-				} catch (IOException e) {
-					throw new MTableSerializerException("Read data from input stream in MTable serializer error.", e);
-				}
+		output.writeInt(byteArrayOutputStream.size());
 
-				return new MTable((List <Row>) null, new String(buffer, StandardCharsets.UTF_8));
-			}
+		try {
+			byteArrayOutputStream.writeTo(output);
+		} catch (IOException e) {
+			throw new MTableSerializerException("Write data to output stream in MTable serializer error.", e);
+		}
 
-			int bufferLen = input.readInt();
+		output.flush();
+	}
 
-			byte[] buffer = new byte[bufferLen];
+	public interface RowStreamSerializerFactory {
+		BaseStreamRowSerializer create(
+			String[] fieldNames, TypeInformation <?>[] fieldTypes,
+			InputStream boundInputStream, OutputStream boundOutputStream
+		);
+	}
 
+	public static class RowStreamSerializerFactoryV1 implements RowStreamSerializerFactory {
+
+		@Override
+		public BaseStreamRowSerializer create(String[] fieldNames, TypeInformation <?>[] fieldTypes,
+											  InputStream boundInputStream, OutputStream boundOutputStream) {
+			return new RowStreamSerializer(fieldNames, fieldTypes, boundInputStream, boundOutputStream);
+		}
+	}
+
+	public static class RowStreamSerializerFactoryV2 implements RowStreamSerializerFactory {
+
+		@Override
+		public BaseStreamRowSerializer create(String[] fieldNames, TypeInformation <?>[] fieldTypes,
+											  InputStream boundInputStream, OutputStream boundOutputStream) {
+			return new RowStreamSerializerV2(fieldNames, fieldTypes, boundInputStream, boundOutputStream);
+		}
+	}
+
+	private static MTable mTableKyroSerializerRead(Kryo kryo, Input input, Class <MTable> type,
+												   RowStreamSerializerFactory factory) {
+
+		// read mask
+		byte nullMask = input.readByte();
+
+		boolean schemaIsNull = (nullMask & 0x1) > 0;
+		boolean dataIsNull = (nullMask & 0x2) > 0;
+
+		// schema is null and data is null
+		if (schemaIsNull && dataIsNull) {
+			return new MTable((List <Row>) null, (String) null);
+		}
+
+		// schema is null and data is not null
+		if (schemaIsNull) {
+			return new MTable((List <Row>) kryo.readClassAndObject(input), (String) null);
+		}
+
+		// schema is not null and data is null
+		if (dataIsNull) {
+			byte[] buffer = new byte[input.readInt()];
 			try {
-				IOUtils.readFully(input, buffer, 0, bufferLen);
+				IOUtils.readFully(input, buffer, 0, buffer.length);
 			} catch (IOException e) {
 				throw new MTableSerializerException("Read data from input stream in MTable serializer error.", e);
 			}
 
-			try (GZIPInputStream gzIn = new GZIPInputStream(new ByteArrayInputStream(buffer))) {
+			return new MTable((List <Row>) null, new String(buffer, StandardCharsets.UTF_8));
+		}
 
-				// read the length of schema.
-				int schemaLen = readInt(gzIn);
+		int bufferLen = input.readInt();
 
-				// read schema
-				byte[] strBytes = new byte[schemaLen];
+		byte[] buffer = new byte[bufferLen];
 
-				IOUtils.readFully(gzIn, strBytes, 0, schemaLen);
+		try {
+			IOUtils.readFully(input, buffer, 0, bufferLen);
+		} catch (IOException e) {
+			throw new MTableSerializerException("Read data from input stream in MTable serializer error.", e);
+		}
 
-				String schemaStr = new String(strBytes, 0, schemaLen, StandardCharsets.UTF_8);
+		try (GZIPInputStream gzIn = new GZIPInputStream(new ByteArrayInputStream(buffer))) {
 
-				TableSchema schema = TableUtil.schemaStr2Schema(schemaStr);
+			// read the length of schema.
+			int schemaLen = readInt(gzIn);
 
-				// read the length of data
-				int dataLen = readInt(gzIn);
+			// read schema
+			byte[] strBytes = new byte[schemaLen];
 
-				// read rows
-				RowStreamSerializer rowSerializer = new RowStreamSerializer(
-					schema.getFieldNames(), schema.getFieldTypes(), gzIn, null
-				);
+			IOUtils.readFully(gzIn, strBytes, 0, schemaLen);
 
-				ArrayList <Row> data = new ArrayList <>(dataLen);
+			String schemaStr = new String(strBytes, 0, schemaLen, StandardCharsets.UTF_8);
 
-				for (int i = 0; i < dataLen; ++i) {
-					data.add(rowSerializer.deserialize());
-				}
+			TableSchema schema = TableUtil.schemaStr2Schema(schemaStr);
 
-				return new MTable(data, schemaStr);
-			} catch (IOException e) {
-				throw new MTableSerializerException("Read gzip input stream in MTable serializer error.", e);
+			// read the length of data
+			int dataLen = readInt(gzIn);
+
+			// read rows
+			BaseStreamRowSerializer rowSerializer = factory.create(
+				schema.getFieldNames(), schema.getFieldTypes(), gzIn, null
+			);
+
+			ArrayList <Row> data = new ArrayList <>(dataLen);
+
+			for (int i = 0; i < dataLen; ++i) {
+				data.add(rowSerializer.deserialize());
 			}
-		}
 
-		private static void writeInt(int value, OutputStream outputStream) throws IOException {
-			outputStream.write((value >> 24) & 0xFF);
-			outputStream.write((value >> 16) & 0xFF);
-			outputStream.write((value >> 8) & 0xFF);
-			outputStream.write((value) & 0xFF);
+			return new MTable(data, schemaStr);
+		} catch (IOException e) {
+			throw new MTableSerializerException("Read gzip input stream in MTable serializer error.", e);
 		}
+	}
 
-		private static int readInt(InputStream inputStream) throws IOException {
-			return (inputStream.read() & 0xFF) << 24
-				| (inputStream.read() & 0xFF) << 16
-				| (inputStream.read() & 0xFF) << 8
-				| (inputStream.read() & 0xFF);
-		}
+	private static void writeInt(int value, OutputStream outputStream) throws IOException {
+		outputStream.write((value >> 24) & 0xFF);
+		outputStream.write((value >> 16) & 0xFF);
+		outputStream.write((value >> 8) & 0xFF);
+		outputStream.write((value) & 0xFF);
+	}
 
+	private static int readInt(InputStream inputStream) throws IOException {
+		return (inputStream.read() & 0xFF) << 24
+			| (inputStream.read() & 0xFF) << 16
+			| (inputStream.read() & 0xFF) << 8
+			| (inputStream.read() & 0xFF);
 	}
 }

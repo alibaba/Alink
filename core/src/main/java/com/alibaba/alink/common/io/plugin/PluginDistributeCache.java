@@ -5,9 +5,15 @@ import com.alibaba.alink.common.exceptions.DistributePluginException;
 import com.google.common.collect.ImmutableMap;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class PluginDistributeCache extends DistributeCache {
+
+	static final String KEY_NAME = "name";
+	static final String KEY_VERSION = "version";
+	static final String KEY_AUTO_PLUGIN_DOWNLOAD = "autoPluginDownload";
+
 	private final Map <String, String> context;
 
 	public PluginDistributeCache(Map <String, String> context) {
@@ -21,8 +27,8 @@ public class PluginDistributeCache extends DistributeCache {
 
 	@Override
 	public void distributeAsLocalFile() throws IOException {
-		String name = context.get("name");
-		String version = context.get("version");
+		String name = context.get(KEY_NAME);
+		String version = context.get(KEY_VERSION);
 		String pluginDir = context.get(PluginConfig.ENV_ALINK_PLUGINS_DIR);
 		String pluginUrl = context.get(AlinkGlobalConfiguration.ALINK_PLUGIN_URL);
 
@@ -32,7 +38,7 @@ public class PluginDistributeCache extends DistributeCache {
 			return;
 		}
 
-		if (!Boolean.parseBoolean(context.get("autoPluginDownload"))) {
+		if (!Boolean.parseBoolean(context.get(KEY_AUTO_PLUGIN_DOWNLOAD))) {
 			throw new DistributePluginException(
 				String.format(
 					"Distribute [%s-%s] error because autoPluginDownload is false and plugin do not exist.",
@@ -44,16 +50,27 @@ public class PluginDistributeCache extends DistributeCache {
 		downloader.downloadPluginSafely(name, version);
 	}
 
+	public static Map <String, String> defaultGlobalContext() {
+		Map <String, String> globalContext = new HashMap <>();
+		globalContext.put(PluginConfig.ENV_ALINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir());
+		globalContext.put(PluginDistributeCache.KEY_AUTO_PLUGIN_DOWNLOAD,
+			Boolean.toString(AlinkGlobalConfiguration.getAutoPluginDownload()));
+		globalContext.put(AlinkGlobalConfiguration.ALINK_PLUGIN_URL, AlinkGlobalConfiguration.getPluginUrl());
+		return globalContext;
+	}
+
 	public static DistributeCache createDistributeCache(String pluginName, String pluginVersion) {
+		return createDistributeCache(pluginName, pluginVersion, defaultGlobalContext());
+	}
+
+	public static DistributeCache createDistributeCache(String pluginName, String pluginVersion,
+														Map <String, String> globalContext) {
 		return new PluginDistributeCacheGenerator().generate(
 			ImmutableMap. <String, String>builder()
-				.put("name", pluginName)
-				.put("version", pluginVersion)
-				.put(PluginConfig.ENV_ALINK_PLUGINS_DIR, AlinkGlobalConfiguration.getPluginDir())
-				.put("autoPluginDownload", Boolean.toString(AlinkGlobalConfiguration.getAutoPluginDownload()))
-				.put(AlinkGlobalConfiguration.ALINK_PLUGIN_URL, AlinkGlobalConfiguration.getPluginUrl())
+				.putAll(globalContext)
+				.put(KEY_NAME, pluginName)
+				.put(KEY_VERSION, pluginVersion)
 				.build()
 		);
 	}
-
 }

@@ -69,12 +69,12 @@ public class BertResources {
 		);
 	}
 
-	static String getBertResource(ModelName modelName, ResourceType type) {
+	static String getBertResource(ResourcePluginFactory factory, ModelName modelName, ResourceType type) {
 		String remotePath = BERT_RESOURCE_PATH_MAP.get(Pair.of(modelName, type));
 		RegisterKey registerKey = getRegisterKey(modelName, type);
 		FilePath pluginFilePath = null;
 		try {
-			pluginFilePath = ResourcePluginFactory.getResourcePluginPath(registerKey);
+			pluginFilePath = factory.getResourcePluginPath(registerKey);
 		} catch (IOException e) {
 			// pass
 			LOG.info("Could not find the plugin", e);
@@ -100,16 +100,16 @@ public class BertResources {
 		return remotePath;
 	}
 
-	public static String getBertModelVocab(String name) {
-		return getBertResource(ModelName.fromString(name), VOCAB);
+	public static String getBertModelVocab(ResourcePluginFactory factory, String name) {
+		return getBertResource(factory, ModelName.fromString(name), VOCAB);
 	}
 
-	public static String getBertSavedModel(String name) {
-		return getBertResource(ModelName.fromString(name), SAVED_MODEL);
+	public static String getBertSavedModel(ResourcePluginFactory factory, String name) {
+		return getBertResource(factory, ModelName.fromString(name), SAVED_MODEL);
 	}
 
-	public static String getBertModelCkpt(String name) {
-		return getBertResource(ModelName.fromString(name), CKPT);
+	public static String getBertModelCkpt(ResourcePluginFactory factory, String name) {
+		return getBertResource(factory, ModelName.fromString(name), CKPT);
 	}
 
 	public enum ModelName {

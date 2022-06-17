@@ -2,7 +2,7 @@ import os
 
 
 def is_flink_1_9() -> bool:
-    return False
+    return True
 
 
 def get_alink_lib_path() -> str:

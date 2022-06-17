@@ -47,12 +47,25 @@ class LocalPredictor(JavaObjectWrapper):
     def _create_input_j_row(values: Union[Sequence, np.ndarray], j_coltypes: List[JavaObject]) -> JavaObject:
         j_row_cls = get_java_class("org.apache.flink.types.Row")
         j_object_cls = get_java_class("java.lang.Object")
+
+        values = [
+            v if not isinstance(v, (JavaObjectWrapper,)) else v.get_j_obj()
+            for v in values
+        ]
         j_values_array = py_list_to_j_array(j_object_cls, len(values), values)
         j_row = j_row_cls.of(j_values_array)
 
         j_row_type_adapter = get_java_class("com.alibaba.alink.python.utils.RowTypeAdapter")
         j_row_type_adapter.adjustRowTypeInplace(j_row, j_coltypes)
         return j_row
+
+    @staticmethod
+    def _j_row_to_arr(j_row: JavaObject) -> np.ndarray:
+        output_size = j_row.getArity()
+        result = np.empty(output_size, dtype=object)
+        for i in range(output_size):
+            result[i] = j_value_to_py_value(j_row.getField(i))
+        return result
 
     def map(self, values: Union[Sequence, np.ndarray]) -> np.ndarray:
         if isinstance(values, (np.ndarray,)):
@@ -62,11 +75,10 @@ class LocalPredictor(JavaObjectWrapper):
 
         j_row = self._create_input_j_row(values, self._j_input_col_types)
         j_result_row = self.get_j_obj().map(j_row)
-        output_size = j_result_row.getArity()
-        result = np.empty(output_size, dtype=object)
-        for i in range(output_size):
-            result[i] = j_value_to_py_value(j_result_row.getField(i))
-        return result
+        return self._j_row_to_arr(j_result_row)
+
+    def predict(self, values: Union[Sequence, np.ndarray]) -> np.ndarray:
+        return self.map(values)
 
     def open(self):
         self.get_j_obj().open()

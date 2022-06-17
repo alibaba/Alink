@@ -118,7 +118,7 @@ public class MTableTest {
 			"col0 int, col1 string, label int, ts timestamp"
 				+ ", d_vec DENSE_VECTOR"
 				+ ", s_vec VECTOR");
-		System.out.println(mTable.toString());
+		System.out.println(mTable);
 
 		MTable mTable1 = new MTable(
 			rows1,
@@ -126,14 +126,20 @@ public class MTableTest {
 				+ ", d_vec DENSE_VECTOR"
 				+ ", s_vec VECTOR");
 
-		Row row = Row.of(1, 3, 4, mTable, "d4353", "dfadsfa", mTable1, "weidosdjaslje", 343, A);
-		Row row11 = Row.of(1, 3, 4, mTable, "d4353", "dfaderwerewrwesfa", mTable1, "weidosdjaslje", 343, A);
-		Row row22 = Row.of(1332323, 3, 4, mTable, "d4erwer353", "dfadsfa", mTable1, "weidoeeeeesdjaslje", 343, A);
-		Row row33 = Row.of(1, 333333, 4, mTable, "d4353", "dfadeesfa", mTable1, "weidoseeeedjaslje", 343, A);
+		MTable mTable2 = new MTable(
+			Collections.singletonList(Row.of(mTable, mTable1)),
+			"col0 MTABLE, col1 MTABLE"
+		);
+
+		Row row = Row.of(1, 3, 4, mTable, "d4353", "dfadsfa", mTable1, "weidosdjaslje", 343, A, mTable2);
+		Row row11 = Row.of(1, 3, 4, mTable, "d4353", "dfaderwerewrwesfa", mTable1, "weidosdjaslje", 343, A, mTable2);
+		Row row22 = Row.of(1332323, 3, 4, mTable, "d4erwer353", "dfadsfa", mTable1, "weidoeeeeesdjaslje", 343, A,
+			mTable2);
+		Row row33 = Row.of(1, 333333, 4, mTable, "d4353", "dfadeesfa", mTable1, "weidoseeeedjaslje", 343, A, mTable2);
 
 		Row[] allRows = new Row[] {row, row11, row22, row33};
 		new MemSourceBatchOp(allRows,
-			new String[] {"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9"}).print();
+			new String[] {"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"}).print();
 
 		new MemSourceBatchOp(
 			new DoubleTensor[][] {

@@ -1,8 +1,8 @@
 package com.alibaba.alink.common.sql.builtin;
 
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 
 import com.alibaba.alink.common.sql.builtin.agg.AvgUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.CountUdaf;
