@@ -18,49 +18,72 @@ public class ParquetClassLoaderFactory extends ClassLoaderFactory {
 	public final static String PARQUET_NAME = "parquet";
 
 	public ParquetClassLoaderFactory(String version) {
-		super(new RegisterKey(PARQUET_NAME, version), PluginDistributeCache.createDistributeCache(PARQUET_NAME, version));
+		super(new RegisterKey(PARQUET_NAME, version),
+			PluginDistributeCache.createDistributeCache(PARQUET_NAME, version));
 	}
 
-	public static ParquetSourceFactory create(ParquetClassLoaderFactory factory) {
-		ClassLoader classLoader = factory.create();
+	public ParquetSourceFactory createParquetSourceFactory() {
+		ClassLoader classLoader = ClassLoaderContainer.getInstance().create(registerKey, distributeCache, ParquetSourceFactory.class,
+			new ParquetSourceServiceFilter(), new ParquetSourceVersionGetter());
 
 		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
-			Iterator<ParquetSourceFactory> iter = ServiceLoader
-				.load(ParquetSourceFactory.class, classLoader)
+			Iterator <ParquetSourceFactory> iter = ServiceLoader.load(ParquetSourceFactory.class, classLoader)
 				.iterator();
 
 			if (iter.hasNext()) {
 				return iter.next();
 			} else {
-				throw new RuntimeException("Could not find the class factory in classloader.");
+				throw new RuntimeException("Could not find ParquetSourceFactory class factory in classloader.");
 			}
 		}
 	}
 
+	public ParquetReaderFactory createParquetReaderFactory() {
+		ClassLoader classLoader = ClassLoaderContainer.getInstance().create(registerKey, distributeCache, ParquetReaderFactory.class,
+			new ParquetReaderServiceFilter(), new ParquetReaderVersionGetter());
+
+		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
+			Iterator<ParquetReaderFactory> iter = ServiceLoader
+				.load(ParquetReaderFactory.class, classLoader)
+				.iterator();
+
+			if (iter.hasNext()) {
+				return iter.next();
+			} else {
+				throw new RuntimeException("Could not find ParquetReaderFactory class factory in classloader.");
+			}
+		}
+	}
 	@Override
 	public ClassLoader create() {
-		return ClassLoaderContainer.getInstance().create(
-			registerKey,
-			distributeCache,
-			ParquetSourceFactory.class,
-			new ParquetServiceFilter(),
-			new ParquetVersionGetter()
-		);
+		return ClassLoaderContainer.getInstance().create(registerKey, distributeCache, ParquetSourceFactory.class,
+			new ParquetSourceServiceFilter(), new ParquetSourceVersionGetter());
 	}
 
-	private static class ParquetServiceFilter implements Predicate<ParquetSourceFactory> {
-
+	private static class ParquetSourceServiceFilter implements Predicate <ParquetSourceFactory> {
 		@Override
 		public boolean test(ParquetSourceFactory factory) {
 			return true;
 		}
 	}
 
-	private static class ParquetVersionGetter implements
-		Function<Tuple2<ParquetSourceFactory, PluginDescriptor>, String> {
-
+	private static class ParquetSourceVersionGetter
+		implements Function <Tuple2 <ParquetSourceFactory, PluginDescriptor>, String> {
 		@Override
-		public String apply(Tuple2<ParquetSourceFactory, PluginDescriptor> factory) {
+		public String apply(Tuple2 <ParquetSourceFactory, PluginDescriptor> factory) {
+			return factory.f1.getVersion();
+		}
+	}
+
+	private static class ParquetReaderServiceFilter implements Predicate <ParquetReaderFactory> {
+		@Override
+		public boolean test(ParquetReaderFactory factory) {return true;}
+	}
+
+	private static class ParquetReaderVersionGetter
+		implements Function <Tuple2 <ParquetReaderFactory, PluginDescriptor>, String> {
+		@Override
+		public String apply(Tuple2 <ParquetReaderFactory, PluginDescriptor> factory) {
 			return factory.f1.getVersion();
 		}
 	}

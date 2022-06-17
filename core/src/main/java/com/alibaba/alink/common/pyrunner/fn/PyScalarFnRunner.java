@@ -19,7 +19,7 @@ public class PyScalarFnRunner<OUT, HANDLE extends PyScalarFnHandle <OUT>> extend
 
 	public PyScalarFnRunner(String fnSpecJson, Class <?> returnType,
 							SerializableBiFunction <String, String, String> runConfigGetter) {
-		super(PY_CLASS_NAME, runConfigGetter, false);
+		super(PY_CLASS_NAME, runConfigGetter);
 		this.fnSpecJson = fnSpecJson;
 		this.returnType = returnType;
 	}

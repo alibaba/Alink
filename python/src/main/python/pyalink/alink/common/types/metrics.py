@@ -184,8 +184,8 @@ class BinaryClassMetrics(BaseSimpleClassifierMetrics):
     def getPrc(self):
         return self.getPrc()
 
-    def getRecallPrecisionCurve(self):
-        return self.getRecallPrecisionCurve()
+    def getPrecisionRecallCurve(self):
+        return self.getPrecisionRecallCurve()
 
     def getLiftChart(self):
         return self.getLiftChart()
@@ -235,8 +235,8 @@ class BinaryClassMetrics(BaseSimpleClassifierMetrics):
             # noinspection PyTypeChecker
             display.display(display.Image(path))
 
-    def saveRecallPrecisionCurveAsImage(self, path, isOverwrite):
-        self.saveRecallPrecisionCurveAsImage(path, isOverwrite)
+    def savePrecisionRecallCurveAsImage(self, path, isOverwrite):
+        self.savePrecisionRecallCurveAsImage(path, isOverwrite)
         if in_ipython():
             from IPython import display
             # noinspection PyTypeChecker

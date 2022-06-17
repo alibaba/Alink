@@ -70,7 +70,8 @@ public final class LibSvmSourceBatchOp extends BaseSourceBatchOp <LibSvmSourceBa
 			.setMLEnvironmentId(getMLEnvironmentId())
 			.setFilePath(getFilePath())
 			.setFieldDelimiter("\n")
-			.setSchemaStr("content string");
+			.setSchemaStr("content string")
+			.setPartitions(getPartitions());
 
 		final int startIndex = getParams().get(LibSvmSourceParams.START_INDEX);
 

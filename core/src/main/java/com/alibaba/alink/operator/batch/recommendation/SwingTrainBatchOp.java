@@ -15,11 +15,11 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
-import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 @ParamSelectColumnSpec(name = "userCol")
 @ParamSelectColumnSpec(name = "itemCol")
 @NameCn("swing训练")
+@NameEn("Swing Recommendation Training")
 public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
     implements SwingTrainParams<SwingTrainBatchOp> {
     private static final long serialVersionUID = 6094224433980263495L;

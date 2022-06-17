@@ -10,6 +10,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Pipeline;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,10 +27,12 @@ public class RedisFactoryImpl implements RedisFactory {
 	private final int TIME_OUT = 10000;
 	private final int DEFAULT_STANDALONE_PORT = 6379;
 	private final int DEFAULT_CLUSTER_PORT = 7000;
+	private Boolean withPipelining;
 
 	@Override
 	public Redis create(Params params) {
 		Boolean useRedisCluster = params.get(RedisParams.CLUSTER_MODE);
+		withPipelining = params.get(RedisParams.PIPELINE_SIZE) > 1;
 		if (useRedisCluster) {
 			return jedisClusterCreate(params);
 		} else {
@@ -40,23 +43,17 @@ public class RedisFactoryImpl implements RedisFactory {
 	public Redis jedisCreate(Params params) {
 		String redisStandaloneIp;
 		Integer redisStandalonePort;
-		if (params.contains(RedisParams.REDIS_IP) && !params.contains(RedisParams.REDIS_IPS)) {
-			redisStandaloneIp = params.get(RedisParams.REDIS_IP);
-			redisStandalonePort = params.contains(RedisParams.REDIS_PORT) ? params.get(RedisParams.REDIS_PORT)
-				: DEFAULT_STANDALONE_PORT;
-		} else {
-			String redisIpPort = params.get(RedisParams.REDIS_IPS)[0];
-			if (redisIpPort.contains(":")) {
-				try {
-					redisStandaloneIp = redisIpPort.split(":")[0];
-					redisStandalonePort = Integer.parseInt(redisIpPort.split(":")[1]);
-				}catch (Exception e){
-					throw new IllegalArgumentException("illegal REDIS_IPS value, use 'ip:port' or ip alone");
-				}
-			} else {
-				redisStandaloneIp = redisIpPort;
-				redisStandalonePort = DEFAULT_STANDALONE_PORT;
+		String redisIpPort = params.get(RedisParams.REDIS_IPS)[0];
+		if (redisIpPort.contains(":")) {
+			try {
+				redisStandaloneIp = redisIpPort.split(":")[0];
+				redisStandalonePort = Integer.parseInt(redisIpPort.split(":")[1]);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("illegal REDIS_IPS value, use 'ip:port' or ip alone");
 			}
+		} else {
+			redisStandaloneIp = redisIpPort;
+			redisStandalonePort = DEFAULT_STANDALONE_PORT;
 		}
 		final Jedis redis = new Jedis(redisStandaloneIp, redisStandalonePort);
 		// if has database index and timeout secound
@@ -72,8 +69,36 @@ public class RedisFactoryImpl implements RedisFactory {
 		}
 
 		return new Redis() {
+			int pipelineSize = params.get(RedisParams.PIPELINE_SIZE);
+			List <byte[]> keyByteBuffer = new ArrayList <>(pipelineSize);
+			List <byte[]> valueByteBuffer = new ArrayList <>(pipelineSize);
+			List <String> keyStringBuffer = new ArrayList <>(pipelineSize);
+			List <String> valueStringBuffer = new ArrayList <>(pipelineSize);
+
 			@Override
 			public void close() {
+				if (withPipelining) {
+					redis.close();
+					return;
+				}
+				if (keyByteBuffer.size() > 0) {
+					Pipeline pipeline = redis.pipelined();
+					for (int i = 0; i < keyByteBuffer.size(); i++) {
+						pipeline.set(keyByteBuffer.get(i), valueByteBuffer.get(i));
+					}
+					pipeline.sync();
+					keyByteBuffer.clear();
+					valueByteBuffer.clear();
+				}
+				if (keyStringBuffer.size() > 0) {
+					Pipeline pipeline = redis.pipelined();
+					for (int i = 0; i < keyByteBuffer.size(); i++) {
+						pipeline.set(keyByteBuffer.get(i), valueByteBuffer.get(i));
+					}
+					pipeline.sync();
+					keyByteBuffer.clear();
+					valueByteBuffer.clear();
+				}
 				redis.close();
 			}
 
@@ -84,13 +109,46 @@ public class RedisFactoryImpl implements RedisFactory {
 
 			@Override
 			public String set(byte[] key, byte[] value) {
-				return redis.set(key, value);
+				if (withPipelining) {
+					return redis.set(key, value);
+				}
+				if (keyByteBuffer.size() < pipelineSize) {
+					keyByteBuffer.add(key);
+					valueByteBuffer.add(value);
+					return "add to buffer";
+				} else {
+					Pipeline pipeline = redis.pipelined();
+					for (int i = 0; i < keyByteBuffer.size(); i++) {
+						pipeline.set(keyByteBuffer.get(i), valueByteBuffer.get(i));
+					}
+					pipeline.sync();
+					keyByteBuffer.clear();
+					valueByteBuffer.clear();
+					return "flush buffer";
+				}
 			}
 
 			@Override
-			public 	String set(final String key, final String value){
-				return redis.set(key,value);
+			public String set(final String key, final String value) {
+				if (withPipelining) {
+					return redis.set(key, value);
+				}
+				if (keyStringBuffer.size() < pipelineSize) {
+					keyStringBuffer.add(key);
+					valueStringBuffer.add(value);
+					return "add to buffer";
+				} else {
+					Pipeline pipeline = redis.pipelined();
+					for (int i = 0; i < keyStringBuffer.size(); i++) {
+						pipeline.set(keyStringBuffer.get(i), valueStringBuffer.get(i));
+					}
+					pipeline.sync();
+					keyStringBuffer.clear();
+					valueStringBuffer.clear();
+					return "flush buffer";
+				}
 			}
+
 			@Override
 			public byte[] get(byte[] key) {
 
@@ -98,14 +156,15 @@ public class RedisFactoryImpl implements RedisFactory {
 			}
 
 			@Override
-			public String get(String key){
+			public String get(String key) {
 				return redis.get(key);
 			}
+
 			@Override
-			public List<byte[]> getKeys(){
-				Set<String> keySet = redis.keys("*");
-				List<byte[]> result = new ArrayList<>(keySet.size());
-				for(String s:keySet){
+			public List <byte[]> getKeys() {
+				Set <String> keySet = redis.keys("*");
+				List <byte[]> result = new ArrayList <>(keySet.size());
+				for (String s : keySet) {
 					result.add(s.getBytes());
 				}
 				return result;
@@ -157,8 +216,8 @@ public class RedisFactoryImpl implements RedisFactory {
 			}
 
 			@Override
-			public 	String set(final String key, final String value){
-				return jedisCluster.set(key,value);
+			public String set(final String key, final String value) {
+				return jedisCluster.set(key, value);
 			}
 
 			@Override
@@ -167,15 +226,15 @@ public class RedisFactoryImpl implements RedisFactory {
 			}
 
 			@Override
-			public String get(String key){
+			public String get(String key) {
 				return jedisCluster.get(key);
 			}
 
 			@Override
-			public List<byte[]> getKeys(){
-				Set<String> keySet = jedisCluster.hkeys("*");
-				List<byte[]> result = new ArrayList<>(keySet.size());
-				for(String s:keySet){
+			public List <byte[]> getKeys() {
+				Set <String> keySet = jedisCluster.hkeys("*");
+				List <byte[]> result = new ArrayList <>(keySet.size());
+				for (String s : keySet) {
 					result.add(s.getBytes());
 				}
 				return result;

@@ -2,9 +2,10 @@ package com.alibaba.alink.operator.stream.onlinelearning;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.flink.api.common.functions.Partitioner;
+import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
-import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeHint;
@@ -12,709 +13,523 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple4;
-import org.apache.flink.api.java.tuple.Tuple6;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
+import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.IterativeStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.co.RichCoFlatMapFunction;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
+import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.FmDataFormat;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.LogitLoss;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.LossFunction;
-import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.SquareLoss;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
+import com.alibaba.alink.operator.common.fm.FmModelData;
+import com.alibaba.alink.operator.common.fm.FmModelDataConverter;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.onlinelearning.FtrlTrainStreamOp.PrepareBatchSample;
+import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
+import com.alibaba.alink.operator.stream.source.NumSeqSourceStreamOp;
 import com.alibaba.alink.params.onlinelearning.OnlineFmTrainParams;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.alibaba.alink.operator.common.optim.FmOptimizer.calcY;
+
 /**
- * FM algorithm receive train data streams, using training samples to update model element by element, and output
- * model after every time interval.
+ * FM algorithm receive train data streams, using training samples to update model, and output model after every time
+ * interval.
  */
 
 @Internal
 @NameCn("在线FM训练")
-public final class OnlineFmTrainStreamOp extends StreamOperator<OnlineFmTrainStreamOp>
-        implements OnlineFmTrainParams<OnlineFmTrainStreamOp> {
-
-    private static final long serialVersionUID = -1717242899554835631L;
-    DataBridge dataBridge = null;
-
-    public OnlineFmTrainStreamOp(BatchOperator <?>model) {
-        super(new Params());
-        if (model != null) {
-            dataBridge = DirectReader.collect(model);
-        } else if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-            System.out.println("FM algo: initial model is null. random generate initial model is used.");
-        }
-    }
-
-    public OnlineFmTrainStreamOp(BatchOperator <?>model, Params params) {
-        super(params);
-        if (model != null) {
-            dataBridge = DirectReader.collect(model);
-        } else if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-            System.out.println("FM algo: initial model is null. random generate initial model is used.");
-        }
-    }
-
-    private static int[] getSplitInfo(int coefSize, int parallelism) {
-        assert (coefSize > parallelism);
-        int subSize = coefSize / parallelism;
-        int[] poses = new int[parallelism + 1];
-        int offset = coefSize % parallelism;
-        for (int i = 0; i < offset; ++i) {
-            poses[i + 1] = poses[i] + subSize + 1;
-        }
-        for (int i = offset; i < parallelism; ++i) {
-            poses[i + 1] = poses[i] + subSize;
-        }
-        return poses;
-    }
-
-    @Override
-    public OnlineFmTrainStreamOp linkFrom(StreamOperator<?>... inputs) {
-        checkOpSize(1, inputs);
-        int vectorSize = getVectorSize();
-        int vectorTrainIdx = getVectorCol() != null ?
-                TableUtil.findColIndexWithAssertAndHint(inputs[0].getColNames(), getVectorCol()) : -1;
-        int labelIdx = TableUtil.findColIndexWithAssertAndHint(inputs[0].getColNames(), getLabelCol());
-
-        StreamExecutionEnvironment
-                streamEnv = MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment();
-        int parallelism = streamEnv.getParallelism();
-        final int[] splitInfo = getSplitInfo(vectorSize, parallelism);
-
-        DataStream<Tuple3<Long, SparseVector, Object>> initData = inputs[0].getDataStream().map(
-                new ParseSample(vectorTrainIdx, labelIdx));
-
-        // train data format = Tuple3<sampleId, SparseVector(subSample), label>
-        // feedback format = Tuple4<sampleId, sum_wx>
-        IterativeStream.ConnectedIterativeStreams<Tuple3<Long, SparseVector, Object>,
-                Tuple2<Long, Object>>
-                iteration = initData.iterate(Long.MAX_VALUE)
-                .withFeedbackType(TypeInformation
-                        .of(new TypeHint<Tuple2<Long, Object>>() {
-                        }));
-
-        DataStream iterativeState = iteration.flatMap(new AppendWx(vectorSize))
-                .flatMap(new SplitVector(splitInfo, vectorSize))
-                .partitionCustom(new SubVectorPartitioner(), 1)
-                .flatMap(new CalcTask(dataBridge, splitInfo, getParams()));
-
-        DataStream<Tuple2<Long, Object>>
-                iterativeStateForReduce = iterativeState.filter(
-                new FilterFunction<Tuple2<Long, Object>>() {
-                    private static final long serialVersionUID = -6625612851177562571L;
-
-                    @Override
-                    public boolean filter(Tuple2<Long, Object> t2) {
-                        // if t2.f0 >= 0 then feedback
-                        return (t2.f0 >= 0L);
-                    }
-                });
-
-        DataStream<Row> output = iterativeState.filter(
-                new FilterFunction<Tuple2<Long, Object>>() {
-                    private static final long serialVersionUID = 8686348884274032711L;
-
-                    @Override
-                    public boolean filter(Tuple2<Long, Object> t2) {
-                        /* if t2.f0 small than 0, then output */
-                        return t2.f0 < 0L;
-                    }
-                }).flatMap(new WriteModel(getVectorSize()));
-
-        DataStream result =
-                iterativeStateForReduce.keyBy(0)
-                        .flatMap(new ReduceTask())
-                        .partitionCustom(new WxPartitioner(), 0);
-
-        iteration.closeWith(result);
-
-        TypeInformation <?>[] types = new TypeInformation[5];
-        String[] names = new String[5];
-        names[0] = ModelStreamUtils.MODEL_STREAM_TIMESTAMP_COLUMN_NAME;
-        types[0] = ModelStreamUtils.MODEL_STREAM_TIMESTAMP_COLUMN_TYPE;
-        names[1] = ModelStreamUtils.MODEL_STREAM_COUNT_COLUMN_NAME;
-        types[1] = ModelStreamUtils.MODEL_STREAM_COUNT_COLUMN_TYPE;
-
-        names[2] = "feature_id";
-        types[2] = AlinkTypes.LONG;
-        names[3] = "feature_weights";
-        types[3] = AlinkTypes.STRING;
-        names[4] = "label_type";
-        types[4] = inputs[0].getColTypes()[labelIdx];
-
-        this.setOutput(output, names, types);
-        return this;
-    }
-
-    public static class ParseSample
-            extends RichMapFunction<Row, Tuple3<Long, SparseVector, Object>> {
-        private static final long serialVersionUID = 4275810354629537546L;
-        private long counter;
-        private int parallelism;
-        private final int vectorTrainIdx;
-        private final int labelIdx;
-
-        public ParseSample(int vectorTrainIdx, int labelIdx) {
-            this.vectorTrainIdx = vectorTrainIdx;
-            this.labelIdx = labelIdx;
-        }
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            this.parallelism = getRuntimeContext().getNumberOfParallelSubtasks();
-            counter = getRuntimeContext().getIndexOfThisSubtask();
-        }
-
-        @Override
-        public Tuple3<Long, SparseVector, Object> map(Row row) throws Exception {
-            long sampleId = counter;
-            counter += parallelism;
-            Thread.sleep(1);
-            SparseVector vec = VectorUtil.getSparseVector(row.getField(vectorTrainIdx));
-            return Tuple3.of(sampleId, vec, row.getField(labelIdx));
-        }
-    }
-
-    public static class AppendWx extends RichCoFlatMapFunction<Tuple3<Long, SparseVector, Object>,
-            Tuple2<Long, Object>,
-            Tuple4<Long, SparseVector, Object, Object>> {
-        private static final long serialVersionUID = -2182229737048131290L;
-        Map<Long, Tuple3<SparseVector, Object, Long>> sampleBuffer = new HashMap<>();
-        private long cnt = 0L;
-        private final int vectorSize;
-
-        public AppendWx(int vectorSize) {
-            this.vectorSize = vectorSize;
-        }
-
-        @Override
-        public void flatMap1(Tuple3<Long, SparseVector, Object> value,
-                             Collector<Tuple4<Long, SparseVector, Object, Object>> out) {
-            if (cnt > 0 && (value.f0 / getRuntimeContext().getNumberOfParallelSubtasks()) % cnt != 0) {
-                return;
-            }
-            sampleBuffer.put(value.f0, Tuple3.of(value.f1, value.f2, System.currentTimeMillis()));
-            out.collect(Tuple4.of(value.f0, value.f1, value.f2, 0.0));
-        }
-
-        @Override
-        public void flatMap2(Tuple2<Long, Object> value,
-                             Collector<Tuple4<Long, SparseVector, Object, Object>> out)
-                throws Exception {
-            if (value.f0 < 0L) {
-                Thread.sleep(vectorSize / 200);
-                return;
-            }
-
-            Tuple3<SparseVector, Object, Long> sample = sampleBuffer.get(value.f0);
-            long timeInterval = System.currentTimeMillis() - sample.f2;
-            if (timeInterval > 500L) {
-                if (cnt != 2L) {
-                    cnt = 2L;
-                    //50% samples are abandoned. current sampleId;
-                }
-            } else {
-                if (cnt != 0L) {
-                    cnt = 0L;
-                    //no sample is abandoned. current sampleId
-                }
-            }
-            out.collect(Tuple4.of(-(value.f0 + 1), sample.f0, sample.f1, value.f1));
-        }
-    }
-
-    public static class SplitVector
-            extends RichFlatMapFunction<Tuple4<Long, SparseVector, Object, Object>,
-            Tuple6<Long, Integer, Integer, SparseVector, Object, Object>> {
-        private static final long serialVersionUID = 3348048191649288404L;
-        private int coefSize;
-        private final int vectorSize;
-        private final int[] splitInfo;
-        private final int[] nnz;
-        private boolean sendTimestamps = true;
-
-        public SplitVector(int[] splitInfo, int vectorSize) {
-            this.vectorSize = vectorSize;
-
-            this.splitInfo = splitInfo;
-            this.nnz = new int[splitInfo.length - 1];
-        }
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            coefSize = vectorSize;
-        }
-
-        @Override
-        public void flatMap(Tuple4<Long, SparseVector, Object, Object> t4,
-                            Collector<Tuple6<Long, Integer, Integer, SparseVector, Object, Object>> collector)
-                throws Exception {
-
-            if (sendTimestamps && getRuntimeContext().getIndexOfThisSubtask() == 0) {
-                long time = System.currentTimeMillis();
-                for (int i = 0; i < getRuntimeContext().getNumberOfParallelSubtasks(); ++i) {
-                    collector.collect(Tuple6.of(time, i, -1, new SparseVector(), -1, -1));
-                }
-                sendTimestamps = false;
-            }
-
-            SparseVector vec = t4.f1;
-
-            int[] indices = vec.getIndices();
-            double[] values = vec.getValues();
-            int pos = 1;
-            int subNum = 0;
-            boolean hasElement = false;
-            for (int i = 0; i < indices.length; ++i) {
-                if (indices[i] < splitInfo[pos]) {
-                    nnz[pos - 1]++;
-                    hasElement = true;
-                } else {
-                    pos++;
-                    i--;
-                    if (hasElement) {
-                        subNum++;
-                        hasElement = false;
-                    }
-                }
-            }
-            if (nnz[pos - 1] != 0) {
-                subNum++;
-            }
-            pos = 0;
-            for (int i = 0; i < nnz.length; ++i) {
-                if (nnz[i] != 0) {
-                    int[] tmpIndices = new int[nnz[i]];
-                    double[] tmpValues = new double[nnz[i]];
-                    System.arraycopy(indices, pos, tmpIndices, 0, nnz[i]);
-                    System.arraycopy(values, pos, tmpValues, 0, nnz[i]);
-                    SparseVector tmpVec = new SparseVector(coefSize, tmpIndices, tmpValues);
-                    collector.collect(Tuple6.of(t4.f0, i, subNum, tmpVec, t4.f2, t4.f3));
-                    pos += nnz[i];
-                    nnz[i] = 0;
-                }
-            }
-        }
-    }
-
-    public static class WriteModel
-            extends RichFlatMapFunction<Tuple2<Long, Object>, Row> {
-        private static final long serialVersionUID = 3487644568763785149L;
-        private final int vectorSize;
-        private long modelId = Long.MAX_VALUE;
-        public WriteModel(int vectorSize) {
-            this.vectorSize = vectorSize;
-        }
-
-        @Override
-        public void flatMap(Tuple2<Long, Object> value,
-                            Collector<Row> out)
-                throws Exception {
-            long nTable = vectorSize + 2L;
-            Timestamp curModelTimestamp = new Timestamp(-value.f0);
-            if (getRuntimeContext().getIndexOfThisSubtask() == 0 && (modelId != value.f0)) {
-                out.collect(
-                        Row.of(curModelTimestamp, nTable,
-                                -1L, JsonConverter.toJson(new double[]{0.0}), null));
-                modelId = value.f0;
-            }
-
-            Tuple3<Integer, Boolean, Object> model = (Tuple3<Integer, Boolean, Object>) value.f1;
-            if (model.f0 == -1 && model.f2 instanceof String) {
-                out.collect(Row.of(curModelTimestamp, nTable, null, model.f2, null));
-            } else {
-                out.collect(Row.of(curModelTimestamp, nTable, (model.f0).longValue(), JsonConverter.toJson(model.f2), null));
-            }
-        }
-    }
-
-    public static class CalcTask
-            extends RichFlatMapFunction<Tuple6<Long, Integer, Integer, SparseVector, Object, Object>,
-            Tuple2<Long, Object>> implements CheckpointedFunction {
-        private static final long serialVersionUID = -8110740731083284505L;
-        private final DataBridge dataBridge;
-        transient private double[][] factors;
-        transient private boolean[] factorState;
-        transient private double[] wx;
-
-        double[] regular;
-        double learnRate;
-        int[] dim;
-        private int k;
-        private Task task;
-        private Object[] labelValues = null;
-
-        private int startIdx;
-        private final int[] poses;
-        private long startTime;
-        int modelSaveTimeInterval;
-        private final int vectorSize;
-        transient private LossFunction lossFunc = null;
-        private double[] grad;
-        transient private double[][] nParams;
-        private final OptimMethod method;
-        // model variable
-        Params meta;
-        private transient ListState<double[][]> modelState;
-        private boolean isRestartFromCheckPoint = false;
-
-        public CalcTask(DataBridge dataBridge, int[] poses, Params params) {
-            this.dataBridge = dataBridge;
-            this.poses = poses;
-            this.modelSaveTimeInterval = params.get(OnlineFmTrainParams.TIME_INTERVAL) * 1000;
-            learnRate = params.get(OnlineFmTrainParams.LEARN_RATE);
-            method = params.get(OnlineFmTrainParams.OPTIM_METHOD);
-            this.regular = new double[3];
-            regular[0] = params.get(OnlineFmTrainParams.LAMBDA_0);
-            regular[1] = params.get(OnlineFmTrainParams.LAMBDA_1);
-            regular[2] = params.get(OnlineFmTrainParams.LAMBDA_2);
-            this.vectorSize = params.get(OnlineFmTrainParams.VECTOR_SIZE);
-        }
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            super.open(parameters);
-            int numWorkers = getRuntimeContext().getNumberOfParallelSubtasks();
-            int workerId = getRuntimeContext().getIndexOfThisSubtask();
-            startTime = Long.MAX_VALUE;
-            startIdx = poses[workerId];
-            int endIdx = poses[workerId + 1];
-            if (!isRestartFromCheckPoint) {
-                // read init model
-                if (dataBridge != null) {
-                    List<Row> modelRows = DirectReader.directRead(dataBridge);
-                    for (Row row : modelRows) {
-                        Object featureId = row.getField(0);
-                        if (featureId == null) {
-                            String metaParamsStr = (String) row.getField(1);
-                            meta = Params.fromJson(metaParamsStr);
-                            this.dim = meta.get(ModelParamName.DIM);
-                            this.k = dim[2];
-                            this.task = meta.get(ModelParamName.TASK);
-                            this.labelValues = meta.get(ModelParamName.LABEL_VALUES);
-                            meta.set(ModelParamName.VECTOR_SIZE, vectorSize);
-                            break;
-                        }
-                    }
-
-                    int localSize = vectorSize / numWorkers;
-                    localSize += (workerId < vectorSize % numWorkers) ? 1 : 0;
-                    factors = new double[localSize][k + 1];
-                    factorState = new boolean[localSize];
-                    Arrays.fill(factorState, false);
-                    if (method.equals(OptimMethod.ADAGRAD) || method.equals(OptimMethod.RMS)) {
-                        nParams = new double[localSize][k + 1];
-                        fillValue(nParams);
-                    }
-
-                    for (Row row : modelRows) {
-                        Object obj = row.getField(0);
-                        if (obj != null) {
-                            long featureId = (long) obj;
-                            if (featureId >= 0L) {
-                                int fid = (int) featureId;
-                                if (fid >= startIdx && fid < endIdx) {
-                                    factors[fid - startIdx]
-                                            = JsonConverter.fromJson((String) row.getField(1), double[].class);
-                                }
-                            }
-                        }
-                    }
-
-                } else {
-                    throw new RuntimeException(
-                            "FM algo: initial model is null. random generate initial model is used.");
-                }
-            }
-            // wx[0] -- wx[dim[2]-1] is sum_vx
-            // wx[dim[2]] -- wx[2*dim[2]-1] is sum_v2x2
-            // wx[2*dim[2]] is linear item
-            wx = new double[2 * k + 1];
-            grad = new double[k + 1];
-
-            if (task.equals(Task.REGRESSION)) {
-                double minTarget = 1.0e20;
-                double maxTarget = -1.0e20;
-
-                double d = maxTarget - minTarget;
-                d = Math.max(d, 1.0);
-                maxTarget = maxTarget + d * 0.2;
-                minTarget = minTarget - d * 0.2;
-
-                lossFunc = new SquareLoss(maxTarget, minTarget);
-            } else if (task.equals(Task.BINARY_CLASSIFICATION)) {
-                lossFunc = new LogitLoss();
-            } else {
-                throw new RuntimeException("Invalid task: " + task);
-            }
-        }
-
-        @Override
-        public void snapshotState(FunctionSnapshotContext context) throws Exception {
-            modelState.clear();
-            modelState.add(factors);
-        }
-
-        @Override
-        public void initializeState(FunctionInitializationContext context) throws Exception {
-            ListStateDescriptor<double[][]> descriptor =
-                    new ListStateDescriptor("StreamingOnlineFtrlModelState",
-                            TypeInformation.of(new TypeHint<double[][]>() {
-                            }));
-
-            modelState = context.getOperatorStateStore().getListState(descriptor);
-            isRestartFromCheckPoint = context.isRestored();
-            if (isRestartFromCheckPoint) {
-                for (double[][] state : modelState.get()) {
-                    this.factors = state;
-                    if (method.equals(OptimMethod.ADAGRAD) || method.equals(OptimMethod.RMS)) {
-                        nParams = new double[factors.length][k + 1];
-                        fillValue(nParams);
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void flatMap(
-                Tuple6<Long, Integer, Integer, SparseVector, Object, Object> value,
-                Collector<Tuple2<Long, Object>> out) throws Exception {
-            if (startTime == Long.MAX_VALUE) {
-                if (value.f2 == -1) {
-                    startTime = value.f0;
-                    return;
-                }
-            }
-            // save model
-            if (System.currentTimeMillis() - startTime > modelSaveTimeInterval) {
-                Arrays.fill(factorState, true);
-                meta.set("lastModelVersion", startTime);
-                startTime += modelSaveTimeInterval;
-                meta.set("modelVersion", startTime);
-
-                int taskId = getRuntimeContext().getIndexOfThisSubtask();
-                if (taskId == 0) {
-                    out.collect(Tuple2.of(-startTime, Tuple3.of(-1, false, meta.toJson())));
-                }
-
-                for (int i = poses[taskId]; i < poses[taskId + 1]; ++i) {
-                    out.collect(Tuple2.of(-startTime, Tuple3.of(i, factorState[i - poses[taskId]], factors[i - poses[taskId]])));
-                }
-                Arrays.fill(factorState, false);
-                out.collect(Tuple2.of(Long.MAX_VALUE, taskId + getRuntimeContext().getNumberOfParallelSubtasks()));
-            }
-
-            if (value.f0 >= 0L) {
-                Arrays.fill(wx, 0.0F);
-                SparseVector vec = value.f3;
-
-                int[] indices = vec.getIndices();
-                double[] values = vec.getValues();
-
-                for (int i = 0; i < indices.length; i++) {
-                    long featurePos = indices[i];
-                    double x = values[i];
-
-                    int localIdx = (int) (featurePos - startIdx);
-                    double[] w = factors[localIdx];
-                    factorState[localIdx] = true;
-
-                    // the linear term
-                    if (dim[1] > 0) {
-                        wx[2 * k] += x * w[k]; // w's last pos is reserved for linear weights
-                    }
-                    // the quadratic term
-                    for (int j = 0; j < k; j++) {
-                        double vixi = x * w[j];
-                        wx[j] += vixi;
-                        wx[k + j] += vixi * vixi;
-                    }
-                }
-                out.collect(Tuple2.of(value.f0, Tuple2.of(value.f2, wx)));
-            } else {
-                double[] recvWx = (double[]) value.f5;
-
-                // long timeInterval = System.currentTimeMillis() - t3.f2;
-                SparseVector vec = value.f3;
-                double y = recvWx[k];
-                double label = task.equals(Task.REGRESSION) ? Double.parseDouble(value.f4.toString())
-                        : (value.f4.equals(labelValues[0]) ? 1.0 : 0.0);
-
-                // (2) compute gradient
-                double dLdy = lossFunc.dldy(label, y);
-                int[] indices = vec.getIndices();
-                double[] values = vec.getValues();
-                for (int i = 0; i < indices.length; i++) {
-                    long featurePos = indices[i];
-                    double x = values[i];
-                    int localIdx = (int) (featurePos - startIdx);
-                    double[] w = factors[localIdx];
-                    factorState[localIdx] = true;
-
-                    // the linear term
-                    if (dim[1] > 0) {
-                        grad[k] = dLdy * x;
-                        grad[k] += regular[1] * w[k]; // regularization
-                    }
-                    // the quadratic term
-                    for (int j = 0; j < k; j++) {
-                        double vixi = x * w[j];
-                        double d = x * (recvWx[j] - vixi);
-                        grad[j] = dLdy * d;
-                        grad[j] += regular[2] * w[j]; // regularization
-                    }
-
-                    // apply the gradient in online way
-                    double[] nParam;
-
-                    switch (method) {
-                        case OSGD:
-                            if (dim[1] > 0) {
-                                w[k] -= learnRate * grad[k];
-                            }
-                            for (int j = 0; j < k; j++) {
-                                w[j] -= learnRate * grad[j];
-                            }
-                            break;
-                        case RMS:
-                            nParam = nParams[localIdx];
-                            for (int j = 0; j < k; j++) {
-                                nParam[j] = 1.0 + 0.999 * nParam[j] + 0.1 * grad[j] * grad[j];
-                            }
-                            if (dim[1] > 0) {
-                                w[k] -= learnRate * grad[k] / Math.sqrt(nParam[k]);
-                            }
-                            for (int j = 0; j < k; j++) {
-                                w[j] -= learnRate * grad[j] / Math.sqrt(nParam[j]);
-                            }
-                            break;
-                        case ADAGRAD:
-                            nParam = nParams[localIdx];
-                            for (int j = 0; j < k; j++) {
-                                nParam[j] = nParam[j] + grad[j] * grad[j];
-                            }
-                            if (dim[1] > 0) {
-                                w[k] -= learnRate * grad[k] / Math.sqrt(nParam[k]);
-                            }
-                            for (int j = 0; j < k; j++) {
-                                w[j] -= learnRate * grad[j] / Math.sqrt(nParam[j]);
-                            }
-                            break;
-                        default:
-                            throw new RuntimeException("optimize method not support yet.");
-                    }
-                }
-            }
-        }
-    }
-
-    public static class ReduceTask extends
-            RichFlatMapFunction<Tuple2<Long, Object>, Tuple2<Long, Object>> {
-
-        private static final long serialVersionUID = 8796024400875966682L;
-        private Map<Long, Tuple2<Integer, double[]>> buffer;
-
-        public ReduceTask() {
-        }
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            super.open(parameters);
-            buffer = new HashMap<>(0);
-        }
-
-        @Override
-        public void flatMap(Tuple2<Long, Object> value,
-                            Collector<Tuple2<Long, Object>> out)
-                throws Exception {
-            if (value.f0 == Long.MAX_VALUE) {
-                out.collect(Tuple2.of((long) -(int) value.f1, false));
-                return;
-            }
-            Tuple2<Integer, double[]> val = buffer.get(value.f0);
-            Tuple2<Integer, double[]> t2 = (Tuple2<Integer, double[]>) value.f1;
-            if (val == null) {
-                val = Tuple2.of(1, t2.f1);
-                buffer.put(value.f0, val);
-            } else {
-                val.f0++;
-                for (int i = 0; i < val.f1.length; ++i) {
-                    val.f1[i] += t2.f1[i];
-                }
-            }
-
-            if (val.f0.equals(t2.f0)) {
-                int k = val.f1.length / 2;
-                double[] ret = new double[k + 1];
-                ret[k] = val.f1[2 * k];
-                for (int i = 0; i < k; ++i) {
-                    ret[k] += 0.5 * (val.f1[i] * val.f1[i] - val.f1[k + i]);
-                }
-                System.arraycopy(val.f1, 0, ret, 0, k);
-                out.collect(Tuple2.of(value.f0, ret));
-                buffer.remove(value.f0);
-            }
-        }
-    }
-
-    private static class SubVectorPartitioner implements Partitioner<Integer> {
-        private static final long serialVersionUID = -2937754666786979106L;
-
-        @Override
-        public int partition(Integer key, int numPartitions) {
-            return key % numPartitions;
-        }
-    }
-
-    private static class WxPartitioner implements Partitioner<Long> {
-
-        private static final long serialVersionUID = -412790528707578880L;
-
-        @Override
-        public int partition(Long sampleId, int numPartition) {
-            if (sampleId < 0L) {
-                return (int) (-(sampleId + 1) % numPartition);
-            } else {
-                return (int) (sampleId % numPartition);
-            }
-        }
-    }
-
-    private static void fillValue(double[][] array) {
-        if (array != null) {
-            for (int i = 0; i < array.length; ++i) {
-                for (int j = 0; j < array[0].length; ++j) {
-                    array[i][j] = 1.0;
-                }
-            }
-        }
-    }
+public final class OnlineFmTrainStreamOp extends StreamOperator <OnlineFmTrainStreamOp>
+	implements OnlineFmTrainParams <OnlineFmTrainStreamOp> {
+
+	private static final long serialVersionUID = -1717242899554835631L;
+	DataBridge dataBridge = null;
+	private String modelSchemeStr;
+
+	public OnlineFmTrainStreamOp(BatchOperator <?> model) {
+		this(model, new Params());
+	}
+
+	public OnlineFmTrainStreamOp(BatchOperator <?> model, Params params) {
+		super(params);
+		if (model != null) {
+			dataBridge = DirectReader.collect(model);
+			modelSchemeStr = TableUtil.schema2SchemaStr(model.getSchema());
+		} else if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+			System.out.println("FM algo: initial model is null. random generate initial model is used.");
+		}
+	}
+
+	@Override
+	public OnlineFmTrainStreamOp linkFrom(StreamOperator <?>... inputs) {
+		StreamExecutionEnvironment streamEnv = MLEnvironmentFactory.get(getMLEnvironmentId())
+			.getStreamExecutionEnvironment();
+		int parallelism = streamEnv.getParallelism();
+		streamEnv.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
+		streamEnv.getCheckpointConfig().setForceCheckpointing(true);
+		checkOpSize(1, inputs);
+		Params params = getParams();
+		String vecColName = getVectorCol();
+		String[] featureCols = getFeatureCols();
+		int vectorTrainIdx = vecColName != null ? TableUtil.findColIndexWithAssertAndHint(inputs[0].getColNames(),
+			vecColName) : -1;
+		int labelIdx = TableUtil.findColIndexWithAssertAndHint(inputs[0].getColNames(), getLabelCol());
+		int[] featureIdx = null;
+		if (vectorTrainIdx == -1) {
+			featureIdx = new int[featureCols.length];
+			for (int i = 0; i < featureCols.length; ++i) {
+				featureIdx[i] = TableUtil.findColIndexWithAssertAndHint(inputs[0].getColNames(), featureCols[i]);
+			}
+		}
+		final TypeInformation <?> labelType = inputs[0].getColTypes()[labelIdx];
+
+		final int timeInterval = getTimeInterval();
+		DataStream <Tuple2 <Long, Object>> modelSaveHandler = new NumSeqSourceStreamOp(0, 0).getDataStream().flatMap(
+			new FlatMapFunction <Row, Tuple2 <Long, Object>>() {
+				@Override
+				public void flatMap(Row row, Collector <Tuple2 <Long, Object>> collector) throws Exception {
+					for (long i = 0; i < Long.MAX_VALUE; ++i) {
+						Thread.sleep(timeInterval * 1000L);
+						collector.collect(Tuple2.of(0L, 0L));
+					}
+				}
+			});
+
+		/* Prepares mini batches for training process. */
+		DataStream <Row[]> batchData = inputs[0].getDataStream()
+			.flatMap(
+				new PrepareBatchSample(Math.max(1, getMiniBatchSize() / parallelism)));
+
+		/* Prepares rebase model stream. */
+		DataStream <Tuple2 <Long, Object>> modelStream = null;
+		if (ModelStreamUtils.useModelStreamFile(params)) {
+			StreamOperator <?> modelStreamOp =
+				new ModelStreamFileSourceStreamOp().setFilePath(getModelStreamFilePath())
+					.setScanInterval(getModelStreamScanInterval()).setStartTime(getModelStreamStartTime()).setSchemaStr(
+						modelSchemeStr).setMLEnvironmentId(inputs[0].getMLEnvironmentId());
+			modelStream = modelStreamOp.getDataStream().map(new MapFunction <Row, Tuple2 <Long, Object>>() {
+				@Override
+				public Tuple2 <Long, Object> map(Row row) throws Exception {
+					return Tuple2.of(-1L, row);
+				}
+			});
+		}
+
+		IterativeStream.ConnectedIterativeStreams <Row[], Tuple2 <Long, Object>> iteration = batchData.iterate(
+			Long.MAX_VALUE).withFeedbackType(TypeInformation.of(new TypeHint <Tuple2 <Long, Object>>() {}));
+
+		DataStream iterativeBody = iteration
+			.flatMap(new ModelUpdater(dataBridge, params, vectorTrainIdx, featureIdx, labelIdx, modelSchemeStr));
+
+		DataStream <Tuple2 <Long, Object>> result = iterativeBody.filter(new FilterFunction <Tuple2 <Long, Object>>() {
+			private static final long serialVersionUID = -5436758453355074895L;
+
+			@Override
+			public boolean filter(Tuple2 <Long, Object> t2) {
+				// if t2.f0 >= 0: data is gradient and feedback it.
+				return (t2.f0 >= 0L);
+			}
+		}).keyBy(0).countWindowAll(parallelism).reduce(new ReduceFunction <Tuple2 <Long, Object>>() {
+			@Override
+			public Tuple2 <Long, Object> reduce(Tuple2 <Long, Object> o, Tuple2 <Long, Object> t1) {
+				Map <Integer, Tuple2 <Double, double[]>> grad1 = (Map <Integer, Tuple2 <Double, double[]>>) o.f1;
+				Map <Integer, Tuple2 <Double, double[]>> grad2 = (Map <Integer, Tuple2 <Double, double[]>>) t1.f1;
+				for (int idx : grad2.keySet()) {
+					if (grad1.containsKey(idx)) {
+						grad1.get(idx).f0 += grad2.get(idx).f0;
+						double[] factor = grad1.get(idx).f1;
+						for (int i = 0; i < factor.length; ++i) {
+							factor[i] += grad2.get(idx).f1[i];
+						}
+					} else {
+						grad1.put(idx, grad2.get(idx));
+					}
+				}
+				return o;
+			}
+		}).map(new MapFunction <Tuple2 <Long, Object>, Tuple2 <Long, Object>>() {
+			@Override
+			public Tuple2 <Long, Object> map(Tuple2 <Long, Object> gradient) {
+				Map <Integer, Tuple2 <Double, double[]>> grad = (Map <Integer, Tuple2 <Double, double[]>>) gradient.f1;
+
+				Map <Integer, double[]> gradAverage = new HashMap <>();
+				for (int idx : grad.keySet()) {
+					double[] gradValues = grad.get(idx).f1;
+					for (int i = 0; i < gradValues.length; ++i) {
+						gradValues[i] /= grad.get(idx).f0;
+					}
+					gradAverage.put(idx, gradValues);
+				}
+				return Tuple2.of(gradient.f0, gradAverage);
+			}
+		}).setParallelism(parallelism);
+
+		result = (modelStream == null ? result : result.union(modelStream)).broadcast();
+
+		DataStream <Row> output = iterativeBody.filter(new FilterFunction <Tuple2 <Long, Object>>() {
+			private static final long serialVersionUID = 4204787383191799107L;
+
+			@Override
+			public boolean filter(Tuple2 <Long, Object> t2) {
+				/* if t2.f0 small than 0L: data is model, then output */
+				return t2.f0 < 0L;
+			}
+		}).flatMap(new WriteModel());
+
+		iteration.closeWith(result.union(modelSaveHandler));
+
+		TableSchema schema = new FmModelDataConverter(labelType).getModelSchema();
+
+		TypeInformation <?>[] types = new TypeInformation[schema.getFieldNames().length + 2];
+		String[] names = new String[schema.getFieldNames().length + 2];
+		names[0] = ModelStreamUtils.MODEL_STREAM_TIMESTAMP_COLUMN_NAME;
+		names[1] = ModelStreamUtils.MODEL_STREAM_COUNT_COLUMN_NAME;
+		types[0] = ModelStreamUtils.MODEL_STREAM_TIMESTAMP_COLUMN_TYPE;
+		types[1] = ModelStreamUtils.MODEL_STREAM_COUNT_COLUMN_TYPE;
+		for (int i = 0; i < schema.getFieldNames().length; ++i) {
+			types[i + 2] = schema.getFieldTypes()[i];
+			names[i + 2] = schema.getFieldNames()[i];
+		}
+
+		this.setOutput(output, names, types);
+		return this;
+	}
+
+	public static class ModelUpdater extends RichCoFlatMapFunction <Row[], Tuple2 <Long, Object>, Tuple2 <Long,
+		Object>>
+		implements CheckpointedFunction {
+		private static final long serialVersionUID = 7338858137860097282L;
+		private final DataBridge dataBridge;
+		transient private FmModelData modelData;
+		double[] regular;
+		int[] dim;
+		private Object[] labelValues;
+		transient private LossFunction lossFunc;
+		transient private FmDataFormat nParam;
+		transient private FmDataFormat zParam;
+		/* Tuple3 : factors, nParams, labelValues */
+		private transient ListState <Tuple4 <FmDataFormat, FmDataFormat, FmDataFormat, Object[]>> modelState;
+		private long gradVersion = 0L;
+		private final int vectorTrainIdx;
+		private final int labelIdx;
+		private final int[] featureIdx;
+		private boolean isUpdatedModel = true;
+		private List <Row[]> localBatchDataBuffer;
+		private List <Map <Integer, double[]>> gradientBuffer;
+		private final int batchSize;
+		private int maxNumBatches;
+		// Map<gradIndex, Tuple2<weight, gradients>>
+		private final Map <Integer, Tuple2 <Double, double[]>> sparseGradient = new HashMap <>();
+
+		private final double l1;
+		private final double l2;
+		private final double alpha;
+		private final double beta;
+
+		private final Map <Timestamp, List <Row>> buffers = new HashMap <>();
+		private final String modelSchemaStr;
+
+		public ModelUpdater(DataBridge dataBridge, Params params, int vectorIdx,
+							int[] featureIdx, int labelIdx, String modelSchemaStr) {
+			this.dataBridge = dataBridge;
+			this.labelValues = null;
+			this.batchSize = params.get(OnlineFmTrainParams.MINI_BATCH_SIZE);
+			this.vectorTrainIdx = vectorIdx;
+			this.labelIdx = labelIdx;
+			this.featureIdx = featureIdx;
+			this.regular = new double[3];
+			this.regular[0] = params.get(OnlineFmTrainParams.LAMBDA_0);
+			this.regular[1] = params.get(OnlineFmTrainParams.LAMBDA_1);
+			this.regular[2] = params.get(OnlineFmTrainParams.LAMBDA_2);
+			this.dim = new int[3];
+			this.dim[0] = params.get(OnlineFmTrainParams.WITH_INTERCEPT) ? 1 : 0;
+			this.dim[1] = params.get(OnlineFmTrainParams.WITH_LINEAR_ITEM) ? 1 : 0;
+			this.dim[2] = params.get(OnlineFmTrainParams.NUM_FACTOR);
+			this.l1 = params.get(OnlineFmTrainParams.L_1);
+			this.l2 = params.get(OnlineFmTrainParams.L_2);
+			this.alpha = params.get(OnlineFmTrainParams.ALPHA);
+			this.beta = params.get(OnlineFmTrainParams.BETA);
+			this.lossFunc = new LogitLoss();
+			this.modelSchemaStr = modelSchemaStr;
+		}
+
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			super.open(parameters);
+			this.maxNumBatches = Math.max(1, 100000 * getRuntimeContext().getNumberOfParallelSubtasks() / batchSize);
+			lossFunc = new LogitLoss();
+		}
+
+		@Override
+		public void snapshotState(FunctionSnapshotContext context) throws Exception {
+			modelState.clear();
+			modelState.add(Tuple4.of(modelData.fmModel, nParam, zParam, labelValues));
+		}
+
+		@Override
+		public void initializeState(FunctionInitializationContext context) throws Exception {
+
+			modelState = context.getOperatorStateStore().getListState(
+				new ListStateDescriptor <>("StreamingOnlineModelState", TypeInformation.of(
+					new TypeHint <Tuple4 <FmDataFormat, FmDataFormat, FmDataFormat, Object[]>>() {})));
+
+			if (context.isRestored()) {
+				// read model data from checkpoint.
+				for (Tuple4 <FmDataFormat, FmDataFormat, FmDataFormat, Object[]> state : modelState.get()) {
+					this.modelData.fmModel = state.f0;
+					this.nParam = state.f1;
+					this.zParam = state.f2;
+					this.labelValues = state.f3;
+				}
+			} else {
+				// read model data from init model.
+				List <Row> modelRows = DirectReader.directRead(dataBridge);
+				this.modelData = new FmModelDataConverter().load(modelRows);
+				double[][] factors = modelData.fmModel.factors;
+				this.nParam = new FmDataFormat(factors.length, factors[0].length, modelData.dim, 0.0);
+				this.zParam = new FmDataFormat(factors.length, factors[0].length, modelData.dim, 0.0);
+				this.labelValues = modelData.labelValues;
+			}
+		}
+
+		@Override
+		public void flatMap1(Row[] rows, Collector <Tuple2 <Long, Object>> out) throws Exception {
+			if (localBatchDataBuffer == null) {
+				localBatchDataBuffer = new ArrayList <>();
+				gradientBuffer = new ArrayList <>();
+			}
+			localBatchDataBuffer.add(rows);
+			if (isUpdatedModel) {
+				sparseGradient.clear();
+				for (Row[] currentRows : localBatchDataBuffer) {
+					for (Row row : currentRows) {
+						Vector vec;
+						if (vectorTrainIdx == -1) {
+							vec = new DenseVector(featureIdx.length);
+							for (int i = 0; i < featureIdx.length; ++i) {
+								vec.set(i, Double.parseDouble(row.getField(featureIdx[i]).toString()));
+							}
+						} else {
+							vec = VectorUtil.getVector(row.getField(vectorTrainIdx));
+						}
+						double yTruth = (row.getField(labelIdx).equals(labelValues[0]) ? 1.0 : 0.0);
+						Tuple2 <Double, double[]> yVx = calcY(vec, modelData.fmModel, dim);
+						double dldy = lossFunc.dldy(yTruth, yVx.f0);
+
+						int[] indices;
+						double[] values;
+						if (vec instanceof SparseVector) {
+							indices = ((SparseVector) vec).getIndices();
+							values = ((SparseVector) vec).getValues();
+						} else {
+							indices = new int[vec.size()];
+							for (int i = 0; i < vec.size(); ++i) {
+								indices[i] = i;
+							}
+							values = ((DenseVector) vec).getData();
+						}
+
+						if (dim[0] > 0) {
+							double biasGrad = dldy + regular[0] * modelData.fmModel.bias;
+							if (sparseGradient.containsKey(-1)) {
+								sparseGradient.get(-1).f0 += 1.0;
+								sparseGradient.get(-1).f1[0] += biasGrad;
+							} else {
+								sparseGradient.put(-1, Tuple2.of(1.0, new double[] {biasGrad}));
+							}
+						}
+						double[][] factors = modelData.fmModel.factors;
+						for (int i = 0; i < indices.length; ++i) {
+							int idx = indices[i];
+							if (sparseGradient.containsKey(idx)) {
+								double[] grad = sparseGradient.get(idx).f1;
+								sparseGradient.get(idx).f0 += 1.0;
+								if (dim[1] > 0) {
+									grad[dim[2]] += dldy * values[i] + regular[1] * factors[idx][dim[2]];
+								}
+								if (dim[2] > 0) {
+									for (int j = 0; j < dim[2]; j++) {
+										double vixi = values[i] * factors[idx][j];
+										double d = values[i] * (yVx.f1[j] - vixi);
+										grad[j] += dldy * d + regular[2] * factors[idx][j];
+									}
+								}
+							} else {
+								double[] grad = new double[dim[2] + dim[1]];
+								if (dim[1] > 0) {
+									grad[dim[2]] = dldy * values[i] + regular[1] * factors[idx][dim[2]];
+								}
+								if (dim[2] > 0) {
+									for (int j = 0; j < dim[2]; j++) {
+										double vixi = values[i] * factors[idx][j];
+										double d = values[i] * (yVx.f1[j] - vixi);
+										grad[j] = dldy * d + regular[2] * factors[idx][j];
+									}
+								}
+								sparseGradient.put(idx, Tuple2.of(1.0, grad));
+							}
+						}
+					}
+				}
+				localBatchDataBuffer.clear();
+				isUpdatedModel = false;
+				out.collect(Tuple2.of(gradVersion++, sparseGradient));
+			} else {
+				if (localBatchDataBuffer.size() > maxNumBatches) {
+					localBatchDataBuffer.subList(0, Math.min(maxNumBatches - 1, maxNumBatches * 9 / 10)).clear();
+					if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+						System.out.println("remove batches happened. ");
+					}
+				}
+			}
+		}
+
+		@Override
+		public void flatMap2(Tuple2 <Long, Object> value, Collector <Tuple2 <Long, Object>> out) {
+			if (value.f1 instanceof Map) {
+				/* Updates model. */
+				gradientBuffer.add((Map) value.f1);
+				if (!isUpdatedModel) {
+					updateModel(gradientBuffer.remove(0));
+					isUpdatedModel = true;
+				}
+			} else if (value.f1 instanceof Row) {
+				Row inRow = (Row) value.f1;
+				Timestamp timestamp = (Timestamp) inRow.getField(0);
+				long count = (long) inRow.getField(1);
+				Row row = ModelStreamUtils.genRowWithoutIdentifier(inRow, 0, 1);
+
+				if (buffers.containsKey(timestamp)) {
+					buffers.get(timestamp).add(row);
+				} else {
+					List <Row> buffer = new ArrayList <>(0);
+					buffer.add(row);
+					buffers.put(timestamp, buffer);
+				}
+				if (buffers.get(timestamp).size() == (int) count) {
+					try {
+						FmModelDataConverter fmModelDataConverter = new FmModelDataConverter(
+							FmModelDataConverter.extractLabelType(TableUtil.schemaStr2Schema(modelSchemaStr)));
+						modelData.fmModel = fmModelDataConverter.load(buffers.remove(timestamp)).fmModel;
+						double[][] factors = modelData.fmModel.factors;
+						this.nParam = new FmDataFormat(factors.length, factors[0].length, modelData.dim, 0.0);
+						this.zParam = new FmDataFormat(factors.length, factors[0].length, modelData.dim, 0.0);
+					} catch (Exception e) {
+						System.err.println("test Model stream updating failed. Please check your model stream.");
+					}
+					if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+						System.out.println("rebase fm model.");
+					}
+				}
+			} else if (value.f1 instanceof Long) {
+				Params meta = new Params()
+					.set(ModelParamName.VECTOR_COL_NAME, modelData.vectorColName)
+					.set(ModelParamName.LABEL_COL_NAME, modelData.labelColName)
+					.set(ModelParamName.TASK, Task.BINARY_CLASSIFICATION)
+					.set(ModelParamName.VECTOR_SIZE, modelData.vectorSize)
+					.set(ModelParamName.FEATURE_COL_NAMES, modelData.featureColNames)
+					.set(ModelParamName.LABEL_VALUES, labelValues)
+					.set(ModelParamName.DIM, modelData.dim)
+					.set(ModelParamName.LOSS_CURVE, modelData.convergenceInfo);
+				long currentTime = System.currentTimeMillis();
+				out.collect(Tuple2.of(-currentTime, Tuple3.of((long) modelData.vectorSize + 2, null, meta.toJson())));
+
+				for (int i = 0; i < modelData.fmModel.factors.length; ++i) {
+					double[] factor = modelData.fmModel.factors[i];
+					out.collect(Tuple2.of(-currentTime,
+						Tuple3.of((long) modelData.vectorSize + 2, (long) i, JsonConverter.toJson(factor))));
+				}
+				out.collect(Tuple2.of(-currentTime,
+					Tuple3.of((long) modelData.vectorSize + 2, -1L,
+						JsonConverter.toJson(new double[] {modelData.fmModel.bias}))));
+			} else {
+				throw new RuntimeException("feedback data type err, must be a Map or DenseVector.");
+			}
+		}
+
+		private void updateModel(Map <Integer, double[]> grad) {
+			for (int idx : grad.keySet()) {
+				// update fmModel
+				if (idx == -1) {
+					assert (grad.get(idx).length == 1);
+					double biasGrad = grad.get(idx)[0];
+					double sigma = (Math.sqrt(nParam.bias + biasGrad * biasGrad) - Math.sqrt(nParam.bias)) / alpha;
+					zParam.bias += biasGrad - sigma * modelData.fmModel.bias;
+					nParam.bias += biasGrad * biasGrad;
+					if (Math.abs(zParam.bias) <= l1) {
+						modelData.fmModel.bias = 0.0;
+					} else {
+						modelData.fmModel.bias = ((zParam.bias < 0 ? -1 : 1) * l1 - zParam.bias) / ((beta + Math.sqrt(
+							nParam.bias)) / alpha + l2);
+					}
+				} else {
+					double[] factor = grad.get(idx);
+					if (dim[1] > 0) {
+						updateModelVal(idx, dim[2], factor[dim[2]]);
+					}
+					if (dim[2] > 0) {
+						for (int j = 0; j < dim[2]; j++) {
+							updateModelVal(idx, j, factor[j]);
+						}
+					}
+				}
+			}
+		}
+
+		private void updateModelVal(int idx, int j, double gradVal) {
+			double sigma = (Math.sqrt(nParam.factors[idx][j] + gradVal * gradVal) - Math.sqrt(nParam.factors[idx][j]))
+				/ alpha;
+			zParam.factors[idx][j] += gradVal - sigma * modelData.fmModel.factors[idx][j];
+			nParam.factors[idx][j] += gradVal * gradVal;
+			if (Math.abs(zParam.factors[idx][j]) <= l1) {
+				modelData.fmModel.factors[idx][j] = 0.0;
+			} else {
+				modelData.fmModel.factors[idx][j] =
+					((zParam.factors[idx][j] < 0 ? -1 : 1) * l1 - zParam.factors[idx][j]) / ((beta + Math.sqrt(
+						nParam.factors[idx][j])) / alpha + l2);
+			}
+		}
+	}
+
+	public static class WriteModel extends RichFlatMapFunction <Tuple2 <Long, Object>, Row> {
+		private static final long serialVersionUID = 3487644568763785149L;
+
+		@Override
+		public void flatMap(Tuple2 <Long, Object> value, Collector <Row> out) throws Exception {
+			Timestamp curModelTimestamp = new Timestamp(-value.f0);
+
+			Tuple3 <Long, Long, String> element = (Tuple3 <Long, Long, String>) value.f1;
+			out.collect(Row.of(curModelTimestamp, element.f0, element.f1, element.f2, null));
+		}
+	}
 }
+

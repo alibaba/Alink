@@ -95,7 +95,7 @@ public class PredictProcess extends RichCoFlatMapFunction <Row, Row, Row> {
 				this.mapper = modelMapper;
 				buffers.get(timestamp).clear();
 			} catch (Exception e) {
-				System.err.println("Model stream updating failed. Please check your model stream.");
+				System.err.println("Model stream updating failed. Please check your model stream." + e);
 			}
 		} else {
 			if (buffers.containsKey(timestamp)) {

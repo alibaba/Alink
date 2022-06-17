@@ -148,7 +148,7 @@ public class AccurateBinaryMetricsSummary
 			return;
 		}
 		EvaluationCurvePoint[] rocCurve = new EvaluationCurvePoint[confusionMatrices.length];
-		EvaluationCurvePoint[] recallPrecisionCurve = new EvaluationCurvePoint[confusionMatrices.length];
+		EvaluationCurvePoint[] precisionRecallCurve = new EvaluationCurvePoint[confusionMatrices.length];
 		EvaluationCurvePoint[] liftChart = new EvaluationCurvePoint[confusionMatrices.length];
 		EvaluationCurvePoint[] lorenzCurve = new EvaluationCurvePoint[confusionMatrices.length];
 		long total = totalTrue + totalFalse;
@@ -157,18 +157,18 @@ public class AccurateBinaryMetricsSummary
 			ConfusionMatrix confusionMatrix = confusionMatrices[i];
 			long curTrue = confusionMatrix.longMatrix.getValue(0, 0);
 			long curFalse = confusionMatrix.longMatrix.getValue(0, 1);
-			double precision = (Double.compare(threshold, 1.0) == 0 && i >= 1 ? recallPrecisionCurve[i - 1].getY() :
+			double precision = (Double.compare(threshold, 1.0) == 0 && i >= 1 ? precisionRecallCurve[i - 1].getY() :
 				curTrue + curFalse == 0 ? 1.0 : 1.0 * curTrue / (curTrue + curFalse));
 			double tpr = (totalTrue == 0 ? 1.0 : 1.0 * curTrue / totalTrue);
 			double fpr = (totalFalse == 0 ? 1.0 : 1.0 * curFalse / totalFalse);
 			double pr = 1.0 * (curTrue + curFalse) / total;
 			rocCurve[i] = new EvaluationCurvePoint(fpr, tpr, threshold);
-			recallPrecisionCurve[i] = new EvaluationCurvePoint(tpr, precision, threshold);
+			precisionRecallCurve[i] = new EvaluationCurvePoint(tpr, precision, threshold);
 			liftChart[i] = new EvaluationCurvePoint(pr, curTrue, threshold);
 			lorenzCurve[i] = new EvaluationCurvePoint(pr, tpr, threshold);
 		}
 		params.set(BinaryClassMetrics.ROC_CURVE, new EvaluationCurve(rocCurve).getXYArray());
-		params.set(BinaryClassMetrics.RECALL_PRECISION_CURVE, new EvaluationCurve(recallPrecisionCurve).getXYArray());
+		params.set(BinaryClassMetrics.PRECISION_RECALL_CURVE, new EvaluationCurve(precisionRecallCurve).getXYArray());
 		params.set(BinaryClassMetrics.LIFT_CHART, new EvaluationCurve(liftChart).getXYArray());
 		params.set(BinaryClassMetrics.LORENZ_CURVE, new EvaluationCurve(lorenzCurve).getXYArray());
 	}

@@ -93,6 +93,22 @@ public class LocalPredictor {
 		return this.mapperList.map(row);
 	}
 
+	/**
+	 * predict operation
+	 *
+	 * @param inputs support single object and object array, and also support a Row type input.
+	 * @return prediction with the format of Object Array
+	 * @throws Exception
+	 */
+	public Object[] predict(Object... inputs) throws Exception {
+		Row row = map((1 == inputs.length && (inputs[0] instanceof Row)) ? (Row) inputs[0] : Row.of(inputs));
+		Object[] objs = new Object[row.getArity()];
+		for (int i = 0; i < objs.length; i++) {
+			objs[i] = row.getField(i);
+		}
+		return objs;
+	}
+
 	@Deprecated
 	public void open() {
 	}

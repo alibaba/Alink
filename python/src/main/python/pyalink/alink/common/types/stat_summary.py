@@ -1,5 +1,8 @@
 from .bases.j_obj_wrapper import JavaObjectWrapperWithAutoTypeConversion
 
+__all__ = ['TableSummary', 'SparseVectorSummary', 'DenseVectorSummary',
+           'CorrelationResult', 'ChiSquareTestResult', 'ChiSquareTestResults']
+
 
 class BaseSummary(JavaObjectWrapperWithAutoTypeConversion):
     _j_cls_name = 'com.alibaba.alink.operator.common.statistics.basicstatistic.BaseSummary'

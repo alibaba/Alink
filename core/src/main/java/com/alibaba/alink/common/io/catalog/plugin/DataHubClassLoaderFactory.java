@@ -45,7 +45,8 @@ public class DataHubClassLoaderFactory extends ClassLoaderFactory implements Ser
 			String catalogType = factory.factoryIdentifier();
 
 			return catalogType != null
-				&& catalogType.equalsIgnoreCase(registerKey.getName());
+				&& catalogType.equalsIgnoreCase(registerKey.getName())
+				&& factory.getClass().getName().equals("com.alibaba.alink.common.io.catalog.datahub.factories.DataHubCatalogFactory");
 		}
 	}
 

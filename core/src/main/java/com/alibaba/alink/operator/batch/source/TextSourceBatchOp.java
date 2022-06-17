@@ -36,6 +36,7 @@ public final class TextSourceBatchOp extends BaseSourceBatchOp <TextSourceBatchO
 			.setQuoteChar(null)
 			.setIgnoreFirstLine(getIgnoreFirstLine())
 			.setSchemaStr(getTextCol() + " string")
+			.setPartitions(getPartitions())
 			.getOutputTable();
 	}
 }

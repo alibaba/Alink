@@ -22,6 +22,9 @@ public class KDTree implements Serializable {
 	private int vectorSize;
 	FastDistanceVectorData[] samples;
 	FastDistance distance;
+	private final int LEAF_SIZE = 40;
+	private int nLevel;
+	private int nodeNum;
 
 	public TreeNode getRoot() {
 		return root;
@@ -40,11 +43,9 @@ public class KDTree implements Serializable {
 	}
 
 	public void buildTree() {
-		this.root = recursiveBuild(0, samples.length);
-	}
-
-	public FastDistanceVectorData[] getSample() {
-		return samples;
+		nLevel = 1 + (int) Math.max(0, (Math.log((samples.length - 1) / LEAF_SIZE) / Math.log(2)));
+		nodeNum = (int) Math.pow(2, nLevel) - 1;
+		this.root = recursiveBuild(0, 0, samples.length);
 	}
 
 	public List <FastDistanceVectorData> rangeSearch(double epsilon, FastDistanceVectorData sample) {
@@ -62,11 +63,19 @@ public class KDTree implements Serializable {
 				list.addAll(Arrays.asList(samples).subList(node.startIndex, node.endIndex));
 			} else if (distance instanceof EuclideanDistance && Math.abs(epsilon - min) > 1e-12 && epsilon < min) {
 			} else {
-				if (distance.calc(sample, samples[node.nodeIndex]).get(0, 0) <= epsilon) {
-					list.add(samples[node.nodeIndex]);
+				if (node.isLeaf) {
+					for (int i = node.startIndex; i < node.endIndex; i++) {
+						if (distance.calc(sample, samples[i]).get(0, 0) <= epsilon) {
+							list.add(samples[node.nodeIndex]);
+						}
+					}
+				} else {
+					if (distance.calc(sample, samples[node.nodeIndex]).get(0, 0) <= epsilon) {
+						list.add(samples[node.nodeIndex]);
+					}
+					stack.add(node.left);
+					stack.add(node.right);
 				}
-				stack.add(node.left);
-				stack.add(node.right);
 			}
 		}
 		return list;
@@ -84,32 +93,74 @@ public class KDTree implements Serializable {
 					return res;
 				}
 			});
-		Stack <TreeNode> stack = new Stack <>();
-		stack.push(root);
-		while (!stack.empty()) {
-			TreeNode node = stack.pop();
+		Stack <TreeNode> nodeStack = new Stack <>();
+		Stack <Double> distanceStack = new Stack <>();
+		nodeStack.push(root);
+		distanceStack.push(distance.calc(sample, samples[root.nodeIndex]).get(0, 0));
+		while (!nodeStack.empty()) {
+			TreeNode node = nodeStack.pop();
+			double nodeDistance = distanceStack.pop();
 			if (null == node) {
 				continue;
 			}
 			if (queue.size() < topN) {
-				queue.add(Tuple2.of(distance.calc(sample, samples[node.nodeIndex]).get(0, 0),
-					samples[node.nodeIndex].getRows()[0]));
+				if (node.isLeaf) {
+					// traversal search of leaf nodes
+					for (int i = node.startIndex; i < node.endIndex; i++) {
+						double d = distance.calc(sample, samples[i]).get(0, 0);
+						if (queue.size() < topN) {
+							queue.add(Tuple2.of(d, samples[i].getRows()[0]));
+						} else if (d < queue.peek().f0) {
+							Tuple2 <Double, Row> tuple = queue.poll();
+							tuple.f0 = d;
+							tuple.f1 = samples[i].getRows()[0];
+							queue.add(tuple);
+						}
+					}
+				} else {
+					queue.add(Tuple2.of(nodeDistance, samples[node.nodeIndex].getRows()[0]));
+				}
 			} else {
 				Tuple2 <Double, Row> peek = queue.peek();
 				double min = minMaxDistance(node, sample.getVector()).f0;
 				if (distance instanceof EuclideanDistance && Math.abs(peek.f0 - min) > 1e-12 && peek.f0 < min) {
 					continue;
 				}
-				double v = distance.calc(sample, samples[node.nodeIndex]).get(0, 0);
-				if (v < peek.f0) {
+				if (nodeDistance < peek.f0) {
 					queue.poll();
-					peek.f0 = v;
+					peek.f0 = nodeDistance;
 					peek.f1 = samples[node.nodeIndex].getRows()[0];
 					queue.add(peek);
 				}
+				if (node.isLeaf) {
+					// traversal search of leaf nodes
+					for (int i = node.startIndex + 1; i < node.endIndex; i++) {
+						double d = distance.calc(sample, samples[i]).get(0, 0);
+						if (d < queue.peek().f0) {
+							Tuple2 <Double, Row> tuple = queue.poll();
+							tuple.f0 = d;
+							tuple.f1 = samples[i].getRows()[0];
+							queue.add(tuple);
+						}
+					}
+				}
 			}
-			stack.add(node.left);
-			stack.add(node.right);
+			// compare left and right children's average distance, closer cluster do binary search first
+			double leftDistance = node.left == null ? Double.MAX_VALUE : distance.calc(sample,
+				samples[node.left.nodeIndex]).get(0, 0);
+			double rightDistance = node.right == null ? Double.MAX_VALUE : distance.calc(sample,
+				samples[node.right.nodeIndex]).get(0, 0);
+			if (leftDistance >= rightDistance) {
+				nodeStack.add(node.left);
+				nodeStack.add(node.right);
+				distanceStack.add(leftDistance);
+				distanceStack.add(rightDistance);
+			} else {
+				nodeStack.add(node.right);
+				nodeStack.add(node.left);
+				distanceStack.add(rightDistance);
+				distanceStack.add(leftDistance);
+			}
 		}
 		Tuple2 <Double, Row>[] res = new Tuple2[queue.size()];
 		int c = res.length - 1;
@@ -140,17 +191,23 @@ public class KDTree implements Serializable {
 	}
 
 	TreeNode recursiveBuild(int startIndex, int endIndex) {
+		return recursiveBuild(startIndex, startIndex, endIndex);
+	}
+
+	TreeNode recursiveBuild(int thisIndex, int startIndex, int endIndex) {
 		if (startIndex >= endIndex) {
 			return null;
 		}
-		TreeNode node = new TreeNode();
-		node.startIndex = startIndex;
-		node.endIndex = endIndex;
-		node.splitDim = pickSplitDim(startIndex, endIndex);
+		TreeNode node = new TreeNode(startIndex, endIndex);
 		findBounds(node);
+		if (2 * thisIndex + 1 > nodeNum) {
+			node.isLeaf = true;
+			return node;
+		}
+		node.splitDim = pickSplitDim(startIndex, endIndex);
 		node.nodeIndex = split(startIndex, endIndex, node.splitDim);
-		node.left = recursiveBuild(node.startIndex, node.nodeIndex);
-		node.right = recursiveBuild(node.nodeIndex + 1, node.endIndex);
+		node.left = recursiveBuild(thisIndex * 2 + 1, node.startIndex, node.nodeIndex);
+		node.right = recursiveBuild(thisIndex * 2 + 2, node.nodeIndex + 1, node.endIndex);
 		return node;
 	}
 
@@ -230,18 +287,20 @@ public class KDTree implements Serializable {
 		public int splitDim;
 		public TreeNode left, right;
 		public double[] downThre, upThre;
+		boolean isLeaf = false;
 
-		//@Override
-		//public String toString(){
-		//    JsonObject object = new JsonObject();
-		//    object.addProperty("nodeIndex", nodeIndex);
-		//    object.addProperty("startIndex", startIndex);
-		//    object.addProperty("endIndex", endIndex);
-		//    object.addProperty("splitDim", splitDim);
-		//    object.addProperty("downThre", Arrays.toString(downThre));
-		//    object.addProperty("upThre", Arrays.toString(upThre));
-		//    return object.toString();
-		//}
+		public TreeNode(int startIndex, int endIndex) {
+			this.nodeIndex = startIndex;
+			this.startIndex = startIndex;
+			this.endIndex = endIndex;
+			isLeaf = false;
+		}
+
+		public TreeNode() {
+			this.nodeIndex = 0;
+			this.startIndex = 0;
+			this.endIndex = 0;
+		}
+
 	}
-
 }

@@ -113,6 +113,7 @@ public class BinaryClassModelFilterStreamOp<T extends BinaryClassModelFilterStre
 		private final List <Row> bufferRows = new ArrayList <>();
 		private final double aucThreshold;
 		private final double accuracyThreshold;
+		private final double logLossThreshold;
 		private final TypeInformation<?> labelType;
 
 		private final ModelMapper mapper;
@@ -141,6 +142,7 @@ public class BinaryClassModelFilterStreamOp<T extends BinaryClassModelFilterStre
 			this.positiveValue = params.get(BinaryClassModelFilterParams.POS_LABEL_VAL_STR);
 			this.aucThreshold = params.get(BinaryClassModelFilterParams.AUC_THRESHOLD);
 			this.accuracyThreshold = params.get(BinaryClassModelFilterParams.ACCURACY_THRESHOLD);
+			this.logLossThreshold = params.get(BinaryClassModelFilterParams.LOG_LOSS);
 			this.timestampColIndex = timestampColIndex;
 			this.countColIndex = countColIndex;
 		}
@@ -178,10 +180,12 @@ public class BinaryClassModelFilterStreamOp<T extends BinaryClassModelFilterStre
 					BinaryClassMetrics metrics = binaryMetricsSummary.toMetrics();
 					double auc = metrics.getAuc();
 					double accuracy = metrics.getAccuracy();
+					double logLoss = metrics.getLogLoss();
+
 					if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-						System.out.println("auc : " + auc + "     accuracy : " + accuracy);
+						System.out.println("auc : " + auc + "     accuracy : " + accuracy + "    logLoss : " + logLoss);
 					}
-					if (auc >= aucThreshold && accuracy >= accuracyThreshold) {
+					if (auc >= aucThreshold && accuracy >= accuracyThreshold && logLoss < logLossThreshold) {
 						for (Row r : oldModel) {
 							collector.collect(r);
 						}

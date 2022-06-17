@@ -1,6 +1,37 @@
 from .bases.j_obj_wrapper import JavaObjectWrapperWithAutoTypeConversion
 from ..utils.packages import in_ipython
 
+__all__ = ['ClusteringModelInfo',
+           'KMeansModelInfo',
+           'BisectingKMeansModelInfo',
+           'GmmModelInfo',
+           'OneHotModelInfo',
+           'QuantileDiscretizerModelInfo',
+           'NaiveBayesTextModelInfo',
+           'LdaModelInfo',
+           'MaxAbsScalarModelInfo',
+           'MinMaxScalerModelInfo',
+           'StandardScalerModelInfo',
+           'VectorMaxAbsScalarModelInfo',
+           'VectorMinMaxScalerModelInfo',
+           'VectorStandardScalerModelInfo',
+           'EqualWidthDiscretizerModelInfo',
+           'ChisqSelectorModelInfo',
+           'PcaModelData',
+           'FmRegressorModelInfo',
+           'FmClassifierModelInfo',
+           'LinearRegressorModelInfo',
+           'LinearClassifierModelInfo',
+           'SoftmaxModelInfo',
+           'TreeModelInfo',
+           'MultiTreeModelInfo',
+           'DecisionTreeModelInfo',
+           'RandomForestModelInfo',
+           'GbdtModelInfo',
+           'NaiveBayesModelInfo',
+           'ImputerModelInfo',
+           'GlmModelInfo']
+
 
 class ClusteringModelInfo(JavaObjectWrapperWithAutoTypeConversion):
     _j_cls_name = 'com.alibaba.alink.operator.common.clustering.ClusteringModelInfo'

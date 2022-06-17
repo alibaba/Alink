@@ -18,6 +18,8 @@ import org.apache.calcite.schema.impl.ScalarFunctionImpl;
 import org.apache.calcite.util.BuiltInMethod;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -166,7 +168,14 @@ public class SelectMapper extends Mapper {
 			Thread.currentThread(), d -> getPreparedStatement());
 
 		for (int i = 0; i < selection.length(); i += 1) {
-			preparedStatement.setObject(i + 1, selection.get(i));
+        Object v = selection.get(i);
+        if (v instanceof BigDecimal) {
+            preparedStatement.setObject(i + 1, v, java.sql.Types.DECIMAL);
+        } else if (v instanceof BigInteger) {
+            preparedStatement.setObject(i + 1, v, java.sql.Types.BIGINT);
+        } else {
+            preparedStatement.setObject(i + 1, v);
+        }
 		}
 		try (ResultSet resultSet = preparedStatement.executeQuery()) {
 			ResultSetMetaData metaData = resultSet.getMetaData();

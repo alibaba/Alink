@@ -95,11 +95,16 @@ public class TensorInternalUtils {
 				LongNdArray longNdArray = NdArrays.ofLongs(org.tensorflow.ndarray.Shape.of(shape.asArray()));
 				longNdArray.write(DataBuffers.of(byteBuffer.asLongBuffer()));
 				return createLongTensor(longNdArray);
-			case BYTE:
-			case UBYTE:
+			case BYTE: {
 				ByteNdArray byteNdArray = NdArrays.ofBytes(Shape.of(shape.asArray()));
 				byteNdArray.write(DataBuffers.of(byteBuffer));
 				return createByteTensor(byteNdArray);
+			}
+			case UBYTE: {
+				ByteNdArray byteNdArray = NdArrays.ofBytes(Shape.of(shape.asArray()));
+				byteNdArray.write(DataBuffers.of(byteBuffer));
+				return createUByteTensor(byteNdArray);
+			}
 			case BOOLEAN:
 				BooleanNdArray booleanNdArray = NdArrays.ofBooleans(Shape.of(shape.asArray()));
 				BitSet bitSet = BitSet.valueOf(byteBuffer);

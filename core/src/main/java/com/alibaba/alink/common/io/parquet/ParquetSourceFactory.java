@@ -8,10 +8,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.io.filesystem.FilePath;
+
 import java.io.IOException;
 
 public interface ParquetSourceFactory {
 	
 	Tuple2<RichInputFormat<Row, FileInputSplit>, TableSchema> createParquetSourceFunction(Params params);
-
 }

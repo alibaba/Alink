@@ -15,6 +15,7 @@ import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -82,12 +83,15 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		.map(BertTokenizerMapper::prependPrefix)
 		.toArray(String[]::new);
 
+	private final ResourcePluginFactory factory;
+
 	public BaseEasyTransferTrainBatchOp() {
 		this(new Params());
 	}
 
 	public BaseEasyTransferTrainBatchOp(Params params) {
 		super(params);
+		factory = new ResourcePluginFactory();
 	}
 
 	public static Map <String, Object> getPreprocessConfig(Params params, boolean doTokenizer) {
@@ -129,11 +133,11 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		return config;
 	}
 
-	public static Map <String, Object> getModelConfig(Params params) {
+	public static Map <String, Object> getModelConfig(Params params, ResourcePluginFactory factory) {
 		Map <String, Object> config = new HashMap <>();
 		if (!params.contains(HasModelPath.MODEL_PATH) || (null == params.get(HasModelPath.MODEL_PATH))) {
 			params.set(HasModelPath.MODEL_PATH,
-				BertResources.getBertModelCkpt(params.get(HasBertModelName.BERT_MODEL_NAME)));
+				BertResources.getBertModelCkpt(factory, params.get(HasBertModelName.BERT_MODEL_NAME)));
 		}
 
 		TaskType taskType = params.get(HasTaskType.TASK_TYPE);
@@ -215,7 +219,8 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		return m;
 	}
 
-	public static Map <String, Map <String, Object>> getConfig(Params params, boolean doTokenizer) {
+	public static Map <String, Map <String, Object>> getConfig(Params params, boolean doTokenizer,
+															   ResourcePluginFactory factory) {
 		Map <String, Map <String, Object>> customConfig;
 		if (params.contains(HasCustomConfigJson.CUSTOM_CONFIG_JSON)) {
 			String customConfigJson = params.get(HasCustomConfigJson.CUSTOM_CONFIG_JSON);
@@ -226,8 +231,9 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		}
 
 		Map <String, Map <String, Object>> config = new HashMap <>();
-		config.put("preprocess_config", mergeMap(getPreprocessConfig(params, doTokenizer), customConfig.get("preprocess_config")));
-		config.put("model_config", mergeMap(getModelConfig(params), customConfig.get("model_config")));
+		config.put("preprocess_config",
+			mergeMap(getPreprocessConfig(params, doTokenizer), customConfig.get("preprocess_config")));
+		config.put("model_config", mergeMap(getModelConfig(params, factory), customConfig.get("model_config")));
 		config.put("train_config", mergeMap(getTrainConfig(params), customConfig.get("train_config")));
 		config.put("export_config", mergeMap(getExportConfig(params), customConfig.get("export_config")));
 		return config;
@@ -261,7 +267,7 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 		String bertModelCkptPath =
 			params.contains(HasModelPath.MODEL_PATH) && (null != params.get(HasModelPath.MODEL_PATH))
 				? params.get(HasModelPath.MODEL_PATH)
-				: BertResources.getBertModelCkpt(bertModelName);
+				: BertResources.getBertModelCkpt(factory, bertModelName);
 
 		String checkpointFilePath = params.get(HasCheckpointFilePathDefaultAsNull.CHECKPOINT_FILE_PATH);
 		if (!StringUtils.isNullOrWhitespaceOnly(checkpointFilePath)) {
@@ -280,7 +286,7 @@ public class BaseEasyTransferTrainBatchOp<T extends BaseEasyTransferTrainBatchOp
 			userParams.put("pretrained_ckpt_path", PythonFileUtils.getCompressedFileName(bertModelCkptPath));
 		}
 
-		Map <String, Map <String, Object>> config = getConfig(getParams(), false);
+		Map <String, Map <String, Object>> config = getConfig(getParams(), false, factory);
 		String configJson = JsonConverter.toJson(config);
 
 		LOG.info("EasyTransfer config: {}", configJson);

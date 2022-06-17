@@ -1,5 +1,7 @@
 package com.alibaba.alink.python.executables;
 
+import com.alibaba.alink.operator.common.evaluation.EvaluationMetricsCollector;
+
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 
@@ -76,7 +78,7 @@ public class GeneratePyOp {
 	final static List <Class <?>> INTERFACE_CANDIDATES = Arrays.asList(
 		WithModelInfoBatchOp.class, WithTrainInfo.class, ExtractModelInfoBatchOp.class,
 		HasLazyPrintModelInfo.class, HasLazyPrintTrainInfo.class, LocalPredictable.class,
-		ModelStreamScanParams.class
+		ModelStreamScanParams.class, EvaluationMetricsCollector.class
 	);
 
 	final static String ENCODING_LINE = "# -*- coding: utf-8 -*-";
@@ -101,9 +103,8 @@ public class GeneratePyOp {
 
 	static List <String> BATCH_IMPORT_LINES = Arrays.asList(
 		"from ..base import BatchOperator, BaseSinkBatchOp",
-		"from ..lazy.extract_model_info_batch_op import ExtractModelInfoBatchOp",
-		"from ..lazy.with_model_info_batch_op import WithModelInfoBatchOp",
-		"from ..lazy.with_train_info import WithTrainInfo");
+		"from ..mixins import WithTrainInfo, EvaluationMetricsCollector, ExtractModelInfoBatchOp, WithModelInfoBatchOp"
+	);
 
 	static List <String> STREAM_IMPORT_LINES = Arrays.asList(
 		"from ..base import StreamOperator, BaseSinkStreamOp, BaseModelStreamOp",
@@ -112,8 +113,7 @@ public class GeneratePyOp {
 	static List <String> PIPELINE_IMPORT_LINES = Arrays.asList(
 		"from ..base import Estimator, Transformer, Model, TuningEvaluator",
 		"from ..tuning.base import BaseGridSearch, BaseRandomSearch",
-		"from ..lazy.has_lazy_print_model_info import HasLazyPrintModelInfo",
-		"from ..lazy.has_lazy_print_train_info import HasLazyPrintTrainInfo",
+		"from ..mixins import HasLazyPrintModelInfo, HasLazyPrintTrainInfo",
 		"from ..local_predictor import LocalPredictable",
 		"from ...common.types.bases.model_stream_scan_params import ModelStreamScanParams");
 

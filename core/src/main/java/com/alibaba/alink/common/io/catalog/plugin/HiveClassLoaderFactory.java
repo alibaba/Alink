@@ -221,7 +221,7 @@ public class HiveClassLoaderFactory extends ClassLoaderFactory implements Serial
 				try {
 
 					Class <?> initializer = Class.forName(
-						"com.alibaba.alink.common.io.plugin.initializer.HivePluginInitializer",
+						"com.alibaba.alink.common.io.catalog.hive.plugin.initializer.HivePluginInitializer",
 						true, classLoader
 					);
 

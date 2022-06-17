@@ -10,25 +10,41 @@ __all__ = ['UDFStreamOp', 'UDTFStreamOp', 'FtrlTrainStreamOp', 'FtrlPredictStrea
 
 
 class UDFStreamOp(_PyScalarFnStreamOp):
+    """
+    Similar as `UDFStreamOp` in Java side, except for supporting Python udf other than Java udf.
+    """
+
     def __init__(self, *args, **kwargs):
+        """"""
         super(UDFStreamOp, self).__init__(*args, **kwargs)
 
-    def setFunc(self, val):
+    def setFunc(self, func):
         """
-        set UDF: object with eval attribute, lambda function, or PyFlink udf object
+        Set UDF function
+
+        :param func: an instance with `eval` attribute, or `callable`, or an instance of :py:class:`UserDefinedScalarFunctionWrapper`.
+        :return: `self`.
         """
-        return do_set_op_udf(self, val)
+        return do_set_op_udf(self, func)
 
 
 class UDTFStreamOp(_PyTableFnStreamOp):
+    """
+    Similar as `UDTFStreamOp` in Java side, except for supporting Python udtf other than Java udtf.
+    """
+
     def __init__(self, *args, **kwargs):
+        """"""
         super(UDTFStreamOp, self).__init__(*args, **kwargs)
 
-    def setFunc(self, val):
+    def setFunc(self, func):
         """
-        set UDTF: object with eval attribute or lambda function
+        Set UDTF function
+
+        :param func: an instance with `eval` attribute, or `callable`, or an instance of :py:class:`UserDefinedTableFunctionWrapper`.
+        :return: `self`.
         """
-        return do_set_op_udtf(self, val)
+        return do_set_op_udtf(self, func)
 
 
 class FtrlTrainStreamOp(_FtrlTrainStreamOp):
@@ -52,7 +68,19 @@ class FtrlPredictStreamOp(_FtrlPredictStreamOp):
 
 
 class TableSourceStreamOp(StreamOperator):
+    """
+    Convert a PyFlink :py:class:`Table` to a :py:class:`StreamOperator`.
+    """
+
     def __init__(self, table, *args, **kwargs):
+        """
+        Construct a :py:class:`BatchOperator` from a PyFlink :py:class:`Table`.
+
+        :param table: an instance of PyFlink :py:class:`Table`.
+        :param args: arguments.
+        :param kwargs: keyword arguments.
+        """
+
         from pyflink.table import Table
         if not isinstance(table, Table):
             raise ValueError("Invalid table: only accept PyFlink Table")

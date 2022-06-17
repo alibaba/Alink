@@ -28,9 +28,6 @@ import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
 import com.alibaba.alink.operator.common.optim.subfunc.OptimVariable;
 import com.alibaba.alink.params.recommendation.FmTrainParams;
 
-import javax.jws.WebParam.Mode;
-import scala.xml.PrettyPrinter.Para;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,11 +37,11 @@ import java.util.Random;
  * Fm optimizer.
  */
 public class FmOptimizer {
-	private Params params;
-	private DataSet <Tuple3 <Double, Double, Vector>> trainData;
-	private int[] dim;
+	private final Params params;
+	private final DataSet <Tuple3 <Double, Double, Vector>> trainData;
+	private final int[] dim;
 	protected DataSet <FmDataFormat> fmModel = null;
-	private double[] lambda;
+	private final double[] lambda;
     private final static int BLOCK_SIZE = 1000;
 	/**
 	 * construct function.
@@ -101,10 +98,10 @@ public class FmOptimizer {
 	public static class FmIterTermination extends CompareCriterionFunction {
 		private static final long serialVersionUID = 2410437704683855923L;
 		private double oldLoss;
-		private double epsilon;
-		private Task task;
-		private int maxIter;
-		private int batchSize;
+		private final double epsilon;
+		private final Task task;
+		private final int maxIter;
+		private final int batchSize;
 		private Long oldTime;
 
 		public FmIterTermination(Params params) {
@@ -171,10 +168,10 @@ public class FmOptimizer {
 	 */
 	public static class CalcLossAndEvaluation extends ComputeFunction {
 		private static final long serialVersionUID = 1276524768860519162L;
-		private int[] dim;
+		private final int[] dim;
 		private double[] y;
-		private LossFunction lossFunc = null;
-		private Task task;
+		private final LossFunction lossFunc;
+		private final Task task;
 
 		public CalcLossAndEvaluation(int[] dim, Task task) {
 			this.dim = dim;
@@ -263,11 +260,10 @@ public class FmOptimizer {
 				if (mSum != 0 && nSum != 0) {
 					double auc = (posRankSum - 0.5 * mSum * (mSum + 1.0)) / ((double) mSum * (double) nSum);
 					buffer[2] = auc;
-					buffer[3] = correctNum;
 				} else {
 					buffer[2] = 0.0;
-					buffer[3] = correctNum;
 				}
+				buffer[3] = correctNum;
 			}
 			buffer[0] = lossSum;
 			buffer[1] = y.length;
@@ -279,7 +275,7 @@ public class FmOptimizer {
 	 */
 	public static class UpdateGlobalModel extends ComputeFunction {
 		private static final long serialVersionUID = 4584059654350995646L;
-		private int[] dim;
+		private final int[] dim;
 
 		public UpdateGlobalModel(int[] dim) {
 			this.dim = dim;
@@ -322,20 +318,18 @@ public class FmOptimizer {
 		/**
 		 * object function class, it supply the functions to calc local gradient (or loss).
 		 */
-		private int[] dim;
-		private double[] lambda;
-		private Task task;
-		private double learnRate;
+		private final int[] dim;
+		private final double[] lambda;
+		private final double learnRate;
 		private int vectorSize;
-		private final double eps = 1.0e-8;
 		private int batchSize;
-		private LossFunction lossFunc = null;
-		private Random rand = new Random(2020);
+		private final LossFunction lossFunc;
+		private final Random rand = new Random(2020);
 
 		public UpdateLocalModel(int[] dim, double[] lambda, Params params) {
 			this.lambda = lambda;
 			this.dim = dim;
-			this.task = params.get(ModelParamName.TASK);
+			Task task = params.get(ModelParamName.TASK);
 			this.learnRate = params.get(FmTrainParams.LEARN_RATE);
 			this.batchSize = params.get(FmTrainParams.MINIBATCH_SIZE);
 			if (task.equals(Task.REGRESSION)) {
@@ -362,7 +356,7 @@ public class FmOptimizer {
 			FmDataFormat innerModel = ((List <FmDataFormat>) context.getObj(OptimVariable.fmModel)).get(0);
 			double[] weights = context.getObj(OptimVariable.weights);
 			if (weights == null) {
-				vectorSize = (innerModel.factors != null) ? innerModel.factors.length : innerModel.factors.length;
+				vectorSize = innerModel.factors.length;
 				weights = new double[vectorSize];
 				context.putObj(OptimVariable.weights, weights);
 			} else {
@@ -427,6 +421,7 @@ public class FmOptimizer {
 					vals = ((DenseVector) sample.f2).getData();
 				}
 
+				double eps = 1.0e-8;
 				if (dim[0] > 0) {
 					double grad = dldy + lambda[0] * factors.bias;
 
@@ -480,17 +475,13 @@ public class FmOptimizer {
 
 			double[][] buffer = new double[BLOCK_SIZE][];
 			for (int i = 0; i < numBlock - 1; ++i) {
-                for(int j = 0; j < BLOCK_SIZE; ++j) {
-                    buffer[j] = factors[i * BLOCK_SIZE + j];
-                }
+				System.arraycopy(factors, i * 1000, buffer, 0, BLOCK_SIZE);
                 model.add(Row.of(i, factors.length, JsonConverter.toJson(buffer)));
             }
 			int endIdx = factors.length - (BLOCK_SIZE * (numBlock - 1));
 
 			buffer = new double[endIdx][];
-			for (int j = 0; j < endIdx; ++j) {
-			    buffer[j] = factors[(numBlock - 1) * BLOCK_SIZE + j];
-			}
+			System.arraycopy(factors, (numBlock - 1) * 1000, buffer, 0, endIdx);
 			model.add(Row.of(numBlock - 1, factors.length, JsonConverter.toJson(buffer)));
 
 		    format.factors = null;
@@ -500,7 +491,7 @@ public class FmOptimizer {
 		}
 	}
 
-	public class ParseRowModel extends RichMapPartitionFunction <Row, Tuple2 <FmDataFormat, double[]>> {
+	public static class ParseRowModel extends RichMapPartitionFunction <Row, Tuple2 <FmDataFormat, double[]>> {
 		private static final long serialVersionUID = -2078134573230730223L;
 
 		@Override
@@ -519,9 +510,7 @@ public class FmOptimizer {
                         }
 						int blockId = (int)row.getField(0);
 						double[][] buffer = JsonConverter.fromJson((String) row.getField(2), double[][].class);
-						for (int i = 0; i < buffer.length; ++i) {
-						    factors[BLOCK_SIZE * blockId + i] = buffer[i];
-						}
+						System.arraycopy(buffer, 0, factors, 1000 * blockId, buffer.length);
 					} else if ((int) row.getField(0) == -1) {
 						cinfo = JsonConverter.fromJson((String) row.getField(1), double[].class);
 					} else if ((int) row.getField(0) == -2) {
@@ -536,11 +525,6 @@ public class FmOptimizer {
 
 	/**
 	 * calculate the value of y with given fm model.
-	 *
-	 * @param vec
-	 * @param fmModel
-	 * @param dim
-	 * @return
 	 */
 	public static Tuple2 <Double, double[]> calcY(Vector vec, FmDataFormat fmModel, int[] dim) {
 		int[] featureIds;

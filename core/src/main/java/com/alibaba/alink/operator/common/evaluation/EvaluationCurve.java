@@ -3,7 +3,7 @@ package com.alibaba.alink.operator.common.evaluation;
 import java.io.Serializable;
 
 /**
- * Evaluation curves for binary evaluation, including rocCurve, recallPrecisionCurve and liftChart.
+ * Evaluation curves for binary evaluation, including rocCurve, PrecisionRecallCurve and liftChart.
  *
  * For rocCurve and recall PrecisionCurve, provide AUC and PRC(Area blow the curve).
  *

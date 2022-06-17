@@ -145,7 +145,7 @@ public final class BinaryMetricsSummary
 	}
 
 	/**
-	 * Set the RocCurve/RecallPrecisionCurve/LiftChar.
+	 * Set the RocCurve/PrecisionRecallCurve/LiftChar.
 	 *
 	 * @param params                 Params.
 	 * @param sampledMatrixThreCurve sampled data.
@@ -153,7 +153,7 @@ public final class BinaryMetricsSummary
 	static void setCurvePointsParams(Params params,
 									 Tuple3 <ConfusionMatrix[], double[], EvaluationCurve[]> sampledMatrixThreCurve) {
 		params.set(BinaryClassMetrics.ROC_CURVE, sampledMatrixThreCurve.f2[0].getXYArray());
-		params.set(BinaryClassMetrics.RECALL_PRECISION_CURVE, sampledMatrixThreCurve.f2[1].getXYArray());
+		params.set(BinaryClassMetrics.PRECISION_RECALL_CURVE, sampledMatrixThreCurve.f2[1].getXYArray());
 		params.set(BinaryClassMetrics.LIFT_CHART, sampledMatrixThreCurve.f2[2].getXYArray());
 		params.set(BinaryClassMetrics.LORENZ_CURVE, sampledMatrixThreCurve.f2[3].getXYArray());
 	}
@@ -202,7 +202,7 @@ public final class BinaryMetricsSummary
 	 * @param positiveBin positiveBins.
 	 * @param negativeBin negativeBins.
 	 * @param total       sample number
-	 * @return ConfusionMatrix array, threshold array, rocCurve/recallPrecisionCurve/LiftChart.
+	 * @return ConfusionMatrix array, threshold array, rocCurve/PrecisionRecallCurve/LiftChart.
 	 */
 	static Tuple3 <ConfusionMatrix[], double[], EvaluationCurve[]> extractMatrixThreCurve(long[] positiveBin,
 																						  long[] negativeBin,
@@ -224,7 +224,7 @@ public final class BinaryMetricsSummary
 		final int newLen = length + 1;
 		final double m = 1.0 / ClassificationEvaluationUtil.DETAIL_BIN_NUMBER;
 		EvaluationCurvePoint[] rocCurve = new EvaluationCurvePoint[newLen];
-		EvaluationCurvePoint[] recallPrecisionCurve = new EvaluationCurvePoint[newLen];
+		EvaluationCurvePoint[] precisionRecallCurve = new EvaluationCurvePoint[newLen];
 		EvaluationCurvePoint[] liftChart = new EvaluationCurvePoint[newLen];
 		EvaluationCurvePoint[] lorenzCurve = new EvaluationCurvePoint[newLen];
 		ConfusionMatrix[] data = new ConfusionMatrix[newLen];
@@ -243,7 +243,7 @@ public final class BinaryMetricsSummary
 			double precision = curTrue + curTrue == 0 ? 1.0 : 1.0 * curTrue / (curTrue + curFalse);
 			double pr = 1.0 * (curTrue + curFalse) / total;
 			rocCurve[i] = new EvaluationCurvePoint(fpr, tpr, threshold[i]);
-			recallPrecisionCurve[i] = new EvaluationCurvePoint(tpr, precision, threshold[i]);
+			precisionRecallCurve[i] = new EvaluationCurvePoint(tpr, precision, threshold[i]);
 			liftChart[i] = new EvaluationCurvePoint(pr, curTrue, threshold[i]);
 			lorenzCurve[i] = new EvaluationCurvePoint(pr, tpr, threshold[i]);
 		}
@@ -251,12 +251,12 @@ public final class BinaryMetricsSummary
 		threshold[0] = 1.0;
 		data[0] = new ConfusionMatrix(new long[][] {{0, 0}, {totalTrue, totalFalse}});
 		rocCurve[0] = new EvaluationCurvePoint(0, 0, threshold[0]);
-		recallPrecisionCurve[0] = new EvaluationCurvePoint(0, recallPrecisionCurve[1].getY(), threshold[0]);
+		precisionRecallCurve[0] = new EvaluationCurvePoint(0, precisionRecallCurve[1].getY(), threshold[0]);
 		liftChart[0] = new EvaluationCurvePoint(0, 0, threshold[0]);
 		lorenzCurve[0] = new EvaluationCurvePoint(0, 0, threshold[0]);
 
 		return Tuple3.of(data, threshold, new EvaluationCurve[] {new EvaluationCurve(rocCurve),
-			new EvaluationCurve(recallPrecisionCurve), new EvaluationCurve(liftChart),
+			new EvaluationCurve(precisionRecallCurve), new EvaluationCurve(liftChart),
 			new EvaluationCurve(lorenzCurve)});
 	}
 

@@ -275,7 +275,7 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 			"The effective number in bins must be equal to total!");
 
 		EvaluationCurvePoint[] rocCurve = new EvaluationCurvePoint[n + 1];
-		EvaluationCurvePoint[] recallPrecisionCurve = new EvaluationCurvePoint[n + 1];
+		EvaluationCurvePoint[] precisionRecallCurve = new EvaluationCurvePoint[n + 1];
 		EvaluationCurvePoint[] liftChart = new EvaluationCurvePoint[n + 1];
 		EvaluationCurvePoint[] lorenzCurve = new EvaluationCurvePoint[n + 1];
 		ConfusionMatrix[] data = new ConfusionMatrix[n + 1];
@@ -296,7 +296,7 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 			double pr = 1. * (curTrue + curFalse) / total;
 
 			rocCurve[k] = new EvaluationCurvePoint(fpr, tpr, threshold[k]);
-			recallPrecisionCurve[k] = new EvaluationCurvePoint(tpr, precision, threshold[k]);
+			precisionRecallCurve[k] = new EvaluationCurvePoint(tpr, precision, threshold[k]);
 			liftChart[k] = new EvaluationCurvePoint(pr, curTrue, threshold[k]);
 			lorenzCurve[k] = new EvaluationCurvePoint(pr, tpr, threshold[k]);
 		}
@@ -305,12 +305,12 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 		data[0] = new ConfusionMatrix(new long[][] {{0, 0}, {totalTrue, totalFalse}});
 
 		rocCurve[0] = new EvaluationCurvePoint(0, 0, threshold[0]);
-		recallPrecisionCurve[0] = new EvaluationCurvePoint(0, recallPrecisionCurve[1].getY(), threshold[0]);
+		precisionRecallCurve[0] = new EvaluationCurvePoint(0, precisionRecallCurve[1].getY(), threshold[0]);
 		liftChart[0] = new EvaluationCurvePoint(0, 0, threshold[0]);
 		lorenzCurve[0] = new EvaluationCurvePoint(0, 0, threshold[0]);
 
 		return Tuple3.of(data, threshold, new EvaluationCurve[] {new EvaluationCurve(rocCurve),
-			new EvaluationCurve(recallPrecisionCurve), new EvaluationCurve(liftChart),
+			new EvaluationCurve(precisionRecallCurve), new EvaluationCurve(liftChart),
 			new EvaluationCurve(lorenzCurve)});
 	}
 

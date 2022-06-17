@@ -35,7 +35,6 @@ public class FmModelMapper extends RichModelMapper {
 	private FmModelData model;
 	private int[] dim;
 	private int[] featureIdx;
-	private long lastModelVersion = Long.MAX_VALUE;
 	private final TypeInformation <?> labelType;
 	private transient ThreadLocal <DenseVector> threadLocalVec;
 
@@ -79,47 +78,6 @@ public class FmModelMapper extends RichModelMapper {
 				vectorColIndex = TableUtil.findColIndexWithAssert(dataSchema.getFieldNames(), model.vectorColName);
 			}
 		}
-	}
-
-	@Override
-	public ModelMapper createNew(List <Row> modelRows) {
-		System.out.println("update model");
-		FmModelMapper fmModelMapper = new FmModelMapper(getModelSchema(), getDataSchema(), params.clone());
-		FmModelData modelData = new FmModelData();
-		modelData.vectorColName = this.model.vectorColName;
-		modelData.featureColNames = this.model.featureColNames;
-		modelData.labelColName = this.model.labelColName;
-		modelData.task = this.model.task;
-		modelData.dim = this.model.dim;
-		modelData.vectorSize = this.model.vectorSize;
-
-		modelData.labelValues = this.model.labelValues;
-
-		modelData.fmModel = new FmDataFormat();
-		modelData.fmModel.factors = new double[modelData.vectorSize][];
-		modelData.fmModel.dim = modelData.dim;
-
-		int featureSize = model.fmModel.factors.length;
-		for (int i = 0; i < featureSize; ++i) {
-			if (model.fmModel.factors[i] != null) {
-				modelData.fmModel.factors[i] = model.fmModel.factors[i];
-			}
-		}
-		for (Row row : modelRows) {
-			Long featureId = (Long) row.getField(0);
-			if (featureId == null) {
-				continue;
-			}
-			if (featureId >= 0) {
-				double[] factor = JsonConverter.fromJson((String) row.getField(1), double[].class);
-				modelData.fmModel.factors[featureId.intValue()] = factor;
-			} else if (featureId == -1) {
-				double[] factor = JsonConverter.fromJson((String) row.getField(1), double[].class);
-				model.fmModel.bias = factor[0];
-			}
-		}
-		fmModelMapper.model = modelData;
-		return this;
 	}
 
 	public double getY(SparseVector feature, boolean isBinCls) {

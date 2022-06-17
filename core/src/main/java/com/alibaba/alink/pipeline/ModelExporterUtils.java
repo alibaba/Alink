@@ -37,6 +37,7 @@ import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.params.io.ModelFileSinkParams;
+import com.alibaba.alink.params.shared.HasModelFilePath;
 import com.alibaba.alink.params.shared.HasOverwriteSink;
 import com.alibaba.alink.pipeline.recommendation.BaseRecommender;
 import com.alibaba.alink.pipeline.recommendation.RecommenderUtil;
@@ -238,16 +239,17 @@ public class ModelExporterUtils {
 			Params params = model.getParams();
 
 			if (params.get(ModelFileSinkParams.MODEL_FILE_PATH) != null) {
-				FilePath modelFilePath = FilePath.deserialize(params.get(ModelFileSinkParams.MODEL_FILE_PATH));
+				if (model.modelData != null) {
 
-				model
-					.getModelData()
-					.link(
-						new AkSinkBatchOp()
-							.setFilePath(modelFilePath)
-							.setMLEnvironmentId(model.getModelData().getMLEnvironmentId())
-							.setOverwriteSink(params.get(HasOverwriteSink.OVERWRITE_SINK))
-					);
+					model
+						.modelData
+						.link(
+							new AkSinkBatchOp()
+								.setFilePath(FilePath.deserialize(params.get(ModelFileSinkParams.MODEL_FILE_PATH)))
+								.setMLEnvironmentId(model.getModelData().getMLEnvironmentId())
+								.setOverwriteSink(params.get(HasOverwriteSink.OVERWRITE_SINK))
+						);
+				}
 
 				return null;
 			}
@@ -319,14 +321,17 @@ public class ModelExporterUtils {
 					Tuple2 <TypeInformation <?>[], int[]> merged
 						= mergeType(first, currentNode.types);
 
-					currentNode.schemaIndices = merged.f1;
+					if (currentNode.types != null) {
+						currentNode.schemaIndices = merged.f1;
+					}
+
 					first = merged.f0;
 				}
 
 				node.types = first;
 			} else {
 				node.types = getTypes(node.stage);
-				node.colNames = getColNames(node.stage);
+				node.colNames = node.types == null ? null : getColNames(node.stage);
 			}
 		});
 
@@ -573,9 +578,12 @@ public class ModelExporterUtils {
 
 			// leaf node.
 			if (stageNode.children == null) {
-				if (stageNode.parent >= 0
-					&& stageNode.schemaIndices != null
-					&& stageNode.colNames != null) {
+
+				if (stageNode.stage == null
+					|| stageNode.stage.getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
+
+					// pass
+				} else if (stageNode.stage instanceof ModelBase <?>) {
 
 					final long localId = id[0];
 					final int[] localSchemaIndices = stageNode.schemaIndices;
@@ -872,9 +880,30 @@ public class ModelExporterUtils {
 
 			// leaf node.
 			if (stageNode.children == null) {
-				if (stageNode.parent >= 0
-					&& stageNode.schemaIndices != null
-					&& stageNode.colNames != null) {
+				if (stageNode.stage == null) {
+					reverseStages.add(Tuple3.of(null, null, null));
+				} else if (stageNode.stage.getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
+
+					List<Row> modelData = new ArrayList <>();
+					TableSchema schema;
+					try {
+						AkStream akStream = new AkStream(
+							FilePath.deserialize(stageNode.stage.getParams().get(HasModelFilePath.MODEL_FILE_PATH))
+						);
+
+						schema = TableUtil.schemaStr2Schema(akStream.getAkMeta().schemaStr);
+
+						try (AkReader akReader = akStream.getReader()) {
+							for (Row row : akReader) {
+								modelData.add(row);
+							}
+						}
+					} catch (IOException e) {
+						throw new IllegalStateException(e);
+					}
+
+					reverseStages.add(Tuple3.of(stageNode.stage, schema, modelData));
+				} else if (stageNode.stage instanceof ModelBase) {
 
 					final int[] localSchemaIndices = stageNode.schemaIndices;
 					final int oldCursor = cursor[0];
