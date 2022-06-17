@@ -20,7 +20,7 @@ public class OnnxModelPredictMapper extends DLPredictServiceMapper <OnnxPredicto
 	}
 
 	public OnnxModelPredictMapper(TableSchema dataSchema, Params params, OnnxPredictorClassLoaderFactory factory) {
-		super(dataSchema, params, factory);
+		super(dataSchema, params, factory, true);
 
 		inputNames = params.get(OnnxModelPredictParams.INPUT_NAMES);
 		if (null == inputNames) {
@@ -36,6 +36,7 @@ public class OnnxModelPredictMapper extends DLPredictServiceMapper <OnnxPredicto
 	@Override
 	protected PredictorConfig getPredictorConfig() {
 		PredictorConfig config = new PredictorConfig();
+		config.factory = factory;
 		Integer intraOpParallelism = params.contains(HasIntraOpParallelism.INTRA_OP_PARALLELISM)
 			? params.get(HasIntraOpParallelism.INTRA_OP_PARALLELISM)
 			: HasIntraOpParallelism.INTRA_OP_PARALLELISM.getDefaultValue();

@@ -18,6 +18,7 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.params.io.LibSvmSinkBatchParams;
 import com.alibaba.alink.params.io.LibSvmSinkParams;
 
 /**
@@ -26,7 +27,7 @@ import com.alibaba.alink.params.io.LibSvmSinkParams;
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SinkBatch)
 @NameCn("LibSvm文件导出")
 public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
-	implements LibSvmSinkParams <LibSvmSinkBatchOp> {
+	implements LibSvmSinkBatchParams <LibSvmSinkBatchOp> {
 
 	private static final long serialVersionUID = 1706349265088035032L;
 
@@ -104,7 +105,8 @@ public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
 			.setQuoteChar(null)
 			.setFilePath(getFilePath())
 			.setOverwriteSink(getOverwriteSink())
-			.setFieldDelimiter(" ");
+			.setFieldDelimiter(" ")
+			.setPartitionCols(getPartitionCols());
 
 		outputBatchOp.link(sink);
 		return this;

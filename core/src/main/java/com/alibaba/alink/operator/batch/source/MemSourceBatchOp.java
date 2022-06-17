@@ -71,6 +71,10 @@ public final class MemSourceBatchOp extends BaseSourceBatchOp <MemSourceBatchOp>
 		this(Arrays.asList(rows), colNames);
 	}
 
+	public MTable getMt() {
+		return mt;
+	}
+
 	@Override
 	protected Table initializeDataSource() {
 		Long mlEnvironmentId = getMLEnvironmentId();

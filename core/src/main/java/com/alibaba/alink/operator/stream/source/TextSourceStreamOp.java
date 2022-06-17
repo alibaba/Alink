@@ -36,6 +36,7 @@ public final class TextSourceStreamOp extends BaseSourceStreamOp <TextSourceStre
 			.setQuoteChar(null)
 			.setIgnoreFirstLine(getIgnoreFirstLine())
 			.setSchemaStr(getTextCol() + " string")
+			.setPartitions(getPartitions())
 			.getOutputTable();
 	}
 }

@@ -18,6 +18,10 @@ public class TorchPredictorClassLoaderFactory extends ClassLoaderFactory {
 			PluginDistributeCache.createDistributeCache(BASENAME, version));
 	}
 
+	public RegisterKey getRegisterKey() {
+		return registerKey;
+	}
+
 	public static DLPredictorService create(TorchPredictorClassLoaderFactory factory) {
 		ClassLoader classLoader = factory.create();
 		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {

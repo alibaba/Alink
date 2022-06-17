@@ -8,6 +8,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.function.TriFunction;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.OutputPorts;
@@ -27,6 +28,7 @@ import com.alibaba.alink.common.model.DataBridgeModelSource;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.common.stream.model.PredictProcess;
 import com.alibaba.alink.operator.stream.StreamOperator;
@@ -138,7 +140,7 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 
 		if (ModelStreamUtils.useModelStreamFile(params)) {
 			StreamOperator <?> modelStreamOp = new ModelStreamFileSourceStreamOp()
-				.setFilePath(params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH))
+				.setFilePath(FilePath.deserialize(params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH)))
 				.setScanInterval(params.get(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL))
 				.setStartTime(params.get(ModelStreamScanParams.MODEL_STREAM_START_TIME))
 				.setSchemaStr(TableUtil.schema2SchemaStr(modelSchema))
@@ -188,14 +190,20 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 			throw new IllegalArgumentException("One of model or modelFilePath should be set.");
 		}
 
-		if (model != null && !(model instanceof AkSourceBatchOp)) {
+		if (model != null && !(model instanceof AkSourceBatchOp || model instanceof MemSourceBatchOp)) {
 			return Tuple2.of(DirectReader.collect(model), model.getSchema());
 		}
 
 		FilePath modelFile;
 
 		if (model != null) {
-			modelFile = FilePath.deserialize(model.getParams().get(AkSourceParams.FILE_PATH));
+			if (model instanceof MemSourceBatchOp) {
+				final MTable mt = ((MemSourceBatchOp) model).getMt();
+
+				return Tuple2.of(new MTableDataBridge(mt), mt.getSchema());
+			} else {
+				modelFile = FilePath.deserialize(model.getParams().get(AkSourceParams.FILE_PATH));
+			}
 		} else {
 			modelFile = FilePath.deserialize(modelFilePath);
 		}
@@ -212,4 +220,14 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 		);
 	}
 
+	private static class MTableDataBridge implements DataBridge {
+		private final MTable mt;
+
+		public MTableDataBridge(MTable mt) {this.mt = mt;}
+
+		@Override
+		public List <Row> read(FilterFunction <Row> filter) {
+			return mt.getRows();
+		}
+	}
 }

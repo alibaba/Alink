@@ -1,24 +1,22 @@
 package com.alibaba.alink.operator.batch.source;
 
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.core.fs.Path;
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.io.filesystem.AkStream;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
-import com.alibaba.alink.common.io.filesystem.AkUtils.FileProcFunction;
-import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.common.io.partition.AkSourceCollectorCreator;
+import com.alibaba.alink.operator.common.io.partition.Utils;
 import com.alibaba.alink.params.io.AkSourceParams;
 
 import java.io.IOException;
@@ -66,49 +64,14 @@ public final class AkSourceBatchOp extends BaseSourceBatchOp <AkSourceBatchOp>
 				TableUtil.schemaStr2Schema(meta.schemaStr)
 			);
 		} else {
-			partitions = partitions.replace(",", " or ");
-
-			final FilePath filePath = getFilePath();
-
 			try {
-				BatchOperator <?> selected = AkUtils
-					.selectPartitionBatchOp(getMLEnvironmentId(), filePath, partitions);
+				Tuple2 <DataSet <Row>, TableSchema> schemaAndData =
+					Utils.readFromPartitionBatch(
+						getParams(), getMLEnvironmentId(),
+						new AkSourceCollectorCreator(meta)
+					);
 
-				final String[] colNames = selected.getColNames();
-
-				return DataSetConversionUtil.toTable(
-					getMLEnvironmentId(),
-					selected
-						.getDataSet()
-						.flatMap(new FlatMapFunction <Row, Row>() {
-							@Override
-							public void flatMap(Row value, Collector <Row> out) throws Exception {
-								Path path = filePath.getPath();
-
-								for (int i = 0; i < value.getArity(); ++i) {
-									path = new Path(path, String.format("%s=%s", colNames[i], value.getField(i)));
-								}
-
-								AkUtils.getFromFolderForEach(
-									new FilePath(path, filePath.getFileSystem()),
-									new FileProcFunction <FilePath, Boolean>() {
-										@Override
-										public Boolean apply(FilePath filePath) throws IOException {
-											try (AkStream.AkReader akReader = new AkStream(filePath,
-												meta).getReader()) {
-												for (Row row : akReader) {
-													out.collect(row);
-												}
-											}
-
-											return true;
-										}
-									});
-
-							}
-						}),
-					TableUtil.schemaStr2Schema(meta.schemaStr)
-				);
+				return DataSetConversionUtil.toTable(getMLEnvironmentId(), schemaAndData.f0, schemaAndData.f1);
 			} catch (IOException e) {
 				throw new IllegalArgumentException(e);
 			}

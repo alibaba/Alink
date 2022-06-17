@@ -314,12 +314,12 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 			Mapper mapper;
 			if (transformer instanceof MapModel) {
 				mapper = ModelExporterUtils.createMapperFromStage(transformer,
-					((MapModel <?>) transformer).modelData.getSchema(),
+					((MapModel <?>) transformer).getModelData().getSchema(),
 					schema, allModelDataRows.get(numMapperModel));
 				numMapperModel++;
 			} else if (transformer instanceof BaseRecommender) {
 				mapper = ModelExporterUtils.createMapperFromStage(transformer,
-					((BaseRecommender <?>) transformer).modelData.getSchema(),
+					((BaseRecommender <?>) transformer).getModelData().getSchema(),
 					schema, allModelDataRows.get(numMapperModel));
 				numMapperModel++;
 			} else {
@@ -393,9 +393,9 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 		for (TransformerBase <?> transformer : pipelineModel.transformers) {
 			TableSchema modelSchema = null;
 			if (transformer instanceof MapModel) {
-				modelSchema = ((MapModel <?>) transformer).modelData.getSchema();
+				modelSchema = ((MapModel <?>) transformer).getModelData().getSchema();
 			} else if (transformer instanceof BaseRecommender) {
-				modelSchema = ((BaseRecommender <?>) transformer).modelData.getSchema();
+				modelSchema = ((BaseRecommender <?>) transformer).getModelData().getSchema();
 			}
 			Mapper mapper = ModelExporterUtils.createMapperFromStage(transformer, modelSchema, outSchema, null);
 			outSchema = mapper.getOutputSchema();

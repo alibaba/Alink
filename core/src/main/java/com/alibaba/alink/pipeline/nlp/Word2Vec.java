@@ -1,5 +1,7 @@
 package com.alibaba.alink.pipeline.nlp;
 
+import org.apache.flink.ml.api.misc.param.Params;
+
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -24,6 +26,13 @@ import com.alibaba.alink.pipeline.Trainer;
 public class Word2Vec extends Trainer <Word2Vec, Word2VecModel>
 	implements Word2VecTrainParams <Word2Vec>, Word2VecPredictParams <Word2Vec>, HasLazyPrintTrainInfo <Word2Vec> {
 	private static final long serialVersionUID = -91548532293731389L;
+
+	public Word2Vec() {
+	}
+
+	public Word2Vec(Params params) {
+		super(params);
+	}
 
 	@Override
 	protected BatchOperator <?> train(BatchOperator <?> in) {

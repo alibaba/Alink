@@ -200,12 +200,11 @@ class TestUdf(unittest.TestCase):
 
     def test_mtable_udf(self):
         import pandas as pd
-        df = pd.DataFrame([['{"data":{"col0":[1],"col1":["2"],"label":[0],"ts":["2603-10-12 04:13:52.012"],"d_vec":['
-                            'null],"s_vec":["$3$1:2.0"],"tensor":["FLOAT#1#3.0 "]},"schema":"col0 INT,col1 VARCHAR,'
-                            'label INT,ts TIMESTAMP,d_vec DENSE_VECTOR,s_vec VECTOR,tensor FLOAT_TENSOR"}']])
+        df = pd.DataFrame([['{"data":{"col0":[1],"col1":["2"],"label":[0]},"schema":"col0 INT,col1 VARCHAR,'
+                            'label INT"}']])
         source = BatchOperator.fromDataframe(df, schemaStr="content string")
         mtable = ToMTableBatchOp() \
-            .setSelectedCol("content")\
+            .setSelectedCol("content") \
             .setOutputCol("mtable") \
             .linkFrom(source)
         mtable.print()

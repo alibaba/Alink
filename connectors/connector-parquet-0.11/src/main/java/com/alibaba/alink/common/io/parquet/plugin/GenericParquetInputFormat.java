@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class GenericParquetInputFormat extends FileInputFormat<Row>
-	implements CheckpointableInputFormat<FileInputSplit, Tuple2<Long, Long>> {
+public class GenericParquetInputFormat extends FileInputFormat <Row>
+	implements CheckpointableInputFormat <FileInputSplit, Tuple2 <Long, Long>> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(GenericParquetInputFormat.class);
 
@@ -40,21 +40,20 @@ public class GenericParquetInputFormat extends FileInputFormat<Row>
 	 */
 	private boolean skipThisSplit = false;
 
-	private MessageType readSchema;
-
 	private FilePath parquetFilePath;
-	private BaseFileSystem<?> fileSystem;
+	private BaseFileSystem <?> fileSystem;
 
 	private FilterPredicate filterPredicate;
 
 	private transient Counter recordConsumed;
 
-	private transient ParquetRecordReader<Row> parquetRecordReader;
+	private transient ParquetRecordReader <Row> parquetRecordReader;
 
 	public GenericParquetInputFormat(FilePath filePath) {
 		super(filePath.getPath(), filePath.getFileSystem());
 		this.parquetFilePath = filePath;
 		fileSystem = filePath.getFileSystem();
+		this.setNestedFileEnumeration(true);
 		// read whole parquet file as one file split
 		this.unsplittable = true;
 		// read schema
@@ -74,9 +73,9 @@ public class GenericParquetInputFormat extends FileInputFormat<Row>
 		// reset the flag when open a new split
 		this.skipThisSplit = false;
 		org.apache.hadoop.conf.Configuration configuration = new org.apache.hadoop.conf.Configuration();
-		InputFile inputFile = new ParquetInputFile(new FilePath(split.getPath(),parquetFilePath.getFileSystem()));
-
-		readSchema = ParquetUtil.getReadSchemaFromParquetFile(new FilePath(split.getPath(),parquetFilePath.getFileSystem()));
+		InputFile inputFile = new ParquetInputFile(new FilePath(split.getPath(), parquetFilePath.getFileSystem()));
+		MessageType readSchema = ParquetUtil.getReadSchemaFromParquetFile(
+			new FilePath(split.getPath(), parquetFilePath.getFileSystem()));
 
 		ParquetReadOptions options = ParquetReadOptions.builder().build();
 		ParquetFileReader fileReader = new ParquetFileReader(inputFile, options);
@@ -87,7 +86,7 @@ public class GenericParquetInputFormat extends FileInputFormat<Row>
 					split.getPath().toString()));
 		} else {
 			this.parquetRecordReader =
-				new ParquetRecordReader<>(
+				new ParquetRecordReader <>(
 					new RowReadSupport(),
 					readSchema,
 					filterPredicate == null
@@ -135,12 +134,12 @@ public class GenericParquetInputFormat extends FileInputFormat<Row>
 	}
 
 	@Override
-	public Tuple2<Long, Long> getCurrentState() {
+	public Tuple2 <Long, Long> getCurrentState() {
 		return parquetRecordReader.getCurrentReadPosition();
 	}
 
 	@Override
-	public void reopen(FileInputSplit split, Tuple2<Long, Long> state) throws IOException {
+	public void reopen(FileInputSplit split, Tuple2 <Long, Long> state) throws IOException {
 		Preconditions.checkNotNull(split, "reopen() cannot be called on a null split.");
 		Preconditions.checkNotNull(state, "reopen() cannot be called with a null initial state.");
 		this.open(split);

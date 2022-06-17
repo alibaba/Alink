@@ -1,20 +1,26 @@
 package com.alibaba.alink.common.io;
 
+import org.apache.flink.types.Row;
 import org.apache.flink.util.FileUtils;
 
 import com.alibaba.alink.common.utils.testhttpsrc.Iris;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.sink.AkSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.AkSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class AkSourceSinkTest extends AlinkTestBase {
 	File path;
@@ -69,5 +75,50 @@ public class AkSourceSinkTest extends AlinkTestBase {
 		data1.sample(0.1).print();
 		data3.sample(0.1).print();
 		StreamOperator.execute();
+	}
+
+	@Test
+	public void testBigRow() throws Exception {
+
+		final int len = 0xFFFFFF;
+
+		StringBuilder stringBuilder = new StringBuilder();
+
+		for (int i = 0; i < (len - 1 - 5); ++i) {
+			stringBuilder.append('a');
+		}
+
+		String big0 = stringBuilder.toString();
+
+		stringBuilder.append('b');
+
+		String big1 = stringBuilder.toString();
+
+		MemSourceBatchOp memSourceBatchOp0 = new MemSourceBatchOp(new Row[]{
+			Row.of(big0),
+			Row.of(big1)
+		}, new String[]{"big"});
+
+		memSourceBatchOp0.link(new AkSinkBatchOp().setFilePath(new File(path, "big").getAbsolutePath()));
+
+		BatchOperator.execute();
+
+		new AkSourceBatchOp().setFilePath(new File(path, "big").getAbsolutePath())
+			.lazyCollect(new Consumer <List <Row>>() {
+				@Override
+				public void accept(List <Row> rows) {
+					rows.sort(new Comparator <Row>() {
+						@Override
+						public int compare(Row o1, Row o2) {
+							return ((String) o1.getField(0)).compareTo((String) o2.getField(0));
+						}
+					});
+
+					Assert.assertEquals((len - 1 - 5), ((String) rows.get(0).getField(0)).getBytes().length);
+					Assert.assertEquals(len - 5, ((String) rows.get(1).getField(0)).getBytes().length);
+				}
+			});
+
+		BatchOperator.execute();
 	}
 }

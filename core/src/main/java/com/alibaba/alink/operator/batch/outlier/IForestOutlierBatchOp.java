@@ -9,7 +9,7 @@ import com.alibaba.alink.operator.common.outlier.IForestDetector;
 import com.alibaba.alink.params.outlier.IForestDetectorParams;
 
 @NameCn("IForest异常检测")
-@NameEn("IForest Outlier")
+@NameEn("IForest Outlier Detection")
 public class IForestOutlierBatchOp extends BaseOutlierBatchOp <IForestOutlierBatchOp>
 	implements IForestDetectorParams <IForestOutlierBatchOp> {
 

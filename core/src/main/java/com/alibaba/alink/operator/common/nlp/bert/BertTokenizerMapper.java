@@ -7,6 +7,7 @@ import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.dl.BertResources;
 import com.alibaba.alink.common.dl.utils.ArchivesUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.BertTokenizerImpl;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.EncodingKeys;
 import com.alibaba.alink.operator.common.nlp.bert.tokenizer.Kwargs;
@@ -21,14 +22,21 @@ import java.io.File;
 @Internal
 public class BertTokenizerMapper extends PreTrainedTokenizerMapper {
 
+	private final ResourcePluginFactory factory;
+
 	public BertTokenizerMapper(TableSchema dataSchema, Params params) {
+		this(dataSchema, params, new ResourcePluginFactory());
+	}
+
+	public BertTokenizerMapper(TableSchema dataSchema, Params params, ResourcePluginFactory factory) {
 		super(dataSchema, params);
+		this.factory = factory;
 	}
 
 	@Override
 	public void open() {
 		String modelName = params.get(HasBertModelName.BERT_MODEL_NAME);
-		String vocabPath = BertResources.getBertModelVocab(modelName);
+		String vocabPath = BertResources.getBertModelVocab(factory, modelName);
 
 		File localModelDir;
 		if (vocabPath.startsWith("file://")) {	// from plugin

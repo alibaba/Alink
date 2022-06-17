@@ -284,7 +284,7 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 
 	@Override
 	public String toString() {
-		return toDisplaySummary() + " " + toShortDisplayData();
+		return toDisplaySummary() + " " + toDisplayData(3);
 	}
 
 	@Override
@@ -627,7 +627,7 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 
 	@Override
 	public String toShortDisplayData() {
-		return toDisplayData(3);
+		return "$" + this.n + "$" + toDisplayData(3);
 	}
 
 	private class SparseVectorVectorIterator implements VectorIterator {

@@ -130,29 +130,43 @@ public class PrettyDisplayUtilsTest extends AlinkTestBase {
 
 	@Test
 	public void testTensor() {
-		IntTensor tensor = new IntTensor(new Shape(6, 6, 6));
-		String s = PrettyDisplayUtils.displayTensor(tensor.shape(), TensorInternalUtils.getValueStrs(tensor), 2);
-		String expected = "[[[0 0 ... 0 0]\n"
-			+ "  [0 0 ... 0 0]\n"
-			+ "  ...\n"
-			+ "  [0 0 ... 0 0]\n"
-			+ "  [0 0 ... 0 0]]\n"
-			+ " [[0 0 ... 0 0]\n"
-			+ "  [0 0 ... 0 0]\n"
-			+ "  ...\n"
-			+ "  [0 0 ... 0 0]\n"
-			+ "  [0 0 ... 0 0]]\n"
-			+ " ...\n"
-			+ " [[0 0 ... 0 0]\n"
-			+ "  [0 0 ... 0 0]\n"
-			+ "  ...\n"
-			+ "  [0 0 ... 0 0]\n"
-			+ "  [0 0 ... 0 0]]\n"
-			+ " [[0 0 ... 0 0]\n"
-			+ "  [0 0 ... 0 0]\n"
-			+ "  ...\n"
-			+ "  [0 0 ... 0 0]\n"
-			+ "  [0 0 ... 0 0]]]";
-		Assert.assertEquals(expected, s);
+		{
+			IntTensor tensor = new IntTensor(new Shape(6, 6, 6));
+			String s = PrettyDisplayUtils.displayTensor(tensor.shape(), TensorInternalUtils.getValueStrs(tensor), 2);
+			String expected = "[[[0 0 ... 0 0]\n"
+				+ "  [0 0 ... 0 0]\n"
+				+ "  ...\n"
+				+ "  [0 0 ... 0 0]\n"
+				+ "  [0 0 ... 0 0]]\n"
+				+ " [[0 0 ... 0 0]\n"
+				+ "  [0 0 ... 0 0]\n"
+				+ "  ...\n"
+				+ "  [0 0 ... 0 0]\n"
+				+ "  [0 0 ... 0 0]]\n"
+				+ " ...\n"
+				+ " [[0 0 ... 0 0]\n"
+				+ "  [0 0 ... 0 0]\n"
+				+ "  ...\n"
+				+ "  [0 0 ... 0 0]\n"
+				+ "  [0 0 ... 0 0]]\n"
+				+ " [[0 0 ... 0 0]\n"
+				+ "  [0 0 ... 0 0]\n"
+				+ "  ...\n"
+				+ "  [0 0 ... 0 0]\n"
+				+ "  [0 0 ... 0 0]]]";
+			Assert.assertEquals(expected, s);
+		}
+		{
+			IntTensor tensor = new IntTensor(new int[][][] {
+				{{1, 2}, {3, 4}},
+				{{5, 6}, {7, 8}},
+			});
+			String s = PrettyDisplayUtils.displayTensor(tensor.shape(), TensorInternalUtils.getValueStrs(tensor), 2);
+			String expected = "[[[1 2]\n"
+				+ "  [3 4]]\n"
+				+ " [[5 6]\n"
+				+ "  [7 8]]]";
+			Assert.assertEquals(expected, s);
+		}
 	}
 }

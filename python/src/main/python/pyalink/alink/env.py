@@ -1,23 +1,56 @@
-import collections
 import os
-from typing import Union, Optional
+from typing import Union, Optional, NamedTuple, Tuple
 
-from py4j.java_gateway import JavaGateway, CallbackServerParameters
+from py4j.java_gateway import JavaGateway, CallbackServerParameters, JavaObject
+from pyflink.dataset import ExecutionEnvironment
+from pyflink.datastream import StreamExecutionEnvironment
+from pyflink.table import BatchTableEnvironment, StreamTableEnvironment, EnvironmentSettings
 
 from .common.types.conversion.type_converters import py_list_to_j_array
 from .common.utils.packages import is_flink_1_9
-# noinspection PyProtectedMember
 from .config import g_config
 from .py4j_util import get_java_gateway, get_java_class, set_java_gateway, LocalJvmBridge
 
-__all__ = ["useLocalEnv", "useRemoteEnv", "useCustomEnv", "getMLEnv", "resetEnv"]
+__all__ = ["MLEnv", "useLocalEnv", "useRemoteEnv", "useCustomEnv", "getMLEnv", "resetEnv"]
 
-MLEnv = collections.namedtuple('MLEnv', 'benv btenv senv stenv')
+
+class MLEnv(NamedTuple):
+    """
+    ML environment.
+    """
+
+    benv: ExecutionEnvironment
+    """
+    Batch execution environment.
+    """
+
+    btenv: BatchTableEnvironment
+    """
+    Batch table environment.
+    """
+
+    senv: StreamExecutionEnvironment
+    """
+    Stream execution environment.
+    """
+
+    stenv: StreamTableEnvironment
+    """
+    Stream table environment.
+    """
+
+
 _mlenv: Optional[MLEnv] = None
 _in_custom_env: bool = False
 
 
-def add_default_configurations(configuration, parallelism: int):
+def add_default_configurations(configuration: JavaObject, parallelism: int):
+    """
+    Add some configuration entries for running Alink.
+
+    :param configuration: a Java object of `org.apache.flink.configuration.Configuration`.
+    :param parallelism: parallelism.
+    """
     if not is_flink_1_9():
         configuration.setString("taskmanager.memory.managed.size", str(64 * parallelism) + "m")
         configuration.setString("taskmanager.memory.network.min", str(64 * parallelism) + "m")
@@ -27,7 +60,14 @@ def add_default_configurations(configuration, parallelism: int):
         configuration.setDouble("taskmanager.memory.fraction", 0.3)
 
 
-def make_j_configuration(config, parallelism: int):
+def make_j_configuration(config: dict, parallelism: int) -> JavaObject:
+    """
+    Make a Java object of Flink configuration.
+
+    :param config: user-defined config entries.
+    :param parallelism: parallelism.
+    :return: a Java object of `org.apache.flink.configuration.Configuration`.
+    """
     configuration = get_java_gateway().jvm.org.apache.flink.configuration.Configuration()
     add_default_configurations(configuration, parallelism)
 
@@ -51,15 +91,22 @@ def make_j_configuration(config, parallelism: int):
 
 
 def setup_alink_plugins_path():
+    """
+    Setup Alink plugin directory and global configuration.
+    """
     alink_plugins_path = g_config['alink_plugins_dir']
     os.makedirs(alink_plugins_path, exist_ok=True)
     from .config import AlinkGlobalConfiguration
     prev_plugin_dir = AlinkGlobalConfiguration.getPluginDir()
-    if prev_plugin_dir == 'plugins':    # not set before
+    if prev_plugin_dir == 'plugins':  # not set before
         AlinkGlobalConfiguration.setPluginDir(alink_plugins_path)
 
 
-def setup_py_flink_env(gateway: JavaGateway, j_benv: object, j_senv: object) -> MLEnv:
+def setup_pyflink_env(gateway: JavaGateway, j_benv: JavaObject, j_senv: JavaObject) \
+        -> Tuple[ExecutionEnvironment, BatchTableEnvironment, StreamExecutionEnvironment, StreamTableEnvironment]:
+    """
+    Setup Py4J for PyFlink, and create Python instances environments.
+    """
     from pyflink.dataset import ExecutionEnvironment
     from pyflink.datastream import StreamExecutionEnvironment
     from pyflink.table import BatchTableEnvironment, StreamTableEnvironment
@@ -75,27 +122,17 @@ def setup_py_flink_env(gateway: JavaGateway, j_benv: object, j_senv: object) -> 
     # noinspection PyDeprecation
     btenv = BatchTableEnvironment.create(benv)
 
-    from pyflink.table import EnvironmentSettings
     # noinspection PyDeprecation
     stenv_settings = EnvironmentSettings.new_instance().use_old_planner().in_streaming_mode().build()
     stenv = StreamTableEnvironment.create(senv, environment_settings=stenv_settings)
     return benv, btenv, senv, stenv
 
 
-def setup_java_ml_env(gateway, benv, btenv, senv, stenv):
+def setup_j_mlenv(gateway: JavaGateway,
+                  benv: ExecutionEnvironment, btenv: BatchTableEnvironment,
+                  senv: StreamExecutionEnvironment, stenv: StreamTableEnvironment) -> JavaObject:
     """
-    Setup Java MLEnv from PyFlink environments.
-    :param gateway:
-    :type gateway: JavaGateway
-    :param benv:
-    :type benv: ExecutionEnvironment
-    :param btenv:
-    :type btenv: BatchTableEnvironment
-    :param senv:
-    :type senv: StreamExecutionEnvironment
-    :param stenv:
-    :type stenv: StreamTableEnvironment
-    :return:
+    Setup Java instance of ML environment.
     """
     # noinspection PyProtectedMember
     j_mlenv = gateway.jvm.com.alibaba.alink.common.MLEnvironment(
@@ -109,21 +146,24 @@ def setup_java_ml_env(gateway, benv, btenv, senv, stenv):
     return j_mlenv
 
 
-def setup_py_ml_env(gateway: JavaGateway, j_benv: object, j_senv: object):
-    benv, btenv, senv, stenv = setup_py_flink_env(gateway, j_benv, j_senv)
-    setup_java_ml_env(gateway, benv, btenv, senv, stenv)
+def setup_py_mlenv(gateway: JavaGateway, j_benv: JavaObject, j_senv: JavaObject) -> MLEnv:
+    """
+    Setup Python instance of ML environment.
+    """
+    benv, btenv, senv, stenv = setup_pyflink_env(gateway, j_benv, j_senv)
+    setup_j_mlenv(gateway, benv, btenv, senv, stenv)
     mlenv = MLEnv(benv, btenv, senv, stenv)
     return mlenv
 
 
 def useLocalEnv(parallelism: int, flinkHome: str = None, config: dict = None) -> MLEnv:
     """
-    Start a local Flink mini-cluster as the execution environment
-    :rtype: object
-    :param parallelism: parallelism to run tasks
-    :param flinkHome: Flink home directory
-    :param config: additional config for Flink local cluster
-    :return: a Java MLEnvironment object
+    Use a local Flink mini-cluster as the execution environment.
+
+    :param parallelism: parallelism to run tasks.
+    :param flinkHome: Flink home directory.
+    :param config: additional config for Flink local cluster.
+    :return: an MLEnvironment instance.
     """
     global _mlenv
     if in_custom_env():
@@ -147,22 +187,23 @@ def useLocalEnv(parallelism: int, flinkHome: str = None, config: dict = None) ->
     j_benv.setParallelism(parallelism)
     j_senv.setParallelism(parallelism)
 
-    _mlenv = setup_py_ml_env(gateway, j_benv, j_senv)
+    _mlenv = setup_py_mlenv(gateway, j_benv, j_senv)
     return _mlenv
 
 
 def useRemoteEnv(host: str, port: Union[int, str], parallelism: int, flinkHome: str = None,
                  localIp: str = None, shipAlinkAlgoJar: bool = True, config: object = None) -> MLEnv:
     """
-    Connect an already started Flink cluster as the execution environment
-    :param host: hostname
-    :param port: rest port
-    :param parallelism: parallelism to run tasks
-    :param flinkHome: Flink home directory in the local machine
-    :param localIp: external ip address, which is used for DataStream display
+    Connect an already started Flink cluster as the execution environment.
+
+    :param host: hostname of the Flink cluster.
+    :param port: rest port of the Flink cluster.
+    :param parallelism: parallelism to run tasks.
+    :param flinkHome: Flink home directory in the local machine, usually no need to set.
+    :param localIp: external ip address, which is used for :py:class:`StreamOperator` display.
     :param shipAlinkAlgoJar: whether to ship Alink algorithm jar to the cluster
     :param config: additional config for running tasks
-    :return: a Java MLEnvironment object
+    :return: an MLEnvironment instance.
     """
     global _mlenv
     if in_custom_env():
@@ -205,7 +246,7 @@ def useRemoteEnv(host: str, port: Union[int, str], parallelism: int, flinkHome: 
     j_benv.setParallelism(parallelism)
     j_senv.setParallelism(parallelism)
 
-    _mlenv = setup_py_ml_env(gateway, j_benv, j_senv)
+    _mlenv = setup_py_mlenv(gateway, j_benv, j_senv)
     return _mlenv
 
 
@@ -250,13 +291,14 @@ def usePyFlinkEnv(parallelism: int = None, flinkHome: str = None) -> MLEnv:
         senv.set_parallelism(parallelism)
 
     # noinspection PyProtectedMember
-    _mlenv = setup_py_ml_env(gateway, benv._j_execution_environment, senv._j_stream_execution_environment)
+    _mlenv = setup_py_mlenv(gateway, benv._j_execution_environment, senv._j_stream_execution_environment)
     return _mlenv
 
 
 def useCustomEnv(gateway, benv, btenv, senv, stenv) -> MLEnv:
     """
-    Use custom env to initialize PyAlink env
+    Use custom env to initialize PyAlink env.
+
     :param gateway:
     :type gateway: JavaGateway
     :param benv:
@@ -277,7 +319,7 @@ def useCustomEnv(gateway, benv, btenv, senv, stenv) -> MLEnv:
     resetEnv()
     set_java_gateway(gateway)
     _mlenv = MLEnv(benv, btenv, senv, stenv)
-    setup_java_ml_env(gateway, *_mlenv)
+    setup_j_mlenv(gateway, *_mlenv)
     _in_custom_env = True
     return _mlenv
 
@@ -286,6 +328,7 @@ def getMLEnv() -> MLEnv:
     """
     Let PyFlink to initialize java_gateway and environments, and use them to construct MLEnvironment.
     PyFlink will automatically handle different environments in `flink run --py xxx.py` and `python xxx.py`.
+
     :return: MLEnv
     """
     global _mlenv
@@ -307,7 +350,6 @@ def in_custom_env():
 def resetEnv():
     """
     Reset the execution environment, clear background services.
-    :return:
     """
     if in_custom_env():
         print("Warning: resetEnv will do nothing, since useCustomEnv is used to initialize MLEnv.")

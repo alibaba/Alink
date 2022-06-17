@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.pyrunner.PyMIMOCalcHandle;
 import com.alibaba.alink.common.pyrunner.PyMIMOCalcRunner;
@@ -33,15 +34,17 @@ public class ProphetModelMapper extends TimeSeriesModelMapper {
 
 	private Map <String, String> state;
 
-	private int predictNum;
+	private final int predictNum;
 
 	private Params meta;
+
+	private final ResourcePluginFactory factory;
 
 	public ProphetModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 
 		this.predictNum = params.get(ProphetPredictParams.PREDICT_NUM);
-
+		factory = new ResourcePluginFactory();
 	}
 
 	/**
@@ -70,7 +73,7 @@ public class ProphetModelMapper extends TimeSeriesModelMapper {
 		}
 
 		PyMIMOCalcRunner <PyMIMOCalcHandle> runner =
-			new PyMIMOCalcRunner <>("algo.prophet.PyProphetCalc2", config::getOrDefault);
+			new PyMIMOCalcRunner <>("algo.prophet.PyProphetCalc2", config::getOrDefault, factory);
 		runner.open();
 		return runner;
 	}

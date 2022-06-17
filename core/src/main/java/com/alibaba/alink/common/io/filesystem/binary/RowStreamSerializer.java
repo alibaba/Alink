@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-public class RowStreamSerializer implements Serializable {
+public class RowStreamSerializer implements BaseStreamRowSerializer, Serializable {
 
 	private static final long serialVersionUID = -542406479129743102L;
 
@@ -31,10 +31,12 @@ public class RowStreamSerializer implements Serializable {
 		outputView = boundOutputStream == null ? null : new DataOutputViewStreamWrapper(boundOutputStream);
 	}
 
+	@Override
 	public void serialize(Row row) throws IOException {
 		serializer.serialize(row, outputView);
 	}
 
+	@Override
 	public Row deserialize() throws IOException {
 		return serializer.deserialize(inputView);
 	}

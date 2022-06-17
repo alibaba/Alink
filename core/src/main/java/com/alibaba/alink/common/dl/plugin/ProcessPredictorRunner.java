@@ -2,7 +2,8 @@ package com.alibaba.alink.common.dl.plugin;
 
 import com.alibaba.alink.common.dl.exchange.BytesDataExchange;
 import com.alibaba.alink.common.dl.plugin.DLPredictServiceMapper.PredictorConfig;
-import com.alibaba.alink.common.utils.JsonConverter;
+import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
+import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.operator.common.pytorch.ListSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,7 +43,7 @@ public class ProcessPredictorRunner implements Closeable {
 		assert DLPredictorService.class.isAssignableFrom(predictorClass);
 		Constructor <?> constructor = predictorClass.getConstructor();
 		predictor = (DLPredictorService) constructor.newInstance();
-		predictor.open(config.toMap());
+		predictor.open(config);
 	}
 
 	@Override
@@ -72,45 +74,61 @@ public class ProcessPredictorRunner implements Closeable {
 		}
 	}
 
-	// args should be: predictorClassName inQueueFilename outQueueFilename configJson procReadyFilename
-	// This process has to delete procReadyFilename when itself is ready.
-	public static void main(String[] args) {
-		for (int i = 0; i < args.length; i += 1) {
-			System.out.println(String.format("arg[%d] = %s", i, args[i]));
-		}
-		System.out.println("OMP_NUM_THREADS is " + System.getenv("OMP_NUM_THREADS"));
+	public static void logPrint(String line) {
+		LOG.info(line);
+		System.out.println(line);
+	}
 
+	public static void mainImpl(String[] args) throws Exception {
 		String predictorClassName = args[0];
 		String inQueueFilename = args[1];
 		String outQueueFilename = args[2];
 		String configJson = args[3];
 		String readyFilename = args[4];
-		PredictorConfig config = JsonConverter.fromJson(configJson, PredictorConfig.class);
+		PredictorConfig config = PredictorConfig.deserialize(configJson);
 		boolean inThread = config.threadMode;
 
-		try {
+		ClassLoaderFactory factory = config.factory;
+		if (null == factory) {
+			throw new RuntimeException("factory in config is null.");
+		}
+		ClassLoader classLoader = factory.create();
+		try (TemporaryClassLoaderContext ignored = TemporaryClassLoaderContext.of(classLoader)) {
 			ProcessPredictorRunner runner = new ProcessPredictorRunner(predictorClassName,
 				inQueueFilename, outQueueFilename, config);
 			boolean deleted = new File(readyFilename).delete();
 			if (!deleted) {
 				if (inThread) {
-					throw new RuntimeException("Failed to create procReadyFile.");
+					throw new RuntimeException("Failed to delete procReadyFile.");
 				} else {
-					System.out.println("Failed to create procReadyFile.");
 					System.exit(1);
 				}
 			}
 			runner.run();
 			runner.close();
+		}
+	}
+
+	// args should be: predictorClassName inQueueFilename outQueueFilename configJson procReadyFilename isThreadMode
+	// This process has to delete procReadyFilename when itself is ready.
+	public static void main(String[] args) {
+		for (int i = 0; i < args.length; i += 1) {
+			logPrint(String.format("arg[%d] = %s", i, args[i]));
+		}
+		logPrint(String.format("OMP_NUM_THREADS = %s", System.getenv("OMP_NUM_THREADS")));
+		boolean inThread = Boolean.parseBoolean(args[args.length - 1]);
+		try {
+			mainImpl(args);
 		} catch (Exception e) {
 			if (inThread) {
-				throw new RuntimeException("Exception caught in the inference thread:", e);
+				throw new RuntimeException("Exception caught in the inference process: ", e);
 			} else {
-				System.out.println("Exception caught in the inference thread:" + e);
+				logPrint("Exception caught in the inference process: " + Arrays.toString(e.getStackTrace()));
 				System.exit(1);
 			}
 		}
 		if (!inThread) {
+			logPrint("ProcessPredictorRunner exit successfully.");
 			System.exit(0);
 		}
 	}

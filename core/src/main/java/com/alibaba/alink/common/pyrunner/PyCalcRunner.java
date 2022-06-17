@@ -35,20 +35,34 @@ public abstract class PyCalcRunner<IN, OUT, HANDLE extends PyObjHandle> {
 	// PyScalar/TableFnRunner should not use plugin, as they are using cloudpickle for (de)serialization which requires
 	// the same Python version.
 	private final boolean usePluginPythonEnv;
+	private final ResourcePluginFactory factory;
+
 	private final String pythonClassName;
 	private final BasePythonBridge bridge = DedicatedPythonBridge.inst();
 
 	protected HANDLE handle;
 
+	/**
+	 * Construct a runner using system python env.
+	 */
 	public PyCalcRunner(String pythonClassName, SerializableBiFunction <String, String, String> getConfigFn) {
-		this(pythonClassName, getConfigFn, true);
+		this(pythonClassName, getConfigFn, false, null);
 	}
 
+	/**
+	 * Construct a runner using plugin python env.
+	 */
 	public PyCalcRunner(String pythonClassName, SerializableBiFunction <String, String, String> getConfigFn,
-						boolean usePluginPythonEnv) {
+						ResourcePluginFactory factory) {
+		this(pythonClassName, getConfigFn, true, factory);
+	}
+
+	private PyCalcRunner(String pythonClassName, SerializableBiFunction <String, String, String> getConfigFn,
+						 boolean usePluginPythonEnv, ResourcePluginFactory factory) {
 		this.pythonClassName = pythonClassName;
 		this.getConfigFn = getConfigFn;
 		this.usePluginPythonEnv = usePluginPythonEnv;
+		this.factory = factory;
 	}
 
 	/**
@@ -71,7 +85,7 @@ public abstract class PyCalcRunner<IN, OUT, HANDLE extends PyObjHandle> {
 			RegisterKey tf1RegisterKey = DLEnvConfig.getRegisterKey(Version.TF115);
 			RegisterKey tf2RegisterKey = DLEnvConfig.getRegisterKey(Version.TF231);
 			try {
-				pluginFilePath = ResourcePluginFactory.getResourcePluginPath(tf1RegisterKey, tf2RegisterKey);
+				pluginFilePath = factory.getResourcePluginPath(tf1RegisterKey, tf2RegisterKey);
 			} catch (Exception e) {
 				String info = String.format("Cannot prepare plugin for %s-%s, and %s-%s, fallback to use system Python.",
 					tf1RegisterKey.getName(), tf1RegisterKey.getVersion(),

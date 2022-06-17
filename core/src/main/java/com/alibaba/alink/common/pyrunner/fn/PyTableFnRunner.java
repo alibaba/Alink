@@ -16,7 +16,7 @@ public class PyTableFnRunner extends PyCalcRunner <Object[], Void, PyTableFnHand
 
 	public PyTableFnRunner(PyCollector pyCollector, String fnSpecJson, String[] resultTypeStrs,
 						   SerializableBiFunction <String, String, String> runConfigGetter) {
-		super(PY_CLASS_NAME, runConfigGetter, false);
+		super(PY_CLASS_NAME, runConfigGetter);
 		this.pyCollector = pyCollector;
 		this.fnSpecJson = fnSpecJson;
 		this.resultTypeStrs = resultTypeStrs;

@@ -1,21 +1,15 @@
-import os
-
+import deprecation
 import numpy as np
+import os
 import pandas as pd
 
 from ....py4j_util import get_java_class
 
-__all__ = [
-    "dataframeToOperator", "collectToDataframes",
-    "py_list_to_j_array", "j_value_to_py_value", "py_obj_to_j_obj", "schema_type_to_py_type",
-    "lazy_collect_to_dataframes", "flink_type_to_str"
-]
-
 # Basic type conversion
 _G_ALINK_TYPE_TO_PTYPE = {
-    'BOOL': 'boolean',
-    'BOOLEAN': 'boolean',
-    'JAVA.LANG.BOOLEAN': 'boolean',
+    'BOOL': 'bool',
+    'BOOLEAN': 'bool',
+    'JAVA.LANG.BOOLEAN': 'bool',
 
     'TINYINT': 'Int8',
     'BYTE': 'Int8',
@@ -38,10 +32,10 @@ _G_ALINK_TYPE_TO_PTYPE = {
     'DOUBLE': 'float64',
     'JAVA.LANG.DOUBLE': 'float64',
 
-    'STRING': 'string',
-    'VARCHAR': 'string',
-    'LONGVARCHAR': 'string',
-    'JAVA.LANG.STRING': 'string',
+    'STRING': 'object',
+    'VARCHAR': 'object',
+    'LONGVARCHAR': 'object',
+    'JAVA.LANG.STRING': 'object',
 
     'DATETIME': 'datetime64',
     'JAVA.SQL.TIMESTAMP': 'datetime64',
@@ -57,13 +51,13 @@ def j_type_to_py_type(t):
     elif typeclass_name in ['java.lang.Long', 'java.lang.Integer', 'int', 'long']:
         return pd.Int64Dtype()
     elif typeclass_name == 'java.lang.String':
-        return pd.StringDtype()
+        return np.object
     elif typeclass_name == 'java.sql.Timestamp':
         return np.datetime64
     elif typeclass_name == "com.alibaba.alink.common.linalg.Vector" or typeclass_name == "com.alibaba.alink.common.linalg.DenseVector" or typeclass_name == "com.alibaba.alink.common.linalg.SparseVector":
-        return pd.StringDtype()
+        return np.str
     elif typeclass_name in ["java.lang.Boolean", 'boolean']:
-        return pd.BooleanDtype()
+        return np.bool
     else:
         print("Java type is not supported in Python for automatic conversion of values: %s" % typeclass_name)
         return t
@@ -79,6 +73,17 @@ def flink_type_to_str(t):
 j_obj_to_py_obj_rules = None
 
 
+def get_all_subclasses(cls):
+    """
+    Get all subclasses of a given class. Note that the results will depend on current imports.
+
+    :param cls: a class.
+    :return: the set of all subclasses.
+    """
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in get_all_subclasses(c)])
+
+
 def get_j_obj_to_py_obj_rules():
     """
     Provides rules to transform from Java Objects to Python objects.
@@ -86,10 +91,7 @@ def get_j_obj_to_py_obj_rules():
     :return:
     """
 
-    def get_all_subclasses(cls):
-        return set(cls.__subclasses__()).union(
-            [s for c in cls.__subclasses__() for s in get_all_subclasses(c)])
-
+    # noinspection PyProtectedMember
     from ..vector import VectorIterator
 
     from pyflink.table.catalog import ObjectPath
@@ -211,14 +213,55 @@ def schema_type_to_py_type(raw_type):
         return np.object
 
 
+def adjust_dataframe_types(df, colnames, coltypes):
+    for (colname, coltype) in zip(colnames, coltypes):
+        col = df[colname]
+        py_type = schema_type_to_py_type(coltype)
+        if not pd.api.types.is_float_dtype(py_type) \
+                and not pd.api.types.is_integer_dtype(py_type) \
+                and col.isnull().values.any():
+            print("Warning: null values exist in column %s, making it cannot be cast to type: %s automatically" % (
+                colname, str(coltype)))
+            continue
+        df = df.astype({colname: py_type}, copy=False, errors='ignore')
+    return df
+
+
 # operator(s) -> dataframe(s)
+
+def post_convert(df: pd.DataFrame, colnames, coltypes):
+    """
+    In :py:func:`csv_content_to_dataframe`, some user-defined types are read as strings.
+    They need to be converted to real types.
+    """
+    from ..mtable import MTable
+    from ..tensor import Tensor
+
+    def to_tensor(s: str):
+        j_tensor_util_cls = get_java_class("com.alibaba.alink.common.linalg.tensor.TensorUtil")
+        return Tensor(j_tensor_util_cls.getTensor(s))
+
+    # Different from `j_value_to_py_value`, values in df may be `str`, but needs to be converted to other types.
+    converters = {
+        'ANY<com.alibaba.alink.common.MTable>'.upper(): lambda s: MTable.fromJson(s)
+    }
+    for tensor_cls in get_all_subclasses(Tensor):
+        # noinspection PyProtectedMember
+        key = ('ANY<' + tensor_cls._j_cls_name + '>').upper()
+        converters[key] = to_tensor
+
+    for colname, coltype in zip(colnames, coltypes):
+        if coltype.upper() in converters:
+            df[colname] = df[colname].apply(converters[coltype.upper()])
+    return df
+
 
 def csv_content_to_dataframe(content, colnames, coltypes):
     from io import StringIO
     force_dtypes = {
         colname: _G_ALINK_TYPE_TO_PTYPE.get(coltype, 'object')
         for colname, coltype in zip(colnames, coltypes)
-        if coltype not in ["TIMESTAMP", 'JAVA.SQL.TIMESTAMP', 'DATETIME']
+        if coltype in ["VARCHAR", "STRING"]
     }
     date_colnames = [
         colname
@@ -227,7 +270,11 @@ def csv_content_to_dataframe(content, colnames, coltypes):
     ]
     df = pd.read_csv(StringIO(content), names=colnames, dtype=force_dtypes, parse_dates=date_colnames,
                      true_values=["True", "true"], false_values=["False", "false"])
-    return df
+    # As all empty strings are read as NaN, we transform them to None
+    df = df.where(df.notnull(), None)
+    # For float/int columns, there are specialized types to represent values with null values, we adjust their types
+    df = adjust_dataframe_types(df, colnames, coltypes)
+    return post_convert(df, colnames, coltypes)
 
 
 def collect_to_dataframes_memory(*ops):
@@ -256,14 +303,16 @@ def lazy_collect_to_dataframes(*ops):
     quote_char = "\""
 
     j_operator_csv_collector_cls = get_java_class('com.alibaba.alink.python.utils.OperatorCsvCollector')
-    j_lazy_csv_contents = j_operator_csv_collector_cls.lazyCollectToCsv(j_op_list, line_terminator, field_delimiter, quote_char)
+    j_lazy_csv_contents = j_operator_csv_collector_cls.lazyCollectToCsv(j_op_list, line_terminator, field_delimiter,
+                                                                        quote_char)
 
-    from ....batch.lazy.lazy_evaluation import LazyEvaluation, PipeLazyEvaluationConsumer
+    from ....batch.lazy_evaluation import LazyEvaluation, PipeLazyEvaluationConsumer
     lazy_dfs = []
     for index, j_lazy_csv_content in enumerate(j_lazy_csv_contents):
         lazy_csv_content = LazyEvaluation()
-        lazy_df = lazy_csv_content\
-            .transform(lambda content: csv_content_to_dataframe(content, ops[index].getColNames(), ops[index].getColTypes()))
+        lazy_df = lazy_csv_content \
+            .transform(
+            lambda content: csv_content_to_dataframe(content, ops[index].getColNames(), ops[index].getColTypes()))
         j_lazy_csv_content.addCallback(PipeLazyEvaluationConsumer(lazy_csv_content))
         lazy_dfs.append(lazy_df)
     return lazy_dfs
@@ -305,11 +354,18 @@ def dataframe_to_operator_memory(df, schema_str, op_type):
                                                           line_terminator, field_delimiter, quote_char)
         from ....batch.base import BatchOperatorWrapper
         wrapper = BatchOperatorWrapper
-    else:
+    elif op_type == "stream":
         j_op = j_multi_line_csv_parser.csvToStreamOperator(content, schema_str,
                                                            line_terminator, field_delimiter, quote_char)
         from ....stream.base import StreamOperatorWrapper
         wrapper = StreamOperatorWrapper
+    elif op_type == "mtable":
+        j_op = j_multi_line_csv_parser.csvToMTable(content, schema_str,
+                                                   line_terminator, field_delimiter, quote_char)
+        from ..mtable import MTable
+        wrapper = MTable
+    else:
+        raise ValueError("Not support op_type {}.".format(op_type))
     return wrapper(j_op)
 
 
@@ -326,6 +382,7 @@ def dataframe_to_operator(df, schema_str, op_type):
     return dataframe_to_operator_memory(df, schema_str, op_type)
 
 
+@deprecation.deprecated("1.3.0", details="Use BatchOperator.fromDataFrame() or StreamOperator.fromDataframe() instead.")
 def dataframeToOperator(df, schemaStr, op_type=None, opType=None):
     if opType is None:
         opType = op_type
