@@ -7,12 +7,12 @@
     <parent>
         <groupId>com.alibaba.alink</groupId>
         <artifactId>alink_shaded</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.5-SNAPSHOT</version>
     </parent>
 
     <groupId>com.alibaba.alink</groupId>
     <artifactId>shaded_alink_metadata_def</artifactId>
-    <version>3.21.1-0.4-SNAPSHOT</version>
+    <version>3.21.1-0.5-SNAPSHOT</version>
 
     <properties>
         <protobuf.version>3.21.1</protobuf.version>
