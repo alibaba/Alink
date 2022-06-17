@@ -93,11 +93,11 @@ public class ItemCfItemsPerUserRecommBatchOpTest {
 ```
 
 ### 运行结果
-user|prediction_result
-----|-----------------
-1|{"item":"[3]","score":"[0.23533936216582085]"}
-2|{"item":"[3]","score":"[0.38953648389671724]"}
-2|{"item":"[3]","score":"[0.38953648389671724]"}
-4|{"item":"[2]","score":"[0.17950184794838112]"}
-4|{"item":"[2]","score":"[0.17950184794838112]"}
-4|{"item":"[2]","score":"[0.17950184794838112]"}
+user| prediction_result            
+----|------------------------------
+1| MTable(1,2)(item,score) <br> 3 &#124; 0.2353 <br>
+2| MTable(1,2)(item,score) <br> 3 &#124; 0.3895 <br>
+2| MTable(1,2)(item,score) <br> 3 &#124; 0.3895 <br> 
+4| MTable(1,2)(item,score) <br> 2 &#124; 0.1795 <br> 
+4| MTable(1,2)(item,score) <br> 2 &#124; 0.1795 <br> 
+4| MTable(1,2)(item,score) <br> 2 &#124; 0.1795 <br>

@@ -5,8 +5,7 @@ Python 类名：TsvSinkStreamOp
 
 
 ## 功能介绍
-
-写Tsv文件，Tsv文件是以tab为分隔符
+本组件将输入数据写出到Tsv文件，Tsv文件以tab为分隔符。
 
 ## 参数说明
 
@@ -19,13 +18,8 @@ Python 类名：TsvSinkStreamOp
 
 ## 代码示例
 ### Python 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```python
-from pyalink.alink import *
-
-import pandas as pd
-
-useLocalEnv(1)
-
 df = pd.DataFrame([
                 ["0L", "1L", 0.6],
                 ["2L", "2L", 0.8],
@@ -54,6 +48,7 @@ StreamOperator.execute()
 
 ```
 ### Java 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```java
 import org.apache.flink.types.Row;
 

@@ -5,9 +5,8 @@ Python 类名：ItemCfTrainBatchOp
 
 
 ## 功能介绍
-ItemCF 是一种被广泛使用的推荐算法，用给定打分数据训练一个推荐模型，
-用于预测user对item的评分、对user推荐itemlist，或者对item推荐userlist。
-
+ItemCF 是一种被广泛使用的协同过滤算法，用给定打分数据训练一个推荐模型，
+用于预测user对item的评分、对user喜欢的itemlist，或者对item推荐可能的userlist等。
 
 ## 参数说明
 

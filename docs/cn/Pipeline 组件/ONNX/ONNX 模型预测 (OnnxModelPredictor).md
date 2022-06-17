@@ -26,6 +26,8 @@ Python 类名：OnnxModelPredictor
 
 组件使用的是 ONNX 1.11.0 版本，当有 GPU 时，自动使用 GPU 进行推理，否则使用 CPU 进行推理。
 
+在 Windows 下运行时，如果遇到 ```UnsatisfiedLinkError```，请下载 [Visual C++ 2019 Redistributable Packages](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) 并重启，然后重新运行。
+
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |

@@ -7,6 +7,18 @@ Python 类名：AkSourceBatchOp
 ## 功能介绍
 从文件系统读Ak文件。Ak文件格式是Alink 自定义的一种文件格式，能够将数据的Schema保留输出的文件格式。
 
+### 分区选择
+Export2FileSinkStreamOp组件能将数据分区保存，AkSourceBatchOp可以选择分区读取。
+分区目录名格式为"分区名=值"，例如： month=06/day=17;month=06/day=18。
+Alink将遍历目录下的分区名和分区值，构造分区表：
+
+month | day
+---|--- 
+06 | 17
+06 | 18
+
+使用SQL语句查找分区，例如：AkSourceBatchOp.setPartitions("day = '17'")，分区选择语法参考[《Flink SQL 内置函数》](https://www.yuque.com/pinshu/alink_tutorial/list_sql_function)，分区值为String类型。
+
 ## 参数说明
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |

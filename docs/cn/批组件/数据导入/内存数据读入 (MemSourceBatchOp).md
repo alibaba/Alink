@@ -5,7 +5,7 @@ Python 类名：MemSourceBatchOp
 
 
 ## 功能介绍
-从内存中读取数据生成表
+从内存中读取数据生成表。
 
 MemSourceBatchOp支持多个构造函数
 

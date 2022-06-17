@@ -32,8 +32,6 @@ df = pd.DataFrame([
        ["9.1,9.1,9.1"],
        ["9.2,9.2,9.2"]
 ])
-    
-
 
 # batch source 
 inOp = BatchOperator.fromDataframe(df, schemaStr='Y string')
@@ -76,8 +74,6 @@ public class FirstNBatchOpTest {
 ```
 
 ### 运行结果
-
-
 |Y|
 |---|
 |0,0,0|

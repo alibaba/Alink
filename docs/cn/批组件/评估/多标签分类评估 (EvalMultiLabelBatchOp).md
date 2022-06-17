@@ -5,35 +5,55 @@ Python 类名：EvalMultiLabelBatchOp
 
 
 ## 功能介绍
-多label分类评估是对多label分类算法的预测结果进行效果评估，支持下列评估指标。
+对多标签分类算法的预测结果进行效果评估。
 
-#### subsetAccuracy
-<div align=center><img src="https://img.alicdn.com/tfs/TB1QHzHYRr0gK0jSZFnXXbRRXXa-119-31.jpg" ></div>
+### 算法原理
 
-#### hammingLoss
-<div align=center><img src="https://img.alicdn.com/tfs/TB1OtDqYLb2gK0jSZK9XXaEgFXa-249-30.jpg" ></div>
+在多标签分类问题中，每个样本点 $i$ 所属标签集合记为 $L_i$，模型预测给出的预测集合记为 $P_i$；样本点总数记为 $N$。
 
-#### accuracy
-<div align=center><img src="https://img.alicdn.com/tfs/TB1EAHtYKH2gK0jSZJnXXaT1FXa-160-36.jpg" ></div>
+#### Precision
 
-#### microPrecision
-<div aligh=center><img src="https://img.alicdn.com/tfs/TB1eq_nYFY7gK0jSZKzXXaikpXa-212-45.jpg" ></div>
+$\frac{1}{N} \sum_{i=0}^{N-1} \frac{\left|P_i \cap L_i\right|}{\left|P_i\right|}$
 
-#### microRecall
-<div align=center><img src="https://img.alicdn.com/tfs/TB1CDruYUH1gK0jSZSyXXXtlpXa-214-44.jpg" ></div>
+#### Recall
 
-#### microF1
-<div align=center><img src="https://img.alicdn.com/tfs/TB1dAzFYUT1gK0jSZFrXXcNCXXa-370-50.jpg" ></div>
+$\frac{1}{N} \sum_{i=0}^{N-1} \frac{\left|L_i \cap P_i\right|}{\left|L_i\right|}$
 
-#### precision
-<div align=center><img src="https://img.alicdn.com/tfs/TB1H12oYFY7gK0jSZKzXXaikpXa-113-34.jpg" ></div>
+#### Accuracy
 
-#### recall
-<div align=center><img src="https://img.alicdn.com/tfs/TB1LuKilZVl614jSZKPXXaGjpXa-110-36.jpg" ></div>
+$\frac{1}{N} \sum_{i=0}^{N - 1} \frac{\left|L_i \cap P_i \right|}{\left|L_i\right| + \left|P_i\right| - \left|L_i \cap P_i \right|}$
 
-#### f1
-$$ explained Variance=\dfrac{SSR}{N} $$
+#### Hamming Loss, HL
 
+$\frac{1}{N \cdot \left|L\right|} \sum_{i=0}^{N - 1} \left|L_i\right| + \left|P_i\right| - 2\left|L_i \cap P_i\right|$
+
+#### Subset Accuracy, SA
+
+$\frac{1}{N}\sum_{i=0}^{N-1}I[L_i =P_i]$
+
+这里 $I[\cdot]$ 是指示函数，内部条件满足时值为1，其他时候为0。
+
+#### F1 Measure
+
+$\frac{1}{N} \sum_{i=0}^{N-1} 2 \frac{\left|P_i \cap L_i\right|}{\left|P_i\right| \cdot \left|L_i\right|}$
+
+#### Micro Precision
+
+$\frac{TP}{TP + FP}=\frac{\sum_{i=0}^{N-1} \left|P_i \cap L_i\right|}{\sum_{i=0}^{N-1} \left|P_i \cap L_i\right| + \sum_{i=0}^{N-1} \left|P_i - L_i\right|}$
+
+#### Micro Recall
+
+$\frac{TP}{TP + FN}=\frac{\sum_{i=0}^{N-1} \left|P_i \cap L_i\right|}{\sum_{i=0}^{N-1} \left|P_i \cap L_i\right| + \sum_{i=0}^{N-1} \left|L_i - P_i\right|}$
+
+#### Micro F1
+
+$2 \cdot \frac{TP}{2 \cdot TP + FP + FN}=2 \cdot \frac{\sum_{i=0}^{N-1} \left|P_i \cap L_i\right|}{2 \cdot \sum_{i=0}^{N-1} \left|P_i \cap L_i\right| + \sum_{i=0}^{N-1} \left|L_i - P_i\right| + \sum_{i=0}^{N-1} \left|P_i - L_i\right|}$
+
+### 使用方式
+
+该组件通常接多标签分类预测算法的输出端。
+
+使用时，需要通过参数 `labelCol` 指定预测标签列，参数 `predictionCol` 和 `predictionCol` 指定预测结果列。
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |

@@ -14,6 +14,7 @@ Python 类名：TsvSourceBatchOp
 | filePath | 文件路径 | 文件路径 | String | ✓ |  |  |
 | schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
 | ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  |  | false |
+| partitions | 分区名 | 1)单级、单个分区示例：ds=20190729；2)多级分区之间用" / "分隔，例如：ds=20190729/dt=12； 3)多个分区之间用","分隔，例如：ds=20190729,ds=20190730 | String |  |  | null |
 | skipBlankLine | 是否忽略空行 | 是否忽略空行 | Boolean |  |  | true |
 
 

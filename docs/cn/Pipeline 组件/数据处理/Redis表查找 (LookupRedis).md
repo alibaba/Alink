@@ -18,10 +18,9 @@ Python 类名：LookupRedis
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
 | clusterMode | Not available! | Not available! | Boolean |  |  | false |
 | databaseIndex | Not available! | Not available! | Long |  |  |  |
-| redisIP | Not available! | Not available! | String |  |  |  |
+| pipelineSize | Not available! | Not available! | Integer |  |  | 1 |
 | redisIPs | Not available! | Not available! | String[] |  |  |  |
 | redisPassword | Not available! | Not available! | String |  |  |  |
-| redisPort | Not available! | Not available! | Integer |  |  | 6379 |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | timeout | Not available! | Not available! | Integer |  |  |  |
 

@@ -5,58 +5,62 @@ Python 类名：EvalRankingBatchOp
 
 
 ## 功能介绍
-排序评估是对推荐排序算法的预测结果进行效果评估，支持下列评估指标。
+对推荐排序算法的预测结果进行效果评估。
 
-#### hitRate	 
-<div align=center><img src="https://img.alicdn.com/tfs/TB1FnHAYQY2gK0jSZFgXXc5OFXa-282-136.jpg" ></div>
+### 算法原理
 
-#### averageReciprocalHitRank
-<div align=center><img src="https://img.alicdn.com/tfs/TB1dgAQlwgP7K4jSZFqXXamhVXa-454-164.jpg" ></div>
+在排序问题中，可以忽略顺序，将问题看作多标签分类问题。这样多标签分类评估中的指标都能使用。
 
-#### map (Mean Average Precision)
-<div align=center><img src="https://img.alicdn.com/tfs/TB1inzAYUY1gK0jSZFCXXcwqXXa-494-74.jpg"></div>
+在考虑顺序时，假设有$M$个用户，每个用户的真实标签集合为 $D_i = \left\{d_0, d_1, ..., d_{N-1}\right\}$，模型推荐的集合为 $R_i = \left[r_0, r_1, ..., r_{Q-1}\right]$，按相关程序递减排序。
+定义$rel_D(r)$在满足$r\in D$时为1，否则为0。 
+那么，还可以支持以下评估指标。
 
-#### ndcgArray (Normalized Discounted Cumulative Gain)
-$$ MSE=\dfrac{1}{N}\sum_{i=1}^{N}(f_i-y_i)^2 $$
+#### Hit Rate
 
+$HitRate=\frac{1}{M}\sum_{i=0}^{M-1} \sum_{j=0}^{\left|D\right| - 1}rel_{\{d_0\}}(R_i(j))$
 
-#### subsetAccuracy
-<div align=center><img src="https://img.alicdn.com/tfs/TB1QHzHYRr0gK0jSZFnXXbRRXXa-119-31.jpg" ></div>
+#### Average Reciprocal Hit Rank
 
-#### hammingLoss
-<div align=center><img src="https://img.alicdn.com/tfs/TB1OtDqYLb2gK0jSZK9XXaEgFXa-249-30.jpg" ></div>
+$ARHR=\frac{1}{M}\sum_{i=0}^{M-1} \sum_{j=0}^{\left|D\right| - 1}\frac{1}{j+1}rel_{\{d_0\}}(R_i(j))$
 
-#### accuracy
-<div align=center><img src="https://img.alicdn.com/tfs/TB1EAHtYKH2gK0jSZJnXXaT1FXa-160-36.jpg" ></div>
+#### Precision at k
 
-#### microPrecision
-<div aligh=center><img src="https://img.alicdn.com/tfs/TB1eq_nYFY7gK0jSZKzXXaikpXa-212-45.jpg" ></div>
+$p(k)=\frac{1}{M} \sum_{i=0}^{M-1} {\frac{1}{k} \sum_{j=0}^{\min(\left|D\right|, k) - 1} rel_{D_i}(R_i(j))}$
 
-#### microRecall
-<div align=center><img src="https://img.alicdn.com/tfs/TB1CDruYUH1gK0jSZSyXXXtlpXa-214-44.jpg" ></div>
+这里 $k$ 是一个参数。
 
-#### microF1
-<div align=center><img src="https://img.alicdn.com/tfs/TB1dAzFYUT1gK0jSZFrXXcNCXXa-370-50.jpg" ></div>
+#### Recall at k
 
-#### precision
-<div align=center><img src="https://img.alicdn.com/tfs/TB1H12oYFY7gK0jSZKzXXaikpXa-113-34.jpg" ></div>
+$recall(k)=\frac{1}{M} \sum_{i=0}^{M-1} {\frac{1}{N} \sum_{j=0}^{\min(\left|D\right|, k) - 1} rel_{D_i}(R_i(j))}$
 
-#### recall
-<div align=center><img src="https://img.alicdn.com/tfs/TB1LuKilZVl614jSZKPXXaGjpXa-110-36.jpg" ></div>
+这里 $k$ 是一个参数。
 
-#### f1
-$$ explained Variance=\dfrac{SSR}{N} $$
+#### MAP (Mean Average Precision)
 
+$MAP=\frac{1}{M} \sum_{i=0}^{M-1} {\frac{1}{\left|D_i\right|} \sum_{j=0}^{Q-1} \frac{rel_{D_i}(R_i(j))}{j + 1}}$
+
+#### NDCG at k (Normalized Discounted Cumulative Gain)
+
+$NDCG(k)=\frac{1}{M} \sum_{i=0}^{M-1} {\frac{1}{IDCG(D_i, k)}\sum_{j=0}^{n-1} \frac{rel_{D_i}(R_i(j))}{\ln(j+2)}},$
+
+其中，$n = \min\left(\max\left(|R_i|,|D_i|\right),k\right)$， $IDCG(D, k) = \sum_{j=0}^{\min(\left|D\right|, k) - 1} \frac{1}{\ln(j+2)}$。
+
+这里 $k$ 是一个参数。
+
+### 使用方式
+
+该组件通常接推荐排序预测算法的输出端。
+
+使用时，需要通过参数 `labelCol` 指定预测标签列，参数 `predictionCol` 和 `predictionCol` 指定预测结果列。
 
 ## 参数说明
+
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | labelRankingInfo | Object列列名 | Object列列名 | String |  |  | "object" |
 | predictionRankingInfo | Object列列名 | Object列列名 | String |  |  | "object" |
-
-
 
 ## 代码示例
 ### Python 代码

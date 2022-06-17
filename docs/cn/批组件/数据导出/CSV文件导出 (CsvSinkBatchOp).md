@@ -5,7 +5,7 @@ Python 类名：CsvSinkBatchOp
 
 
 ## 功能介绍
-写CSV文件。支持写到本地、hdfs。
+将输入数据写出到CSV文件。支持写到本地、hdfs。
 
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
@@ -14,6 +14,7 @@ Python 类名：CsvSinkBatchOp
 | fieldDelimiter | 字段分隔符 | 字段分隔符 | String |  |  | "," |
 | numFiles | 文件数目 | 文件数目 | Integer |  |  | 1 |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| partitionCols | 分区列 | 创建分区使用的列名 | String[] |  |  | null |
 | quoteChar | 引号字符 | 引号字符 | Character |  |  | "\"" |
 | rowDelimiter | 行分隔符 | 行分隔符 | String |  |  | "\n" |
 

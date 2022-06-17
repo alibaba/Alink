@@ -6,7 +6,15 @@ Python 类名：DCTStreamOp
 
 ## 功能介绍
 
-对数据进行离散余弦变换。
+DCT(Discrete Cosine Transform), 又叫做离散余弦变换，是对数据进行离散余弦变换，可以用来做视频编码，图像压缩等，经过变换后数据会有更好的聚集性。
+输入是vector列，vector的size为n, 那经过变换后的输出变成size为n的vector。
+
+### 算法原理
+DCT变换就是输入信号为实偶函数的DFT变换
+
+<div align=center><img src="https://img.alicdn.com/imgextra/i3/O1CN014yvQGX224jkzJkYQF_!!6000000007067-2-tps-1082-326.png" height="100%" width="100%"></div>
+
+
 
 
 ## 参数说明

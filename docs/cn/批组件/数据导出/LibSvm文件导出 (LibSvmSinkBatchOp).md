@@ -17,6 +17,7 @@ Python 类名：LibSvmSinkBatchOp
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |  |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| partitionCols | 分区列 | 创建分区使用的列名 | String[] |  |  | null |
 | startIndex | 起始索引 | 起始索引 | Integer |  |  | 1 |
 
 

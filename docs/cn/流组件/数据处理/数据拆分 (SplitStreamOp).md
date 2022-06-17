@@ -5,7 +5,7 @@ Python 类名：SplitStreamOp
 
 
 ## 功能介绍
-将数据集按比例拆分为两部分
+数据拆分组件。本算法将输入数据按比例拆分为两部分。
 
 ## 参数说明
 
@@ -74,11 +74,7 @@ public class SplitStreamOpTest {
 ```
 
 ### 运行结果
-f1|f2|f3
+f1 |f2 |f3 
 ---|---|---
-Nevada|2003|3.2000
-Ohio|2000|1.5000
-Ohio|2001|1.7000
-Ohio|2002|3.6000
 Nevada|2001|2.4000
-Nevada|2002|2.9000
+Nevada|2003|3.2000

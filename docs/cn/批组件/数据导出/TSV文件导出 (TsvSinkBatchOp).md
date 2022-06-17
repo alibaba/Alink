@@ -14,11 +14,12 @@ Python 类名：TsvSinkBatchOp
 | filePath | 文件路径 | 文件路径 | String | ✓ |  |  |
 | numFiles | 文件数目 | 文件数目 | Integer |  |  | 1 |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
+| partitionCols | 分区列 | 创建分区使用的列名 | String[] |  |  | null |
 
 
 ## 代码示例
-** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ### Python 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```python
 df = pd.DataFrame([
                 ["0L", "1L", 0.6],

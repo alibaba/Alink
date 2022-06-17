@@ -5,8 +5,9 @@ Python 类名：MetaPathWalkBatchOp
 
 
 ## 功能介绍
- MataPathWalk是描述随机游走的一种算法。在给定的图上，每次迭代过程中，点都会按照一定的metaPath转移到它的邻居上，
- 转移到每个邻居的概率和连接这两个点的边的Type相关。通过这样的随机游走可以获得固定长度的随机游走序列，这可以类比自然语言中的句子。
+MataPathWalk [1] 是描述随机游走的一种算法。在给定的图上，每次迭代过程中，点都会按照一定的metaPath转移到它的邻居上，转移到每个邻居的概率和连接这两个点的边的Type相关。通过这样的随机游走可以获得固定长度的随机游走序列，这可以类比自然语言中的句子。
+
+[1] Dong et al. metapath2vec: Scalable Representation Learning for Heterogeneous Networks. KDD2017.
 
 ## 参数说明
 

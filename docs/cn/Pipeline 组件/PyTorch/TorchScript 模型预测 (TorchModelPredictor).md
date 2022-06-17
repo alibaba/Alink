@@ -22,7 +22,9 @@ Python 类名：TorchModelPredictor
 - 输出列的数量需要与模型输出结果匹配。
 - 输出类型可以是 Alink ```Tensor``` 类型或者 Alink 支持的类型，如果从模型预测输出的结果转换到指定类型失败那么将报错；暂不支持列表或字典类型。
 
-组件使用的是 PyTorch 1.8.1 版本，当有 GPU 时，自动使用 GPU 进行推理，否则使用 CPU 进行推理。
+组件使用的是 PyTorch 1.8.1 CPU 版本，如果需要使用 GPU 功能，可以自行替换插件文件。
+
+在 Windows 下运行时，如果遇到 ```UnsatisfiedLinkError```，请下载 [Visual C++ 2015 Redistributable Packages](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) 并重启，然后重新运行。
 
 ## 参数说明
 

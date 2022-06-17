@@ -6,7 +6,7 @@ Python 类名：ChiSqSelectorBatchOp
 
 ## 功能介绍
 
-针对table数据，进行特征筛选
+针对table数据，进行特征筛选。计算features和label列两两的卡方值，取最大的n个feature作为结果。
 
 ## 参数说明
 

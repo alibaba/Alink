@@ -5,8 +5,7 @@ Python 类名：TextSourceBatchOp
 
 
 ## 功能介绍
-
-按行读取文件数据
+按行读取文件数据。
 
 ## 参数说明
 
@@ -14,6 +13,7 @@ Python 类名：TextSourceBatchOp
 | --- | --- | --- | --- | --- | --- | --- |
 | filePath | 文件路径 | 文件路径 | String | ✓ |  |  |
 | ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  |  | false |
+| partitions | 分区名 | 1)单级、单个分区示例：ds=20190729；2)多级分区之间用" / "分隔，例如：ds=20190729/dt=12； 3)多个分区之间用","分隔，例如：ds=20190729,ds=20190730 | String |  |  | null |
 | textCol | 文本列名称 | 文本列名称 | String |  |  | "text" |
 
 ## 代码示例

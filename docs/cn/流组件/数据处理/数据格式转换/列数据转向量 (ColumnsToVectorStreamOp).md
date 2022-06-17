@@ -6,7 +6,7 @@ Python 类名：ColumnsToVectorStreamOp
 
 ## 功能介绍
 将数据格式从 Columns 转成 Vector
-
+数据格式可以为数值类型，如int，float，long，double，也可以为能够转换为数值类型的字符串。
 
 ## 参数说明
 
@@ -37,7 +37,6 @@ op = ColumnsToVectorStreamOp()\
     .setSelectedCols(["f0", "f1"])\
     .setReservedCols(["row"])\
     .setVectorCol("vec")\
-    .setVectorSize(5)\
     .linkFrom(data)
     
 op.print()
@@ -60,7 +59,8 @@ public class ColumnsToVectorStreamOpTest {
 	@Test
 	public void testColumnsToVectorStreamOp() throws Exception {
 		List <Row> df = Arrays.asList(
-			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0)
+			Row.of("1", "{\"f0\":\"1.0\",\"f1\":\"2.0\"}", "$3$0:1.0 1:2.0", "f0:1.0,f1:2.0", "1.0,2.0", 1.0, 2.0),
+			Row.of("2", "{\"f0\":\"4.0\",\"f1\":\"8.0\"}", "$3$0:4.0 1:8.0", "f0:4.0,f1:8.0", "4.0,8.0", 4.0, 8.0)
 		);
 		StreamOperator <?> data = new MemSourceStreamOp(df,
 			"row string, json string, vec string, kv string, csv string, f0 double, f1 double");
@@ -68,7 +68,6 @@ public class ColumnsToVectorStreamOpTest {
 			.setSelectedCols("f0", "f1")
 			.setReservedCols("row")
 			.setVectorCol("vec")
-			.setVectorSize(5)
 			.linkFrom(data);
 		op.print();
 		StreamOperator.execute();
@@ -77,9 +76,9 @@ public class ColumnsToVectorStreamOpTest {
 ```
 
 ### 运行结果
-    
-|row|vec|
-|---|-----|
-|1|$5$1.0 2.0|
-|2|$5$4.0 8.0|
+
+row|vec
+---|---
+1|1.0 2.0
+1|4.0 8.0
     

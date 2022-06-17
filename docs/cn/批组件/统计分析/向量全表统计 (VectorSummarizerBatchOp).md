@@ -6,7 +6,33 @@ Python 类名：VectorSummarizerBatchOp
 
 ## 功能介绍
 
-针对vector数据，进行全表统计
+* 全表统计用来计算整表的统计量, 包含count(个数),numValidValue(有效值个数), numMissingValue(缺失值个数), sum(求和), mean(均值), standardDeviation(标准差), variance(方差), min(最小值), max(最大值), normL1(L1范数), normL2(L2范数)。
+
+* 只支持vector列
+
+* 只支持java接口
+
+### 使用方式
+* 打印统计结果.
+
+```java
+test.lazyPrintVectorSummary();
+```
+
+* 获取相应的统计值
+
+```java
+    summary = summarizer.linkFrom(source).collectVectorSummary()
+    print(summary.sum('f_double'))
+    print(summary.mean('f_double'))
+    print(summary.variance('f_double'))
+    print(summary.standardDeviation('f_double'))
+    print(summary.min('f_double'))
+    print(summary.max('f_double'))
+    print(summary.normL1('f_double'))
+    print(summary.normL2('f_double'))
+    print(summary.numValidValue('f_double'))
+    print(summary.numMissingValue('f_double'))
 
 ## 参数说明
 

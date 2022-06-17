@@ -5,9 +5,11 @@ Python 类名：RandomWalkBatchOp
 
 
 ## 功能介绍
-RandomWalk是deepwalk中描述随机游走的一种算法。
+RandomWalk是deepwalk [1] 中描述随机游走的一种算法。
 在给定的图上，每次迭代过程中，点都会转移到它的邻居上，转移到每个邻居的概率和连接这两个点的边的权重相关。
 通过这样的随机游走可以获得固定长度的随机游走序列，这可以类比自然语言中的句子。
+
+[1] Bryan Perozzi et al. DeepWalk: online learning of social representations. KDD 2014.
 
 ## 参数说明
 

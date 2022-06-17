@@ -5,7 +5,6 @@ Python 类名：LibSvmSinkStreamOp
 
 
 ## 功能介绍
-
 写出LibSvm格式文件，支持写出到本地文件和HDFS文件。
 
 ## 参数说明
@@ -23,13 +22,8 @@ Python 类名：LibSvmSinkStreamOp
 
 ## 代码示例
 ### Python 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```python
-from pyalink.alink import *
-
-import pandas as pd
-
-useLocalEnv(1)
-
 df_data = pd.DataFrame([
     ['1:2.0 2:1.0 4:0.5', 1.5],
     ['1:2.0 2:1.0 4:0.5', 1.7],
@@ -45,6 +39,7 @@ StreamOperator.execute()
 
 ```
 ### Java 代码
+** 以下代码仅用于示意，可能需要修改部分代码或者配置环境后才能正常运行！**
 ```java
 import org.apache.flink.types.Row;
 

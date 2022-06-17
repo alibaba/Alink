@@ -6,7 +6,22 @@ Python 类名：VectorCorrelationBatchOp
 
 ## 功能介绍
 
-针对vector数据，计算相关系数
+
+* 相关系数算法用于计算一个矩阵中每一列之间的相关系数，范围在[-1,1]之间。计算的时候，count数按两列间同时非空的元素个数计算，两两列之间可能不同。
+
+* 支持Pearson和Spearman两种相关系数
+
+* 只支持Vector类型列。如果想计算数字类型列，请参考CorrelationBatchOp
+
+
+### 使用方式
+* 通过collectCorrelation()获取CorrelationMetric.
+```python
+corr = corrOp.collectCorrelation()
+print(corr)
+print(corr.getCorrelation())
+print(corr.getCorrelation()[1][1])
+```
 
 ## 参数说明
 
