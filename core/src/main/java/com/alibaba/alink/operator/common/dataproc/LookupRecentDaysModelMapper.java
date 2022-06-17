@@ -95,7 +95,11 @@ public class LookupRecentDaysModelMapper extends ModelMapper {
 		int k = 0;
 		for (int i = 0; i < numGroups; i++) {
 			for (int j = 0; j < groupColIndexes[i].length; j++) {
-				keyObjs[i].set(j, selection.get(groupColIndexes[i][j]));
+				if (groupColIndexes[i][j] == -1) {
+					keyObjs[i].set(j, 1);
+				} else {
+					keyObjs[i].set(j, selection.get(groupColIndexes[i][j]));
+				}
 			}
 
 			Object[] valueObjs = maps[i].get(keyObjs[i]);

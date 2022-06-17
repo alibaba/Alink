@@ -204,7 +204,7 @@
         <dependency>
             <groupId>com.alibaba.alink</groupId>
             <artifactId>shaded_protobuf_java</artifactId>
-            <version>3.6.1-0.4</version>
+            <version>3.6.1-0.5</version>
         </dependency>
 
         <!-- lazy-api dependency -->
@@ -270,7 +270,7 @@
         <dependency>
             <groupId>com.alibaba.alink</groupId>
             <artifactId>shaded_flink_ai_extended_tf2</artifactId>
-            <version>0.3.0-SNAPSHOT-0.4</version>
+            <version>0.3.0-SNAPSHOT-0.5</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -282,7 +282,7 @@
         <dependency>
             <groupId>com.alibaba.alink</groupId>
             <artifactId>shaded_tensorflow_core_api</artifactId>
-            <version>0.2.0-0.4</version>
+            <version>0.2.0-0.5</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -301,6 +301,12 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.48</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.alink</groupId>
+            <artifactId>shaded_alink_metadata_def</artifactId>
+            <version>3.21.1-0.5</version>
         </dependency>
 
         <!-- unit test dependency -->

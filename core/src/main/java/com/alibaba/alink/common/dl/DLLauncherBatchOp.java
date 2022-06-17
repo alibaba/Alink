@@ -36,6 +36,7 @@ import com.alibaba.alink.common.dl.utils.DataSetDiskDownloader;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
+import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
 import com.alibaba.alink.common.utils.DataSetUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -69,12 +70,15 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 
 	private static final Logger LOG = LoggerFactory.getLogger(DLLauncherBatchOp.class);
 
+	private final ResourcePluginFactory factory;
+
 	public DLLauncherBatchOp() {
 		this(new Params());
 	}
 
 	public DLLauncherBatchOp(Params params) {
 		super(params);
+		factory = new ResourcePluginFactory();
 	}
 
 	private DLConfig setupDLConfig(TableSchema inputSchema, TableSchema outputSchema) {
@@ -213,7 +217,7 @@ public final class DLLauncherBatchOp extends BatchOperator <DLLauncherBatchOp>
 		// and collect from them.
 		TableSchema ipPortSchema = new TableSchema(new String[] {"ip_port"}, new TypeInformation[] {Types.STRING});
 		RichMapPartitionFunction <Row, Row> mapPartitionOp = new DLClusterMapPartitionFunc(
-			config.getMlConfig(), in.getSchema(), outputSchema);
+			config.getMlConfig(), in.getSchema(), outputSchema, factory);
 
 		// To setup a DL cluster, we need two steps:
 		// Step A: collect IPs and ports of each tasks of a Flink MapPartition operator

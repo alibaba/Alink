@@ -6,26 +6,32 @@ import com.alibaba.alink.common.linalg.tensor.DataType;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
 import com.alibaba.alink.common.linalg.tensor.TensorInternalUtils;
 import com.alibaba.alink.common.pyrunner.fn.JavaObjectWrapper;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import org.tensorflow.ndarray.Shape;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class TensorWrapper implements JavaObjectWrapper<Tensor<?>> {
+public class TensorWrapper implements JavaObjectWrapper <Tensor <?>> {
 
-	private static final BiMap <DataType, String> TYPE_MAPPING = HashBiMap.create();
+	private static final Map <DataType, String> TO_NUMPY_DTYPE = new HashMap <>();
+	private static final Map <String, DataType> FROM_NUMPY_DTYPE = new HashMap <>();
 
 	static {
-		TYPE_MAPPING.put(DataType.FLOAT, "<f4");
-		TYPE_MAPPING.put(DataType.DOUBLE, "<f8");
-		TYPE_MAPPING.put(DataType.INT, "<i4");
-		TYPE_MAPPING.put(DataType.LONG, "<i8");
-		TYPE_MAPPING.put(DataType.BOOLEAN, "<?");
-		TYPE_MAPPING.put(DataType.BYTE, "<b");
-		TYPE_MAPPING.put(DataType.UBYTE, "<B");
-		// TODO: DataType.STRING
+		TO_NUMPY_DTYPE.put(DataType.FLOAT, "<f4");
+		TO_NUMPY_DTYPE.put(DataType.DOUBLE, "<f8");
+		TO_NUMPY_DTYPE.put(DataType.INT, "<i4");
+		TO_NUMPY_DTYPE.put(DataType.LONG, "<i8");
+		TO_NUMPY_DTYPE.put(DataType.BOOLEAN, "<?");
+		TO_NUMPY_DTYPE.put(DataType.BYTE, "<b");
+		TO_NUMPY_DTYPE.put(DataType.UBYTE, "<B");
+		TO_NUMPY_DTYPE.put(DataType.STRING, "<U");
+
+		TO_NUMPY_DTYPE.forEach((k, v) -> FROM_NUMPY_DTYPE.put(v, k));
+		FROM_NUMPY_DTYPE.put("|b1", DataType.BOOLEAN);
+		FROM_NUMPY_DTYPE.put("|i1", DataType.BYTE);
+		FROM_NUMPY_DTYPE.put("|u1", DataType.UBYTE);
 	}
 
 	private Tensor <?> tensor;
@@ -39,7 +45,7 @@ public class TensorWrapper implements JavaObjectWrapper<Tensor<?>> {
 	public static TensorWrapper fromJava(Tensor <?> tensor) {
 		TensorWrapper wrapper = new TensorWrapper();
 		wrapper.tensor = tensor;
-		wrapper.dtypeStr = TYPE_MAPPING.get(tensor.getType());
+		wrapper.dtypeStr = TO_NUMPY_DTYPE.get(tensor.getType());
 		wrapper.shape = tensor.shape();
 		wrapper.bytes = TensorInternalUtils.tensorToBytes(tensor);
 		return wrapper;
@@ -54,9 +60,9 @@ public class TensorWrapper implements JavaObjectWrapper<Tensor<?>> {
 		wrapper.bytes = bytes;
 		wrapper.dtypeStr = dtypeStr;
 		wrapper.shape = shape;
-		Preconditions.checkArgument(TYPE_MAPPING.inverse().containsKey(dtypeStr),
+		Preconditions.checkArgument(FROM_NUMPY_DTYPE.containsKey(dtypeStr),
 			String.format("Numpy array of type %s is not supported.", dtypeStr));
-		wrapper.tensor = TensorInternalUtils.bytesToTensor(bytes, TYPE_MAPPING.inverse().get(dtypeStr),
+		wrapper.tensor = TensorInternalUtils.bytesToTensor(bytes, FROM_NUMPY_DTYPE.get(dtypeStr),
 			Shape.of(shape));
 		return wrapper;
 	}

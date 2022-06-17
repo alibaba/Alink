@@ -90,8 +90,8 @@ public class BaseBinaryClassMetrics<T extends BaseBinaryClassMetrics<T>> extends
 		.setRequired()
 		.build();
 
-	static final ParamInfo <double[][]> RECALL_PRECISION_CURVE = ParamInfoFactory
-		.createParamInfo("RecallPrecisionCurve", double[][].class)
+	static final ParamInfo <double[][]> PRECISION_RECALL_CURVE = ParamInfoFactory
+		.createParamInfo("PrecisionRecallCurve", double[][].class)
 		.setDescription("recall precision curve")
 		.setRequired()
 		.build();
@@ -178,8 +178,8 @@ public class BaseBinaryClassMetrics<T extends BaseBinaryClassMetrics<T>> extends
 		return get(PRC);
 	}
 
-	public Tuple2 <double[], double[]> getRecallPrecisionCurve() {
-		double[][] curve = getParams().get(RECALL_PRECISION_CURVE);
+	public Tuple2 <double[], double[]> getPrecisionRecallCurve() {
+		double[][] curve = getParams().get(PRECISION_RECALL_CURVE);
 		return Tuple2.of(curve[0], curve[1]);
 	}
 
@@ -319,15 +319,15 @@ public class BaseBinaryClassMetrics<T extends BaseBinaryClassMetrics<T>> extends
 			getLiftChart());
 	}
 
-	public void saveRecallPrecisionCurveAsImage(String path, boolean isOverwrite) throws IOException {
+	public void savePrecisionRecallCurveAsImage(String path, boolean isOverwrite) throws IOException {
 		saveAsImage(path,
 			isOverwrite,
-			"RecallPrecisionCurve",
+			"PrecisionRecallCurve",
 			"Recall",
 			"Precision",
-			new String[] {"RecallPrecision"},
+			new String[] {"PrecisionRecall"},
 			Tuple2.of("PRC", getPrc()),
-			getRecallPrecisionCurve());
+			getPrecisionRecallCurve());
 	}
 
 	public void saveLorenzCurveAsImage(String path, boolean isOverwrite) throws IOException {

@@ -3,6 +3,7 @@ package com.alibaba.alink.common.dl.plugin;
 import com.alibaba.alink.common.dl.plugin.DLPredictServiceMapper.PredictorConfig;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -23,7 +24,7 @@ import java.util.List;
 @RunWith(Parameterized.class)
 public class OnnxPredictorServiceImplTest {
 	private final PredictorConfig config;
-	private final FloatTensor input;
+	private final List <?> input;
 	private final Class <? extends Exception> expectedException;
 	private final String expectedExceptionMessage;
 
@@ -43,6 +44,7 @@ public class OnnxPredictorServiceImplTest {
 
 		PredictorConfig configThreadMode = new PredictorConfig();
 		configThreadMode.modelPath = file.getAbsolutePath();
+		configThreadMode.factory = new OnnxPredictorClassLoaderFactory();
 		configThreadMode.inputNames = new String[] {"0"};
 		configThreadMode.outputNames = new String[] {"21"};
 		configThreadMode.intraOpNumThreads = 4;
@@ -51,14 +53,15 @@ public class OnnxPredictorServiceImplTest {
 
 		PredictorConfig configProcessMode = new PredictorConfig();
 		configProcessMode.modelPath = file.getAbsolutePath();
+		configProcessMode.factory = new OnnxPredictorClassLoaderFactory();
 		configProcessMode.inputNames = new String[] {"0"};
 		configProcessMode.outputNames = new String[] {"21"};
 		configProcessMode.intraOpNumThreads = 4;
 		configProcessMode.outputTypeClasses = new Class <?>[] {FloatTensor.class};
 		configProcessMode.threadMode = false;
 
-		FloatTensor legalInput = new FloatTensor(new Shape(1, 1, 28, 28));
-		FloatTensor illegalInput = new FloatTensor(new Shape(1, 28, 28));
+		List <?> legalInput = Collections.singletonList(new FloatTensor(new Shape(1, 1, 28, 28)));
+		List <?> illegalInput = Collections.singletonList(new FloatTensor(new Shape(1, 28, 28)));
 
 		return Arrays.asList(
 			new Object[] {configThreadMode, legalInput, null, null},
@@ -70,7 +73,7 @@ public class OnnxPredictorServiceImplTest {
 		);
 	}
 
-	public OnnxPredictorServiceImplTest(PredictorConfig config, FloatTensor input,
+	public OnnxPredictorServiceImplTest(PredictorConfig config, List <?> input,
 										Class <? extends Exception> expectedException,
 										String expectedExceptionMessage) {
 		this.config = config;
@@ -83,15 +86,17 @@ public class OnnxPredictorServiceImplTest {
 	public void testOnnxPredictorServiceImpl() {
 		//AlinkGlobalConfiguration.setPrintProcessInfo(true);
 		OnnxPredictorServiceImpl predictor = new OnnxPredictorServiceImpl();
-		predictor.open(config.toMap());
+		predictor.open(config);
 
 		if (null != expectedException) {
 			thrown.expect(expectedException);
 			thrown.expectMessage(expectedExceptionMessage);
 		}
 
-		List <?> outputs = predictor.predict(Collections.singletonList(input));
+		List <?> outputs = predictor.predict(input);
 		predictor.close();
-		System.out.println(outputs.get(0));
+		Assert.assertTrue(outputs.get(0) instanceof FloatTensor);
+		FloatTensor output = (FloatTensor) outputs.get(0);
+		Assert.assertArrayEquals(new long[] {1, 10}, output.shape());
 	}
 }

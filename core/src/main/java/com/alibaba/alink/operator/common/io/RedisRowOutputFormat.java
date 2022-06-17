@@ -7,7 +7,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.io.filesystem.binary.RowSerializer;
+import com.alibaba.alink.common.io.filesystem.binary.RowSerializerV2;
 import com.alibaba.alink.common.io.redis.Redis;
 import com.alibaba.alink.common.io.redis.RedisClassLoaderFactory;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -28,8 +28,8 @@ public class RedisRowOutputFormat extends RichOutputFormat <Row> {
 	private transient int[] valColIndices;
 
 	private transient Redis redis;
-	private transient RowSerializer keyRowSerializer;
-	private transient RowSerializer valueRowSerializer;
+	private transient RowSerializerV2 keyRowSerializer;
+	private transient RowSerializerV2 valueRowSerializer;
 
 	public RedisRowOutputFormat(
 		Params params, String[] colNames, TypeInformation <?>[] colTypes) {
@@ -61,13 +61,13 @@ public class RedisRowOutputFormat extends RichOutputFormat <Row> {
 		}
 
 		keyColIndices = TableUtil.findColIndicesWithAssertAndHint(dataSchema, keyColNames);
-		keyRowSerializer = new RowSerializer(
+		keyRowSerializer = new RowSerializerV2(
 			keyColNames,
 			TableUtil.findColTypesWithAssertAndHint(dataSchema, keyColNames)
 		);
 
 		valColIndices = TableUtil.findColIndicesWithAssertAndHint(dataSchema, valueColNames);
-		valueRowSerializer = new RowSerializer(
+		valueRowSerializer = new RowSerializerV2(
 			valueColNames,
 			TableUtil.findColTypesWithAssertAndHint(dataSchema, valueColNames)
 		);

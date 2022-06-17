@@ -1,9 +1,10 @@
 package com.alibaba.alink.common.dl.plugin;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.exchange.BytesDataExchange;
 import com.alibaba.alink.common.dl.plugin.DLPredictServiceMapper.PredictorConfig;
+import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
-import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.pytorch.ListSerializer;
 import com.alibaba.flink.ml.util.ShellExec;
 import org.slf4j.Logger;
@@ -11,15 +12,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-
-import static com.alibaba.alink.operator.common.pytorch.TorchScriptConstants.LIBRARY_PATH_KEY;
 
 /**
  * Base class for predictor service using separate process for prediction. Current requires usage of
@@ -47,9 +47,19 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 
 	public static FutureTask <Void> startInferenceProcessWatcher(Process process) {
 		Thread inLogger = new Thread(
-			new ShellExec.ProcessLogger(process.getInputStream(), new ShellExec.StdOutConsumer()));
+			new ShellExec.ProcessLogger(process.getInputStream(), d -> {
+				LOG.info("Inference process stdout: {}", d);
+				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+					System.out.println(d);
+				}
+			}));
 		Thread errLogger = new Thread(
-			new ShellExec.ProcessLogger(process.getErrorStream(), new ShellExec.StdOutConsumer()));
+			new ShellExec.ProcessLogger(process.getErrorStream(), d -> {
+				LOG.info("Inference process stderr: {}", d);
+				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+					System.out.println(d);
+				}
+			}));
 		inLogger.setName("JavaInferenceProcess-in-logger");
 		inLogger.setDaemon(true);
 		errLogger.setName("JavaInferenceProcess-err-logger");
@@ -92,10 +102,13 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 		List <String> cpElements = new ArrayList <>();
 		// add sys classpath
 		cpElements.add(System.getProperty("java.class.path"));
-		// add user code classpath
-		if (Thread.currentThread().getContextClassLoader() instanceof URLClassLoader) {
-			for (URL url : ((URLClassLoader) Thread.currentThread().getContextClassLoader()).getURLs()) {
+		LOG.info("java.class.path = {}", System.getProperty("java.class.path"));
+		// add user code classpath, not plugin classpath
+		ClassLoader classLoader = ResourcePluginFactory.class.getClassLoader();
+		if (classLoader instanceof URLClassLoader) {
+			for (URL url : ((URLClassLoader) classLoader).getURLs()) {
 				cpElements.add(url.toString());
+				LOG.info("classloader url: {}", url);
 			}
 		}
 		args.add("-cp");
@@ -107,8 +120,9 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 		// swapped in and out
 		args.add(outQueueFilename);
 		args.add(inQueueFilename);
-		args.add(JsonConverter.toJson(config));
+		args.add(config.serialize());
 		args.add(procReadyFilename);
+		args.add(String.valueOf(config.threadMode));
 
 		LOG.info("Java Inference Cmd: " + String.join(" ", args));
 		System.out.println(String.join(" ", args));
@@ -117,6 +131,21 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 		builder.redirectErrorStream(true);
 		builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 		return builder.start();
+	}
+
+	public static void addLibraryPath(String pathToAdd) throws Exception {
+		Field usrPathsField = ClassLoader.class.getDeclaredField("usr_paths");
+		usrPathsField.setAccessible(true);
+
+		String[] paths = (String[]) usrPathsField.get(null);
+		System.out.println(Arrays.toString(paths));
+
+		for (String path : paths) {if (path.equals(pathToAdd)) {return;}}
+
+		String[] newPaths = Arrays.copyOf(paths, paths.length + 1);
+		newPaths[newPaths.length - 1] = pathToAdd;
+		System.out.println(Arrays.toString(newPaths));
+		usrPathsField.set(null, newPaths);
 	}
 
 	private FutureTask <Void> createInferFutureTask() {
@@ -137,12 +166,20 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 	}
 
 	private FutureTask <Void> createInferFutureTaskDebug() {
+		if (null != config.libraryPath) {
+			try {
+				addLibraryPath(config.libraryPath);
+			} catch (Exception e) {
+				LOG.warn("add library path {} failed", config.libraryPath, e);
+			}
+		}
 		FutureTask <Void> res = new FutureTask <>(() -> {
 			ProcessPredictorRunner.main(new String[] {getPredictorClass().getCanonicalName(),
 				outQueueFile.getAbsolutePath(),
 				inQueueFile.getAbsolutePath(),
-				JsonConverter.toJson(config),
-				procReadyFile.getAbsolutePath()});
+				config.serialize(),
+				procReadyFile.getAbsolutePath(),
+				Boolean.toString(true)});
 		}, null);
 		Thread t = new Thread(res);
 		t.setContextClassLoader(this.getClass().getClassLoader());
@@ -164,9 +201,9 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 	}
 
 	@Override
-	public void open(Map <String, Object> m) {
-		config = PredictorConfig.fromMap(m);
-		libraryPath = (String) m.get(LIBRARY_PATH_KEY);
+	public void open(PredictorConfig config) {
+		this.config = config;
+		libraryPath = config.libraryPath;
 		intraOpParallelism = config.intraOpNumThreads;
 		listSerializer = new ListSerializer();
 

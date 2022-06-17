@@ -9,7 +9,7 @@ import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.params.io.TextSinkParams;
+import com.alibaba.alink.params.io.TextSinkBatchParams;
 
 /**
  * Sink data to files in text lines.
@@ -17,7 +17,7 @@ import com.alibaba.alink.params.io.TextSinkParams;
 @IoOpAnnotation(name = "text", ioType = IOType.SinkBatch)
 @NameCn("Text文件导出")
 public final class TextSinkBatchOp extends BaseSinkBatchOp <TextSinkBatchOp>
-	implements TextSinkParams <TextSinkBatchOp> {
+	implements TextSinkBatchParams <TextSinkBatchOp> {
 
 	private static final long serialVersionUID = -8765859539929096961L;
 
@@ -30,7 +30,7 @@ public final class TextSinkBatchOp extends BaseSinkBatchOp <TextSinkBatchOp>
 	}
 
 	@Override
-	public TextSinkBatchOp sinkFrom(BatchOperator<?> in) {
+	public TextSinkBatchOp sinkFrom(BatchOperator <?> in) {
 		TypeInformation <?>[] types = in.getSchema().getFieldTypes();
 		if (types.length != 1 || Types.STRING != types[0]) {
 			throw new IllegalArgumentException("The Input could only be a string type column.");
@@ -44,6 +44,7 @@ public final class TextSinkBatchOp extends BaseSinkBatchOp <TextSinkBatchOp>
 				.setFieldDelimiter("\n")
 				.setQuoteChar(null)
 				.setNumFiles(getNumFiles())
+				.setPartitionCols(getPartitionCols())
 		);
 
 		return this;

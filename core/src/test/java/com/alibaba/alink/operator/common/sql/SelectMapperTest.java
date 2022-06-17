@@ -8,11 +8,16 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.params.dataproc.HasClause;
+import com.alibaba.alink.pipeline.LocalPredictor;
+import com.alibaba.alink.pipeline.PipelineModel;
+import com.alibaba.alink.pipeline.sql.Select;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import io.reactivex.rxjava3.functions.BiFunction;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -22,6 +27,24 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 
 public class SelectMapperTest extends AlinkTestBase {
+	@Test
+	public void testInputTypeSupport() throws Exception {
+		{
+			Select select = new Select().setClause("age + 1 as age");
+			PipelineModel pipeline = new PipelineModel(select);
+			LocalPredictor localPredictor = pipeline.collectLocalPredictor("age DECIMAL");
+			Row result = localPredictor.map(Row.of(new BigDecimal("1.")));
+			System.out.println(result);
+		}
+
+		{
+			Select select = new Select().setClause("age + 1 as age");
+			PipelineModel pipeline = new PipelineModel(select);
+			LocalPredictor localPredictor = pipeline.collectLocalPredictor("age BIGINT");
+			Row result = localPredictor.map(Row.of(new BigInteger("1")));
+			System.out.println(result);
+		}
+	}
 
 	@Test
 	public void testGeneral() throws Exception {
@@ -320,20 +343,15 @@ public class SelectMapperTest extends AlinkTestBase {
 
 		Future <?>[] futures = new Future[numThreads];
 		for (int threadId = 0; threadId < numThreads; threadId += 1) {
-			int finalThreadId = threadId;
-			futures[threadId] = executorService.submit(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						for (int i = 0; i < numItems; i += 1) {
-							System.err.println("threadId = " + finalThreadId);
-							Row output = multiThreadMapper.map(inputs[i]);
-							assertEquals(output.toString(), outputs[i].toString());
-							Thread.sleep(10);
-						}
-					} catch (Exception e) {
-						throw new RuntimeException(e);
+			futures[threadId] = executorService.submit(() -> {
+				try {
+					for (int i = 0; i < numItems; i += 1) {
+						Row output = multiThreadMapper.map(inputs[i]);
+						assertEquals(output.toString(), outputs[i].toString());
+						Thread.sleep(10);
 					}
+				} catch (Exception e) {
+					throw new RuntimeException(e);
 				}
 			});
 		}
@@ -344,7 +362,7 @@ public class SelectMapperTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void testMultiThread() throws Exception {
+	public void testMultiThread() {
 		int numItems = 100;
 
 		Row[] inputs = new Row[numItems];

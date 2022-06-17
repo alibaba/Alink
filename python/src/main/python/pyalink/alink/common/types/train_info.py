@@ -1,5 +1,8 @@
 from .bases.j_obj_wrapper import JavaObjectWrapperWithAutoTypeConversion
 
+__all__ = ['FmRegressorModelTrainInfo', 'FmClassifierModelTrainInfo', 'LinearModelTrainInfo',
+           'Word2VecTrainInfo', 'Report']
+
 
 class FmRegressorModelTrainInfo(JavaObjectWrapperWithAutoTypeConversion):
     _j_cls_name = 'com.alibaba.alink.operator.common.fm.FmRegressorModelTrainInfo'

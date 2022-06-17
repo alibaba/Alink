@@ -17,6 +17,7 @@ public class ListSerializer {
 	public ListSerializer() {
 		kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
 		kryo.addDefaultSerializer(Tensor.class, TensorKryoSerializer.class);
+		kryo.setClassLoader(ListSerializer.class.getClassLoader());
 	}
 
 	public byte[] serialize(List <?> values) {

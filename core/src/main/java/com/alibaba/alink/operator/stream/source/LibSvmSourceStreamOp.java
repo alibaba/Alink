@@ -42,7 +42,8 @@ public final class LibSvmSourceStreamOp extends BaseSourceStreamOp <LibSvmSource
 			.setMLEnvironmentId(getMLEnvironmentId())
 			.setFilePath(getFilePath())
 			.setFieldDelimiter("\n")
-			.setSchemaStr("content string");
+			.setSchemaStr("content string")
+			.setPartitions(getPartitions());
 
 		final int startIndex = getParams().get(LibSvmSourceParams.START_INDEX);
 

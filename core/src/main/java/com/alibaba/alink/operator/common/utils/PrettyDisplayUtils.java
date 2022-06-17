@@ -454,6 +454,10 @@ public class PrettyDisplayUtils {
 				}
 			}
 		} else {
+			int numElemSubSlice = 1;
+			for (int i = dim + 1; i < shape.length; i += 1) {
+				numElemSubSlice *= shape[i];
+			}
 			for (int i = 0; i < dimSize; i += 1) {
 				if (i > 0) {
 					sbd.append("\n");
@@ -463,7 +467,8 @@ public class PrettyDisplayUtils {
 					sbd.append("...");
 					i = dimSize - nEdgeItems - 1;
 				} else {
-					sbd.append(displayTensorSlice(dim + 1, shape, index * dimSize + i, valueStrs, nEdgeItems));
+					sbd.append(displayTensorSlice(dim + 1, shape, index + numElemSubSlice * i,
+						valueStrs, nEdgeItems));
 				}
 			}
 		}

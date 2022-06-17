@@ -103,8 +103,7 @@ public class OnnxJavaPredictor implements DLPredictorService, Closeable {
 	}
 
 	@Override
-	public void open(Map <String, Object> m) {
-		PredictorConfig config = PredictorConfig.fromMap(m);
+	public void open(PredictorConfig config) {
 		String modelPath = config.modelPath;
 		String[] inputNames = config.inputNames;
 		String[] outputNames = config.outputNames;
@@ -211,8 +210,7 @@ public class OnnxJavaPredictor implements DLPredictorService, Closeable {
 			outputValues.add(optionalOnnxValue.get());
 		}
 		// TODO: assume all outputs are OnnxTensors for now
-		List <OnnxTensor> outputTensors = outputValues.stream().map(d -> (OnnxTensor) d).collect(Collectors.toList());
-		return outputTensors;
+		return outputValues.stream().map(d -> (OnnxTensor) d).collect(Collectors.toList());
 	}
 
 	@Override

@@ -12,6 +12,7 @@ import com.alibaba.alink.common.dl.utils.DLClusterUtils;
 import com.alibaba.alink.common.dl.utils.DLUtils;
 import com.alibaba.alink.common.dl.utils.ExternalFilesUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.flink.ml.cluster.ExecutionMode;
 import com.alibaba.flink.ml.cluster.MLConfig;
 import com.alibaba.flink.ml.cluster.node.MLContext;
@@ -53,11 +54,12 @@ public class DLStreamCoFlatMapFunc extends RichCoFlatMapFunction <Row, Row, Row>
 	private FutureTask <Void> serverFuture;
 	private volatile Collector <Row> collector = null;
 
-	MLContext mlContext;
+	private MLContext mlContext;
+	private final ResourcePluginFactory factory;
 	private final MLConfig mlConfig;
 
-	private int numWorkers;
-	private int numPSs;
+	private final int numWorkers;
+	private final int numPSs;
 	private int taskId;
 
 	private final List <Tuple3 <Integer, String, Integer>> taskIpPorts = new ArrayList <>();
@@ -67,7 +69,8 @@ public class DLStreamCoFlatMapFunc extends RichCoFlatMapFunction <Row, Row, Row>
 
 	private boolean firstItem = true;
 
-	public DLStreamCoFlatMapFunc(MLConfig mlConfig, int numWorkers, int numPSs) {
+	public DLStreamCoFlatMapFunc(MLConfig mlConfig, int numWorkers, int numPSs, ResourcePluginFactory factory) {
+		this.factory = factory;
 		this.mlConfig = mlConfig;
 		this.numWorkers = numWorkers;
 		this.numPSs = numPSs;
@@ -147,7 +150,7 @@ public class DLStreamCoFlatMapFunc extends RichCoFlatMapFunction <Row, Row, Row>
 				if (StringUtils.isNullOrWhitespaceOnly(pythonEnv)) {
 					Version version = Version.valueOf(properties.get(DLConstants.ENV_VERSION));
 					LOG.info(String.format("Use pythonEnv from plugin: %s", version));
-					pythonEnv = DLEnvConfig.getDefaultPythonEnv(version);
+					pythonEnv = DLEnvConfig.getDefaultPythonEnv(factory, version);
 					properties.put(MLConstants.VIRTUAL_ENV_DIR, pythonEnv.substring("file://".length()));
 				} else {
 					if (PythonFileUtils.isLocalFile(pythonEnv)) {

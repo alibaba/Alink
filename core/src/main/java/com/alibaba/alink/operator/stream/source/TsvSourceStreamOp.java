@@ -37,6 +37,7 @@ public final class TsvSourceStreamOp extends BaseSourceStreamOp <TsvSourceStream
 			.setIgnoreFirstLine(getIgnoreFirstLine())
 			.setSchemaStr(getSchemaStr())
 			.setSkipBlankLine(getSkipBlankLine())
+			.setPartitions(getPartitions())
 			.getOutputTable();
 	}
 }
