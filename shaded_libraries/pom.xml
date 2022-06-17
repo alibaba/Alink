@@ -93,6 +93,7 @@
         <module>shaded_tensorflow_core_api</module>
         <module>shaded_flink_ai_extended_tf2</module>
         <module>third_party_flink_ai_extended</module>
+        <module>shaded_alink_metadata_def</module>
     </modules>
 
     <profiles>
