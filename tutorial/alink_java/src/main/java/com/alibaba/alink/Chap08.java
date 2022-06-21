@@ -279,7 +279,7 @@ public class Chap08 {
 		System.out.println(lr_metrics);
 
 		lr_metrics.saveRocCurveAsImage(DATA_DIR + "lr_roc.jpg", true);
-		lr_metrics.saveRecallPrecisionCurveAsImage(DATA_DIR + "lr_recallprec.jpg", true);
+		lr_metrics.savePrecisionRecallCurveAsImage(DATA_DIR + "lr_recallprec.jpg", true);
 		lr_metrics.saveLiftChartAsImage(DATA_DIR + "lr_lift.jpg", true);
 		lr_metrics.saveKSAsImage(DATA_DIR + "lr_ks.jpg", true);
 
@@ -297,7 +297,7 @@ public class Chap08 {
 							try {
 								binaryClassMetrics.saveRocCurveAsImage(
 									DATA_DIR + "svm_roc.jpg", true);
-								binaryClassMetrics.saveRecallPrecisionCurveAsImage(
+								binaryClassMetrics.savePrecisionRecallCurveAsImage(
 									DATA_DIR + "svm_recallprec.jpg", true);
 								binaryClassMetrics.saveLiftChartAsImage(
 									DATA_DIR + "svm_lift.jpg", true);
