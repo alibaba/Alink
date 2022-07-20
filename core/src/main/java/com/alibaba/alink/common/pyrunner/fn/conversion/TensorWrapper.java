@@ -1,7 +1,7 @@
 package com.alibaba.alink.common.pyrunner.fn.conversion;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.tensor.DataType;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
 import com.alibaba.alink.common.linalg.tensor.TensorInternalUtils;
@@ -60,8 +60,9 @@ public class TensorWrapper implements JavaObjectWrapper <Tensor <?>> {
 		wrapper.bytes = bytes;
 		wrapper.dtypeStr = dtypeStr;
 		wrapper.shape = shape;
-		Preconditions.checkArgument(FROM_NUMPY_DTYPE.containsKey(dtypeStr),
-			String.format("Numpy array of type %s is not supported.", dtypeStr));
+		AkPreconditions.checkArgument(FROM_NUMPY_DTYPE.containsKey(dtypeStr),
+			new AkUnsupportedOperationException(
+				String.format("Numpy array of type %s is not supported.", dtypeStr)));
 		wrapper.tensor = TensorInternalUtils.bytesToTensor(bytes, FROM_NUMPY_DTYPE.get(dtypeStr),
 			Shape.of(shape));
 		return wrapper;

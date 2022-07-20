@@ -9,6 +9,8 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -223,7 +225,7 @@ public class StatisticsHelper {
 			return in.getDataSet().map(new VectorColToTableMap(vectorColIndex, reservedColIndices));
 		}
 
-		throw new InvalidParameterException("selectedColName and vectorColName must be set one only.");
+		throw new AkIllegalOperatorParameterException("selectedColName and vectorColName must be set one only.");
 	}
 
 	/**
@@ -234,7 +236,7 @@ public class StatisticsHelper {
 												 String vectorColName,
 												 String[] reservedColNames) {
 		if (selectedColNames != null && selectedColNames.length != 0 && vectorColName != null) {
-			throw new InvalidParameterException("selectedColName and vectorColName must be set one only.");
+			throw new AkIllegalOperatorParameterException("selectedColName and vectorColName must be set one only.");
 		}
 
 		TableUtil.assertSelectedColExist(in.getColNames(), selectedColNames);
@@ -252,7 +254,7 @@ public class StatisticsHelper {
 	private static DataSet <TableSummarizer> summarizer(BatchOperator in, String[] selectedColNames,
 														boolean calculateOuterProduct) {
 		if (selectedColNames == null || selectedColNames.length == 0) {
-			throw new InvalidParameterException("selectedColNames must be set.");
+			throw new AkIllegalOperatorParameterException("selectedColNames must be set.");
 		}
 
 		in = Preprocessing.select(in, selectedColNames);
@@ -396,8 +398,7 @@ public class StatisticsHelper {
 		public Tuple2 <Vector, Row> map(Row in) throws Exception {
 			Vector vec = VectorUtil.getVector(in.getField(vectorColIndex));
 			if (vec == null) {
-				throw new RuntimeException(
-					"vector is null, please check your input data.");
+				throw new AkIllegalDataException("input vector is null");
 			}
 			Row out = new Row(reservedColIndices.length);
 			for (int i = 0; i < this.reservedColIndices.length; ++i) {

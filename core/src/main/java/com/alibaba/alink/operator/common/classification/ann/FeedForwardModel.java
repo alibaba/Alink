@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.classification.ann;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 
@@ -11,8 +12,8 @@ import java.util.List;
  */
 public class FeedForwardModel extends TopologyModel {
 	private static final long serialVersionUID = 6320266940893689929L;
-	private List <Layer> layers;
-	private List <LayerModel> layerModels;
+	private final List <Layer> layers;
+	private final List <LayerModel> layerModels;
 
 	/**
 	 * Buffers of deltas of each layers.
@@ -22,8 +23,8 @@ public class FeedForwardModel extends TopologyModel {
 	public FeedForwardModel(List <Layer> layers) {
 		this.layers = layers;
 		this.layerModels = new ArrayList <>(layers.size());
-		for (int i = 0; i < layers.size(); i++) {
-			layerModels.add(layers.get(i).createModel());
+		for (Layer layer : layers) {
+			layerModels.add(layer.createModel());
 		}
 	}
 
@@ -83,7 +84,7 @@ public class FeedForwardModel extends TopologyModel {
 		}
 		int L = layerModels.size() - 1;
 		if (!(this.layerModels.get(L) instanceof AnnLossFunction)) {
-			throw new UnsupportedOperationException("The last layer should be loss function");
+			throw new AkUnsupportedOperationException("The last layer should be loss function");
 		}
 		AnnLossFunction labelWithError = (AnnLossFunction) this.layerModels.get(L);
 		double loss = labelWithError.loss(outputs.get(L), target, deltas.get(L - 1));

@@ -6,11 +6,12 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
-import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.mapper.FlatModelMapper;
 import com.alibaba.alink.common.mapper.IterableModelLoader;
 import com.alibaba.alink.common.model.LabeledModelDataConverter;
@@ -86,7 +87,7 @@ public class TFTableModelRegressionFlatModelMapper extends CachedRichModelMapper
 				preprocessLocalPredictor = LocalPredictorLoader.load(
 					modelData.getPreprocessPipelineModelRows(), pipelineModelSchema, dataSchema);
 			} catch (Exception e) {
-				throw new RuntimeException("Cannot initialize preprocess PipelineModel", e);
+				throw new AkUnclassifiedErrorException("Cannot initialize preprocess PipelineModel", e);
 			}
 			dataSchema = preprocessLocalPredictor.getOutputSchema();
 		}
@@ -133,7 +134,7 @@ public class TFTableModelRegressionFlatModelMapper extends CachedRichModelMapper
 	@Override
 	protected Object extractPredictResult(Row row) throws Exception {
 		FloatTensor tensor = (FloatTensor) row.getField(predColId);
-		Preconditions.checkArgument(tensor.size() == 1, "The prediction tensor must have size 1");
+		AkPreconditions.checkState(tensor.size() == 1, "The prediction tensor must have size 1");
 		return (double) (tensor.shape().length == 1
 			? tensor.getFloat(0)
 			: tensor.getFloat());

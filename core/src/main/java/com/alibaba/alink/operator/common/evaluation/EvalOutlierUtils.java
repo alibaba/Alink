@@ -4,8 +4,9 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.outlier.OutlierDetector;
 import com.google.gson.reflect.TypeToken;
@@ -74,10 +75,10 @@ public class EvalOutlierUtils {
 				parsed = JsonConverter.fromJson(json,
 					new TypeReference <HashMap <String, Object>>() {}.getType());
 			} catch (Exception e) {
-				throw new RuntimeException(
+				throw new AkParseErrorException(
 					String.format("Failed to deserialize prediction detail: %s.", json));
 			}
-			Preconditions.checkArgument(parsed.containsKey(OUTLIER_SCORE_KEY),
+			AkPreconditions.checkState(parsed.containsKey(OUTLIER_SCORE_KEY),
 				String.format("Prediction detail %s doesn't contain key %s.", json, OUTLIER_SCORE_KEY));
 			double p = Double.parseDouble(String.valueOf(parsed.get(OutlierDetector.OUTLIER_SCORE_KEY)));
 			Map <String, Double> probMap = new HashMap <>();
@@ -95,9 +96,9 @@ public class EvalOutlierUtils {
 	public static Tuple2 <Boolean, Double> extractPredictionScore(String detailJson) {
 		Map <String, Object> m = JsonConverter.fromJson(detailJson,
 			new TypeToken <Map <String, Object>>() {}.getType());
-		Preconditions.checkArgument(m.containsKey(IS_OUTLIER_KEY),
+		AkPreconditions.checkState(m.containsKey(IS_OUTLIER_KEY),
 			String.format("Prediction detail %s doesn't contain key %s.", detailJson, IS_OUTLIER_KEY));
-		Preconditions.checkArgument(m.containsKey(OUTLIER_SCORE_KEY),
+		AkPreconditions.checkState(m.containsKey(OUTLIER_SCORE_KEY),
 			String.format("Prediction detail %s doesn't contain key %s.", detailJson, OUTLIER_SCORE_KEY));
 		boolean isOutlier = Boolean.parseBoolean(String.valueOf(m.get(IS_OUTLIER_KEY)));
 		double score = Double.parseDouble(String.valueOf(m.get(OUTLIER_SCORE_KEY)));

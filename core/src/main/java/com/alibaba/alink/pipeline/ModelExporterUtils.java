@@ -16,6 +16,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.io.filesystem.AkStream;
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
@@ -35,6 +36,7 @@ import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.params.io.ModelFileSinkParams;
 import com.alibaba.alink.params.shared.HasModelFilePath;
@@ -234,7 +236,7 @@ public class ModelExporterUtils {
 				"Error pipeline stage. Could not get column types from pipeline model."
 			);
 		} else if (stage instanceof ModelBase) {
-			ModelBase<?> model = (ModelBase <?>) stage;
+			ModelBase <?> model = (ModelBase <?>) stage;
 
 			Params params = model.getParams();
 
@@ -750,7 +752,7 @@ public class ModelExporterUtils {
 		);
 	}
 
-	static StageNode[] deserializePipelineStagesFromMeta(Row metaRow, TableSchema schema) {
+	public static StageNode[] deserializePipelineStagesFromMeta(Row metaRow, TableSchema schema) {
 		return deserializeMeta(metaRow, schema, 1).f0;
 	}
 
@@ -884,7 +886,7 @@ public class ModelExporterUtils {
 					reverseStages.add(Tuple3.of(null, null, null));
 				} else if (stageNode.stage.getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
 
-					List<Row> modelData = new ArrayList <>();
+					List <Row> modelData = new ArrayList <>();
 					TableSchema schema;
 					try {
 						AkStream akStream = new AkStream(
@@ -1031,7 +1033,49 @@ public class ModelExporterUtils {
 			PipelineModelMapper pipelineModelMapper
 				= new PipelineModelMapper(readed.f0, inputSchema, params);
 			pipelineModelMapper.loadModel(readed.f1);
-			return new Mapper[]{pipelineModelMapper};
+			return new Mapper[] {pipelineModelMapper};
+		}
+		return mappers;
+	}
+
+	static Mapper[] loadLocalPredictorFromPipelineModelAsMappers(
+		FilePath filePath, TableSchema inputSchema, Params params) throws Exception {
+		FilePath finalFilePath = filePath;
+		FilePath streamFilePath = FilePath.deserialize(params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH));
+		if (streamFilePath != null && filePath == null) {
+			FilePath tmpFilePath = ModelStreamUtils.getLatestModelPath(streamFilePath);
+			if (tmpFilePath != null) {
+				finalFilePath = tmpFilePath;
+			} else {
+				throw new AkIllegalArgumentException("Pipeline model path is null and no initial model found.");
+			}
+		}
+		Tuple2 <TableSchema, List <Row>> readed = AkUtils.readFromPath(finalFilePath);
+		Tuple2 <TableSchema, Row> schemaAndMeta = ModelExporterUtils.loadMetaFromAkFile(finalFilePath);
+		Tuple2 <StageNode[], Params> stagesAndParams
+			= ModelExporterUtils.deserializePipelineStagesAndParamsFromMeta(schemaAndMeta.f1, schemaAndMeta.f0);
+		Mapper[] mappers = loadMapperListFromStages(readed.f1, readed.f0, inputSchema).getMappers();
+		Params finalParams = stagesAndParams.f1;
+		if (streamFilePath != null) {
+			finalParams.set(ModelStreamScanParams.MODEL_STREAM_FILE_PATH, streamFilePath.serialize());
+		}
+		if (params.contains(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL)) {
+			finalParams.set(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL,
+				params.get(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL));
+		}
+		if (params.contains(ModelStreamScanParams.MODEL_STREAM_START_TIME)) {
+			finalParams.set(ModelStreamScanParams.MODEL_STREAM_START_TIME,
+				params.get(ModelStreamScanParams.MODEL_STREAM_START_TIME));
+		}
+		if (finalParams.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH) != null) {
+			TableSchema extendSchema = mappers[mappers.length - 1].getOutputSchema();
+			finalParams.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_NAMES, extendSchema.getFieldNames());
+			finalParams.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_TYPES,
+				FlinkTypeConverter.getTypeString(extendSchema.getFieldTypes()));
+			PipelineModelMapper pipelineModelMapper
+				= new PipelineModelMapper(readed.f0, inputSchema, finalParams);
+			pipelineModelMapper.loadModel(readed.f1);
+			return new Mapper[] {pipelineModelMapper};
 		}
 		return mappers;
 	}

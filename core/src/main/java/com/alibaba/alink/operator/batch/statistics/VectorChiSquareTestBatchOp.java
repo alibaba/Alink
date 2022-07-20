@@ -63,10 +63,6 @@ public final class VectorChiSquareTestBatchOp extends BatchOperator <VectorChiSq
 		String selectedColName = getSelectedCol();
 		String labelColName = getLabelCol();
 
-		if (selectedColName == null) {
-			throw new IllegalArgumentException("selectedColName must be set.");
-		}
-
 		TableUtil.assertSelectedColExist(in.getColNames(), selectedColName);
 		TableUtil.assertSelectedColExist(in.getColNames(), labelColName);
 

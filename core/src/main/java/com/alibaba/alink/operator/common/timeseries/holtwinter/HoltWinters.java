@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.timeseries.holtwinter;
 
 import org.apache.flink.api.java.tuple.Tuple3;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.timeseries.TimeSeriesUtils;
 import com.alibaba.alink.params.timeseries.holtwinters.HasSeasonalType.SeasonalType;
@@ -41,7 +42,7 @@ public class HoltWinters {
 									   Double trendStart,
 									   double[] seasonalStart) {
 		if (data == null) {
-			throw new RuntimeException("Data is null.");
+			throw new AkIllegalDataException("Data is null.");
 		}
 
 		for (double val : data) {
@@ -122,7 +123,7 @@ public class HoltWinters {
 			}
 			if (trendStart == null) {
 				if (2 * frequency > data.length) {
-					throw new RuntimeException("need at least 2 periods to compute seasonal start values.");
+					throw new AkIllegalDataException("need at least 2 periods to compute seasonal start values.");
 				}
 				trendStart = (sum(data, frequency, 2 * frequency) - sum(data, 0, frequency)) / Math.pow(frequency, 2);
 			}
@@ -144,7 +145,7 @@ public class HoltWinters {
 			}
 			if (trendStart == null) {
 				if (2 * frequency > data.length) {
-					throw new RuntimeException("need at least 2 periods to compute seasonal start values.");
+					throw new AkIllegalDataException("need at least 2 periods to compute seasonal start values.");
 				}
 				if (seasonalType == SeasonalType.ADDITIVE) {
 					trendStart = data[1] - data[0];

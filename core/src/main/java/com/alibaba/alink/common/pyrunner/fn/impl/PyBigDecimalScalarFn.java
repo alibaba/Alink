@@ -6,21 +6,20 @@ import org.apache.flink.api.common.typeinfo.Types;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.pyrunner.fn.BasePyScalarFn;
 import com.alibaba.alink.common.pyrunner.fn.PyScalarFnHandle;
-import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Map;
 
 @Internal
 public class PyBigDecimalScalarFn extends BasePyScalarFn <BigDecimal, PyScalarFnHandle <BigDecimal>> {
 
 	public PyBigDecimalScalarFn(String name, String fnSpecJson) {
-		this(name, fnSpecJson, Collections. <String, String>emptyMap()::getOrDefault);
+		this(name, fnSpecJson, Collections.emptyMap());
 	}
 
-	public PyBigDecimalScalarFn(String name, String fnSpecJson,
-								SerializableBiFunction <String, String, String> runConfigGetter) {
-		super(name, fnSpecJson, BigDecimal.class, runConfigGetter);
+	public PyBigDecimalScalarFn(String name, String fnSpecJson, Map <String, String> runConfig) {
+		super(name, fnSpecJson, BigDecimal.class, runConfig);
 	}
 
 	@Override

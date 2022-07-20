@@ -15,6 +15,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -70,7 +71,7 @@ public class VectorImputerTrainBatchOp extends BatchOperator <VectorImputerTrain
 				.flatMap(new BuildVectorImputerModel(vectorColName, strategy));
 		} else {
 			if (!getParams().contains(VectorImputerTrainParams.FILL_VALUE)) {
-				throw new RuntimeException("In VALUE strategy, the filling value is necessary.");
+				throw new AkIllegalOperatorParameterException("In VALUE strategy, the filling value is necessary.");
 			}
 			double fillValue = getFillValue();
 			RowCollector collector = new RowCollector();
@@ -94,7 +95,7 @@ public class VectorImputerTrainBatchOp extends BatchOperator <VectorImputerTrain
 		} else if (Strategy.VALUE.equals(strategy)) {
 			return false;
 		} else {
-			throw new IllegalArgumentException("Only support \"MAX\", \"MEAN\", \"MIN\" and \"VALUE\" strategy.");
+			throw new AkIllegalOperatorParameterException("Only support \"MAX\", \"MEAN\", \"MIN\" and \"VALUE\" strategy.");
 		}
 	}
 

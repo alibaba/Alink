@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.evaluation;
 
-import org.apache.flink.util.Preconditions;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -28,13 +29,13 @@ public interface LabelProbMapExtractor extends Serializable {
 
 		Collection <Double> probs = labelProbMap.values();
 		probs.forEach(v ->
-			Preconditions.checkArgument(v <= 1.0 && v >= 0,
-				String.format("Probability in %s not in range [0, 1]!", json)));
+			AkPreconditions.checkState(v <= 1.0 && v >= 0,
+				new AkIllegalDataException(String.format("Probability in %s not in range [0, 1]!", json))));
 
 		final double PROB_SUM_EPS = 0.01;
-		Preconditions.checkArgument(
+		AkPreconditions.checkState(
 			Math.abs(probs.stream().mapToDouble(Double::doubleValue).sum() - 1.0) < PROB_SUM_EPS,
-			String.format("Probability sum in %s not equal to 1.0!", json));
+			new AkIllegalDataException(String.format("Probability sum in %s not equal to 1.0!", json)));
 		return labelProbMap;
 	}
 }

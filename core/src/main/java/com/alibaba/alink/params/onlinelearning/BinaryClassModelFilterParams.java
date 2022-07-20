@@ -49,4 +49,16 @@ public interface BinaryClassModelFilterParams<T> extends WithParams <T>,
 	default Double getLogLossThreshold() {return get(LOG_LOSS);}
 
 	default T setLogLossThreshold(Double value) {return set(LOG_LOSS, value);}
+
+	@NameCn("评估样本数据条数")
+	@DescCn("用多少样本数据对模型进行评估")
+	ParamInfo <Integer> NUM_EVAL_SAMPLES = ParamInfoFactory
+		.createParamInfo("numEvalSamples", Integer.class)
+		.setDescription("num eval samples.")
+		.setHasDefaultValue(200000)
+		.build();
+
+	default Integer getNumEvalSamples() {return get(NUM_EVAL_SAMPLES);}
+
+	default T setNumEvalSamples(Integer value) {return set(NUM_EVAL_SAMPLES, value);}
 }

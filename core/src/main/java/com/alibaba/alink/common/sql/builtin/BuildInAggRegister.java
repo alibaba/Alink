@@ -1,8 +1,8 @@
 package com.alibaba.alink.common.sql.builtin;
 
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 
 import com.alibaba.alink.common.sql.builtin.agg.AvgUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.CountUdaf;
@@ -45,6 +45,12 @@ public class BuildInAggRegister {
 		env.registerFunction("unix_timestamp", new UnixTimeStamp());
 		env.registerFunction("from_unixtime", new FromUnixTime());
 		env.registerFunction("date_format_ltz", new DataFormat());
+	}
+
+	public static void registerUdtf(BatchTableEnvironment env) {
+	}
+
+	public static void registerUdtf(StreamTableEnvironment env) {
 	}
 
 	public static void registerUdaf(StreamTableEnvironment env) {

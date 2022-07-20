@@ -5,12 +5,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.params.dataproc.tensor.HasChannelFirst;
 import com.alibaba.alink.params.io.HasRootFilePath;
 import com.alibaba.alink.params.shared.colname.HasOutputCol;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
 
 public interface ReadImageToTensorParams<T>
 	extends HasRootFilePath <T>,
+	HasChannelFirst <T>,
 	HasOutputCol <T>,
 	HasRelativeFilePathCol <T>,
 	HasReservedColsDefaultAsNull <T> {

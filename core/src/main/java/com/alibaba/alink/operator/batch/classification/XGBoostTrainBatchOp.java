@@ -13,9 +13,14 @@ public final class XGBoostTrainBatchOp extends BaseXGBoostTrainBatchOp <XGBoostT
 	implements XGBoostTrainParams <XGBoostTrainBatchOp> {
 
 	public XGBoostTrainBatchOp() {
+		this(new Params());
 	}
 
 	public XGBoostTrainBatchOp(Params params) {
 		super(params);
+
+		if (!getParams().contains(XGBoostTrainParams.OBJECTIVE)) {
+			getParams().set(XGBoostTrainParams.OBJECTIVE, Objective.BINARY_LOGISTIC);
+		}
 	}
 }

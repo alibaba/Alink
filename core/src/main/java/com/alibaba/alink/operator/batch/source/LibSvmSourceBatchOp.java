@@ -80,7 +80,7 @@ public final class LibSvmSourceBatchOp extends BaseSourceBatchOp <LibSvmSourceBa
 				private static final long serialVersionUID = 2844973160952262773L;
 
 				@Override
-				public Row map(Row value) throws Exception {
+				public Row map(Row value) {
 					String line = (String) value.getField(0);
 					Tuple2 <Double, Vector> labelAndFeatures = parseLibSvmFormat(line, startIndex);
 					return Row.of(labelAndFeatures.f0, labelAndFeatures.f1);

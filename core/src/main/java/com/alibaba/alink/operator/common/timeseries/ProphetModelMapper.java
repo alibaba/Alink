@@ -7,6 +7,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.pyrunner.PyMIMOCalcHandle;
@@ -126,7 +128,7 @@ public class ProphetModelMapper extends TimeSeriesModelMapper {
 		try {
 			state.put(key, tuple3.f0);
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkIllegalStateException(ex.getMessage());
 		}
 
 		return Tuple2.of(tuple3.f2, tuple3.f1);
@@ -135,7 +137,7 @@ public class ProphetModelMapper extends TimeSeriesModelMapper {
 	@Override
 	protected Tuple2 <Vector[], String> predictMultiVar(Timestamp[] historyTimes, Vector[] historyVals,
 														int predictNum) {
-		throw new RuntimeException("It is not support.");
+		throw new AkUnsupportedOperationException("ProphetModelMapper not support predictMultiVar().");
 	}
 
 }

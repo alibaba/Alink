@@ -17,14 +17,14 @@ import java.util.Map;
 public class SoftmaxModelInfo implements Serializable {
 	private static final long serialVersionUID = 1587799722352066332L;
 	private final String[] featureNames;
-	private String vectorColName;
-	private int vectorSize;
-	private String modelName;
-	private Object[] labelValues;
+	private final String vectorColName;
+	private final int vectorSize;
+	private final String modelName;
+	private final Object[] labelValues;
 	private boolean hasInterceptItem = true;
 	private static final int WIDTH = 10;
 	private static final int DEPTH = 5;
-	private DenseVector[] coefVectors;
+	private final DenseVector[] coefVectors;
 
 	public SoftmaxModelInfo(List <Row> rows) {
 		LinearModelData modelData = new LinearModelDataConverter().load(rows);

@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.regression.glm.famliy;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.AlinkSerializable;
 import com.alibaba.alink.operator.common.regression.glm.GlmUtil;
 import com.alibaba.alink.operator.common.regression.glm.link.Log;
@@ -36,7 +37,7 @@ public class Poisson extends FamilyFunction implements Serializable, AlinkSerial
 	@Override
 	public double initialize(double y, double weight) {
 		if (y < 0) {
-			throw new RuntimeException("y must be larger or equal with 0 when Poisson.");
+			throw new AkIllegalOperatorParameterException("y must be larger or equal with 0 when Poisson.");
 		}
 		return Math.max(y, GlmUtil.DELTA);
 	}

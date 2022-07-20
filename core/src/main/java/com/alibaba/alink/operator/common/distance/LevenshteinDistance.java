@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.distance;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.operator.common.similarity.Sample;
 
 /**
@@ -32,7 +33,8 @@ public class LevenshteinDistance implements CategoricalDistance, FastCategorical
 		lenR = right.length() + 1;
 		//memory consumption is sizeof(long) * 2 * lenR
 		if (2 * lenR > MAX_MEMORY) {
-			throw new RuntimeException("String is Too Long for LEVENSHTEIN, please use other method");
+			throw new AkIllegalDataException("String is Too Long for LEVENSHTEIN, please use other method."
+				+ "The max length is " + MAX_MEMORY / 2);
 		}
 
 		int[][] matrix = new int[2][lenR];
@@ -74,7 +76,8 @@ public class LevenshteinDistance implements CategoricalDistance, FastCategorical
 		lenR = right.length + 1;
 		//memory consumption is sizeof(long) * 2 * lenR
 		if (2 * lenR > MAX_MEMORY) {
-			throw new RuntimeException("String is Too Long for LEVENSHTEIN, please use other method");
+			throw new AkIllegalDataException("String is Too Long for LEVENSHTEIN, please use other method."
+				+ "The max length is " + MAX_MEMORY / 2);
 		}
 		int[][] matrix = new int[2][lenR];
 		for (int j = 0; j < lenR; j++) {

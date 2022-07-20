@@ -14,7 +14,9 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.mapper.FlatMapperAdapter;
+import com.alibaba.alink.common.mapper.FlatMapperAdapterMT;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.params.mapper.MapperParams;
 
 import java.util.function.BiFunction;
 
@@ -42,13 +44,24 @@ public class FlatMapBatchOp<T extends FlatMapBatchOp <T>> extends BatchOperator 
 		BatchOperator <?> in = checkAndGetFirst(inputs);
 
 		try {
-			FlatMapper flatmapper = this.mapperBuilder.apply(in.getSchema(), this.getParams());
-			DataSet <Row> resultRows = in.getDataSet().flatMap(new FlatMapperAdapter(flatmapper));
-			TableSchema resultSchema = flatmapper.getOutputSchema();
+			FlatMapper flatMapper = this.mapperBuilder.apply(in.getSchema(), this.getParams());
+			DataSet <Row> resultRows = calcResultRows(in, flatMapper, getParams());
+			TableSchema resultSchema = flatMapper.getOutputSchema();
 			this.setOutput(resultRows, resultSchema);
+			//noinspection unchecked
 			return (T) this;
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
+		}
+	}
+
+	public static DataSet <Row> calcResultRows(BatchOperator <?> in, FlatMapper flatMapper, Params params) {
+		if (params.get(MapperParams.NUM_THREADS) <= 1) {
+			return in.getDataSet().flatMap(new FlatMapperAdapter(flatMapper));
+		} else {
+			return in.getDataSet().flatMap(
+				new FlatMapperAdapterMT(flatMapper, params.get(MapperParams.NUM_THREADS))
+			);
 		}
 	}
 

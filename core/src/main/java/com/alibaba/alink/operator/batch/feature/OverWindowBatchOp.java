@@ -19,6 +19,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.sql.builtin.agg.BaseRankUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.BaseUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.CountUdaf;
@@ -188,7 +189,8 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 				} else if ("asc".equals(stringOrder) || "ascending".equals(stringOrder)) {
 					orderTypes[i] = Order.ASCENDING;
 				} else {
-					throw new RuntimeException("Order only support DESCENDING and ASCENDING.");
+					throw new AkIllegalOperatorParameterException(
+						String.format("order [%s] not support yet.", stringOrder));
 				}
 			}
 		}

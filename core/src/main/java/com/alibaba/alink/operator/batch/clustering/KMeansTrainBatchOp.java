@@ -7,7 +7,6 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -19,6 +18,8 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -127,7 +128,8 @@ public final class KMeansTrainBatchOp extends BatchOperator <KMeansTrainBatchOp>
 
 			@Override
 			public Integer map(BaseVectorSummary value) {
-				Preconditions.checkArgument(value.count() > 0, "The train dataset is empty!");
+				AkPreconditions.checkArgument(value.count() > 0,
+					new AkIllegalDataException("The train dataset is empty!"));
 				return value.vectorSize();
 			}
 		});

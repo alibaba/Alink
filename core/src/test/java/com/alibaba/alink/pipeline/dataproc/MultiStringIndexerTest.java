@@ -1,6 +1,5 @@
 package com.alibaba.alink.pipeline.dataproc;
 
-import org.apache.flink.runtime.client.JobExecutionException;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -147,7 +146,7 @@ public class MultiStringIndexerTest extends AlinkTestBase {
 
 	@Test
 	public void testException() throws Exception {
-		thrown.expect(JobExecutionException.class);
+		thrown.expect(RuntimeException.class);
 		BatchOperator data = new MemSourceBatchOp(Arrays.asList(rows), new String[] {"f0", "f1"});
 
 		MultiStringIndexerTrainBatchOp stringIndexer = new MultiStringIndexerTrainBatchOp()

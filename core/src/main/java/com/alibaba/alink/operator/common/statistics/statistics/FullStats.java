@@ -106,7 +106,11 @@ public class FullStats implements Serializable {
 									.setMax(src.maxDouble())
 									.setMin(src.minDouble())
 									.setStdDev(src.standardDeviation())
-									.setMedian(((Number) src.getPercentile().median).doubleValue())
+									.setMedian(
+										src.hasFreq()
+											? ((Number) src.getPercentile().median).doubleValue()
+											: src.getApproximatePercentile().getPercentile(50)
+									)
 									.addHistograms(histoBuilder)
 									.addHistograms(percentileBuilder)
 							)

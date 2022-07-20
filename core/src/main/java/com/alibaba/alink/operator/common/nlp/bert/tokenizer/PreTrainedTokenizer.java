@@ -1,5 +1,8 @@
 package com.alibaba.alink.operator.common.nlp.bert.tokenizer;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.ArrayUtils;
@@ -101,7 +104,7 @@ public abstract class PreTrainedTokenizer implements Serializable {
 			Constructor <T> constructor = cls.getConstructor(Kwargs.class);
 			tokenizer = constructor.newInstance(initKwargs);
 		} catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-			throw new RuntimeException(String.format("Cannot initialize class %s", cls.getCanonicalName()));
+			throw new AkUnclassifiedErrorException(String.format("Cannot initialize class %s", cls.getCanonicalName()));
 		}
 
 		File specialTokensMapFile = Paths.get(pretrained_model_name_or_path, SPECIAL_TOKENS_MAP_FILE).toFile();
@@ -362,9 +365,10 @@ public abstract class PreTrainedTokenizer implements Serializable {
 		int lenPairIds = pair ? pairIds.length : 0;
 
 		if (BooleanUtils.isTrue(return_token_type_ids) && BooleanUtils.isFalse(add_special_tokens)) {
-			throw new RuntimeException("Asking to return token_type_ids while setting add_special_tokens to False " +
-				"results in an undefined behavior. Please set add_special_tokens to True or " +
-				"set return_token_type_ids to None.");
+			throw new AkIllegalArgumentException(
+				"Asking to return token_type_ids while setting add_special_tokens to False " +
+					"results in an undefined behavior. Please set add_special_tokens to True or " +
+					"set return_token_type_ids to None.");
 		}
 		if (null == return_token_type_ids) {
 			return_token_type_ids = modelInputNames.contains(TOKEN_TYPE_IDS_KEY);
@@ -609,7 +613,7 @@ public abstract class PreTrainedTokenizer implements Serializable {
 			encodedInputs.put(modelInputNames.get(0),
 				ArrayUtils.addAll(TokenizerUtils.nCopiesArray(padTokenId, difference), requiredInput));
 		} else {
-			throw new RuntimeException(String.format("Invalid padding strategy: %s", paddingStrategy));
+			throw new AkUnsupportedOperationException(String.format("Invalid padding strategy: %s", paddingStrategy));
 		}
 		return encodedInputs;
 	}

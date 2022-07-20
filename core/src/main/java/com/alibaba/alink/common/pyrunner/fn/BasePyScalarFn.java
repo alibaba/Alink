@@ -8,6 +8,7 @@ import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Map;
 
 import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_TURN_ON_LOGGING_KEY;
 
@@ -22,20 +23,19 @@ public abstract class BasePyScalarFn<PYOUT, HANDLE extends PyScalarFnHandle <PYO
 
 	protected final String name;
 	protected final String fnSpecJson;
-	protected final SerializableBiFunction <String, String, String> runConfigGetter;
+	protected final Map <String, String> runConfig;
 	protected PyScalarFnRunner <PYOUT, HANDLE> runner;
 	protected Class <PYOUT> pyOutType;
 
 	public BasePyScalarFn(String name, String fnSpecJson, Class <PYOUT> pyOutType) {
-		this(name, fnSpecJson, pyOutType, Collections. <String, String>emptyMap()::getOrDefault);
+		this(name, fnSpecJson, pyOutType, Collections.emptyMap());
 	}
 
-	public BasePyScalarFn(String name, String fnSpecJson, Class <PYOUT> pyOutType,
-						  SerializableBiFunction <String, String, String> runConfigGetter) {
+	public BasePyScalarFn(String name, String fnSpecJson, Class <PYOUT> pyOutType, Map <String, String> runConfig) {
 		this.name = name;
 		this.fnSpecJson = fnSpecJson;
 		this.pyOutType = pyOutType;
-		this.runConfigGetter = runConfigGetter;
+		this.runConfig = runConfig;
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public abstract class BasePyScalarFn<PYOUT, HANDLE extends PyScalarFnHandle <PYO
 			if (PY_TURN_ON_LOGGING_KEY.equals(key)) {
 				return String.valueOf(AlinkGlobalConfiguration.isPrintProcessInfo());
 			} else {
-				return runConfigGetter.apply(key, context.getJobParameter(key, defaultValue));
+				return runConfig.getOrDefault(key, context.getJobParameter(key, defaultValue));
 			}
 		};
 		runner = new PyScalarFnRunner <>(fnSpecJson, pyOutType, newRunConfigGetter);

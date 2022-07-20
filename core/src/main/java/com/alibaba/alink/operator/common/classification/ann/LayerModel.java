@@ -7,7 +7,7 @@ import com.alibaba.alink.common.linalg.DenseVector;
  * The LayerModel object holds weights of a neural network layer, and defines methods
  * to compute layer output, gradient and delta.
  *
- * @see {@link Layer}.
+ * {@see @link Layer}.
  */
 public abstract class LayerModel {
 	/**

@@ -2,6 +2,8 @@ package com.alibaba.alink.common.source;
 
 import org.apache.flink.api.java.tuple.Tuple3;
 
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +57,7 @@ public class RandomTableSourceUtils {
 						Double nullper = Double.parseDouble(str.substring(str.indexOf("=") + 1, str.length() - 1));
 						confs.put(colName, Tuple3.of(method, values, nullper));
 					} else {
-						throw (new RuntimeException("poisson distribution parameter error."));
+						throw new AkParseErrorException("cannot parse poisson distribution parameter ");
 					}
 				}
 			}

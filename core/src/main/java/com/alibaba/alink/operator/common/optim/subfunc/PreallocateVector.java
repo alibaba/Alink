@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class PreallocateVector extends ComputeFunction {
 	private static final long serialVersionUID = 8639853924159859121L;
-	private String name;
+	private final String name;
 	private double[] value = new double[] {0.0};
 
 	/**

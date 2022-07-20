@@ -1,7 +1,6 @@
 package com.alibaba.alink.common.linalg.tensor;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil.DoCalcFunctions;
 import org.tensorflow.ndarray.DoubleNdArray;
 import org.tensorflow.ndarray.FloatNdArray;
@@ -81,7 +80,7 @@ public final class FloatTensor extends NumericalTensor <Float> {
 
 	@Override
 	public FloatTensor reshape(Shape newShape) {
-		Preconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
+		AkPreconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
 		FloatDataBuffer buffer = DataBuffers.ofFloats(size());
 		data.read(buffer);
 		return new FloatTensor(NdArrays.wrap(newShape.toNdArrayShape(), buffer));

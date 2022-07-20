@@ -2,6 +2,8 @@ package com.alibaba.alink.common.fe.udaf;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+
 import java.time.Year;
 import java.util.HashMap;
 import java.util.Locale;
@@ -11,7 +13,7 @@ public class UdafUtil {
 
 	static Tuple2 <int[], DayTimeUnit[]> getDayAndUnit(String[] windows) {
 		if (windows == null && windows.length == 1) {
-			throw new RuntimeException("window must be set. unit is d, w, m, y");
+			throw new AkIllegalOperatorParameterException("window must be set. unit is d, w, m, y");
 		}
 		int[] windowLengths = new int[windows.length];
 		DayTimeUnit[] windowUnits = new DayTimeUnit[windows.length];
@@ -33,7 +35,7 @@ public class UdafUtil {
 					windowUnits[i] = DayTimeUnit.DAY;
 					break;
 				default:
-					throw new IllegalStateException("Unexpected value: " + unitStr);
+					throw new AkIllegalOperatorParameterException("Unexpected value: " + unitStr);
 			}
 		}
 		return Tuple2.of(windowLengths, windowUnits);

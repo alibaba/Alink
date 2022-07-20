@@ -6,20 +6,17 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.mapper.SISOModelMapper;
 import com.alibaba.alink.operator.common.recommendation.KObjectUtil;
 import com.alibaba.alink.operator.common.similarity.dataConverter.NearestNeighborDataConverter;
 import com.alibaba.alink.operator.common.similarity.modeldata.NearestNeighborModelData;
 import com.alibaba.alink.params.similarity.NearestNeighborPredictParams;
 
-import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 public class NearestNeighborsMapper extends SISOModelMapper implements Cloneable {
 	private static final long serialVersionUID = 3350330064758380671L;
@@ -36,7 +33,7 @@ public class NearestNeighborsMapper extends SISOModelMapper implements Cloneable
 		this.dataConverter.setIdType(modelSchema.getFieldTypes()[modelSchema.getFieldNames().length - 1]);
 		this.topN = this.params.get(NearestNeighborPredictParams.TOP_N);
 		this.radius = this.params.get(NearestNeighborPredictParams.RADIUS);
-		Preconditions.checkArgument(!(topN == null && radius == null), "Must give topN or radius!");
+		AkPreconditions.checkArgument(!(topN == null && radius == null), "Must give topN or radius!");
 	}
 
 	@Override

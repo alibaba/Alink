@@ -3,6 +3,9 @@ package com.alibaba.alink.operator.common.tree;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -47,7 +50,7 @@ public abstract class Criteria implements Cloneable, Serializable {
 		try {
 			return (Criteria) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new IllegalStateException("Can not clone the criteria.");
+			throw new AkIllegalStateException("Can not clone the criteria.", e);
 		}
 	}
 
@@ -372,7 +375,7 @@ public abstract class Criteria implements Cloneable, Serializable {
 			case INFOGAINRATIO:
 				return false;
 			default:
-				throw new IllegalArgumentException("Not support " + treeType + " yet.");
+				throw new AkIllegalArgumentException("Not support " + treeType + " yet.");
 		}
 	}
 

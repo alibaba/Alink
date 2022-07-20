@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.distance;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+
 import java.io.Serializable;
 
 /**
@@ -33,7 +35,7 @@ public interface CategoricalDistance extends Serializable {
 		} else if (left instanceof String[] && right instanceof String[]) {
 			return calc((String[]) left, (String[]) right);
 		} else {
-			throw new IllegalArgumentException(
+			throw new AkIllegalDataException(
 				"only support calculation between string and string or string array and string array!");
 		}
 	}

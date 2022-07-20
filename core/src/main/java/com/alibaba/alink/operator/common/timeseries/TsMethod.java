@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.timeseries;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.common.timeseries.arima.Arima;
 import com.alibaba.alink.operator.common.timeseries.arima.ArimaModel;
 import com.alibaba.alink.operator.common.timeseries.sarima.Sarima;
@@ -30,7 +31,7 @@ public class TsMethod {
 	 */
 	public static double[] computeACVF(double[] data, int order) {
 		if (order >= data.length) {
-			throw new RuntimeException("Order for ComputeACVF must be smaller than length of data.");
+			throw new AkIllegalOperatorParameterException("Order for ComputeACVF must be smaller than length of data.");
 		}
 
 		double mean = mean(data);
@@ -376,7 +377,7 @@ public class TsMethod {
 
 	public static double[][] seasonArray2Matrix(double[] array, int season) {
 		if (season < 1) {
-			throw new RuntimeException("Season must be Greater than 0");
+			throw new AkIllegalOperatorParameterException("Season must > 0");
 		}
 
 		int ifAddOne = 0;

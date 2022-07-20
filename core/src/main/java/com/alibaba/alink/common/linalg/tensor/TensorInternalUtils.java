@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.linalg.tensor;
 
 import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.tensorflow.ndarray.BooleanNdArray;
 import org.tensorflow.ndarray.ByteNdArray;
 import org.tensorflow.ndarray.DoubleNdArray;
@@ -120,7 +121,7 @@ public class TensorInternalUtils {
 					DataInputStream dis = new DataInputStream(bais)) {
 					int sizeRead = dis.readInt();
 					if (sizeRead != size) {
-						throw new RuntimeException(
+						throw new AkUnclassifiedErrorException(
 							String.format("Size %d in bytes are different from computed value %d from shape.", sizeRead,
 								size));
 					}
@@ -131,7 +132,7 @@ public class TensorInternalUtils {
 						strings[i] = new String(b, StandardCharsets.UTF_8);
 					}
 				} catch (IOException e) {
-					throw new RuntimeException("Cannot deserialize bytes to a StringTensor:", e);
+					throw new AkUnclassifiedErrorException("Cannot deserialize bytes to a StringTensor:", e);
 				}
 				DataBuffer <String> stringDataBuffer = DataBuffers.of(strings, false, false);
 				stringNdArray.write(stringDataBuffer);
@@ -203,7 +204,7 @@ public class TensorInternalUtils {
 				}
 				return baos.toByteArray();
 			} catch (IOException e) {
-				throw new RuntimeException("Cannot serialize StringTensor to bytes:", e);
+				throw new AkUnclassifiedErrorException("Cannot serialize StringTensor to bytes:", e);
 			}
 		} else {
 			throw new UnsupportedOperationException("Unsupported tensor type: " + tensor.getClass().getName());

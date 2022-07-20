@@ -6,9 +6,9 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
-import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.params.image.ReadImageToTensorParams;
 import javax.imageio.ImageIO;
@@ -25,10 +25,12 @@ public class ReadImageToTensorMapper extends Mapper {
 	private final boolean resized;
 	private final int newWidth;
 	private final int newHeight;
+	private final boolean channelFirst;
 
 	public ReadImageToTensorMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
 
+		channelFirst = params.get(ReadImageToTensorParams.CHANNEL_FIRST);
 		rootFolder = FilePath.deserialize(params.get(ReadImageToTensorParams.ROOT_FILE_PATH));
 		if (params.contains(ReadImageToTensorParams.IMAGE_WIDTH)
 			&& params.contains(ReadImageToTensorParams.IMAGE_HEIGHT)) {
@@ -52,7 +54,7 @@ public class ReadImageToTensorMapper extends Mapper {
 						new Path(rootFolder.getPath(), (String) selection.get(0)),
 						rootFolder.getFileSystem()
 					),
-					resized, newHeight, newWidth
+					resized, newHeight, newWidth, channelFirst
 				)
 		);
 	}
@@ -74,9 +76,10 @@ public class ReadImageToTensorMapper extends Mapper {
 	 */
 	public static final class ImageToFloatTensor {
 
-		public static FloatTensor read(FilePath filePath, boolean resized, int newHeight, int newWidth)
+		public static FloatTensor read(FilePath filePath, boolean resized, int newHeight, int newWidth,
+									   boolean channelFirst)
 			throws IOException {
-			return readToTensor(readImageFromFile(filePath, resized, newHeight, newWidth));
+			return readToTensor(readImageFromFile(filePath, resized, newHeight, newWidth), channelFirst);
 		}
 
 		private static BufferedImage readImageFromFile(FilePath filePath, boolean resized, int newHeight, int newWidth)
@@ -136,24 +139,37 @@ public class ReadImageToTensorMapper extends Mapper {
 			}
 		}
 
-		private static FloatTensor readToTensor(BufferedImage bufferedImage) {
+		private static FloatTensor readToTensor(BufferedImage bufferedImage, boolean channelFirst) {
 			bufferedImage = toRGBImage(bufferedImage);
 
 			Raster raster = bufferedImage.getData();
 
-			int numBands = raster.getNumBands();
+			int numChannels = raster.getNumBands();
 			int height = raster.getHeight();
 			int width = raster.getWidth();
 			int minX = raster.getMinX();
 			int minY = raster.getMinY();
-			float[] sample = new float[numBands];
+			float[] sample = new float[numChannels];
 
-			float[][][] img = new float[height][width][numBands];
+			float[][][] img;
 
-			for (int h = 0; h < height; ++h) {
-				for (int w = 0; w < width; ++w) {
-					raster.getPixel(minX + w, minY + h, sample);
-					System.arraycopy(sample, 0, img[h][w], 0, numBands);
+			if (channelFirst) {
+				img = new float[numChannels][height][width];
+				for (int h = 0; h < height; ++h) {
+					for (int w = 0; w < width; ++w) {
+						raster.getPixel(minX + w, minY + h, sample);
+						for (int c = 0; c < numChannels; c++) {
+							img[c][h][w] = sample[c];
+						}
+					}
+				}
+			} else {
+				img = new float[height][width][numChannels];
+				for (int h = 0; h < height; ++h) {
+					for (int w = 0; w < width; ++w) {
+						raster.getPixel(minX + w, minY + h, sample);
+						System.arraycopy(sample, 0, img[h][w], 0, numChannels);
+					}
 				}
 			}
 

@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 import com.alibaba.alink.params.recommendation.BaseRateRecommParams;
@@ -91,7 +92,7 @@ public class RecommMapper extends ModelMapper {
 				outputTypes = new TypeInformation <?>[] {AlinkTypes.M_TABLE};
 				break;
 			default:
-				throw new RuntimeException("not support yet.");
+				throw new AkUnsupportedOperationException("not support yet.");
 		}
 		return Tuple4.of(selectedCols, outputCols, outputTypes, params.get(BaseRecommParams.RESERVED_COLS));
 	}

@@ -28,6 +28,8 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -44,7 +46,6 @@ import com.alibaba.alink.operator.common.linear.LinearModelType;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
-import com.alibaba.alink.operator.stream.source.NumSeqSourceStreamOp;
 import com.alibaba.alink.params.onlinelearning.FtrlTrainParams;
 
 import java.sql.Timestamp;
@@ -74,7 +75,7 @@ public class FtrlTrainStreamOp extends StreamOperator <FtrlTrainStreamOp>
 			dataBridge = DirectReader.collect(model);
 			modelSchemeStr = TableUtil.schema2SchemaStr(model.getSchema());
 		} else {
-			throw new IllegalArgumentException("Online algo: initial model is null. Please set the initial model.");
+			throw new AkIllegalModelException("Online algo: initial model is null. Please set the initial model.");
 		}
 	}
 
@@ -102,8 +103,8 @@ public class FtrlTrainStreamOp extends StreamOperator <FtrlTrainStreamOp>
 		final TypeInformation <?> labelType = inputs[0].getColTypes()[labelIdx];
 
 		final int timeInterval = getTimeInterval();
-		DataStream <Tuple2 <Long, Object>> modelSaveHandler = new NumSeqSourceStreamOp(0, 0)
-			.getDataStream().flatMap(new FlatMapFunction <Row, Tuple2 <Long, Object>>() {
+		DataStream <Tuple2 <Long, Object>> modelSaveHandler = streamEnv.fromElements(Row.of(1))
+			.flatMap(new FlatMapFunction <Row, Tuple2 <Long, Object>>() {
 				@Override
 				public void flatMap(Row row, Collector <Tuple2 <Long, Object>> collector) throws Exception {
 					for (long i = 0; i < Long.MAX_VALUE; ++i) {
@@ -114,7 +115,7 @@ public class FtrlTrainStreamOp extends StreamOperator <FtrlTrainStreamOp>
 			});
 
 		/* Prepares mini batches for training process. */
-		DataStream <Row[]> batchData = inputs[0].getDataStream().flatMap(
+		DataStream <Row[]> batchData = inputs[0].getDataStream().rebalance().flatMap(
 			new PrepareBatchSample(Math.max(1, getMiniBatchSize() / parallelism)));
 
 		/* Prepares rebase model stream. */
@@ -243,6 +244,7 @@ public class FtrlTrainStreamOp extends StreamOperator <FtrlTrainStreamOp>
 		private final int batchSize;
 		private final Row[] bufferedData;
 		private int idx = 0;
+
 		public PrepareBatchSample(int batchSize) {
 			this.batchSize = batchSize;
 			bufferedData = new Row[batchSize];
@@ -427,7 +429,7 @@ public class FtrlTrainStreamOp extends StreamOperator <FtrlTrainStreamOp>
 				/* Collects model to down stream. */
 				out.collect(Tuple2.of(-1L, Tuple2.of(labelValues, coefficientVector)));
 			} else {
-				throw new RuntimeException("feedback data type err, must be a Map or DenseVector.");
+				throw new AkUnclassifiedErrorException("feedback data type err, must be a Map, Long, or DenseVector.");
 			}
 		}
 

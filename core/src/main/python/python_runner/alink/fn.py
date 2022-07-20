@@ -1,20 +1,54 @@
 import base64
 import json
 import os
+import shutil
 import sys
+import zipfile
 from typing import Dict, List
 
 from alink.py4j_gateway import get_class_from_name
 from alink.type_conversion import to_py_value, to_java_value, to_java_values
 
 
-def import_one_file(filename):
+def import_file(filename):
+    import os
     from importlib.util import spec_from_file_location, module_from_spec
     module_name = os.path.splitext(filename)[0]
+    print(f'module_name = {module_name}, filename = {filename}', flush=True)
     spec = spec_from_file_location(module_name, filename)
+    print(f'spec = {spec}', flush=True)
     module = module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
+
+
+def import_paths(paths: List[str]):
+    print(f'cwd = {os.getcwd()}', flush=True)
+    to_be_added = []
+    for p in paths:
+        p = os.path.normcase(os.path.normpath(p))
+        print(f'p = {p}', flush=True)
+        if os.path.isfile(p):
+            if p.endswith(".py"):
+                import_file(p)
+                print(f'Import file: {p}', flush=True)
+            elif zipfile.is_zipfile(p):
+                folder_name = p.rstrip(".zip")
+                shutil.unpack_archive(p, extract_dir=folder_name)
+                to_be_added.append(folder_name)
+                print(f'Add dir to to_be_added: {folder_name}', flush=True)
+            else:
+                print(f'Not supported: {p}', flush=True)
+        else:
+            to_be_added.append(p)
+            print(f'Add dir to to_be_added: {p}')
+    print(f'before sys.path = {sys.path}', flush=True)
+    for p in to_be_added:
+        if os.path.exists(p):
+            if p not in sys.path and p + os.sep not in sys.path:
+                sys.path.append(p)
+    print(f'sys.path = {sys.path}', flush=True)
+    return to_be_added
 
 
 class UdfConfig(object):
@@ -30,32 +64,12 @@ class UdfConfig(object):
         """
         print('the config: {}'.format(config_json))
         self._config: Dict = json.loads(config_json)
-        self._paths = self._normalize_paths()
         self._fn = None
-
-    def _normalize_paths(self):
-        if 'paths' not in self._config:
-            return []
-        ret = []
-        for p in self._config['paths']:
-            p = os.path.normpath(p)
-            p = os.path.normcase(p)
-            if os.path.isfile(p):
-                import_one_file(p)
-                print('>>> Found file: {}'.format(p))
-            else:
-                ret.append(p)
-                print('>>> Found dir: {}'.format(p))
-        return ret
+        import_paths(self._config.get('paths', []))
 
     def get_fn(self):
         if self._fn is not None:
             return self._fn
-
-        for p in self._paths:
-            if os.path.exists(p):
-                if p not in sys.path and p + os.sep not in sys.path:
-                    sys.path.append(p)
 
         if 'className' in self._config:
             class_name = self._config['className']
@@ -66,6 +80,7 @@ class UdfConfig(object):
             code = self._config['classObject']
             class_object_type = self._config["classObjectType"]
             if class_object_type == 'DILL_BASE64':
+                # noinspection PyUnresolvedReferences
                 import dill
                 # noinspection PyProtectedMember
                 dill._dill._reverse_typemap['ClassType'] = type
@@ -105,12 +120,16 @@ class PyScalarFn:
     def eval(self, args):
         if args is None:
             return None
+        import time
+        start = time.time()
         args = to_py_value(args)
         if isinstance(args, (list,)):
             ret = self._fn.eval(*args)
         else:
             ret = self._fn.eval(args)
         ret = to_java_value(ret, self._result_type)
+        end = time.time()
+        print(f"Total Python eval time {end - start}", flush=True)
         return ret
 
     class Java:

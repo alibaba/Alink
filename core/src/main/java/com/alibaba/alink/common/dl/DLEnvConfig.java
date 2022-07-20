@@ -1,9 +1,9 @@
 package com.alibaba.alink.common.dl;
 
-import org.apache.flink.util.Preconditions;
-
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
@@ -101,7 +101,7 @@ public class DLEnvConfig {
 		if (null != pluginFilePath) {
 			String compressedFileName = PythonFileUtils.getCompressedFileName(remotePath);
 			File directoryFile = new File(pluginFilePath.getPath().toString(), compressedFileName);
-			Preconditions.checkArgument(directoryFile.exists(),
+			AkPreconditions.checkState(directoryFile.exists(),
 				String.format("There should be a directory named %s in plugin directory %s, but cannot be found.",
 					compressedFileName, pluginFilePath.getPath().toString()));
 			return "file://" + directoryFile.getAbsolutePath();
@@ -109,7 +109,8 @@ public class DLEnvConfig {
 
 		// Use default PythonEnv path in PYTHON_ENV_MAP
 		if (null == remotePath) {
-			throw new RuntimeException(String.format("Default python env for %s not specified.", version.name()));
+			throw new AkUnimplementedOperationException(
+				String.format("Default python env for %s not specified.", version.name()));
 		}
 		return remotePath;
 	}

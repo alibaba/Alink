@@ -5,17 +5,17 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.common.utils.TimeUtil;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil.prependTagMapFunction;
@@ -58,8 +58,9 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 		double timeInterval = this.get(EvalMultiClassStreamParams.TIME_INTERVAL);
 
 		if (binary) {
-			Preconditions.checkArgument(getParams().contains(EvalBinaryClassParams.PREDICTION_DETAIL_COL),
-				"Binary Evaluation must give predictionDetailCol!");
+			if (!getParams().contains(EvalBinaryClassParams.PREDICTION_DETAIL_COL)) {
+				throw new AkIllegalOperatorParameterException("Binary Evaluation must give predictionDetailCol!");
+			}
 		}
 
 		ClassificationEvaluationUtil.Type type = ClassificationEvaluationUtil.judgeEvaluationType(this.getParams());
@@ -73,10 +74,9 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 				LabelPredictionWindow predMultiWindowFunction = new LabelPredictionWindow(binary, positiveValue,
 					labelType);
-				statistics = in
-					.select(new String[] {labelColName, predResultColName})
+				statistics = in.select(new String[] {labelColName, predResultColName})
 					.getDataStream()
-					.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+					.timeWindowAll(TimeUtil.convertTime(timeInterval))
 					.apply(predMultiWindowFunction);
 				break;
 			}
@@ -88,12 +88,12 @@ public class BaseEvalClassStreamOp<T extends BaseEvalClassStreamOp <T>> extends 
 
 				statistics = in.select(new String[] {labelColName, predDetailColName})
 					.getDataStream()
-					.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+					.timeWindowAll(TimeUtil.convertTime(timeInterval))
 					.apply(eval);
 				break;
 			}
 			default: {
-				throw new RuntimeException("Error Input");
+				throw new AkUnsupportedOperationException("Unsupported evaluation type: " + type);
 			}
 		}
 		DataStream <BaseMetricsSummary> totalStatistics = statistics

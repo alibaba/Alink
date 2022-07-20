@@ -1,5 +1,10 @@
 package com.alibaba.alink.operator.common.statistics.statistics;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -98,10 +103,10 @@ public class IntervalCalculator implements Cloneable, Serializable {
 		} else if (Date.class == type) {
 			this.type = "Date";
 		} else {
-			throw new RuntimeException();
+			throw new AkUnsupportedOperationException(type.getSimpleName());
 		}
 		if ((10 * (long) magnitude > Integer.MAX_VALUE) || (magnitude < 1)) {
-			throw new RuntimeException();
+			throw new AkIllegalArgumentException("");
 		} else {
 			this.magnitude = magnitude;
 		}
@@ -145,7 +150,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 		if (BigInteger.valueOf(k.longValue()).subtract(k).signum() == 0) {
 			return k.longValue();
 		} else {
-			throw new RuntimeException();
+			throw new AkIllegalArgumentException("");
 		}
 	}
 
@@ -176,7 +181,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 
 	public static IntervalCalculator create(long[] vals, double[][] colvals, int magnitude) {
 		if (null == vals || vals.length == 0) {
-			throw new RuntimeException();
+			throw new AkIllegalDataException("");
 		}
 
 		long minVal = vals[0];
@@ -209,7 +214,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 
 	public static IntervalCalculator create(double[] vals, double[][] colvals, int magnitude) {
 		if (null == vals || vals.length == 0) {
-			throw new RuntimeException();
+			throw new AkIllegalDataException("");
 		}
 
 		double minVal = vals[0];
@@ -283,7 +288,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 			return new IntervalCalculator(Double.class, minBD, k - 1 - 1000, new long[] {0}, tmpmcs, magnitude);
 
 		} else {
-			throw new RuntimeException();
+			throw new AkIllegalDataException("");
 		}
 	}
 
@@ -300,7 +305,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 			return null;
 		}
 		if (ia.magnitude != ib.magnitude) {
-			throw new RuntimeException("Two merge XInterval must have same magnitude!");
+			throw new AkIllegalDataException("Two merge XInterval must have same magnitude!");
 		}
 		IntervalCalculator x = null;
 		IntervalCalculator y = null;
@@ -313,7 +318,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 				y = (IntervalCalculator) ia.clone();
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkIllegalDataException(ex.getMessage());
 		}
 
 		while (x.step > y.step) {
@@ -356,7 +361,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 	 */
 	public static boolean update2MaxStep(IntervalCalculator[] ics) {
 		if (null == ics || ics.length == 0) {
-			throw new RuntimeException();
+			throw new AkIllegalDataException("");
 		}
 
 		long maxstep = ics[0].step;
@@ -657,7 +662,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 			}
 		}
 
-		throw new RuntimeException("Not support this data type or wrong step!");
+		throw new AkIllegalDataException("Not support this data type or wrong step!");
 	}
 
 	private void upgrade() {
@@ -689,7 +694,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 					this.updateStepBD();
 				}
 			} else {
-				throw new RuntimeException("Not support this data type or wrong step!");
+				throw new AkIllegalDataException("Not support this data type or wrong step!");
 			}
 		}
 
@@ -727,7 +732,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 
 	private long getScale4Upgrade(long min, long max) {
 		if (min > max) {
-			throw new RuntimeException();
+			throw new AkIllegalDataException("");
 		}
 
 		long s = 1;
@@ -755,7 +760,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 		BigInteger k = calcIntervalValBD(val, this.stepBD);
 		if (BigInteger.valueOf(k.longValue()).subtract(k).signum() != 0) {
 			//有精度损失
-			throw new RuntimeException();
+			throw new AkIllegalDataException("");
 		}
 		return k.longValue();
 	}

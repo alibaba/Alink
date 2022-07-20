@@ -4,6 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.shaded.guava18.com.google.common.collect.ImmutableMap;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
 import com.alibaba.alink.operator.common.recommendation.KObjectUtil;
 import com.alibaba.alink.operator.common.similarity.SimilarityUtil;
@@ -70,7 +71,7 @@ public class NearestNeighborModelData implements Serializable, Cloneable {
 			modelData.comparator = modelData.getQueueComparator();
 			return modelData;
 		} catch (CloneNotSupportedException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException(e.getMessage());
 		}
 	}
 

@@ -8,12 +8,12 @@ import com.alibaba.alink.common.linalg.DenseVector;
  * The LayerModel for {@link AffineLayer}.
  */
 public class AffineLayerModel extends LayerModel {
-	private DenseMatrix w;
-	private DenseVector b;
+	private final DenseMatrix w;
+	private final DenseVector b;
 
 	// buffer for holding gradw and gradb
-	private DenseMatrix gradw;
-	private DenseVector gradb;
+	private final DenseMatrix gradw;
+	private final DenseVector gradb;
 
 	private transient DenseVector ones = null;
 

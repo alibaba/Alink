@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -63,7 +64,7 @@ public class TensorUtil {
 	public static Tensor <?> parseTensor(String s) {
 		String[] split = StringUtils.splitPreserveAllTokens(s, TensorUtil.HEADER_DELIMITER_STR, 3);
 		if (split.length != 3) {
-			throw new RuntimeException("Illegal tensor string: " + s);
+			throw new AkParseErrorException("Illegal tensor string: " + s);
 		}
 		DataType type = DataType.valueOf(split[0]);
 		Shape shape = TensorUtil.parseShapeStr(split[1]);

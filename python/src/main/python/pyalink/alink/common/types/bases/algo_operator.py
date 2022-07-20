@@ -1,8 +1,6 @@
 from abc import abstractmethod
-from typing import Optional, List, Union
-
 from py4j.java_gateway import JavaObject
-from pyflink.table import Table
+from typing import Optional, List, Union
 
 from .params import Params
 from .with_params import WithParams
@@ -79,22 +77,19 @@ class AlgoOperator(WithParams):
     def getSideOutputCount(self) -> int:
         """
         Get the count of side outputs.
-        
+
         :return:the count of side outputs.
         """
         return self.get_j_obj().getSideOutputCount()
 
-    def getOutputTable(self) -> 'Table':
+    def getOutputTable(self):
         """
         Get the output table represented by this operator.
 
         :return: the output table.
         """
-        # noinspection PyProtectedMember
-        from ....env import _mlenv
-        _, btenv, _, stenv = _mlenv
-        tenv = self._choose_by_op_type(btenv, stenv)
-        return Table(self.get_j_obj().getOutputTable(), tenv)
+        from pyflink.table import Table
+        return Table(self.get_j_obj().getOutputTable())
 
     @abstractmethod
     def linkFrom(self, *ops: 'AlgoOperator') -> 'AlgoOperator':

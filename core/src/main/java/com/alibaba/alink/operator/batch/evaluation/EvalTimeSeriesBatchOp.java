@@ -10,7 +10,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -18,6 +17,8 @@ import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataSetUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -93,7 +94,8 @@ public final class EvalTimeSeriesBatchOp extends BatchOperator <EvalTimeSeriesBa
 		@Override
 		public void open(Configuration param) {
 			long count = (long) getRuntimeContext().getBroadcastVariable("count").get(0);
-			Preconditions.checkArgument(count > 0, "Please check the evaluation input! there is no effective row!");
+			AkPreconditions.checkState(count > 0,
+				new AkIllegalDataException("Please check the evaluation input! there is no effective row!"));
 		}
 
 		@Override

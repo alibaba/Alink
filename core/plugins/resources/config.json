@@ -1,0 +1,218 @@
+{
+  "base_cased_ckpt": {
+    "versions": {
+      "0.01": [
+        "cased_L-12_H-768_A-12.zip"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_cased_saved_model": {
+    "versions": {
+      "0.01": [
+        "bert-base-cased-savedmodel.tar.gz"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_cased_vocab": {
+    "versions": {
+      "0.01": [
+        "bert-base-cased-vocab.tar.gz"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_chinese_ckpt": {
+    "versions": {
+      "0.01": [
+        "chinese_L-12_H-768_A-12.zip"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_chinese_saved_model": {
+    "versions": {
+      "0.01": [
+        "bert-base-chinese-savedmodel.tar.gz"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_chinese_vocab": {
+    "versions": {
+      "0.01": [
+        "bert-base-chinese-vocab.tar.gz"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_multilingual_cased_ckpt": {
+    "versions": {
+      "0.01": [
+        "multi_cased_L-12_H-768_A-12.zip"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_multilingual_cased_saved_model": {
+    "versions": {
+      "0.01": [
+        "bert-base-multilingual-cased-savedmodel.tar.gz"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_multilingual_cased_vocab": {
+    "versions": {
+      "0.01": [
+        "bert-base-multilingual-cased-vocab.tar.gz"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_uncased_ckpt": {
+    "versions": {
+      "0.01": [
+        "uncased_L-12_H-768_A-12.zip"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_uncased_saved_model": {
+    "versions": {
+      "0.01": [
+        "bert-base-uncased-savedmodel.tar.gz"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "base_uncased_vocab": {
+    "versions": {
+      "0.01": [
+        "bert-base-uncased-vocab.tar.gz"
+      ]
+    },
+    "default-version": "0.01"
+  },
+  "libtorch_linux": {
+    "versions": {
+      "1.8.1": [
+        "libtorch-shared-with-deps-1.8.1-cpu.zip"
+      ]
+    },
+    "default-version": "1.8.1"
+  },
+  "libtorch_macosx": {
+    "versions": {
+      "1.8.1": [
+        "libtorch-macos-1.8.1.zip"
+      ]
+    },
+    "default-version": "1.8.1"
+  },
+  "libtorch_windows": {
+    "versions": {
+      "1.8.1": [
+        "libtorch-win-shared-with-deps-1.8.1-cpu.zip"
+      ]
+    },
+    "default-version": "1.8.1"
+  },
+  "tf115_python_env_linux": {
+    "versions": {
+      "0.01": [
+        "tf115-ai030-py36-linux.tar.gz"
+      ],
+      "0.02": [
+        "tf115-ai030-py36-linux.tar.gz"
+      ],
+      "0.03": [
+        "tf115-ai030-py36-linux.tar.gz"
+      ],
+      "0.04": [
+        "tf115-ai030-py36-linux.tar.gz"
+      ]
+    },
+    "default-version": "0.04"
+  },
+  "tf115_python_env_macosx": {
+    "versions": {
+      "0.01": [
+        "tf115-ai030-py36-mac.tar.gz"
+      ],
+      "0.02": [
+        "tf115-ai030-py36-mac.tar.gz"
+      ],
+      "0.03": [
+        "tf115-ai030-py36-mac.tar.gz"
+      ],
+      "0.04": [
+        "tf115-ai030-py36-mac.tar.gz"
+      ]
+    },
+    "default-version": "0.04"
+  },
+  "tf115_python_env_windows": {
+    "versions": {
+      "0.02": [
+        "tf115-ai030-py36-windows.zip"
+      ],
+      "0.03": [
+        "tf115-ai030-py36-windows.zip"
+      ],
+      "0.04": [
+        "tf115-ai030-py36-windows.zip"
+      ]
+    },
+    "default-version": "0.04"
+  },
+  "tf231_python_env_linux": {
+    "versions": {
+      "0.01": [
+        "tf231-ai030-py36-linux.tar.gz"
+      ],
+      "0.02": [
+        "tf231-ai030-py36-linux.tar.gz"
+      ],
+      "0.03": [
+        "tf231-ai030-py36-linux.tar.gz"
+      ],
+      "0.04": [
+        "tf231-ai030-py36-linux.tar.gz"
+      ]
+    },
+    "default-version": "0.04"
+  },
+  "tf231_python_env_macosx": {
+    "versions": {
+      "0.01": [
+        "tf231-ai030-py36-mac.tar.gz"
+      ],
+      "0.02": [
+        "tf231-ai030-py36-mac.tar.gz"
+      ],
+      "0.03": [
+        "tf231-ai030-py36-mac.tar.gz"
+      ],
+      "0.04": [
+        "tf231-ai030-py36-mac.tar.gz"
+      ]
+    },
+    "default-version": "0.04"
+  },
+  "tf231_python_env_windows": {
+    "versions": {
+      "0.02": [
+        "tf231-ai030-py36-windows.zip"
+      ],
+      "0.03": [
+        "tf231-ai030-py36-windows.zip"
+      ],
+      "0.04": [
+        "tf231-ai030-py36-windows.zip"
+      ]
+    },
+    "default-version": "0.04"
+  }
+}

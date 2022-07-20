@@ -1,7 +1,7 @@
 package com.alibaba.alink.operator.common.nlp.bert.tokenizer;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -24,7 +24,7 @@ public class TokenizerUtils {
 	 * @return
 	 */
 	public static int[] createArrayWithCopies(int... specs) {
-		Preconditions.checkArgument(specs.length % 2 == 0,
+		AkPreconditions.checkArgument(specs.length % 2 == 0,
 			"Argument `specs` should have values like : `v0, len0, v1, len1, ...`");
 		int total = 0;
 		for (int i = 1; i < specs.length; i += 2) {
@@ -45,7 +45,7 @@ public class TokenizerUtils {
 		try {
 			return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
 		} catch (IOException e) {
-			throw new RuntimeException(String.format("Cannot read file %s", file.getAbsolutePath()));
+			throw new AkUnclassifiedErrorException(String.format("Cannot read file %s", file.getAbsolutePath()));
 		}
 	}
 }

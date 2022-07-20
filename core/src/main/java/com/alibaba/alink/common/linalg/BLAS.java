@@ -1,7 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.github.fommil.netlib.F2jBLAS;
 
 /**
@@ -50,7 +49,7 @@ public class BLAS {
 	 * y += a * x .
 	 */
 	public static void axpy(double a, double[] x, double[] y) {
-		Preconditions.checkArgument(x.length == y.length, "Array dimension mismatched.");
+		AkPreconditions.checkArgument(x.length == y.length, "Array dimension mismatched.");
 		F2J_BLAS.daxpy(x.length, a, x, 1, y, 1);
 	}
 
@@ -58,7 +57,7 @@ public class BLAS {
 	 * y += a * x .
 	 */
 	public static void axpy(double a, DenseVector x, DenseVector y) {
-		Preconditions.checkArgument(x.data.length == y.data.length, "Vector dimension mismatched.");
+		AkPreconditions.checkArgument(x.data.length == y.data.length, "Vector dimension mismatched.");
 		F2J_BLAS.daxpy(x.data.length, a, x.data, 1, y.data, 1);
 	}
 
@@ -77,7 +76,7 @@ public class BLAS {
 			}
 		}
 		else{
-			Preconditions.checkArgument(x.size() == y.size(), "Vector dimension mismatched.");
+			AkPreconditions.checkArgument(x.size() == y.size(), "Vector dimension mismatched.");
 			for (int i = 0; i < x.indices.length; i++) {
 				y.data[x.indices[i]] += a * x.values[i];
 			}
@@ -99,7 +98,7 @@ public class BLAS {
 	 * y += a * x .
 	 */
 	public static void axpy(double a, DenseMatrix x, DenseMatrix y) {
-		Preconditions.checkArgument(x.m == y.m && x.n == y.n, "Matrix dimension mismatched.");
+		AkPreconditions.checkArgument(x.m == y.m && x.n == y.n, "Matrix dimension mismatched.");
 		F2J_BLAS.daxpy(x.data.length, a, x.data, 1, y.data, 1);
 	}
 
@@ -114,7 +113,7 @@ public class BLAS {
 	 * x \cdot y .
 	 */
 	public static double dot(double[] x, double[] y) {
-		Preconditions.checkArgument(x.length == y.length, "Array dimension mismatched.");
+		AkPreconditions.checkArgument(x.length == y.length, "Array dimension mismatched.");
 		double s = 0.;
 		for (int i = 0; i < x.length; i++) {
 			s += x[i] * y[i];
@@ -173,7 +172,7 @@ public class BLAS {
 		int na = transA ? matA.m : matA.n;
 		int mb = transB ? matB.n : matB.m;
 		int nb = transB ? matB.m : matB.n;
-		Preconditions.checkArgument(na == mb && ma == matC.m && nb == matC.n, "matrix size mismatched.");
+		AkPreconditions.checkArgument(na == mb && ma == matC.m && nb == matC.n, "matrix size mismatched.");
 
 		final int m = matC.numRows();
 		final int n = matC.numCols();
@@ -191,10 +190,10 @@ public class BLAS {
 	 */
 	private static void gemvDimensionCheck(DenseMatrix matA, boolean transA, DenseVector x, DenseVector y) {
 		if (transA) {
-			Preconditions.checkArgument(matA.numCols() == y.size() && matA.numRows() == x.size(),
+			AkPreconditions.checkArgument(matA.numCols() == y.size() && matA.numRows() == x.size(),
 				"Matrix and vector size mismatched.");
 		} else {
-			Preconditions.checkArgument(matA.numRows() == y.size() && matA.numCols() == x.size(),
+			AkPreconditions.checkArgument(matA.numRows() == y.size() && matA.numCols() == x.size(),
 				"Matrix and vector size mismatched.");
 		}
 	}
@@ -205,19 +204,19 @@ public class BLAS {
 	private static void gemvDimensionCheck(DenseMatrix matA, boolean transA, SparseVector x, DenseVector y) {
 		if(x.size() != -1) {
 			if (transA) {
-				Preconditions.checkArgument(matA.numCols() == y.size() && matA.numRows() == x.size(),
+				AkPreconditions.checkArgument(matA.numCols() == y.size() && matA.numRows() == x.size(),
 					"Matrix and vector size mismatched.");
 			} else {
-				Preconditions.checkArgument(matA.numRows() == y.size() && matA.numCols() == x.size(),
+				AkPreconditions.checkArgument(matA.numRows() == y.size() && matA.numCols() == x.size(),
 					"Matrix and vector size mismatched.");
 			}
 		}
 		else{
 			if (transA) {
-				Preconditions.checkArgument(matA.numCols() == y.size(),
+				AkPreconditions.checkArgument(matA.numCols() == y.size(),
 					"Matrix and vector size mismatched.");
 			} else {
-				Preconditions.checkArgument(matA.numRows() == y.size(),
+				AkPreconditions.checkArgument(matA.numRows() == y.size(),
 					"Matrix and vector size mismatched.");
 			}
 		}

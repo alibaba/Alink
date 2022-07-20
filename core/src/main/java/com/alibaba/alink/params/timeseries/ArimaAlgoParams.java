@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.timeseries.holtwinters.HasSeasonalPeriod;
+import com.alibaba.alink.params.validators.ArrayLengthValidator;
 
 public interface ArimaAlgoParams<T> extends
 	HasEstmateMethod <T>,
@@ -13,17 +14,18 @@ public interface ArimaAlgoParams<T> extends
 
 	@NameCn("模型(p, d, q)")
 	@DescCn("模型(p, d, q)")
-	ParamInfo <int[]> ORDER = ParamInfoFactory
-		.createParamInfo("order", int[].class)
+	ParamInfo <Integer[]> ORDER = ParamInfoFactory
+		.createParamInfo("order", Integer[].class)
 		.setDescription("p,d,q")
+		.setValidator(new ArrayLengthValidator(3))
 		.setRequired()
 		.build();
 
-	default int[] getOrder() {
+	default Integer[] getOrder() {
 		return get(ORDER);
 	}
 
-	default T setOrder(int[] value) {
+	default T setOrder(Integer... value) {
 		return set(ORDER, value);
 	}
 

@@ -31,6 +31,8 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
+import com.alibaba.alink.common.exceptions.AkFlinkExecutionErrorException;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -44,6 +46,7 @@ import com.alibaba.alink.operator.common.clustering.kmeans.KMeansPredictModelDat
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansTrainModelData;
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansUtil;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
+import com.alibaba.alink.operator.common.evaluation.EvaluationUtil.AllDataMerge;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.clustering.StreamingKMeansParams;
@@ -57,8 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Streaming version of Kmeans.
- * It supports online learning and inference of kmeans model.
+ * Streaming version of Kmeans. It supports online learning and inference of kmeans model.
  */
 @InputPorts(values = {
 	@PortSpec(value = PortType.MODEL, opType = OpType.BATCH),
@@ -92,20 +94,21 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 		return KMeansUtil.transformPredictDataToTrainData(predictModelData);
 	}
 
-	enum PredType{
+	enum PredType {
 		PRED,
 		PRED_CLUS,
 		PRED_DIST,
 		PRED_CLUS_DIST;
 
-		static PredType fromInputs(Params params){
-			if(!params.contains(StreamingKMeansParams.PREDICTION_CLUSTER_COL) && !params.contains(StreamingKMeansParams.PREDICTION_DISTANCE_COL)){
+		static PredType fromInputs(Params params) {
+			if (!params.contains(StreamingKMeansParams.PREDICTION_CLUSTER_COL) && !params.contains(
+				StreamingKMeansParams.PREDICTION_DISTANCE_COL)) {
 				return PRED;
-			}else if(!params.contains(StreamingKMeansParams.PREDICTION_CLUSTER_COL)){
+			} else if (!params.contains(StreamingKMeansParams.PREDICTION_CLUSTER_COL)) {
 				return PRED_DIST;
-			}else if(!params.contains(StreamingKMeansParams.PREDICTION_DISTANCE_COL)){
+			} else if (!params.contains(StreamingKMeansParams.PREDICTION_DISTANCE_COL)) {
 				return PRED_CLUS;
-			}else{
+			} else {
 				return PRED_CLUS_DIST;
 			}
 		}
@@ -134,76 +137,69 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 		final long halfLife = getParams().get(HALF_LIFE);
 		final double decayFactor = Math.pow(0.5, (double) timeInterval / (double) halfLife);
 
-		try {
+		DataStream <Row> trainingData = in1.getDataStream();
+		DataStream <Row> predictData = in2.getDataStream();
 
-			DataStream <Row> trainingData = in1.getDataStream();
-			DataStream <Row> predictData = in2.getDataStream();
+		PredType predType = PredType.fromInputs(getParams());
 
-			PredType predType = PredType.fromInputs(getParams());
-
-
-			OutputColsHelper outputColsHelper = null;
-			switch (predType){
-				case PRED:{
-					outputColsHelper = new OutputColsHelper(in2.getSchema(),
-						new String[]{getPredictionCol()}, new TypeInformation[]{Types.LONG}, this.getReservedCols());
-					break;
-				}
-				case PRED_CLUS:{
-					outputColsHelper = new OutputColsHelper(in2.getSchema(),
-						new String[]{getPredictionCol(), getPredictionClusterCol()},
-						new TypeInformation[]{Types.LONG, AlinkTypes.DENSE_VECTOR},
-						this.getReservedCols());
-					break;
-
-				}
-				case PRED_DIST:{
-					outputColsHelper = new OutputColsHelper(in2.getSchema(),
-						new String[]{getPredictionCol(), getPredictionDistanceCol()},
-						new TypeInformation[]{Types.LONG, Types.DOUBLE},
-						this.getReservedCols());
-					break;
-				}
-				case PRED_CLUS_DIST:{
-					outputColsHelper = new OutputColsHelper(in2.getSchema(),
-						new String[] {this.getPredictionCol(), getPredictionClusterCol(), getPredictionDistanceCol()},
-						new TypeInformation[] {Types.LONG, AlinkTypes.DENSE_VECTOR, Types.DOUBLE},
-						this.getReservedCols());
-				}
+		OutputColsHelper outputColsHelper = null;
+		switch (predType) {
+			case PRED: {
+				outputColsHelper = new OutputColsHelper(in2.getSchema(),
+					new String[] {getPredictionCol()}, new TypeInformation[] {Types.LONG}, this.getReservedCols());
+				break;
 			}
+			case PRED_CLUS: {
+				outputColsHelper = new OutputColsHelper(in2.getSchema(),
+					new String[] {getPredictionCol(), getPredictionClusterCol()},
+					new TypeInformation[] {Types.LONG, AlinkTypes.DENSE_VECTOR},
+					this.getReservedCols());
+				break;
 
-			// for direct read
-			DataBridge modelDataBridge = DirectReader.collect(batchModel);
-
-			// incremental train on every window of data
-			DataStream <Tuple3 <DenseVector[], int[], Long>> updateData = trainingData
-				.flatMap(new CollectUpdateData(modelDataBridge, in1.getColNames(), timeInterval))
-				.name("local_aggregate");
-
-			int taskNum = updateData.getParallelism();
-
-			DataStream <KMeansTrainModelData> streamModel = updateData
-				.flatMap(new AllDataMerge(taskNum))
-				.name("global_aggregate")
-				.setParallelism(1)
-				.map(new UpdateModelOp(modelDataBridge, decayFactor))
-				.name("update_model")
-				.setParallelism(1);
-
-			// predict
-			DataStream <Row> predictResult = predictData
-				.connect(streamModel.broadcast())
-				.flatMap(new PredictOp(modelDataBridge, in2.getColNames(), outputColsHelper, predType))
-				.name("kmeans_prediction");
-
-			this.setOutput(predictResult, outputColsHelper.getResultSchema());
-			this.setSideOutputTables(outputModel(streamModel, getMLEnvironmentId()));
-
-			return this;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
+			}
+			case PRED_DIST: {
+				outputColsHelper = new OutputColsHelper(in2.getSchema(),
+					new String[] {getPredictionCol(), getPredictionDistanceCol()},
+					new TypeInformation[] {Types.LONG, Types.DOUBLE},
+					this.getReservedCols());
+				break;
+			}
+			case PRED_CLUS_DIST: {
+				outputColsHelper = new OutputColsHelper(in2.getSchema(),
+					new String[] {this.getPredictionCol(), getPredictionClusterCol(), getPredictionDistanceCol()},
+					new TypeInformation[] {Types.LONG, AlinkTypes.DENSE_VECTOR, Types.DOUBLE},
+					this.getReservedCols());
+			}
 		}
+
+		// for direct read
+		DataBridge modelDataBridge = DirectReader.collect(batchModel);
+
+		// incremental train on every window of data
+		DataStream <Tuple3 <DenseVector[], int[], Long>> updateData = trainingData
+			.flatMap(new CollectUpdateData(modelDataBridge, in1.getColNames(), timeInterval))
+			.name("local_aggregate");
+
+		int taskNum = updateData.getParallelism();
+
+		DataStream <KMeansTrainModelData> streamModel = updateData
+			.flatMap(new AllDataMerge(taskNum))
+			.name("global_aggregate")
+			.setParallelism(1)
+			.map(new UpdateModelOp(modelDataBridge, decayFactor))
+			.name("update_model")
+			.setParallelism(1);
+
+		// predict
+		DataStream <Row> predictResult = predictData
+			.connect(streamModel.broadcast())
+			.flatMap(new PredictOp(modelDataBridge, in2.getColNames(), outputColsHelper, predType))
+			.name("kmeans_prediction");
+
+		this.setOutput(predictResult, outputColsHelper.getResultSchema());
+		this.setSideOutputTables(outputModel(streamModel, getMLEnvironmentId()));
+
+		return this;
 	}
 
 	private static class UpdateModelOp extends RichMapFunction <Tuple2 <DenseVector[], int[]>, KMeansTrainModelData>
@@ -218,7 +214,7 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 		@Override
 		public void open(Configuration params) {
 			if (getRuntimeContext().getNumberOfParallelSubtasks() > 1) {
-				throw new RuntimeException("The parallelism of UpdateModelOp should be one.");
+				throw new AkIllegalStateException("The parallelism of UpdateModelOp should be one.");
 			}
 		}
 
@@ -235,7 +231,7 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 				new ListStateDescriptor("StreamingKMeansModelState",
 					TypeInformation.of(new TypeHint <Tuple2 <String, List <String>>>() {}));
 
-			modelState = context.getOperatorStateStore().getListState(descriptor);
+			modelState = context.getOperatorStateStore().getOperatorState(descriptor);
 
 			if (context.isRestored()) {
 				for (Tuple2 <String, List <String>> state : modelState.get()) {
@@ -270,10 +266,8 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 		}
 
 		/**
-		 * Update the model given:
-		 * -# the original model (centroids with weights)
-		 * -# a batch of new samples
-		 * -# decayFactor
+		 * Update the model given: -# the original model (centroids with weights) -# a batch of new samples -#
+		 * decayFactor
 		 */
 		void updateModel(DenseVector[] sum, int[] clusterCount, double decayFactor) {
 			// update cluster centers and weights
@@ -451,7 +445,8 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 				trainColNames);
 		}
 
-		PredictOp(DataBridge modelDataBridge, String[] testColNames, OutputColsHelper outputColsHelper, PredType predType) {
+		PredictOp(DataBridge modelDataBridge, String[] testColNames, OutputColsHelper outputColsHelper,
+				  PredType predType) {
 			this.outputColsHelper = outputColsHelper;
 			this.trainColNames = testColNames;
 			this.modelDataBridge = modelDataBridge;
@@ -465,23 +460,23 @@ public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMea
 			Tuple2 <Integer, Double> tuple2 = KMeansUtil.getClosestClusterIndex(modelData, record, distance);
 			long clusterId = modelData.getClusterId(tuple2.f0);
 			DenseVector vec = modelData.getClusterVector(tuple2.f0);
-			switch (predType){
-				case PRED:{
+			switch (predType) {
+				case PRED: {
 					out.collect(outputColsHelper.getResultRow(row, Row.of(clusterId)));
 					break;
 				}
-				case PRED_CLUS:{
+				case PRED_CLUS: {
 					out.collect(outputColsHelper.getResultRow(row, Row.of(clusterId, vec)));
 
 					break;
 
 				}
-				case PRED_DIST:{
+				case PRED_DIST: {
 					out.collect(outputColsHelper.getResultRow(row, Row.of(clusterId, tuple2.f1)));
 
 					break;
 				}
-				case PRED_CLUS_DIST:{
+				case PRED_CLUS_DIST: {
 					out.collect(outputColsHelper.getResultRow(row, Row.of(clusterId, vec, tuple2.f1)));
 				}
 			}

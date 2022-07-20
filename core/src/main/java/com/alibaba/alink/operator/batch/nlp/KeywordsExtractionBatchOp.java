@@ -19,6 +19,7 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -125,7 +126,7 @@ public final class KeywordsExtractionBatchOp extends BatchOperator <KeywordsExtr
 				break;
 			}
 			default: {
-				throw new RuntimeException("Not support this type!");
+				throw new AkUnsupportedOperationException("Not support extraction type: " + method);
 			}
 		}
 

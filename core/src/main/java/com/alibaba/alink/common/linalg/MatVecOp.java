@@ -1,7 +1,9 @@
 package com.alibaba.alink.common.linalg;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +19,7 @@ public class MatVecOp {
 	 * compute vec1 + vec2 .
 	 */
 	public static Vector plus(Vector vec1, Vector vec2) {
-		Preconditions.checkArgument(vec1.size() == vec2.size());
+		AkPreconditions.checkArgument(vec1.size() == vec2.size());
 		return vec1.plus(vec2);
 	}
 
@@ -25,7 +27,7 @@ public class MatVecOp {
 	 * compute vec1 - vec2 .
 	 */
 	public static Vector minus(Vector vec1, Vector vec2) {
-		Preconditions.checkArgument(vec1.size() == vec2.size());
+		AkPreconditions.checkArgument(vec1.size() == vec2.size());
 		return vec1.minus(vec2);
 	}
 
@@ -33,7 +35,7 @@ public class MatVecOp {
 	 * Compute vec1 \cdot vec2 .
 	 */
 	public static double dot(Vector vec1, Vector vec2) {
-		Preconditions.checkArgument(vec1.size() == vec2.size());
+		AkPreconditions.checkArgument(vec1.size() == vec2.size());
 		return vec1.dot(vec2);
 	}
 
@@ -140,7 +142,7 @@ public class MatVecOp {
 
 			return new SparseVector(vec1.size() + vec2.size(), indices, values);
 		} else {
-			throw new RuntimeException("not support yet.");
+			throw new AkUnsupportedOperationException("not support yet.");
 		}
 	}
 
@@ -154,7 +156,7 @@ public class MatVecOp {
 		} else if (vec1 instanceof DenseVector && vec2 instanceof SparseVector) {
 			return MatVecOp.apply((SparseVector) vec2, (DenseVector) vec1, (a, b) -> (a * b));
 		} else {
-			throw new RuntimeException("not support yet.");
+			throw new AkUnsupportedOperationException("not support yet.");
 		}
 	}
 
@@ -399,7 +401,7 @@ public class MatVecOp {
 			double[] matrixData = matrix.getData();
 			int vectorSize = vectorData.length;
 			if (trans) {
-				Preconditions.checkArgument(matrix.numCols() == vectorSize,
+				AkPreconditions.checkArgument(matrix.numCols() == vectorSize,
 					"Matrix and vector size mismatched, matrix column number %s, vectorSize %s",
 					matrix.numCols(), vectorSize);
 				for (double aVectorData : vectorData) {
@@ -407,7 +409,7 @@ public class MatVecOp {
 					index += vectorSize;
 				}
 			} else {
-				Preconditions.checkArgument(matrix.numRows() == vectorSize,
+				AkPreconditions.checkArgument(matrix.numRows() == vectorSize,
 					"Matrix and vector size mismatched, matrix column number %s, vectorSize %s",
 					matrix.numRows(), vectorSize);
 				System.arraycopy(vectorData, 0, matrixData, index * vectorSize, vectorSize);
@@ -420,7 +422,7 @@ public class MatVecOp {
 			if (trans) {
 				int vectorSize = matrix.numCols();
 				for (int j = 0; j < indices.length; j++) {
-					Preconditions.checkArgument(indices[j] <= matrix.numCols(), "Index %s out of matrix size %s!",
+					AkPreconditions.checkArgument(indices[j] <= matrix.numCols(), "Index %s out of matrix size %s!",
 						indices[j], matrix.numCols());
 					matrixData[index + indices[j]] = values[j];
 					index += vectorSize;
@@ -428,7 +430,7 @@ public class MatVecOp {
 			} else {
 				int startIndex = matrix.numRows() * index;
 				sparseVector.forEach((k, v) -> {
-					Preconditions.checkArgument(k <= matrix.numRows(), "Index %s out of matrix size %s!", k,
+					AkPreconditions.checkArgument(k <= matrix.numRows(), "Index %s out of matrix size %s!", k,
 						matrix.numRows());
 					matrixData[startIndex + k] = v;
 				});
@@ -441,7 +443,7 @@ public class MatVecOp {
 		double[] value = vector.getValues();
 		int[] key = vector.getIndices();
 		for (int j = 0; j < key.length; j++) {
-			Preconditions.checkArgument(key[j] < indices.length,
+			AkPreconditions.checkArgument(key[j] < indices.length,
 				"SparseVector size not the same, please check the data!");
 			if (indices[key[j]] == null) {
 				indices[key[j]] = new ArrayList <>();

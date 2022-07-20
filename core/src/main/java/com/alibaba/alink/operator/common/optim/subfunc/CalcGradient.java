@@ -36,7 +36,7 @@ public class CalcGradient extends ComputeFunction {
 		}
 		Tuple2 <DenseVector, double[]> grad = context.getObj(OptimVariable.dir);
 		// calculate local gradient
-		Double weightSum = objFunc.calcGradient(labledVectors, coef, grad.f0);
+		double weightSum = objFunc.calcGradient(labledVectors, coef, grad.f0);
 
 		// prepare buffer vec for allReduce. the last element of vec is the weight Sum.
 		double[] buffer = context.getObj(OptimVariable.gradAllReduce);

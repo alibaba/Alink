@@ -10,8 +10,12 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.common.dataproc.SortUtils;
@@ -49,7 +53,7 @@ public class EvaluationUtil implements Serializable {
 		if (o1 instanceof Comparable && o2 instanceof Comparable && o1.getClass() == o2.getClass()) {
 			return ((Comparable) o1).compareTo((Comparable) o2);
 		} else {
-			throw new RuntimeException("Input Labels are not comparable!");
+			throw new AkUnclassifiedErrorException("Input Labels are not comparable!");
 		}
 	}
 
@@ -97,7 +101,7 @@ public class EvaluationUtil implements Serializable {
 			}
 			return x.toString();
 		} else {
-			throw new RuntimeException("unsupported type: " + t.getClass().getName());
+			throw new AkUnsupportedOperationException("unsupported type: " + t.getClass().getName());
 		}
 	}
 
@@ -284,7 +288,7 @@ public class EvaluationUtil implements Serializable {
 	public static void updateBinaryMetricsSummary(TreeMap <Object, Double> labelProbMap,
 												  Object label,
 												  BinaryMetricsSummary binaryMetricsSummary) {
-		Preconditions.checkState(labelProbMap.size() == BINARY_LABEL_NUMBER,
+		AkPreconditions.checkState(labelProbMap.size() == BINARY_LABEL_NUMBER,
 			"The number of labels must be equal to 2!");
 		binaryMetricsSummary.total++;
 		binaryMetricsSummary.logLoss += extractLogloss(labelProbMap, label);
@@ -578,7 +582,8 @@ public class EvaluationUtil implements Serializable {
 		List <Object> list = KObjectUtil.deserializeKObject(
 			s, new String[] {kObject}, new Type[] {Object.class}
 		).get(kObject);
-		Preconditions.checkNotNull(list, s + " not contains key '" + kObject + "', please check the input!");
+		AkPreconditions.checkNotNull(list,
+			new AkParseErrorException(s + " not contains key '" + kObject + "', please check the input!"));
 		return list;
 	}
 
@@ -616,7 +621,8 @@ public class EvaluationUtil implements Serializable {
 
 		@Override
 		public void flatMap(BaseMetricsSummary t, Collector <Row> collector) throws Exception {
-			Preconditions.checkNotNull(t, "Please check the evaluation input! there is no effective row!");
+			AkPreconditions.checkNotNull(t,
+				new AkIllegalDataException("Please check the evaluation input! there is no effective row!"));
 			collector.collect(t.toMetrics().serialize());
 		}
 	}

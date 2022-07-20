@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.common.feature.featurebuilder.BaseGroupTimeWindowStreamOp;
 import com.alibaba.alink.operator.common.feature.featurebuilder.BaseOverWindowStreamOp;
 import com.alibaba.alink.operator.common.feature.featurebuilder.DateUtil;
@@ -46,7 +47,7 @@ public class OverTimeWindowStreamOp
 		} else if (timeInterval == null && timeIntervalWithUnit != null) {
 			windowClause = BaseGroupTimeWindowStreamOp.parseWindowTime(timeInterval, timeIntervalWithUnit);
 		} else {
-			throw new RuntimeException("timeInterval or timeIntervalWithUnit must be set.");
+			throw new AkIllegalOperatorParameterException("timeInterval or timeIntervalWithUnit must be set.");
 		}
 
 		if (timeInterval == null) {
@@ -75,7 +76,8 @@ public class OverTimeWindowStreamOp
 			case "d":
 				return ti * 43200_000L;
 			default:
-				throw new RuntimeException("It is not support yet.");
+				throw new AkIllegalOperatorParameterException(
+					String.format("unit [%s] not support yet.", unit));
 		}
 	}
 }

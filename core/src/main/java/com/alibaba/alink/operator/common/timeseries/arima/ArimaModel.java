@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.timeseries.arima;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.common.timeseries.TsMethod;
 import com.alibaba.alink.operator.common.timeseries.arma.ArmaModel;
 import com.alibaba.alink.params.timeseries.HasEstmateMethod.EstMethod;
@@ -49,7 +50,7 @@ public class ArimaModel {
 		this.q = q;
 
 		if (this.p < 0 || this.q < 0 || this.d < 0) {
-			throw new RuntimeException("Order p, d and q must equal to or Greater than 0");
+			throw new AkIllegalOperatorParameterException("Order p, d and q need >= 0.");
 		}
 
 		this.ifIntercept = ifIntercept;

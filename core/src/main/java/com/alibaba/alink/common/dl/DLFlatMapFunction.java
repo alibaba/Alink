@@ -8,7 +8,6 @@ import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
@@ -16,6 +15,8 @@ import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.common.dl.utils.DLUtils;
 import com.alibaba.alink.common.dl.utils.DataSetDiskDownloader;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.flink.ml.cluster.ExecutionMode;
@@ -93,7 +94,7 @@ public class DLFlatMapFunction implements Closeable, Serializable {
 					bw.write(sbd.toString());
 				}
 			} catch (IOException e) {
-				throw new RuntimeException("Fail to write broadcast data to local disk.");
+				throw new AkUnclassifiedErrorException("Fail to write broadcast data to local disk.");
 			}
 			LOG.info("Succ in writing bc data to {}", fn);
 			DLUtils.safePutProperties(mlContext, DLConstants.BC_NAME_PREFIX + i, fn);
@@ -109,7 +110,7 @@ public class DLFlatMapFunction implements Closeable, Serializable {
 		int numWorkers = Integer.parseInt(this.config.getProperties().get(DLConstants.NUM_WORKERS));
 		int numPSs = Integer.parseInt(this.config.getProperties().get(DLConstants.NUM_PSS));
 		List <Row> bc = runtimeContext.getBroadcastVariable(DLConstants.IP_PORT_BC_NAME);
-		Preconditions.checkArgument(bc.size() == (numWorkers + numPSs), "Some IPs and ports are missing.");
+		AkPreconditions.checkState(bc.size() == (numWorkers + numPSs), "Some IPs and ports are missing.");
 		List <Tuple3 <Integer, String, Integer>> taskIpPorts = new ArrayList <>(bc.size());
 		bc.forEach(row -> {
 			String info = (String) row.getField(numOutputFields);
@@ -186,8 +187,7 @@ public class DLFlatMapFunction implements Closeable, Serializable {
             int taskId = taskIpPort.f0;
             ips[taskId] = taskIpPort.f1;
             if (thisTaskIndex == taskId) {
-                Preconditions.checkArgument(ips[taskId].equals(IpHostUtil.getIpAddress()),
-                    "task allocation changed");
+				AkPreconditions.checkState(ips[taskId].equals(IpHostUtil.getIpAddress()), "task allocation changed");
             }
             ports[taskId] = taskIpPort.f2;
         }
@@ -245,9 +245,9 @@ public class DLFlatMapFunction implements Closeable, Serializable {
 			serverFuture.cancel(true);
 		} catch (ExecutionException e) {
 			LOG.error(mlContext.getIdentity() + " node server failed");
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException(mlContext.getIdentity() + " node server failed", e);
 		} catch (Throwable th) {
-			throw new RuntimeException(th);
+			throw new AkUnclassifiedErrorException("Exception thrown.", th);
 		} finally {
 			serverFuture = null;
 			long mumReadRecords = dataExchange.getReadRecords();
@@ -264,7 +264,7 @@ public class DLFlatMapFunction implements Closeable, Serializable {
 			}
 			if (failNum > 0) {
 				//noinspection ThrowFromFinallyBlock
-				throw new RuntimeException("Python script run failed, please check TaskManager logs.");
+				throw new AkUnclassifiedErrorException("Python script run failed, please check TaskManager logs.");
 			} else {
 				LOG.info("Records output: " + mumReadRecords);
 			}
@@ -307,7 +307,7 @@ public class DLFlatMapFunction implements Closeable, Serializable {
 				serverFuture.cancel(true);
 			} catch (IOException e) {
 				LOG.error("Fail to read data from python.", e);
-				throw new RuntimeException(e);
+				throw new AkUnclassifiedErrorException("Fail to read data from python.", e);
 			}
 		}
     }

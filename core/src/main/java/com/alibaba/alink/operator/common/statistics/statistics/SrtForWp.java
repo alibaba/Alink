@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.statistics.statistics;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.AlinkSerializable;
 import com.alibaba.alink.common.utils.TableUtil;
 
@@ -55,12 +56,12 @@ public class SrtForWp implements AlinkSerializable {
 		if (null == colNames || 0 == colNames.length ||
 			null == srt.colNames || 0 == srt.colNames.length ||
 			colNames.length != srt.colNames.length) {
-			throw new RuntimeException("Col names are empty, or not matched!");
+			throw new AkIllegalOperatorParameterException("Col names are empty, or not matched!");
 		}
 		int nCol = colNames.length;
 		for (int i = 0; i < nCol; i++) {
 			if (!colNames[i].equals(srt.colNames[i])) {
-				throw new RuntimeException("Col names are not matched!");
+				throw new AkIllegalOperatorParameterException("Col names are not matched!");
 			}
 		}
 

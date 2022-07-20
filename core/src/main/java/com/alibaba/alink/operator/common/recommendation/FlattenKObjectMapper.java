@@ -6,10 +6,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
-import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
-import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -39,9 +38,10 @@ public class FlattenKObjectMapper extends FlatMapper {
 		if (params.contains(FlattenKObjectParams.OUTPUT_COL_TYPES)) {
 			String[] typesStr = params.get(FlattenKObjectParams.OUTPUT_COL_TYPES);
 
-			Preconditions.checkState(
+			AkPreconditions.checkState(
 				outputColNames.length == typesStr.length,
-				"the length of output column names should be equal to the length of output column types.");
+				new AkIllegalDataException(
+				"the length of output column names should be equal to the length of output column types."));
 
 			for (int i = 0; i < outputColTypes.length; ++i) {
 				outputColTypes[i] = FlinkTypeConverter.getFlinkType(typesStr[i].toUpperCase());

@@ -7,6 +7,9 @@ import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -49,12 +52,12 @@ public abstract class BaseSinkBatchOp<T extends BaseSinkBatchOp <T>> extends Bat
 
 	@Override
 	public final Table getOutputTable() {
-		throw new RuntimeException("Sink Operator has no output data.");
+		throw new AkIllegalOperationException("Sink Operator has no output data.");
 	}
 
 	@Override
 	public final BatchOperator<?> getSideOutput(int idx) {
-		throw new RuntimeException("Sink Operator has no side-output data.");
+		throw new AkIllegalOperationException("Sink Operator has no side-output data.");
 	}
 
 	@Override

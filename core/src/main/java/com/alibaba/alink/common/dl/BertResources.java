@@ -1,9 +1,10 @@
 package com.alibaba.alink.common.dl;
 
-import org.apache.flink.util.Preconditions;
-
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkPluginErrorException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
@@ -82,16 +83,17 @@ public class BertResources {
 		if (null != pluginFilePath) {
 			String directoryName = PythonFileUtils.getCompressedFileName(remotePath);
 			File file = new File(pluginFilePath.getPath().toString(), directoryName);
-			Preconditions.checkArgument(file.exists() && file.isDirectory(),
-				String.format("There should be a directory named %s in plugin directory %s, but cannot be found.",
-					directoryName, pluginFilePath.getPath().toString()));
+			AkPreconditions.checkArgument(file.exists() && file.isDirectory(),
+				new AkPluginErrorException(
+					String.format("There should be a directory named %s in plugin directory %s, but cannot be found.",
+						directoryName, pluginFilePath.getPath().toString())));
 			return "file://" + file.getAbsolutePath();
 		}
 
 		// Use default PythonEnv path in PYTHON_ENV_MAP
 		if (null == remotePath) {
-			throw new RuntimeException(String.format("Default resource path for %s %s not specified.",
-				modelName.name(), type.name()));
+			throw new AkUnimplementedOperationException(
+				String.format("Default resource path for %s %s not specified.", modelName.name(), type.name()));
 		}
 		LOG.info("Use plugin resource: {}", remotePath);
 		if (AlinkGlobalConfiguration.isPrintProcessInfo()) {

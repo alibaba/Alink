@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.probabilistic;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.XMath;
 import com.alibaba.alink.operator.common.statistics.DistributionFuncName;
 
@@ -39,7 +41,7 @@ public class IDF {
 	 */
 	public static double normal(double p, double mu, double sigma2) {
 		if ((p < 0) || (p > 1) || (sigma2 < 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		return stdNormal(p) * Math.sqrt(sigma2) + mu;
 	}
@@ -54,7 +56,7 @@ public class IDF {
 	 */
 	public static double gamma(double p, double alpha, double lambda) {
 		if ((alpha <= 0) || (lambda <= 0) || (p > 1) && (p < 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		if (1.0 == p) {
 			return Double.POSITIVE_INFINITY;
@@ -90,7 +92,7 @@ public class IDF {
 	 */
 	public static double beta(double p, double a, double b) {
 		if ((p < 0) || (p > 1) || (a <= 0) || (b <= 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 
 		if ((0.0 == p) || (1.0 == p)) {
@@ -134,7 +136,7 @@ public class IDF {
 	 */
 	public static double studentT(double p, double df) {
 		if ((p <= 0) || (p >= 1) || (df <= 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		if (df == 1) {
 			return (Math.tan(Math.PI * (p - 0.5)));
@@ -155,7 +157,7 @@ public class IDF {
 	 */
 	public static double F(double p, double df1, double df2) {
 		if ((p < 0) || (p >= 1) || (df1 <= 0) || (df2 <= 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		double x;
 		if (p > 0) {
@@ -177,10 +179,10 @@ public class IDF {
 	 */
 	public static double uniform(double p, double lowerBound, double upperBound) {
 		if (lowerBound >= upperBound) {
-			throw new RuntimeException("Wrong input parameters: the lower bound should be less than the upper bound!");
+			throw new AkIllegalOperatorParameterException("Wrong input parameters: the lower bound should be less than the upper bound!");
 		}
 		if ((p < 0) || (p > 1)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		return Math.min(p * (upperBound - lowerBound) + lowerBound, upperBound);
 	}
@@ -196,10 +198,10 @@ public class IDF {
 	 */
 	public static double exponential(double p, double lambda) {
 		if ((lambda <= 0) || (p < 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		if ((p < 0) || (p > 1)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		if (0 == p) {
 			return 0;
@@ -231,7 +233,7 @@ public class IDF {
 			case F:
 				return F(p, params[0], params[1]);
 			default:
-				throw new RuntimeException("Not supported yet!");
+				throw new AkUnsupportedOperationException("Not supported yet!");
 		}
 	}
 }

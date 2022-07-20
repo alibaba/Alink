@@ -2,6 +2,8 @@ package com.alibaba.alink.operator.batch.timeseries;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
@@ -36,9 +38,10 @@ public class ArimaBatchOpTest extends AlinkTestBase {
 				.setSelectClause("mtable_agg(ts, val) as data")
 		).link(new ArimaBatchOp()
 			.setValueCol("data")
-			.setOrder(new int[] {1, 2, 1})
+			.setOrder(1, 2, 1)
 			.setPredictNum(12)
 			.setPredictionCol("predict")
 		).print();
 	}
+
 }
