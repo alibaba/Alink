@@ -8,7 +8,6 @@ import org.apache.flink.api.java.sampling.ReservoirSamplerWithoutReplacement;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -16,6 +15,8 @@ import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dataproc.StrafiedSampleWithSizeParams;
@@ -82,13 +83,14 @@ public final class StratifiedSampleWithSizeBatchOp extends BatchOperator <Strati
 			for (String keyRatio : keyRatios) {
 				String[] sizeArray = keyRatio.split(":");
 				int groupSize = new Integer(sizeArray[1]);
-				Preconditions.checkArgument(groupSize >= 0, "SampleSize must be non-negative!");
+				AkPreconditions.checkArgument(groupSize >= 0,
+					new AkIllegalArgumentException("SampleSize must be non-negative!"));
 				sampleNumsMap.put(sizeArray[0], groupSize);
 			}
 		}
 
 		@Override
-		public void reduce(Iterable <T> values, Collector <T> out) throws Exception {
+		public void reduce(Iterable <T> values, Collector <T> out) {
 			StratifiedSampleBatchOp.GetFirstIterator iterator = new StratifiedSampleBatchOp.GetFirstIterator(
 				values.iterator());
 			Integer numSample = sampleSize;
@@ -97,7 +99,7 @@ public final class StratifiedSampleWithSizeBatchOp extends BatchOperator <Strati
 				if (null != first) {
 					Object key = first.getField(keyIndex);
 					numSample = sampleNumsMap.get(String.valueOf(key));
-					Preconditions.checkNotNull(numSample, key + "is not contained in map!");
+					AkPreconditions.checkNotNull(numSample, key + "is not contained in map!");
 				} else {
 					return;
 				}

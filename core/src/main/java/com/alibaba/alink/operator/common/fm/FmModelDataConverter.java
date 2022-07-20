@@ -43,6 +43,7 @@ public class FmModelDataConverter implements ModelDataConverter<FmModelData, FmM
                 .set(ModelParamName.FEATURE_COL_NAMES, modelData.featureColNames)
                 .set(ModelParamName.LABEL_VALUES, modelData.labelValues)
                 .set(ModelParamName.DIM, modelData.dim)
+                .set(ModelParamName.REGULAR, modelData.regular)
                 .set(ModelParamName.LOSS_CURVE, modelData.convergenceInfo);
         FmDataFormat factors = modelData.fmModel;
 
@@ -74,6 +75,7 @@ public class FmModelDataConverter implements ModelDataConverter<FmModelData, FmM
         modelData.labelColName = meta.get(ModelParamName.LABEL_COL_NAME);
         modelData.task = meta.get(ModelParamName.TASK);
         modelData.dim = meta.get(ModelParamName.DIM);
+        modelData.regular = meta.contains(ModelParamName.REGULAR) ? meta.get(ModelParamName.REGULAR) : null;
         modelData.vectorSize = meta.get(ModelParamName.VECTOR_SIZE);
         modelData.convergenceInfo = meta.get(ModelParamName.LOSS_CURVE);
 

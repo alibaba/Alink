@@ -10,6 +10,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceData;
@@ -86,7 +87,7 @@ public class VectorModelDataConverter extends NearestNeighborDataConverter <Vect
 						FastDistanceSparseData data = (FastDistanceSparseData) fastDistanceData;
 						row.setField(DATA_INDEX, data.toString());
 					} else {
-						throw new RuntimeException(fastDistanceData.getClass().getName() + "is not supported!");
+						throw new AkUnsupportedOperationException(fastDistanceData.getClass().getName() + " is not supported!");
 					}
 					out.collect(row);
 				}

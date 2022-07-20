@@ -124,6 +124,9 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
             modelData.vectorColName = params.get(FmTrainParams.VECTOR_COL);
             modelData.featureColNames = params.get(FmTrainParams.FEATURE_COLS);
             modelData.dim = dim;
+            modelData.regular = new double[]{params.get(FmTrainParams.LAMBDA_0),
+                params.get(FmTrainParams.LAMBDA_1),
+                params.get(FmTrainParams.LAMBDA_2)};
             modelData.labelColName = params.get(FmTrainParams.LABEL_COL);
             modelData.task = params.get(ModelParamName.TASK);
             modelData.convergenceInfo = value.f1;

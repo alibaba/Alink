@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- DBSCAN is a clustering method. This outlier determines the parameter eps using statistical techniques.
- (https://link.springer.com/chapter/10.1007/978-3-319-44944-9_24)
+ * DBSCAN is a clustering method. This outlier determines the parameter eps using statistical techniques.
+ * (https://link.springer.com/chapter/10.1007/978-3-319-44944-9_24)
  */
 public class DbscanDetector extends OutlierDetector {
 	private static final double ZERO = 1e-18;
@@ -41,9 +41,9 @@ public class DbscanDetector extends OutlierDetector {
 
 	@Override
 	public Tuple3 <Boolean, Double, Map <String, String>>[] detect(MTable series, boolean detectLast) throws Exception {
-		List <Row> rowTable = series.getRows();
-		int m = series.getNumRow();
-		int n = series.getNumCol();
+		Vector[] vectors = OutlierUtil.getVectors(series, this.params);
+		int m = vectors.length;
+		int n = vectors[0].size();
 		int iStart = detectLast ? m - 1 : 0;
 		Tuple3 <Boolean, Double, Map <String, String>>[] results = new Tuple3[m - iStart];
 		if (m < K) {
@@ -63,7 +63,6 @@ public class DbscanDetector extends OutlierDetector {
 		}
 		UnionJoin unionJoin = new UnionJoin(m);
 		TableSchema schema = series.getSchema();
-		Vector[] vectors = OutlierUtil.getVectors(series, this.params);
 
 		/*
 		 To avoid recording every distance and space out of memory, use consideredNeighborNum to decrease 
@@ -77,30 +76,39 @@ public class DbscanDetector extends OutlierDetector {
 		double[][] neighborDists = new double[m][consideredNeighborNum];
 		List <Tuple2 <Integer, Double>> kDist = new ArrayList <>(m);
 		/*
-		Use multi threads to calculate distance of k nearest neighbors of every point
-		Use one thread when samples are not too many.
+		calculate distance of k nearest neighbors of every point
 		 */
-		int numThread = m >= MAX_CONSIDERED_NEIGHBOR_NUM * NUM_THREAD ? NUM_THREAD : 1;
-		parallelDistanceSort[] parallelJobs = new parallelDistanceSort[numThread];
-		for (int i = 0; i < numThread; i++) {
-			parallelJobs[i] = new parallelDistanceSort(i, numThread, K, consideredNeighborNum, distanceType,
-				vectors.clone());
-			parallelJobs[i].start();
-		}
+		FastDistanceVectorData[] fastDistanceVectors = new FastDistanceVectorData[m];
+		FastDistance distance = distanceType.getFastDistance();
 		for (int i = 0; i < m; i++) {
-			kDist.add(Tuple2.of(0, 0.0));
+			fastDistanceVectors[i] = distance.prepareVectorData(Row.of(vectors[i], i), 0, 1);
 		}
-		for (int i = 0; i < numThread; i++) {
-			parallelJobs[i].join();
-			int s = parallelJobs[i].start;
-			int t = parallelJobs[i].end;
-			for (int j = s; j < t; j++) {
-				System.arraycopy(parallelJobs[i].neighborDists[j - s], 0, neighborDists[j], 0, consideredNeighborNum);
-				System.arraycopy(parallelJobs[i].ascendingNeighbors[j - s], 0, ascendingNeighbors[j], 0,
-					consideredNeighborNum);
-				kDist.set(j, parallelJobs[i].kDist.get(j - s));
+		KDTree kdTree = new KDTree(fastDistanceVectors.clone(), n, distance);
+		kdTree.buildTree();
+		for (int i = 0; i < m; i += 1) {
+			// The sample itself could be returned, so fetch K + 1 neighbors
+			Tuple2 <Double, Row>[] topNList = kdTree.getTopN(consideredNeighborNum + 1,
+				fastDistanceVectors[i]);
+			int p = 0;
+			for (Tuple2 <Double, Row> kNeighbor : topNList) {
+				int index = (Integer) kNeighbor.f1.getField(0);
+				if (index == i) {
+					continue;
+				}
+				neighborDists[i][p] = Math.max(kNeighbor.f0, ZERO);
+				ascendingNeighbors[i][p] = (Integer) kNeighbor.f1.getField(0);
+				p += 1;
+				if (p == consideredNeighborNum) {
+					break;
+				}
 			}
+			if (consideredNeighborNum == 1 && m == 1) {
+				/* if only has one sample, return itself */
+				kDist.add(Tuple2.of(i, 0.0));
+			}
+			kDist.add(Tuple2.of(i, neighborDists[i][K - 1]));
 		}
+		
 
 		/* 
 		 samples are considered in ascending order of their k-dist values 
@@ -150,9 +158,8 @@ public class DbscanDetector extends OutlierDetector {
 		 Use given eps if it is set. 
 		 */
 		double eps = mean + WITHIN_STANDARD_DEVIATION_NUM * sd;
-		eps = params.get(DbscanDetectorParams.EPSILON) > 0 ? params.get(DbscanDetectorParams.EPSILON) : eps;
-
-
+		eps = params.contains(DbscanDetectorParams.EPSILON) ? params.get(DbscanDetectorParams.EPSILON) : eps;
+		
 		/*
 		 To union join connected samples 
 		 */
@@ -174,6 +181,7 @@ public class DbscanDetector extends OutlierDetector {
 			int clusterSize = unionJoin.getClusterSize(m - 1);
 			double score = clusterSize > K ? Math.min(1.0, neighborDists[iStart][K - 1] / eps)
 				: neighborDists[iStart][K - 1] / eps;
+			score = score <= ZERO ? 0.0 : score;
 			infoMap.put("cluster_size", String.valueOf(clusterSize));
 			infoMap.put("label", clusterSize <= K ? "-1" : String.valueOf(unionJoin.find(m - 1)));
 			results[0] = Tuple3.of(clusterSize <= K ? true : false, score, infoMap);
@@ -183,6 +191,7 @@ public class DbscanDetector extends OutlierDetector {
 				int clusterSize = unionJoin.getClusterSize(i);
 				double score = clusterSize > K ? Math.min(1.0, neighborDists[i][K - 1] / eps)
 					: neighborDists[i][K - 1] / eps;
+				score = score <= ZERO ? 0.0 : score;
 				infoMap.put("cluster_size", String.valueOf(clusterSize));
 				infoMap.put("label", clusterSize <= K ? "-1" : String.valueOf(unionJoin.find(i)));
 				results[i] = Tuple3.of(clusterSize <= K ? true : false,
@@ -204,7 +213,7 @@ public class DbscanDetector extends OutlierDetector {
 			this.n = n;
 			this.pre = new int[n];
 			this.num = new int[n];
-			for (int i = 0; i < n; i++) { pre[i] = i; }
+			for (int i = 0; i < n; i++) {pre[i] = i;}
 			Arrays.fill(num, 1);
 		}
 
@@ -244,72 +253,6 @@ public class DbscanDetector extends OutlierDetector {
 
 		public int getClusterSize(int i) {
 			return this.num[this.find(i)];
-		}
-	}
-
-	public static class parallelDistanceSort extends Thread {
-		final int threadId;
-		final int size;
-		final int K;
-		final int start;
-		final int end;
-		final int neighborNum;
-		private KDTree kdTree;
-		private FastDistanceVectorData[] fastDistanceVectors;
-		int[][] ascendingNeighbors;
-		double[][] neighborDists;
-		List <Tuple2 <Integer, Double>> kDist;
-
-		public parallelDistanceSort(int i, int nJob, int k, int neighborNum, DistanceType distanceType,
-									Vector[] vectors) {
-			this.threadId = i;
-			this.K = k;
-			this.neighborNum = neighborNum;
-			this.size = vectors.length;
-			i = size - size / nJob * nJob;
-			this.start = this.threadId < i ? this.threadId * (size / nJob + 1)
-				: i * (size / nJob + 1) + (this.threadId - i) * (size / nJob);
-			this.end = this.threadId < i ? this.start + (size / nJob + 1)
-				: this.start + (size / nJob);
-			ascendingNeighbors = new int[end - start][neighborNum];
-			neighborDists = new double[end - start][neighborNum];
-			kDist = new ArrayList <>(end - start);
-			fastDistanceVectors = new FastDistanceVectorData[this.size];
-			FastDistance distance = distanceType.getFastDistance();
-			for (i = 0; i < this.size; i++) {
-				fastDistanceVectors[i] = distance.prepareVectorData(Row.of(vectors[i], i), 0, 1);
-			}
-			kdTree = new KDTree(fastDistanceVectors.clone(), vectors[0].size(), distance);
-			kdTree.buildTree();
-		}
-
-		@Override
-		public void run() {
-
-			for (int i = 0; i < end - start; i += 1) {
-				// The sample itself could be returned, so fetch K + 1 neighbors
-				Tuple2 <Double, Row>[] results = kdTree.getTopN(neighborNum + 1,
-					fastDistanceVectors[start + i]);
-				int p = 0;
-				for (Tuple2 <Double, Row> kNeighbor : results) {
-					int index = (Integer) kNeighbor.f1.getField(0);
-					if (index == start + i) {
-						continue;
-					}
-					neighborDists[i][p] = Math.max(kNeighbor.f0, ZERO);
-					ascendingNeighbors[i][p] = (Integer) kNeighbor.f1.getField(0);
-					p += 1;
-					if (p == neighborNum) {
-						break;
-					}
-				}
-				if(neighborNum==1 && size==1){
-					/* if only has one sample, return itself */
-					kDist.add(Tuple2.of(i + start, 0.0));
-					return;
-				}
-				kDist.add(Tuple2.of(i + start, neighborDists[i][K - 1]));
-			}
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.regression.glm.famliy;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.AlinkSerializable;
 import com.alibaba.alink.operator.common.regression.glm.link.Inverse;
 
@@ -35,7 +36,7 @@ public class Gamma extends FamilyFunction implements Serializable, AlinkSerializ
 	@Override
 	public double initialize(double y, double weight) {
 		if (y <= 0) {
-			throw new RuntimeException("y of Gamma family must be positive.");
+			throw new AkIllegalOperatorParameterException("y of Gamma family must be positive.");
 		}
 		return y;
 	}

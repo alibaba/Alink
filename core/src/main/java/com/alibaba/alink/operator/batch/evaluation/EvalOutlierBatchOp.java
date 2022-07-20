@@ -17,7 +17,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -27,6 +26,9 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -207,11 +209,12 @@ public class EvalOutlierBatchOp extends BatchOperator <EvalOutlierBatchOp> imple
 		BatchOperator <?> in = checkAndGetFirst(inputs);
 		String labelColName = get(EvalOutlierParams.LABEL_COL);
 		String[] outlierValues = get(EvalOutlierParams.OUTLIER_VALUE_STRINGS);
-		Preconditions.checkArgument(outlierValues.length > 0, "Must provide at least 1 outlier values.");
+		AkPreconditions.checkArgument(outlierValues.length > 0,
+			new AkIllegalOperatorParameterException("Must provide at least 1 outlier values."));
 		Set <String> outlierValueSet = new HashSet <>(Arrays.asList(outlierValues));
 
-		Preconditions.checkArgument(getParams().contains(EvalOutlierParams.PREDICTION_DETAIL_COL),
-			"Outlier detection evaluation must give predictionDetailCol!");
+		AkPreconditions.checkArgument(getParams().contains(EvalOutlierParams.PREDICTION_DETAIL_COL),
+			new AkIllegalOperatorParameterException("Outlier detection evaluation must give predictionDetailCol!"));
 
 		String predDetailColName = get(EvalOutlierParams.PREDICTION_DETAIL_COL);
 		TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predDetailColName);
@@ -281,8 +284,8 @@ public class EvalOutlierBatchOp extends BatchOperator <EvalOutlierBatchOp> imple
 		public void open(Configuration parameters) throws Exception {
 			List <Tuple2 <Map <Object, Integer>, Object[]>> list =
 				getRuntimeContext().getBroadcastVariable(LABELS_BC_NAME);
-			Preconditions.checkArgument(list.size() > 0,
-				"Please check the evaluation input! there is no effective row!");
+			AkPreconditions.checkState(list.size() > 0,
+				new AkIllegalDataException("Please check the evaluation input! there is no effective row!"));
 			labels = list.get(0).f1;
 		}
 

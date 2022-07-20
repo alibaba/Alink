@@ -80,6 +80,7 @@ public class ModelStreamModelMapperAdapter extends Mapper {
 
 	@Override
 	public void open() {
+		initialModelMapper.open();
 		internal.set(initialModelMapper);
 		fileScanner = new ModelStreamFileScanner(1, 2);
 		fileScanner.open();

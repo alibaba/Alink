@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.common.distance;
 
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -42,7 +42,7 @@ public class FastDistanceVectorData extends FastDistanceData {
 	 */
 	public FastDistanceVectorData(Vector vec, Row row) {
 		super(null == row ? null : new Row[] {row});
-		Preconditions.checkNotNull(vec, "Vector should not be null!");
+		AkPreconditions.checkNotNull(vec, "Vector should not be null!");
 		this.vector = vec;
 	}
 

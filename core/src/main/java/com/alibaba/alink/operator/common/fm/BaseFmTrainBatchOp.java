@@ -17,7 +17,6 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -27,6 +26,9 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -135,7 +137,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         // Get parameters of this algorithm.
         Params params = getParams();
         if (params.contains(HasFeatureCols.FEATURE_COLS) && params.contains(HasVectorCol.VECTOR_COL)) {
-            throw new RuntimeException("featureCols and vectorCol cannot be set at the same time.");
+            throw new AkIllegalArgumentException("featureCols and vectorCol cannot be set at the same time.");
         }
         int[] dim = new int[3];
         dim[0] = params.get(FmTrainParams.WITH_INTERCEPT) ? 1 : 0;
@@ -273,7 +275,8 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
             tmpArr.add(row);
         }
         Object[] labels = tmpArr.toArray(new Object[0]);
-        Preconditions.checkState((labels.length == 2), "labels count should be 2 in 2 classification algo.");
+        AkPreconditions.checkState((labels.length == 2),
+            new AkIllegalDataException("labels count should be 2 in 2 classification algo."));
         if (labels[0] instanceof Number) {
             if (((Number) labels[0]).doubleValue() + ((Number) labels[1]).doubleValue() == 1.0) {
                 if (((Number) labels[0]).doubleValue() == 0.0) {
@@ -345,10 +348,10 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         private final boolean isRegProc;
         private final int[] featureIndices;
 
-        public Transform(boolean isRegProc, int weightIndx, int vecIdx, int[] featureIndices, int labelIdx) {
+        public Transform(boolean isRegProc, int weightIdx, int vecIdx, int[] featureIndices, int labelIdx) {
             this.vecIdx = vecIdx;
             this.labelIdx = labelIdx;
-            this.weightIdx = weightIndx;
+            this.weightIdx = weightIdx;
             this.isRegProc = isRegProc;
             this.featureIndices = featureIndices;
         }
@@ -419,7 +422,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                             public void mapPartition(Iterable<FmModelData> values, Collector<Row> out) {
 
                                 FmModelData model = values.iterator().next();
-                                double[] cinfo = model.convergenceInfo;
+                                double[] cInfo = model.convergenceInfo;
                                 Params meta = new Params();
                                 meta.set(ModelParamName.VECTOR_SIZE, model.vectorSize);
                                 meta.set(ModelParamName.LABEL_VALUES, model.labelValues);
@@ -427,7 +430,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                                 meta.set(FmTrainParams.WITH_INTERCEPT, model.dim[0] == 1);
                                 meta.set(FmTrainParams.NUM_FACTOR, model.dim[2]);
                                 out.collect(Row.of(0, JsonConverter.toJson(meta)));
-                                out.collect(Row.of(1, JsonConverter.toJson(cinfo)));
+                                out.collect(Row.of(1, JsonConverter.toJson(cInfo)));
 
                             }
                         }).setParallelism(1).withBroadcastSet(model, "model");
@@ -514,7 +517,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
             } else if (yTruth >= 0.5) {
                 return -Math.log(logit);
             } else {
-                throw new RuntimeException("Invalid label: " + yTruth);
+                throw new AkIllegalDataException("Invalid label: " + yTruth);
             }
         }
 

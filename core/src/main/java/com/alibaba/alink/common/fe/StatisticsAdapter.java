@@ -1,12 +1,12 @@
 package com.alibaba.alink.common.fe;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
@@ -37,7 +37,7 @@ public class StatisticsAdapter<T> implements JsonSerializer <T>,
 			klass = Class.forName(className);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			throw new JsonParseException(e.getMessage());
+			throw new AkIllegalStateException(e.getMessage());
 		}
 		return (T) gson.fromJson(gson.toJson(jsonObject.get(INSTANCE)), klass);
 	}

@@ -4,6 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironment;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.sql.builtin.BuildInAggRegister;
 import com.alibaba.alink.common.sql.builtin.UdafName;
 import com.alibaba.alink.common.sql.builtin.agg.MTableAgg;
@@ -23,27 +24,27 @@ public class FeatureClauseUtil {
 
 	public static FeatureClause[] extractFeatureClauses(String exprStr) {
 		if (exprStr == null || exprStr.isEmpty()) {
-			throw new RuntimeException("expressions must be set");
+			throw new AkIllegalOperatorParameterException("expressions must be set");
 		}
 		String[] clauses = splitClause(exprStr);
 		FeatureClause[] featureClauses = new FeatureClause[clauses.length];
 		for (int i = 0; i < clauses.length; i++) {
 			String[] opAndResCol = trimArray(clauses[i].split(" (?i)as "));
 			if (opAndResCol.length != 2) {
-				throw new RuntimeException(ERROR_MESSAGE);
+				throw new AkIllegalOperatorParameterException(ERROR_MESSAGE);
 			}
 			FeatureClause featureClause = new FeatureClause();
 			featureClause.outColName = opAndResCol[1].trim();
 			String[] opAndInput = opAndResCol[0].split("\\(");
 			if (opAndInput.length != 2) {
-				throw new RuntimeException(ERROR_MESSAGE);
+				throw new AkIllegalOperatorParameterException(ERROR_MESSAGE);
 			}
 			featureClause.op = FeatureClauseOperator
 				.valueOf(opAndInput[0].trim().toUpperCase());
 			String[] inputContent = opAndInput[1].split("\\)");
 			if (inputContent.length != 0) {
 				if (inputContent.length != 1) {
-					throw new RuntimeException(ERROR_MESSAGE);
+					throw new AkIllegalOperatorParameterException(ERROR_MESSAGE);
 				}
 
 				if (inputContent[0].contains(",")) {
@@ -332,7 +333,7 @@ public class FeatureClauseUtil {
 				res.add(splittedClauses[index]);
 			} else {
 				if (index + 1 == lens) {
-					throw new RuntimeException();
+					throw new AkIllegalOperatorParameterException("");
 				}
 				res.add(splittedClauses[index] + "," + splittedClauses[++index]);
 			}

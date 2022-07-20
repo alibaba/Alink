@@ -144,7 +144,7 @@ public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 			DataSetConversionUtil.toTable(getMLEnvironmentId(), modelSummary.map(
 					new MapFunction <GlmModelSummary, Row>() {
 						@Override
-						public Row map(GlmModelSummary value) throws Exception {
+						public Row map(GlmModelSummary value) {
 							return Row.of(JsonConverter.toJson(value));
 						}
 					}),

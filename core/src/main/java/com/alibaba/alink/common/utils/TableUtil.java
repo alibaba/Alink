@@ -12,6 +12,7 @@ import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.DataTypeDisplayInterface;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -584,7 +585,7 @@ public class TableUtil {
 		List <String> categoricalList = null == categoricalCols ? null : Arrays.asList(categoricalCols);
 		List <String> featureList = Arrays.asList(featureCols);
 		if (null != categoricalCols && !featureList.containsAll(categoricalList)) {
-			throw new IllegalArgumentException("CategoricalCols must be included in featureCols!");
+			throw new AkIllegalArgumentException("CategoricalCols must be included in featureCols!");
 		}
 
 		TypeInformation <?>[] featureColTypes = findColTypes(tableSchema, featureCols);

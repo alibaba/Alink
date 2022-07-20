@@ -4,12 +4,17 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasDirection<T> extends WithParams <T> {
+
+	@NameCn("方向")
+	@DescCn("检测异常的方向")
 	ParamInfo <Direction> DIRECTION = ParamInfoFactory
 		.createParamInfo("direction", Direction.class)
-		.setDescription("directionality of the anomalities to be detected")
+		.setDescription("directionality of the anomalies to be detected")
 		.setHasDefaultValue(Direction.BOTH)
 		.build();
 

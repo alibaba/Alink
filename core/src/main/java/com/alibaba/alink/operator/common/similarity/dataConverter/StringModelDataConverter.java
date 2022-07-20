@@ -13,6 +13,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.distance.FastCategoricalDistance;
 import com.alibaba.alink.operator.common.distance.LevenshteinDistance;
@@ -127,7 +128,8 @@ public class StringModelDataConverter extends NearestNeighborDataConverter <Stri
 				return new Cosine(params.get(StringTextNearestNeighborTrainParams.WINDOW_SIZE));
 			}
 			default: {
-				throw new IllegalArgumentException("Not support yet!");
+				throw new AkUnsupportedOperationException("unsupported distance type:"
+					+ params.get(StringTextNearestNeighborTrainParams.METRIC).toString());
 			}
 		}
 	}

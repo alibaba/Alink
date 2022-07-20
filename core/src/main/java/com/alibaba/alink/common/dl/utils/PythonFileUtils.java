@@ -21,7 +21,7 @@ package com.alibaba.alink.common.dl.utils;
 import org.apache.flink.util.FileUtils;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.utils.DownloadUtils;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,24 +45,6 @@ public class PythonFileUtils {
         ".zip", ".tar.gz", ".tgz"
     );
 
-    public static String createTempWorkDir(String prefix) {
-        String dirname = FileUtils.getRandomFilename(prefix);
-        String fullPathName;
-        try {
-            fullPathName = DownloadUtils.createLocalDirectory(dirname);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create local directory.");
-        }
-        LOG.info("The work dir is: {}", fullPathName);
-        if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-            System.out.println("The work dir is: " + fullPathName);
-        }
-        if (DELETE_TEMP_FILES_WHEN_EXIT) {
-            DownloadUtils.setSafeDeleteFileOnExit(fullPathName);
-        }
-        return fullPathName;
-    }
-
 	/**
 	 * Create a temporary directory in the default temporary directory specified by the system property java.io.tmpdir,
 	 * and delete it on JVM shutdown if it still exists.
@@ -82,7 +64,7 @@ public class PythonFileUtils {
 			deleteFileOrDirectoryQuietlyOnExit(path);
 			return path;
 		} catch (IOException e) {
-			throw new RuntimeException("Cannot create temporary directory:", e);
+			throw new AkUnclassifiedErrorException("Cannot create temporary directory:", e);
 		}
 	}
 
@@ -106,7 +88,7 @@ public class PythonFileUtils {
 			deleteFileOrDirectoryQuietlyOnExit(path);
 			return path;
 		} catch (IOException e) {
-			throw new RuntimeException("Cannot create temporary directory:", e);
+			throw new AkUnclassifiedErrorException("Cannot create temporary directory:", e);
 		}
 	}
 
@@ -214,7 +196,8 @@ public class PythonFileUtils {
             //Get the checksum
             return getFileChecksum(md5Digest, file);
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+			throw new AkUnclassifiedErrorException(
+				String.format("Failed to get MD5 check sum for file %s.", file.getAbsolutePath()), ex);
+		}
     }
 }

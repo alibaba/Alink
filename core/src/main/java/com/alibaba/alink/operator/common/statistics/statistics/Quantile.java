@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.statistics.statistics;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.utils.AlinkSerializable;
 
 import java.util.Iterator;
@@ -45,7 +47,7 @@ public class Quantile implements AlinkSerializable {
 			k++;
 		}
 		if (n <= 0) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 		double t = 0.0;
 		for (int i = 0; i <= q; i++) {
@@ -67,7 +69,7 @@ public class Quantile implements AlinkSerializable {
 		int high = cntScan.length - 1;
 		int cur;
 		if (k > cntScan[high]) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 		if (k <= cntScan[0]) {
 			return 0;
@@ -85,7 +87,8 @@ public class Quantile implements AlinkSerializable {
 
 	public Object getQuantile(int k) {
 		if (k < 0 || k > q) {
-			throw new RuntimeException();
+			throw new AkIllegalOperatorParameterException(String.format(
+				"k must in [0, %s], but k is %s.", q, k));
 		}
 		return items[k];
 	}

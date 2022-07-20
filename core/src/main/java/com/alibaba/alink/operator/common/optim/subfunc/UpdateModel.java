@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.ComputeFunction;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams.OptimMethod;
@@ -24,10 +25,10 @@ public class UpdateModel extends ComputeFunction {
 	private static final double EPS = 1.0e-18;
 	private final static Logger LOG = LoggerFactory.getLogger(UpdateModel.class);
 	private static final long serialVersionUID = -5794349014922265691L;
-	private int numSearchStep;
-	private OptimMethod method;
-	private String gradName;
-	private Params params;
+	private final int numSearchStep;
+	private final OptimMethod method;
+	private final String gradName;
+	private final Params params;
 
 	/**
 	 * construct function.
@@ -70,7 +71,7 @@ public class UpdateModel extends ComputeFunction {
 		double beta = dir.f1[1] / numSearchStep;
 		double eta;
 		if (pos == -1) {
-			/**
+			/*
 			 * if all losses larger than last loss value. we'll do the below things:
 			 * 1. reduce learning rate by multiply 1.0 / (numSearchStep*numSearchStep).
 			 * 2. set eta with zero.
@@ -80,7 +81,7 @@ public class UpdateModel extends ComputeFunction {
 			dir.f1[1] *= 1.0 / (numSearchStep * numSearchStep);
 			curCoef.f1 = losses[0];
 		} else if (pos == numSearchStep) {
-			/**
+			/*
 			 * if losses[numSearchStep] smaller than last loss value. we'll do the below things:
 			 * 1. enlarge learning rate by multiply numSearchStep.
 			 * 2. set eta with the smallest value pos.
@@ -92,7 +93,7 @@ public class UpdateModel extends ComputeFunction {
 			lossChangeRatio = Math.abs((curCoef.f1 - losses[pos]) / curCoef.f1);
 			curCoef.f1 = losses[numSearchStep];
 		} else {
-			/**
+			/*
 			 * else :
 			 * 1. learning rate not changed.
 			 * 2. set eta with the smallest value pos.
@@ -113,7 +114,7 @@ public class UpdateModel extends ComputeFunction {
 		}
 		lossCurve[offset + 2] = dir.f1[1];
 		if (method.equals(OptimMethod.OWLQN)) {
-			/**
+			/*
 			 * if owlqn method: we'll using the constraint line search strategy.
 			 */
 			Tuple2 <DenseVector[], DenseVector[]> sKyK = context.getObj(OptimVariable.sKyK);
@@ -146,7 +147,7 @@ public class UpdateModel extends ComputeFunction {
 			curCoef.f0.plusScaleEqual(dir.f0, -eta);
 		}
 
-		/**
+		/*
 		 * if current loss is smaller than min loss, then update the min loss and min coefficient by current.
 		 */
 		if (curCoef.f1 < minCoef.f1) {
@@ -170,8 +171,9 @@ public class UpdateModel extends ComputeFunction {
 		int maxIter = params.get(LinearTrainParams.MAX_ITER);
 		double gradNorm = ((Tuple2 <DenseVector, double[]>) context.getObj(gradName)).f0.normL2();
 		if (Double.isNaN(gradNorm) || Double.isInfinite(gradNorm)) {
-			throw new RuntimeException("Optimize method not converged, may be your input has NaN or infinite number"
-				+ ", or optimize method not suit for your data!");
+			throw new AkIllegalDataException(
+				"Optimize method not converged, may be your input has NaN or infinite number"
+					+ ", or some train parameters not appropriate, or optimize method not suit for your data!");
 		}
 		if (c.f1 < epsilon || gradNorm < epsilon) {
 			printLog(" method converged at step : ", c.f1, m.f1, grad.f1[1], gradNorm, context, lossChangeRatio);

@@ -7,9 +7,10 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
-import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.mapper.FlatModelMapper;
 import com.alibaba.alink.common.mapper.IterableModelLoader;
 import com.alibaba.alink.common.model.LabeledModelDataConverter;
@@ -90,7 +91,7 @@ public class TFTableModelClassificationFlatModelMapper extends CachedRichModelMa
 				preprocessLocalPredictor = LocalPredictorLoader.load(
 					modelData.getPreprocessPipelineModelRows(), pipelineModelSchema, dataSchema);
 			} catch (Exception e) {
-				throw new RuntimeException("Cannot initialize preprocess PipelineModel", e);
+				throw new AkUnclassifiedErrorException("Cannot initialize preprocess PipelineModel", e);
 			}
 			dataSchema = preprocessLocalPredictor.getOutputSchema();
 		}

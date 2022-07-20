@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.dataproc;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import org.apache.commons.math3.complex.Complex;
 
 /**
@@ -49,7 +50,7 @@ public class FFT {
 		//notice: only support power of 2
 		//fftChirpZ support other lengths
 		if ((1 << logl) != length) {
-			throw new IllegalArgumentException("Radix-2 Cooley-Tukey only supports lengths of power-of-2.");
+			throw new AkIllegalOperatorParameterException("Radix-2 Cooley-Tukey only supports lengths of power-of-2.");
 		}
 
 		//2. copy data
@@ -134,7 +135,7 @@ public class FFT {
 		int length = input.length;
 		int logl = (int) (Math.log(length + 0.01) * INVERSE_LOG_2);
 		if ((1 << logl) == length) {
-			throw new IllegalArgumentException(
+			throw new AkIllegalOperatorParameterException(
 				"Chirp-Z is not efficient for lengths of power-of-2. Use Radix-2 Cooley-Tukey instead.");
 		}
 

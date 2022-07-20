@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.probabilistic;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+
 import java.util.HashMap;
 import java.util.Random;
 
@@ -26,7 +28,7 @@ public class XRandom implements java.io.Serializable {
 
 	public boolean bernoulli(double p) {
 		if (p < 0 || p > 1) {
-			throw new IllegalArgumentException("p must bewteen 0 and 1");
+			throw new AkIllegalOperatorParameterException("p must bewteen 0 and 1");
 		}
 		double d = rn.nextDouble();
 		if (d < p) {
@@ -39,7 +41,7 @@ public class XRandom implements java.io.Serializable {
 
 	public long nextLong(long n) {
 		if (n <= 0) {
-			throw new IllegalArgumentException("n must be positive");
+			throw new AkIllegalOperatorParameterException("n must be positive");
 		}
 		double d = rn.nextDouble();
 		return (long) Math.floor(d * (double) n);
@@ -49,10 +51,10 @@ public class XRandom implements java.io.Serializable {
 
 	public long[] randLongs(long n, int size, boolean replace) {
 		if (n <= 0) {
-			throw new IllegalArgumentException("n must be positive");
+			throw new AkIllegalOperatorParameterException("n must be positive");
 		}
 		if (size <= 0) {
-			throw new IllegalArgumentException("size must be positive");
+			throw new AkIllegalOperatorParameterException("size must be positive");
 		}
 		if (replace) {
 			long[] r = new long[size];
@@ -62,7 +64,7 @@ public class XRandom implements java.io.Serializable {
 			return r;
 		} else {
 			if (size > n) {
-				throw new IllegalArgumentException("Sample size is larger than entire set size!");
+				throw new AkIllegalOperatorParameterException("Sample size is larger than entire set size!");
 			}
 			long[] r = new long[size];
 			HashMap <Long, Long> hm = new HashMap <Long, Long>();
@@ -101,17 +103,17 @@ public class XRandom implements java.io.Serializable {
 
 	public int[] randInts(int n, int size, boolean replace, double[] para) throws Exception {
 		if (n <= 0) {
-			throw new IllegalArgumentException("n must be positive");
+			throw new AkIllegalOperatorParameterException("n must be positive");
 		}
 		if (size <= 0) {
-			throw new IllegalArgumentException("size must be positive");
+			throw new AkIllegalOperatorParameterException("size must be positive");
 		}
 		if (para.length != n) {
-			throw new IllegalArgumentException("size of para must be same as n");
+			throw new AkIllegalOperatorParameterException("size of para must be same as n");
 		}
 		if (!replace) {
 			if (size > n) {
-				throw new IllegalArgumentException("Sample size is larger than entire set size!");
+				throw new AkIllegalOperatorParameterException("Sample size is larger than entire set size!");
 			}
 		}
 		int[] r = new int[size];
@@ -124,10 +126,10 @@ public class XRandom implements java.io.Serializable {
 
 	public int[] randInts(int n, int size, boolean replace) {
 		if (n <= 0) {
-			throw new IllegalArgumentException("n must be positive");
+			throw new AkIllegalOperatorParameterException("n must be positive");
 		}
 		if (size <= 0) {
-			throw new IllegalArgumentException("size must be positive");
+			throw new AkIllegalOperatorParameterException("size must be positive");
 		}
 		if (replace) {
 			int[] r = new int[size];
@@ -137,7 +139,7 @@ public class XRandom implements java.io.Serializable {
 			return r;
 		} else {
 			if (size > n) {
-				throw new IllegalArgumentException("Sample size is larger than entire set size!");
+				throw new AkIllegalOperatorParameterException("Sample size is larger than entire set size!");
 			}
 			int[] r = new int[size];
 			HashMap <Integer, Integer> hm = new HashMap <Integer, Integer>();
@@ -167,7 +169,7 @@ public class XRandom implements java.io.Serializable {
 
 	public int TestSize_randLong(long n, int size, boolean replace) {
 		if (n <= 0) {
-			throw new IllegalArgumentException("n must be positive");
+			throw new AkIllegalOperatorParameterException("n must be positive");
 		}
 		if (replace) {
 			long[] r = new long[size];
@@ -177,7 +179,7 @@ public class XRandom implements java.io.Serializable {
 			return 0;
 		} else {
 			if (size > n) {
-				throw new IllegalArgumentException("Sample size is larger than entire set size!");
+				throw new AkIllegalOperatorParameterException("Sample size is larger than entire set size!");
 			}
 			int reSize = 0;
 			long[] r = new long[size];
@@ -507,7 +509,7 @@ class WeightedSampleTree {
 
 	public WeightedSampleTree(double[] para, XRandom xr) throws Exception {
 		if (para.length <= 1) {
-			throw new Exception("The size of para must at least 2");
+			throw new AkIllegalOperatorParameterException("The size of para must at least 2");
 		}
 		rnd = xr;
 		sizeData = para.length;
@@ -515,7 +517,7 @@ class WeightedSampleTree {
 		probs = new double[2 * sizeData - 1];
 		for (int i = 0; i < sizeData; i++) {
 			if (probs[i] < 0) {
-				throw new Exception("The item in para must not be negative!");
+				throw new AkIllegalOperatorParameterException("The item in para must not be negative!");
 			}
 			probs[sizeData - 1 + i] = para[i];
 		}
@@ -527,7 +529,7 @@ class WeightedSampleTree {
 
 	public WeightedSampleTree(double[] para) throws Exception {
 		if (para.length <= 1) {
-			throw new Exception("The size of para must at least 2");
+			throw new AkIllegalOperatorParameterException("The size of para must at least 2");
 		}
 		rnd = new XRandom();
 		sizeData = para.length;
@@ -535,7 +537,7 @@ class WeightedSampleTree {
 		probs = new double[2 * sizeData - 1];
 		for (int i = 0; i < sizeData; i++) {
 			if (probs[i] < 0) {
-				throw new Exception("The item in para must not be negative!");
+				throw new AkIllegalOperatorParameterException("The item in para must not be negative!");
 			}
 			probs[sizeData - 1 + i] = para[i];
 		}
@@ -544,29 +546,10 @@ class WeightedSampleTree {
 			probs[i] = probs[2 * i + 1] + probs[2 * i + 2];
 		}
 	}
-	//get RandomNumber where the index begins from 0
 
-	//    public int getRandomNumber(boolean replace) throws Exception {
-	//        if (sizeLeft == 0) {
-	//            throw new Exception("No data left");
-	//        }
-	//        int i = 0;
-	//        sizeLeft--;
-	//        while (i < sizeData - 1) {
-	//            if (rnd.bernoulli(probs[2 * i + 1] / probs[i])) {
-	//                i = 2 * i + 1;
-	//            } else {
-	//                i = 2 * i + 2;
-	//            }
-	//        }
-	//        if (!replace) {
-	//            remove(i);
-	//        }
-	//        return i - sizeData + 1;
-	//    }
 	public int getRandomNumber(boolean replace) throws Exception {
 		if (sizeLeft == 0) {
-			throw new Exception("No data left");
+			throw new AkIllegalOperatorParameterException("No data left");
 		}
 		int i = 0;
 		while (i < sizeData - 1) {

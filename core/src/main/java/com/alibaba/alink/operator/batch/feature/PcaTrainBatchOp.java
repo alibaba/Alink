@@ -15,6 +15,9 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -377,7 +380,8 @@ public final class PcaTrainBatchOp extends BatchOperator <PcaTrainBatchOp>
 					corr = getCov(counts, sums, dotProduct, nx);
 					break;
 				default:
-					throw new IllegalArgumentException("pca type not supported yet!");
+					throw new AkUnsupportedOperationException(
+						String.format("pca type [%s] not supported yet!", pcaType));
 			}
 
 			DenseMatrix calculateMatrix = new DenseMatrix(corr);
@@ -393,13 +397,13 @@ public final class PcaTrainBatchOp extends BatchOperator <PcaTrainBatchOp>
 			}
 
 			if (p >= calculateMatrix.numCols()) {
-				throw new RuntimeException(
+				throw new AkIllegalOperatorParameterException(
 					"k is larger than vector size. k: " + p + " vectorSize: " + calculateMatrix.numCols());
 			}
 
 			scala.Tuple2 <DenseVector, DenseMatrix> eigValueAndVector = solve(calculateMatrix, p);
 			if (eigValueAndVector._1.size() < p) {
-				throw new RuntimeException("Fail to converge when solving eig value problem.");
+				throw new AkIllegalStateException("Fail to converge when solving eig value problem.");
 			}
 
 			//set model

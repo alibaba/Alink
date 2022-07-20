@@ -2,7 +2,6 @@ package com.alibaba.alink.operator.batch.recommendation;
 
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.functions.ScalarFunction;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -12,6 +11,8 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -95,7 +96,7 @@ public final class FmRecommTrainBatchOp
 
         public String eval(String v) {
             if (v == null) {
-                throw new RuntimeException("feature vector is null, perhaps some user/item feature is missing.");
+                throw new AkIllegalDataException("feature vector is null, perhaps some user/item feature is missing.");
             }
             return v;
         }
@@ -147,10 +148,10 @@ public final class FmRecommTrainBatchOp
             userFeatureCols = new String[]{userCol};
             userCateFeatureCols = new String[]{userCol};
         } else {
-            Preconditions.checkArgument(
+            AkPreconditions.checkArgument(
                     TableUtil.findColTypeWithAssert(userFeaturesOp.getSchema(), userCol).equals(
                             TableUtil.findColTypeWithAssert(samplesOp.getSchema(), userCol))
-                    , "user column type mismatch");
+                    , new AkIllegalDataException("user column type mismatch"));
         }
 
         if (itemFeaturesOp == null) {
@@ -158,10 +159,10 @@ public final class FmRecommTrainBatchOp
             itemFeatureCols = new String[]{itemCol};
             itemCateFeatureCols = new String[]{itemCol};
         } else {
-            Preconditions.checkArgument(
+            AkPreconditions.checkArgument(
                     TableUtil.findColTypeWithAssert(itemFeaturesOp.getSchema(), itemCol).equals(
                             TableUtil.findColTypeWithAssert(samplesOp.getSchema(), itemCol))
-                    , "item column type mismatch");
+                    , new AkIllegalDataException("item column type mismatch"));
         }
 
         BatchOperator <?> history = samplesOp.select(new String[]{userCol, itemCol});

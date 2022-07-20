@@ -1,20 +1,17 @@
 package com.alibaba.alink.common.utils;
 
-import org.apache.flink.util.StringUtils;
-
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import org.apache.commons.io.FileUtils;
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -32,7 +29,7 @@ public class DownloadUtils {
 			httpConnection.disconnect();
 			return acceptRanges ? fileLength : -1;
 		} catch (Exception ex) {
-			throw new RuntimeException("Cannot check range download support: " + remoteFilePath, ex);
+			throw new AkUnclassifiedErrorException("Cannot check range download support: " + remoteFilePath, ex);
 		}
 	}
 
@@ -54,7 +51,7 @@ public class DownloadUtils {
 		try {
 			url = new URL(remoteFilePath);
 		} catch (MalformedURLException e) {
-			throw new RuntimeException(String.format("%s is not a valid URL", remoteFilePath), e);
+			throw new AkParseErrorException(String.format("%s is not a valid URL", remoteFilePath), e);
 		}
 
 		final int buffSize = 64 * 1024;    // 64KB
@@ -100,7 +97,8 @@ public class DownloadUtils {
 			}
 		}
 		if (existingFileSize < fileLength) {
-			throw new RuntimeException(String.format("Fail to resumable download file with %d tries: %s", retryCount, remoteFilePath));
+			throw new AkUnclassifiedErrorException(
+				String.format("Fail to resumable download file with %d tries: %s", retryCount, remoteFilePath));
 		}
 		return localPath.toString();
 	}
@@ -137,101 +135,7 @@ public class DownloadUtils {
 			return fn;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException("Fail to download file " + filePath);
-		}
-	}
-
-	public static String createLocalDirectory(String prefix) throws IOException {
-		if (StringUtils.isNullOrWhitespaceOnly(prefix)) {
-			throw new RuntimeException("prefix is empty");
-		}
-
-		String userDir = System.getProperty("user.dir");
-		if (StringUtils.isNullOrWhitespaceOnly(userDir)) {
-			throw new RuntimeException("user.dir is empty");
-		}
-
-		File localDir = new File(userDir);
-		// TODO: to delete
-		if (new File(userDir, "local").isDirectory()) {
-			/*
-			 * NOTE:
-			 * In cupid, ${user.dir} is on apsara disk, while ${user.dir}/local is pangu disk.
-			 * We should write temp files to ${user.dir}/local
-			 */
-			localDir = new File(userDir, "local");
-		} else if (new File(userDir, "target").isDirectory()) {
-			localDir = new File(userDir, "target");
-		}
-
-		File tempDir = new File(localDir, prefix);
-		if (tempDir.exists()) {
-			throw new RuntimeException("directory already exists: " + tempDir.getName());
-		}
-		tempDir.deleteOnExit();
-		if (!tempDir.mkdir()) {
-			throw new IOException("Failed to create temp directory " + tempDir.getPath());
-		}
-
-		return tempDir.getPath();
-	}
-
-	public static void setSafeDeleteFileOnExit(final String pathName) {
-		String userDir = System.getProperty("user.dir");
-		if (StringUtils.isNullOrWhitespaceOnly(userDir)) {
-			throw new RuntimeException("user.dir is empty");
-		}
-
-		File file = new File(pathName);
-		if (!file.getAbsolutePath().startsWith(userDir)) {
-			throw new RuntimeException("Trying to delete a file/dir outside of user directory.");
-		}
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				try {
-					File file = new File(pathName);
-					if (file.exists()) {
-						if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-							System.out.println("exit deleting " + file.getAbsolutePath());
-						}
-						if (file.isFile()) {
-							file.delete();
-						} else if (file.isDirectory()) {
-							FileUtils.deleteDirectory(file);
-						}
-					}
-				} catch (Exception e) {
-					LOG.info(e.toString());
-				}
-			}
-		});
-	}
-
-	public static void safeDeleteFile(final String pathName) {
-		String userDir = System.getProperty("user.dir");
-		if (StringUtils.isNullOrWhitespaceOnly(userDir)) {
-			throw new RuntimeException("user.dir is empty");
-		}
-
-		File file = new File(pathName);
-		if (!file.getAbsolutePath().startsWith(userDir)) {
-			throw new RuntimeException("Trying to delete a file/dir outside of user directory.");
-		}
-
-		try {
-			if (file.exists()) {
-				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-					System.out.println("deleting " + file.getName());
-				}
-				if (file.isFile()) {
-					file.delete();
-				} else if (file.isDirectory()) {
-					FileUtils.deleteDirectory(file);
-				}
-			}
-		} catch (Exception e) {
-			throw new RuntimeException("Fail to delete " + pathName);
+			throw new AkUnclassifiedErrorException("Fail to download file " + filePath);
 		}
 	}
 }

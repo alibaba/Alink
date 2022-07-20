@@ -3,7 +3,6 @@ package com.alibaba.alink.common.dl.utils;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.AlinkTypes;
@@ -12,6 +11,7 @@ import com.alibaba.alink.common.dl.coding.ExampleCodingV2;
 import com.alibaba.alink.common.dl.data.DataTypesV2;
 import com.alibaba.alink.common.dl.data.TFRecordReaderImpl;
 import com.alibaba.alink.common.dl.data.TFRecordWriterImpl;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.flink.ml.cluster.node.MLContext;
 import com.alibaba.flink.ml.tensorflow2.client.DLConfig;
 import com.alibaba.flink.ml.tensorflow2.util.TFConstants;
@@ -62,7 +62,7 @@ public class DLUtils implements Serializable {
     }
 
     private static void safePutProperties(Map<String, String> properties, String k, String v) {
-        Preconditions.checkArgument(v != null, String.format("Null value encountered for key %s.", k));
+		AkPreconditions.checkNotNull(v, String.format("Null value encountered for key %s.", k));
 		properties.put(k, v);
     }
 

@@ -11,17 +11,14 @@ import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.PipelineModelMapper;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
-import com.alibaba.alink.operator.common.linear.LinearModelMapper;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
-import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
+import com.alibaba.alink.operator.stream.onlinelearning.PipelinePredictStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.params.mapper.MapperParams;
 import com.alibaba.alink.params.shared.HasNumThreads;
@@ -151,22 +148,8 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 				if (0 >= maxCurModelNumThread) {
 					maxCurModelNumThread = MapperParams.NUM_THREADS.getDefaultValue();
 				}
-
-				BatchOperator <?> pipelineExpandModel = model.save();
-				TableSchema outSchema = getOutSchema(model, input.getSchema());
-				PipelinePredictStreamOp pipePredictOp = new PipelinePredictStreamOp(pipelineExpandModel)
-					.setMLEnvironmentId(input.getMLEnvironmentId())
-					.setNumThreads(maxCurModelNumThread)
-					.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_NAMES, outSchema.getFieldNames())
-					.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_TYPES,
-						FlinkTypeConverter.getTypeString(outSchema.getFieldTypes()));
-				input = (params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH) == null) ?
-					pipePredictOp.linkFrom(input) :
-					pipePredictOp.linkFrom(input, new ModelStreamFileSourceStreamOp()
-						.setFilePath(FilePath.deserialize(params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH)))
-						.setScanInterval(params.get(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL))
-						.setStartTime(params.get(ModelStreamScanParams.MODEL_STREAM_START_TIME))
-						.setSchemaStr(TableUtil.schema2SchemaStr(pipelineExpandModel.getSchema())));
+				input = new PipelinePredictStreamOp(this)
+					.setNumThreads(maxCurModelNumThread).linkFrom(input);
 			}
 		}
 		return input;
@@ -388,7 +371,7 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 		return ModelExporterUtils.serializePipelineStages(Arrays.asList(transformers), params);
 	}
 
-	private TableSchema getOutSchema(PipelineModel pipelineModel, TableSchema inputSchema) {
+	public static TableSchema getOutSchema(PipelineModel pipelineModel, TableSchema inputSchema) {
 		TableSchema outSchema = inputSchema;
 		for (TransformerBase <?> transformer : pipelineModel.transformers) {
 			TableSchema modelSchema = null;
@@ -434,11 +417,11 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 
 		PipelineModel pipelineModel = new PipelineModel(stagesAndParams.f1);
 		pipelineModel.setTransformers(ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
-			new AkSourceBatchOp()
-				.setFilePath(filePath)
-				.setMLEnvironmentId(mlEnvId),
-			stagesAndParams.f0,
-			schemaAndMeta.f0
+				new AkSourceBatchOp()
+					.setFilePath(filePath)
+					.setMLEnvironmentId(mlEnvId),
+				stagesAndParams.f0,
+				schemaAndMeta.f0
 			).toArray(new TransformerBase <?>[0])
 		);
 		return pipelineModel;
@@ -453,26 +436,6 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 
 		PipelinePredictBatchOp(Params params) {
 			super(PipelineModelMapper::new, params);
-		}
-	}
-
-	static class PipelinePredictStreamOp extends ModelMapStreamOp <PipelinePredictStreamOp>
-		implements MapperParams <PipelinePredictStreamOp> {
-
-		PipelinePredictStreamOp() {
-			super(LinearModelMapper::new, new Params());
-		}
-
-		PipelinePredictStreamOp(Params params) {
-			super(LinearModelMapper::new, params);
-		}
-
-		PipelinePredictStreamOp(BatchOperator <?> model) {
-			this(model, new Params());
-		}
-
-		PipelinePredictStreamOp(BatchOperator <?> model, Params params) {
-			super(model, PipelineModelMapper::new, params);
 		}
 	}
 }

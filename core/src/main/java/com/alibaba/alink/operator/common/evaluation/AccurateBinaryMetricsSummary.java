@@ -2,7 +2,8 @@ package com.alibaba.alink.operator.common.evaluation;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,8 +86,8 @@ public class AccurateBinaryMetricsSummary
 		if (null == binaryClassMetrics) {
 			return this;
 		}
-		Preconditions.checkState(Arrays.equals(labels, binaryClassMetrics.labels), "The labels are not the same!");
-		Preconditions.checkState(Double.compare(auc, binaryClassMetrics.auc) == 0, "Auc not equal!");
+		AkPreconditions.checkState(Arrays.equals(labels, binaryClassMetrics.labels), "The labels are not the same!");
+		AkPreconditions.checkState(Double.compare(auc, binaryClassMetrics.auc) == 0, "Auc not equal!");
 
 		logLoss += binaryClassMetrics.logLoss;
 		total += binaryClassMetrics.total;

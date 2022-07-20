@@ -7,9 +7,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -32,12 +35,12 @@ import java.util.Set;
 final public class FmRecommKernel extends RecommKernel {
 
 	private static final long serialVersionUID = 9054724969258810346L;
-	protected transient FmModelMapper fmModelMapper;
-	protected transient Map <Object, SparseVector> userFeatures;
-	protected transient Map <Object, SparseVector> itemFeatures;
-	protected transient Map <Object, Set <Object>> historyUserItems;
-	protected transient Map <Object, Set <Object>> historyItemUsers;
-	protected transient boolean isBinCls;
+	private transient FmModelMapper fmModelMapper;
+	private transient Map <Object, SparseVector> userFeatures;
+	private transient Map <Object, SparseVector> itemFeatures;
+	private transient Map <Object, Set <Object>> historyUserItems;
+	private transient Map <Object, Set <Object>> historyItemUsers;
+	private transient boolean isBinCls;
 
 	private int userColIdx = -1;
 	private int itemColIdx = -1;
@@ -57,15 +60,19 @@ final public class FmRecommKernel extends RecommKernel {
 		}
 
 		if (recommType == RecommType.RATE) {
-			Preconditions.checkArgument(userColIdx >= 0, "Can't find user col: " + userColName);
-			Preconditions.checkArgument(itemColIdx >= 0, "Can't find item col: " + itemColName);
+			AkPreconditions.checkArgument(userColIdx >= 0,
+				new AkIllegalArgumentException("Can't find user col: " + userColName));
+			AkPreconditions.checkArgument(itemColIdx >= 0,
+				new AkIllegalArgumentException("Can't find item col: " + itemColName));
 		} else if (recommType == RecommType.ITEMS_PER_USER) {
-			Preconditions.checkArgument(userColIdx >= 0, "Can't find user col: " + userColName);
-			Preconditions.checkArgument(topK != null, "Missing param topK");
+			AkPreconditions.checkArgument(userColIdx >= 0,
+				new AkIllegalArgumentException("Can't find user col: " + userColName));
+			AkPreconditions.checkArgument(topK != null, new AkIllegalArgumentException("Missing param topK"));
 			excludeKnown = params.get(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN);
 		} else if (recommType == RecommType.USERS_PER_ITEM) {
-			Preconditions.checkArgument(itemColIdx >= 0, "Can't find item col: " + itemColName);
-			Preconditions.checkArgument(topK != null, "Missing param topK");
+			AkPreconditions.checkArgument(itemColIdx >= 0,
+				new AkIllegalArgumentException("Can't find item col: " + itemColName));
+			AkPreconditions.checkArgument(topK != null, new AkIllegalArgumentException("Missing param topK"));
 			excludeKnown = params.get(BaseUsersPerItemRecommParams.EXCLUDE_KNOWN);
 		} else {
 			throw new UnsupportedOperationException("Not supported rec type.");
@@ -114,7 +121,7 @@ final public class FmRecommKernel extends RecommKernel {
 							score = (float) getScore(combined);
 						}
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						throw new AkUnclassifiedErrorException(e.toString());
 					}
 
 					priorityQueue.addOrReplace(itemId, score);
@@ -124,7 +131,8 @@ final public class FmRecommKernel extends RecommKernel {
 
 		List <Row> rows = priorityQueue.getOrderedRows();
 		return new MTable(rows,
-			objectColName + " " + FlinkTypeConverter.getTypeString(recommObjType) + "," + KObjectUtil.RATING_NAME + " DOUBLE");
+			objectColName + " " + FlinkTypeConverter.getTypeString(recommObjType) + "," + KObjectUtil.RATING_NAME
+				+ " DOUBLE");
 	}
 
 	@Override
@@ -193,20 +201,20 @@ final public class FmRecommKernel extends RecommKernel {
 		isBinCls = fmModelMapper.getModel().task.equals(BaseFmTrainBatchOp.Task.BINARY_CLASSIFICATION);
 
 		if (userColIdx >= 0) {
-			Preconditions.checkArgument(
+			AkPreconditions.checkArgument(
 				PackBatchOperatorUtil.unpackSchema(modelRows, getModelSchema(), 1).getFieldTypes()[0]
 					.equals(super.getDataSchema().getFieldTypes()[userColIdx]),
-				"user column type different from train set");
+				new AkIllegalDataException("user column type different from train set"));
 		}
 		List <Row> userFeatureRows = PackBatchOperatorUtil.unpackRows(modelRows, 1);
 		userFeatures = new HashMap <>();
 		userFeatureRows.forEach(row -> userFeatures.put(row.getField(0), VectorUtil.getSparseVector(row.getField(1))));
 
 		if (itemColIdx >= 0) {
-			Preconditions.checkArgument(
+			AkPreconditions.checkArgument(
 				PackBatchOperatorUtil.unpackSchema(modelRows, getModelSchema(), 2).getFieldTypes()[0]
 					.equals(super.getDataSchema().getFieldTypes()[itemColIdx]),
-				"user column type different from train set");
+				new AkIllegalDataException("user column type different from train set"));
 		}
 		List <Row> itemFeatureRows = PackBatchOperatorUtil.unpackRows(modelRows, 2);
 		itemFeatures = new HashMap <>();
@@ -238,8 +246,8 @@ final public class FmRecommKernel extends RecommKernel {
 	}
 
 	public static SparseVector combine(SparseVector v1, SparseVector v2) {
-		Preconditions.checkArgument(v1.size() >= 0);
-		Preconditions.checkArgument(v2.size() >= 0);
+		AkPreconditions.checkArgument(v1.size() >= 0);
+		AkPreconditions.checkArgument(v2.size() >= 0);
 		int[] indices = new int[v1.getIndices().length + v2.getIndices().length];
 		double[] values = new double[v1.getValues().length + v2.getValues().length];
 		int size1 = v1.size();

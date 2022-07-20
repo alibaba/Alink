@@ -1,39 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import logging
 import sys
-import threading
 import time
 from optparse import OptionParser
+from typing import Optional
 
 from py4j.java_gateway import JavaGateway, GatewayParameters, CallbackServerParameters
-
-
-class AtomicInteger:
-    def __init__(self, value=0):
-        self._value = value
-        self._lock = threading.Lock()
-
-    def inc(self):
-        with self._lock:
-            self._value += 1
-            return self._value
-
-    def dec(self):
-        with self._lock:
-            self._value -= 1
-            return self._value
-
-    @property
-    def value(self):
-        with self._lock:
-            return self._value
-
-    @value.setter
-    def value(self, v):
-        with self._lock:
-            self._value = v
-            return self._value
 
 
 def get_class_from_name(cls_name):
@@ -57,41 +30,38 @@ def get_class_from_name(cls_name):
         return c
 
 
+# noinspection PyMethodMayBeStatic
 class PyMain(object):
 
     def __init__(self):
-        self._cnt = AtomicInteger()
-        self._tag = True
+        self._cnt = 0
+        self._running = True
 
     def check(self):
-        print('check it')
         sys.stdout.flush()
-        return self._tag
+        return self._running
 
     def open(self, name):
-        print('open from {}'.format(name))
-        sys.stdout.flush()
-        return self._cnt.inc()
+        print('open from {}'.format(name), flush=True)
+        self._cnt += 1
+        return self._cnt
 
     def close(self, name):
-        print('close from {}'.format(name))
-        sys.stdout.flush()
-        return self._cnt.dec()
+        print('close from {}'.format(name), flush=True)
+        self._cnt -= 1
+        return self._cnt
 
     def shutdown(self, name):
-        if self._cnt.value == 0:
-            print('shutdown from {} .. OK'.format(name))
-            sys.stdout.flush()
-            self._tag = False
+        if self._cnt == 0:
+            print('shutdown from {} .. OK'.format(name), flush=True)
+            self._running = False
             return True
         else:
-            print('shutdown from {} .. WAIT'.format(name))
-            sys.stdout.flush()
+            print('shutdown from {} .. WAIT'.format(name), flush=True)
             return False
 
     def newobj(self, class_name):
-        print('new object of class {}'.format(class_name))
-        sys.stdout.flush()
+        print('new object of class {}'.format(class_name), flush=True)
         cls = get_class_from_name(class_name)
         return cls()
 
@@ -99,10 +69,11 @@ class PyMain(object):
         implements = ["com.alibaba.alink.common.pyrunner.PyMainHandle"]
 
 
-gateway: JavaGateway = None
+gateway: Optional[JavaGateway] = None
 
 
 def main():
+    logging.getLogger("py4j").setLevel(logging.ERROR)
     p = OptionParser()
     p.add_option('-j', '--jvm_port', help='the port for jvm side',
                  dest='jvm_port', type=int, default=None)
@@ -122,8 +93,9 @@ def main():
     print('Started Listening On {}'.format(gateway.get_callback_server().get_listening_port()))
     sys.stdout.flush()
     while app.check():
-        time.sleep(1.0)
-    print('Exit')
+        # Increase sleep time, since Java will kill Python process anyway
+        time.sleep(60.0)
+    print('Exit', flush=True)
 
 
 if __name__ == '__main__':

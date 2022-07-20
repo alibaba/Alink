@@ -9,7 +9,6 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -18,6 +17,8 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
@@ -104,8 +105,8 @@ public class EvalBinaryClassBatchOp extends BatchOperator <EvalBinaryClassBatchO
 		TypeInformation <?> labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelColName);
 		String positiveValue = get(EvalBinaryClassParams.POS_LABEL_VAL_STR);
 
-		Preconditions.checkArgument(getParams().contains(EvalBinaryClassParams.PREDICTION_DETAIL_COL),
-			"Binary Evaluation must give predictionDetailCol!");
+		AkPreconditions.checkArgument(getParams().contains(EvalBinaryClassParams.PREDICTION_DETAIL_COL),
+			new AkIllegalOperatorParameterException("Binary Evaluation must give predictionDetailCol!"));
 
 		String predDetailColName = get(EvalMultiClassParams.PREDICTION_DETAIL_COL);
 		TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predDetailColName);

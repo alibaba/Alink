@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.statistics.statistics;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
@@ -62,7 +64,7 @@ public class Interval4Calc {
 	public static Interval4Display display(long left, long right, long preferStep, int preferN, IntervalCalculator
 		ic) {
 		if (null == ic || ic.getDataType().equals("Decimal")) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 		Interval4Calc itvc = Interval4Calc.calculate(left, right, preferStep, preferN, ic.getDataType(), ic);
 		return itvc.toInterval4Display();
@@ -85,7 +87,7 @@ public class Interval4Calc {
 	public static Interval4Display display(String left, String right, String preferStep, int preferN,
 										   IntervalCalculator ic) {
 		if (null == ic) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 		if (ic.getDataType().equals("Decimal")) {
 			Interval4Calc itvc = Interval4Calc.calculate(left, right, preferStep, preferN, ic);
@@ -214,7 +216,7 @@ public class Interval4Calc {
 			if (step * 10 / 10 == step) {
 				return step * 10;
 			} else {
-				throw new RuntimeException();
+				throw new AkIllegalStateException("");
 			}
 		} else {
 			return step * 10;
@@ -236,10 +238,10 @@ public class Interval4Calc {
 								   IntervalCalculator ic) {
 		//if (colType.equals("Decimal") || colType.equals("Integer")) {
 		if (dataType.equals("Decimal")) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 		if (null != ic && ic.getDataType() != dataType) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 
 		long icstep = 1;
@@ -263,7 +265,7 @@ public class Interval4Calc {
 			sizeBlock = Math.max(1, (int) (preferStep / step));
 		} else {
 			if (preferN < 1) {
-				throw new RuntimeException();
+				throw new AkIllegalStateException("");
 			}
 			step = icstep;
 			boolean isDateType = (dataType.equals("Date"));
@@ -314,7 +316,7 @@ public class Interval4Calc {
 			}
 		}
 		if (null == left || null == right || Double.parseDouble(left) >= Double.parseDouble(right)) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 
 		BigDecimal stepBD = new BigDecimal(1);
@@ -346,7 +348,7 @@ public class Interval4Calc {
 		long scale;
 		if (null == preferStep) {
 			if (preferN < 1) {
-				throw new RuntimeException();
+				throw new AkIllegalStateException("");
 			}
 			scale = 1;
 			if ((valRight - valLeft) / scale > preferN) {
@@ -440,7 +442,7 @@ public class Interval4Calc {
 	 */
 	Interval4Display toInterval4Display(long[] items, long[] vals, String dataType) {
 		if (!this.dataType.equals(dataType)) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 		Interval4Display dis = new Interval4Display();
 		int n = this.nBlock;
@@ -454,7 +456,7 @@ public class Interval4Calc {
 			} else if (this.dataType.equals("Integer")) {
 				dis.tags[i] = String.valueOf(this.startLong + i * this.stepLong);
 			} else {
-				throw new RuntimeException();
+				throw new AkIllegalStateException("");
 			}
 		}
 		for (int i = 0; i < items.length; i++) {
@@ -468,7 +470,7 @@ public class Interval4Calc {
 
 	Interval4Display toInterval4Display() {
 		if (null == this.ic) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 		Interval4Display dis = new Interval4Display();
 		int n = this.nBlock;

@@ -1,16 +1,18 @@
 package com.alibaba.alink.operator.common.linear.unarylossfunc;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+
 /**
  * SVR (Support Vector Regression) loss function.
  */
 public class SvrLossFunc implements UnaryLossFunc {
 
 	private static final long serialVersionUID = 2882192117339178786L;
-	private double epsilon;
+	private final double epsilon;
 
 	public SvrLossFunc(double epsilon) {
 		if (epsilon < 0) {
-			throw new IllegalArgumentException("Parameter epsilon can not be negtive.");
+			throw new AkIllegalArgumentException("Parameter epsilon can not be negtive.");
 		}
 		this.epsilon = epsilon;
 	}

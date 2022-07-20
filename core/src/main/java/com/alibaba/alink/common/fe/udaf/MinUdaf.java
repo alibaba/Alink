@@ -2,6 +2,7 @@ package com.alibaba.alink.common.fe.udaf;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.fe.udaf.MinUdaf.MinData;
 import com.alibaba.alink.common.fe.udaf.UdafUtil.DayTimeUnit;
 import com.alibaba.alink.common.sql.builtin.agg.BaseUdaf;
@@ -135,7 +136,7 @@ public class MinUdaf extends BaseUdaf <ArrayList <Object>, MinData> {
 		}
 
 		public void retract(int conditionIndex, int rowIndex, int minLevel, Number val) {
-			throw new RuntimeException("It is not support.");
+			throw new AkUnsupportedOperationException("It is not support.");
 		}
 
 		public void reset() {

@@ -17,6 +17,8 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils.FileProcFunction;
@@ -70,7 +72,7 @@ public class ParquetSourceBatchOp extends BaseSourceBatchOp <ParquetSourceBatchO
 		try {
 			selected = AkUtils.selectPartitionBatchOp(getMLEnvironmentId(), filePath, getPartitions());
 		} catch (IOException e) {
-			throw new IllegalArgumentException(e);
+			throw new AkIllegalOperatorParameterException("Could not find the path: " + filePath.getPathStr());
 		}
 		final String[] colNames = selected.getColNames();
 		final ParquetClassLoaderFactory localFactory = factory;

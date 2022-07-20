@@ -6,6 +6,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.CompleteResultFunction;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.model.ModelParamName;
 
@@ -43,7 +44,8 @@ public class OutputModel extends CompleteResultFunction {
 		Params params = new Params();
 		for (int i = 0; i < minCoef.f0.size(); ++i) {
 			if (Double.isNaN(minCoef.f0.get(i)) || Double.isInfinite(minCoef.f0.get(i))) {
-				throw new RuntimeException("Optimization result has NAN or infinite value, coefficient is invalid");
+				throw new AkIllegalDataException("Optimization result has NAN or infinite value,"
+					+ " please check your input data and train parameters.");
 			}
 		}
 		params.set(ModelParamName.COEF, minCoef.f0);

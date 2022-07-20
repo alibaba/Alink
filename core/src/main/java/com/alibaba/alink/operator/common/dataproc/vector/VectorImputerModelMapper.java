@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -70,7 +71,7 @@ public class VectorImputerModelMapper extends SISOModelMapper {
 		this.defaultValueArray = tuple2.f1;
 		if (this.defaultValueArray == null || this.defaultValueArray.length == 0) {
 			if (tuple2.f2 == null) {
-				throw new RuntimeException("In VALUE strategy, the filling value is necessary.");
+				throw new AkIllegalOperatorParameterException("In VALUE strategy, the filling value is necessary.");
 			}
 			this.defaultValue = tuple2.f2;
 			this.useOneDefaultValue = true;

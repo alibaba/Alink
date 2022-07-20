@@ -22,7 +22,8 @@ public class ParquetSourceFactoryImpl implements ParquetSourceFactory {
 	public Tuple2 <RichInputFormat <Row, FileInputSplit>, TableSchema> createParquetSourceFunction(Params params) {
 		FilePath filePath = FilePath.deserialize(params.get(ParquetSourceParams.FILE_PATH));
 		MessageType messageType = ParquetUtil.getReadSchemaFromParquetFile(filePath);
-		RowTypeInfo rowTypeInfo = (RowTypeInfo) ParquetSchemaConverter.fromParquetType(messageType);
+		RowTypeInfo rowTypeInfo = messageType == null ? new RowTypeInfo()
+			: (RowTypeInfo) ParquetSchemaConverter.fromParquetType(messageType);
 		return Tuple2.of(new GenericParquetInputFormat(filePath),
 			new TableSchema(rowTypeInfo.getFieldNames(), rowTypeInfo.getFieldTypes()));
 	}

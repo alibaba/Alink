@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.linear;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -128,7 +129,7 @@ public class FeatureLabelUtil {
 						LabelTypeEnum.StringTypeEnum.valueOf(labelType.toString().toUpperCase());
 					labels[i] = operation.getOperation().apply(strLable);
 				} catch (Exception e) {
-					throw new RuntimeException("unknown label type: " + labelType);
+					throw new AkIllegalDataException("Unknown label type: " + labelType);
 				}
 			} else if (label instanceof Double) {
 				Double dLabel = (Double) label;

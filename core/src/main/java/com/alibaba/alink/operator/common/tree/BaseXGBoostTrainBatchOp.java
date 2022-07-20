@@ -33,6 +33,8 @@ import com.alibaba.alink.common.comqueue.ComQueue;
 import com.alibaba.alink.common.comqueue.CompleteResultFunction;
 import com.alibaba.alink.common.comqueue.ComputeFunction;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.exceptions.XGboostException;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -250,7 +252,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 					.name("Gen model");
 				break;
 			default:
-				throw new IllegalArgumentException("Illegal running mode: " + runningMode);
+				throw new AkIllegalArgumentException("Illegal running mode: " + runningMode);
 		}
 
 		setOutput(model, modelSchema);
@@ -279,11 +281,11 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 				try {
 					tracker = xgBoost.initTracker(context.getNumTask());
 				} catch (XGboostException e) {
-					throw new IllegalStateException(e);
+					throw new AkIllegalStateException("XGboost error.", e);
 				}
 
 				if (!tracker.start(0L)) {
-					throw new IllegalStateException("Tracker cannot be started");
+					throw new AkIllegalStateException("Tracker cannot be started");
 				}
 
 				context.putObj("tracker", tracker);
@@ -324,7 +326,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 			try {
 				xgBoost.init(workerEnvsList);
 			} catch (XGboostException e) {
-				throw new IllegalStateException(e);
+				throw new AkIllegalStateException("XGBoost init error.", e);
 			}
 
 			try (TemporaryClassLoaderContext temporaryClassLoaderContext
@@ -348,7 +350,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 					context.putObj("model", model);
 				}
 			} catch (XGboostException e) {
-				throw new IllegalStateException(e);
+				throw new AkIllegalStateException("XGBoost error.", e);
 			} finally {
 				try {
 					xgBoost.shutdown();
@@ -484,7 +486,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 				Tracker tracker = xgBoost.initTracker(getRuntimeContext().getNumberOfParallelSubtasks());
 
 				if (!tracker.start(0L)) {
-					throw new IllegalStateException("Tracker cannot be started");
+					throw new AkIllegalStateException("Tracker cannot be started");
 				}
 
 				IterTaskObjKeeper.put(trackerHandle, 0, tracker);
@@ -586,7 +588,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 			try {
 				xgBoost.init(localWorkerEnvsList);
 			} catch (XGboostException e) {
-				throw new IllegalStateException(e);
+				throw new AkIllegalStateException("XGBoost init error.", e);
 			}
 
 			try (TemporaryClassLoaderContext temporaryClassLoaderContext
@@ -612,7 +614,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 					}
 				}
 			} catch (XGboostException e) {
-				throw new IllegalStateException(e);
+				throw new AkIllegalStateException("XGBoost error", e);
 			} finally {
 				try {
 					xgBoost.shutdown();

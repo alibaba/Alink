@@ -13,8 +13,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.params.evaluation.EvalMultiClassParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,11 +135,11 @@ public class ClassificationEvaluationUtil implements Serializable {
 																			 Object[] tuple,
 																			 TypeInformation <?> labelType,
 																			 LabelProbMapExtractor extractor) {
-		Preconditions.checkArgument(tuple.length == 2, "Label length is not 2, Only support binary evaluation!");
+		AkPreconditions.checkArgument(tuple.length == 2, "Label length is not 2, Only support binary evaluation!");
 		if (EvaluationUtil.checkRowFieldNotNull(row)) {
 			TreeMap <Object, Double> labelProbMap = EvaluationUtil.extractLabelProbMap(row, labelType, extractor);
 			Object label = row.getField(0);
-			Preconditions.checkState(labelProbMap.size() == BINARY_LABEL_NUMBER,
+			AkPreconditions.checkState(labelProbMap.size() == BINARY_LABEL_NUMBER,
 				"The number of labels must be equal to 2!");
 			double logLoss = EvaluationUtil.extractLogloss(labelProbMap, label);
 
@@ -298,7 +299,7 @@ public class ClassificationEvaluationUtil implements Serializable {
 
 		// For multi-classification evaluation, #labels == 1 gives reasonable results.
 		// So, it is OK to only check #labels in binary classification evaluation.
-		Preconditions.checkArgument(!binary || labels.length == BINARY_LABEL_NUMBER,
+		AkPreconditions.checkArgument(!binary || labels.length == BINARY_LABEL_NUMBER,
 			"The number of labels must be equal to 2!");
 		Map <Object, Integer> map = new HashMap <>(labels.length);
 		if (binary && null != positiveValue) {
@@ -691,8 +692,8 @@ public class ClassificationEvaluationUtil implements Serializable {
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			List <Tuple2 <Map <Object, Integer>, Object[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
-			Preconditions.checkArgument(list.size() > 0,
-				"Please check the evaluation input! there is no effective row!");
+			AkPreconditions.checkState(list.size() > 0,
+				new AkIllegalDataException("Please check the evaluation input! there is no effective row!"));
 			map = list.get(0);
 
 			decisionThreshold = getRuntimeContext().hasBroadcastVariable(DECISION_THRESHOLD_BC_NAME)
@@ -767,8 +768,8 @@ public class ClassificationEvaluationUtil implements Serializable {
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			List <Tuple2 <Map <Object, Integer>, Object[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
-			Preconditions.checkArgument(list.size() > 0,
-				"Please check the evaluation input! there is no effective row!");
+			AkPreconditions.checkState(list.size() > 0,
+				new AkIllegalDataException("Please check the evaluation input! there is no effective row!"));
 			labels = list.get(0).f1;
 
 			List <BinaryPartitionSummary> statistics = getRuntimeContext()

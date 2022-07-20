@@ -8,6 +8,9 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.dl.data.TFRecordReader;
 import com.alibaba.alink.common.dl.data.TFRecordWriter;
 import com.alibaba.alink.common.dl.utils.TFExampleConversionUtils;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.filesystem.copy.FileInputFormat;
 import com.alibaba.alink.common.io.filesystem.copy.FileOutputFormat;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -85,7 +88,7 @@ public class TFRecordDatasetUtils {
 
 						case NO_OVERWRITE:
 							// file or directory may not be overwritten
-							throw new RuntimeException(
+							throw new AkIllegalOperatorParameterException(
 								"File or directory already exists. Existing files and directories are not overwritten "
 									+ "in "
 									+
@@ -98,11 +101,12 @@ public class TFRecordDatasetUtils {
 							break;
 
 						default:
-							throw new IllegalArgumentException("Invalid write mode: " + writeMode);
+							throw new AkUnsupportedOperationException("Invalid write mode: " + writeMode);
 					}
 				}
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw new AkUnclassifiedErrorException(
+					String.format("Failed to handle overwrite on file: %s", filePath.getPath()), e);
 			}
 		}
 

@@ -7,7 +7,7 @@ import com.alibaba.alink.common.linalg.DenseVector;
  * LayerModel for {@link FuntionalLayer}.
  */
 public class FuntionalLayerModel extends LayerModel {
-	private FuntionalLayer layer;
+	private final FuntionalLayer layer;
 
 	public FuntionalLayerModel(FuntionalLayer layer) {
 		this.layer = layer;

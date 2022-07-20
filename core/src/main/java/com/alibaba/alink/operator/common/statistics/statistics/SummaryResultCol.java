@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.statistics.statistics;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.common.viz.plot.Histogram;
 import com.alibaba.alink.common.viz.plot.StackedBar;
@@ -150,7 +152,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 
 	public static SummaryResultCol combine(SummaryResultCol src1, SummaryResultCol src2) {
 		if (!src1.dataType.equals(src2.dataType)) {
-			throw new RuntimeException("The 2 col data types are not equal!");
+			throw new AkIllegalStateException("The 2 col data types are not equal!");
 		}
 
 		if (0 == src1.countTotal) {
@@ -204,7 +206,8 @@ public class SummaryResultCol implements Serializable, Cloneable {
 				minValue = (Long) src1.min < (Long) src2.min ? src1.min : src2.min;
 				maxValue = (Long) src1.max > (Long) src2.max ? src1.max : src2.max;
 			} else {
-				throw new RuntimeException("Not implemented yet! " + src1.dataType);
+				throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
+					src1.dataType.getSimpleName()));
 			}
 
 		}
@@ -242,7 +245,8 @@ public class SummaryResultCol implements Serializable, Cloneable {
 				} else if (Boolean.class == src.dataType) {
 					b = convertBoolean((Boolean) (src1.topItems[i])) >= convertBoolean((Boolean) (src2.topItems[j]));
 				} else {
-					throw new RuntimeException("Not support yet!" + src.dataType);
+					throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
+						src.dataType.getSimpleName()));
 				}
 				if (b) {
 					src.topItems[i + j] = src1.topItems[i];
@@ -272,7 +276,8 @@ public class SummaryResultCol implements Serializable, Cloneable {
 				} else if (Boolean.class == src.dataType) {
 					b = convertBoolean((Boolean) (src1.topItems[i])) <= convertBoolean((Boolean) (src2.topItems[j]));
 				} else {
-					throw new RuntimeException("Not support yet!");
+					throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
+						src1.dataType.getSimpleName()));
 				}
 				if (b) {
 					src.bottomItems[i + j] = src1.bottomItems[i];
@@ -441,7 +446,8 @@ public class SummaryResultCol implements Serializable, Cloneable {
 		} else if (Boolean.class == this.dataType) {
 			return maxDouble() - minDouble();
 		} else {
-			throw new RuntimeException("Not implemented yet!");
+			throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
+				this.dataType.getSimpleName()));
 		}
 	}
 
@@ -625,7 +631,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
-		if (1 == count || 0 == count  || max.equals(min)) {
+		if (1 == count || 0 == count || max.equals(min)) {
 			return 0.0;
 		} else {
 			if (count == 0) {
@@ -643,7 +649,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
-		if (1 == count || 0 == count  || max.equals(min)) {
+		if (1 == count || 0 == count || max.equals(min)) {
 			return 0.0;
 		} else {
 			if (count == 0) {
@@ -863,7 +869,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 			  double sum, double absSum, double sum2, double sum3, double sum4, Object minValue, Object maxValue) {
 		this.dataType = dataType;
 		if (countTotal != count + countMissValue + countNanValue + countPositiveInfinity + countNegativInfinity) {
-			throw new RuntimeException();
+			throw new AkIllegalStateException("");
 		}
 		this.countTotal = countTotal;
 		this.count = count;
@@ -883,7 +889,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 
 	public void combine(SummaryResultCol src) throws CloneNotSupportedException {
 		if (!dataType.equals(src.dataType)) {
-			throw new RuntimeException("The 2 col data types are not equal!");
+			throw new AkIllegalStateException("The 2 col data types are not equal!");
 		}
 
 		if (0 == countTotal) {
@@ -915,7 +921,8 @@ public class SummaryResultCol implements Serializable, Cloneable {
 		} else if (dataType == String.class) {
 
 		} else {
-			throw new RuntimeException("Not implemented yet!");
+			throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
+				dataType.getSimpleName()));
 		}
 
 		this.countTotal = countTotal + src.countTotal;

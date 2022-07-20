@@ -1,10 +1,10 @@
 package com.alibaba.alink.operator.common.pytorch;
 
-import org.apache.flink.util.Preconditions;
-
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.ArchivesUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkPluginErrorException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
@@ -65,9 +65,10 @@ public class LibtorchUtils {
 		if (null != pluginFilePath) {
 			String directoryName = "libtorch";
 			File directoryFile = new File(pluginFilePath.getPath().toString(), directoryName);
-			Preconditions.checkArgument(directoryFile.exists(),
-				String.format("There should be a directory named %s in plugin directory %s, but cannot be found.",
-					directoryName, pluginFilePath.getPath().toString()));
+			AkPreconditions.checkArgument(directoryFile.exists(),
+				new AkPluginErrorException(
+					String.format("There should be a directory named %s in plugin directory %s, but cannot be found.",
+						directoryName, pluginFilePath.getPath().toString())));
 			return directoryFile.getAbsolutePath();
 		} else {
 			// Download from remote Path

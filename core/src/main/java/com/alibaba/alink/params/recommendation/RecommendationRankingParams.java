@@ -17,6 +17,8 @@ public interface RecommendationRankingParams<T>
 	HasReservedColsDefaultAsNull <T>,
 	HasTopNDefaultAs10 <T> {
 
+	@NameCn("MTable 列名")
+	@DescCn("召回列表列")
 	ParamInfo <String> M_TABLE_COL = ParamInfoFactory
 		.createParamInfo("mTableCol", String.class)
 		.setDescription("recall list col name")

@@ -21,6 +21,8 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.regression.IsotonicRegressionConverter;
@@ -109,9 +111,9 @@ public final class IsotonicRegTrainBatchOp extends BatchOperator <IsotonicRegTra
 				selectedColNames = new String[] {labelColName, vectorColName, weightColName};
 			}
 		} else if (null != featureColName) {
-			throw new IllegalArgumentException("featureCols and vectorCol cannot be set at the same time.");
+			throw new AkIllegalOperatorParameterException("featureCols and vectorCol cannot be set at the same time.");
 		} else {
-			throw new IllegalArgumentException("Either featureColName or vectorColName is required!");
+			throw new AkIllegalOperatorParameterException("Either featureColName or vectorColName is required!");
 		}
 
 		//initialize the input data, the three dimensions are label, feature, weight.
@@ -128,7 +130,7 @@ public final class IsotonicRegTrainBatchOp extends BatchOperator <IsotonicRegTra
 							 : VectorUtil.getVector(row.getField(1)).get(index);
 						 double weight = null == weightColName ? 1.0 : ((Number) row.getField(2)).doubleValue();
 						 if (weight < 0) {
-							 throw new IllegalArgumentException("Weights must be non-negative!");
+							 throw new AkIllegalDataException("Weights must be non-negative!");
 						 }
 						 return Tuple3.of(label, feature, weight);
 					 }

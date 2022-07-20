@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -91,7 +92,7 @@ public class AggLookupModelMapper extends ModelMapper {
 									dvec.plusScaleEqual(t, 1.0);
 									break;
 								default:
-									throw new RuntimeException("not support yet.");
+									throw new AkUnsupportedOperationException("not support yet.");
 							}
 
 						} else {

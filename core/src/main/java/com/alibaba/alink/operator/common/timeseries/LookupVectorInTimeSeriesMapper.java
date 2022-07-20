@@ -9,6 +9,7 @@ import org.apache.flink.table.api.TableSchema;
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.MTableUtil;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -26,13 +27,13 @@ public class LookupVectorInTimeSeriesMapper extends Mapper {
 		String timeCol = params.get(LookupVectorInTimeSeriesParams.TIME_COL);
 		TypeInformation<?> typeTime = TableUtil.findColType(dataSchema, timeCol);
 		if (Types.SQL_TIMESTAMP != typeTime) {
-			throw new IllegalArgumentException("Type of column '" + timeCol + "' must be timestamp!");
+			throw new AkIllegalOperatorParameterException("Type of column '" + timeCol + "' must be timestamp!");
 		}
 
 		String timeSeriesCol = params.get(LookupVectorInTimeSeriesParams.TIME_SERIES_COL);
 		TypeInformation<?> typeTS = TableUtil.findColType(dataSchema, timeSeriesCol);
 		if (!AlinkTypes.M_TABLE.equals(typeTS) && Types.STRING != typeTime) {
-			throw new IllegalArgumentException("Type of column '" + timeSeriesCol + "' must be MTable!");
+			throw new AkIllegalOperatorParameterException("Type of column '" + timeSeriesCol + "' must be MTable!");
 		}
 	}
 

@@ -1,7 +1,8 @@
 package com.alibaba.alink.operator.common.evaluation;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 public final class MultiLabelMetricsSummary
 	implements BaseMetricsSummary <MultiLabelMetrics, MultiLabelMetricsSummary> {
@@ -92,7 +93,7 @@ public final class MultiLabelMetricsSummary
 		if (null == multiLabelMetrics) {
 			return this;
 		}
-		Preconditions.checkArgument(this.labelNumber == multiLabelMetrics.labelNumber, "LabelNumber not equal!");
+		AkPreconditions.checkState(this.labelNumber == multiLabelMetrics.labelNumber, "LabelNumber not equal!");
 		this.precision += multiLabelMetrics.precision;
 		this.recall += multiLabelMetrics.recall;
 		this.accuracy += multiLabelMetrics.accuracy;

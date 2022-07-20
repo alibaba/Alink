@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -112,7 +113,7 @@ public class BLASTest extends AlinkTestBase {
 
 	@Test
 	public void testGemmSizeCheck() throws Exception {
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalArgumentException.class);
 		DenseMatrix m32 = DenseMatrix.rand(3, 2);
 		DenseMatrix m42 = DenseMatrix.rand(4, 2);
 		DenseMatrix a34 = DenseMatrix.zeros(3, 4);
@@ -121,7 +122,7 @@ public class BLASTest extends AlinkTestBase {
 
 	@Test
 	public void testGemmTransposeSizeCheck() throws Exception {
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalArgumentException.class);
 		DenseMatrix m32 = DenseMatrix.rand(3, 2);
 		DenseMatrix m42 = DenseMatrix.rand(4, 2);
 		DenseMatrix a34 = DenseMatrix.zeros(3, 4);
@@ -174,14 +175,14 @@ public class BLASTest extends AlinkTestBase {
 
 	@Test
 	public void testGemvSizeCheck() throws Exception {
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalArgumentException.class);
 		DenseVector y = DenseVector.ones(2);
 		BLAS.gemv(2.0, mat, false, dv1, 0., y);
 	}
 
 	@Test
 	public void testGemvTransposeSizeCheck() throws Exception {
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalArgumentException.class);
 		DenseVector y = DenseVector.ones(2);
 		BLAS.gemv(2.0, mat, true, dv1, 0., y);
 	}

@@ -5,9 +5,10 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -42,15 +43,15 @@ public class AlsRecommKernel extends RecommKernel {
 		this.topK = getParamDefaultAsNull(params, BaseItemsPerUserRecommParams.K);
 
 		if (recommType == RecommType.ITEMS_PER_USER) {
-			Preconditions.checkArgument(topK != null, "Missing param topK");
+			AkPreconditions.checkArgument(topK != null, new AkIllegalArgumentException("Missing param topK"));
 			excludeKnown = params.get(BaseItemsPerUserRecommParams.EXCLUDE_KNOWN);
 		} else if (recommType == RecommType.USERS_PER_ITEM) {
-			Preconditions.checkArgument(topK != null, "Missing param topK");
+			AkPreconditions.checkArgument(topK != null, new AkIllegalArgumentException("Missing param topK"));
 			excludeKnown = params.get(BaseUsersPerItemRecommParams.EXCLUDE_KNOWN);
 		} else if (recommType == RecommType.SIMILAR_USERS) {
-			Preconditions.checkArgument(topK != null, "Missing param topK");
+			AkPreconditions.checkArgument(topK != null, new AkIllegalArgumentException("Missing param topK"));
 		} else if (recommType == RecommType.SIMILAR_ITEMS) {
-			Preconditions.checkArgument(topK != null, "Missing param topK");
+			AkPreconditions.checkArgument(topK != null, new AkIllegalArgumentException("Missing param topK"));
 		}
 	}
 

@@ -11,6 +11,8 @@ import org.apache.flink.api.java.typeutils.PojoField;
 import org.apache.flink.api.java.typeutils.PojoTypeInfo;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.AlinkTypes;
 
@@ -104,7 +106,7 @@ public class StatisticsState implements Serializable {
 					}
 					timestampSrcStates.add(new SrcState(srt.src[i]));
 				} else {
-					throw new UnsupportedOperationException("Not supported column type: " + colClasses[i].getName());
+					throw new AkUnsupportedOperationException("Not supported column type: " + colClasses[i].getName());
 				}
 			}
 		}
@@ -134,7 +136,7 @@ public class StatisticsState implements Serializable {
 				} else if (colClassNames[i].equals(Timestamp.class.getName())) {
 					srcs[i] = this.timestampSrcStates.get(numTimestampCol++).toSummaryResultCol();
 				} else {
-					throw new UnsupportedOperationException("Not supported column type: " + colClassNames[i]);
+					throw new AkUnsupportedOperationException("Not supported column type: " + colClassNames[i]);
 				}
 			}
 
@@ -213,7 +215,7 @@ public class StatisticsState implements Serializable {
 					}
 					String name = field.getName();
 					if (!fieldsSet.contains(name)) {
-						throw new RuntimeException(String.format(
+						throw new AkIllegalStateException(String.format(
 							"Can't find field \"%s\". This exception indicates that fields in SummaryResultCol changed"
 								+ " but "
 								+
@@ -222,7 +224,7 @@ public class StatisticsState implements Serializable {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				throw new RuntimeException(e);
+				throw new AkIllegalStateException(e.getMessage());
 			}
 		}
 
@@ -342,7 +344,7 @@ public class StatisticsState implements Serializable {
 			} else if (clazz.equals(Timestamp.class)) {
 				return LONG_ARRAY_TYPE_INFO; // we use long array to store the timestamp array
 			} else {
-				throw new UnsupportedOperationException("Not supported data type: " + clazz.getName());
+				throw new AkUnsupportedOperationException("Not supported data type: " + clazz.getName());
 			}
 		}
 
@@ -370,7 +372,7 @@ public class StatisticsState implements Serializable {
 			} else if (clazz.equals(Timestamp.class)) {
 				return new Long[len]; // we use long array to store the timestamp array
 			} else {
-				throw new UnsupportedOperationException("Not supported data type: " + clazz.getName());
+				throw new AkUnsupportedOperationException("Not supported data type: " + clazz.getName());
 			}
 		}
 	}

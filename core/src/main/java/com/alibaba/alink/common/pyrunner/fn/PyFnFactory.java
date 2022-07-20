@@ -4,6 +4,8 @@ import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.pyrunner.fn.impl.PyBigDecimalScalarFn;
 import com.alibaba.alink.common.pyrunner.fn.impl.PyBooleanScalarFn;
 import com.alibaba.alink.common.pyrunner.fn.impl.PyByteScalarFn;
@@ -60,21 +62,22 @@ public class PyFnFactory {
 	}
 
 	public static ScalarFunction makeScalarFn(String name, String resultType, String fnSpecJson) {
-		return PyFnFactory.makeScalarFn(name, resultType, fnSpecJson,
-			Collections. <String, String>emptyMap()::getOrDefault);
+		return PyFnFactory.makeScalarFn(name, resultType, fnSpecJson, Collections.emptyMap());
 	}
 
 	public static ScalarFunction makeScalarFn(String name, String resultType, String fnSpecJson,
-											  SerializableBiFunction <String, String, String> runConfigGetter) {
+											  Map <String, String> runConfig) {
 		if (!SCALAR_FN_MAPPING.containsKey(resultType.toUpperCase())) {
-			throw new RuntimeException(String.format("Invalid result type %s for Python scalar function.", resultType));
+			throw new AkUnsupportedOperationException(
+				String.format("Invalid result type %s for Python scalar function.", resultType));
 		}
 		Class <?> clz = SCALAR_FN_MAPPING.get(resultType.toUpperCase());
 		try {
-			Constructor <?> constructor = clz.getConstructor(String.class, String.class, SerializableBiFunction.class);
-			return (ScalarFunction) constructor.newInstance(name, fnSpecJson, runConfigGetter);
-		} catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-			throw new RuntimeException(String.format("Unable to construct %s.", clz.getSimpleName()), e);
+			Constructor <?> constructor = clz.getConstructor(String.class, String.class, Map.class);
+			return (ScalarFunction) constructor.newInstance(name, fnSpecJson, runConfig);
+		} catch (InvocationTargetException | NoSuchMethodException | InstantiationException |
+				 IllegalAccessException e) {
+			throw new AkUnclassifiedErrorException(String.format("Unable to construct %s.", clz.getSimpleName()), e);
 		}
 	}
 

@@ -19,6 +19,7 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -140,7 +141,7 @@ class TripleToAnyBatchOp<T extends TripleToAnyBatchOp <T>> extends BatchOperator
 			Tuple2 <Boolean, Row> t2 = formatWriter.write(bufMap);
 			if (!t2.f0) {
 				if (handleInvalid.equals(HandleInvalid.ERROR)) {
-					throw new RuntimeException("Fail to convert: " + JsonConverter.toJson(bufMap));
+					throw new AkIllegalDataException("Fail to convert: " + JsonConverter.toJson(bufMap));
 				} else {
 					return;
 				}

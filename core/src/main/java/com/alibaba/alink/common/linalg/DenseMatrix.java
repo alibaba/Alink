@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.linalg;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -84,7 +86,7 @@ public class DenseMatrix implements Serializable {
 	 * Construct a matrix from a 2-D array.
 	 *
 	 * @param data Two-dimensional array of doubles.
-	 * @throws IllegalArgumentException All rows must have the same size
+	 * @throws AkUnclassifiedErrorException All rows must have the same size
 	 */
 	public DenseMatrix(double[][] data) {
 		this.m = data.length;
@@ -96,7 +98,7 @@ public class DenseMatrix implements Serializable {
 		this.n = data[0].length;
 		for (int i = 0; i < m; i++) {
 			if (data[i].length != n) {
-				throw new IllegalArgumentException("All rows must have the same size.");
+				throw new AkUnclassifiedErrorException("All rows must have the same size.");
 			}
 		}
 		this.data = new double[m * n];
@@ -198,7 +200,6 @@ public class DenseMatrix implements Serializable {
 	 * @param i Row index.
 	 * @param j Column index.
 	 * @return matA(i, j)
-	 * @throws ArrayIndexOutOfBoundsException
 	 */
 	public double get(int i, int j) {
 		return data[j * m + i];
@@ -356,7 +357,6 @@ public class DenseMatrix implements Serializable {
 	 * @param i Row index.
 	 * @param j Column index.
 	 * @param s A(i,j).
-	 * @throws ArrayIndexOutOfBoundsException
 	 */
 	public void set(int i, int j, double s) {
 		data[j * m + i] = s;
@@ -368,7 +368,6 @@ public class DenseMatrix implements Serializable {
 	 * @param i Row index.
 	 * @param j Column index.
 	 * @param s A(i,j).
-	 * @throws ArrayIndexOutOfBoundsException
 	 */
 	public void add(int i, int j, double s) {
 		data[j * m + i] += s;

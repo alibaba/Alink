@@ -24,6 +24,8 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -237,7 +239,7 @@ public final class MultilayerPerceptronTrainBatchOp
                         Comparable<?> label = (Comparable<?>) value.getField(labelColIdx);
                         Long labelIdx = this.label2index.get(label);
                         if (labelIdx == null) {
-                            throw new RuntimeException("unknown label: " + label);
+                            throw new AkIllegalDataException("unknown label: " + label);
                         }
                         if (isVectorInput) {
                             Vector vec = VectorUtil.getVector(value.getField(vectorColIdx));
@@ -291,7 +293,7 @@ public final class MultilayerPerceptronTrainBatchOp
         final String vectorColName = getVectorCol();
         final boolean isVectorInput = !StringUtils.isNullOrWhitespaceOnly(vectorColName);
         if (getParams().contains(HasFeatureCols.FEATURE_COLS) && getParams().contains(HasVectorCol.VECTOR_COL)) {
-            throw new RuntimeException("featureCols and vectorCol cannot be set at the same time.");
+            throw new AkIllegalArgumentException("featureCols and vectorCol cannot be set at the same time.");
         }
         final String[] featureColNames = isVectorInput ? null :
                 (getParams().contains(FEATURE_COLS) ? getFeatureCols() :
@@ -326,12 +328,12 @@ public final class MultilayerPerceptronTrainBatchOp
                     int[] modelLayerSize = model.meta.get(MultilayerPerceptronTrainParams.LAYERS);
 					boolean judge = (model.meta.get(ModelParamName.IS_VECTOR_INPUT) == isVectorInput);
 					if (!judge) {
-						throw new RuntimeException("initial mlpc model not compatible with parameter setting: initial model need vector data.");
+						throw new AkIllegalDataException("initial mlpc model not compatible with parameter setting: initial model need vector data.");
 					}
 					for (int i = 0; i < layerSize.length; ++i) {
 						judge = (modelLayerSize[i] == layerSize[i]);
 						if (!judge) {
-							throw new RuntimeException("initial mlpc model not compatible with parameter setting. layerSize not equal.");
+							throw new AkIllegalDataException("initial mlpc model not compatible with parameter setting. layerSize not equal.");
 						}
 					}
 

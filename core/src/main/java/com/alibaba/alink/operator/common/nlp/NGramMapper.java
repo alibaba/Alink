@@ -5,6 +5,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.mapper.SISOMapper;
 import com.alibaba.alink.params.nlp.NGramParams;
 
@@ -23,7 +24,7 @@ public class NGramMapper extends SISOMapper {
 		super(dataSchema, params);
 		this.n = this.params.get(NGramParams.N);
 		if (this.n <= 0) {
-			throw new IllegalArgumentException("N must be positive!");
+			throw new AkIllegalOperatorParameterException("N must be positive!");
 		}
 	}
 

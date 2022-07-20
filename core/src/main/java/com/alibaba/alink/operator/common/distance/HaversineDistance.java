@@ -2,8 +2,9 @@ package com.alibaba.alink.operator.common.distance;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -117,7 +118,7 @@ public class HaversineDistance extends FastDistance {
 	 */
 	@Override
 	public double calc(double[] array1, double[] array2) {
-		Preconditions.checkState(array1.length == VECTOR_SIZE && array2.length == VECTOR_SIZE,
+		AkPreconditions.checkArgument(array1.length == VECTOR_SIZE && array2.length == VECTOR_SIZE,
 			"HaversineDistance only supports vector size 2, the first value is latitude and the second value is "
 				+ "longitude");
 
@@ -133,7 +134,7 @@ public class HaversineDistance extends FastDistance {
 	 */
 	@Override
 	public double calc(Vector vec1, Vector vec2) {
-		Preconditions.checkState(vec1.size() == VECTOR_SIZE && vec2.size() == VECTOR_SIZE,
+		AkPreconditions.checkArgument(vec1.size() == VECTOR_SIZE && vec2.size() == VECTOR_SIZE,
 			"HaversineDistance only supports vector size 2, the first value is latitude and the second value is "
 				+ "longitude");
 
@@ -144,7 +145,7 @@ public class HaversineDistance extends FastDistance {
 	List <FastDistanceData> prepareSparseMatrixData(Tuple2 <Vector, Row> tuple,
 													Iterator <Tuple2 <Vector, Row>> iterator,
 													int vectorSize) {
-		throw new RuntimeException("HaversineDistance not support sparse data!");
+		throw new AkUnsupportedOperationException("HaversineDistance not support sparse data!");
 	}
 
 	/**
@@ -174,7 +175,7 @@ public class HaversineDistance extends FastDistance {
 		if (data instanceof FastDistanceVectorData) {
 			FastDistanceVectorData vectorData = (FastDistanceVectorData) data;
 			Vector vec = vectorData.getVector();
-			Preconditions.checkState(vec.size() == VECTOR_SIZE,
+			AkPreconditions.checkArgument(vec.size() == VECTOR_SIZE,
 				"HaversineDistance only supports vector size 2, the first value is latitude and the second value is "
 					+ "longitude");
 			if (vectorData.label == null || vectorData.label.size() != LABEL_SIZE) {
@@ -189,7 +190,7 @@ public class HaversineDistance extends FastDistance {
 				matrix.label = new DenseMatrix(LABEL_SIZE, matrix.vectors.numCols());
 			}
 			double[] matrixData = matrix.vectors.getData();
-			Preconditions.checkState(matrixData.length % VECTOR_SIZE == 0,
+			AkPreconditions.checkArgument(matrixData.length % VECTOR_SIZE == 0,
 				"HaversineDistance only supports vector size 2, the first value is latitude and the second value is "
 					+ "longitude");
 
@@ -259,11 +260,11 @@ public class HaversineDistance extends FastDistance {
 
 	@Override
 	void calc(FastDistanceVectorData left, FastDistanceSparseData right, double[] res) {
-		throw new RuntimeException("HaversineDistance not support sparse data!");
+		throw new AkUnsupportedOperationException("HaversineDistance not support sparse data!");
 	}
 
 	@Override
 	void calc(FastDistanceSparseData left, FastDistanceSparseData right, double[] res) {
-		throw new RuntimeException("HaversineDistance not support sparse data!");
+		throw new AkUnsupportedOperationException("HaversineDistance not support sparse data!");
 	}
 }
