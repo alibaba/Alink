@@ -1,0 +1,299 @@
+{
+  "datahub": {
+    "versions": {
+      "2.13.0-public": [
+        ".version",
+        "alink_connector_datahub_flink-1.11_2.11-1.5.6.jar",
+        "aliyun-sdk-datahub-2.13.0-public.jar",
+        "commons-codec-1.9.jar",
+        "commons-lang3-3.5.jar",
+        "converter-jackson-2.5.0.jar",
+        "flink-shaded-guava-18.0-13.0.jar",
+        "jackson-annotations-2.9.0.jar",
+        "jackson-core-2.9.4.jar",
+        "jackson-databind-2.9.4.jar",
+        "logging-interceptor-3.12.0.jar",
+        "okhttp-3.14.9.jar",
+        "okio-1.15.0.jar",
+        "protobuf-java-2.6.1.jar",
+        "retrofit-2.5.0.jar"
+      ]
+    },
+    "default-version": "2.13.0-public"
+  },
+  "derby": {
+    "versions": {
+      "10.6.1.0": [
+        ".version",
+        "alink_connector_jdbc_derby_flink-1.11_2.11-1.5.6.jar",
+        "derby-10.6.1.0.jar",
+        "flink-connector-jdbc_2.11-1.11.3.jar"
+      ]
+    },
+    "default-version": "10.6.1.0"
+  },
+  "hadoop": {
+    "versions": {
+      "2.8.3": [
+        ".version",
+        "alink_flink_hadoop_fs_service_flink-1.11_2.11-1.5.6.jar",
+        "flink-hadoop-fs-1.11.3.jar",
+        "flink-shaded-hadoop-2-uber-2.8.3-9.0.jar",
+        "log4j-1.2.17.jar"
+      ]
+    },
+    "default-version": "2.8.3"
+  },
+  "hive": {
+    "versions": {
+      "2.3.4": [
+        ".version",
+        "alink_hive_bridge_flink-1.11_2.11-1.5.6.jar",
+        "antlr-runtime-3.5.2.jar",
+        "bonecp-0.8.0.RELEASE.jar",
+        "commons-dbcp-1.4.jar",
+        "commons-dbcp2-2.0.1.jar",
+        "commons-pool-1.5.4.jar",
+        "commons-pool2-2.2.jar",
+        "datanucleus-api-jdo-4.2.4.jar",
+        "datanucleus-core-4.1.17.jar",
+        "datanucleus-rdbms-4.1.19.jar",
+        "flink-connector-hive_2.11-1.11.3.jar",
+        "flink-hadoop-compatibility_2.11-1.11.3.jar",
+        "flink-shaded-hadoop-2-uber-2.8.3-9.0.jar",
+        "hive-exec-2.3.4.jar",
+        "hive-metastore-2.3.4.jar",
+        "jackson-core-2.6.5.jar",
+        "javax.jdo-3.2.0-m3.jar",
+        "jdo-api-3.0.1.jar",
+        "log4j-1.2.17.jar",
+        "mysql-connector-java-5.1.27.jar"
+      ]
+    },
+    "default-version": "2.3.4"
+  },
+  "kafka": {
+    "versions": {
+      "0.11": [
+        ".version",
+        "alink_connector_kafka_flink-1.11_2.11-1.5.6.jar",
+        "commons-collections-3.2.2.jar",
+        "flink-connector-kafka-base_2.11-1.11.0.jar",
+        "flink-connector-kafka_2.11-1.11.0.jar",
+        "kafka-clients-2.4.1.jar"
+      ]
+    },
+    "default-version": "0.11"
+  },
+  "mysql": {
+    "versions": {
+      "5.1.27": [
+        ".version",
+        "alink_connector_jdbc_mysql_flink-1.11_2.11-1.5.6.jar",
+        "flink-connector-jdbc_2.11-1.11.3.jar",
+        "mysql-connector-java-5.1.27.jar"
+      ]
+    },
+    "default-version": "5.1.27"
+  },
+  "odps": {
+    "versions": {
+      "0.36.4-public": [
+        ".version",
+        "alink_connector_odps_flink-1.11_2.11-1.5.6.jar",
+        "commons-codec-1.9.jar",
+        "commons-io-2.4.jar",
+        "commons-lang3-3.3.2.jar",
+        "gson-2.2.4.jar",
+        "mail-1.4.7.jar",
+        "odps-sdk-commons-0.36.4-public.jar",
+        "odps-sdk-core-0.36.4-public.jar",
+        "protobuf-java-2.4.1.jar",
+        "snappy-java-1.1.1.6.jar"
+      ]
+    },
+    "default-version": "0.36.4-public"
+  },
+  "onnx_predictor": {
+    "versions": {
+      "1.11.0": [
+        ".version",
+        "alink_onnx_predictor_flink-1.11_2.11-1.5.4.jar",
+        "onnxruntime-1.11.0.jar",
+        "onnxruntime_gpu-1.11.0.jar"
+      ],
+      "1.11.0r1": [
+        ".version",
+        "alink_onnx_predictor_flink-1.11_2.11-1.5.6.jar",
+        "onnxruntime-1.11.0.jar",
+        "onnxruntime_gpu-1.11.0.jar"
+      ]
+    },
+    "default-version": "1.11.0r1"
+  },
+  "oss": {
+    "versions": {
+      "3.4.1": [
+        ".version",
+        "flink-oss-fs-hadoop-1.11.3.jar"
+      ]
+    },
+    "default-version": "3.4.1"
+  },
+  "parquet": {
+    "versions": {
+      "0.11.0": [
+        ".version",
+        "alink_connector_parquet_flink-1.11_2.11-1.5.6.jar",
+        "commons-collections-3.2.2.jar",
+        "commons-compress-1.20.jar",
+        "flink-parquet_2.11-1.13.0.jar",
+        "guava-11.0.2.jar",
+        "hadoop-common-2.8.0.jar",
+        "parquet-column-1.11.1.jar",
+        "parquet-common-1.11.1.jar",
+        "parquet-encoding-1.11.1.jar",
+        "parquet-format-structures-1.11.1.jar",
+        "parquet-hadoop-1.11.1.jar",
+        "parquet-jackson-1.11.1.jar",
+        "snappy-java-1.1.8.3.jar"
+      ]
+    },
+    "default-version": "0.11.0"
+  },
+  "redis": {
+    "versions": {
+      "2.9.0": [
+        ".version",
+        "alink_connector_redis_flink-1.11_2.11-1.5.6.jar",
+        "commons-pool2-2.6.0.jar",
+        "jedis-2.9.0.jar",
+        "slf4j-api-1.7.21.jar"
+      ]
+    },
+    "default-version": "2.9.0"
+  },
+  "s3-hadoop": {
+    "versions": {
+      "1.11.788": [
+        ".version",
+        "flink-s3-fs-hadoop-1.11.3.jar"
+      ]
+    },
+    "default-version": "1.11.788"
+  },
+  "s3-presto": {
+    "versions": {
+      "1.11.788": [
+        ".version",
+        "flink-s3-fs-presto-1.11.3.jar"
+      ]
+    },
+    "default-version": "1.11.788"
+  },
+  "sqlite": {
+    "versions": {
+      "3.19.3": [
+        ".version",
+        "alink_connector_jdbc_sqlite_flink-1.11_2.11-1.5.6.jar",
+        "flink-connector-jdbc_2.11-1.11.3.jar",
+        "sqlite-jdbc-3.19.3.jar"
+      ]
+    },
+    "default-version": "3.19.3"
+  },
+  "tf_predictor_linux": {
+    "versions": {
+      "0.01": [
+        ".version",
+        "alink_tf_predictor_flink-1.13_2.11-1.5.0.jar",
+        "shaded_tensorflow_core_api-0.2.0-0.3.jar",
+        "tensorflow-core-api-0.2.0-linux-x86_64-gpu.jar"
+      ],
+      "0.02": [
+        ".version",
+        "alink_tf_predictor_flink-1.11_2.11-1.5.6.jar",
+        "commons-io-2.4.jar",
+        "shaded_tensorflow_core_api-0.2.0-0.5.jar",
+        "tensorflow-core-api-0.2.0-linux-x86_64-gpu.jar"
+      ]
+    },
+    "default-version": "0.02"
+  },
+  "tf_predictor_macosx": {
+    "versions": {
+      "0.01": [
+        ".version",
+        "alink_tf_predictor_flink-1.13_2.11-1.5.0.jar",
+        "shaded_tensorflow_core_api-0.2.0-0.3.jar",
+        "tensorflow-core-api-0.2.0-macosx-x86_64.jar"
+      ],
+      "0.02": [
+        ".version",
+        "alink_tf_predictor_flink-1.11_2.11-1.5.6.jar",
+        "commons-io-2.4.jar",
+        "shaded_tensorflow_core_api-0.2.0-0.5.jar",
+        "tensorflow-core-api-0.2.0-macosx-x86_64.jar"
+      ]
+    },
+    "default-version": "0.02"
+  },
+  "tf_predictor_windows": {
+    "versions": {
+      "0.01": [
+        ".version",
+        "alink_tf_predictor_flink-1.13_2.11-1.5.0.jar",
+        "shaded_tensorflow_core_api-0.2.0-0.3.jar",
+        "tensorflow-core-api-0.2.0-windows-x86_64-gpu.jar"
+      ],
+      "0.02": [
+        ".version",
+        "alink_tf_predictor_flink-1.11_2.11-1.5.6.jar",
+        "commons-io-2.4.jar",
+        "shaded_tensorflow_core_api-0.2.0-0.5.jar",
+        "tensorflow-core-api-0.2.0-windows-x86_64-gpu.jar"
+      ]
+    },
+    "default-version": "0.02"
+  },
+  "torch_predictor": {
+    "versions": {
+      "1.8.0": [
+        ".version",
+        "alink_torch_predictor_flink-1.11_2.11-1.5.3.jar",
+        "fbjni-java-only-0.0.3.jar",
+        "nativeloader-0.8.0.jar",
+        "pytorch_java_only-1.8.0.jar"
+      ],
+      "1.8.0r1": [
+        ".version",
+        "alink_torch_predictor_flink-1.11_2.11-1.5.6.jar",
+        "fbjni-java-only-0.0.3.jar",
+        "nativeloader-0.8.0.jar",
+        "pytorch_java_only-1.8.0.jar"
+      ]
+    },
+    "default-version": "1.8.0r1"
+  },
+  "xgboost": {
+    "versions": {
+      "1.1.2": [
+        ".version",
+        "alink_xgboost_bridge_flink-1.11_2.11-1.5.6.jar",
+        "commons-logging-1.2.jar",
+        "kryo-2.22.jar",
+        "scala-library-2.11.12.jar",
+        "xgboost4j_2.11-1.1.2.jar"
+      ],
+      "1.5.1": [
+        ".version",
+        "alink_xgboost_bridge_flink-1.11_2.11-1.5.6.jar",
+        "commons-logging-1.2.jar",
+        "kryo-4.0.2.jar",
+        "scala-library-2.12.8.jar",
+        "xgboost4j_2.12-1.5.1.jar"
+      ]
+    },
+    "default-version": "1.5.1"
+  }
+}

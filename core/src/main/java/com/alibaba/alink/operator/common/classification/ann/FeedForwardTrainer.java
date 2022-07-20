@@ -13,6 +13,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -29,12 +30,12 @@ import java.util.Random;
  */
 public class FeedForwardTrainer implements Serializable {
 	private static final long serialVersionUID = -1664569158355844836L;
-	private Topology topology;
-	private int inputSize;
-	private int outputSize;
-	private int blockSize;
-	private boolean onehotLabel;
-	private DenseVector initialWeights;
+	private final Topology topology;
+	private final int inputSize;
+	private final int outputSize;
+	private final int blockSize;
+	private final boolean onehotLabel;
+	private final DenseVector initialWeights;
 
 	/**
 	 * The Constructor.
@@ -96,7 +97,7 @@ public class FeedForwardTrainer implements Serializable {
 			private static final long serialVersionUID = -6247802998516251320L;
 
 			@Override
-			public DenseVector map(Tuple2 <DenseVector, double[]> value) throws Exception {
+			public DenseVector map(Tuple2 <DenseVector, double[]> value) {
 				return value.f0;
 			}
 		});
@@ -111,7 +112,7 @@ public class FeedForwardTrainer implements Serializable {
 
 				@Override
 				public void mapPartition(Iterable <Tuple2 <Double, DenseVector>> samples,
-										 Collector <Tuple3 <Double, Double, Vector>> out) throws Exception {
+										 Collector <Tuple3 <Double, Double, Vector>> out) {
 					List <Tuple2 <Double, DenseVector>> batchData = new ArrayList <>(batchSize);
 					for (int i = 0; i < batchSize; i++) {
 						batchData.add(null);
@@ -141,7 +142,7 @@ public class FeedForwardTrainer implements Serializable {
 	private DataSet <DenseVector> initModel(DataSet <?> inputRel, final Topology topology) {
 		if (initialWeights != null) {
 			if (initialWeights.size() != topology.getWeightSize()) {
-				throw new RuntimeException("Invalid initial weights, size mismatch");
+				throw new AkIllegalModelException("Invalid initial weights, size mismatch");
 			}
 			return BatchOperator.getExecutionEnvironmentFromDataSets(inputRel).fromElements(this.initialWeights);
 		} else {
@@ -153,12 +154,12 @@ public class FeedForwardTrainer implements Serializable {
 					transient Random random;
 
 					@Override
-					public void open(Configuration parameters) throws Exception {
+					public void open(Configuration parameters) {
 						random = new Random(seed);
 					}
 
 					@Override
-					public DenseVector map(Integer value) throws Exception {
+					public DenseVector map(Integer value) {
 						DenseVector weights = DenseVector.zeros(topology.getWeightSize());
 						for (int i = 0; i < weights.size(); i++) {
 							weights.set(i, random.nextGaussian() * initStdev);

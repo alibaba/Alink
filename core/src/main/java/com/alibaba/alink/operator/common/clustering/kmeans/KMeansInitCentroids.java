@@ -23,6 +23,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.shaded.guava18.com.google.common.hash.HashFunction;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.utils.Functional;
@@ -78,7 +79,7 @@ public class KMeansInitCentroids implements Serializable {
 				break;
 			}
 			default: {
-				throw new IllegalArgumentException("Unknown init mode: " + initMode);
+				throw new AkIllegalArgumentException("Unknown init mode: " + initMode);
 			}
 		}
 

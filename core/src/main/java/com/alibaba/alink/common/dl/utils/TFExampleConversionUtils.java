@@ -3,10 +3,12 @@ package com.alibaba.alink.common.dl.utils;
 import org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.dl.coding.TFExampleConversionV2;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.tensor.BoolTensor;
@@ -162,7 +164,7 @@ public class TFExampleConversionUtils {
 					.collect(Collectors.toList());
 				bb.addAllValue(byteStringList);
 			} else {
-				throw new RuntimeException("Not support ByteTensor with rank > 2");
+				throw new AkUnsupportedOperationException("Not support ByteTensor with rank > 2");
 			}
 			featureBuilder.setBytesList(bb);
 		} else if (AlinkTypes.STRING_TENSOR.equals(type)) {
@@ -179,7 +181,7 @@ public class TFExampleConversionUtils {
 			bb.addValue(ByteString.copyFrom((byte[]) val));
 			featureBuilder.setBytesList(bb);
 		} else {
-			throw new RuntimeException(String.format("Unsupported data type for TF: %s", type));
+			throw new AkUnsupportedOperationException(String.format("Unsupported data type for TF: %s", type));
 		}
 		return featureBuilder.build();
 	}
@@ -211,25 +213,31 @@ public class TFExampleConversionUtils {
 
 		if (AlinkTypes.isTensorType(type)) {    // Tensor
 			if (AlinkTypes.FLOAT_TENSOR.equals(type)) {
-				Preconditions.checkArgument(floats.length > 0, "no FLOAT values in the feature.");
+				AkPreconditions.checkArgument(floats.length > 0,
+					new AkIllegalDataException("no FLOAT values in the feature."));
 				return new FloatTensor(floats);
 			} else if (AlinkTypes.DOUBLE_TENSOR.equals(type)) {
-				Preconditions.checkArgument(floats.length > 0, "no FLOAT values in the feature.");
+				AkPreconditions.checkArgument(floats.length > 0,
+					new AkIllegalDataException("no FLOAT values in the feature."));
 				return DoubleTensor.of(new FloatTensor(floats));
 			} else if (AlinkTypes.LONG_TENSOR.equals(type)) {
-				Preconditions.checkArgument(longs.length > 0, "no INT64 values in the feature.");
+				AkPreconditions.checkArgument(longs.length > 0,
+					new AkIllegalDataException("no INT64 values in the feature."));
 				return new LongTensor(longs);
 			} else if (AlinkTypes.INT_TENSOR.equals(type)) {
-				Preconditions.checkArgument(ints.length > 0, "no INT64 values in the feature.");
+				AkPreconditions.checkArgument(ints.length > 0,
+					new AkIllegalDataException("no INT64 values in the feature."));
 				return new IntTensor(ints);
 			} else if (AlinkTypes.STRING_TENSOR.equals(type)) {
-				Preconditions.checkArgument(byteStringList.size() > 0, "no BYTES values in the feature.");
+				AkPreconditions.checkArgument(byteStringList.size() > 0,
+					new AkIllegalDataException("no BYTES values in the feature."));
 				String[] strings = byteStringList.stream()
 					.map(d -> d.toString(StandardCharsets.UTF_8))
 					.toArray(String[]::new);
 				return new StringTensor(strings);
 			} else if (AlinkTypes.BYTE_TENSOR.equals(type)) {
-				Preconditions.checkArgument(byteStringList.size() > 0, "no BYTES values in the feature.");
+				AkPreconditions.checkArgument(byteStringList.size() > 0,
+					new AkIllegalDataException("no BYTES values in the feature."));
 				byte[][] bytes = byteStringList.stream()
 					.map(ByteString::toByteArray)
 					.toArray(byte[][]::new);
@@ -237,31 +245,38 @@ public class TFExampleConversionUtils {
 			}
 		} else if (AlinkTypes.isVectorType(type)) {    // Vector
 			if (AlinkTypes.DENSE_VECTOR.equals(type)) {
-				Preconditions.checkArgument(floats.length > 0, "no FLOAT values in the feature.");
+				AkPreconditions.checkArgument(floats.length > 0,
+					new AkIllegalDataException("no FLOAT values in the feature."));
 				return DoubleTensor.of(new FloatTensor(floats)).toVector();
 			}
 		} else {    // Primitives
 			if (AlinkTypes.LONG.equals(type)) {
-				Preconditions.checkArgument(longs.length > 0, "no INT64 values in the feature.");
+				AkPreconditions.checkArgument(longs.length > 0,
+					new AkIllegalDataException("no INT64 values in the feature."));
 				return longs[0];
 			} else if (AlinkTypes.INT.equals(type)) {
-				Preconditions.checkArgument(longs.length > 0, "no INT64 values in the feature.");
+				AkPreconditions.checkArgument(longs.length > 0,
+					new AkIllegalDataException("no INT64 values in the feature."));
 				return (int) longs[0];
 			} else if (AlinkTypes.FLOAT.equals(type)) {
-				Preconditions.checkArgument(floats.length > 0, "no FLOAT values in the feature.");
+				AkPreconditions.checkArgument(floats.length > 0,
+					new AkIllegalDataException("no FLOAT values in the feature."));
 				return floats[0];
 			} else if (AlinkTypes.DOUBLE.equals(type)) {
-				Preconditions.checkArgument(floats.length > 0, "no FLOAT values in the feature.");
+				AkPreconditions.checkArgument(floats.length > 0,
+					new AkIllegalDataException("no FLOAT values in the feature."));
 				return (double) floats[0];
 			} else if (AlinkTypes.STRING.equals(type)) {
-				Preconditions.checkArgument(byteStringList.size() > 0, "no BYTES values in the feature.");
+				AkPreconditions.checkArgument(byteStringList.size() > 0,
+					new AkIllegalDataException("no BYTES values in the feature."));
 				return byteStringList.get(0).toString(StandardCharsets.UTF_8);
 			} else if (PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO.equals(type)) {
-				Preconditions.checkArgument(byteStringList.size() > 0, "no BYTES values in the feature.");
+				AkPreconditions.checkArgument(byteStringList.size() > 0,
+					new AkIllegalDataException("no BYTES values in the feature."));
 				return byteStringList.get(0).toByteArray();
 			}
 		}
-		throw new RuntimeException(
+		throw new AkUnsupportedOperationException(
 			String.format("Feature of type %s cannot convert to Java object of type %s. Support "
 					+ "FLOAT feature to Float(Tensor), Double(Tensor), and DenseVector; "
 					+ "LONG feature to Long(Tensor); STRING feature to String(Tensor)."
@@ -269,13 +284,13 @@ public class TFExampleConversionUtils {
 	}
 
 	public static Row fromExample(Example example, String[] names, TypeInformation <?>[] types) {
-		Preconditions.checkArgument(names.length == types.length);
+		AkPreconditions.checkArgument(names.length == types.length);
 		Map <String, Feature> featureMap = example.getFeatures().getFeatureMap();
 		Row row = new Row(names.length);
 		for (int i = 0; i < names.length; i++) {
 			String name = names[i];
 			if (!featureMap.containsKey(name)) {
-				throw new RuntimeException(String.format("No feature named %s in the example.", name));
+				throw new AkIllegalDataException(String.format("No feature named %s in the example.", name));
 			}
 			Object obj = fromFeature(featureMap.get(name), types[i]);
 			row.setField(i, obj);

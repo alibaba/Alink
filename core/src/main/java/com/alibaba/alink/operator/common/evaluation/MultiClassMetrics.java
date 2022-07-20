@@ -4,8 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import org.apache.commons.lang.ArrayUtils;
 
@@ -115,7 +115,7 @@ public final class MultiClassMetrics extends BaseSimpleClassifierMetrics <MultiC
 
 	private int getLabelIndex(String label) {
 		int index = ArrayUtils.indexOf(getParams().get(LABEL_ARRAY), label);
-		Preconditions.checkArgument(index >= 0, String.format("Not exist label %s", label));
+		AkPreconditions.checkArgument(index >= 0, String.format("Not exist label %s", label));
 		return index;
 	}
 }

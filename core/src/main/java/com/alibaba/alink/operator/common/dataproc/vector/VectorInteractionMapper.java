@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -30,7 +31,7 @@ public class VectorInteractionMapper extends MISOMapper {
 	@Override
 	protected Object map(Object[] input) {
 		if (input.length != 2) {
-			throw new IllegalArgumentException("VectorInteraction only support two input columns.");
+			throw new AkIllegalDataException("VectorInteraction only support two input columns.");
 		}
 
 		if (input[0] == null || input[1] == null) {
@@ -42,7 +43,7 @@ public class VectorInteractionMapper extends MISOMapper {
 
 		if (vector1 instanceof SparseVector) {
 			if (vector2 instanceof DenseVector) {
-				throw new IllegalArgumentException("Make sure the two input vectors are both dense or sparse.");
+				throw new AkIllegalDataException("Make sure the two input vectors are both dense or sparse.");
 			}
 			SparseVector sparseVector = (SparseVector) vector1;
 			int vecSize = sparseVector.size();
@@ -65,7 +66,7 @@ public class VectorInteractionMapper extends MISOMapper {
 			return new SparseVector(vecSize * scalingSize, interactionIndices, interactionValues);
 		} else {
 			if (vector2 instanceof SparseVector) {
-				throw new IllegalArgumentException("Make sure the two input vectors are both dense or sparse.");
+				throw new AkIllegalDataException("Make sure the two input vectors are both dense or sparse.");
 			}
 			double[] vecArray = ((DenseVector) vector1).getData();
 			double[] scalingArray = ((DenseVector) vector2).getData();

@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.recommendation;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.params.recommendation.BaseSimilarItemsRecommParams;
 
@@ -21,7 +22,7 @@ public class SwingRecommKernel extends RecommKernel implements Cloneable {
 			this.topN = this.params.get(BaseSimilarItemsRecommParams.K);
 			this.recommObjType = modelSchema.getFieldTypes()[0];
 		} else {
-			throw new RuntimeException("ItemKnn not support " + recommType + " yet!");
+			throw new AkUnsupportedOperationException("ItemKnn not support " + recommType + " yet!");
 		}
 	}
 
@@ -38,17 +39,17 @@ public class SwingRecommKernel extends RecommKernel implements Cloneable {
 
 	@Override
 	public Double rate(Object[] infoUserItem) {
-		throw new RuntimeException("Swing not support rate.");
+		throw new AkUnsupportedOperationException("swing not support rate.");
 	}
 
 	@Override
 	public MTable recommendItemsPerUser(Object userId) {
-		throw new RuntimeException("Swing not support recommendItemsPerUser.");
+		throw new AkUnsupportedOperationException("Swing not support recommendItemsPerUser.");
 	}
 
 	@Override
 	public MTable recommendUsersPerItem(Object itemId) {
-		throw new RuntimeException("Swing not support recommendItemsPerUser.");
+		throw new AkUnsupportedOperationException("Swing not support recommendItemsPerUser.");
 	}
 
 	@Override
@@ -63,7 +64,7 @@ public class SwingRecommKernel extends RecommKernel implements Cloneable {
 
 	@Override
 	public MTable recommendSimilarUsers(Object userId) {
-		throw new RuntimeException("Swing not support recommendItemsPerUser.");
+		throw new AkUnsupportedOperationException("Swing not support recommendItemsPerUser.");
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.classification.ann;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -18,9 +19,9 @@ public class Stacker implements Serializable {
 	public static final int BATCH_SIZE = 64;
 	private static final long serialVersionUID = -6416234078414747788L;
 
-	private int inputSize;
-	private int outputSize;
-	private boolean onehot;
+	private final int inputSize;
+	private final int outputSize;
+	private final boolean onehot;
 
 	private transient DenseMatrix features;
 	private transient DenseMatrix labels;
@@ -68,7 +69,7 @@ public class Stacker implements Serializable {
 			for (int i = 0; i < batchSize; i++) {
 				int target = (int) stacked.get(start + i);
 				if (target < 0 || target >= outputSize) {
-					throw new RuntimeException("Invalid target value: " + target);
+					throw new AkIllegalDataException("Invalid target value: " + target);
 				}
 				labels.set(i, target, 1.);
 			}

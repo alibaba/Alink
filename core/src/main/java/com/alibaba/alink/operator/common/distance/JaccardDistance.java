@@ -2,8 +2,9 @@ package com.alibaba.alink.operator.common.distance;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -190,12 +191,12 @@ public class JaccardDistance extends FastDistance {
 
 	@Override
 	void calc(FastDistanceVectorData vector, FastDistanceMatrixData matrix, double[] res) {
-		throw new RuntimeException("Jaccard Distance not support matrix calculation yet!");
+		throw new AkUnimplementedOperationException("Jaccard Distance not support matrix calculation yet!");
 	}
 
 	@Override
 	void calc(FastDistanceMatrixData left, FastDistanceMatrixData right, DenseMatrix res) {
-		throw new RuntimeException("Jaccard Distance not support matrix calculation yet!");
+		throw new AkUnimplementedOperationException("Jaccard Distance not support matrix calculation yet!");
 	}
 
 	@Override
@@ -242,7 +243,7 @@ public class JaccardDistance extends FastDistance {
 		int[][] leftIndices = left.getIndices();
 		int[][] rightIndices = right.getIndices();
 
-		Preconditions.checkArgument(leftIndices.length == rightIndices.length, "VectorSize not equal!");
+		AkPreconditions.checkArgument(leftIndices.length == rightIndices.length, "VectorSize not equal!");
 		for (int i = 0; i < leftIndices.length; i++) {
 			int[] leftIndicesList = leftIndices[i];
 			int[] rightIndicesList = rightIndices[i];

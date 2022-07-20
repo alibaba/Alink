@@ -2,18 +2,19 @@ package com.alibaba.alink.operator.common.tensorflow;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.dl.utils.ArchivesUtils;
 import com.alibaba.alink.common.dl.utils.FileDownloadUtils;
+import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.dl.utils.ZipFileUtil;
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Decoder;
@@ -58,7 +59,7 @@ class TFSavedModelUtils {
 		} else if (modelPath.startsWith("file://")) {
 			localModelPath = modelPath.substring("file://".length());
 		} else {
-			throw new UnsupportedOperationException(
+			throw new AkUnsupportedOperationException(
 				"Model path must represent a compressed file or a local directory or an OSS directory.");
 		}
 		return localModelPath;
@@ -71,7 +72,7 @@ class TFSavedModelUtils {
 		try {
 			ZipFileUtil.unzipFileIntoDirectory(new File(path), dir);
 		} catch (IOException e) {
-			throw new RuntimeException(String.format("Failed to unzip %s to %s.", new File(path), dir), e);
+			throw new AkUnclassifiedErrorException(String.format("Failed to unzip %s to %s.", new File(path), dir), e);
 		}
 		return dir.getAbsolutePath();
 	}
@@ -93,7 +94,7 @@ class TFSavedModelUtils {
 				fos.write(decoder.decode((String) modelRow.getField(1)));
 			}
 		} catch (Exception e) {
-			throw new RuntimeException(String.format("Cannot extract data to %s", zipFilename), e);
+			throw new AkIllegalModelException(String.format("Cannot extract data to %s", zipFilename), e);
 		}
 		return loadSavedModelFromZipFile(zipFile.getAbsolutePath());
 	}

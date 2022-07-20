@@ -3,6 +3,8 @@ package com.alibaba.alink.common.model;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
@@ -145,6 +147,12 @@ public class ModelParamName {
 		.setRequired()
 		.build();
 
+	public final static ParamInfo <double[]> REGULAR = ParamInfoFactory
+		.createParamInfo("regular", double[].class)
+		.setDescription("regular")
+		.setRequired()
+		.build();
+
 	public final static ParamInfo <int[]> FIELD_POS = ParamInfoFactory
 		.createParamInfo("filedPos", int[].class)
 		.setDescription("field pos")
@@ -157,4 +165,11 @@ public class ModelParamName {
 		.setRequired()
 		.build();
 
+	@NameCn("bagging 的数目")
+	@DescCn("bagging 的数目")
+	public final static ParamInfo <Integer> BAGGING_NUMBER = ParamInfoFactory
+		.createParamInfo("baggingNumber", Integer.class)
+		.setDescription("bagging number")
+		.setHasDefaultValue(-1)
+		.build();
 }

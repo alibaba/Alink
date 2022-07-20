@@ -2,8 +2,10 @@ package com.alibaba.alink.operator.common.distance;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.MatVecOp;
@@ -112,8 +114,8 @@ public abstract class FastDistance implements ContinuousDistance {
 				List <Double>[] values = new List[vectorSize];
 				Row[] rows = new Row[rowNumber];
 				while (index < rowNumber && null != tuple) {
-					Preconditions.checkState(tuple.f0 instanceof SparseVector,
-						"Inputs should be the same vector type!");
+					AkPreconditions.checkState(tuple.f0 instanceof SparseVector,
+						new AkIllegalDataException("Inputs should be the same vector type!"));
 					rows[index] = tuple.f1;
 					MatVecOp.appendVectorToSparseData(indices, values, index++, (SparseVector) tuple.f0);
 					tuple = iterator.hasNext() ? iterator.next() : null;
@@ -131,8 +133,8 @@ public abstract class FastDistance implements ContinuousDistance {
 				HashMap <Integer, Tuple2 <List <Integer>, List <Double>>> indexHashMap = new HashMap <>();
 				Row[] rows = new Row[rowNumber];
 				while (index < rowNumber && null != tuple) {
-					Preconditions.checkState(tuple.f0 instanceof SparseVector,
-						"Inputs should be the same vector type!");
+					AkPreconditions.checkState(tuple.f0 instanceof SparseVector,
+						new AkIllegalDataException("Inputs should be the same vector type!"));
 					rows[index] = tuple.f1;
 					MatVecOp.appendVectorToSparseData(indexHashMap, index++, (SparseVector) tuple.f0);
 					tuple = iterator.hasNext() ? iterator.next() : null;
@@ -157,7 +159,8 @@ public abstract class FastDistance implements ContinuousDistance {
 			DenseMatrix matrix = new DenseMatrix(vectorSize, rowNumber);
 			Row[] rows = new Row[rowNumber];
 			while (index < rowNumber && null != tuple) {
-				Preconditions.checkState(tuple.f0 instanceof DenseVector, "Inputs should be the same vector type!");
+				AkPreconditions.checkState(tuple.f0 instanceof DenseVector,
+					new AkIllegalDataException("Inputs should be the same vector type!"));
 				rows[index] = tuple.f1;
 				MatVecOp.appendVectorToMatrix(matrix, false, index++, tuple.f0);
 				tuple = iterator.hasNext() ? iterator.next() : null;
@@ -256,7 +259,7 @@ public abstract class FastDistance implements ContinuousDistance {
 				}
 				calc(leftData, rightData, res);
 			} else {
-				throw new RuntimeException("Not support multiple dense vector and sparse vector distance calculation");
+				throw new AkUnsupportedOperationException("Not support multiple dense vector and sparse vector distance calculation");
 			}
 		} else {
 			if (right instanceof FastDistanceVectorData) {
@@ -274,7 +277,7 @@ public abstract class FastDistance implements ContinuousDistance {
 				}
 				calc(leftData, rightData, res.getData());
 			} else {
-				throw new RuntimeException("Not support multiple dense vector and sparse vector distance calculation");
+				throw new AkUnsupportedOperationException("Not support multiple dense vector and sparse vector distance calculation");
 			}
 		}
 		return res;

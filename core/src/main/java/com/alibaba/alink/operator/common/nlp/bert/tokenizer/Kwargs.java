@@ -1,6 +1,6 @@
 package com.alibaba.alink.operator.common.nlp.bert.tokenizer;
 
-import org.apache.flink.util.Preconditions;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.util.HashMap;
 
@@ -40,7 +40,7 @@ public class Kwargs extends HashMap <String, Object> {
 	 * @return
 	 */
 	public Kwargs putIfAbsent(Object... args) {
-		Preconditions.checkArgument(args.length % 2 == 0, "#args must be a multiple of 2.");
+		AkPreconditions.checkArgument(args.length % 2 == 0, "#args must be a multiple of 2.");
 		for (int i = 0; i < args.length; i += 2) {
 			String key = (String) args[i];
 			Object value = args[i + 1];
@@ -50,7 +50,7 @@ public class Kwargs extends HashMap <String, Object> {
 	}
 
 	public Kwargs put(Object... args) {
-		Preconditions.checkArgument(args.length % 2 == 0, "#args must be a multiple of 2.");
+		AkPreconditions.checkArgument(args.length % 2 == 0, "#args must be a multiple of 2.");
 		for (int i = 0; i < args.length; i += 2) {
 			String key = (String) args[i];
 			Object value = args[i + 1];

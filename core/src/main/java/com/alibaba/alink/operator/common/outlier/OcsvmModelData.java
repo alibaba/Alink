@@ -4,7 +4,9 @@ import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.params.outlier.HaskernelType.KernelType;
 
-public class OcsvmModelData {
+import java.io.Serializable;
+
+public class OcsvmModelData implements Serializable {
 	public SvmModelData[] models;
 	public String[] featureColNames;
 	public String vectorCol;
@@ -20,7 +22,7 @@ public class OcsvmModelData {
 	public double nu;
 	public KernelType kernelType;
 
-	public static class SvmModelData
+	public static class SvmModelData implements Serializable
 	{
 		/** Total #SupportVec */
 		public int numSupportVec;

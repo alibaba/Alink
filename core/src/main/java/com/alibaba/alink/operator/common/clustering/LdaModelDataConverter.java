@@ -5,6 +5,8 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -74,7 +76,7 @@ public class LdaModelDataConverter extends SimpleModelDataConverter <LdaModelDat
 				modelData.wordTopicCounts = res.f0;
 				break;
 			default:
-				throw new NotImplementedException("Optimizer not support.");
+				throw new AkIllegalArgumentException("Optimizer not supported: " + modelData.optimizer);
 		}
 		return modelData;
 	}

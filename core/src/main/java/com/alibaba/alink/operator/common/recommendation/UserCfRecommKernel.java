@@ -5,6 +5,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
 import com.alibaba.alink.params.recommendation.BaseSimilarItemsRecommParams;
@@ -41,7 +42,7 @@ public class UserCfRecommKernel extends RecommKernel implements Cloneable {
 				break;
 			}
 			default: {
-				throw new RuntimeException("UserCf not support " + recommType + " yet!");
+				throw new AkUnsupportedOperationException("UserCf not support " + recommType + " yet!");
 			}
 		}
 	}
@@ -102,7 +103,7 @@ public class UserCfRecommKernel extends RecommKernel implements Cloneable {
 
 	@Override
 	public MTable recommendSimilarItems(Object itemId) {
-		throw new RuntimeException("ItemCf not support recommendSimilarItems");
+		throw new AkUnsupportedOperationException("ItemCf not support recommendSimilarItems");
 	}
 
 	@Override

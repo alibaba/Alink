@@ -62,7 +62,7 @@ public class Sgd extends Optimizer {
 		double epsilon = params.get(SgdParams.EPSILON);
 		checkInitCoef();
 
-		/**
+		/*
 		 * solve problem using iteration.
 		 * trainData is the distributed samples.
 		 * initCoef is the initial model coefficient, which will be broadcast to every worker.
@@ -102,7 +102,7 @@ public class Sgd extends Optimizer {
 		 * object function class, it supply the functions to calc gradient (or loss) locality.
 		 */
 		private OptimObjFunc objFunc;
-		private double fraction;
+		private final double fraction;
 		private transient List <Tuple3 <Double, Double, Vector>> data = null;
 		private transient List <Tuple3 <Double, Double, Vector>> miniBatchData = null;
 
@@ -170,10 +170,10 @@ public class Sgd extends Optimizer {
 
 		private final static Logger LOG = LoggerFactory.getLogger(UpdateSgdModel.class);
 		private static final long serialVersionUID = 2064300908719020918L;
-		private double epsilon;
-		private int maxIter;
-		private double learnRate;
-		private LinearTrainParams.OptimMethod method;
+		private final double epsilon;
+		private final int maxIter;
+		private final double learnRate;
+		private final LinearTrainParams.OptimMethod method;
 
 		public UpdateSgdModel(int maxIter, double epsilon, double learnRate, LinearTrainParams.OptimMethod method) {
 			this.maxIter = maxIter;

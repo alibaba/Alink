@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
@@ -48,7 +49,7 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 				break;
 			}
 			default: {
-				throw new RuntimeException("ItemKnn not support " + recommType + " yet!");
+				throw new AkUnimplementedOperationException("Item not support " + recommType + " yet!");
 			}
 		}
 	}

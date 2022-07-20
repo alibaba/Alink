@@ -129,7 +129,7 @@ public class LinearRegressionTest extends AlinkTestBase {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			PrintStream ps = new PrintStream(baos);
 			ex.printStackTrace(ps);
-			Assert.assertTrue("label col has null value", baos.toString().contains("label col has null values, please check it!"));
+			Assert.assertTrue("The input labels has null values", baos.toString().contains("The input labels has null values, please check it!"));
 		}
 
 	}

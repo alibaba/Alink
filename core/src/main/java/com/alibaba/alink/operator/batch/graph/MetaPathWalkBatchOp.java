@@ -19,7 +19,6 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.NumberSequenceIterator;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -31,6 +30,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.graph.RandomWalkBatchOp.RandomWalkCommunicationUnit;
@@ -347,7 +347,7 @@ public class MetaPathWalkBatchOp extends BatchOperator <MetaPathWalkBatchOp>
 						logical2physical.getDstPartitionId());
 				}
 				HeteGraphEngine heteGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				Preconditions.checkNotNull(heteGraphEngine);
+				AkPreconditions.checkNotNull(heteGraphEngine, "heteGraphEngine is null");
 				heteGraphEngine.setLogicalWorkerIdToPhysicalWorkerId(workerIdMapping);
 			} else {
 				// do nothing here.
@@ -394,9 +394,9 @@ public class MetaPathWalkBatchOp extends BatchOperator <MetaPathWalkBatchOp>
 				MetaPathWalkPathEngine heteWalkPath = IterTaskObjKeeper.get(randomWalkStorageHandler, partitionId);
 				RandomWalkMemoryBuffer randomWalkMemoryBuffer = IterTaskObjKeeper.get(walkWriteBufferHandler,
 					partitionId);
-				Preconditions.checkNotNull(heteGraphEngine);
-				Preconditions.checkNotNull(heteWalkPath);
-				Preconditions.checkNotNull(randomWalkMemoryBuffer);
+				AkPreconditions.checkNotNull(heteGraphEngine, "heteGraphEngine is null");
+				AkPreconditions.checkNotNull(heteWalkPath, "heteWalkPath is null");
+				AkPreconditions.checkNotNull(randomWalkMemoryBuffer, "randomWalkMemoryBuffer is null");
 				Tuple2 <long[], Character[]> nextBatchOfVerticesToSampleFrom =
 					heteWalkPath.getNextBatchOfVerticesToSampleFrom();
 
@@ -502,9 +502,12 @@ public class MetaPathWalkBatchOp extends BatchOperator <MetaPathWalkBatchOp>
 				}
 			} else {
 				HeteGraphEngine heteGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				Preconditions.checkNotNull(heteGraphEngine);
+				AkPreconditions.checkNotNull(heteGraphEngine, "heteGraphEngine is null");
 				for (MetaPathCommunicationUnit metaPathCommunicationUnit : values) {
-					Preconditions.checkState(metaPathCommunicationUnit.getDstPartitionId() == partitionId);
+					AkPreconditions.checkState(metaPathCommunicationUnit.getDstPartitionId() == partitionId,
+						"The task id is incorrect. It should be "
+						+ metaPathCommunicationUnit.getDstPartitionId()
+						+ " but is is " + partitionId);
 					Long[] verticesToSample = metaPathCommunicationUnit.getRequestedVertexIds();
 					Character[] typesToSample = metaPathCommunicationUnit.getVertexTypes();
 					for (int vertexCnt = 0; vertexCnt < verticesToSample.length; vertexCnt++) {

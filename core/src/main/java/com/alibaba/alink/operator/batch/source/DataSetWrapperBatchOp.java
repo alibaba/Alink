@@ -6,6 +6,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 
 /**
@@ -41,6 +42,6 @@ public final class DataSetWrapperBatchOp extends BatchOperator <DataSetWrapperBa
 
 	@Override
 	public DataSetWrapperBatchOp linkFrom(BatchOperator <?>... inputs) {
-		throw new RuntimeException("Unsupported now.");
+		throw new AkUnsupportedOperationException("Unsupported now.");
 	}
 }

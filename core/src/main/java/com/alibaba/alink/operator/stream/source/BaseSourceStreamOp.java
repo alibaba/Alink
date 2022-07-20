@@ -8,6 +8,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.HasIoName;
@@ -34,7 +35,7 @@ public abstract class BaseSourceStreamOp<T extends BaseSourceStreamOp <T>> exten
 
 	@Override
 	public final T linkFrom(StreamOperator <?>... inputs) {
-		throw new UnsupportedOperationException("Source operator does not support linkFrom()");
+		throw new AkUnsupportedOperationException("Source operator does not support linkFrom()");
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -39,7 +40,7 @@ public class FlattenMTableMapper extends FlatMapper {
                 ? params.get(FlattenMTableParams.RESERVED_COLS) : getDataSchema().getFieldNames();
         for (String outputColName : outputColNames) {
             if (TableUtil.findColIndex(reservedColNames, outputColName) > -1) {
-                throw new RuntimeException("output table has repeated col names, please check your table schemas.");
+                throw new AkIllegalArgumentException("output table has repeated col names, please check your table schemas.");
             }
         }
         outputColsHelper = new OutputColsHelper(

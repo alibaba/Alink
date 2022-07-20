@@ -7,22 +7,21 @@ import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.pyrunner.fn.BasePyScalarFn;
 import com.alibaba.alink.common.pyrunner.fn.PyScalarFnHandle;
 import com.alibaba.alink.common.pyrunner.fn.conversion.MTableWrapper;
-import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.Map;
 
 public class PyMTableScalarFn extends BasePyScalarFn <MTableWrapper, PyScalarFnHandle <MTableWrapper>> {
 	private final static Logger LOG = LoggerFactory.getLogger(PyMTableScalarFn.class);
 
 	public PyMTableScalarFn(String name, String fnSpecJson) {
-		this(name, fnSpecJson, Collections. <String, String>emptyMap()::getOrDefault);
+		this(name, fnSpecJson, Collections.emptyMap());
 	}
 
-	public PyMTableScalarFn(String name, String fnSpecJson,
-							SerializableBiFunction <String, String, String> runConfigGetter) {
-		super(name, fnSpecJson, MTableWrapper.class, runConfigGetter);
+	public PyMTableScalarFn(String name, String fnSpecJson, Map <String, String> runConfig) {
+		super(name, fnSpecJson, MTableWrapper.class, runConfig);
 	}
 
 	@Override

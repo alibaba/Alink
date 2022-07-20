@@ -4,6 +4,10 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
+import com.alibaba.alink.operator.common.sql.SelectUtils;
+import com.alibaba.alink.operator.common.sql.SimpleSelectMapper;
 import com.alibaba.alink.params.sql.SelectParams;
 
 /**
@@ -29,7 +33,34 @@ public final class SelectBatchOp extends BaseSqlApiBatchOp <SelectBatchOp>
 
 	@Override
 	public SelectBatchOp linkFrom(BatchOperator <?>... inputs) {
-		this.setOutputTable(inputs[0].select(getClause()).getOutputTable());
+		BatchOperator <?> in = checkAndGetFirst(inputs);
+		String[] colNames = in.getColNames();
+
+		String clause = getClause();
+		String newClause = SelectUtils.convertRegexClause2ColNames(colNames, clause);
+
+		if (SelectUtils.isSimpleSelect(newClause, colNames)) {
+			this.setOutputTable(
+				in.link(new SimpleSelectBatchOp()
+					.setClause(newClause)
+					.setMLEnvironmentId(in.getMLEnvironmentId())
+				).getOutputTable());
+		} else {
+			this.setOutputTable(BatchSqlOperators.select(in, newClause).getOutputTable());
+		}
 		return this;
 	}
+
+	private class SimpleSelectBatchOp extends MapBatchOp <SimpleSelectBatchOp>
+		implements SelectParams <SimpleSelectBatchOp> {
+
+		public SimpleSelectBatchOp() {
+			this(null);
+		}
+
+		public SimpleSelectBatchOp(Params param) {
+			super(SimpleSelectMapper::new, param);
+		}
+	}
+
 }

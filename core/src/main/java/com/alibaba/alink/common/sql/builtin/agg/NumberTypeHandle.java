@@ -3,6 +3,8 @@ package com.alibaba.alink.common.sql.builtin.agg;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+
 public class NumberTypeHandle {
 
 
@@ -26,7 +28,7 @@ public class NumberTypeHandle {
 		} else if (Types.DOUBLE.equals(dataType)) {
 			return data;
 		}
-		throw new RuntimeException("Do not support this type: " + dataType);
+		throw new AkUnsupportedOperationException("Do not support this type: " + dataType);
 	}
 
 	private void getType(Object data) {
@@ -43,7 +45,7 @@ public class NumberTypeHandle {
 		} else if (data instanceof Byte) {
 			dataType = Types.BYTE;
 		} else {
-			throw new RuntimeException("We only support double, long, int, float, short, byte.");
+			throw new AkUnsupportedOperationException("We only support double, long, int, float, short, byte.");
 		}
 	}
 }

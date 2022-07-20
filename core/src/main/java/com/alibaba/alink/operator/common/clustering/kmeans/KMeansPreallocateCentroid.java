@@ -1,10 +1,11 @@
 package com.alibaba.alink.operator.common.clustering.kmeans;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.ComputeFunction;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.batch.clustering.KMeansTrainBatchOp;
 import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
 import org.slf4j.Logger;
@@ -29,8 +30,8 @@ public class KMeansPreallocateCentroid extends ComputeFunction {
 			context.putObj(KMeansTrainBatchOp.VECTOR_SIZE, vectorSize);
 
 			FastDistanceMatrixData centroid = initCentroids.get(0);
-			Preconditions.checkArgument(centroid.getVectors().numRows() == vectorSize,
-				"Init centroid error, size not equal!");
+			AkPreconditions.checkArgument(centroid.getVectors().numRows() == vectorSize,
+				new AkIllegalArgumentException("Init centroid error, size not equal!"));
 			LOG.info("Init centroids, initial centroid size {}", centroid.getVectors().numCols());
 			context.putObj(KMeansTrainBatchOp.CENTROID1, Tuple2.of(context.getStepNo() - 1, centroid));
 			context.putObj(KMeansTrainBatchOp.CENTROID2,

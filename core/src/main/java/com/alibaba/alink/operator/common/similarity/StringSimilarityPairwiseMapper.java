@@ -5,6 +5,8 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.MISOMapper;
 import com.alibaba.alink.operator.common.similarity.similarity.Cosine;
 import com.alibaba.alink.operator.common.similarity.similarity.JaccardSimilarity;
@@ -68,7 +70,7 @@ public class StringSimilarityPairwiseMapper extends MISOMapper {
 					params.get(StringTextApproxParams.NUM_BUCKET));
 			}
 			default: {
-				throw new RuntimeException("No such calc method");
+				throw new AkUnsupportedOperationException("No such calc method");
 			}
 		}
 	}
@@ -91,7 +93,7 @@ public class StringSimilarityPairwiseMapper extends MISOMapper {
 				return JaccardSimilarity.similarity(s1, s2);
 			}
 			default: {
-				throw new RuntimeException("No such calc method");
+				throw new AkUnsupportedOperationException("No such calc method " + metric);
 			}
 		}
 	}
@@ -104,7 +106,7 @@ public class StringSimilarityPairwiseMapper extends MISOMapper {
 	@Override
 	protected Object map(Object[] input) {
 		if (input.length != 2) {
-			throw new RuntimeException("PairWise only supports two input columns!");
+			throw new AkIllegalDataException("PairWise only supports two input columns!");
 		}
 		String s1 = (String) input[0];
 		String s2 = (String) input[1];

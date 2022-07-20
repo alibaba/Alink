@@ -4,6 +4,7 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
@@ -30,7 +31,7 @@ public class OptimizerFactory {
 			case OWLQN:
 				return new Owlqn(objFunc, trainData, coefDim, params);
 			default:
-				throw new UnsupportedOperationException("Optimization method not found.");
+				throw new AkUnsupportedOperationException("Optimization method not found.");
 		}
 	}
 }

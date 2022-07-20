@@ -1,17 +1,71 @@
 package com.alibaba.alink.operator.common.utils;
 
+import com.alibaba.alink.common.io.filesystem.FilePath;
+import com.alibaba.alink.common.pyrunner.PyCalcRunner;
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.params.udf.BasePyBinaryFnParams;
+import com.alibaba.alink.params.udf.BasePyFileFnParams;
+import com.alibaba.alink.params.udf.HasPythonEnvFilePath;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class UDFHelper {
 
 	public static String generateRandomFuncName() {
 		return "func_" + UUID.randomUUID().toString().replace("-", "");
+	}
+
+	public static JsonObject makeFnSpec(BasePyFileFnParams <?> params) {
+		JsonObject fnSpec = new JsonObject();
+		// TODO: support OSS, etc.
+		Set <String> filePaths = Arrays.stream(params.getUserFilePaths())
+			.map(FilePath::serialize)
+			.collect(Collectors.toSet());
+		JsonArray filePathsJsonArray = new JsonArray();
+		for (String filePath : filePaths) {
+			filePathsJsonArray.add(new JsonPrimitive(filePath));
+		}
+		fnSpec.add("filePaths", filePathsJsonArray);
+		fnSpec.addProperty("className", params.getClassName());
+		fnSpec.addProperty("pythonVersion", params.getPythonVersion());
+		return fnSpec;
+	}
+
+	public static JsonObject makeFnSpec(BasePyBinaryFnParams <?> params) {
+		JsonObject fnSpec = new JsonObject();
+		//noinspection deprecation
+		fnSpec.add("classObject", JsonConverter.gson.toJsonTree(params.getClassObject()));
+		fnSpec.addProperty("classObjectType", params.getClassObjectType());
+		fnSpec.addProperty("pythonVersion", params.getPythonVersion());
+		return fnSpec;
+	}
+
+	public static Map <String, String> makeRunConfig(BasePyFileFnParams <?> params) {
+		Map <String, String> runConfig = new HashMap <>();
+		// TODO: switch to UDF plugin
+		if (params.getParams().contains(HasPythonEnvFilePath.PYTHON_ENV_FILE_PATH)) {
+			runConfig.put(PyCalcRunner.PY_PYTHON_ENV_FILE_PATH, params.getPythonEnvFilePath().serialize());
+		}
+		return runConfig;
+	}
+
+	public static Map <String, String> makeRunConfig(BasePyBinaryFnParams <?> params) {
+		Map <String, String> runConfig = new HashMap <>();
+		if (params.getParams().contains(HasPythonEnvFilePath.PYTHON_ENV_FILE_PATH)) {
+			runConfig.put(PyCalcRunner.PY_PYTHON_ENV_FILE_PATH, params.getPythonEnvFilePath().serialize());
+		}
+		return runConfig;
 	}
 
 	/**
@@ -40,7 +94,7 @@ public class UDFHelper {
 			sb.append(TableUtil.columnsToSqlClause(cleanedReservedCols)).append(", ");
 		}
 		sb.append(functionName).append("(").append(selectedColsStr).append(") as `").append(outputCol).append("`");
-		return String.format("SELECT %s FROM %s", sb.toString(), inTableName);
+		return String.format("SELECT %s FROM %s", sb, inTableName);
 	}
 
 	/**

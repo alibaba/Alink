@@ -6,6 +6,8 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil.ClauseInfo;
 import com.alibaba.alink.params.feature.featuregenerator.GroupTimeWindowParams;
 import com.alibaba.alink.params.feature.featuregenerator.HopTimeWindowParams;
@@ -63,7 +65,7 @@ public abstract class BaseGroupTimeWindowStreamOp<T extends BaseGroupTimeWindowS
 				);
 				break;
 			default:
-				throw new IllegalArgumentException("Not support this type : " + this.windowType);
+				throw new AkUnsupportedOperationException("Not support this type : " + this.windowType);
 		}
 
 		ArrayList <String> partitionCols = new ArrayList <>();
@@ -83,7 +85,7 @@ public abstract class BaseGroupTimeWindowStreamOp<T extends BaseGroupTimeWindowS
 		}
 		String exprStr = getClause();
 		if (exprStr == null || exprStr.isEmpty()) {
-			throw new RuntimeException("expressions must be set");
+			throw new AkIllegalOperatorParameterException("expressions must be set");
 		}
 		String[][] clauses = FeatureClauseUtil.splitClauseForMultiInput(exprStr);
 		int clauseNum = clauses.length;
@@ -168,10 +170,10 @@ public abstract class BaseGroupTimeWindowStreamOp<T extends BaseGroupTimeWindowS
 				case "y":
 					return String.format("INTERVAL '%s' YEAR", ti);
 				default:
-					throw new RuntimeException("Is is not support unit." + unit);
+					throw new AkUnsupportedOperationException("Is is not support unit." + unit);
 			}
 		} else {
-			throw new RuntimeException("windowTime or windowWithUnit must be set, and only one can be set.");
+			throw new AkIllegalOperatorParameterException("windowTime or windowWithUnit must be set, and only one can be set.");
 		}
 
 	}

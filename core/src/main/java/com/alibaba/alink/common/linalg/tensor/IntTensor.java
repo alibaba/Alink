@@ -1,7 +1,6 @@
 package com.alibaba.alink.common.linalg.tensor;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil.DoCalcFunctions;
 import org.tensorflow.ndarray.IntNdArray;
 import org.tensorflow.ndarray.NdArray;
@@ -72,7 +71,7 @@ public final class IntTensor extends NumericalTensor <Integer> {
 
 	@Override
 	public IntTensor reshape(Shape newShape) {
-		Preconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
+		AkPreconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
 		IntDataBuffer buffer = DataBuffers.ofInts(size());
 		data.read(buffer);
 		return new IntTensor(NdArrays.wrap(newShape.toNdArrayShape(), buffer));

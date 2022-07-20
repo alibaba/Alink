@@ -4,6 +4,7 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeRefe
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
@@ -48,7 +49,7 @@ public class KObjectUtil {
 				}.getType()
 			);
 		} catch (Exception e) {
-			throw new IllegalStateException("Fail to deserialize json '" + json + "', please check the input!");
+			throw new AkParseErrorException("Fail to deserialize json '" + json + "', please check the input!");
 		}
 
 		Map <String, String> lowerCaseDeserializedJson = new HashMap <>();

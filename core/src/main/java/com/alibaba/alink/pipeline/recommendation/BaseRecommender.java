@@ -3,8 +3,9 @@ package com.alibaba.alink.pipeline.recommendation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.recommendation.BaseRecommBatchOp;
@@ -46,7 +47,8 @@ public abstract class BaseRecommender<T extends BaseRecommender <T>>
 
 		super(params);
 		this.recommKernelBuilder
-			= Preconditions.checkNotNull(recommKernelBuilder, "recommKernelBuilder can not be null");
+			= AkPreconditions.checkNotNull(recommKernelBuilder,
+			new AkIllegalOperatorParameterException("recommKernelBuilder can not be null"));
 		this.recommType = recommType;
 	}
 

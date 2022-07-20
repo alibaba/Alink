@@ -6,6 +6,7 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil.ClauseInfo;
 import com.alibaba.alink.params.feature.featuregenerator.BaseOverWindowParams;
 import org.apache.commons.lang3.EnumUtils;
@@ -52,7 +53,7 @@ public abstract class BaseOverWindowStreamOp<T extends BaseOverWindowStreamOp <T
 		String[] partitionCols = getParams().get(BaseOverWindowParams.GROUP_COLS);
 		String timeCol = getParams().get(BaseOverWindowParams.TIME_COL);
 		if (exprStr == null || exprStr.isEmpty()) {
-			throw new RuntimeException("Please set sql clause first.");
+			throw new AkIllegalOperatorParameterException("Please set sql clause first.");
 		}
 		StringBuilder sbd = new StringBuilder();
 		sbd.append("select ");

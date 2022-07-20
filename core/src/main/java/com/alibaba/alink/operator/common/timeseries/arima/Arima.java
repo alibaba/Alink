@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.timeseries.arima;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.operator.common.timeseries.TsMethod;
 import com.alibaba.alink.operator.common.timeseries.teststatistics.KPSS;
 import com.alibaba.alink.operator.common.timeseries.teststatistics.StationaryTest;
@@ -34,11 +35,11 @@ public class Arima {
 	 */
 	public static ArimaModel fit(double[] data, int p, int d, int q, EstMethod estMethod, int ifIntercept) {
 		if (data == null) {
-			throw new RuntimeException("data must be not null.");
+			throw new AkIllegalDataException("data must be not null.");
 		}
 
 		if (data.length - p - d < p + q + ifIntercept) {
-			throw new RuntimeException("Do not have enough data");
+			throw new AkIllegalDataException("Do not have enough data, data size must > 2p + d+ q.");
 		}
 
 		ArimaModel model = new ArimaModel(p, d, q, estMethod, ifIntercept);
@@ -95,7 +96,7 @@ public class Arima {
 		}
 
 		if (diff == 6) {
-			throw new RuntimeException("1-lag difference can not change data to stationary series.");
+			throw new AkIllegalDataException("1-lag difference can not change data to stationary series.");
 		}
 
 		if (d >= 0 && diff != d) {

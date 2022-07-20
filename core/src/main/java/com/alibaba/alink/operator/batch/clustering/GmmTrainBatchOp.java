@@ -25,6 +25,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -110,7 +111,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 				private static final long serialVersionUID = -4882845811146695041L;
 
 				@Override
-				public Integer getKey(Tuple2 <Long, Vector> value) throws Exception {
+				public Integer getKey(Tuple2 <Long, Vector> value) {
 					return (int) (value.f0 % numClusters);
 				}
 			})
@@ -121,8 +122,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 
 					@Override
 					public void reduce(Iterable <Tuple2 <Long, Vector>> values,
-									   Collector <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> out)
-						throws Exception {
+									   Collector <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> out) {
 						List <Vector> data = new ArrayList <>(numSamplesPerCluster);
 						int clusterId = -1;
 						int featureSize = 0;
@@ -185,7 +185,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 				private static final long serialVersionUID = 8456872852742625845L;
 
 				@Override
-				public Integer map(BaseVectorSummary summary) throws Exception {
+				public Integer map(BaseVectorSummary summary) {
 					return summary.vectorSize();
 				}
 			});
@@ -196,13 +196,13 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 				transient int featureSize;
 
 				@Override
-				public void open(Configuration parameters) throws Exception {
+				public void open(Configuration parameters) {
 					List <Integer> bc = getRuntimeContext().getBroadcastVariable("featureSize");
 					this.featureSize = bc.get(0);
 				}
 
 				@Override
-				public Vector map(Vector vec) throws Exception {
+				public Vector map(Vector vec) {
 					if (vec instanceof SparseVector) {
 						((SparseVector) vec).setSize(featureSize);
 					}
@@ -227,8 +227,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 					@Override
 					public void mapPartition(Iterable <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> values,
 											 Collector <Tuple4 <Integer, GmmClusterSummary, IterationStatus,
-												 MultivariateGaussian>> collector)
-						throws Exception {
+												 MultivariateGaussian>> collector) {
 						for (Tuple3 <Integer, GmmClusterSummary, IterationStatus> value : values) {
 							DenseVector means = value.f1.mean;
 							DenseMatrix cov = GmmModelData.expandCovarianceMatrix(value.f1.cov, means.size());
@@ -247,7 +246,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 				transient MultivariateGaussian[] mnd;
 
 				@Override
-				public void open(Configuration parameters) throws Exception {
+				public void open(Configuration parameters) {
 					oldWeights = new DenseVector(numClusters);
 					oldMeans = new DenseVector[numClusters];
 					oldCovs = new DenseVector[numClusters];
@@ -255,8 +254,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 				}
 
 				@Override
-				public void mapPartition(Iterable <Vector> values, Collector <LocalAggregator> out)
-					throws Exception {
+				public void mapPartition(Iterable <Vector> values, Collector <LocalAggregator> out) {
 					List <Integer> bcNumFeatures = getRuntimeContext().getBroadcastVariable("featureSize");
 					List <Tuple4 <Integer, GmmClusterSummary, IterationStatus, MultivariateGaussian>> bcOldModel =
 						getRuntimeContext().getBroadcastVariable("oldModel");
@@ -288,7 +286,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 				private static final long serialVersionUID = -6976429920344470952L;
 
 				@Override
-				public LocalAggregator reduce(LocalAggregator value1, LocalAggregator value2) throws Exception {
+				public LocalAggregator reduce(LocalAggregator value1, LocalAggregator value2) {
 					return value1.merge(value2);
 				}
 			})
@@ -298,8 +296,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 
 					@Override
 					public void flatMap(LocalAggregator aggregator,
-										Collector <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> out)
-						throws Exception {
+										Collector <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> out) {
 						for (int i = 0; i < numClusters; i++) {
 							double w = aggregator.updatedWeightsSum.get(i);
 							aggregator.updatedMeansSum[i].scaleEqual(1.0 / w);
@@ -339,7 +336,7 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 
 				@Override
 				public void flatMap(Tuple3 <Integer, GmmClusterSummary, IterationStatus> value,
-									Collector <Boolean> out) throws Exception {
+									Collector <Boolean> out) {
 					IterationStatus stat = value.f2;
 					int stepNo = getIterationRuntimeContext().getSuperstepNumber();
 					double diffLogLikelihood = Math.abs(stat.currLogLikelihood - stat.prevLogLikelihood);
@@ -362,16 +359,16 @@ public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 					transient int featureSize;
 
 					@Override
-					public void open(Configuration parameters) throws Exception {
+					public void open(Configuration parameters) {
 						this.featureSize = (int) (getRuntimeContext().getBroadcastVariable("featureSize").get(0));
 					}
 
 					@Override
 					public void mapPartition(Iterable <Tuple3 <Integer, GmmClusterSummary, IterationStatus>> values,
-											 Collector <Row> out) throws Exception {
+											 Collector <Row> out) {
 						int numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
 						if (numTasks > 1) {
-							throw new RuntimeException("parallelism is not 1 when saving model.");
+							throw new AkIllegalStateException("parallelism is not 1 when saving model.");
 						}
 						GmmModelData model = new GmmModelData();
 						model.k = numClusters;

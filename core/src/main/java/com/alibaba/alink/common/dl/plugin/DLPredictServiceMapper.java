@@ -5,11 +5,14 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.util.FileUtils;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.FileDownloadUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPluginErrorException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
@@ -71,8 +74,8 @@ public abstract class DLPredictServiceMapper<FACTORY extends ClassLoaderFactory>
 			inputCols = dataSchema.getFieldNames();
 		}
 
-		Preconditions.checkArgument(params.contains(HasOutputSchemaStr.OUTPUT_SCHEMA_STR),
-			"Must set outputSchemaStr.");
+		AkPreconditions.checkArgument(params.contains(HasOutputSchemaStr.OUTPUT_SCHEMA_STR),
+			new AkIllegalOperatorParameterException("Must set outputSchemaStr."));
 		String outputSchemaStr = params.get(HasOutputSchemaStr.OUTPUT_SCHEMA_STR);
 		TableSchema outputSchema = TableUtil.schemaStr2Schema(outputSchemaStr);
 		outputCols = outputSchema.getFieldNames();
@@ -102,7 +105,7 @@ public abstract class DLPredictServiceMapper<FACTORY extends ClassLoaderFactory>
 			Method createMethod = factory.getClass().getMethod("create", factory.getClass());
 			predictor = (DLPredictorService) createMethod.invoke(null, factory);
 		} catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-			throw new RuntimeException(
+			throw new AkPluginErrorException(
 				String.format("Failed to call %s#create(factory).", factory.getClass().getCanonicalName()), e);
 		}
 		try (TemporaryClassLoaderContext ignored = TemporaryClassLoaderContext.of(classLoader)) {
@@ -115,13 +118,13 @@ public abstract class DLPredictServiceMapper<FACTORY extends ClassLoaderFactory>
 		try {
 			predictor.close();
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to close predictor", e);
+			throw new AkUnclassifiedErrorException("Failed to close predictor", e);
 		}
 	}
 
 	@Override
 	public void open() {
-		Preconditions.checkArgument(modelPath != null, "Model path is not set.");
+		AkPreconditions.checkArgument(modelPath != null, "Model path is not set.");
 		workDir = PythonFileUtils.createTempDir("temp_d_").toFile();
 		File modelFile = new File(workDir, "model");
 		FileDownloadUtils.downloadFile(modelPath, modelFile);

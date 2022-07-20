@@ -3,11 +3,12 @@ package com.alibaba.alink.common.dl.utils;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.DLConstants;
 import com.alibaba.alink.common.dl.DLRunner;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.flink.ml.cluster.ExecutionMode;
 import com.alibaba.flink.ml.cluster.MLConfig;
@@ -40,14 +41,14 @@ public class DLClusterUtils {
 		try {
 			workDir = PythonFileUtils.createTempDir(String.format("temp_%d_", subtaskId)).toString();
 		} catch (Exception ex) {
-			throw new RuntimeException("Failed to crate temporary work dir: ", ex);
+			throw new AkUnclassifiedErrorException("Failed to crate temporary work dir: ", ex);
 		}
 		config.getProperties().put(MLConstants.WORK_DIR, workDir);
 
 		try {
 			return new MLContext(mode, config, roleAndIndex.f0.name(), roleAndIndex.f1, config.getEnvPath(), null);
 		} catch (MLException e) {
-			throw new RuntimeException("Failed to create MLContext: ", e);
+			throw new AkUnclassifiedErrorException("Failed to create MLContext: ", e);
 		}
 	}
 
@@ -58,7 +59,7 @@ public class DLClusterUtils {
 			int taskId = taskIpPort.f0;
 			ips[taskId] = taskIpPort.f1;
 			if (subtaskId == taskId) {
-				Preconditions.checkArgument(ips[taskId].equals(IpHostUtil.getIpAddress()), "task allocation changed");
+				AkPreconditions.checkState(ips[taskId].equals(IpHostUtil.getIpAddress()), "task allocation changed");
 			}
 			ports[taskId] = taskIpPort.f2;
 		}
@@ -105,7 +106,7 @@ public class DLClusterUtils {
 			serverFuture.cancel(true);
 		} catch (ExecutionException e) {
 			LOG.error(mlContext.getIdentity() + " node server failed");
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException(mlContext.getIdentity() + " node server failed", e);
 		} finally {
 			serverFuture = null;
 			//long mumReadRecords = dataExchange.getReadRecords();
@@ -120,7 +121,7 @@ public class DLClusterUtils {
 			mlContext = null;
 			if (failNum > 0) {
 				//noinspection ThrowFromFinallyBlock
-				throw new RuntimeException("Python script run failed, please check TaskManager logs.");
+				throw new AkUnclassifiedErrorException("Python script run failed, please check TaskManager logs.");
 			} else {
 				//LOG.info("Records output: " + mumReadRecords);
 			}

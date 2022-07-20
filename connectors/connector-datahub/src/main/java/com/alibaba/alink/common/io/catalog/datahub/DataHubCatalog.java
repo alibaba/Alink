@@ -36,9 +36,9 @@ import com.alibaba.alink.common.io.catalog.SourceSinkFunctionCatalog;
 import com.alibaba.alink.common.io.catalog.datahub.datastream.sink.DatahubPublicSinkFunction;
 import com.alibaba.alink.common.io.catalog.datahub.datastream.source.DatahubPublicSourceFunction;
 import com.alibaba.alink.common.io.catalog.datahub.datastream.util.DatahubClientProvider;
-import com.alibaba.alink.params.io.DataHubParams;
 import com.alibaba.alink.params.io.shared.HasCatalogName;
 import com.alibaba.alink.params.io.shared.HasDefaultDatabase;
+import com.alibaba.alink.params.io.DataHubParams;
 import com.aliyun.datahub.client.exception.ResourceNotFoundException;
 import com.aliyun.datahub.client.model.Field;
 import com.aliyun.datahub.client.model.GetProjectResult;
@@ -308,7 +308,7 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 
 		String comment = table.getComment();
 
-		String sharedCountStr = table.getOptions().get("shareCount");
+		String sharedCountStr = table.getProperties().get("shareCount");
 
 		if (sharedCountStr == null) {
 			sharedCountStr = "1";
@@ -316,7 +316,7 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 
 		int sharedCount = Integer.parseInt(sharedCountStr);
 
-		String lifeCycleStr = table.getOptions().get("lifeCycle");
+		String lifeCycleStr = table.getProperties().get("lifeCycle");
 
 		if (lifeCycleStr == null) {
 			lifeCycleStr = "3";

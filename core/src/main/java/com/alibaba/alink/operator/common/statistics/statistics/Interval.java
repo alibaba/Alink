@@ -4,6 +4,8 @@
  */
 package com.alibaba.alink.operator.common.statistics.statistics;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+
 import java.math.BigDecimal;
 
 /**
@@ -23,7 +25,7 @@ class Interval implements Cloneable {
 	public Interval(double start, int size, double step, boolean bEqualAtRight, boolean leftResult, boolean
 		rightResult) {
 		if (step <= 0) {
-			throw new RuntimeException("step must be positive!");
+			throw new AkIllegalStateException("step must be positive!");
 		}
 		//    System.out.println("Ok");
 		this.start = start;
@@ -79,7 +81,6 @@ class Interval implements Cloneable {
 			stepBD = stepBD.divide(scaleBD);
 		}
 		if (i == 17) {
-			//            throw new Exception("Not enough precision!");
 			double step = Math.pow(10.0, Math.ceil(Math.log10((max - min) / N)));
 			return new Interval(Math.floor(min / step) * step, (int) (Math.ceil(max / step) - Math.floor(min / step)),
 				step, false, false, false);
@@ -189,7 +190,7 @@ class Interval implements Cloneable {
 
 	public String toString(int pos) {
 		if (pos < 0 || pos >= numIntervals) {
-			throw new RuntimeException("Out of bound!");
+			throw new AkIllegalStateException("Out of bound!");
 		}
 		if (pos == numIntervals - 1 && rightResult) {
 			if (bEqualAtRight) {

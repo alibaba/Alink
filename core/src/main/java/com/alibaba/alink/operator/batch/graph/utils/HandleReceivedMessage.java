@@ -4,6 +4,7 @@ import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.operator.batch.graph.RandomWalkBatchOp.RandomWalkCommunicationUnit;
 import com.alibaba.alink.operator.batch.graph.walkpath.BaseWalkPathEngine;
 
@@ -28,7 +29,9 @@ public class HandleReceivedMessage<T extends RandomWalkCommunicationUnit> extend
 		} else {
 			int partitionId = getRuntimeContext().getIndexOfThisSubtask();
 			BaseWalkPathEngine baseWalkPathEngine = IterTaskObjKeeper.get(randomWalkStorageHandler, partitionId);
-			assert null != baseWalkPathEngine;
+			if (baseWalkPathEngine == null) {
+				throw new AkIllegalStateException("baseWalkPathEngine is null");
+			}
 
 			for (RandomWalkCommunicationUnit randomWalkCommunicationUnit : values) {
 				int srcPartitionId = randomWalkCommunicationUnit.getSrcPartitionId();

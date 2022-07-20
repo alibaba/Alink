@@ -20,6 +20,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.SortUtils;
@@ -145,7 +146,7 @@ public final class DocCountVectorizerTrainBatchOp extends BatchOperator <DocCoun
 			this.maxDF = this.maxDF >= 1.0 ? this.maxDF : this.maxDF * this.docCnt;
 			this.minDF = this.minDF >= 1.0 ? this.minDF : this.minDF * this.docCnt;
 			if (this.maxDF < this.minDF) {
-				throw new IllegalArgumentException("MaxDF must be greater than MinDF!");
+				throw new AkIllegalOperatorParameterException("MaxDF must be larger than MinDF!");
 			}
 		}
 

@@ -8,6 +8,7 @@ import org.apache.flink.runtime.client.JobExecutionException;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkFlinkExecutionErrorException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.evaluation.RankingMetrics;
@@ -120,7 +121,7 @@ public class EvalRankingBatchOpTest extends AlinkTestBase {
 				.linkFrom(data);
 			op.print();
 			Assert.fail("Expected an IllegalStateException to be thrown");
-		} catch (JobExecutionException | ProgramInvocationException e) {
+		} catch (JobExecutionException | ProgramInvocationException | AkFlinkExecutionErrorException e) {
 			// pass
 		}
 	}

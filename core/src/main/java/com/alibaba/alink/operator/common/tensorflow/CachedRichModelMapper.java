@@ -8,6 +8,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.mapper.FlatModelMapper;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.utils.OutputColsHelper;
@@ -88,7 +89,7 @@ public abstract class CachedRichModelMapper extends FlatModelMapper {
 						outputColsHelper.getResultRow(input, Row.of(extractPredictResult(row))));
 				}
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw new AkUnclassifiedErrorException("Failed to extract or concatenate predictions.", e);
 			}
 		}
 

@@ -3,6 +3,8 @@ package com.alibaba.alink.common.dl.utils;
 import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.util.function.BiConsumerWithException;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.DownloadUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -57,11 +59,11 @@ public class FileDownloadUtils {
 			try {
 				downloader.accept(path, targetFile);
 			} catch (Exception e) {
-				throw new RuntimeException("Cannot download file from " + path, e);
+				throw new AkUnclassifiedErrorException("Cannot download file from " + path, e);
 			}
 			return;
 		}
-		throw new UnsupportedOperationException("Unsupported path: " + path);
+		throw new AkUnsupportedOperationException("Unsupported path: " + path);
 	}
 
 	public static void downloadFile(String path, File targetDir, String filename) {
@@ -165,7 +167,8 @@ public class FileDownloadUtils {
 			FSDataInputStream fsDataInputStream = path.getFileSystem().open(path);
 			FileUtils.copyInputStreamToFile(fsDataInputStream, targetFile);
 		} catch (IOException e) {
-			throw new RuntimeException(String.format("Cannot copy HDFS file %s to %s", uri, targetFile.getAbsolutePath()), e);
+			throw new AkUnclassifiedErrorException(
+				String.format("Cannot copy HDFS file %s to %s", uri, targetFile.getAbsolutePath()), e);
 		}
 	}
 

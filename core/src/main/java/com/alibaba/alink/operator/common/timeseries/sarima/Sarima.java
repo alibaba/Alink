@@ -1,5 +1,8 @@
 package com.alibaba.alink.operator.common.timeseries.sarima;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.common.timeseries.TsMethod;
 import com.alibaba.alink.operator.common.timeseries.arima.Arima;
 import com.alibaba.alink.operator.common.timeseries.arima.ArimaModel;
@@ -31,20 +34,20 @@ public class Sarima {
 
 		SarimaModel model = new SarimaModel(p, d, q, sP, sD, sQ, estMethod, ifIntercept, seasonalPeriod);
 		if (seasonalPeriod < 1) {
-			throw new RuntimeException(
+			throw new AkIllegalOperatorParameterException(
 				"Seasonality must be equal or Greater than 1. If it is 1, there is no seasonality.");
 		}
 		if (p < 0 || q < 0 || d < 0) {
-			throw new RuntimeException("Order p, d and q must equal to or Greater than 0");
+			throw new AkIllegalOperatorParameterException("Order p, d and q must equal to or Greater than 0");
 		}
 		if (seasonalPeriod > 1 && (sP < 0 || sQ < 0 || sD < 0)) {
-			throw new RuntimeException("Seasonal order p, d and q must >=0 0 when seasonalPeriod > 2");
+			throw new AkIllegalOperatorParameterException("Seasonal order p, d and q must >=0 0 when seasonalPeriod > 2");
 		}
 		if (data == null) {
-			throw new RuntimeException("Data is null.");
+			throw new AkIllegalDataException("Data is null.");
 		}
 		if (seasonalPeriod > 1 && (data.length - sD * seasonalPeriod - d - p < p + q + sP + sQ + ifIntercept)) {
-			throw new RuntimeException(
+			throw new AkIllegalDataException(
 				"Do not have enough data. Please reduce order and seasonal order, or add sample.");
 		}
 
@@ -80,7 +83,7 @@ public class Sarima {
 						estimate = new SCSSMLEEstimate();
 						break;
 					default:
-						throw new RuntimeException("Estimation method must be Css or Css-mle for Seasonal ARIMA");
+						throw new AkUnsupportedOperationException(String.format("Estimation method [%s] not support.", estMethod));
 
 				}
 
@@ -150,7 +153,7 @@ public class Sarima {
 		}
 
 		if (diff1 == 6) {
-			throw new RuntimeException("1-lag difference can not change data to stationary series.");
+			throw new AkIllegalDataException("1-lag difference can not change data to stationary series.");
 		}
 
 		int d1 = diff1;
@@ -188,7 +191,7 @@ public class Sarima {
 		}
 
 		if (diff2 == 6) {
-			throw new RuntimeException("1-lag difference can not change data to stationary series.");
+			throw new AkIllegalDataException("1-lag difference can not change data to stationary series.");
 		}
 
 		int d2 = diff2;

@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.sql.builtin.agg;
 
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.sql.builtin.agg.BaseSummaryUdaf.SummaryData;
 
 public abstract class BaseSummaryUdaf extends BaseUdaf <Object, SummaryData> {
@@ -171,7 +172,7 @@ public abstract class BaseSummaryUdaf extends BaseUdaf <Object, SummaryData> {
 				if (excludeLast && thisData != null) {
 					thisData = null;
 				} else {
-					throw new RuntimeException("No data to retract.");
+					throw new AkIllegalDataException("No data to retract.");
 				}
 			} else if (data != null) {
 				double doubleData = data.doubleValue();

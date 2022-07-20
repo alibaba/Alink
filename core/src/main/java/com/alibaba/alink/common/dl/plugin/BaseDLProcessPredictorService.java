@@ -3,6 +3,7 @@ package com.alibaba.alink.common.dl.plugin;
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.exchange.BytesDataExchange;
 import com.alibaba.alink.common.dl.plugin.DLPredictServiceMapper.PredictorConfig;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.operator.common.pytorch.ListSerializer;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -50,14 +52,14 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 			new ShellExec.ProcessLogger(process.getInputStream(), d -> {
 				LOG.info("Inference process stdout: {}", d);
 				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-					System.out.println(d);
+					System.out.println("Inference process stdout: " + d);
 				}
 			}));
 		Thread errLogger = new Thread(
 			new ShellExec.ProcessLogger(process.getErrorStream(), d -> {
-				LOG.info("Inference process stderr: {}", d);
+				LOG.error("Inference process stderr: {}", d);
 				if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-					System.out.println(d);
+					System.err.println("Inference process stderr: " + d);
 				}
 			}));
 		inLogger.setName("JavaInferenceProcess-in-logger");
@@ -72,7 +74,7 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 				inLogger.join();
 				errLogger.join();
 				if (r != 0) {
-					throw new RuntimeException("Java inference process exited with " + r);
+					throw new AkUnclassifiedErrorException("Java inference process exited with " + r);
 				}
 
 				LOG.info("Java inference process finished successfully");
@@ -125,11 +127,13 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 		args.add(String.valueOf(config.threadMode));
 
 		LOG.info("Java Inference Cmd: " + String.join(" ", args));
-		System.out.println(String.join(" ", args));
+		if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+			System.out.println("Java Inference Cmd: " + String.join(" ", args));
+		}
 		ProcessBuilder builder = new ProcessBuilder(args);
 		builder.environment().put("OMP_NUM_THREADS", String.valueOf(numThreads));
-		builder.redirectErrorStream(true);
-		builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+		builder.redirectOutput(Redirect.PIPE);
+		builder.redirectError(Redirect.PIPE);
 		return builder.start();
 	}
 
@@ -160,7 +164,7 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 				procReadyFile.getAbsolutePath(),
 				config, libraryPath, intraOpParallelism);
 		} catch (IOException e) {
-			throw new RuntimeException("Launch inference process failed.", e);
+			throw new AkUnclassifiedErrorException("Launch inference process failed.", e);
 		}
 		return startInferenceProcessWatcher(process);
 	}
@@ -196,7 +200,7 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 			LOG.error("Interrupted waiting for server join {}.", e.getMessage());
 			inferFutureTask.cancel(true);
 		} catch (ExecutionException e) {
-			throw new RuntimeException("Inference process exited with exception.", e);
+			throw new AkUnclassifiedErrorException("Inference process exited with exception.", e);
 		}
 	}
 
@@ -212,12 +216,12 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 			outQueueFile = File.createTempFile("queue-", ".output");
 			procReadyFile = File.createTempFile("queue-", ".ready");
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to create in/out queue files", e);
+			throw new AkUnclassifiedErrorException("Failed to create in/out queue files", e);
 		}
 		try {
 			bytesDataExchange = new BytesDataExchange(inQueueFile.getAbsolutePath(), outQueueFile.getAbsolutePath());
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to create BytesDataBridge", e);
+			throw new AkUnclassifiedErrorException("Failed to create BytesDataBridge", e);
 		}
 
 		try (TemporaryClassLoaderContext ignored = TemporaryClassLoaderContext.of(this.getClass().getClassLoader())) {
@@ -232,11 +236,11 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 				Thread.sleep(50);
 			} catch (InterruptedException ignored) {
 			} catch (ExecutionException e) {
-				throw new RuntimeException("Exception thrown in inference process.", e);
+				throw new AkUnclassifiedErrorException("Exception thrown in inference process.", e);
 			}
 		}
 		if (procReadyFile.exists()) {
-			throw new RuntimeException("ProcReadyFile for inference process still exists."
+			throw new AkUnclassifiedErrorException("ProcReadyFile for inference process still exists."
 				+ "Inference process launched error.");
 		}
 	}
@@ -268,7 +272,7 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 		try {
 			bytesDataExchange.write(bytes);
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to write to data exchange.", e);
+			throw new AkUnclassifiedErrorException("Failed to write to data exchange.", e);
 		}
 		bytes = null;
 		while (null == bytes) {
@@ -278,9 +282,9 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 				}
 				bytes = bytesDataExchange.read(false);
 			} catch (IOException e) {
-				throw new RuntimeException("Failed to read from data exchange.", e);
+				throw new AkUnclassifiedErrorException("Failed to read from data exchange.", e);
 			} catch (ExecutionException | InterruptedException e) {
-				throw new RuntimeException("Exception thrown in inference process.", e);
+				throw new AkUnclassifiedErrorException("Exception thrown in inference process.", e);
 			}
 		}
 		return listSerializer.deserialize(bytes);

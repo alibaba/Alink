@@ -7,7 +7,9 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.params.recommendation.BaseRecommParams;
 
@@ -58,9 +60,9 @@ public abstract class RecommKernel implements Serializable {
 		String resultColName = this.params.get(BaseRecommParams.RECOMM_COL);
 		String[] reservedColNames = this.params.get(BaseRecommParams.RESERVED_COLS);
 		this.outputColsHelper4Rate
-			= new OutputColsHelper(dataSchema, resultColName, Types.DOUBLE(), reservedColNames);
+			= new OutputColsHelper(dataSchema, resultColName, AlinkTypes.DOUBLE, reservedColNames);
 		this.outputColsHelper4RecommObjs
-			= new OutputColsHelper(dataSchema, resultColName, Types.DOUBLE(), reservedColNames);
+			= new OutputColsHelper(dataSchema, resultColName, AlinkTypes.DOUBLE, reservedColNames);
 	}
 
 	protected TableSchema getModelSchema() {
@@ -98,7 +100,7 @@ public abstract class RecommKernel implements Serializable {
 			case SIMILAR_USERS:
 				return recommendSimilarUsers(input[0]);
 			default:
-				throw new IllegalArgumentException("NOT supported recommend type : " + recommType);
+				throw new AkUnsupportedOperationException("NOT supported recommend type : " + recommType);
 		}
 	}
 

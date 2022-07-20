@@ -15,6 +15,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.similarity.Sample;
@@ -174,7 +175,7 @@ public class MinHashModelDataConverter extends NearestNeighborDataConverter <Min
 				return new SimHashHammingSimilarity();
 			}
 			default: {
-				throw new IllegalArgumentException("Not support yet!");
+				throw new AkUnsupportedOperationException(params.get(StringTextApproxNearestNeighborTrainParams.METRIC).toString() + " is not supported");
 			}
 		}
 	}

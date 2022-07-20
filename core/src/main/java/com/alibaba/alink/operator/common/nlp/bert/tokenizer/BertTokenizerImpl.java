@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.nlp.bert.tokenizer;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -99,7 +100,8 @@ public class BertTokenizerImpl extends PreTrainedTokenizer {
 		try {
 			lines = FileUtils.readLines(vocabFile, StandardCharsets.UTF_8);
 		} catch (IOException e) {
-			throw new RuntimeException(String.format("Cannot read all lines in %s", vocabFile.getAbsoluteFile()));
+			throw new AkUnclassifiedErrorException(
+				String.format("Cannot read all lines in %s", vocabFile.getAbsoluteFile()));
 		}
 		int index = 0;
 		LinkedHashMap <String, Integer> vocab = new LinkedHashMap <>();

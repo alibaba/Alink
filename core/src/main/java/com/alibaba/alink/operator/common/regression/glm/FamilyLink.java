@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.regression.glm;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.AlinkSerializable;
 import com.alibaba.alink.operator.common.regression.glm.famliy.Binomial;
 import com.alibaba.alink.operator.common.regression.glm.famliy.FamilyFunction;
@@ -37,7 +38,7 @@ public class FamilyLink implements Serializable, AlinkSerializable {
 	 */
 	public FamilyLink(GlmTrainParams.Family family, double variancePower, GlmTrainParams.Link link, double linkPower) {
 		if (family == null) {
-			throw new RuntimeException("family can not be empty");
+			throw new AkIllegalOperatorParameterException("family can not be empty");
 		}
 
 		switch (family) {
