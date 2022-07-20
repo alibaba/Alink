@@ -17,6 +17,7 @@ public class FmModelData implements Serializable {
 	public FmDataFormat fmModel;
 	public int vectorSize;
 	public int[] dim;
+	public double[] regular;
 	public Object[] labelValues = null;
 	public Task task;
 	public double[] convergenceInfo;

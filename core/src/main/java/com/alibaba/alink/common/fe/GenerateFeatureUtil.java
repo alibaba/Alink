@@ -8,6 +8,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.fe.def.BaseCategoricalStatFeatures;
 import com.alibaba.alink.common.fe.def.BaseCrossCategoricalStatFeatures;
 import com.alibaba.alink.common.fe.def.BaseNumericStatFeatures;
@@ -81,7 +83,7 @@ public class GenerateFeatureUtil {
 				getStartTime(ts, ((InterfaceSlotWindowStatFeatures) feature).getWindowTimes()[0],
 					true));
 		} else {
-			throw new RuntimeException("It is not support yet.");
+			throw new AkUnsupportedOperationException(String.format("It is not support yet."));
 		}
 	}
 
@@ -125,7 +127,7 @@ public class GenerateFeatureUtil {
 			String hopUnit = getTimeUnit(hopTime).f0;
 
 			if (!unit.equals(hopUnit)) {
-				throw new RuntimeException("hop window and time window unit must be same.");
+				throw new AkIllegalOperatorParameterException("hop window and time window unit must be same.");
 			}
 
 			Timestamp startTime = getStartTime(firstTime, unit, ti);
@@ -186,7 +188,7 @@ public class GenerateFeatureUtil {
 			String stepUnit = getTimeUnit(stepTime).f0;
 
 			if (!unit.equals(stepUnit)) {
-				throw new RuntimeException("hop window and time window unit must be same.");
+				throw new AkIllegalOperatorParameterException("hop window and time window unit must be same.");
 			}
 
 			Timestamp startTime = getStartTime(firstTime, windowTime, true);
@@ -257,7 +259,8 @@ public class GenerateFeatureUtil {
 						.withNano(0);
 					break;
 				default:
-					throw new RuntimeException("It is not support yet.");
+					throw new AkUnsupportedOperationException(
+						String.format("unit [%s] not support yet.", unit));
 			}
 		} else {
 			switch (unit) {
@@ -280,7 +283,8 @@ public class GenerateFeatureUtil {
 					localStartTime = localEndTime.minusYears(ti);
 					break;
 				default:
-					throw new RuntimeException("It is not support yet.");
+					throw new AkUnsupportedOperationException(
+						String.format("unit [%s] not support yet.", unit));
 			}
 		}
 		return Timestamp.valueOf(localStartTime);
@@ -477,7 +481,7 @@ public class GenerateFeatureUtil {
 						lastNSum += ((Number) mt.getEntry(i, featureColIndex)).doubleValue();
 					}
 				} else {
-					throw new RuntimeException("It is not support yet." + type);
+					throw new AkUnsupportedOperationException("It is not support yet." + type);
 				}
 			}
 		}
@@ -641,7 +645,7 @@ public class GenerateFeatureUtil {
 						out[idx++] = (double) kvCount.get(Arrays.asList(obj)) / (double) summary.numValidValue(
 							featureCol);
 					} else {
-						throw new RuntimeException("It is not support yet." + type);
+						throw new AkUnsupportedOperationException("ratio is not support yet in " + type);
 					}
 				} else if (type instanceof CategoricalStatistics.LastN) {
 					int n = ((CategoricalStatistics.LastN) type).getN();
@@ -671,7 +675,7 @@ public class GenerateFeatureUtil {
 					}
 					out[idx++] = i >= fromId;
 				} else {
-					throw new RuntimeException("It is not support yet." + type);
+					throw new AkUnsupportedOperationException("It is not support yet." + type);
 				}
 			}
 			colIdx++;
@@ -764,7 +768,7 @@ public class GenerateFeatureUtil {
 						}
 						out[idx++] = (double) kvCount.get(objs) / (double) validCount;
 					} else {
-						throw new RuntimeException("It is not support yet." + type);
+						throw new AkUnsupportedOperationException("It is not support yet." + type);
 					}
 				} else if (type instanceof CategoricalStatistics.FirstN) {
 					int n = ((CategoricalStatistics.FirstN) type).getN();
@@ -863,7 +867,7 @@ public class GenerateFeatureUtil {
 					}
 					out[idx++] = exist;
 				} else {
-					throw new RuntimeException("It is not support yet." + type);
+					throw new AkUnsupportedOperationException("It is not support yet." + type);
 				}
 			}
 		}
@@ -1121,7 +1125,7 @@ public class GenerateFeatureUtil {
 				return Timestamp.valueOf(localTime
 					.plusYears(ti));
 			default:
-				throw new RuntimeException("It is not support yet.");
+				throw new AkUnsupportedOperationException("It is not support yet.");
 		}
 	}
 
@@ -1146,7 +1150,7 @@ public class GenerateFeatureUtil {
 			case "d":
 				return ti * 43200_000L;
 			default:
-				throw new RuntimeException("It is not support yet.");
+				throw new AkUnsupportedOperationException("It is not support yet.");
 		}
 	}
 
@@ -1175,7 +1179,7 @@ public class GenerateFeatureUtil {
 					.withSecond(0)
 					.withNano(0));
 			default:
-				throw new RuntimeException("It is not support yet.");
+				throw new AkUnsupportedOperationException("It is not support yet.");
 		}
 	}
 

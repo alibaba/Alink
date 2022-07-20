@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.timeseries.sarima.Sarima;
 import com.alibaba.alink.operator.common.timeseries.sarima.SarimaModel;
@@ -29,9 +30,9 @@ public class ArimaMapper extends TimeSeriesSingleMapper {
 	public ArimaMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);
 		this.estMethod = params.get(ArimaParams.EST_METHOD);
-		int[] order = params.get(ArimaParams.ORDER);
+		Integer[] order = params.get(ArimaParams.ORDER);
 		if (order.length != 3) {
-			throw new RuntimeException("Order must has p, d and q.");
+			throw new AkIllegalOperatorParameterException("Order must has p, d and q.");
 		}
 		this.p = order[0];
 		this.d = order[1];

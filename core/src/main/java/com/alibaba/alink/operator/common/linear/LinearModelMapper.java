@@ -5,13 +5,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.classification.LinearModelMapperParams;
-import org.apache.commons.lang.NotImplementedException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -148,7 +148,7 @@ public class LinearModelMapper extends RichModelMapper {
 			case SVR:
 				return dotValue;
 			default:
-				throw new NoSuchMethodException("Not supported yet!");
+				throw new AkUnimplementedOperationException("Linear model type is Not implemented yet!");
 		}
 	}
 
@@ -165,7 +165,7 @@ public class LinearModelMapper extends RichModelMapper {
 				return new Tuple2 <>(dotValue >= 0 ? model.labelValues[0] : model.labelValues[1],
 					new Double[] {prob, 1 - prob});
 			default:
-				throw new NotImplementedException("not support score or detail yet!");
+				throw new AkUnimplementedOperationException("Current linear algo not supports score or detail yet!");
 		}
 	}
 

@@ -1,10 +1,10 @@
 package com.alibaba.alink.operator.common.pytorch;
 
-import org.apache.flink.util.Preconditions;
-
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.ArchivesUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkPluginErrorException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
@@ -27,11 +27,11 @@ public class LibtorchUtils {
 
 	static {
 		LIBTORCH_PATH_MAP.put(Pair.of(OsType.MACOSX, "1.8.1"),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/libtorch_macosx-1.8.1/libtorch-macos-1.8.1.zip");
+			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/alink-plugins/resources/libtorch_macosx-1.8.1/libtorch-macos-1.8.1.zip");
 		LIBTORCH_PATH_MAP.put(Pair.of(OsType.LINUX, "1.8.1"),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/libtorch_linux-1.8.1/libtorch-shared-with-deps-1.8.1-cpu.zip");
+			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/alink-plugins/resources/libtorch_linux-1.8.1/libtorch-shared-with-deps-1.8.1-cpu.zip");
 		LIBTORCH_PATH_MAP.put(Pair.of(OsType.WINDOWS, "1.8.1"),
-			"https://alink-release.oss-cn-beijing.aliyuncs.com/deps-files/resources/libtorch_windows-1.8.1/libtorch-win-shared-with-deps-1.8.1-cpu.zip");
+			"http://pai-algo-public.oss-cn-hangzhou-zmf.aliyuncs.com/alink-plugins/resources/libtorch_windows-1.8.1/libtorch-win-shared-with-deps-1.8.1-cpu.zip");
 	}
 
 	static RegisterKey getRegisterKey(OsType systemType, String pluginVersion) {
@@ -65,9 +65,10 @@ public class LibtorchUtils {
 		if (null != pluginFilePath) {
 			String directoryName = "libtorch";
 			File directoryFile = new File(pluginFilePath.getPath().toString(), directoryName);
-			Preconditions.checkArgument(directoryFile.exists(),
-				String.format("There should be a directory named %s in plugin directory %s, but cannot be found.",
-					directoryName, pluginFilePath.getPath().toString()));
+			AkPreconditions.checkArgument(directoryFile.exists(),
+				new AkPluginErrorException(
+					String.format("There should be a directory named %s in plugin directory %s, but cannot be found.",
+						directoryName, pluginFilePath.getPath().toString())));
 			return directoryFile.getAbsolutePath();
 		} else {
 			// Download from remote Path

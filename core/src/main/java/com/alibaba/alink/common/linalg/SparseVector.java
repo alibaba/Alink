@@ -1,6 +1,8 @@
 package com.alibaba.alink.common.linalg;
 
 import com.alibaba.alink.common.DataTypeDisplayInterface;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.VectorUtil.VectorSerialType;
 
 import java.nio.ByteBuffer;
@@ -57,9 +59,6 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 
 	/**
 	 * Construct a sparse vector with the given indices and values.
-	 *
-	 * @throws IllegalArgumentException If size of indices array and values array differ.
-	 * @throws IllegalArgumentException If n >= 0 and the indices are out of bound.
 	 */
 	public SparseVector(int n, int[] indices, double[] values) {
 		this.n = n;
@@ -71,8 +70,6 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 
 	/**
 	 * Construct a sparse vector with given indices to values map.
-	 *
-	 * @throws IllegalArgumentException If n >= 0 and the indices are out of bound.
 	 */
 	public SparseVector(int n, Map <Integer, Double> kv) {
 		this.n = n;
@@ -102,11 +99,11 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 	 */
 	private void checkSizeAndIndicesRange() {
 		if (indices.length != values.length) {
-			throw new IllegalArgumentException("Indices size and values size should be the same.");
+			throw new AkUnclassifiedErrorException("Indices size and values size should be the same.");
 		}
 		for (int i = 0; i < indices.length; i++) {
 			if (indices[i] < 0 || (n >= 0 && indices[i] >= n)) {
-				throw new IllegalArgumentException("Index out of bound.");
+				throw new AkUnsupportedOperationException("Index out of bound.");
 			}
 		}
 	}
@@ -339,7 +336,7 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 
 		for (int i = 0; i < indices.length; i++) {
 			if (this.n >= 0 && indices[i] >= this.n) {
-				throw new IllegalArgumentException("Index is larger than vector size.");
+				throw new AkUnclassifiedErrorException("Index is larger than vector size.");
 			}
 			int pos = Arrays.binarySearch(this.indices, indices[i]);
 			if (pos >= 0) {
@@ -360,7 +357,7 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 	@Override
 	public Vector plus(Vector vec) {
 		if (this.size() != vec.size()) {
-			throw new IllegalArgumentException("The size of the two vectors are different.");
+			throw new AkUnclassifiedErrorException("The size of the two vectors are different.");
 		}
 
 		if (vec instanceof DenseVector) {
@@ -370,14 +367,14 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 			}
 			return r;
 		} else {
-			return MatVecOp.apply(this, (SparseVector) vec, ((a, b) -> a + b));
+			return MatVecOp.apply(this, (SparseVector) vec, (Double::sum));
 		}
 	}
 
 	@Override
 	public Vector minus(Vector vec) {
 		if (this.size() != vec.size()) {
-			throw new IllegalArgumentException("The size of the two vectors are different.");
+			throw new AkUnclassifiedErrorException("The size of the two vectors are different.");
 		}
 
 		if (vec instanceof DenseVector) {
@@ -427,7 +424,7 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 
 	private double dot(SparseVector other) {
 		if (this.size() != other.size()) {
-			throw new RuntimeException("the size of the two vectors are different");
+			throw new AkUnclassifiedErrorException("the size of the two vectors are different");
 		}
 
 		double d = 0;
@@ -449,7 +446,7 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 
 	private double dot(DenseVector other) {
 		if (this.size() != other.size()) {
-			throw new RuntimeException(
+			throw new AkUnclassifiedErrorException(
 				"The size of the two vectors are different: " + this.size() + " vs " + other.size());
 		}
 		double s = 0.;
@@ -647,7 +644,7 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 		@Override
 		public int getIndex() {
 			if (cursor >= values.length) {
-				throw new RuntimeException("Iterator out of bound.");
+				throw new AkUnclassifiedErrorException("Iterator out of bound.");
 			}
 			return indices[cursor];
 		}
@@ -655,7 +652,7 @@ public class SparseVector extends Vector implements DataTypeDisplayInterface {
 		@Override
 		public double getValue() {
 			if (cursor >= values.length) {
-				throw new RuntimeException("Iterator out of bound.");
+				throw new AkUnclassifiedErrorException("Iterator out of bound.");
 			}
 			return values[cursor];
 		}

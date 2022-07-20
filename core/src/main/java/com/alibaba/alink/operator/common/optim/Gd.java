@@ -57,7 +57,7 @@ public class Gd extends Optimizer {
 
 		int numSearchStep = params.get(HasNumSearchStepDefaultAs4.NUM_SEARCH_STEP);
 
-		/**
+		/*
 		 * solve problem using iteration.
 		 * trainData is the distributed samples.
 		 * initCoef is the initial model coefficient, which will be broadcast to every worker.

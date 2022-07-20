@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.distance;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -47,7 +48,7 @@ public class HaversineDistanceTest extends AlinkTestBase {
 		Assert.assertEquals(distance.calc(denseVector1, denseVector2), 5160.251, 0.01);
 		Assert.assertEquals(distance.calc(denseVector1.getData(), denseVector2.getData()), 5160.251, 0.01);
 
-		thrown.expect(IllegalStateException.class);
+		thrown.expect(AkIllegalArgumentException.class);
 		distance.calc(DenseVector.rand(3), DenseVector.rand(3));
 	}
 
@@ -126,7 +127,7 @@ public class HaversineDistanceTest extends AlinkTestBase {
 
 	@Test
 	public void testException1() {
-		thrown.expect(IllegalStateException.class);
+		thrown.expect(AkIllegalArgumentException.class);
 		distance.calc((Vector) DenseVector.rand(3), (Vector) DenseVector.rand(3));
 
 		List <Row> sparse = new ArrayList <>();

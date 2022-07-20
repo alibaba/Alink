@@ -71,17 +71,23 @@ public final class RandomTableSourceStreamOp extends BaseSourceStreamOp <RandomT
 			colConfsString, colNames);
 		StreamOperator<?> initData;
 		if (timePerSample != null && idColName != null) {
-			initData = new NumSeqSourceStreamOp(1, maxRows, idColName, timePerSample, getParams());
-		} else if (timePerSample != null && idColName == null) {
-			initData = new NumSeqSourceStreamOp(1, maxRows, timePerSample, getParams());
-		} else if (timePerSample == null && timeZones == null && idColName != null) {
-			initData = new NumSeqSourceStreamOp(1, maxRows, idColName, getParams());
+			initData = new NumSeqSourceStreamOp(1, maxRows, idColName, timePerSample, getParams())
+				.setMLEnvironmentId(getMLEnvironmentId());
+		} else if (timePerSample != null) {
+			initData = new NumSeqSourceStreamOp(1, maxRows, timePerSample, getParams())
+				.setMLEnvironmentId(getMLEnvironmentId());
+		} else if (timeZones == null && idColName != null) {
+			initData = new NumSeqSourceStreamOp(1, maxRows, idColName, getParams())
+				.setMLEnvironmentId(getMLEnvironmentId());
 		} else if (timeZones != null && idColName == null) {
-			initData = new NumSeqSourceStreamOp(1, maxRows, timeZones, getParams());
-		} else if (timeZones != null && idColName != null) {
-			initData = new NumSeqSourceStreamOp(1, maxRows, idColName, timeZones, getParams());
+			initData = new NumSeqSourceStreamOp(1, maxRows, timeZones, getParams())
+				.setMLEnvironmentId(getMLEnvironmentId());
+		} else if (timeZones != null) {
+			initData = new NumSeqSourceStreamOp(1, maxRows, idColName, timeZones, getParams())
+				.setMLEnvironmentId(getMLEnvironmentId());
 		} else {
-			initData = new NumSeqSourceStreamOp(1, maxRows, getParams());
+			initData = new NumSeqSourceStreamOp(1, maxRows, getParams())
+				.setMLEnvironmentId(getMLEnvironmentId());
 		}
 
 		return initData

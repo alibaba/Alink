@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.statistics.statistics;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+
 import java.util.ArrayList;
 import java.util.Map.Entry;
 
@@ -58,7 +60,7 @@ public class EmpiricalCDF {
 			} else if (dataType == Integer.class) {
 				x[i] = (Integer) e.getKey();
 			} else {
-				throw new Exception("Error in datatype of column!");
+				throw new AkUnsupportedOperationException(String.format("type [%s] not support.", dataType));
 			}
 		}
 	}

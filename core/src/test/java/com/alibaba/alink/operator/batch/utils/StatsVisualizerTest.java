@@ -18,6 +18,6 @@ public class StatsVisualizerTest {
 			stats = TextFormat.parse(s, DatasetFeatureStatisticsList.class);
 		}
 		StatsVisualizer visualizer = StatsVisualizer.getInstance();
-		visualizer.visualize(stats);
+		visualizer.visualize(stats, null);
 	}
 }

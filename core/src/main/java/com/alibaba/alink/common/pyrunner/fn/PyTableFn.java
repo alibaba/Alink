@@ -6,16 +6,18 @@ import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static com.alibaba.alink.common.pyrunner.bridge.BasePythonBridge.PY_TURN_ON_LOGGING_KEY;
 
@@ -54,7 +56,8 @@ public class PyTableFn extends TableFunction <Row> implements Serializable {
 				return runConfigGetter.apply(key, context.getJobParameter(key, defaultValue));
 			}
 		};
-		runner = new PyTableFnRunner(new PyCollector(), fnSpecJson, resultTypeStrs, newRunConfigGetter);
+		PyCollector pyCollector = new PyCollector(this::collect, resultTypes);
+		runner = new PyTableFnRunner(pyCollector, fnSpecJson, resultTypeStrs, newRunConfigGetter);
 		runner.open();
 	}
 
@@ -76,16 +79,29 @@ public class PyTableFn extends TableFunction <Row> implements Serializable {
 		return Types.ROW(resultTypes);
 	}
 
-	class PyCollector implements Collector <List <Object>> {
+	public static class PyCollector implements Collector <List <Object>> {
+
+		private Consumer <Row> collectFn;
+		private final TypeInformation <?>[] resultTypes;
+
+		public PyCollector(Consumer <Row> collectFn, TypeInformation <?>[] resultTypes) {
+			this.collectFn = collectFn;
+			this.resultTypes = resultTypes;
+		}
+
+		public void setCollectFn(Consumer <Row> collectFn) {
+			this.collectFn = collectFn;
+		}
+
 		@Override
 		public void collect(List <Object> record) {
-			Preconditions.checkArgument(record.size() == resultTypes.length,
-				"Python UDTF returns wrong number of elements.");
+			AkPreconditions.checkArgument(record.size() == resultTypes.length,
+				new AkIllegalOperationException("Python UDTF returns wrong number of elements."));
 			Object[] values = new Object[resultTypes.length];
 			for (int i = 0; i < resultTypes.length; i += 1) {
 				values[i] = DataConversionUtils.pyToJava(record.get(i), resultTypes[i]);
 			}
-			PyTableFn.this.collect(Row.of(values));
+			collectFn.accept(Row.of(values));
 		}
 
 		@Override

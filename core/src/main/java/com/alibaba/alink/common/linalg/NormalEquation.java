@@ -11,17 +11,17 @@ public class NormalEquation {
 	/**
 	 * Rank of the equation.
 	 */
-	private int n;
+	private final int n;
 
 	/**
 	 * A^T * A.
 	 */
-	private DenseMatrix ata;
+	private final DenseMatrix ata;
 
 	/**
 	 * A^T * b.
 	 */
-	private DenseVector atb;
+	private final DenseVector atb;
 
 	/**
 	 * The constructor.

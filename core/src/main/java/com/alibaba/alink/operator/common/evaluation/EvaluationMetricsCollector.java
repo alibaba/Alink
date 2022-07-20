@@ -1,8 +1,8 @@
 package com.alibaba.alink.operator.common.evaluation;
 
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.batch.BatchOperator;
 
 import java.util.Arrays;
@@ -46,7 +46,7 @@ public interface EvaluationMetricsCollector<S, T extends BatchOperator <T>> {
 
 	default S collectMetrics() {
 		List <Row> list = ((T) this).collect();
-		Preconditions.checkArgument(list.size() > 0, "There is no data in evaluation result");
+		AkPreconditions.checkState(list.size() > 0, "There is no data in evaluation result");
 		return createMetrics(list);
 	}
 }

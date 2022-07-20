@@ -10,6 +10,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.params.feature.GenerateFeatureOfWindowParams;
 import com.alibaba.alink.common.fe.GenerateFeatureUtil;
 import com.alibaba.alink.common.fe.def.BaseStatFeatures;
@@ -163,7 +164,7 @@ public class GenerateFeatureOfWindowStreamOp extends StreamOperator <GenerateFea
 					.setMLEnvironmentId(in.getMLEnvironmentId())
 			);
 		} else {
-			throw new RuntimeException("It is not support yet." + feature.getClass().getName());
+			throw new AkUnsupportedOperationException("It is not support yet." + feature.getClass().getName());
 		}
 
 	}

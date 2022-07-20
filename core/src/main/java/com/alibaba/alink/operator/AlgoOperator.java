@@ -8,6 +8,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.params.shared.HasMLEnvironmentId;
 
 import java.io.Serializable;
@@ -254,24 +255,24 @@ public abstract class AlgoOperator<T extends AlgoOperator <T>>
 	public abstract AlgoOperator <?> where(String predicate);
 
 	protected static void checkOpSize(int size, AlgoOperator <?>... inputs) {
-		Preconditions.checkNotNull(inputs, "Operators should not be null.");
-		Preconditions.checkState(inputs.length == size, "The size of operators should be equal to "
+		AkPreconditions.checkNotNull(inputs, "Operators should not be null.");
+		AkPreconditions.checkState(inputs.length == size, "The size of operators should be equal to "
 			+ size + ", current: " + inputs.length);
 	}
 
 	protected static void checkMinOpSize(int size, AlgoOperator <?>... inputs) {
-		Preconditions.checkNotNull(inputs, "Operators should not be null.");
-		Preconditions.checkState(inputs.length >= size, "The size of operators should be equal or greater than "
+		AkPreconditions.checkNotNull(inputs, "Operators should not be null.");
+		AkPreconditions.checkState(inputs.length >= size, "The size of operators should be equal or greater than "
 			+ size + ", current: " + inputs.length);
 	}
 
 	@Deprecated
 	private void checkSideOutputAccessibility(int index) {
-		Preconditions.checkNotNull(sideOutputs,
+		AkPreconditions.checkNotNull(sideOutputs,
 			"There is not side-outputs in this AlgoOperator.");
-		Preconditions.checkState(index >= 0 && index < sideOutputs.length,
+		AkPreconditions.checkState(index >= 0 && index < sideOutputs.length,
 			String.format("The index(%s) of side-outputs is out of bound.", index));
-		Preconditions.checkNotNull(sideOutputs[index],
+		AkPreconditions.checkNotNull(sideOutputs[index],
 			String.format("The %snd of side-outputs is null. Maybe the operator has not been linked.", index));
 	}
 

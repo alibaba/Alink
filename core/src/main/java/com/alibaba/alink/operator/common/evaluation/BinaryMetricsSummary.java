@@ -2,7 +2,8 @@ package com.alibaba.alink.operator.common.evaluation;
 
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,7 +82,7 @@ public final class BinaryMetricsSummary
 		if (null == binaryClassMetrics) {
 			return this;
 		}
-		Preconditions.checkState(Arrays.equals(labels, binaryClassMetrics.labels), "The labels are not the same!");
+		AkPreconditions.checkState(Arrays.equals(labels, binaryClassMetrics.labels), "The labels are not the same!");
 
 		for (int i = 0; i < positiveBin.length; i++) {
 			positiveBin[i] += binaryClassMetrics.positiveBin[i];
@@ -217,7 +218,7 @@ public final class BinaryMetricsSummary
 				totalFalse += negativeBin[i];
 			}
 		}
-		Preconditions.checkState(totalFalse + totalTrue == total,
+		AkPreconditions.checkState(totalFalse + totalTrue == total,
 			"The effective number in bins must be equal to total!");
 
 		final int length = effectiveIndices.size();

@@ -5,6 +5,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -33,7 +34,7 @@ public final class TextSinkBatchOp extends BaseSinkBatchOp <TextSinkBatchOp>
 	public TextSinkBatchOp sinkFrom(BatchOperator <?> in) {
 		TypeInformation <?>[] types = in.getSchema().getFieldTypes();
 		if (types.length != 1 || Types.STRING != types[0]) {
-			throw new IllegalArgumentException("The Input could only be a string type column.");
+			throw new AkIllegalArgumentException("The Input could only be a string type column.");
 		}
 
 		in.link(

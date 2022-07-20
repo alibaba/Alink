@@ -102,13 +102,6 @@ public abstract class JdbcCatalog extends BaseCatalog {
 	}
 
 	@Override
-	public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
-		throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
-
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public void alterDatabase(String name, CatalogDatabase newDatabase, boolean ignoreIfNotExists)
 		throws DatabaseNotExistException, CatalogException {
 
@@ -307,13 +300,6 @@ public abstract class JdbcCatalog extends BaseCatalog {
 	public void alterPartitionColumnStatistics(ObjectPath tablePath, CatalogPartitionSpec partitionSpec,
 											   CatalogColumnStatistics columnStatistics, boolean ignoreIfNotExists)
 		throws PartitionNotExistException, CatalogException {
-
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public List <CatalogPartitionSpec> listPartitionsByFilter(ObjectPath objectPath, List <Expression> list)
-		throws TableNotExistException, TableNotPartitionedException, CatalogException {
 
 		throw new UnsupportedOperationException();
 	}

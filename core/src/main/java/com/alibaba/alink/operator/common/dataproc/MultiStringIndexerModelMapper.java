@@ -9,6 +9,11 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
@@ -83,8 +88,8 @@ public class MultiStringIndexerModelMapper extends ModelMapper {
 			outputColNames = selectedColNames;
 		}
 
-		Preconditions.checkArgument(outputColNames.length == selectedColNames.length,
-			"OutputCol length must be equal to selectedCol length!");
+		AkPreconditions.checkArgument(outputColNames.length == selectedColNames.length,
+			new AkIllegalOperatorParameterException("OutputCol length must be equal to selectedCol length!"));
 
 		String[] reservedColNames = params.get(MultiStringIndexerPredictParams.RESERVED_COLS);
 
@@ -111,9 +116,9 @@ public class MultiStringIndexerModelMapper extends ModelMapper {
 						result.set(i, null);
 						break;
 					case ERROR:
-						throw new RuntimeException("Unseen token: " + key);
+						throw new AkIllegalDataException("Unseen token: " + key);
 					default:
-						throw new IllegalArgumentException("Invalid handle invalid strategy.");
+						throw new AkUnsupportedOperationException("Invalid handle invalid strategy.");
 				}
 			}
 		}

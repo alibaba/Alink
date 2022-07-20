@@ -1,7 +1,6 @@
 package com.alibaba.alink.common.linalg.tensor;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil.DoCalcFunctions;
 import org.tensorflow.ndarray.IntNdArray;
 import org.tensorflow.ndarray.LongNdArray;
@@ -73,7 +72,7 @@ public final class LongTensor extends NumericalTensor <Long> {
 
 	@Override
 	public LongTensor reshape(Shape newShape) {
-		Preconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
+		AkPreconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
 		LongDataBuffer buffer = DataBuffers.ofLongs(size());
 		data.read(buffer);
 		return new LongTensor(NdArrays.wrap(newShape.toNdArrayShape(), buffer));

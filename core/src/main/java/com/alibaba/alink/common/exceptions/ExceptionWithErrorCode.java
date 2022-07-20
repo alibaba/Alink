@@ -2,15 +2,19 @@ package com.alibaba.alink.common.exceptions;
 
 abstract class ExceptionWithErrorCode extends RuntimeException {
 	private final ErrorCode errorCode;
-	private final String message;
 
 	public ExceptionWithErrorCode(ErrorCode errorCode, String message) {
+		super(message);
 		this.errorCode = errorCode;
-		this.message = message;
+	}
+
+	public ExceptionWithErrorCode(ErrorCode errorCode, String message, Throwable cause) {
+		super(message, cause);
+		this.errorCode = errorCode;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s: %s", errorCode, message);
+		return String.format("%s: %s", errorCode, getLocalizedMessage());
 	}
 }

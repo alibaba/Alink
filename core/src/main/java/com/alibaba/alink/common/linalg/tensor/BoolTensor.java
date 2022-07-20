@@ -1,7 +1,6 @@
 package com.alibaba.alink.common.linalg.tensor;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import org.tensorflow.ndarray.BooleanNdArray;
 import org.tensorflow.ndarray.NdArrays;
 import org.tensorflow.ndarray.StdArrays;
@@ -67,7 +66,7 @@ public final class BoolTensor extends Tensor <Boolean> {
 
 	@Override
 	public BoolTensor reshape(Shape newShape) {
-		Preconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
+		AkPreconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
 		BooleanDataBuffer buffer = DataBuffers.ofBooleans(size());
 		data.read(buffer);
 		return new BoolTensor(NdArrays.wrap(newShape.toNdArrayShape(), buffer));

@@ -2,6 +2,7 @@ package com.alibaba.alink.common.sql.builtin.agg;
 
 import org.apache.flink.api.java.tuple.Tuple3;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.sql.builtin.agg.LastDistinctValueUdaf.LastDistinctSaveFirst;
 
 import java.sql.Timestamp;
@@ -41,7 +42,7 @@ public class LastDistinctValueUdaf extends BaseUdaf<Object, LastDistinctSaveFirs
 	@Override
 	public void accumulate(LastDistinctSaveFirst acc, Object... values) {
 		if (values.length != 4) {
-			throw new RuntimeException();
+			throw new AkIllegalDataException("");
 		}
 		Object key = values[0];
 		Object value = values[1];

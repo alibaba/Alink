@@ -10,7 +10,6 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -19,6 +18,9 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
@@ -99,7 +101,7 @@ public class EvalMultiClassBatchOp extends BatchOperator <EvalMultiClassBatchOp>
 				break;
 			}
 			default: {
-				throw new RuntimeException("Error Input");
+				throw new AkUnsupportedOperationException("Unsupported evaluation type: " + type);
 			}
 		}
 
@@ -174,8 +176,8 @@ public class EvalMultiClassBatchOp extends BatchOperator <EvalMultiClassBatchOp>
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			List <Tuple2 <Map <Object, Integer>, Object[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
-			Preconditions.checkArgument(list.size() > 0,
-				"Please check the evaluation input! there is no effective row!");
+			AkPreconditions.checkState(list.size() > 0,
+				new AkIllegalDataException("Please check the evaluation input! there is no effective row!"));
 			this.map = list.get(0);
 		}
 
@@ -200,8 +202,8 @@ public class EvalMultiClassBatchOp extends BatchOperator <EvalMultiClassBatchOp>
 		@Override
 		public void open(Configuration parameters) throws Exception {
 			List <Tuple2 <Map <Object, Integer>, Object[]>> list = getRuntimeContext().getBroadcastVariable(LABELS);
-			Preconditions.checkArgument(list.size() > 0,
-				"Please check the evaluation input! there is no effective row!");
+			AkPreconditions.checkState(list.size() > 0,
+				new AkIllegalDataException("Please check the evaluation input! there is no effective row!"));
 			this.map = list.get(0);
 		}
 

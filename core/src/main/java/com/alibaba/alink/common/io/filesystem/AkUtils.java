@@ -19,6 +19,7 @@ import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader.AkReadIterator;
 import com.alibaba.alink.common.io.filesystem.copy.FileInputFormat;
@@ -586,7 +587,7 @@ public class AkUtils {
 	public static String[] splitPath(String dirname) {
 		String[] splits = dirname.split(COLUMN_SPLIT_TAG);
 		if (splits.length != 2) {
-			throw new RuntimeException(String.format("invalid directory name %s", dirname));
+			throw new AkParseErrorException(String.format("invalid directory name %s", dirname));
 		}
 		return splits;
 	}

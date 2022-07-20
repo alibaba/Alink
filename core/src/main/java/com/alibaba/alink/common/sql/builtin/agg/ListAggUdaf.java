@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.sql.builtin.agg;
 
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.sql.builtin.agg.ListAggUdaf.ListAggData;
 
 public class ListAggUdaf extends BaseUdaf<String, ListAggData> {
@@ -105,7 +106,7 @@ public class ListAggUdaf extends BaseUdaf<String, ListAggData> {
 			}
 			if (aggData == null) {
 				if (excludeLast && thisData == null) {
-					throw new RuntimeException("No data to retract.");
+					throw new AkIllegalDataException("No data to retract.");
 				}
 				thisData = null;
 				return;

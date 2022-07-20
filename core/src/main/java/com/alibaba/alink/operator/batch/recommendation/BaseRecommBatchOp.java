@@ -54,38 +54,33 @@ public class BaseRecommBatchOp<T extends BaseRecommBatchOp <T>> extends BatchOpe
 	@Override
 	public T linkFrom(BatchOperator <?>... inputs) {
 		checkOpSize(2, inputs);
+		BroadcastVariableModelSource modelSource = new BroadcastVariableModelSource(BROADCAST_MODEL_TABLE_NAME);
 
-		try {
-			BroadcastVariableModelSource modelSource = new BroadcastVariableModelSource(BROADCAST_MODEL_TABLE_NAME);
+		RecommMapper mapper =
+			new RecommMapper(
+				this.recommKernelBuilder, this.recommType,
+				inputs[0].getSchema(),
+				inputs[1].getSchema(), this.getParams()
+			);
 
-			RecommMapper mapper =
-				new RecommMapper(
-					this.recommKernelBuilder, this.recommType,
-					inputs[0].getSchema(),
-					inputs[1].getSchema(), this.getParams()
-				);
+		DataSet <Row> modelRows = inputs[0].getDataSet().rebalance();
+		DataSet <Row> resultRows;
 
-			DataSet <Row> modelRows = inputs[0].getDataSet().rebalance();
-			DataSet <Row> resultRows;
-
-			if (getParams().get(ModelMapperParams.NUM_THREADS) <= 1) {
-				resultRows = inputs[1].getDataSet()
-					.map(new RecommAdapter(mapper, modelSource))
-					.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
-			} else {
-				resultRows = inputs[1].getDataSet()
-					.flatMap(
-						new RecommAdapterMT(mapper, modelSource, getParams().get(ModelMapperParams.NUM_THREADS))
-					)
-					.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
-			}
-
-			TableSchema outputSchema = mapper.getOutputSchema();
-
-			this.setOutput(resultRows, outputSchema);
-			return (T) this;
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+		if (getParams().get(ModelMapperParams.NUM_THREADS) <= 1) {
+			resultRows = inputs[1].getDataSet()
+				.map(new RecommAdapter(mapper, modelSource))
+				.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
+		} else {
+			resultRows = inputs[1].getDataSet()
+				.flatMap(
+					new RecommAdapterMT(mapper, modelSource, getParams().get(ModelMapperParams.NUM_THREADS))
+				)
+				.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
 		}
+
+		TableSchema outputSchema = mapper.getOutputSchema();
+
+		this.setOutput(resultRows, outputSchema);
+		return (T) this;
 	}
 }

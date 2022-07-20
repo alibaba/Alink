@@ -11,6 +11,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.Mapper;
@@ -71,7 +72,7 @@ public abstract class TimeSeriesMapper extends Mapper {
 			TableUtil.findColType(dataSchema, params.get(TimeSeriesPredictParams.VALUE_COL));
 
 		if (!valColType.equals(AlinkTypes.M_TABLE) && valColType != Types.STRING) {
-			throw new RuntimeException("valCol must be mtable type.");
+			throw new AkIllegalDataException("valCol must be mtable or string.");
 		}
 
 		return prepareTimeSeriesIoSchema(params);

@@ -9,6 +9,7 @@ import org.apache.flink.table.api.TableSchema;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MTableUtil;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.timeseries.LookupValueInTimeSeriesParams;
@@ -25,13 +26,13 @@ public class LookupValueInTimeSeriesMapper extends Mapper {
 		String timeCol = params.get(LookupValueInTimeSeriesParams.TIME_COL);
 		TypeInformation<?> typeTime = TableUtil.findColType(dataSchema, timeCol);
 		if (Types.SQL_TIMESTAMP != typeTime) {
-			throw new IllegalArgumentException("Type of column '" + timeCol + "' must be timestamp!");
+			throw new AkIllegalOperatorParameterException("Type of column '" + timeCol + "' must be timestamp!");
 		}
 
 		String timeSeriesCol = params.get(LookupValueInTimeSeriesParams.TIME_SERIES_COL);
 		TypeInformation<?> typeTS = TableUtil.findColType(dataSchema, timeSeriesCol);
 		if (!AlinkTypes.M_TABLE.equals(typeTS)) {
-			throw new IllegalArgumentException("Type of column '" + timeSeriesCol + "' must be MTable!");
+			throw new AkIllegalOperatorParameterException("Type of column '" + timeSeriesCol + "' must be MTable!");
 		}
 	}
 
@@ -67,7 +68,7 @@ public class LookupValueInTimeSeriesMapper extends Mapper {
 			}
 		}
 		if (timeIdx == -1) {
-			throw new RuntimeException("can not find time column, lookup failed");
+			throw new AkIllegalOperatorParameterException("can not find time column, lookup failed");
 		}
 
 		String[] valueCols = TableUtil.getNumericCols(schema);

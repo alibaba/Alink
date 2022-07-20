@@ -21,6 +21,7 @@ import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.common.sql.StreamSqlOperators;
 import com.alibaba.alink.operator.stream.dataproc.SampleStreamOp;
 import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
+import com.alibaba.alink.operator.stream.sql.SelectStreamOp;
 import com.alibaba.alink.operator.stream.utils.PrintStreamOp;
 import com.alibaba.alink.operator.stream.utils.UDFStreamOp;
 import com.alibaba.alink.operator.stream.utils.UDTFStreamOp;
@@ -136,7 +137,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 
 	@Override
 	public StreamOperator<?> select(String fields) {
-		return StreamSqlOperators.select(this, fields);
+		return new SelectStreamOp(fields).setMLEnvironmentId(this.getMLEnvironmentId()).linkFrom(this);
 	}
 
 	@Override
@@ -206,8 +207,8 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		return MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute();
 	}
 
-	public static JobExecutionResult execute(String string) throws Exception {
-		return MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute(string);
+	public static JobExecutionResult execute(String jobName) throws Exception {
+		return MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment().execute(jobName);
 	}
 
 	public static void setParallelism(int parallelism) {

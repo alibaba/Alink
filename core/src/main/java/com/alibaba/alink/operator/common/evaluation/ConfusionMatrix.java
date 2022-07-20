@@ -1,6 +1,6 @@
 package com.alibaba.alink.operator.common.evaluation;
 
-import org.apache.flink.util.Preconditions;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -52,7 +52,7 @@ public class ConfusionMatrix implements Serializable {
 	}
 
 	public ConfusionMatrix(LongMatrix longMatrix) {
-		Preconditions.checkArgument(longMatrix.getRowNum() == longMatrix.getColNum(),
+		AkPreconditions.checkArgument(longMatrix.getRowNum() == longMatrix.getColNum(),
 			"The row size must be equal to col size!");
 		this.longMatrix = longMatrix;
 		labelCnt = this.longMatrix.getRowNum();
@@ -122,13 +122,13 @@ public class ConfusionMatrix implements Serializable {
 	}
 
 	double numTruePositive(Integer labelIndex) {
-		Preconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
+		AkPreconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
 			"labelIndex must be null or less than " + labelCnt);
 		return null == labelIndex ? tpCount : longMatrix.getValue(labelIndex, labelIndex);
 	}
 
 	double numTrueNegative(Integer labelIndex) {
-		Preconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
+		AkPreconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
 			"labelIndex must be null or less than " + labelCnt);
 		return null == labelIndex ? tnCount : longMatrix.getValue(labelIndex, labelIndex) + total
 			- predictLabelFrequency[labelIndex]
@@ -136,14 +136,14 @@ public class ConfusionMatrix implements Serializable {
 	}
 
 	double numFalsePositive(Integer labelIndex) {
-		Preconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
+		AkPreconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
 			"labelIndex must be null or less than " + labelCnt);
 		return null == labelIndex ? fpCount : predictLabelFrequency[labelIndex] - longMatrix.getValue(labelIndex,
 			labelIndex);
 	}
 
 	double numFalseNegative(Integer labelIndex) {
-		Preconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
+		AkPreconditions.checkArgument(null == labelIndex || labelIndex < labelCnt,
 			"labelIndex must be null or less than " + labelCnt);
 		return null == labelIndex ? fnCount : actualLabelFrequency[labelIndex] - longMatrix.getValue(labelIndex,
 			labelIndex);

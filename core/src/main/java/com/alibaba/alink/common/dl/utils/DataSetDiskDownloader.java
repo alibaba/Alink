@@ -14,6 +14,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DownloadUtils;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -376,7 +377,7 @@ public class DataSetDiskDownloader implements Serializable {
 			}
 		}
 		if (downloadPath == null) {
-			throw new RuntimeException("Cannot get download path from candidates: " +
+			throw new AkUnclassifiedErrorException("Cannot get download path from candidates: " +
 				Arrays.toString(downloadPathCandidates));
 		}
 		return downloadPath;

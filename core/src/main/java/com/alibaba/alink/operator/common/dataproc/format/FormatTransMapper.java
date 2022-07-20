@@ -10,6 +10,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -125,7 +127,7 @@ public class FormatTransMapper extends Mapper {
 				formatReader = new ColumnsReader(colIndices, fromColNames);
 				break;
 			default:
-				throw new IllegalArgumentException("Can not translate this type : " + fromFormat);
+				throw new AkUnsupportedOperationException("translate input type unsupported: " + fromFormat);
 		}
 
 		return new Tuple2 <>(formatReader, fromColNames);
@@ -176,7 +178,7 @@ public class FormatTransMapper extends Mapper {
 				outputColTypes = new TypeInformation[] {AlinkTypes.VECTOR};
 				break;
 			default:
-				throw new IllegalArgumentException("Can not translate to this type : " + toFormat);
+				throw new AkUnsupportedOperationException("translate output type unsupported: " + toFormat);
 		}
 
 		return new Tuple3 <>(formatWriter, outputColNames, outputColTypes);
@@ -194,7 +196,7 @@ public class FormatTransMapper extends Mapper {
 		boolean success = formatReaderThreadLocal.get().read(inputBuffer, bufMap);
 		if (!success) {
 			if (isError) {
-				throw new RuntimeException("Fail to read: " + inputBuffer);
+				throw new AkIllegalDataException("Illegal input data:" + inputBuffer);
 			} else {
 				for (int i = 0; i < outputSize; i++) {
 					result.set(i, null);
@@ -205,7 +207,7 @@ public class FormatTransMapper extends Mapper {
 		Tuple2 <Boolean, Row> resultData = formatWriterThreadLocal.get().write(bufMap);
 		if (!resultData.f0) {
 			if (isError) {
-				throw new RuntimeException("Fail to write: " + JsonConverter.toJson(bufMap));
+				throw new AkIllegalDataException("failed to output data:" + JsonConverter.toJson(bufMap));
 			} else {
 				for (int i = 0; i < outputSize; i++) {
 					result.set(i, null);

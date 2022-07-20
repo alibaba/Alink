@@ -3,6 +3,7 @@ package com.alibaba.alink.common.fe.def;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.fe.BaseFeaturesAdapter;
 import com.alibaba.alink.common.fe.StatisticsAdapter;
 import com.alibaba.alink.common.fe.def.statistics.BaseCategoricalStatistics;
@@ -84,7 +85,7 @@ public abstract class BaseStatFeatures<T extends BaseStatFeatures <T>> implement
 	}
 
 	public String[] getSimplifiedOutColNames() {
-		throw new RuntimeException("It is not support yet!getOutColNames");
+		throw new AkUnsupportedOperationException("It is not support yet!getOutColNames");
 	}
 
 	public String getColPrefix() {
@@ -92,11 +93,11 @@ public abstract class BaseStatFeatures<T extends BaseStatFeatures <T>> implement
 	}
 
 	public TypeInformation <?>[] getOutColTypes(TableSchema schema) {
-		throw new RuntimeException("It is not support yet! getOutColTypes");
+		throw new AkUnsupportedOperationException("It is not support yet! getOutColTypes");
 	}
 
 	public BaseStatFeatures <?>[] flattenFeatures() {
-		throw new RuntimeException("It is not support yet! expandFeatures");
+		throw new AkUnsupportedOperationException("It is not support yet! expandFeatures");
 	}
 
 	public static String toJson(Object obj) {

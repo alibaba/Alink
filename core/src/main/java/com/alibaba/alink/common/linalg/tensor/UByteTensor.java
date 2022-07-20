@@ -2,6 +2,7 @@ package com.alibaba.alink.common.linalg.tensor;
 
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import org.tensorflow.ndarray.ByteNdArray;
 import org.tensorflow.ndarray.NdArrays;
 import org.tensorflow.ndarray.StdArrays;
@@ -67,7 +68,7 @@ public final class UByteTensor extends Tensor <Byte> {
 
 	@Override
 	public UByteTensor reshape(Shape newShape) {
-		Preconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
+		AkPreconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
 		ByteDataBuffer buffer = DataBuffers.ofBytes(size());
 		data.read(buffer);
 		return new UByteTensor(NdArrays.wrap(buffer, newShape.toNdArrayShape()));

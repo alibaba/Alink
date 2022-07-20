@@ -13,6 +13,7 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.recommendation.HugeMfAlsImpl;
 import com.alibaba.alink.operator.common.utils.PackBatchOperatorUtil;
@@ -107,7 +108,7 @@ public final class AlsImplicitTrainBatchOp
 			this.setSideOutputTables(new Table[] {factors.f0.getOutputTable(), factors.f1.getOutputTable(),
 				factors.f2.getOutputTable(), factors.f3.getOutputTable()});
 		} else {
-			throw new RuntimeException("als input op count err, need 1 or 2 input op.");
+			throw new AkIllegalArgumentException("als input op count err, need 1 or 2 input op.");
 		}
 		return this;
 	}

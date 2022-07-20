@@ -18,6 +18,8 @@ import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.mapper.ModelMapper;
@@ -67,7 +69,7 @@ public class BaseOnlinePredictStreamOp<T extends BaseOnlinePredictStreamOp <T>> 
 			if (model != null) {
 				dataBridge = DirectReader.collect(model);
 			} else {
-				throw new IllegalArgumentException(
+				throw new AkIllegalModelException(
 					"online algo: initial model is null. Please set a valid initial model.");
 			}
 
@@ -92,7 +94,7 @@ public class BaseOnlinePredictStreamOp<T extends BaseOnlinePredictStreamOp <T>> 
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			throw new RuntimeException(ex.toString());
+			throw new AkUnclassifiedErrorException(ex.toString());
 		}
 
 		return (T) this;

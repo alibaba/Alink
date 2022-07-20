@@ -5,10 +5,10 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,12 +32,12 @@ public class LocalFileDataBridge implements DataBridge {
 					try {
 						return filter.filter(x);
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						throw new AkUnclassifiedErrorException(String.format("Failed to call filter on %s.", x), e);
 					}
 				})
 				.collect(Collectors.toList());
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Failed to read rows.", e);
 		}
 	}
 }

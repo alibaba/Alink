@@ -2,7 +2,7 @@ package com.alibaba.alink.pipeline;
 
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.internal.TableImpl;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;

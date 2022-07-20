@@ -25,6 +25,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -184,7 +185,7 @@ public final class Preprocessing {
 		if (found >= 0) {
 			return found;
 		} else {
-			throw new RuntimeException("Can not find " + val);
+			throw new AkIllegalArgumentException("Can not find " + val);
 		}
 	}
 
@@ -588,7 +589,7 @@ public final class Preprocessing {
 			return params.get(HasFeatureColsDefaultAsNull.FEATURE_COLS);
 		}
 
-		throw new IllegalArgumentException("Could not find the feature columns. "
+		throw new AkIllegalArgumentException("Could not find the feature columns. "
 			+ "Please consider to set the feature columns on the "
 			+ that.getClass().getName()
 			+ ".");
@@ -599,7 +600,7 @@ public final class Preprocessing {
 			return params.get(HasVectorColDefaultAsNull.VECTOR_COL);
 		}
 
-		throw new IllegalArgumentException("Could not find the vector column. "
+		throw new AkIllegalArgumentException("Could not find the vector column. "
 			+ "Please consider to set the vector column on the "
 			+ that.getClass().getName()
 			+ ".");
@@ -1127,7 +1128,9 @@ public final class Preprocessing {
 			BatchOperator <?> in = checkAndGetFirst(inputs);
 			if (getParams().contains(QuantileDiscretizerTrainParams.NUM_BUCKETS) && getParams().contains(
 				QuantileDiscretizerTrainParams.NUM_BUCKETS_ARRAY)) {
-				throw new RuntimeException("It can not set num_buckets and num_buckets_array at the same time.");
+				throw new AkIllegalArgumentException(
+					"It can not set num_buckets and num_buckets_array at the same time."
+				);
 			}
 
 			String vectorColName = getVectorCol();

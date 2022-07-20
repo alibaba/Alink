@@ -10,8 +10,8 @@ import java.util.Arrays;
  */
 public class PreallocateConvergenceInfo extends ComputeFunction {
 	private static final long serialVersionUID = 3801536180940080L;
-	private String name;
-	private int maxIter;
+	private final String name;
+	private final int maxIter;
 
 	/**
 	 * @param name    name for this memory.

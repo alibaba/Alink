@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.probabilistic;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.XMath;
 import com.alibaba.alink.operator.common.statistics.DistributionFuncName;
 
@@ -29,7 +31,7 @@ public class CDF {
 	 */
 	public static double uniform(double x, double lowerBound, double upperBound) {
 		if (lowerBound >= upperBound) {
-			throw new RuntimeException("Wrong input parameters: the lower bound should be less than the upper bound!");
+			throw new AkIllegalOperatorParameterException("Wrong input parameters: the lower bound should be less than the upper bound!");
 		}
 		if (x < lowerBound) {
 			return 0.0;
@@ -51,7 +53,7 @@ public class CDF {
 	 */
 	public static double exponential(double x, double lambda) {
 		if ((lambda <= 0) || (x < 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		if (x <= 0) {
 			return 0;
@@ -91,7 +93,7 @@ public class CDF {
 	 */
 	public static double normal(double x, double mu, double sigma2) {
 		if (sigma2 <= 0) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		double t = (x - mu) / Math.sqrt(sigma2);
 		return stdNormal(t);
@@ -107,7 +109,7 @@ public class CDF {
 	 */
 	public static double gamma(double x, double alpha, double lambda) {
 		if (alpha <= 0 || lambda <= 0 || x < 0) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		if (x == Double.POSITIVE_INFINITY) {
 			return 1;
@@ -152,7 +154,7 @@ public class CDF {
 	 */
 	public static double studentT(double x, double df) {
 		if (df <= 0) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		double t = (x + Math.sqrt(x * x + df)) / (2 * Math.sqrt(x * x + df));
 		return beta(t, df / 2, df / 2);
@@ -168,7 +170,7 @@ public class CDF {
 	 */
 	public static double F(double x, double df1, double df2) {
 		if ((df1 <= 0) || (df2 <= 0) || (x < 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		return beta((df1 * x) / (df1 * x + df2), df1 / 2, df2 / 2);
 	}
@@ -194,7 +196,7 @@ public class CDF {
 			case F:
 				return F(x, params[0], params[1]);
 			default:
-				throw new RuntimeException("Not supported yet!");
+				throw new AkUnsupportedOperationException("Not supported yet!");
 		}
 	}
 

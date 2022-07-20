@@ -1,10 +1,9 @@
 import os
-from typing import Union, Optional, NamedTuple, Tuple
-
 from py4j.java_gateway import JavaGateway, CallbackServerParameters, JavaObject
 from pyflink.dataset import ExecutionEnvironment
 from pyflink.datastream import StreamExecutionEnvironment
-from pyflink.table import BatchTableEnvironment, StreamTableEnvironment, EnvironmentSettings
+from pyflink.table import BatchTableEnvironment, StreamTableEnvironment
+from typing import Union, Optional, NamedTuple, Tuple
 
 from .common.types.conversion.type_converters import py_list_to_j_array
 from .common.utils.packages import is_flink_1_9
@@ -121,10 +120,7 @@ def setup_pyflink_env(gateway: JavaGateway, j_benv: JavaObject, j_senv: JavaObje
     senv = StreamExecutionEnvironment(j_senv)
     # noinspection PyDeprecation
     btenv = BatchTableEnvironment.create(benv)
-
-    # noinspection PyDeprecation
-    stenv_settings = EnvironmentSettings.new_instance().use_old_planner().in_streaming_mode().build()
-    stenv = StreamTableEnvironment.create(senv, environment_settings=stenv_settings)
+    stenv = StreamTableEnvironment.create(senv)
     return benv, btenv, senv, stenv
 
 

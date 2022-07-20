@@ -62,31 +62,27 @@ public class BaseOutlierBatchOp<T extends BaseOutlierBatchOp <T>> extends MapBat
 	public T linkFrom(BatchOperator <?>... inputs) {
 		BatchOperator <?> in = checkAndGetFirst(inputs);
 
-		try {
-			//Step 1 : Grouped the input rows into MTables
-			BatchOperator <?> inGrouped = group2MTables(in, getParams());
+		//Step 1 : Grouped the input rows into MTables
+		BatchOperator <?> inGrouped = group2MTables(in, getParams());
 
-			//Step 2 : detect the outlier for each MTable
-			Mapper mapper = mapperBuilder.apply(
-				inGrouped.getSchema(),
-				getParams().clone()
-					.set(HasInputMTableCol.INPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
-					.set(HasOutputMTableCol.OUTPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
-					.set(HasDetectLast.DETECT_LAST, false)
-			);
-			DataSet <Row> resultRows = MapBatchOp.calcResultRows(inGrouped, mapper, getParams());
+		//Step 2 : detect the outlier for each MTable
+		Mapper mapper = mapperBuilder.apply(
+			inGrouped.getSchema(),
+			getParams().clone()
+				.set(HasInputMTableCol.INPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
+				.set(HasOutputMTableCol.OUTPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
+				.set(HasDetectLast.DETECT_LAST, false)
+		);
+		DataSet <Row> resultRows = MapBatchOp.calcResultRows(inGrouped, mapper, getParams());
 
-			//Step 3 : Flatten the MTables to final results
-			Table resultTable = flattenMTable(
-				resultRows, in.getSchema(), mapper.getOutputSchema(), getParams(), getMLEnvironmentId()
-			);
+		//Step 3 : Flatten the MTables to final results
+		Table resultTable = flattenMTable(
+			resultRows, in.getSchema(), mapper.getOutputSchema(), getParams(), getMLEnvironmentId()
+		);
 
-			setOutputTable(resultTable);
+		setOutputTable(resultTable);
 
-			return (T) this;
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
+		return (T) this;
 	}
 
 	/**

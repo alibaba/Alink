@@ -2,8 +2,9 @@ package com.alibaba.alink.operator.common.distance;
 
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 
 /**
@@ -49,10 +50,10 @@ public class FastDistanceMatrixData extends FastDistanceData {
 	 */
 	public FastDistanceMatrixData(DenseMatrix vectors, Row[] rows) {
 		super(rows);
-		Preconditions.checkNotNull(vectors, "DenseMatrix should not be null!");
+		AkPreconditions.checkNotNull(vectors, "DenseMatrix should not be null!");
 		if (null != rows) {
-			Preconditions.checkArgument(vectors.numCols() == rows.length,
-				"The column number of DenseMatrix must be equal to the rows array length!");
+			AkPreconditions.checkArgument(vectors.numCols() == rows.length,
+				new AkIllegalDataException("The column number of DenseMatrix must be equal to the rows array length!"));
 		}
 		this.vectors = vectors;
 	}

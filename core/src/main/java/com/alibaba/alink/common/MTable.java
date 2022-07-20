@@ -23,6 +23,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable.MTableDeserializer;
 import com.alibaba.alink.common.MTable.MTableSerializer;
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.exceptions.MTableSerializerException;
 import com.alibaba.alink.common.io.filesystem.binary.BaseStreamRowSerializer;
 import com.alibaba.alink.common.io.filesystem.binary.RowStreamSerializer;
@@ -572,7 +573,7 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 			if (tuple2.f0) {
 				rows.add(tuple2.f1);
 			} else {
-				throw new RuntimeException("Fail to parse line: \"" + line + "\"");
+				throw new AkParseErrorException("Fail to parse line: \"" + line + "\"");
 			}
 		}
 		return new MTable(rows, schema);

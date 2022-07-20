@@ -11,6 +11,8 @@ import org.apache.flink.shaded.guava18.com.google.common.collect.BiMap;
 import org.apache.flink.shaded.guava18.com.google.common.collect.HashBiMap;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import org.apache.parquet.ParquetReadOptions;
@@ -21,6 +23,8 @@ import org.apache.parquet.io.SeekableInputStream;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +32,7 @@ import java.util.List;
 
 public class ParquetUtil {
 	private static final BiMap <PrimitiveTypeName, TypeInformation <?>> PRIMITIVE_TYPE_MAP = HashBiMap.create();
+	private static final Logger LOG = LoggerFactory.getLogger(ParquetUtil.class);
 
 	static {
 		PRIMITIVE_TYPE_MAP.put(PrimitiveTypeName.BOOLEAN, Types.BOOLEAN);
@@ -44,7 +49,8 @@ public class ParquetUtil {
 		try {
 			messageType = readSchemaFromFile(filePath);
 		} catch (IOException e) {
-			throw new IllegalArgumentException("cannot read parquet footer");
+			throw new AkIllegalOperatorParameterException(
+				String.format("Doesn't have access to %s", filePath.getPathStr()));
 		}
 		if (messageType == null) {return null;}
 		RowTypeInfo schema = (RowTypeInfo) ParquetSchemaConverter.fromParquetType(messageType);
@@ -72,16 +78,20 @@ public class ParquetUtil {
 					return messageType;
 				}
 			}
+			return null;
 		} else {
 			try (ParquetFileReader fileReader
 					 = new ParquetFileReader(new ParquetInputFile(filePath),
 				ParquetReadOptions.builder().build())) {
 				return fileReader.getFileMetaData().getSchema();
-			}catch (IOException e){
+			} catch (Exception e) {
+				LOG.warn(
+					String.format(
+						"Escaped the file [%s] due to fail reading a parquet format footer",
+						filePath.getPath().toString()));
 				return null;
 			}
 		}
-		return null;
 	}
 
 	public static class ParquetInputFile implements InputFile {

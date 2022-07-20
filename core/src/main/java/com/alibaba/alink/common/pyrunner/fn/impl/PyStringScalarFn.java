@@ -6,20 +6,24 @@ import org.apache.flink.api.common.typeinfo.Types;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.pyrunner.fn.BasePyScalarFn;
 import com.alibaba.alink.common.pyrunner.fn.PyScalarFnHandle;
-import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.Map;
 
 @Internal
 public class PyStringScalarFn extends BasePyScalarFn <String, PyScalarFnHandle <String>> {
 
+	private final static Logger LOG = LoggerFactory.getLogger(PyStringScalarFn.class);
+
 	public PyStringScalarFn(String name, String fnSpecJson) {
-		this(name, fnSpecJson, Collections. <String, String>emptyMap()::getOrDefault);
+		this(name, fnSpecJson, Collections.emptyMap());
 	}
 
 	public PyStringScalarFn(String name, String fnSpecJson,
-							SerializableBiFunction <String, String, String> runConfigGetter) {
-		super(name, fnSpecJson, String.class, runConfigGetter);
+							Map <String, String> runConfig) {
+		super(name, fnSpecJson, String.class, runConfig);
 	}
 
 	@Override
@@ -28,6 +32,12 @@ public class PyStringScalarFn extends BasePyScalarFn <String, PyScalarFnHandle <
 	}
 
 	public String eval(Object... args) {
-		return runner.calc(args);
+		long start = System.currentTimeMillis();
+		LOG.info("In Java eval {}", start);
+		String result = runner.calc(args);
+		long end = System.currentTimeMillis();
+		LOG.info("Out Java eval {}", end);
+		LOG.info("Elapsed time: {}", end - start);
+		return result;
 	}
 }

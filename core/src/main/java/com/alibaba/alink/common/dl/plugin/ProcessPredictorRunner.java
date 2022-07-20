@@ -13,7 +13,6 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -123,7 +122,9 @@ public class ProcessPredictorRunner implements Closeable {
 			if (inThread) {
 				throw new RuntimeException("Exception caught in the inference process: ", e);
 			} else {
-				logPrint("Exception caught in the inference process: " + Arrays.toString(e.getStackTrace()));
+				LOG.error("Exception caught in the inference process:", e);
+				System.err.println("Exception caught in the inference process: ");
+				e.printStackTrace(System.err);
 				System.exit(1);
 			}
 		}

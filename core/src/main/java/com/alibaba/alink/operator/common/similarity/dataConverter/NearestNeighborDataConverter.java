@@ -12,6 +12,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.model.ModelDataConverter;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -82,7 +83,7 @@ public abstract class NearestNeighborDataConverter<T extends NearestNeighborMode
 	@Override
 	public TableSchema getModelSchema() {
 		TableSchema tableSchema = getModelDataSchema();
-		Preconditions.checkNotNull(idType, "ID type not set!");
+		AkPreconditions.checkNotNull(idType, "ID type not set!");
 		return new TableSchema(
 			ArrayUtils.addAll(tableSchema.getFieldNames(), "META", DataConverType.fromDataConverter(this).name()),
 			ArrayUtils.addAll(tableSchema.getFieldTypes(), Types.STRING, idType));

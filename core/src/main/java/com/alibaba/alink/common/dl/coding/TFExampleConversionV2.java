@@ -18,6 +18,9 @@
 
 package com.alibaba.alink.common.dl.coding;
 
+import com.alibaba.alink.common.dl.data.DataTypesV2;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.tensor.BoolTensor;
 import com.alibaba.alink.common.linalg.tensor.ByteTensor;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
@@ -29,7 +32,6 @@ import com.alibaba.alink.common.linalg.tensor.StringTensor;
 import com.alibaba.alink.common.linalg.tensor.UByteTensor;
 import com.alibaba.alink.operator.batch.tensorflow.TensorFlow2BatchOp;
 import com.alibaba.alink.operator.batch.tensorflow.TensorFlowBatchOp;
-import com.alibaba.alink.common.dl.data.DataTypesV2;
 import com.alibaba.flink.ml.coding.CodingException;
 import com.alibaba.flink.ml.tf2.shaded.com.google.protobuf.ByteString;
 import org.tensorflow.proto.example.BytesList;
@@ -186,7 +188,7 @@ public class TFExampleConversionV2 implements Serializable {
 			}
 			case BYTE_TENSOR:
 			default:
-				throw new RuntimeException("Unsupported data type for TF");
+				throw new AkUnsupportedOperationException("Unsupported data type for TF: " + dt);
 		}
 		return featureBuilder.build();
 	}
@@ -234,7 +236,7 @@ public class TFExampleConversionV2 implements Serializable {
 			String s = (String) val;
 			return ByteString.copyFrom(s, StandardCharsets.UTF_8);
 		}
-		throw new RuntimeException("Can't cast object " + val + " to bytes.");
+		throw new AkIllegalArgumentException("Can't cast object " + val + " to bytes.");
 	}
 
 	private static long castAsLong(Object val) {
@@ -251,6 +253,6 @@ public class TFExampleConversionV2 implements Serializable {
 			boolean b = (Boolean) val;
 			return b ? 1 : 0;
 		}
-		throw new RuntimeException("Can't cast object " + val + " to long");
+		throw new AkIllegalArgumentException("Can't cast object " + val + " to long");
 	}
 }

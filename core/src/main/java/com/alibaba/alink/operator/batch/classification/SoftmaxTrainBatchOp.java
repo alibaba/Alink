@@ -30,6 +30,9 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -119,7 +122,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 		TypeInformation <?> labelType;
 		String vectorColName = getVectorCol();
 		if (getParams().contains(HasFeatureCols.FEATURE_COLS) && getParams().contains(HasVectorCol.VECTOR_COL)) {
-			throw new RuntimeException("featureCols and vectorCol cannot be set at the same time.");
+			throw new AkIllegalArgumentException("featureCols and vectorCol cannot be set at the same time.");
 		}
 		TableSchema dataSchema = in.getSchema();
 		if (null == featureColNames && null == vectorColName) {
@@ -151,7 +154,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 					final int maxLabels = 1000;
 					final double labelRatio = 0.5;
 					if (rows.size() > value.f2[1] * labelRatio && rows.size() > maxLabels) {
-							throw new RuntimeException("label num is : " + rows.size() + ","
+							throw new AkIllegalDataException("label num is : " + rows.size() + ","
 								+ " sample num is : " + value.f2[1] + ", please check your label column.");
 						}
 
@@ -206,7 +209,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 					boolean judge = (model.hasInterceptItem == hasInterceptItem)
 						&& (model.vectorSize + (model.hasInterceptItem ? 1 : 0) == featSize);
 					if (!judge) {
-						throw new RuntimeException("initial softmax model not compatible with parameter setting.");
+						throw new AkIllegalModelException("initial softmax model not compatible with parameter setting.");
 					}
 
 					int labelSize = model.labelValues.length;
@@ -239,7 +242,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 
 		DataSet <Params> meta = labelIds
 			.mapPartition(
-				new CreateMeta(modelName, hasInterceptItem, vectorColName))
+				new CreateMeta(modelName, hasInterceptItem, vectorColName, labelName))
 			.setParallelism(1);
 
 		DataSet <Row> modelRows = coefs
@@ -416,11 +419,13 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 		private final String modelName;
 		private final boolean hasInterceptItem;
 		private final String vectorColName;
+		private final String labelColName;
 
-		private CreateMeta(String modelName, boolean hasInterceptItem, String vectorColName) {
+		private CreateMeta(String modelName, boolean hasInterceptItem, String vectorColName, String labelColName) {
 			this.modelName = modelName;
 			this.hasInterceptItem = hasInterceptItem;
 			this.vectorColName = vectorColName;
+			this.labelColName = labelColName;
 		}
 
 		@Override
@@ -438,6 +443,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 			Params meta = new Params();
 			meta.set(ModelParamName.MODEL_NAME, this.modelName);
 			meta.set(ModelParamName.LABEL_VALUES, labels);
+			meta.set(ModelParamName.LABEL_COL_NAME, labelColName);
 			meta.set(ModelParamName.HAS_INTERCEPT_ITEM, this.hasInterceptItem);
 			meta.set(ModelParamName.VECTOR_COL_NAME, vectorColName);
 			meta.set(ModelParamName.NUM_CLASSES, rowList.size());

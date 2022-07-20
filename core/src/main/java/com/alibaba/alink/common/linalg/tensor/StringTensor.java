@@ -2,6 +2,7 @@ package com.alibaba.alink.common.linalg.tensor;
 
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import org.tensorflow.ndarray.NdArray;
 import org.tensorflow.ndarray.NdArrays;
 import org.tensorflow.ndarray.StdArrays;
@@ -63,7 +64,7 @@ public final class StringTensor extends Tensor <String> {
 
 	@Override
 	public StringTensor reshape(Shape newShape) {
-		Preconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
+		AkPreconditions.checkArgument(newShape.size() == size(), "Shape not matched.");
 		DataBuffer <String> buffer = DataBuffers.ofObjects(String.class, size());
 		data.read(buffer);
 		return new StringTensor(NdArrays.wrap(newShape.toNdArrayShape(), buffer));

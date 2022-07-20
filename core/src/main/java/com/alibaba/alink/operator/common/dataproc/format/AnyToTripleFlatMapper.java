@@ -10,6 +10,7 @@ import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.OutputColsHelper;
@@ -90,12 +91,12 @@ public class AnyToTripleFlatMapper extends FlatMapper implements Serializable {
 						output.collect(outputColsHelper
 							.getResultRow(row, Row.of(parsedKey.f1, parsedValue.f1)));
 					} else if (handleInvalid.equals(HandleInvalid.ERROR)) {
-						throw new RuntimeException("Fail to write: " + JsonConverter.toJson(bufMap));
+						throw new AkIllegalDataException(String.format("Fail to write:", JsonConverter.toJson(bufMap)));
 					}
 				}
 			}
 		} else if (handleInvalid.equals(HandleInvalid.ERROR)) {
-			throw new RuntimeException("Fail to read: " + row);
+			throw new AkIllegalDataException(String.format("Fail to write:", row));
 		}
 	}
 

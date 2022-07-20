@@ -14,6 +14,8 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.LinearSolver;
 import com.alibaba.alink.common.utils.AlinkSerializable;
@@ -90,7 +92,7 @@ public class GlmUtil {
 	public static DataSet <Row> preProc(BatchOperator in, String[] featureColNames,
 										String offsetColName, String weightColName, String labelColName) {
 		if (featureColNames == null || featureColNames.length == 0) {
-			throw new RuntimeException("featureColNames must be set.");
+			throw new AkIllegalOperatorParameterException("featureColNames must be set.");
 		}
 
 		int numFeature = featureColNames.length;
@@ -101,7 +103,7 @@ public class GlmUtil {
 		}
 
 		if (labelColName == null) {
-			throw new RuntimeException("labelColName must be set.");
+			throw new AkIllegalOperatorParameterException("labelColName must be set.");
 		}
 
 		int labelColIdx = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), labelColName);
@@ -335,7 +337,7 @@ public class GlmUtil {
 				.map(new GaussionAicTransform2())
 				.withBroadcastSet(der, "deviance");
 		} else {
-			throw new RuntimeException("family name not support yet." + familyName);
+			throw new AkUnsupportedOperationException("family name not support yet." + familyName);
 		}
 
 		return aic;
@@ -871,7 +873,7 @@ public class GlmUtil {
 
 	private static double lnGamma(double x) {
 		if (x <= 0) {
-			throw new RuntimeException("para is out of range!");
+			throw new AkIllegalOperatorParameterException("para is out of range!");
 		}
 		double t = ckLanczos[0];
 		for (int i = 1; i < ckLanczos.length; i++) {

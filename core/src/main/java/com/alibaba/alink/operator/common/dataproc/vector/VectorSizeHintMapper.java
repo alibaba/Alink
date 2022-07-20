@@ -5,6 +5,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.SISOMapper;
@@ -37,14 +40,14 @@ public class VectorSizeHintMapper extends SISOMapper {
 		switch (handleMethod) {
 			case ERROR:
 				if (input == null) {
-					throw new NullPointerException(
+					throw new AkIllegalDataException(
 						"Got null vector in VectorSizeHint");
 				} else {
 					vec = VectorUtil.getVector(input);
 					if (vec.size() == size) {
 						return vec;
 					} else {
-						throw new IllegalArgumentException(
+						throw new AkIllegalOperatorParameterException(
 							"VectorSizeHint : vec size (" + vec.size() + ") not equal param size (" + size + ").");
 					}
 				}
@@ -55,7 +58,7 @@ public class VectorSizeHintMapper extends SISOMapper {
 					return null;
 				}
 			default:
-				throw new IllegalArgumentException("Not support param " + handleMethod);
+				throw new AkIllegalOperatorParameterException("Not support param " + handleMethod);
 		}
 	}
 }
