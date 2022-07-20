@@ -3,8 +3,8 @@ package com.alibaba.alink.operator.common.distance;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 
 import java.util.HashMap;
@@ -45,15 +45,15 @@ public class FastDistanceSparseData extends FastDistanceData {
 
 	public FastDistanceSparseData(List <Integer>[] indices, List <Double>[] values, int vectorNum, Row[] rows) {
 		super(rows);
-		Preconditions.checkNotNull(indices, "Index should not be null!");
-		Preconditions.checkNotNull(values, "Index should not be null!");
-		Preconditions.checkArgument(indices.length == values.length, "Index size not equal to value size!");
+		AkPreconditions.checkNotNull(indices, "Index should not be null!");
+		AkPreconditions.checkNotNull(values, "Index should not be null!");
+		AkPreconditions.checkArgument(indices.length == values.length, "Index size not equal to value size!");
 		this.indices = new int[indices.length][];
 		this.values = new double[values.length][];
 		for (int i = 0; i < this.indices.length; i++) {
 			if (indices[i] != null) {
-				Preconditions.checkNotNull(values[i], "Index size not equal to value size!");
-				Preconditions.checkArgument(indices[i].size() == values[i].size(),
+				AkPreconditions.checkNotNull(values[i], "Index size not equal to value size!");
+				AkPreconditions.checkArgument(indices[i].size() == values[i].size(),
 					"Index size not equal to value size!");
 				this.indices[i] = new int[indices[i].size()];
 				this.values[i] = new double[indices[i].size()];
@@ -82,7 +82,7 @@ public class FastDistanceSparseData extends FastDistanceData {
 		vectorNum,
 								  Row[] rows) {
 		super(rows);
-		Preconditions.checkNotNull(indexHashMap, "IndexHashMap should not be null!");
+		AkPreconditions.checkNotNull(indexHashMap, "IndexHashMap should not be null!");
 		int vectorSize = indexHashMap.keySet().stream().max(Integer::compareTo).get() + 1;
 		System.out.println("vectorSize:" + vectorSize);
 		this.indices = new int[vectorSize][];
@@ -90,7 +90,7 @@ public class FastDistanceSparseData extends FastDistanceData {
 		for (int i = 0; i < this.indices.length; i++) {
 			Tuple2 <List <Integer>, List <Double>> t = indexHashMap.get(i);
 			if (t != null) {
-				Preconditions.checkArgument(t.f0 != null && t.f1 != null && t.f0.size() == t.f1.size(),
+				AkPreconditions.checkArgument(t.f0 != null && t.f1 != null && t.f0.size() == t.f1.size(),
 					"Index size not equal to value size!");
 				this.indices[i] = new int[t.f0.size()];
 				this.values[i] = new double[t.f0.size()];

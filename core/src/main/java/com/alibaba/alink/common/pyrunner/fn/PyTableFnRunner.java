@@ -4,6 +4,7 @@ import com.alibaba.alink.common.pyrunner.PyCalcRunner;
 import com.alibaba.alink.common.pyrunner.fn.PyTableFn.PyCollector;
 import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 
 public class PyTableFnRunner extends PyCalcRunner <Object[], Void, PyTableFnHandle> {
@@ -11,7 +12,7 @@ public class PyTableFnRunner extends PyCalcRunner <Object[], Void, PyTableFnHand
 	public static final String PY_CLASS_NAME = "alink.fn.PyTableFn";
 
 	private final PyCollector pyCollector;
-	private final String fnSpecJson;
+	private String fnSpecJson;
 	private final String[] resultTypeStrs;
 
 	public PyTableFnRunner(PyCollector pyCollector, String fnSpecJson, String[] resultTypeStrs,
@@ -20,6 +21,11 @@ public class PyTableFnRunner extends PyCalcRunner <Object[], Void, PyTableFnHand
 		this.pyCollector = pyCollector;
 		this.fnSpecJson = fnSpecJson;
 		this.resultTypeStrs = resultTypeStrs;
+	}
+
+	public void preOpenBridgeHook(Path workDir) {
+		super.preOpenBridgeHook(workDir);
+		fnSpecJson = PyFnUtils.downloadFilePaths(fnSpecJson, workDir);
 	}
 
 	@Override

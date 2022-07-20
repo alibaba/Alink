@@ -10,6 +10,7 @@ import org.apache.flink.metrics.Counter;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.parquet.ParquetReaderFactory;
 import com.alibaba.alink.common.io.parquet.plugin.ParquetUtil.ParquetInputFile;
@@ -57,10 +58,14 @@ public class ParquetReaderImpl implements ParquetReaderFactory {
 
 	@Override
 	public boolean reachedEnd() {
-		try {
-			return parquetRecordReader.reachEnd();
-		} catch (Exception e) {
-			throw new IllegalArgumentException("cannot read parquet file");
+		if (parquetRecordReader != null) {
+			try {
+				return parquetRecordReader.reachEnd();
+			} catch (Exception e) {
+				throw new AkIllegalOperatorParameterException("cannot read parquet file");
+			}
+		} else {
+			return true;
 		}
 	}
 
@@ -78,7 +83,7 @@ public class ParquetReaderImpl implements ParquetReaderFactory {
 			try {
 				parquetRecordReader.close();
 			} catch (Exception e) {
-				throw new IllegalArgumentException("cannot close parquet file");
+				throw new AkIllegalOperatorParameterException("cannot close parquet file");
 			}
 		}
 	}
@@ -86,7 +91,8 @@ public class ParquetReaderImpl implements ParquetReaderFactory {
 	@Override
 	public TableSchema getTableSchemaFromParquetFile(FilePath filePath) {
 		MessageType messageType = ParquetUtil.getReadSchemaFromParquetFile(filePath);
-		RowTypeInfo schema = (RowTypeInfo) ParquetSchemaConverter.fromParquetType(messageType);
+		RowTypeInfo schema = messageType == null ? new RowTypeInfo()
+			: (RowTypeInfo) ParquetSchemaConverter.fromParquetType(messageType);
 		return new TableSchema(schema.getFieldNames(), schema.getFieldTypes());
 	}
 }

@@ -4,6 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.fe.def.over.LatestNCrossCategoricalStatFeatures;
 import com.alibaba.alink.common.fe.def.over.LatestTimeIntervalCrossCategoricalStatFeatures;
 import com.alibaba.alink.common.fe.def.over.LatestTimeSlotCrossCategoricalStatFeatures;
@@ -84,7 +85,7 @@ public abstract class BaseCrossCategoricalStatFeatures<T extends BaseStatFeature
 		if (this instanceof LatestNCrossCategoricalStatFeatures) {
 			int[] ns = ((InterfaceNStatFeatures) this).getNumbers();
 			if (null == ns && 0 == ns.length) {
-				throw new RuntimeException("number must be set.");
+				throw new AkIllegalOperatorParameterException("number must be set.");
 			}
 			for (int n : ns) {
 				flattenedFeatures.add(
@@ -98,7 +99,7 @@ public abstract class BaseCrossCategoricalStatFeatures<T extends BaseStatFeature
 		} else if (this instanceof LatestTimeIntervalCrossCategoricalStatFeatures) {
 			String[] timeIntervals = ((LatestTimeIntervalCrossCategoricalStatFeatures) this).getTimeIntervals();
 			if (null == timeIntervals && 0 == timeIntervals.length) {
-				throw new RuntimeException("time interval must be set.");
+				throw new AkIllegalOperatorParameterException("time interval must be set.");
 			}
 			for (String timeInterval : timeIntervals) {
 				flattenedFeatures.add(
@@ -113,7 +114,7 @@ public abstract class BaseCrossCategoricalStatFeatures<T extends BaseStatFeature
 		} else if (this instanceof LatestTimeSlotCrossCategoricalStatFeatures) {
 			String[] timeSlots = ((LatestTimeSlotCrossCategoricalStatFeatures) this).getTimeSlots();
 			if (null == timeSlots && 0 == timeSlots.length) {
-				throw new RuntimeException("time slot must be set.");
+				throw new AkIllegalOperatorParameterException("time slot must be set.");
 			}
 			for (String timeSlot : timeSlots) {
 				flattenedFeatures.add(
@@ -127,7 +128,7 @@ public abstract class BaseCrossCategoricalStatFeatures<T extends BaseStatFeature
 		} else if (this instanceof TumbleWindowCrossCategoricalStatFeatures) {
 			String[] windowTimes = ((TumbleWindowCrossCategoricalStatFeatures) this).getWindowTimes();
 			if (null == windowTimes && 0 == windowTimes.length) {
-				throw new RuntimeException("window time must be set.");
+				throw new AkIllegalOperatorParameterException("window time must be set.");
 			}
 			for (String windowTime : windowTimes) {
 				flattenedFeatures.add(
@@ -141,7 +142,7 @@ public abstract class BaseCrossCategoricalStatFeatures<T extends BaseStatFeature
 		} else if (this instanceof SessionWindowCrossCategoricalStatFeatures) {
 			String[] sessionTimes = ((SessionWindowCrossCategoricalStatFeatures) this).getSessionGapTimes();
 			if (null == sessionTimes && 0 == sessionTimes.length) {
-				throw new RuntimeException("session time must be set.");
+				throw new AkIllegalOperatorParameterException("session time must be set.");
 			}
 			for (String sessionTime : sessionTimes) {
 				flattenedFeatures.add(
@@ -156,13 +157,13 @@ public abstract class BaseCrossCategoricalStatFeatures<T extends BaseStatFeature
 			String[] windowTimes = ((HopWindowCrossCategoricalStatFeatures) this).getWindowTimes();
 			String[] hopTimes = ((HopWindowCrossCategoricalStatFeatures) this).getHopTimes();
 			if (null == windowTimes && 0 == windowTimes.length) {
-				throw new RuntimeException("window time must be set.");
+				throw new AkIllegalOperatorParameterException("window time must be set.");
 			}
 			if (null == hopTimes && 0 == hopTimes.length) {
-				throw new RuntimeException("hop time must be set.");
+				throw new AkIllegalOperatorParameterException("hop time must be set.");
 			}
 			if (windowTimes.length != hopTimes.length) {
-				throw new RuntimeException("hopTimes size must be equal with windowTimes.");
+				throw new AkIllegalOperatorParameterException("hopTimes size must be equal with windowTimes.");
 			}
 			for (int i = 0; i < windowTimes.length; i++) {
 				flattenedFeatures.add(
@@ -178,13 +179,13 @@ public abstract class BaseCrossCategoricalStatFeatures<T extends BaseStatFeature
 			String[] windowTimes = ((SlotWindowCrossCategoricalStatFeatures) this).getWindowTimes();
 			String[] stepTimes = ((SlotWindowCrossCategoricalStatFeatures) this).getStepTimes();
 			if (null == windowTimes && 0 == windowTimes.length) {
-				throw new RuntimeException("window time must be set.");
+				throw new AkIllegalOperatorParameterException("window time must be set.");
 			}
 			if (null == stepTimes && 0 == stepTimes.length) {
-				throw new RuntimeException("step time must be set.");
+				throw new AkIllegalOperatorParameterException("step time must be set.");
 			}
 			if (windowTimes.length != stepTimes.length) {
-				throw new RuntimeException("stepTimes size must be equal with windowTimes.");
+				throw new AkIllegalOperatorParameterException("stepTimes size must be equal with windowTimes.");
 			}
 			for (int i = 0; i < windowTimes.length; i++) {
 				flattenedFeatures.add(

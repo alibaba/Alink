@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.timeseries.sarima;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.operator.common.timeseries.AbstractGradientTarget;
 import com.alibaba.alink.operator.common.timeseries.TsMethod;
@@ -88,7 +89,7 @@ public class SMLEGradientTarget extends AbstractGradientTarget {
 	@Override
 	public DenseMatrix gradient(DenseMatrix coef, int iter) {
 		if (coef.numRows() != p + q + 1) {
-			throw new RuntimeException("Error!coef is not comparable with the model");
+			throw new AkIllegalDataException("Coef is not comparable with the model.");
 		}
 
 		double[] arCoef = new double[p];
@@ -134,7 +135,7 @@ public class SMLEGradientTarget extends AbstractGradientTarget {
 	@Override
 	public double f(DenseMatrix coef) {
 		if (coef.numRows() != p + q + 1) {
-			throw new RuntimeException("Error!coef is not comparable with the model");
+			throw new AkIllegalDataException("Coef is not comparable with the model.");
 		}
 
 		double[] arCoef = new double[p];

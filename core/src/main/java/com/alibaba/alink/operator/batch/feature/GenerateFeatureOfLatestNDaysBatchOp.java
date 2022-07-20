@@ -13,6 +13,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.fe.GenerateFeatureUtil;
 import com.alibaba.alink.common.fe.def.day.BaseDaysStatFeatures;
 import com.alibaba.alink.common.fe.def.day.CategoricalDaysStatistics;
@@ -257,7 +258,8 @@ public class GenerateFeatureOfLatestNDaysBatchOp extends BatchOperator <Generate
 				if (sbd.length() > 1) {
 					colStr = sbd.substring(0, sbd.length() - 1);
 				}
-				throw new RuntimeException("col in " + extendFeatures + " is not exist. maybe " + colStr);
+				throw new AkIllegalOperatorParameterException(
+					"col in " + extendFeatures + " is not exist. maybe " + colStr);
 			}
 		}
 		//combine exprs
@@ -434,7 +436,8 @@ public class GenerateFeatureOfLatestNDaysBatchOp extends BatchOperator <Generate
 					} else if (NumericDaysStatistics.MEAN == statFunc) {
 						bEnv.registerFunction(udafName, new MeanUdaf(nDays, colNames.length, conditions));
 					} else {
-						throw new RuntimeException("It is not support yet.");
+						throw new AkIllegalOperatorParameterException(
+							String.format("stat function [%s] not support yet.", statFunc));
 					}
 					if (conditions == null) {
 						String subClause = String.format("%s(%s, %s, %s, %s, %s)",
@@ -482,7 +485,8 @@ public class GenerateFeatureOfLatestNDaysBatchOp extends BatchOperator <Generate
 					} else if (CategoricalDaysStatistics.DISTINCT_COUNT == statFunc) {
 						bEnv.registerFunction(udafName, new DistinctCountUdaf(nDays, colNames.length, conditions));
 					} else {
-						throw new RuntimeException("It is not support yet.");
+						throw new AkIllegalOperatorParameterException(
+							String.format("stat function [%s] not support yet.", statFunc));
 					}
 					if (conditions == null) {
 						String subClause = String.format("%s(%s, %s, %s, %s, %s)",

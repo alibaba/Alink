@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.fe.def.day;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -40,7 +41,7 @@ public class BaseDaysFeaturesAdapter<T> implements JsonSerializer <T>, JsonDeser
 			klass = Class.forName(className);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			throw new JsonParseException(e.getMessage());
+			throw new AkIllegalStateException(e.getMessage());
 		}
 		return context.deserialize(jsonObject.get(INSTANCE), klass);
 	}

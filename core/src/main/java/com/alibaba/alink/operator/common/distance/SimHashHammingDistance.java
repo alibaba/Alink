@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.distance;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.operator.common.similarity.Sample;
 import com.alibaba.alink.operator.common.similarity.SimilarityUtil;
 
@@ -18,7 +19,7 @@ public class SimHashHammingDistance implements CategoricalDistance, FastCategori
 
 	public SimHashHammingDistance(int bitLength) {
 		if (64 != bitLength && 128 != bitLength) {
-			throw new RuntimeException("bitNum should be 64 or 128.");
+			throw new AkIllegalArgumentException("bitNum should be 64 or 128.");
 		}
 		this.bitLength = bitLength;
 	}

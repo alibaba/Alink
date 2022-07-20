@@ -6,6 +6,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -13,7 +14,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
-import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
 import static java.lang.Thread.sleep;
@@ -24,9 +25,15 @@ import static java.lang.Thread.sleep;
 @NameCn("数值队列数据源")
 @InputPorts
 @OutputPorts(values = @PortSpec(PortType.DATA))
-public final class NumSeqSourceStreamOp extends StreamOperator <NumSeqSourceStreamOp> {
+public final class NumSeqSourceStreamOp extends BaseSourceStreamOp <NumSeqSourceStreamOp> {
 
 	private static final long serialVersionUID = -1132356020317225421L;
+
+	private final long from;
+	private final long to;
+	private final String colName;
+	private double timePerSample = -1;
+	private Double[] timeZones;
 
 	public NumSeqSourceStreamOp(long n) {
 		this(1L, n);
@@ -45,11 +52,10 @@ public final class NumSeqSourceStreamOp extends StreamOperator <NumSeqSourceStre
 	}
 
 	public NumSeqSourceStreamOp(long from, long to, String colName, Params params) {
-		super(params);
-		DataStreamSource <Long> seq = MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment()
-			.generateSequence(from, to);
-		this.setOutputTable(MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment()
-			.fromDataStream(seq, colName));
+		super(AnnotationUtils.annotatedName(NumSeqSourceStreamOp.class), params);
+		this.from = from;
+		this.to = to;
+		this.colName = colName;
 	}
 
 	public NumSeqSourceStreamOp(long from, long to, double timePerSample) {
@@ -65,14 +71,12 @@ public final class NumSeqSourceStreamOp extends StreamOperator <NumSeqSourceStre
 	}
 
 	public NumSeqSourceStreamOp(long from, long to, String colName, double timePerSample, Params params) {
-		super(params);
+		super(AnnotationUtils.annotatedName(NumSeqSourceStreamOp.class), params);
+		this.from = from;
+		this.to = to;
+		this.colName = colName;
+		this.timePerSample = timePerSample;
 
-		DataStreamSource <Long> seq = MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment()
-			.generateSequence(from, to);
-		DataStream <Long> data = seq.map(new SpeedController(new Double[] {timePerSample}));
-
-		this.setOutputTable(MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment()
-			.fromDataStream(data, colName));
 	}
 
 	public NumSeqSourceStreamOp(long from, long to, Double[] timeZones) {
@@ -88,19 +92,28 @@ public final class NumSeqSourceStreamOp extends StreamOperator <NumSeqSourceStre
 	}
 
 	public NumSeqSourceStreamOp(long from, long to, String colName, Double[] timeZones, Params params) {
-		super(params);
-
-		DataStreamSource <Long> seq = MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment()
-			.generateSequence(from, to);
-		DataStream <Long> data = seq.map(new SpeedController(timeZones));
-
-		this.setOutputTable(MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment()
-			.fromDataStream(data, colName));
+		super(AnnotationUtils.annotatedName(NumSeqSourceStreamOp.class), params);
+		this.from = from;
+		this.to = to;
+		this.colName = colName;
+		this.timeZones = timeZones;
 	}
 
 	@Override
-	public NumSeqSourceStreamOp linkFrom(StreamOperator <?>... inputs) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	protected Table initializeDataSource() {
+		DataStreamSource <Long> seq
+			= MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamExecutionEnvironment()
+			.generateSequence(from, to);
+		DataStream <Long> data;
+		if (timeZones == null && timePerSample == -1) {
+			data = seq;
+		} else if (timeZones != null && timePerSample == -1) {
+			data = seq.map(new SpeedController(timeZones));
+		} else {
+			data = seq.map(new SpeedController(new Double[] {timePerSample}));
+		}
+		return MLEnvironmentFactory.get(getMLEnvironmentId()).getStreamTableEnvironment()
+			.fromDataStream(data, colName);
 	}
 
 	public static class SpeedController extends AbstractRichFunction
@@ -146,7 +159,6 @@ public final class NumSeqSourceStreamOp extends StreamOperator <NumSeqSourceStre
 			} else {
 				throw new IllegalArgumentException("time parameter is wrong!");
 			}
-
 			sleep(sleepMs);
 			return value;
 		}

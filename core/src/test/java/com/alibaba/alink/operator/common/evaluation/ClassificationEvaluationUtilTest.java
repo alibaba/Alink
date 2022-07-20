@@ -9,6 +9,7 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.BinaryPartitionSummary;
 import com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil.CalcBinaryPartitionSummary;
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
@@ -65,7 +66,7 @@ public class ClassificationEvaluationUtilTest extends AlinkTestBase {
 	public void predResultLabelMapExceptionWhenBinaryClassification() {
 		HashSet <Object> set = new HashSet <>();
 		set.add("0");
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalArgumentException.class);
 		thrown.expectMessage("The number of labels must be equal to 2!");
 		ClassificationEvaluationUtil.buildLabelIndexLabelArray(set, true, null, Types.INT, true);
 	}

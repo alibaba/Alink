@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.params.dataproc.tensor.HasChannelFirst;
 import com.alibaba.alink.params.image.HasRelativeFilePathCol;
 import com.alibaba.alink.params.io.HasRootFilePath;
 import com.alibaba.alink.params.mapper.MapperParams;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
 
 public interface ReadAudioToTensorParams<T> extends
 	MapperParams <T>,
+	HasChannelFirst<T>,
 	HasSampleRate <T>,
 	HasRelativeFilePathCol <T>,
 	HasRootFilePath <T>,

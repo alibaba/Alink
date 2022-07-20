@@ -2,6 +2,8 @@ package com.alibaba.alink.operator.common.statistics.statistics;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.slidingwindow.windowtree.DeepCloneable;
 import com.alibaba.alink.operator.common.statistics.basicstat.WindowTable;
@@ -115,12 +117,12 @@ public class SummaryResultTable implements Serializable, Cloneable, DeepCloneabl
 	public static SummaryResultTable combine(SummaryResultTable srt1, SummaryResultTable srt2) {
 		if (null == srt1.colNames || 0 == srt1.colNames.length || null == srt2.colNames || 0 == srt2.colNames.length
 			|| srt1.colNames.length != srt2.colNames.length) {
-			throw new RuntimeException("Col names are empty, or not matched!");
+			throw new AkIllegalStateException("Col names are empty, or not matched!");
 		}
 		int nCol = srt1.colNames.length;
 		for (int i = 0; i < nCol; i++) {
 			if (!srt1.colNames[i].equals(srt2.colNames[i])) {
-				throw new RuntimeException("Col names are not matched!");
+				throw new AkIllegalStateException("Col names are not matched!");
 			}
 		}
 
@@ -158,12 +160,12 @@ public class SummaryResultTable implements Serializable, Cloneable, DeepCloneabl
 		if (null == colNames || 0 == colNames.length ||
 			null == srt.colNames || 0 == srt.colNames.length ||
 			colNames.length != srt.colNames.length) {
-			throw new RuntimeException("Col names are empty, or not matched!");
+			throw new AkIllegalStateException("Col names are empty, or not matched!");
 		}
 		int nCol = colNames.length;
 		for (int i = 0; i < nCol; i++) {
 			if (!colNames[i].equals(srt.colNames[i])) {
-				throw new RuntimeException("Col names are not matched!");
+				throw new AkIllegalStateException("Col names are not matched!");
 			}
 		}
 
@@ -220,7 +222,7 @@ public class SummaryResultTable implements Serializable, Cloneable, DeepCloneabl
 			}
 			return cov;
 		} else {
-			throw new RuntimeException("Not implemented yet!");
+			throw new AkUnsupportedOperationException("Not implemented yet!");
 		}
 
 	}

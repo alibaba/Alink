@@ -2,6 +2,7 @@ package com.alibaba.alink.common.io.directreader;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkFlinkExecutionErrorException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 
@@ -26,7 +27,7 @@ public class LocalFileDataBridgeGenerator implements DataBridgeGenerator {
 		try {
 			BatchOperator.execute();
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new AkFlinkExecutionErrorException("Failed to write op data to the local file.", e);
 		}
 		return new LocalFileDataBridge(file.getAbsolutePath());
 	}

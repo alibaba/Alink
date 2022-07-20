@@ -12,6 +12,7 @@ import com.alibaba.alink.common.dl.utils.DLClusterUtils;
 import com.alibaba.alink.common.dl.utils.DLUtils;
 import com.alibaba.alink.common.dl.utils.ExternalFilesUtils;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.flink.ml.cluster.ExecutionMode;
 import com.alibaba.flink.ml.cluster.MLConfig;
@@ -169,7 +170,7 @@ public class DLStreamCoFlatMapFunc extends RichCoFlatMapFunction <Row, Row, Row>
 			dataExchange = dataExchangeFutureTaskThreadTuple3.f0;
 			serverFuture = dataExchangeFutureTaskThreadTuple3.f1;
 		} catch (Exception ex) {
-			throw new RuntimeException("Start TF cluster failed: ", ex);
+			throw new AkUnclassifiedErrorException("Start TF cluster failed: ", ex);
 		}
 	}
 
@@ -211,7 +212,7 @@ public class DLStreamCoFlatMapFunc extends RichCoFlatMapFunction <Row, Row, Row>
 				serverFuture.cancel(true);
 			} catch (IOException e) {
 				LOG.error("Fail to read data from python.", e);
-				throw new RuntimeException(e);
+				throw new AkUnclassifiedErrorException("Fail to read data from python.", e);
 			}
 		}
 	}

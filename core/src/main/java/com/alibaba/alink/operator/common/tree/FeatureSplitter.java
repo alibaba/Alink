@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.tree;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.params.shared.tree.HasMaxLeaves;
 import com.alibaba.alink.params.shared.tree.HasMinInfoGain;
 import com.alibaba.alink.params.shared.tree.HasMinSampleRatioPerChild;
@@ -46,7 +47,7 @@ public abstract class FeatureSplitter implements Cloneable {
 		try {
 			return (FeatureSplitter) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new IllegalStateException("Can not clone FeatureSplitter.", e);
+			throw new AkIllegalStateException("Can not clone FeatureSplitter.", e);
 		}
 	}
 

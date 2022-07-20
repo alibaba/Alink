@@ -2,6 +2,7 @@ package com.alibaba.alink.common.sql.builtin.agg;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.utils.Functional.SerializableFunction;
 
 import java.sql.Timestamp;
@@ -42,7 +43,7 @@ public class TimeSeriesAgg extends BaseUdaf <String, List <Tuple2 <Long, Object>
 
 	public static <T> List <Tuple2 <Long, T>> getValue(String seriesStr, SerializableFunction <String, T> parser) {
 		if (seriesStr == null) {
-			throw new RuntimeException("seriesStr is null.");
+			throw new AkIllegalDataException("seriesStr is null.");
 		}
 
 		if (seriesStr.isEmpty()) {
@@ -55,7 +56,7 @@ public class TimeSeriesAgg extends BaseUdaf <String, List <Tuple2 <Long, Object>
 		for (String line : lines) {
 			String[] lineValues = line.split(TIME_VECTOR_INNER_DELIMITER);
 			if (lineValues.length != 2) {
-				throw new RuntimeException("lineValue nums is larger than 2.");
+				throw new AkIllegalDataException("lineValue nums is larger than 2.");
 			}
 			data.add(
 				Tuple2.of(Long.parseLong(lineValues[0]), parser.apply(lineValues[1]))

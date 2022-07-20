@@ -6,20 +6,19 @@ import org.apache.flink.api.common.typeinfo.Types;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.pyrunner.fn.BasePyScalarFn;
 import com.alibaba.alink.common.pyrunner.fn.PyScalarFnHandle;
-import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
 
 import java.util.Collections;
+import java.util.Map;
 
 @Internal
 public class PyDoubleScalarFn extends BasePyScalarFn <Double, PyScalarFnHandle <Double>> {
 
 	public PyDoubleScalarFn(String name, String fnSpecJson) {
-		this(name, fnSpecJson, Collections. <String, String>emptyMap()::getOrDefault);
+		this(name, fnSpecJson, Collections.emptyMap());
 	}
 
-	public PyDoubleScalarFn(String name, String fnSpecJson,
-							SerializableBiFunction <String, String, String> runConfigGetter) {
-		super(name, fnSpecJson, double.class, runConfigGetter);
+	public PyDoubleScalarFn(String name, String fnSpecJson, Map <String, String> runConfig) {
+		super(name, fnSpecJson, double.class, runConfig);
 	}
 
 	@Override

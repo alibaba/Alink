@@ -15,7 +15,6 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.NumberSequenceIterator;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -27,6 +26,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.graph.storage.GraphEdge;
@@ -309,7 +309,7 @@ public final class RandomWalkBatchOp extends BatchOperator <RandomWalkBatchOp>
 						logical2physical.getDstPartitionId());
 				}
 				HomoGraphEngine homoGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				Preconditions.checkNotNull(homoGraphEngine);
+				AkPreconditions.checkNotNull(homoGraphEngine, "homoGraphEngine is null");
 				homoGraphEngine.setLogicalWorkerIdToPhysicalWorkerId(workerIdMapping);
 			} else {
 				// do nothing here.
@@ -355,9 +355,9 @@ public final class RandomWalkBatchOp extends BatchOperator <RandomWalkBatchOp>
 				RandomWalkPathEngine randomWalkPathEngine = IterTaskObjKeeper.get(randomWalkStorageHandler,
 					partitionId);
 				RandomWalkMemoryBuffer randomWalkMemoryBuffer = IterTaskObjKeeper.get(walkBufferHandler, partitionId);
-				Preconditions.checkNotNull(homoGraphEngine);
-				Preconditions.checkNotNull(randomWalkPathEngine);
-				Preconditions.checkNotNull(randomWalkMemoryBuffer);
+				AkPreconditions.checkNotNull(homoGraphEngine, "homoGraphEngine is null");
+				AkPreconditions.checkNotNull(randomWalkPathEngine, "randomWalkPathEngine is null");
+				AkPreconditions.checkNotNull(randomWalkMemoryBuffer, "randomWalkMemoryBuffer is null");
 
 				long[] nextBatchOfVerticesToSampleFrom = randomWalkPathEngine.getNextBatchOfVerticesToSampleFrom();
 
@@ -444,9 +444,12 @@ public final class RandomWalkBatchOp extends BatchOperator <RandomWalkBatchOp>
 			} else {
 				int partitionId = getRuntimeContext().getIndexOfThisSubtask();
 				HomoGraphEngine homoGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				Preconditions.checkNotNull(homoGraphEngine);
+				AkPreconditions.checkNotNull(homoGraphEngine, "homoGraphEngine is null");
 				for (RandomWalkCommunicationUnit randomWalkCommunicationUnit : values) {
-					Preconditions.checkState(randomWalkCommunicationUnit.getDstPartitionId() == partitionId);
+					AkPreconditions.checkState(randomWalkCommunicationUnit.getDstPartitionId() == partitionId,
+						"The target task id is incorrect. It should be "
+							+ randomWalkCommunicationUnit.getDstPartitionId()
+							+ ", but it is " + partitionId);
 					Long[] verticesToSample = randomWalkCommunicationUnit.getRequestedVertexIds();
 					for (int vertexCnt = 0; vertexCnt < verticesToSample.length; vertexCnt++) {
 						if (homoGraphEngine.containsVertex(verticesToSample[vertexCnt])) {

@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.regression.glm.famliy;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.AlinkSerializable;
 import com.alibaba.alink.operator.common.regression.glm.GlmUtil;
 import com.alibaba.alink.operator.common.regression.glm.link.Logit;
@@ -37,7 +38,7 @@ public class Binomial extends FamilyFunction implements Serializable, AlinkSeria
 	public double initialize(double y, double weight) {
 		double mu = (weight * y + 0.5) / (weight + 1.0);
 		if (mu <= 0 || mu >= 1.0) {
-			throw new RuntimeException("mu must be in (0, 1).");
+			throw new AkIllegalOperatorParameterException("mu must be in (0, 1).");
 		}
 		return mu;
 	}

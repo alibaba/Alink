@@ -3,6 +3,8 @@ package com.alibaba.alink.operator.common.statistics.statistics;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
 import com.alibaba.alink.metadata.def.shaded.com.google.protobuf.InvalidProtocolBufferException;
 import com.alibaba.alink.metadata.def.v0.DatasetFeatureStatisticsList;
@@ -29,9 +31,9 @@ public class FullStatsConverter
 			try {
 				return new FullStats(DatasetFeatureStatisticsList.parseFrom(bytes));
 			} catch (InvalidProtocolBufferException e) {
-				throw new RuntimeException("Failed to parse from base64 string: " + s, e);
+				throw new AkParseErrorException("Failed to parse from base64 string: " + s, e);
 			}
 		}
-		throw new IllegalArgumentException("No data for deserialize.");
+		throw new AkIllegalModelException("No data for deserialize.");
 	}
 }

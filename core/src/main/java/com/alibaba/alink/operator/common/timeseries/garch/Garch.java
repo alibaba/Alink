@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.timeseries.garch;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.common.timeseries.TsMethod;
 import com.alibaba.alink.params.timeseries.HasIcType.IcType;
 
@@ -14,14 +15,14 @@ public class Garch {
 		model.bOrder = bOrder;
 
 		if (aOrder < 0 || bOrder < 0) {
-			throw new RuntimeException("Order for conditional variance and data must equal to or Greater than 0");
+			throw new AkIllegalOperatorParameterException("Order for conditional variance and data must equal to or Greater than 0");
 		}
 		if (aOrder == 0 && bOrder == 0) {
-			throw new RuntimeException("Order for conditional variance and data can not be 0 simultaneously");
+			throw new AkIllegalOperatorParameterException("Order for conditional variance and data can not be 0 simultaneously");
 		}
 
 		if (data.length - bOrder < aOrder + bOrder + 1) {
-			throw new RuntimeException("Do not have enough data");
+			throw new AkIllegalOperatorParameterException("Do not have enough data");
 		}
 
 		MleEstimate mleEstimate = new MleEstimate();
@@ -66,7 +67,7 @@ public class Garch {
 									 boolean ifGarch11) {
 
 		if (upperBound <= 0) {
-			throw new RuntimeException("upperBound must be Greater than 0");
+			throw new AkIllegalOperatorParameterException("upperBound must be Greater than 0");
 		}
 
 		if (!ifGarch11) {

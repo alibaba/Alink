@@ -13,7 +13,7 @@ public class FeedForwardTopology extends Topology {
 	/**
 	 * All layers of the topology.
 	 */
-	private List <Layer> layers;
+	private final List <Layer> layers;
 
 	public FeedForwardTopology(List <Layer> layers) {
 		this.layers = layers;

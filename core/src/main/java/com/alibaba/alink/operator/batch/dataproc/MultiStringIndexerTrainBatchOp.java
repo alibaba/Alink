@@ -14,11 +14,13 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
-import com.alibaba.alink.common.annotation.SelectedColsWithFirstInputSpec;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.HugeStringIndexerUtil;
@@ -45,8 +47,9 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCols;
  */
 @InputPorts(values = @PortSpec(value = PortType.DATA, opType = OpType.BATCH))
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
-@SelectedColsWithFirstInputSpec
-@NameCn("MultiStringIndexer训练")
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.INT_LONG_STRING_TYPES)
+@NameCn("多字段字符串编码训练")
+@NameEn("Multiple String Indexer Train")
 public final class MultiStringIndexerTrainBatchOp
 	extends BatchOperator <MultiStringIndexerTrainBatchOp>
 	implements MultiStringIndexerTrainParams <MultiStringIndexerTrainBatchOp> {

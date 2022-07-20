@@ -10,7 +10,7 @@ import java.util.List;
  * The TopologyModel object holds weights of a neural network topology, and defines methods
  * to compute output, gradient and delta.
  *
- * @see {@link Topology}.
+ * see {@link Topology}.
  */
 public abstract class TopologyModel implements Serializable {
 	private static final long serialVersionUID = 5827794156908092664L;

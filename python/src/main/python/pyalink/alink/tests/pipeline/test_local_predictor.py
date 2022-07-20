@@ -85,12 +85,6 @@ class TestLocalPredictor(unittest.TestCase):
                                              np.array([2.4, 2.2, 1], dtype=object))
 
     def test_string_values(self):
-        data = np.array([
-            [0, 'That is an English Book!'],
-            [1, 'Do you like math?'],
-            [2, 'Have a good day!']
-        ], dtype=object)
-
         tokenizer = Tokenizer().setSelectedCol("text").setOutputCol("output")
         predictor = tokenizer.collectLocalPredictor('id long, text string')
 
@@ -114,8 +108,6 @@ class TestLocalPredictor(unittest.TestCase):
             .setSchemaStr(schemaStr) \
             .setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv")
 
-        model_filename = tempfile.NamedTemporaryFile().name
-
         stage1 = QuantileDiscretizer().setNumBuckets(2).setSelectedCols(["sepal_length"])
         stage2 = Binarizer().setSelectedCol("petal_width").setThreshold(1.)
         stage3 = QuantileDiscretizer().setNumBuckets(4).setSelectedCols(["petal_length"])
@@ -131,6 +123,8 @@ class TestLocalPredictor(unittest.TestCase):
         np.testing.assert_array_equal(res,
                                       np.array([0, 3.4, 1, 1.0, "1"], dtype=object))
         res = predictor.map(np.array([1.2, 3.4, 2.4, 3.6, "1"], dtype=object))
+        np.testing.assert_array_equal(res,
+                                      np.array([0, 3.4, 1, 1.0, "1"], dtype=object))
 
     def test_load_model_str_path(self):
         schemaStr = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string"
@@ -157,6 +151,8 @@ class TestLocalPredictor(unittest.TestCase):
         np.testing.assert_array_equal(res,
                                       np.array([0, 3.4, 1, 1.0, "1"], dtype=object))
         res = predictor.map(np.array([1.2, 3.4, 2.4, 3.6, "1"], dtype=object))
+        np.testing.assert_array_equal(res,
+                                      np.array([0, 3.4, 1, 1.0, "1"], dtype=object))
 
     def test_load_model_file_path(self):
         schemaStr = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string"
@@ -176,14 +172,30 @@ class TestLocalPredictor(unittest.TestCase):
 
         predictor = LocalPredictor(model_file_path, schemaStr)
 
-        print(predictor.getOutputColTypes())
-        print(predictor.getOutputColNames())
-        # self.assertListEqual(predictor.getOutputColNames(),
-        #                      ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'category'])
-        # self.assertListEqual(predictor.getOutputColTypes(),
-        #                      ['BIGINT', 'DOUBLE', 'BIGINT', 'DOUBLE', 'VARCHAR'])
+        self.assertListEqual(predictor.getOutputColNames(),
+                             ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'category'])
+        self.assertListEqual(predictor.getOutputColTypes(),
+                             ['BIGINT', 'DOUBLE', 'BIGINT', 'DOUBLE', 'VARCHAR'])
 
         res = predictor.map([1.2, 3.4, 2.4, 3.6, "1"])
-        # np.testing.assert_array_equal(res,
-        #                               np.array([0, 3.4, 1, 1.0, "1"], dtype=object))
+        np.testing.assert_array_equal(res,
+                                      np.array([0, 3.4, 1, 1.0, "1"], dtype=object))
         res = predictor.map(np.array([1.2, 3.4, 2.4, 3.6, "1"], dtype=object))
+        np.testing.assert_array_equal(res,
+                                      np.array([0, 3.4, 1, 1.0, "1"], dtype=object))
+
+    def test_construct_with_params(self):
+        schemaStr = "sepal_length double, sepal_width double, petal_length double, petal_width double, category string"
+        source = CsvSourceBatchOp() \
+            .setSchemaStr(schemaStr) \
+            .setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv")
+
+        model_filename = tempfile.NamedTemporaryFile().name
+        model_file_path = FilePath(model_filename, LocalFileSystem())
+
+        stage = QuantileDiscretizer().setNumBuckets(2).setSelectedCols(["sepal_length"])
+        pipeline_model = Pipeline(stage).fit(source)
+        pipeline_model.save(model_file_path)
+        BatchOperator.execute()
+
+        LocalPredictor(model_file_path, schemaStr, Params().set("abc", "def"))

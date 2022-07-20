@@ -1,7 +1,8 @@
 package com.alibaba.alink.operator.common.evaluation;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +42,7 @@ public final class MultiMetricsSummary implements BaseMetricsSummary <MultiClass
 	double logLoss;
 
 	public MultiMetricsSummary(long[][] matrix, Object[] labels, double logLoss, long total) {
-		Preconditions.checkArgument(matrix.length > 0 && matrix.length == matrix[0].length,
+		AkPreconditions.checkArgument(matrix.length > 0 && matrix.length == matrix[0].length,
 			"The row size must be equal to col size!");
 		this.matrix = new LongMatrix(matrix);
 		this.labels = labels;

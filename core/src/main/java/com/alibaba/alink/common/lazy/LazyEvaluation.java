@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.lazy;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import io.reactivex.rxjava3.subjects.ReplaySubject;
 
 import java.util.List;
@@ -39,7 +41,8 @@ public class LazyEvaluation<T> {
 	public void addValue(T v) {
 		replaySubject.onNext(v);
 		if (throwable != null) {
-			throw new RuntimeException(throwable);
+			throw new AkUnclassifiedErrorException(
+				String.format("Failed to call addValue with value: %s.", v), throwable);
 		}
 	}
 
@@ -47,7 +50,7 @@ public class LazyEvaluation<T> {
 		if (replaySubject.hasValue()) {
 			return replaySubject.getValue();
 		} else {
-			throw new RuntimeException("Result not set");
+			throw new AkIllegalStateException("Result not set.");
 		}
 	}
 }

@@ -7,8 +7,8 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.flink.ml.cluster.ExecutionMode;
 import com.alibaba.flink.ml.cluster.MLConfig;
@@ -86,7 +86,7 @@ public class DLClusterMapPartitionFunc extends RichMapPartitionFunction <Row, Ro
 			return;
 		}
 		stepNo = getIterationRuntimeContext().getSuperstepNumber();
-		Preconditions.checkArgument(stepNo <= 2);
+		AkPreconditions.checkState(stepNo <= 2);
 		if (stepNo == 1) {
 			ipPortFunction.open(getRuntimeContext());
 		} else if (stepNo == 2) {

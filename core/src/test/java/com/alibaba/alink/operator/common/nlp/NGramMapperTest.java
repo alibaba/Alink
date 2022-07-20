@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.params.nlp.NGramParams;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Rule;
@@ -75,7 +76,7 @@ public class NGramMapperTest extends AlinkTestBase {
 			.set(NGramParams.SELECTED_COL, "sentence")
 			.set(NGramParams.N, -1);
 
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalOperatorParameterException.class);
 		NGramMapper mapper = new NGramMapper(schema, params);
 	}
 }

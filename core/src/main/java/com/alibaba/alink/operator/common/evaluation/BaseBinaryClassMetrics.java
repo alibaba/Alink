@@ -5,8 +5,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.feature.binning.FeatureBinsUtil;
 import com.alibaba.alink.operator.common.tree.viz.TreeModelViz;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
@@ -229,13 +230,11 @@ public class BaseBinaryClassMetrics<T extends BaseBinaryClassMetrics<T>> extends
 							Tuple2 <String, Double> subTitle,
 							Tuple2 <double[], double[]>... curvePoints) throws IOException {
 		File file = new File(path);
-
-		Preconditions.checkArgument(
-			isOverwrite || !file.exists(),
-			"File: %s is exists.", path
-		);
-
-		Preconditions.checkNotNull(curvePoints, "Points should not be null!");
+		if (!isOverwrite && file.exists()) {
+			throw new AkIllegalOperationException(
+				String.format("File %s exists and isOverwrite is set to false.", path));
+		}
+		AkPreconditions.checkNotNull(curvePoints, "Points should not be null!");
 		XYSeriesCollection seriesCollection = new XYSeriesCollection();
 		for (int i = 0; i < curvePoints.length; i++) {
 			XYSeries series = new XYSeries(keys[i]);

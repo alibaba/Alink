@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.sql.builtin.agg;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.sql.builtin.agg.LastValueTypeData.LastValueData;
 import com.alibaba.alink.common.sql.builtin.agg.LastValueTypeData.SumLastData;
 
@@ -17,7 +18,7 @@ public class SumLastUdaf extends BaseUdaf<Object, SumLastData> {
 
 	public SumLastUdaf(int k, double timeInterval) {
 		if (k <= 0) {
-			throw new RuntimeException("k must be set larger than 0.");
+			throw new AkIllegalOperatorParameterException("k must be set larger than 0.");
 		}
 		this.timeInterval = timeInterval * 1000;
 	}

@@ -21,6 +21,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.RowUtil;
@@ -623,7 +624,7 @@ public class WordCountUtil {
 	private static int[] findColIdx(String[] selectedColNames, String[] colnames, TypeInformation <?>[] coltypes) {
 		int size = selectedColNames.length;
 		if (size < 1 || size > colnames.length) {
-			throw new RuntimeException(String.format(
+			throw new AkIllegalArgumentException(String.format(
 				"selected column size out of range [%d, %d]", 1, colnames.length));
 		}
 		int[] colIdxs = new int[size];
@@ -633,7 +634,7 @@ public class WordCountUtil {
 			for (int j = 0; j < colnames.length; ++j) {
 				if (selectedColNames[i].equals(colnames[j])) {
 					if (coltypes[j] != Types.STRING) {
-						throw new RuntimeException(String.format(
+						throw new AkIllegalArgumentException(String.format(
 							"type of column: %s must be string.", colnames[j]
 						));
 					}
@@ -642,7 +643,7 @@ public class WordCountUtil {
 				}
 			}
 			if (colIdxs[i] == -1) {
-				throw new RuntimeException(String.format(
+				throw new AkIllegalArgumentException(String.format(
 					"column %s does not exist.", selectedColNames[i]));
 			}
 		}
@@ -656,7 +657,7 @@ public class WordCountUtil {
 
 		int size = keepColNames.length;
 		if (size > colnames.length) {
-			throw new RuntimeException(String.format(
+			throw new AkIllegalArgumentException(String.format(
 				"selected append column size out of range [%d, %d]", 0, colnames.length));
 		}
 		int[] colIdxs = new int[size];
@@ -670,7 +671,7 @@ public class WordCountUtil {
 				}
 			}
 			if (colIdxs[i] == -1) {
-				throw new RuntimeException(String.format(
+				throw new AkIllegalArgumentException(String.format(
 					"column %s does not exist.", keepColNames[i]));
 			}
 		}

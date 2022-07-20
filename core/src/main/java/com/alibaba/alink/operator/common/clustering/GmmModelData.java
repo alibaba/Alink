@@ -1,7 +1,7 @@
 package com.alibaba.alink.operator.common.clustering;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 
@@ -35,7 +35,8 @@ public class GmmModelData {
 	 * Get the matrix element position in the compact format.
 	 */
 	public static int getElementPositionInCompactMatrix(int i, int j, int n) {
-		Preconditions.checkArgument(i <= j);
+		AkPreconditions.checkArgument(i <= j,
+			new AkIllegalArgumentException("i should be smaller than/equal to j"));
 		return (1 + j) * j / 2 + i;
 	}
 

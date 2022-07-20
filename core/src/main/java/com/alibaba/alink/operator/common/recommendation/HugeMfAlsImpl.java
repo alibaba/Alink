@@ -27,8 +27,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.NormalEquation;
@@ -116,9 +117,9 @@ public class HugeMfAlsImpl {
 					Object user = value.getField(userColIdx);
 					Object item = value.getField(itemColIdx);
 					Object rating = value.getField(rateColIdx);
-					Preconditions.checkNotNull(user, "user is null");
-					Preconditions.checkNotNull(item, "item is null");
-					Preconditions.checkNotNull(rating, "rating is null");
+					AkPreconditions.checkNotNull(user, new AkIllegalDataException("user is null"));
+					AkPreconditions.checkNotNull(item, new AkIllegalDataException("item is null"));
+					AkPreconditions.checkNotNull(rating, new AkIllegalDataException("rating is null"));
 					return new Tuple3 <>(((Number) user).longValue(),
 						((Number) item).longValue(),
 						((Number) rating).floatValue());
@@ -226,9 +227,9 @@ public class HugeMfAlsImpl {
 					Object user = value.getField(userColIdx);
 					Object item = value.getField(itemColIdx);
 					Object rating = value.getField(rateColIdx);
-					Preconditions.checkNotNull(user, "user is null");
-					Preconditions.checkNotNull(item, "item is null");
-					Preconditions.checkNotNull(rating, "rating is null");
+					AkPreconditions.checkNotNull(user, new AkIllegalDataException("user is null"));
+					AkPreconditions.checkNotNull(item, new AkIllegalDataException("item is null"));
+					AkPreconditions.checkNotNull(rating, new AkIllegalDataException("rating is null"));
 					return new Tuple3 <>(((Number) user).longValue(),
 						((Number) item).longValue(),
 						((Number) rating).floatValue());

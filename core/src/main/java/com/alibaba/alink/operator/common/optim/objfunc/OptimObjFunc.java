@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.MatVecOp;
@@ -198,7 +199,7 @@ public abstract class OptimObjFunc implements Serializable {
 			}
 			return Tuple2.of(weightSum, loss);
 		} else {
-			throw new UnsupportedOperationException(
+			throw new AkUnsupportedOperationException(
 				"loss function can't support second derivative, newton precondition can not work.");
 		}
 	}

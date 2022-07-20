@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.pyrunner.fn.conversion;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.pyrunner.fn.JavaObjectWrapper;
 
 import java.io.BufferedReader;
@@ -27,7 +28,7 @@ public class MTableWrapper implements JavaObjectWrapper <MTable> {
 			writer.flush();
 			wrapper.content = stringWriter.toString();
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to write MTable to StringWriter.", e);
+			throw new AkUnclassifiedErrorException("Failed to write MTable to StringWriter.", e);
 		}
 		return wrapper;
 	}
@@ -40,7 +41,7 @@ public class MTableWrapper implements JavaObjectWrapper <MTable> {
 			 BufferedReader reader = new BufferedReader(stringReader)) {
 			wrapper.mTable = MTable.readCsvFromFile(reader, schemaStr);
 		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException("Failed to read MTable from Python content.", ex);
 		}
 		return wrapper;
 	}

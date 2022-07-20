@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper.DiscreteMapperBuilder;
 import com.alibaba.alink.params.feature.BucketizerParams;
@@ -59,7 +60,7 @@ public class BucketizerMapper extends Mapper {
 					mapperBuilder.vectorSize.put(i, (long) binCount + 1);
 					break;
 				default:
-					throw new UnsupportedOperationException("Unsupported now.");
+					throw new AkUnsupportedOperationException("Unsupported now.");
 			}
 
 			if (mapperBuilder.paramsBuilder.dropLast) {

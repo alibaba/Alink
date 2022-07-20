@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.linalg;
 
 import com.alibaba.alink.common.DataTypeDisplayInterface;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.VectorUtil.VectorSerialType;
 
 import java.nio.ByteBuffer;
@@ -168,7 +169,7 @@ public class DenseVector extends Vector implements DataTypeDisplayInterface {
 		double[] values = new double[indices.length];
 		for (int i = 0; i < indices.length; ++i) {
 			if (indices[i] >= data.length) {
-				throw new IllegalArgumentException("Index is larger than vector size.");
+				throw new AkUnclassifiedErrorException("Index is larger than vector size.");
 			}
 			values[i] = data[indices[i]];
 		}
@@ -433,7 +434,7 @@ public class DenseVector extends Vector implements DataTypeDisplayInterface {
 		@Override
 		public int getIndex() {
 			if (cursor >= data.length) {
-				throw new RuntimeException("Iterator out of bound.");
+				throw new AkUnclassifiedErrorException("Iterator out of bound.");
 			}
 			return cursor;
 		}
@@ -441,7 +442,7 @@ public class DenseVector extends Vector implements DataTypeDisplayInterface {
 		@Override
 		public double getValue() {
 			if (cursor >= data.length) {
-				throw new RuntimeException("Iterator out of bound.");
+				throw new AkUnclassifiedErrorException("Iterator out of bound.");
 			}
 			return data[cursor];
 		}

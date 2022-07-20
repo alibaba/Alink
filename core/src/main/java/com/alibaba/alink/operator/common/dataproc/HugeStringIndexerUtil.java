@@ -15,6 +15,7 @@ import org.apache.flink.api.java.typeutils.TupleTypeInfo;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.params.dataproc.HasStringOrderTypeDefaultAsRandom;
 
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public class HugeStringIndexerUtil {
 			case ALPHABET_DESC:
 				return indexSortedByAlphabet(data, startIndex, false);
 			default:
-				throw new IllegalArgumentException("Unsupported order type " + orderType);
+				throw new AkUnsupportedOperationException("Unsupported order type " + orderType);
 		}
 	}
 

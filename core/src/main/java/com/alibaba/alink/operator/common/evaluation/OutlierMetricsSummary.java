@@ -3,7 +3,8 @@ package com.alibaba.alink.operator.common.evaluation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -248,7 +249,7 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 		if (null == other) {
 			return this;
 		}
-		Preconditions.checkState(Arrays.equals(labels, other.labels), "The labels are not the same!");
+		AkPreconditions.checkState(Arrays.equals(labels, other.labels), "The labels are not the same!");
 
 		total += other.total;
 
@@ -271,7 +272,7 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 		long totalTrue = actualLabelFrequency[0];
 		long totalFalse = actualLabelFrequency[1];
 
-		Preconditions.checkState(totalFalse + totalTrue == total,
+		AkPreconditions.checkState(totalFalse + totalTrue == total,
 			"The effective number in bins must be equal to total!");
 
 		EvaluationCurvePoint[] rocCurve = new EvaluationCurvePoint[n + 1];

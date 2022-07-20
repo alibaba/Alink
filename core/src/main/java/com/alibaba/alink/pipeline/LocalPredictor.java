@@ -1,5 +1,6 @@
 package com.alibaba.alink.pipeline;
 
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
@@ -32,12 +33,32 @@ public class LocalPredictor {
 		this(pipelineModelPath, TableUtil.schemaStr2Schema(inputSchemaStr));
 	}
 
+	public LocalPredictor(String pipelineModelPath, String inputSchemaStr, Params params) throws Exception {
+		this(pipelineModelPath == null ? null : new FilePath(pipelineModelPath), TableUtil.schemaStr2Schema(inputSchemaStr), params);
+	}
+
+	public LocalPredictor(FilePath pipelineModelPath, String inputSchemaStr, Params params) throws Exception {
+		this(pipelineModelPath, TableUtil.schemaStr2Schema(inputSchemaStr), params);
+	}
+
 	public LocalPredictor(FilePath pipelineModelPath, TableSchema inputSchema) throws Exception {
 		this(
 			Preconditions.checkNotNull(
 				ModelExporterUtils
 					.loadLocalPredictorFromPipelineModelAsMappers(
 						pipelineModelPath, inputSchema
+					),
+				"The input mappers can not be empty."
+			)
+		);
+	}
+
+	public LocalPredictor(FilePath pipelineModelPath, TableSchema inputSchema, Params params) throws Exception {
+		this(
+			Preconditions.checkNotNull(
+				ModelExporterUtils
+					.loadLocalPredictorFromPipelineModelAsMappers(
+						pipelineModelPath, inputSchema, params
 					),
 				"The input mappers can not be empty."
 			)
@@ -117,5 +138,4 @@ public class LocalPredictor {
 		this.mapperList.close();
 		//this.mappers.forEach(Mapper::close);
 	}
-
 }

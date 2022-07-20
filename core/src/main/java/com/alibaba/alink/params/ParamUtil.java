@@ -3,6 +3,7 @@ package com.alibaba.alink.params;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -189,7 +190,7 @@ public class ParamUtil {
 				.append(values[i].name());
 		}
 		sbd.append(".");
-		throw new RuntimeException(sbd.toString());
+		throw new AkIllegalOperatorParameterException(sbd.toString());
 	}
 
 }

@@ -30,6 +30,8 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -50,7 +52,6 @@ import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.onlinelearning.FtrlTrainStreamOp.PrepareBatchSample;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
-import com.alibaba.alink.operator.stream.source.NumSeqSourceStreamOp;
 import com.alibaba.alink.params.onlinelearning.OnlineFmTrainParams;
 
 import java.sql.Timestamp;
@@ -72,8 +73,8 @@ public final class OnlineFmTrainStreamOp extends StreamOperator <OnlineFmTrainSt
 	implements OnlineFmTrainParams <OnlineFmTrainStreamOp> {
 
 	private static final long serialVersionUID = -1717242899554835631L;
-	DataBridge dataBridge = null;
-	private String modelSchemeStr;
+	DataBridge dataBridge;
+	private final String modelSchemeStr;
 
 	public OnlineFmTrainStreamOp(BatchOperator <?> model) {
 		this(model, new Params());
@@ -84,8 +85,8 @@ public final class OnlineFmTrainStreamOp extends StreamOperator <OnlineFmTrainSt
 		if (model != null) {
 			dataBridge = DirectReader.collect(model);
 			modelSchemeStr = TableUtil.schema2SchemaStr(model.getSchema());
-		} else if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-			System.out.println("FM algo: initial model is null. random generate initial model is used.");
+		} else {
+			throw new AkIllegalModelException("Online algo: initial model is null. Please set the initial model.");
 		}
 	}
 
@@ -113,7 +114,7 @@ public final class OnlineFmTrainStreamOp extends StreamOperator <OnlineFmTrainSt
 		final TypeInformation <?> labelType = inputs[0].getColTypes()[labelIdx];
 
 		final int timeInterval = getTimeInterval();
-		DataStream <Tuple2 <Long, Object>> modelSaveHandler = new NumSeqSourceStreamOp(0, 0).getDataStream().flatMap(
+		DataStream <Tuple2 <Long, Object>> modelSaveHandler = streamEnv.fromElements(Row.of(1)).flatMap(
 			new FlatMapFunction <Row, Tuple2 <Long, Object>>() {
 				@Override
 				public void flatMap(Row row, Collector <Tuple2 <Long, Object>> collector) throws Exception {
@@ -125,7 +126,7 @@ public final class OnlineFmTrainStreamOp extends StreamOperator <OnlineFmTrainSt
 			});
 
 		/* Prepares mini batches for training process. */
-		DataStream <Row[]> batchData = inputs[0].getDataStream()
+		DataStream <Row[]> batchData = inputs[0].getDataStream().rebalance()
 			.flatMap(
 				new PrepareBatchSample(Math.max(1, getMiniBatchSize() / parallelism)));
 
@@ -138,7 +139,7 @@ public final class OnlineFmTrainStreamOp extends StreamOperator <OnlineFmTrainSt
 						modelSchemeStr).setMLEnvironmentId(inputs[0].getMLEnvironmentId());
 			modelStream = modelStreamOp.getDataStream().map(new MapFunction <Row, Tuple2 <Long, Object>>() {
 				@Override
-				public Tuple2 <Long, Object> map(Row row) throws Exception {
+				public Tuple2 <Long, Object> map(Row row) {
 					return Tuple2.of(-1L, row);
 				}
 			});
@@ -472,7 +473,7 @@ public final class OnlineFmTrainStreamOp extends StreamOperator <OnlineFmTrainSt
 					Tuple3.of((long) modelData.vectorSize + 2, -1L,
 						JsonConverter.toJson(new double[] {modelData.fmModel.bias}))));
 			} else {
-				throw new RuntimeException("feedback data type err, must be a Map or DenseVector.");
+				throw new AkUnclassifiedErrorException("feedback data type err, must be a Map or DenseVector.");
 			}
 		}
 

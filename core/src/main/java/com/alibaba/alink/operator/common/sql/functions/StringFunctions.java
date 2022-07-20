@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.sql.functions;
 
 import org.apache.flink.table.utils.EncodingUtils;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import org.apache.calcite.linq4j.tree.Types;
 
 import java.io.Serializable;
@@ -153,7 +154,7 @@ public class StringFunctions implements Serializable {
 			MessageDigest instance = MessageDigest.getInstance(algorithm);
 			return hash(str, instance);
 		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(String.format("Algorithm for %s is not available.", algorithm), e);
+			throw new AkUnsupportedOperationException(String.format("Algorithm for %s is not available.", algorithm), e);
 		}
 	}
 
@@ -188,7 +189,7 @@ public class StringFunctions implements Serializable {
 		if ((bitLen == 224) || (bitLen == 256) || (bitLen == 384) || (bitLen == 512)) {
 			return hash(str, "SHA-" + bitLen);
 		} else {
-			throw new RuntimeException("Unsupported algorithm.");
+			throw new AkUnsupportedOperationException("Unsupported algorithm for bitLen " + bitLen);
 		}
 	}
 }

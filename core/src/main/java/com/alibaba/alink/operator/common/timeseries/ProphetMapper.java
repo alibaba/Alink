@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.pyrunner.PyMIMOCalcHandle;
 import com.alibaba.alink.common.pyrunner.PyMIMOCalcRunner;
@@ -102,7 +103,7 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 		int len = historyTimes.length;
 		long diff = historyTimes[len - 1].getTime() - historyTimes[len - 2].getTime();
 		if (diff <= 0) {
-			throw new RuntimeException("history times must be acs, and not equal.");
+			throw new AkIllegalDataException("history times must be acs, and not equal.");
 		}
 		return diff + "L";
 	}

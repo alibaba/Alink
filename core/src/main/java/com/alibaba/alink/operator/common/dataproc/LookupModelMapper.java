@@ -6,6 +6,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dataproc.LookupParams;
@@ -40,7 +42,7 @@ public class LookupModelMapper extends ModelMapper {
 			TableUtil.findColIndicesWithAssertAndHint(modelSchema, mapValueColNames) : new int[] {1};
 		if (modelSchema.getFieldNames().length > 2) {
 			if (mapKeyColNames == null || mapValueColNames == null) {
-				throw new RuntimeException("LookUpMapper err : mapKeyCols and mapValueCols should set in parameters.");
+				throw new AkIllegalOperatorParameterException("LookUpMapper err : mapKeyCols and mapValueCols should set in parameters.");
 			}
 		}
 		this.mk = this.mapKeyColIndices.length;
@@ -56,7 +58,7 @@ public class LookupModelMapper extends ModelMapper {
 			if (mapKeyColNames != null && mapValueColNames != null) {
 				if (TableUtil.findColTypeWithAssertAndHint(dataSchema, selectedColNames[i])
 					!= TableUtil.findColTypeWithAssertAndHint(modelSchema, mapKeyColNames[i])) {
-					throw new IllegalArgumentException("Data types are not match. selected column type is "
+					throw new AkIllegalDataException("Data types are not match. selected column type is "
 						+ TableUtil.findColTypeWithAssertAndHint(dataSchema, selectedColNames[i])
 						+ " , and the map key column type is "
 						+ TableUtil.findColTypeWithAssertAndHint(modelSchema, mapKeyColNames[i])

@@ -4,6 +4,7 @@ import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 
 public class EndWritingRandomWalks<IN extends Object> extends RichMapPartitionFunction <IN, long[]> {
 
@@ -27,7 +28,9 @@ public class EndWritingRandomWalks<IN extends Object> extends RichMapPartitionFu
 				break;
 			}
 		}
-		assert memoryBuffer != null;
+		if (memoryBuffer == null) {
+			throw new AkIllegalStateException("The memory buffer is null.");
+		}
 		memoryBuffer.writeOneWalk(new long[0]);
 	}
 }

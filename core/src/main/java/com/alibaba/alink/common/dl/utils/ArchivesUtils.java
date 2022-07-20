@@ -1,6 +1,9 @@
 package com.alibaba.alink.common.dl.utils;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.pyrunner.TarFileUtil;
+import com.alibaba.alink.common.utils.FileSystemDownloadUtils;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -20,7 +23,7 @@ public class ArchivesUtils {
 	}
 
 	/**
-	 * Download and decompress a archive file to `targetDir` with all contents in the archive are just put under
+	 * Download and decompress an archive file to `targetDir` with all contents in the archive are just put under
 	 * `targetDir`.
 	 *
 	 * @param path
@@ -33,8 +36,34 @@ public class ArchivesUtils {
 		try {
 			decompressFile(archiveFile, targetDir);
 		} catch (IOException e) {
-			throw new RuntimeException(
-				String.format("Cannot decompress file %s to directory %s", archiveFile, targetDir));
+			throw new AkUnclassifiedErrorException(
+				String.format("Cannot decompress file %s to directory %s", archiveFile, targetDir), e);
+		}
+	}
+
+	/**
+	 * Download and decompress an archive file to `targetDir` with all contents in the archive are just put under
+	 * `targetDir`.
+	 *
+	 * @param filePath
+	 * @param targetDir
+	 */
+	public static void downloadDecompressToDirectory(FilePath filePath, File targetDir) {
+		Path downloadPath = PythonFileUtils.createTempDir("download_");
+		String archiveFileName;
+		try {
+			archiveFileName = FileSystemDownloadUtils.downloadToDirectory(filePath, downloadPath);
+		} catch (IOException e) {
+			throw new AkUnclassifiedErrorException(
+				String.format("Failed to download file %s to directory %s",
+					filePath.serialize(), downloadPath.toAbsolutePath()), e);
+		}
+		File archiveFile = downloadPath.resolve(archiveFileName).toFile();
+		try {
+			decompressFile(archiveFile, targetDir);
+		} catch (IOException e) {
+			throw new AkUnclassifiedErrorException(
+				String.format("Cannot decompress file %s to directory %s", archiveFile, targetDir), e);
 		}
 	}
 

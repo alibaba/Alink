@@ -7,6 +7,9 @@ package com.alibaba.alink.operator.common.statistics.statistics;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.statistics.StatisticUtil;
 import com.alibaba.alink.operator.common.statistics.basicstat.WindowTable;
@@ -91,13 +94,13 @@ public class Summary2 {
 										   HasStatLevel_L1.StatLevel statLevel) {
 
 		if (wt.colNames == null || wt.colNames.length == 0) {
-			throw new RuntimeException("colNames must not be empty.");
+			throw new AkIllegalOperatorParameterException("colNames must not be empty.");
 		}
 		if (wt.colTypes == null || wt.colTypes.length == 0) {
-			throw new RuntimeException("colTypes must not be empty.");
+			throw new AkIllegalOperatorParameterException("colTypes must not be empty.");
 		}
 		if (wt.colNames.length != wt.colTypes.length) {
-			throw new RuntimeException("colNames length must equal with colTypes length.");
+			throw new AkIllegalOperatorParameterException("colNames length must equal with colTypes length.");
 		}
 
 		if (statColNames == null || statColNames.length == 0) {
@@ -168,13 +171,13 @@ public class Summary2 {
 										int timeColIdx, long startTime, long endTime) {
 
 		if (colNames == null || colNames.length == 0) {
-			throw new RuntimeException("colNames must not be empty.");
+			throw new AkIllegalOperatorParameterException("colNames must not be empty.");
 		}
 		if (colTypes == null || colTypes.length == 0) {
-			throw new RuntimeException("colTypes must not be empty.");
+			throw new AkIllegalOperatorParameterException("colTypes must not be empty.");
 		}
 		if (colNames.length != colTypes.length) {
-			throw new RuntimeException("colNames length must equal with colTypes length.");
+			throw new AkIllegalOperatorParameterException("colNames length must equal with colTypes length.");
 		}
 
 		SrtForWp srt = new SrtForWp(statColNames);
@@ -254,7 +257,8 @@ public class Summary2 {
 			} else if (java.sql.Timestamp.class == colTypes[index]) {
 				mis[j] = new MeasureIteratorDate(colTypes[index]);
 			} else {
-				throw new RuntimeException("Not supported yet!");
+				throw new AkUnsupportedOperationException(String.format(
+					"col type [%s] not supported.", colTypes[index].getSimpleName()));
 			}
 		}
 		return mis;
@@ -315,7 +319,7 @@ public class Summary2 {
 					try {
 						r = Interval.findInterval(srt.src[j].minDouble(), srt.src[j].maxDouble(), histogramBins);
 					} catch (Exception ex) {
-						throw new RuntimeException(ex);
+						throw new AkIllegalStateException(ex.getMessage());
 					}
 				} else {
 					r = null;
@@ -393,20 +397,20 @@ public class Summary2 {
 		List <MeasureIteratorBase[]> measures = new ArrayList <>();
 
 		if (colNames == null || colNames.length == 0) {
-			throw new RuntimeException("colNames must not be empty.");
+			throw new AkIllegalOperatorParameterException("colNames must not be empty.");
 		}
 		if (colTypes == null || colTypes.length == 0) {
-			throw new RuntimeException("colTypes must not be empty.");
+			throw new AkIllegalOperatorParameterException("colTypes must not be empty.");
 		}
 		if (colNames.length != colTypes.length) {
-			throw new RuntimeException("colNames length must equal with colTypes length.");
+			throw new AkIllegalOperatorParameterException("colNames length must equal with colTypes length.");
 		}
 
 		int[] idxStat = new int[statColNames.length];
 		for (int i = 0; i < statColNames.length; i++) {
 			idxStat[i] = TableUtil.findColIndex(colNames, statColNames[i]);
 			if (idxStat[i] < 0) {
-				throw new RuntimeException("stat col not exsit.");
+				throw new AkIllegalOperatorParameterException("stat col not exist.");
 			}
 		}
 
@@ -437,7 +441,8 @@ public class Summary2 {
 					} else if (java.sql.Timestamp.class == colTypes[index]) {
 						mis[j] = new MeasureIteratorDate(colTypes[index]);
 					} else {
-						throw new RuntimeException("Not supported yet!");
+						throw new AkUnsupportedOperationException(String.format(
+							"col type [%s] not supported.", colTypes[index].getSimpleName()));
 					}
 				}
 				for (int i = 0; i < nStat; i++) {
@@ -734,7 +739,7 @@ class FrequencyIterator {
 				}
 			}
 		} else {
-			throw new RuntimeException("Not valid class type!");
+			throw new AkIllegalStateException("Not valid class type!");
 		}
 	}
 
@@ -773,7 +778,7 @@ class DistinctValueIterator {
 		if (o.getClass() == this.dataType) {
 			mapFreq.add(o);
 		} else {
-			throw new RuntimeException("Not valid class type!");
+			throw new AkIllegalStateException("Not valid class type!");
 		}
 	}
 }
@@ -861,7 +866,8 @@ class TopKInterator {
 			} else if (java.sql.Timestamp.class == this.dataType) {
 				return (sortKey) * (((java.sql.Timestamp) t).compareTo((java.sql.Timestamp) t1));
 			} else {
-				throw new RuntimeException("Not implemented yet!");
+				throw new AkIllegalStateException(String.format(
+					"type [%s] not support.", this.dataType.getSimpleName()));
 			}
 		}
 

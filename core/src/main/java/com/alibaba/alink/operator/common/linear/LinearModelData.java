@@ -4,6 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -93,6 +94,7 @@ public class LinearModelData implements Serializable {
 			ModelParamName.HAS_INTERCEPT_ITEM) : true;
 		this.vectorSize = meta.contains(ModelParamName.VECTOR_SIZE) ? meta.get(ModelParamName.VECTOR_SIZE) : 0;
 		this.vectorColName = meta.contains(HasVectorCol.VECTOR_COL) ? meta.get(HasVectorCol.VECTOR_COL) : null;
+		this.labelName = meta.contains(ModelParamName.LABEL_COL_NAME) ? meta.get(ModelParamName.LABEL_COL_NAME) : null;
 	}
 
 	public Params getMetaInfo() {
@@ -117,7 +119,7 @@ public class LinearModelData implements Serializable {
 	public void deserializeModel(Params meta, List <String> data, List <Object> distinctLabels) {
 		setMetaInfo(meta);
 		if (data.size() != 1) {
-			throw new RuntimeException("Not valid model.");
+			throw new AkIllegalModelException("Current model is not valid linear model.");
 		}
 		if (distinctLabels.size() > 0) {
 			this.labelValues = new Object[distinctLabels.size()];
@@ -154,7 +156,7 @@ public class LinearModelData implements Serializable {
 			meta.set(ModelParamName.IS_OLD_FORMAT, true);
 			deserializeModel(meta, data, recoverLabelsFromOldFormatModel(meta));
 		} else {
-			throw new RuntimeException("Not old format model");
+			throw new AkIllegalModelException("Current model is not an old format model.");
 		}
 	}
 

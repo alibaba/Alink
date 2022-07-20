@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.statistics.basicstatistic;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 
 import java.util.Map;
@@ -21,7 +22,7 @@ public class VectorSummarizerUtil {
 		} else if (left instanceof DenseVectorSummarizer && right instanceof DenseVectorSummarizer) {
 			return merge((DenseVectorSummarizer) left, (DenseVectorSummarizer) right);
 		} else {
-			throw new UnsupportedOperationException();
+			throw new AkUnsupportedOperationException("");
 		}
 	}
 

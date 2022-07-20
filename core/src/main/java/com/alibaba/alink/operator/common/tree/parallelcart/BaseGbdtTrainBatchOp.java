@@ -25,6 +25,7 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -174,7 +175,7 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 
 		if (LossUtils.isRanking(getParams().get(LossUtils.LOSS_TYPE))) {
 			if (!getParams().contains(LambdaMartNdcgParams.GROUP_COL)) {
-				throw new IllegalArgumentException("Group column should be set in ranking loss function.");
+				throw new AkIllegalArgumentException("Group column should be set in ranking loss function.");
 			}
 		}
 
@@ -190,7 +191,7 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 					@Override
 					public Row map(Row row) throws Exception {
 						if (null == row.getField(labelColIdx)) {
-							throw new RuntimeException("label col has null values.");
+							throw new AkIllegalArgumentException("label col has null values.");
 						}
 						return row;
 					}
@@ -465,7 +466,7 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 		@Override
 		public Object[] map(Object[] value) throws Exception {
 			if (value == null || value.length != 2) {
-				throw new IllegalArgumentException("The gbdt only support binary class right now.");
+				throw new AkIllegalArgumentException("The gbdt only support binary class right now.");
 			}
 			return value;
 		}

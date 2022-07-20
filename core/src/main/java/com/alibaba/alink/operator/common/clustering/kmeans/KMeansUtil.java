@@ -3,8 +3,9 @@ package com.alibaba.alink.operator.common.clustering.kmeans;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -74,9 +75,9 @@ public class KMeansUtil implements Serializable {
 									  int k,
 									  FastDistance fastDistance,
 									  DenseMatrix distanceMatrix) {
-		Preconditions.checkNotNull(sumMatrix);
-		Preconditions.checkNotNull(distanceMatrix);
-		Preconditions.checkArgument(distanceMatrix.numRows() == centroids.getVectors().numCols() &&
+		AkPreconditions.checkNotNull(sumMatrix);
+		AkPreconditions.checkNotNull(distanceMatrix);
+		AkPreconditions.checkArgument(distanceMatrix.numRows() == centroids.getVectors().numCols() &&
 			distanceMatrix.numCols() == 1, "Memory not preallocated!");
 
 		fastDistance.calc(sample, centroids, distanceMatrix);
@@ -127,8 +128,8 @@ public class KMeansUtil implements Serializable {
 											   FastDistanceMatrixData centroids,
 											   FastDistance distance,
 											   DenseMatrix distanceMatrix) {
-		Preconditions.checkNotNull(distanceMatrix);
-		Preconditions.checkArgument(distanceMatrix.numRows() == centroids.getVectors().numCols() &&
+		AkPreconditions.checkNotNull(distanceMatrix);
+		AkPreconditions.checkArgument(distanceMatrix.numRows() == centroids.getVectors().numCols() &&
 			distanceMatrix.numCols() == 1, "Memory not preallocated!");
 
 		distance.calc(sample, centroids, distanceMatrix);
@@ -170,7 +171,7 @@ public class KMeansUtil implements Serializable {
 	}
 
 	public static int getMinPointIndex(double[] data, int endIndex) {
-		Preconditions.checkArgument(endIndex <= data.length, "End index must be less than data length!");
+		AkPreconditions.checkArgument(endIndex <= data.length, "End index must be less than data length!");
 		int index = -1;
 		double min = Double.MAX_VALUE;
 		for (int i = 0; i < endIndex; i++) {
@@ -191,13 +192,13 @@ public class KMeansUtil implements Serializable {
 	 * @return selected columns indexes.
 	 */
 	public static int[] getKmeansPredictColIdxs(KMeansTrainModelData.ParamSummary params, String[] dataCols) {
-		Preconditions.checkArgument((null == params.longtitudeColName) == (null == params.latitudeColName),
-			"Model Format error!");
-		Preconditions.checkArgument(
+		AkPreconditions.checkArgument((null == params.longtitudeColName) == (null == params.latitudeColName),
+			new AkIllegalArgumentException("Model Format error!"));
+		AkPreconditions.checkArgument(
 			params.distanceType.equals(HasKMeansWithHaversineDistanceType.DistanceType.HAVERSINE) == (
 				null == params.vectorColName
 					&& null != params.longtitudeColName),
-			"Model Format error!");
+			new AkIllegalArgumentException("Model Format error!"));
 		int[] colIdxs;
 		if (null != params.vectorColName) {
 			colIdxs = new int[1];

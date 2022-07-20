@@ -23,8 +23,8 @@ public class CalcLosses extends ComputeFunction {
 	 * object function class, it supply the functions to calc gradient (or loss) locality.
 	 */
 	private OptimObjFunc objFunc;
-	private OptimMethod method;
-	private int numSearchStep;
+	private final OptimMethod method;
+	private final int numSearchStep;
 
 	/**
 	 * calc losses.

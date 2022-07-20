@@ -16,7 +16,6 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.NumberSequenceIterator;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -28,6 +27,8 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.graph.RandomWalkBatchOp.RandomWalkCommunicationUnit;
@@ -159,7 +160,7 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 				BasicTypeInfo.LONG_TYPE_INFO)
 			.map(new MapFunction <Long, Node2VecCommunicationUnit>() {
 				@Override
-				public Node2VecCommunicationUnit map(Long value) throws Exception {
+				public Node2VecCommunicationUnit map(Long value) {
 					return new Node2VecCommunicationUnit(1, 1, null, null, null, null);
 				}
 			}).name("initData");
@@ -197,8 +198,7 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 		DataSet <Object> termination = sendCommunicationUnit.map(
 			new MapFunction <Node2VecCommunicationUnit, Object>() {
 				@Override
-				public Object map(Node2VecCommunicationUnit value)
-					throws Exception {
+				public Object map(Node2VecCommunicationUnit value) {
 					return new Object();
 				}
 			}).name("termination");
@@ -275,7 +275,7 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 					}
 				}
 				boolean useAlias = false;
-				Preconditions.checkNotNull(myStatistics);
+				AkPreconditions.checkNotNull(myStatistics, "The statistics is null.");
 				final String ALIAS_NAME = "ALIAS";
 				if (samplingMethod.equalsIgnoreCase(ALIAS_NAME)) {
 					useAlias = true;
@@ -320,7 +320,7 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 						logical2physical.getDstPartitionId());
 				}
 				HomoGraphEngine homoGraphEngine = IterTaskObjKeeper.get(graphStorageHandler, partitionId);
-				Preconditions.checkNotNull(homoGraphEngine);
+				AkPreconditions.checkNotNull(homoGraphEngine, "the graph engine is null");
 				homoGraphEngine.setLogicalWorkerIdToPhysicalWorkerId(workerIdMapping);
 			} else {
 				// do nothing here.
@@ -371,9 +371,9 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 					partitionId);
 				RandomWalkMemoryBuffer randomWalkMemoryBuffer = IterTaskObjKeeper.get(walkWriteBufferHandler,
 					partitionId);
-				Preconditions.checkNotNull(homoGraphEngine);
-				Preconditions.checkNotNull(node2VecWalkPathEngine);
-				Preconditions.checkNotNull(randomWalkMemoryBuffer);
+				AkPreconditions.checkNotNull(homoGraphEngine, "homoGraphEngine is null.");
+				AkPreconditions.checkNotNull(node2VecWalkPathEngine, "node2VecWalkPathEngine is null");
+				AkPreconditions.checkNotNull(randomWalkMemoryBuffer, "randomWalkMemoryBuffer is null");
 
 				long[] nextBatchOfVerticesToSampleFrom = node2VecWalkPathEngine.getNextBatchOfVerticesToSampleFrom();
 
@@ -501,10 +501,13 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 				int partitionId = getRuntimeContext().getIndexOfThisSubtask();
 				HomoGraphEngine homoGraphEngine = IterTaskObjKeeper.get(graphStorageHandler,
 					partitionId);
-				Preconditions.checkNotNull(homoGraphEngine);
+				AkPreconditions.checkNotNull(homoGraphEngine, "homoGraphEngine is null");
 
 				for (Node2VecCommunicationUnit node2VecCommunicationUnit : values) {
-					Preconditions.checkState(node2VecCommunicationUnit.getDstPartitionId() == partitionId);
+					AkPreconditions.checkState(node2VecCommunicationUnit.getDstPartitionId() == partitionId,
+						"The target task id is incorrect. It should be "
+							+ node2VecCommunicationUnit.getDstPartitionId()
+							+ ", but it is " + partitionId);
 					Long[] requestedVertexIds = node2VecCommunicationUnit.getRequestedVertexIds();
 					Long[] prevVertexIdsOrContainsPrevVertexIds
 						= node2VecCommunicationUnit.getPrevVertexIdsOrContainsPrevVertexIds();
@@ -532,7 +535,7 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 									}
 									break;
 								default:
-									throw new RuntimeException(
+									throw new AkIllegalStateException(
 										"Illegal state here: Remote state must be one of [GET_NUM_OF_NEIGHBORS, "
 											+ "SAMPLE_A_NEIGHBOR and CHECK_NEXT_NODE_NEIGHBOR_CONTAINS_PREV_VERTEX]");
 							}
@@ -578,11 +581,14 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 			} else {
 				Node2VecWalkPathEngine node2VecWalkPathEngine = IterTaskObjKeeper.get(randomWalkStorageHandler,
 					partitionId);
-				Preconditions.checkNotNull(node2VecWalkPathEngine);
+				AkPreconditions.checkNotNull(node2VecWalkPathEngine, "node2VecWalkPathEngine is null");
 
 				for (Node2VecCommunicationUnit node2VecCommunicationUnit : values) {
 					int srcPartitionId = node2VecCommunicationUnit.getSrcPartitionId();
-					Preconditions.checkState(srcPartitionId == partitionId);
+					AkPreconditions.checkState(srcPartitionId == partitionId,
+						"The target task id is incorrect. It should be "
+							+ srcPartitionId
+							+ ", but it is " + partitionId);
 					Long[] recvResults = node2VecCommunicationUnit.getRequestedVertexIds();
 					Integer[] walkIds = node2VecCommunicationUnit.getWalkIds();
 					Node2VecState[] messageTypes = node2VecCommunicationUnit.getMessageTypes();

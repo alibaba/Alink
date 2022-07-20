@@ -1,12 +1,18 @@
+from typing import Union
+
 from .common import FtrlPredictStreamOp as _FtrlPredictStreamOp
 from .common import FtrlTrainStreamOp as _FtrlTrainStreamOp
+from .common import OnlineLearningStreamOp as _OnlineLearningStreamOp
+from .common import PipelinePredictStreamOp as _PipelinePredictStreamOp
 from .common import PyScalarFnStreamOp as _PyScalarFnStreamOp
 from .common import PyTableFnStreamOp as _PyTableFnStreamOp
+from ..batch.base import BatchOperator
 from ..py4j_util import get_java_class
 from ..stream import StreamOperator
 from ..udf.utils import do_set_op_udf, do_set_op_udtf
 
-__all__ = ['UDFStreamOp', 'UDTFStreamOp', 'FtrlTrainStreamOp', 'FtrlPredictStreamOp', 'TableSourceStreamOp']
+__all__ = ['UDFStreamOp', 'UDTFStreamOp', 'FtrlTrainStreamOp', 'FtrlPredictStreamOp', 'TableSourceStreamOp',
+           'PipelinePredictStreamOp', 'OnlineLearningStreamOp']
 
 
 class UDFStreamOp(_PyScalarFnStreamOp):
@@ -88,3 +94,23 @@ class TableSourceStreamOp(StreamOperator):
         # noinspection PyProtectedMember
         j_op = table_source_stream_op_cls(table._j_table)
         super(TableSourceStreamOp, self).__init__(j_op=j_op, *args, **kwargs)
+
+
+class PipelinePredictStreamOp(_PipelinePredictStreamOp):
+    def __init__(self, pipeline_model_or_path: Union['PipelineModel', str], *args, **kwargs):
+        from ..pipeline.base import PipelineModel
+        if isinstance(pipeline_model_or_path, (PipelineModel,)):
+            model = pipeline_model_or_path
+        else:
+            model = PipelineModel.load(pipeline_model_or_path)
+        super(PipelinePredictStreamOp, self).__init__(model=model, *args, **kwargs)
+
+
+class OnlineLearningStreamOp(_OnlineLearningStreamOp):
+    def __init__(self, pipeline_model_or_batch_op: Union['PipelineModel', BatchOperator], *args, **kwargs):
+        from ..pipeline.base import PipelineModel
+        if isinstance(pipeline_model_or_batch_op, (PipelineModel,)):
+            model = pipeline_model_or_batch_op.save()
+        else:
+            model = pipeline_model_or_batch_op
+        super(OnlineLearningStreamOp, self).__init__(model=model, *args, **kwargs)
