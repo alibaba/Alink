@@ -12,6 +12,8 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.dataproc.AppendIdBatchOp;
@@ -216,7 +218,7 @@ public class SpearmanCorrelation {
 					return count.f1.intValue();
 				}
 			}
-			throw new RuntimeException("Error key. key: " + id);
+			throw new AkIllegalOperatorParameterException("Error key. key: " + id);
 		}
 
 		@Override
@@ -252,7 +254,7 @@ public class SpearmanCorrelation {
 				}
 
 				if (curId > id) {
-					throw new RuntimeException("Error curId: " + curId
+					throw new AkIllegalStateException("Error curId: " + curId
 						+ ". id: " + id);
 				}
 

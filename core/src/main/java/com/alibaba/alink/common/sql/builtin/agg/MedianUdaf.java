@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.sql.builtin.agg;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.sql.builtin.agg.MedianUdaf.MedianData;
 
 import java.util.Comparator;
@@ -111,7 +112,7 @@ public class MedianUdaf extends BaseUdaf<Number, MedianData> {
 		public void removeData(double data) {
 			if (!minHeap.contains(data) && !maxHeap.contains(data)) {
 				if (excludeLast && thisData == null) {
-					throw new RuntimeException("No data to retract.");
+					throw new AkIllegalDataException("No data to retract.");
 				}
 				thisData = null;
 				return;

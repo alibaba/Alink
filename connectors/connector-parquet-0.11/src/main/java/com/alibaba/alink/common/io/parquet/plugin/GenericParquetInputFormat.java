@@ -76,15 +76,17 @@ public class GenericParquetInputFormat extends FileInputFormat <Row>
 		InputFile inputFile = new ParquetInputFile(new FilePath(split.getPath(), parquetFilePath.getFileSystem()));
 		MessageType readSchema = ParquetUtil.getReadSchemaFromParquetFile(
 			new FilePath(split.getPath(), parquetFilePath.getFileSystem()));
-
-		ParquetReadOptions options = ParquetReadOptions.builder().build();
-		ParquetFileReader fileReader = new ParquetFileReader(inputFile, options);
+		if (readSchema == null) {
+			skipThisSplit = true;
+		}
 		if (skipThisSplit) {
 			LOG.warn(
 				String.format(
 					"Escaped the file split [%s] due to mismatch of file schema to expected result schema",
 					split.getPath().toString()));
 		} else {
+			ParquetReadOptions options = ParquetReadOptions.builder().build();
+			ParquetFileReader fileReader = new ParquetFileReader(inputFile, options);
 			this.parquetRecordReader =
 				new ParquetRecordReader <>(
 					new RowReadSupport(),

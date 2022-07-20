@@ -44,7 +44,7 @@ public class ArimaStreamOpTest extends AlinkTestBase {
 				).link(
 					new ArimaStreamOp()
 						.setValueCol("data")
-						.setOrder(new int[] {1, 0, 1})
+						.setOrder(1, 0, 1)
 						.setPredictNum(12)
 						.setPredictionCol("predict")
 				).link(

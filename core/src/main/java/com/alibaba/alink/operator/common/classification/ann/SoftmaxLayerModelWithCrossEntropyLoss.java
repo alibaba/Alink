@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.classification.ann;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.MatVecOp;
@@ -49,7 +50,7 @@ public class SoftmaxLayerModelWithCrossEntropyLoss extends LayerModel
 
 	@Override
 	public void computePrevDelta(DenseMatrix delta, DenseMatrix output, DenseMatrix prevDelta) {
-		throw new RuntimeException("SoftmaxLayerModelWithCrossEntropyLoss should be the last layer.");
+		throw new AkUnclassifiedErrorException("SoftmaxLayerModelWithCrossEntropyLoss should be the last layer.");
 	}
 
 	@Override

@@ -2,9 +2,8 @@ package com.alibaba.alink.operator.batch.utils;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -30,7 +29,7 @@ public class DiveVisualizer {
 			assert templateStream != null;
 			template = IOUtils.toString(templateStream);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Failed to read resource /facets_dive_template.html", e);
 		}
 	}
 

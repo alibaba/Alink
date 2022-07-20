@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.probabilistic;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.XMath;
 
 /**
@@ -10,7 +11,7 @@ public class PDF {
 
 	public static double poisson(int n, double lambda) {
 		if ((lambda <= 0) || (n < 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		if (n == 0) {
 			return Math.exp(-lambda);
@@ -35,7 +36,7 @@ public class PDF {
 	 */
 	public static double uniform(double x, double lowerBound, double upperBound) {
 		if (lowerBound >= upperBound) {
-			throw new RuntimeException("Wrong input parameters: the lower bound should be less than the upper bound!");
+			throw new AkIllegalOperatorParameterException("Wrong input parameters: the lower bound should be less than the upper bound!");
 		}
 		if (x < lowerBound || x > upperBound) {
 			return 0.0;
@@ -55,7 +56,7 @@ public class PDF {
 	 */
 	public static double exponential(double x, double lambda) {
 		if (lambda <= 0) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		if (x < 0) {
 			return 0;
@@ -85,7 +86,7 @@ public class PDF {
 	 */
 	public static double normal(double x, double mu, double sigma2) throws Exception {
 		if (sigma2 <= 0) {
-			throw new Exception("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		double sigma = Math.sqrt(sigma2);
 		double t = (x - mu) / sigma;
@@ -148,7 +149,7 @@ public class PDF {
 	 */
 	public static double gamma(double x, double alpha, double lambda) {
 		if ((alpha <= 0) || (lambda <= 0) || (x <= 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		return Math.exp(alpha * Math.log(lambda) + (alpha - 1) * Math.log(x) - lambda * x - XMath.lnGamma(alpha));
 	}
@@ -163,7 +164,7 @@ public class PDF {
 	 */
 	public static double beta(double x, double a, double b) {
 		if ((x < 0) || (x > 1) || (a <= 0) || (b <= 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		return Math.exp(
 			XMath.lnGamma(a + b) - XMath.lnGamma(a) - XMath.lnGamma(b) + (a - 1) * Math.log(x) + (b - 1) * Math
@@ -172,7 +173,7 @@ public class PDF {
 
 	public static double fisherZ(double x, double p, double q) {
 		if ((p <= 0) || (q <= 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkIllegalOperatorParameterException("Input parameter out of range!");
 		}
 		if (x <= 0) {
 			return 0;

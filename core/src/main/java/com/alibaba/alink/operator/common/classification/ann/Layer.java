@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * The base class that defines the meta data of a neural network layer.
  *
- * @see {@link LayerModel}.
+ * see {@link LayerModel}.
  */
 public abstract class Layer implements Serializable {
 	private static final long serialVersionUID = 7445130696999143464L;

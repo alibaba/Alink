@@ -9,7 +9,6 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -18,6 +17,8 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dataproc.WeightSampleParams;
@@ -68,15 +69,14 @@ public class WeightSampleBatchOp extends BatchOperator <WeightSampleBatchOp>
 					private static final long serialVersionUID = -684553157530047702L;
 
 					@Override
-					public void mapPartition(Iterable <Row> values, Collector <Tuple3 <Integer, Integer, Double>> out)
-						throws Exception {
+					public void mapPartition(Iterable <Row> values, Collector <Tuple3 <Integer, Integer, Double>> out) {
 						int cnt = 0;
 						double sum = 0.;
 						int taskId = getRuntimeContext().getIndexOfThisSubtask();
 						for (Row row : values) {
 							double weight = ((Number) row.getField(weightIdx)).doubleValue();
-							Preconditions.checkArgument(weight > 0 && !Double.isNaN(weight) && Double.isFinite(weight),
-								"Weight must be positive!");
+							AkPreconditions.checkArgument(weight > 0 && !Double.isNaN(weight) && Double.isFinite(weight),
+								new AkIllegalDataException("Weight must be positive!"));
 							cnt++;
 							sum += weight;
 						}
@@ -90,8 +90,7 @@ public class WeightSampleBatchOp extends BatchOperator <WeightSampleBatchOp>
 
 					@Override
 					public void reduce(Iterable <Tuple3 <Integer, Integer, Double>> values,
-									   Collector <Tuple2 <Integer, double[]>> out)
-						throws Exception {
+									   Collector <Tuple2 <Integer, double[]>> out) {
 						List <Tuple3 <Integer, Integer, Double>> list = new ArrayList <>();
 						values.forEach(list::add);
 						Collections.sort(list, Comparator.comparingDouble(t -> t.f0));
@@ -117,13 +116,12 @@ public class WeightSampleBatchOp extends BatchOperator <WeightSampleBatchOp>
 					private static final long serialVersionUID = -9150449993114999173L;
 
 					@Override
-					public void mapPartition(Iterable <Row> values, Collector <Tuple2 <Double, Row>> out)
-						throws Exception {
+					public void mapPartition(Iterable <Row> values, Collector <Tuple2 <Double, Row>> out) {
 						Random random = new Random(getRuntimeContext().getIndexOfThisSubtask());
 						for (Row row : values) {
 							double weight = ((Number) row.getField(weightIdx)).doubleValue();
-							Preconditions.checkArgument(weight > 0 && !Double.isNaN(weight) && Double.isFinite(weight),
-								"Weight must be positive!");
+							AkPreconditions.checkArgument(weight > 0 && !Double.isNaN(weight) && Double.isFinite(weight),
+								new AkIllegalDataException("Weight must be positive!"));
 							double rp = random.nextDouble();
 							while (rp <= 1e-30) {
 								rp = random.nextDouble();
@@ -140,7 +138,7 @@ public class WeightSampleBatchOp extends BatchOperator <WeightSampleBatchOp>
 
 					@Override
 					public void mapPartition(Iterable <Tuple2 <Double, Row>> values,
-											 Collector <Tuple3 <Integer, Integer, Double>> out) throws Exception {
+											 Collector <Tuple3 <Integer, Integer, Double>> out) {
 						int taskId = getRuntimeContext().getIndexOfThisSubtask();
 						int cnt = 0;
 						double min = Double.MAX_VALUE;
@@ -236,7 +234,7 @@ public class WeightSampleBatchOp extends BatchOperator <WeightSampleBatchOp>
 		}
 
 		@Override
-		public void mapPartition(Iterable <Tuple2 <Double, Row>> values, Collector <Row> out) throws Exception {
+		public void mapPartition(Iterable <Tuple2 <Double, Row>> values, Collector <Row> out) {
 
 			int taskId = getRuntimeContext().getIndexOfThisSubtask();
 			int start = 0;

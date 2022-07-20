@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.statistics.statistics;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.utils.AlinkSerializable;
 
 /**
@@ -21,7 +22,8 @@ public class Percentile implements AlinkSerializable {
 
 	public Object getPercentile(int k) {
 		if (k < 0 || k > 100) {
-			throw new RuntimeException();
+			throw new AkIllegalOperatorParameterException(String.format(
+				"k must in [0, 100], but k is [%s].", k));
 		}
 		return items[k];
 	}

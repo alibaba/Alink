@@ -8,7 +8,6 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -17,6 +16,8 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -112,7 +113,8 @@ public final class CorrelationBatchOp extends BatchOperator <CorrelationBatchOp>
 	}
 
 	public CorrelationResult collectCorrelation() {
-		Preconditions.checkArgument(null != this.getOutputTable(), "Please link from or link to.");
+		AkPreconditions.checkArgument(null != this.getOutputTable(),
+			new AkIllegalOperationException("Please link from or link to."));
 		return new CorrelationDataConverter().load(this.collect());
 	}
 

@@ -47,6 +47,12 @@ public class BuildInAggRegister {
 		env.registerFunction("date_format_ltz", new DataFormat());
 	}
 
+	public static void registerUdtf(BatchTableEnvironment env) {
+	}
+
+	public static void registerUdtf(StreamTableEnvironment env) {
+	}
+
 	public static void registerUdaf(StreamTableEnvironment env) {
 		env.registerFunction(UdafName.COUNT.name + EXTEND, new CountUdaf(true));
 		env.registerFunction(UdafName.SUM.name + EXTEND, new SumUdaf(true));

@@ -62,7 +62,7 @@ public class Owlqn extends Optimizer {
 
 		int numSearchStep = params.get(HasNumSearchStepDefaultAs4.NUM_SEARCH_STEP);
 
-		/**
+		/*
 		 * solving problem using iteration.
 		 * trainData is the distributed samples.
 		 * initCoef is the initial model coefficient, which will be broadcast to every worker.
@@ -116,8 +116,8 @@ public class Owlqn extends Optimizer {
 		private static final long serialVersionUID = 500289895112614970L;
 		private transient DenseVector oldGradient;
 		private double[] alpha;
-		private double l1;
-		private int m;
+		private final double l1;
+		private final int m;
 
 		private CalDirection(double l1, int numCorrections) {
 			this.l1 = l1;
@@ -159,7 +159,7 @@ public class Owlqn extends Optimizer {
 			}
 			// compute H^-1 * g_k
 			int delta = k > m ? k - m : 0;
-			int l = k <= m ? k : m;
+			int l = Math.min(k, m);
 			if (alpha == null) {
 				alpha = new double[m];
 			}
@@ -182,7 +182,7 @@ public class Owlqn extends Optimizer {
 				}
 			}
 
-			/** dir = project(dir, pse gradient) */
+			/* dir = project(dir, pse gradient) */
 			if (Math.abs(l1) > 0.0) {
 				for (int s = 0; s < size; ++s) {
 					if (dir.f0.get(s) * psegrad.f0.get(s) <= 0) {

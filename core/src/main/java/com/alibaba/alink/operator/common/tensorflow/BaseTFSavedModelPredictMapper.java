@@ -4,10 +4,12 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.dl.plugin.DLPredictorService;
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dl.HasModelPath;
@@ -74,8 +76,8 @@ public class BaseTFSavedModelPredictMapper extends Mapper implements Serializabl
 			inputSignatureDefs = tfInputCols;
 		}
 
-		Preconditions.checkArgument(params.contains(BaseTFSavedModelPredictParams.OUTPUT_SCHEMA_STR),
-			"Must set outputSchemaStr.");
+		AkPreconditions.checkArgument(params.contains(BaseTFSavedModelPredictParams.OUTPUT_SCHEMA_STR),
+			new AkIllegalOperatorParameterException("Must set outputSchemaStr."));
 		String tfOutputSchemaStr = params.get(BaseTFSavedModelPredictParams.OUTPUT_SCHEMA_STR);
 		TableSchema tfOutputSchema = TableUtil.schemaStr2Schema(tfOutputSchemaStr);
 		tfOutputCols = tfOutputSchema.getFieldNames();
@@ -116,7 +118,7 @@ public class BaseTFSavedModelPredictMapper extends Mapper implements Serializabl
 
 	@Override
 	public void open() {
-		Preconditions.checkArgument(modelPath != null, "Model path is not set.");
+		AkPreconditions.checkArgument(modelPath != null, "Model path is not set.");
 		predictor = TFPredictorClassLoaderFactory.create(factory);
 		predictor.open(getPredictorConfig());
 	}
@@ -126,7 +128,7 @@ public class BaseTFSavedModelPredictMapper extends Mapper implements Serializabl
 		try {
 			predictor.close();
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to close predictor", e);
+			throw new AkUnclassifiedErrorException("Failed to close predictor", e);
 		}
 	}
 

@@ -4,6 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -124,7 +125,7 @@ public class TableUtilTest extends AlinkTestBase {
 			TableUtil.getCategoricalCols(tableSchema, new String[] {"f2", "f1", "f0", "f3"}, new String[] {"f0"}),
 			new String[] {"f2", "f0", "f3"});
 
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalArgumentException.class);
 		Assert.assertArrayEquals(
 			TableUtil.getCategoricalCols(tableSchema, new String[] {"f3", "f0"}, new String[] {"f2"}),
 			new String[] {"f3", "f2"});

@@ -2,6 +2,7 @@ package com.alibaba.alink.common;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.utils.TableUtil;
 
 import java.io.Serializable;
@@ -50,7 +51,7 @@ public class MTableUtil implements Serializable {
 		} else if (obj instanceof String) {
 			return MTable.fromJson((String) obj);
 		} else {
-			throw new RuntimeException("Type must be string or mtable");
+			throw new AkIllegalDataException("Type must be string or mtable");
 		}
 
 	}

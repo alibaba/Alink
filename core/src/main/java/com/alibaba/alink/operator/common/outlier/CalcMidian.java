@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.outlier;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -68,7 +70,7 @@ public class CalcMidian {
 		int minSize = minHeap.size();
 		int maxSize = maxHeap.size();
 		if (minSize == 0 && maxSize == 0) {
-			throw new RuntimeException("there is no data");
+			throw new AkIllegalDataException("there is no data");
 		}
 		if (minSize == maxSize) {
 			return (maxHeap.peek() + minHeap.peek()) / 2;

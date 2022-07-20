@@ -11,7 +11,6 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -21,6 +20,9 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -83,8 +85,8 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 			TableUtil.findColTypeWithAssertAndHint(in.getSchema(), itemCol));
 
 		if (null == rateCol) {
-			Preconditions.checkArgument(getSimilarityType().equals(SimilarityType.JACCARD),
-				"When rateCol is not given, only Jaccard calc is supported!");
+			AkPreconditions.checkArgument(getSimilarityType().equals(SimilarityType.JACCARD),
+				new AkIllegalArgumentException("When rateCol is not given, only Jaccard calc is supported!"));
 		}
 
 		String[] selectedCols = (null == rateCol ? new String[] {userCol, itemCol}
@@ -253,7 +255,7 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 				if (null == userId) {
 					userId = row.getField(0);
 				}
-				Preconditions.checkNotNull(row.getField(0), "User column is null!");
+				AkPreconditions.checkNotNull(row.getField(0), new AkIllegalDataException("User column is null!"));
 				long itemId = (long) row.getField(1);
 				double rate = 1.0;
 				if (null != rateCol) {
@@ -293,10 +295,10 @@ public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 			Object itemId = null;
 			for (Row row : iterable) {
 				if (null == itemId) {
-					Preconditions.checkNotNull(row.getField(1), "Item column is null!");
+					AkPreconditions.checkNotNull(row.getField(1), new AkIllegalDataException("Item column is null!"));
 					itemId = row.getField(1);
 				}
-				Preconditions.checkNotNull(row.getField(0), "User column is null!");
+				AkPreconditions.checkNotNull(row.getField(0), new AkIllegalDataException("User column is null!"));
 				long userId = (long) row.getField(0);
 				double rate = 1.0;
 				if (null != rateCol) {

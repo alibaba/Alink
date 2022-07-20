@@ -1,12 +1,12 @@
 package com.alibaba.alink.operator.common.optim;
 
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
@@ -54,7 +54,7 @@ public abstract class Optimizer {
 				private static final long serialVersionUID = -884105350593462660L;
 
 				@Override
-				public DenseVector map(Integer n) throws Exception {
+				public DenseVector map(Integer n) {
 					DenseVector denseVector = new DenseVector(n);
 					for (int i = 0; i < denseVector.size(); i++) {
 						denseVector.set(i, 0.0);
@@ -64,7 +64,7 @@ public abstract class Optimizer {
 				}
 			});
 		} else if (null == coefDim) {
-			throw new RuntimeException("Must input the coefficients dimension or initial coefficients!");
+			throw new AkUnclassifiedErrorException("Must input the coefficients dimension or initial coefficients!");
 		}
 	}
 

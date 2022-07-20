@@ -44,30 +44,26 @@ public class BaseOutlierStreamOp<T extends BaseOutlierStreamOp <T>> extends MapS
 	public T linkFrom(StreamOperator <?>... inputs) {
 		StreamOperator <?> in = checkAndGetFirst(inputs);
 
-		try {
-			//Step 1 : Grouped the input rows into MTables
-			StreamOperator <?> in_grouped = group2MTables(in, getParams());
+		//Step 1 : Grouped the input rows into MTables
+		StreamOperator <?> in_grouped = group2MTables(in, getParams());
 
-			//Step 2 : detect the outlier for each MTable
-			Mapper mapper = this.mapperBuilder.apply(in_grouped.getSchema(),
-				getParams().clone()
-					.set(HasInputMTableCol.INPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
-					.set(HasOutputMTableCol.OUTPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
-					.set(HasDetectLast.DETECT_LAST, true)
-			);
-			DataStream <Row> resultRows = MapStreamOp.calcResultRows(in_grouped, mapper, getParams());
+		//Step 2 : detect the outlier for each MTable
+		Mapper mapper = this.mapperBuilder.apply(in_grouped.getSchema(),
+			getParams().clone()
+				.set(HasInputMTableCol.INPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
+				.set(HasOutputMTableCol.OUTPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
+				.set(HasDetectLast.DETECT_LAST, true)
+		);
+		DataStream <Row> resultRows = MapStreamOp.calcResultRows(in_grouped, mapper, getParams());
 
-			//Step 3 : Flatten the MTables to final results
-			Table resultTable = flattenMTable(
-				resultRows, in.getSchema(), mapper.getOutputSchema(), getParams(), getMLEnvironmentId()
-			);
+		//Step 3 : Flatten the MTables to final results
+		Table resultTable = flattenMTable(
+			resultRows, in.getSchema(), mapper.getOutputSchema(), getParams(), getMLEnvironmentId()
+		);
 
-			this.setOutputTable(resultTable);
+		this.setOutputTable(resultTable);
 
-			return (T) this;
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
+		return (T) this;
 	}
 
 	public static StreamOperator <?> group2MTables(StreamOperator <?> input_data, Params params) {
@@ -90,7 +86,8 @@ public class BaseOutlierStreamOp<T extends BaseOutlierStreamOp <T>> extends MapS
 
 	public static Table flattenMTable(DataStream <Row> inputRows, TableSchema input_schema,
 									  TableSchema mapper_schema, Params params, Long mlEnvironmentId) {
-		String[] mtableCols = ArrayUtils.add(input_schema.getFieldNames(), params.get(OutlierDetectorParams.PREDICTION_COL));
+		String[] mtableCols = ArrayUtils.add(input_schema.getFieldNames(),
+			params.get(OutlierDetectorParams.PREDICTION_COL));
 		TypeInformation <?>[] mtableTypes = ArrayUtils.add(input_schema.getFieldTypes(), AlinkTypes.BOOLEAN);
 		if (params.contains(OutlierDetectorParams.PREDICTION_DETAIL_COL)) {
 			mtableCols = ArrayUtils.add(mtableCols, params.get(OutlierDetectorParams.PREDICTION_DETAIL_COL));

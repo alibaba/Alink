@@ -1,7 +1,7 @@
 package com.alibaba.alink.operator.common.distance;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -205,7 +205,8 @@ public class EuclideanDistance extends FastDistance {
 		int[][] rightIndices = right.getIndices();
 		double[][] leftValues = left.getValues();
 		double[][] rightValues = right.getValues();
-		Preconditions.checkArgument(leftIndices.length == rightIndices.length, "VectorSize not equal!");
+		AkPreconditions.checkArgument(leftIndices.length == rightIndices.length,
+			new AkIllegalArgumentException("VectorSize not equal!"));
 		for (int i = 0; i < leftIndices.length; i++) {
 			int[] leftIndicesList = leftIndices[i];
 			int[] rightIndicesList = rightIndices[i];

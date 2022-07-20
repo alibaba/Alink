@@ -21,7 +21,6 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -30,6 +29,9 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -421,7 +423,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator <BisectingK
 					assignmentInState.add(Tuple2.of(sample.f1, sample.f3));
 				} else {
 					if (!sample.f1.equals(assignmentInState.get(pos).f0)) {
-						throw new RuntimeException("Data out of order.");
+						throw new AkIllegalStateException("Data out of order.");
 					}
 					parentClusterId = assignmentInState.get(pos).f1;
 				}
@@ -538,7 +540,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator <BisectingK
 						Tuple3 <Long, ClusterSummary, IterInfo> oldSummary,
 						Tuple2 <Long, ClusterSummary> newSummary) {
 						if (newSummary == null) {
-							Preconditions.checkState(!oldSummary.f2.isNew, "Encounter an empty cluster: {}",
+							AkPreconditions.checkState(!oldSummary.f2.isNew, "Encounter an empty cluster: {}",
 								oldSummary);
 							oldSummary.f2.updateIterInfo();
 							return oldSummary;
@@ -578,7 +580,8 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator <BisectingK
 
 			@Override
 			public Integer map(BaseVectorSummary value) {
-				Preconditions.checkArgument(value.count() > 0, "The train dataset is empty!");
+				AkPreconditions.checkArgument(value.count() > 0,
+					new AkIllegalDataException("The train dataset is empty!"));
 				return value.vectorSize();
 			}
 		});
@@ -679,7 +682,7 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator <BisectingK
 		@Override
 		public void mapPartition(Iterable <Tuple2 <Long, ClusterSummary>> values,
 								 Collector <Row> out) {
-			Preconditions.checkArgument(getRuntimeContext().getNumberOfParallelSubtasks() <= 1,
+			AkPreconditions.checkArgument(getRuntimeContext().getNumberOfParallelSubtasks() <= 1,
 				"parallelism greater than one when saving model.");
 			final int dim = (Integer) (getRuntimeContext().getBroadcastVariable(VECTOR_SIZE).get(0));
 			BisectingKMeansModelData modelData = new BisectingKMeansModelData();
@@ -732,8 +735,8 @@ public final class BisectingKMeansTrainBatchOp extends BatchOperator <BisectingK
 			if (distanceType == DistanceType.EUCLIDEAN) {
 				BLAS.axpy(1., v, sum);
 			} else {
-				Preconditions.checkArgument(norm > 0,
-					"The L2 norm must not be zero when using cosine distance.");
+				AkPreconditions.checkArgument(norm > 0,
+					new AkIllegalDataException("The L2 norm must not be zero when using cosine distance."));
 				BLAS.axpy(1. / Math.sqrt(norm), v, sum);
 			}
 		}

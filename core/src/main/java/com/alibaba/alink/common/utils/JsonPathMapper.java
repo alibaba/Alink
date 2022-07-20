@@ -7,6 +7,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.dataproc.JsonValueParams;
@@ -35,7 +36,7 @@ public class JsonPathMapper extends Mapper {
 		TypeInformation <?>[] outputTypes = ioSchema.f2;
 
 		if (jsonPaths.length != outputTypes.length) {
-			throw new IllegalArgumentException(
+			throw new AkParseErrorException(
 				"jsonPath and outputColName mismatch: " + jsonPaths.length + " vs " + outputTypes.length);
 		}
 
@@ -89,7 +90,7 @@ public class JsonPathMapper extends Mapper {
 					result.set(idx, null);
 				}
 			} else {
-				throw new RuntimeException("empty json string");
+				throw new AkParseErrorException("empty json string");
 			}
 		} else {
 			for (int i = 0; i < jsonPaths.length; i++) {
@@ -104,7 +105,7 @@ public class JsonPathMapper extends Mapper {
 						if (skipFailed) {
 							result.set(i, null);
 						} else {
-							throw new IllegalStateException("Fail to get json path: " + ex);
+							throw new AkParseErrorException("Fail to get json path: " + ex);
 						}
 					}
 				} else {
@@ -119,7 +120,7 @@ public class JsonPathMapper extends Mapper {
 						if (skipFailed) {
 							result.set(i, null);
 						} else {
-							throw new IllegalStateException("Fail to get json path: " + ex);
+							throw new AkParseErrorException("Fail to get json path: " + ex);
 						}
 					}
 				}

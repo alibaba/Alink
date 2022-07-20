@@ -2,6 +2,7 @@ package com.alibaba.alink.common.io.redis;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.params.io.RedisParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ public class RedisFactoryImpl implements RedisFactory {
 				redisStandaloneIp = redisIpPort.split(":")[0];
 				redisStandalonePort = Integer.parseInt(redisIpPort.split(":")[1]);
 			} catch (NumberFormatException e) {
-				throw new IllegalArgumentException("illegal REDIS_IPS value, use 'ip:port' or ip alone");
+				throw new AkIllegalOperatorParameterException("illegal REDIS_IPS value, use 'ip:port' or ip alone");
 			}
 		} else {
 			redisStandaloneIp = redisIpPort;

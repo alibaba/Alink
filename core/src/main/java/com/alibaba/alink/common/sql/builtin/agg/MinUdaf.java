@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.sql.builtin.agg;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
@@ -93,7 +95,7 @@ public class MinUdaf extends BaseUdaf<Object, MinUdaf.MinMaxData> {
         public void retract(Object data) {
             if (!heap.contains(data)) {
                 if (excludeLast && thisData == null) {
-                    throw new RuntimeException("No data to retract.");
+                    throw new AkIllegalDataException("No data to retract.");
                 }
                 thisData = null;
                 return;

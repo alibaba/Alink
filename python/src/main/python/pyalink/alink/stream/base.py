@@ -59,20 +59,25 @@ class StreamOperator(AlgoOperator):
         return self
 
     @classmethod
-    def execute(cls):
+    def execute(cls, jobName: str = None):
         """
         Trigger the program execution.
 
         The environment will execute all parts of the program that have resulted in a "sink" operation.
         Sink operations include :py:func:`StreamOperator.print`, or data sink functions.
         An exception is thrown if no sink operators found.
+
+        :param jobName: optional, job name for this execution.
         """
         for op in StreamOperator._print_ops:
             op.collector_thread.daemon = True
             op.collector_thread.start()
         j_stream_operator_cls = get_java_class("com.alibaba.alink.operator.stream.StreamOperator")
         try:
-            j_stream_operator_cls.execute()
+            if jobName is None:
+                j_stream_operator_cls.execute()
+            else:
+                j_stream_operator_cls.execute(jobName)
         finally:
             for op in StreamOperator._print_ops:
                 op.collector_thread.stop()

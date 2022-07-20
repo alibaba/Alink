@@ -1,6 +1,8 @@
 package com.alibaba.alink.common.linalg;
 
-import com.google.common.base.Preconditions;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.ByteBuffer;
@@ -152,7 +154,7 @@ public class VectorUtil {
 			for (int i = 0; i < numValues; i++) {
 				int colonPos = StringUtils.indexOf(str, INDEX_VALUE_DELIMITER, startPos);
 				if (colonPos < 0) {
-					throw new IllegalArgumentException("Format error.");
+					throw new AkIllegalDataException("Format error.");
 				}
 				endPos = StringUtils.indexOf(str, ELEMENT_DELIMITER, colonPos);
 
@@ -170,7 +172,7 @@ public class VectorUtil {
 			}
 			return new SparseVector(n, indices, data);
 		} catch (Exception e) {
-			throw new IllegalArgumentException(
+			throw new AkIllegalDataException(
 				String.format("Fail to getVector sparse vector from string: \"%s\".", str),
 				e);
 		}
@@ -262,7 +264,7 @@ public class VectorUtil {
 		} else if (obj instanceof Number) {
 			return new DenseVector(new double[] {((Number) obj).doubleValue()});
 		} else {
-			throw new IllegalArgumentException("Can not get the vector from " + obj.toString());
+			throw new AkIllegalDataException("Can not get the vector from " + obj);
 		}
 	}
 
@@ -307,7 +309,7 @@ public class VectorUtil {
 	 * @return
 	 */
 	public static SparseVector decodeSparseVector(byte[] bytes) {
-		Preconditions.checkArgument((bytes.length - 4 - 1) % 12 == 0);
+		AkPreconditions.checkArgument((bytes.length - 4 - 1) % 12 == 0);
 		int size = bytes.length / 12;
 		ByteBuffer wrapper = ByteBuffer.wrap(bytes);
 		wrapper.get(); // pass the first byte
@@ -328,7 +330,7 @@ public class VectorUtil {
 	 * @return
 	 */
 	private static DenseVector decodeDenseVector(byte[] bytes) {
-		Preconditions.checkArgument((bytes.length - 1) % 8 == 0);
+		AkPreconditions.checkArgument((bytes.length - 1) % 8 == 0);
 		int size = bytes.length / 8;
 		ByteBuffer wrapper = ByteBuffer.wrap(bytes);
 		wrapper.get(); // pass the first byte
@@ -346,7 +348,7 @@ public class VectorUtil {
 			case VectorSerialType.SPARSE_VECTOR:
 				return decodeSparseVector(bytes);
 		}
-		throw new RuntimeException("Unsupported Vector Type");
+		throw new AkUnsupportedOperationException("Unsupported Vector Type");
 	}
 
 	static class VectorSerialType {

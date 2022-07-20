@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.timeseries.teststatistics;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
 public class ADF {
@@ -26,10 +28,10 @@ public class ADF {
 	 */
 	void adfTest(double[] data, int maxLag, int nLag) {
 		if (maxLag >= data.length) {
-			throw new RuntimeException("maxLag must be smaller than rows of data");
+			throw new AkIllegalDataException("MaxLag must be smaller than rows of data.");
 		}
 		if (nLag != 1 && nLag != 2 && nLag != 3) {
-			throw new RuntimeException("nLag must be 1: use 12*(n/100)^{1/4} lag. 2: use AIC. 3: use BIC.");
+			throw new AkIllegalOperatorParameterException("NLag must be 1: use 12*(n/100)^{1/4} lag. 2: use AIC. 3: use BIC.");
 		}
 
 		double[] dData = new StationaryTest().difference(data);

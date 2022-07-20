@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.timeseries.teststatistics;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.probabilistic.IDF;
 import com.alibaba.alink.operator.common.statistics.DistributionFuncName;
 import com.alibaba.alink.operator.common.timeseries.TsMethod;
@@ -35,7 +36,7 @@ public class StationaryTest {
 	 */
 	public double[][] ljungBox(double[] data, double alpha, int h) {
 		if (h >= data.length) {
-			throw new RuntimeException("Lag h to be tested must be smaller than the number of sample");
+			throw new AkIllegalDataException("Lag h to be tested must be smaller than the number of sample.");
 		}
 
 		//1st row is Q value, 2rd row is value of Chi2 at alpha with h degree of freedom

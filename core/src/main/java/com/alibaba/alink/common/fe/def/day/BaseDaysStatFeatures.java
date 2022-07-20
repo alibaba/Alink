@@ -3,6 +3,7 @@ package com.alibaba.alink.common.fe.def.day;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.fe.StatisticsAdapter;
 import com.alibaba.alink.common.fe.def.statistics.BaseCategoricalStatistics;
 import com.alibaba.alink.common.fe.def.statistics.BaseNumericStatistics;
@@ -56,7 +57,7 @@ public abstract class BaseDaysStatFeatures<T extends BaseDaysStatFeatures <T>> i
 
 	public String[] getNDays() {
 		if (nDays == null) {
-			throw new RuntimeException("nDays must be set.");
+			throw new AkIllegalOperatorParameterException("nDays must be set.");
 		}
 		return nDays;
 	}

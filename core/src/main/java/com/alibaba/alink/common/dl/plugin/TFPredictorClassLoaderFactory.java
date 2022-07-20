@@ -1,10 +1,11 @@
 package com.alibaba.alink.common.dl.plugin;
 
+import com.alibaba.alink.common.exceptions.AkPluginErrorException;
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
-import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
+import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 
@@ -39,7 +40,7 @@ public class TFPredictorClassLoaderFactory extends ClassLoaderFactory {
 			if (iter.hasNext()) {
 				return iter.next();
 			} else {
-				throw new RuntimeException("Could not find the service in the classloader.");
+				throw new AkPluginErrorException("Could not find the service in the classloader.");
 			}
 		}
 	}

@@ -8,6 +8,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.redis.Redis;
 import com.alibaba.alink.common.io.redis.RedisClassLoaderFactory;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -60,7 +62,7 @@ public class RedisStringOutputFormat extends RichOutputFormat <Row> {
 
 		if (!dataSchema.getFieldTypes()[keyColIndic].equals(AlinkTypes.STRING) ||
 			!dataSchema.getFieldTypes()[valColIndic].equals(AlinkTypes.STRING)){
-			throw new IllegalArgumentException("RedisStringSinkBatchOp  key value columns require String data");
+			throw new AkIllegalDataException("RedisStringSinkBatchOp  key value columns require String data");
 		}
 	}
 

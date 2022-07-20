@@ -19,6 +19,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.common.evaluation.BinaryClassMetrics;
@@ -56,7 +57,7 @@ import static com.alibaba.alink.operator.common.evaluation.ClassificationEvaluat
 @ParamSelectColumnSpec(name = "vectorCol",
 	allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @ParamSelectColumnSpec(name = "labelCol")
-@NameCn("")
+@NameCn("二分类模型过滤")
 public class BinaryClassModelFilterStreamOp<T extends BinaryClassModelFilterStreamOp<T>> extends StreamOperator <T> {
 
 	/**
@@ -101,7 +102,7 @@ public class BinaryClassModelFilterStreamOp<T extends BinaryClassModelFilterStre
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			throw new RuntimeException(ex.toString());
+			throw new AkUnclassifiedErrorException(ex.toString());
 		}
 
 		return (T) this;

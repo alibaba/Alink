@@ -5,6 +5,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.operator.batch.outlier.IForestOutlierBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.params.outlier.HasInputMTableCol;
 import com.alibaba.alink.params.outlier.HasOutputMTableCol;
 import com.alibaba.alink.params.outlier.IForestDetectorParams;
@@ -16,7 +18,7 @@ public class IForestDetectorTest {
 	@Test
 	public void testMTableImmutable() throws Exception {
 		MTable input = new MTable(
-			new Row[]{
+			new Row[] {
 				Row.of(0.1f),
 				Row.of(0.2f)
 			},
@@ -28,7 +30,7 @@ public class IForestDetectorTest {
 			new Params()
 				.set(HasInputMTableCol.INPUT_MTABLE_COL, "f0")
 				.set(HasOutputMTableCol.OUTPUT_MTABLE_COL, "f0")
-				.set(IForestDetectorParams.FEATURE_COLS, new String[]{"f0"})
+				.set(IForestDetectorParams.FEATURE_COLS, new String[] {"f0"})
 		);
 
 		iForestDetector.detect(input, false);
@@ -36,5 +38,33 @@ public class IForestDetectorTest {
 		Assert.assertEquals(input.getColTypes()[0], Types.FLOAT);
 		Assert.assertTrue(input.getRow(0).getField(0) instanceof Float);
 		Assert.assertTrue(input.getRow(1).getField(0) instanceof Float);
+	}
+
+	@Test
+	public void test() throws Exception {
+		MTable input = new MTable(
+			new Row[] {
+				Row.of("3289664", 4L),
+				Row.of("3289664", 22L),
+				Row.of("3289664", 27L),
+				Row.of("3289664", 13L),
+				Row.of("1038472", 10L),
+				Row.of("1038472", 40L),
+				Row.of("1038472", 43L),
+				Row.of("1038472", 43L),
+				Row.of("1038472", 43L),
+				Row.of("1038472", 22L),
+			},
+			"groupId string, f0 bigint"
+		);
+
+		new MemSourceBatchOp(input)
+			.link(
+				new IForestOutlierBatchOp()
+					.setFeatureCols("f0")
+					.setGroupCols("groupId")
+					.setPredictionCol("pred")
+					.setPredictionDetailCol("detail")
+			).print();
 	}
 }

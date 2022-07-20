@@ -1,7 +1,9 @@
 package com.alibaba.alink.operator.common.evaluation;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 public final class RankingMetricsSummary implements BaseMetricsSummary <RankingMetrics, RankingMetricsSummary> {
 
@@ -51,8 +53,8 @@ public final class RankingMetricsSummary implements BaseMetricsSummary <RankingM
 								 int hits,
 								 double hitRank,
 								 double[] recallArray) {
-		Preconditions.checkNotNull(multiLabelMetricsSummary, "MultiLabelMetrics is null, please check the input "
-			+ "data!");
+		AkPreconditions.checkNotNull(multiLabelMetricsSummary,
+			new AkIllegalDataException("MultiLabelMetrics is null, please check the input data!"));
 		this.precisionArray = precisionArray;
 		this.recallArray = recallArray;
 		this.ndcgArray = ndcgArray;

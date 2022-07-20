@@ -7,15 +7,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.RichModelMapper;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.FmDataFormat;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
 import com.alibaba.alink.operator.common.linear.FeatureLabelUtil;
 import com.alibaba.alink.operator.common.optim.FmOptimizer;
@@ -125,7 +123,7 @@ public class FmModelMapper extends RichModelMapper {
 			String jsonDetail = JsonConverter.toJson(detail);
 			return Tuple2.of(label, jsonDetail);
 		} else {
-			throw new RuntimeException("task not support yet");
+			throw new AkUnsupportedOperationException("task not support yet");
 		}
 	}
 }

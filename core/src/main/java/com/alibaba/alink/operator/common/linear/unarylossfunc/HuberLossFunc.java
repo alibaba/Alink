@@ -1,16 +1,18 @@
 package com.alibaba.alink.operator.common.linear.unarylossfunc;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+
 /**
  * Huber loss function.
  * https://en.wikipedia.org/wiki/Huber_loss
  */
 public class HuberLossFunc implements UnaryLossFunc {
 	private static final long serialVersionUID = 618967763754853703L;
-	private double delta;
+	private final double delta;
 
 	public HuberLossFunc(double delta) {
 		if (delta <= 0) {
-			throw new IllegalArgumentException("Parameter delta must be positive.");
+			throw new AkIllegalArgumentException("Parameter delta must be positive.");
 		}
 		this.delta = delta;
 	}

@@ -18,11 +18,7 @@ public class IterTermination extends CompareCriterionFunction {
 	@Override
 	public boolean calc(ComContext context) {
 		Tuple2 <DenseVector, double[]> dir = context.getObj(OptimVariable.dir);
-		if (dir.f1[0] < 0.0) {
-			return true;
-		} else {
-			return false;
-		}
+		return dir.f1[0] < 0.0;
 	}
 }
 

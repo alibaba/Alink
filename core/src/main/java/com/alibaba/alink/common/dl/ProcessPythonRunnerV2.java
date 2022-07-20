@@ -19,10 +19,10 @@
 package com.alibaba.alink.common.dl;
 
 import org.apache.flink.util.FileUtils;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
 import com.alibaba.flink.ml.cluster.node.MLContext;
@@ -154,7 +154,7 @@ public class ProcessPythonRunnerV2 extends ProcessPythonRunner implements Serial
 
 		Path filePath = PythonFileUtils.createTempFile("call_conda_pack", fileSuffix);
 		try (final InputStream is = getClass().getResourceAsStream(scriptResource)) {
-			Preconditions.checkNotNull(is, "Cannot get resource " + scriptResource);
+			AkPreconditions.checkNotNull(is, "Cannot get resource " + scriptResource);
 			Files.copy(is, filePath, StandardCopyOption.REPLACE_EXISTING);
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 				try {

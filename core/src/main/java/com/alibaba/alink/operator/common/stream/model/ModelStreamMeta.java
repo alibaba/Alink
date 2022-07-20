@@ -1,6 +1,8 @@
 package com.alibaba.alink.operator.common.stream.model;
 
-public class ModelStreamMeta {
+import java.io.Serializable;
+
+public class ModelStreamMeta implements Serializable {
 	public long count;
 	public int numFiles;
 

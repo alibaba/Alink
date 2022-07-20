@@ -11,13 +11,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -58,7 +59,8 @@ public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 
 		int indexLabel = TableUtil.findColIndex(in.getColNames(), this.getLabelCol());
 		int indexPredict = TableUtil.findColIndex(in.getColNames(), this.getPredictionCol());
-		Preconditions.checkArgument(indexLabel >= 0 && indexPredict >= 0, "Can not find given columns!");
+		AkPreconditions.checkArgument(indexLabel >= 0 && indexPredict >= 0,
+			new AkIllegalOperatorParameterException("Can not find label column or prediction column!"));
 
 		DataSet <Row> dataSet = in.select(new String[] {this.getLabelCol(), this.getPredictionCol()}).getDataSet();
 		DataSet <Tuple3 <Integer, Class, Integer>> labels = getLabelNumberAndMaxK(dataSet, getPredictionRankingInfo(),
@@ -142,11 +144,11 @@ public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 						return value1;
 					} else {
 						if (value1.f1 == null) {
-							Preconditions.checkArgument(value1.f0.size() == 0 && value1.f2 == 0,
+							AkPreconditions.checkArgument(value1.f0.size() == 0 && value1.f2 == 0,
 								"LabelClass is null but label size is not 0!");
 							return value2;
 						} else if (value2.f1 == null) {
-							Preconditions.checkArgument(value2.f0.size() == 0 && value2.f2 == 0,
+							AkPreconditions.checkArgument(value2.f0.size() == 0 && value2.f2 == 0,
 								"LabelClass is null but label size is not 0!");
 							return value1;
 						} else if (value1.f1.equals(value2.f1)) {
@@ -170,7 +172,7 @@ public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 
 				@Override
 				public Tuple3 <Integer, Class, Integer> map(Tuple3 <HashSet <Object>, Class, Integer> value) {
-					Preconditions.checkState(value.f0.size() > 0,
+					AkPreconditions.checkState(value.f0.size() > 0,
 						"There is no valid data in the whole dataSet, please check the input for evaluation!");
 					return Tuple3.of(value.f0.size(), value.f1, value.f2);
 				}

@@ -59,16 +59,21 @@ class BatchOperator(AlgoOperator):
         return self
 
     @classmethod
-    def execute(cls):
+    def execute(cls, jobName: str = None):
         """
         Trigger the program execution.
 
         The environment will execute all parts of the program that have resulted in a "sink" operation.
         Sink operations include :py:func:`BatchOperator.print`, :py:func:`BatchOperator.collectToDataframe`, lazy print or collect functions.
         An exception is thrown if no sink operators found.
+
+        :param jobName: optional, job name for this execution.
         """
         j_batch_operator_class = get_java_class("com.alibaba.alink.operator.batch.BatchOperator")
-        j_batch_operator_class.execute()
+        if jobName is None:
+            j_batch_operator_class.execute()
+        else:
+            j_batch_operator_class.execute(jobName)
 
     def collectToDataframe(self) -> pandas.DataFrame:
         """

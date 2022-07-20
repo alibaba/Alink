@@ -11,7 +11,7 @@ import com.alibaba.alink.common.linalg.DenseVector;
  */
 public class PreallocateSkyk extends ComputeFunction {
 	private static final long serialVersionUID = -7775746805736310785L;
-	private int numCorrections;
+	private final int numCorrections;
 
 	public PreallocateSkyk(int numCorrections) {
 		this.numCorrections = numCorrections;

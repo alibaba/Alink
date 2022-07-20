@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.operator.common.timeseries.holtwinter.HoltWinters;
 import com.alibaba.alink.operator.common.timeseries.holtwinter.HoltWintersModel;
@@ -46,7 +47,7 @@ public class HoltWintersMapper extends TimeSeriesSingleMapper {
 		doSeasonal = params.get(HoltWintersParams.DO_SEASONAL);
 
 		if (doSeasonal && !doTrend) {
-			throw new RuntimeException("seasonal time serial must have trend.");
+			throw new AkIllegalOperatorParameterException("seasonal time serial must have trend.");
 		}
 		seasonalType = params.get(HasSeasonalType.SEASONAL_TYPE);
 
@@ -59,7 +60,7 @@ public class HoltWintersMapper extends TimeSeriesSingleMapper {
 		if (params.contains(HasSeasonalStart.SEASONAL_START)) {
 			seasonalStart = params.get(HasSeasonalStart.SEASONAL_START);
 			if (seasonalStart.length != frequency) {
-				throw new RuntimeException("the length of " +
+				throw new AkIllegalOperatorParameterException("the length of " +
 					"seasonal start data must equal to frequency.");
 			}
 		}

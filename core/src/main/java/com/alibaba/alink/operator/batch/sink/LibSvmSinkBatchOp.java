@@ -87,7 +87,7 @@ public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
 				private static final long serialVersionUID = 8796282303884042197L;
 
 				@Override
-				public Row map(Row value) throws Exception {
+				public Row map(Row value) {
 					return Row.of(
 						formatLibSvm(value.getField(labelColIdx), value.getField(vectorColIdx), startIndex)
 					);

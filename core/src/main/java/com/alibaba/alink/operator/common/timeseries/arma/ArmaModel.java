@@ -1,5 +1,8 @@
 package com.alibaba.alink.operator.common.timeseries.arma;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.common.timeseries.arima.ArimaModel;
 import com.alibaba.alink.params.timeseries.HasEstmateMethod.EstMethod;
 
@@ -39,7 +42,7 @@ public class ArmaModel {
 		this.q = q;
 
 		if (p < 0 || q < 0) {
-			throw new RuntimeException("Order p and q must equal to or Greater than 0");
+			throw new AkIllegalOperatorParameterException("Order p and q need >= 0");
 		}
 	}
 
@@ -51,16 +54,17 @@ public class ArmaModel {
 	 */
 	public void fit(double[] data) {
 		if (data == null) {
-			throw new RuntimeException("data must be not null.");
+			throw new AkIllegalDataException("data must be not null.");
 		}
 		this.data = data.clone();
 
 		if (data.length - p < p + q + ifIntercept) {
-			throw new RuntimeException("Do not have enough data");
+			throw new AkIllegalDataException("Do not have enough data. data size need > 2p + q.");
 		}
 
 		if (ifIntercept != 1 && ifIntercept != 0) {
-			throw new RuntimeException("ifIntercept must be int 1(have intercept) or 0(no intercept)");
+			throw new AkIllegalOperatorParameterException(
+				"ifIntercept must be int 1(have intercept) or 0(no intercept)");
 		}
 
 		switch (estMethod) {
@@ -77,7 +81,7 @@ public class ArmaModel {
 				estimate = new CSSEstimate();
 				break;
 			default:
-				throw new RuntimeException("Method not support.");
+				throw new AkUnsupportedOperationException(String.format("Method [%s] not support. ", estimate));
 		}
 
 		estimate.compute(this.data, this.p, this.q, this.ifIntercept);
@@ -96,8 +100,8 @@ public class ArmaModel {
 
 	/**
 	 * diff: 1: add mean when doing forecast. 2: not add
-	 *
-	 *
+	 * <p>
+	 * <p>
 	 * First row: prediction
 	 * second row: standard error for each prediction
 	 * third row: lower bound of 95% CI
@@ -108,7 +112,7 @@ public class ArmaModel {
 												double[] maCoef,
 												double intercept, double variance) {
 		if (predictNum <= 0) {
-			throw new RuntimeException("Number of predicted lags must be Greater than 0");
+			throw new AkIllegalOperatorParameterException("Number of predicted need > 0");
 		}
 
 		ArrayList <double[]> result = new ArrayList <>();

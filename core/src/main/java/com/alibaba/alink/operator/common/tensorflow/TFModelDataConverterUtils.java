@@ -7,6 +7,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.classification.tensorflow.TFTableModelClassificationModelData;
 import com.alibaba.alink.operator.common.regression.tensorflow.TFTableModelRegressionModelData;
@@ -15,7 +16,6 @@ import com.google.common.collect.Iterables;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Decoder;
@@ -136,7 +136,7 @@ public class TFModelDataConverterUtils {
 				fos.write(decoder.decode((String) objects[1]));
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Failed to write model rows to file.", e);
 		}
 		return zipPath.toFile().getAbsolutePath();
 	}
@@ -156,7 +156,7 @@ public class TFModelDataConverterUtils {
 				fos.write(decoder.decode((String) objects[1]));
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Failed to write model rows to file.", e);
 		}
 		return zipPath.toFile().getAbsolutePath();
 	}

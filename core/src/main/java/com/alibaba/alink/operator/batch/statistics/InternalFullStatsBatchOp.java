@@ -8,9 +8,10 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.metadata.def.v0.DatasetFeatureStatisticsList;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.utils.StatsVisualizer;
@@ -39,7 +40,8 @@ public class InternalFullStatsBatchOp extends BatchOperator <InternalFullStatsBa
 
 	@Override
 	public InternalFullStatsBatchOp linkFrom(BatchOperator <?>... inputs) {
-		Preconditions.checkArgument(inputs.length > 0, "Must provide at least 1 inputs.");
+		AkPreconditions.checkArgument(inputs.length > 0,
+			new AkIllegalOperationException("Must provide at least 1 inputs."));
 		int n = inputs.length;
 		DataSet <Tuple2 <Integer, SummaryResultTable>> unionSrtDataSet = null;
 		for (int i = 0; i < n; i += 1) {
@@ -78,7 +80,8 @@ public class InternalFullStatsBatchOp extends BatchOperator <InternalFullStatsBa
 	}
 
 	public FullStats collectFullStats() {
-		Preconditions.checkArgument(null != this.getOutputTable(), "Please link from or link to.");
+		AkPreconditions.checkState(null != this.getOutputTable(),
+			new AkIllegalOperationException("Please call link from/to before collect statistics."));
 		return new FullStatsConverter().load(collect());
 	}
 
@@ -103,21 +106,22 @@ public class InternalFullStatsBatchOp extends BatchOperator <InternalFullStatsBa
 	}
 
 	public final InternalFullStatsBatchOp lazyVizFullStats(String[] newTableNames) {
+		return lazyVizFullStats(newTableNames, false);
+	}
+
+	@Internal
+	public final InternalFullStatsBatchOp lazyVizFullStats(String[] newTableNames, boolean useExperimentalViz) {
 		//noinspection Convert2Lambda
 		return lazyCollectFullStats(new Consumer <FullStats>() {
 			@Override
 			public void accept(FullStats fullStats) {
 				StatsVisualizer visualizer = StatsVisualizer.getInstance();
 				DatasetFeatureStatisticsList datasetFeatureStatisticsList = fullStats.getDatasetFeatureStatisticsList();
-				if (null != newTableNames && newTableNames.length > 0) {
-					assert datasetFeatureStatisticsList.getDatasetsCount() == newTableNames.length;
-					DatasetFeatureStatisticsList.Builder builder = datasetFeatureStatisticsList.toBuilder();
-					for (int i = 0; i < newTableNames.length; i += 1) {
-						builder.getDatasetsBuilder(i).setName(newTableNames[i]);
-					}
-					datasetFeatureStatisticsList = builder.build();
+				if (useExperimentalViz) {
+					visualizer.visualizeNew(datasetFeatureStatisticsList, newTableNames);
+				} else {
+					visualizer.visualize(datasetFeatureStatisticsList, newTableNames);
 				}
-				visualizer.visualize(datasetFeatureStatisticsList);
 			}
 		});
 	}

@@ -22,7 +22,6 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
@@ -35,6 +34,10 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
 import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -137,7 +140,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 		/* Get parameters of this algorithm. */
 		final Params params = getParams();
 		if (params.contains(HasFeatureCols.FEATURE_COLS) && params.contains(HasVectorCol.VECTOR_COL)) {
-			throw new RuntimeException("featureCols and vectorCol cannot be set at the same time.");
+			throw new AkIllegalArgumentException("FeatureCols and vectorCol cannot be set at the same time.");
 		}
 		/* Get type of processing: regression or not */
 		final boolean isRegProc = getIsRegProc(params, linearModelType, modelName);
@@ -180,8 +183,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 				public void flatMap(Tuple3 <DenseVector[], Object[], Integer[]> value,
 									Collector <Object[]> out) {
 					if (!isRegProc) {
-						Preconditions.checkState((value.f1.length == 2),
-							"labels count should be 2 in in classification algo.");
+						AkPreconditions.checkState((value.f1.length == 2),
+							"Labels count should be 2 in in linear classification algo.");
 					}
 					out.collect(value.f1);
 				}
@@ -238,16 +241,17 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 					LinearModelData model = new LinearModelDataConverter().load(modelRows);
 
 					if (!(model.hasInterceptItem == params.get(HasWithIntercept.WITH_INTERCEPT))) {
-						throw new RuntimeException("initial linear model not compatible with parameter setting."
+						throw new AkIllegalArgumentException("Initial linear model is not compatible with parameter setting."
 							+ "InterceptItem parameter setting error.");
 					}
 					if (!(model.linearModelType == localLinearModelType)) {
-						throw new RuntimeException("initial linear model not compatible with parameter setting."
+						throw new AkIllegalArgumentException("Initial linear model is not compatible with parameter setting."
 							+ "linearModelType setting error.");
 					}
-					if (!(model.vectorSize + (model.hasInterceptItem ? 1 : 0) == featSize)) {
-						throw new RuntimeException("initial linear model not compatible with parameter setting."
-							+ "vector size not equal.");
+					if (!(model.vectorSize == featSize)) {
+						throw new AkIllegalDataException("Initial linear model is not compatible with training data. "
+							+ " vector size not equal, vector size in init model is : " + model.vectorSize +
+							" and vector size of train data is : " + featSize);
 					}
 					int n = meanVar[0].size();
 					if (model.hasInterceptItem) {
@@ -732,8 +736,6 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 			tmpArr.add(row);
 		}
 		Object[] labels = tmpArr.toArray(new Object[0]);
-
-		Preconditions.checkState((labels.length >= 2), "labels count should be more than 2 in classification algo.");
 		String str0 = labels[0].toString();
 		String str1 = labels[1].toString();
 
@@ -836,7 +838,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 				objFunc = new AftRegObjFunc(params);
 				break;
 			default:
-				throw new RuntimeException("Not implemented yet!");
+				throw new AkUnimplementedOperationException("Linear model type is Not implemented yet!");
 		}
 		return objFunc;
 	}
@@ -872,8 +874,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 				featureIndices[i] = idx;
 				TypeInformation <?> type = in.getSchema().getFieldTypes()[idx];
 
-				Preconditions.checkState(TableUtil.isSupportedNumericType(type),
-					"linear algorithm only support numerical data type. type is : " + type);
+				AkPreconditions.checkState(TableUtil.isSupportedNumericType(type),
+					"linear algorithm only support numerical data type. Current type is : " + type);
 			}
 		}
 		int weightIdx = weightColName != null ? TableUtil.findColIndexWithAssertAndHint(in.getColNames(),
@@ -911,8 +913,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 				} else if (type.equals(Types.BOOLEAN)) {
 					featureColTypes[i] = "bool";
 				} else {
-					throw new RuntimeException(
-						"linear algorithm only support numerical data type. type is : " + type);
+					throw new AkIllegalArgumentException(
+						"Linear algorithm only support numerical data type. Current type is : " + type);
 				}
 			}
 			return featureColTypes;
@@ -1019,14 +1021,14 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 		if (linearModelType.equals(LinearModelType.LinearReg)) {
 			if ("Ridge Regression".equals(modelName)) {
 				double lambda = params.get(RidgeRegTrainParams.LAMBDA);
-				Preconditions.checkState((lambda > 0), "lambda must be positive number or zero! lambda is : " +
+				AkPreconditions.checkState((lambda > 0), "Lambda must be positive number or zero! lambda is : " +
 					lambda);
 				params.set(HasL2.L_2, lambda);
 				params.remove(RidgeRegTrainParams.LAMBDA);
 			} else if ("LASSO".equals(modelName)) {
 				double lambda = params.get(LassoRegTrainParams.LAMBDA);
 				if (lambda < 0) {
-					throw new RuntimeException("lambda must be positive number or zero!");
+					throw new AkIllegalArgumentException("Lambda must be positive number or zero!");
 				}
 				params.set(HasL1.L_1, lambda);
 				params.remove(RidgeRegTrainParams.LAMBDA);
@@ -1036,10 +1038,10 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 			Double tau = params.get(LinearSvrTrainParams.TAU);
 			double cParam = params.get(LinearSvrTrainParams.C);
 			if (tau < 0) {
-				throw new RuntimeException("Parameter tau must be positive number or zero!");
+				throw new AkIllegalArgumentException("Parameter tau must be positive number or zero!");
 			}
 			if (cParam <= 0) {
-				throw new RuntimeException("Parameter C must be positive number!");
+				throw new AkIllegalArgumentException("Parameter C must be positive number!");
 			}
 
 			params.set(HasL2.L_2, 1.0 / cParam);
@@ -1172,10 +1174,10 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 		public void close() throws Exception {
 			super.close();
 			if (hasNull) {
-				throw new RuntimeException("the input data has null values, please check it!");
+				throw new AkIllegalDataException("The input data has null values, please check it!");
 			}
 			if (hasLabelNull) {
-				throw new RuntimeException("label col has null values, please check it!");
+				throw new AkIllegalDataException("The input labels has null values, please check it!");
 			}
 		}
 
@@ -1254,8 +1256,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 					}
 				} else {
 					Vector vec = VectorUtil.getVector(row.getField(vecIdx));
-					Preconditions.checkState((vec != null),
-						"vector for linear model train is null, please check your input data.");
+					AkPreconditions.checkState((vec != null),
+						"Vector for linear model train is null, please check your input data.");
 					if (vec instanceof SparseVector) {
 						hasSparseVector = true;
 						if (hasIntercept) {

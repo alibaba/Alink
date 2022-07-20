@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.feature.featurebuilder;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+
 public class DateUtil {
 
 	private static final double hundredDay = 8640000.0;
@@ -11,7 +13,7 @@ public class DateUtil {
 			DayTime dayTime = new DayTime(second);
 			return dayTime.parseData();
 		} else {
-			throw new RuntimeException("Currently we only support interval less than one hundred day.");
+			throw new AkUnsupportedOperationException("Currently we only support interval less than one hundred day.");
 		}
 	}
 
@@ -82,10 +84,10 @@ public class DateUtil {
 
 		public YearTime(double second) {
 			if (second < oneMonth) {
-				throw new RuntimeException("second time " + second + " should be at least one month.");
+				throw new AkUnsupportedOperationException("second time " + second + " should be at least one month.");
 			}
 			if (second > maxSecond) {
-				throw new RuntimeException("second time " + second + " is too long.");
+				throw new AkUnsupportedOperationException("second time " + second + " is too long.");
 			}
 			buildData(second);
 		}

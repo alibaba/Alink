@@ -61,7 +61,7 @@ public class Newton extends Optimizer {
 		double epsilon = params.get(LinearTrainParams.EPSILON);
 		checkInitCoef();
 
-		/**
+		/*
 		 * solve problem using iteration.
 		 * trainData is the distributed samples.
 		 * initCoef is the initial model coefficient, which will be broadcast to every worker.
@@ -123,7 +123,7 @@ public class Newton extends Optimizer {
 			Tuple2 <Double, Double> loss = objFunc.calcHessianGradientLoss(labledVectors, curCoef.f0, hessian, grad
 				.f0);
 
-			/**
+			/*
 			 * prepare buffer vec for allReduce. the last two elements of vec are weight Sum and current loss.
 			 */
 			double[] buffer = context.getObj("gradHessAllReduce");
@@ -168,8 +168,8 @@ public class Newton extends Optimizer {
 		private final static Logger LOG = LoggerFactory.getLogger(UpdateModel.class);
 		private static final long serialVersionUID = -4113558902964352141L;
 		private DenseMatrix bMat = null;
-		private double epsilon;
-		private int maxIter;
+		private final double epsilon;
+		private final int maxIter;
 
 		private UpdateModel(int maxIter, double epsilon) {
 			this.maxIter = maxIter;
