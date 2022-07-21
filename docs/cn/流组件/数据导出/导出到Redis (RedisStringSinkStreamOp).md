@@ -15,13 +15,13 @@ Python 类名：RedisStringSinkStreamOp
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |  |
-| clusterMode | Not available! | Not available! | Boolean |  |  | false |
-| databaseIndex | Not available! | Not available! | Long |  |  |  |
+| clusterMode | 集群模式 | 是集群模式还是单机模式 | Boolean |  |  | false |
+| databaseIndex | 数据库索引号 | 数据库索引号 | Long |  |  |  |
 | keyCol | 单键列 | 单键列 | String |  |  | null |
-| pipelineSize | Not available! | Not available! | Integer |  |  | 1 |
-| redisIPs | Not available! | Not available! | String[] |  |  |  |
-| redisPassword | Not available! | Not available! | String |  |  |  |
-| timeout | Not available! | Not available! | Integer |  |  |  |
+| pipelineSize | 流水线大小 | Redis 发送命令流水线的大小 | Integer |  |  | 1 |
+| redisIPs | Redis IP | Redis 集群的 IP/端口 | String[] |  |  |  |
+| redisPassword | Redis 密码 | Redis 服务器密码 | String |  |  |  |
+| timeout | 超时 | 关闭连接的超时时间 | Integer |  |  |  |
 | valueCol | 单值列 | 单值列 | String |  |  | null |
 
 ## 代码示例

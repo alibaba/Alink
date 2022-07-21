@@ -12,7 +12,7 @@ MemSourceBatchOp支持多个构造函数
 |构造函数|参数| 示例 |
 |:------|:----|:----|
 |MemSourceBatchOp(Object[] vals, String colName)|数据只有一列，列类型从数据判断| MemSourceBatchOp(new Object[]{1.0, 2.0}, "f0")
-|MemSourceBatchOp(Object[][] vals, String[] colNames)|colNames是列名列表，列类型从数据判断|MemSourceBatchOp(new Object[][]{{1.0, 2.0}, {3.0, 4.0}}, new String[]{"f0", "f1"})
+|MemSourceBatchOp(Object[][] vals, String[] colNames)|colNames是列名列表，列类型从数据判断|MemSourceBatchOp(new Object[][]{ {1.0, 2.0}, {3.0, 4.0} }, new String[]{"f0", "f1"})
 |MemSourceBatchOp(List <Row> rows, TableSchema schema)|schema|MemSourceBatchOp source = new MemSourceBatchOp(df, new TableSchema(new String[]{"f1", "f2"}, new TypeInformation[]{Types.STRING, Types.DOUBLE}))
 |MemSourceBatchOp(List <Row> rows, String schemaStr)|schemaStr格式是col1 string, f1 int...|MemSourceBatchOp(df, "f1 string, f2  double")
 |MemSourceBatchOp(Row[] rows, String[] colNames)|colNames是列名列表，列类型从数据判断|MemSourceBatchOp(rows, new String[]{"f0", "f1"})

@@ -19,9 +19,9 @@ LookupHBaseStreamOp ，将HBase中的数据取出。
 | pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |  |
 | rowKeyCols | rowkey所在列 | rowkey所在列 | String[] | ✓ |  |  |
 | tableName | HBase表名称 | HBase表名称 | String | ✓ |  |  |
-| zookeeperQuorum | Not available! | Not available! | String | ✓ |  |  |
+| zookeeperQuorum | Zookeeper quorum | Zookeeper quorum 地址 | String | ✓ |  |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
-| timeout | Not available! | Not available! | Integer |  |  | 1000 |
+| timeout | HBase RPC 超时时间 | HBase RPC 超时时间，单位毫秒 | Integer |  |  | 1000 |
 
 
 ## 代码示例

@@ -14,7 +14,7 @@ Python 类名：VectorFunctionStreamOp
 | --- | --- | --- | --- | --- | --- | --- |
 | funcName | 函数名字 | 函数操作名称, 可取max（最大值）, min（最小值）, argMax（最大值索引）, argMin（最小值索引）, scale（尺度变换）, NormL2, NormL1, NormL2Square, Normalize | String | ✓ | "Max", "Min", "ArgMax", "ArgMin", "Scale", "NormL2", "NormL1", "NormL2Square", "Normalize" |  |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
-| WithVariable | Not available! | Not available! | String |  |  |  |
+| WithVariable | 变量 | 函数中变量 | String |  |  |  |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |

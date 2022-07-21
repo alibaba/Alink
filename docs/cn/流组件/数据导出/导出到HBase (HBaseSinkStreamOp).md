@@ -17,8 +17,8 @@ Python 类名：HBaseSinkStreamOp
 | pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |  |
 | rowKeyCols | rowkey所在列 | rowkey所在列 | String[] | ✓ |  |  |
 | tableName | HBase表名称 | HBase表名称 | String | ✓ |  |  |
-| zookeeperQuorum | Not available! | Not available! | String | ✓ |  |  |
-| timeout | Not available! | Not available! | Integer |  |  | 1000 |
+| zookeeperQuorum | Zookeeper quorum | Zookeeper quorum 地址 | String | ✓ |  |  |
+| timeout | HBase RPC 超时时间 | HBase RPC 超时时间，单位毫秒 | Integer |  |  | 1000 |
 | valueCols | 多数值列 | 多数值列 | String[] |  |  | null |
 
 

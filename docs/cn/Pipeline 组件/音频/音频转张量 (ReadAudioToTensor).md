@@ -16,6 +16,7 @@ Python 类名：ReadAudioToTensor
 | relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ |  |  |
 | rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |  |
 | sampleRate | 采样率 | 采样率 | Integer | ✓ |  |  |
+| channelFirst | Channel维度是否放在Shape的第一位 | 默认为false，参数为false时，放在Shape的最右侧，为true时，放在Shape的最左侧。 | Boolean |  |  | false |
 | duration | 采样持续时间 | 采样持续时间 | Double |  |  |  |
 | offset | 采样开始时刻 | 采样开始时刻 | Double |  |  | 0.0 |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |

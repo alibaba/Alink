@@ -16,13 +16,13 @@ Python 类名：LookupRedis
 | outputSchemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
 | pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |  |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
-| clusterMode | Not available! | Not available! | Boolean |  |  | false |
-| databaseIndex | Not available! | Not available! | Long |  |  |  |
-| pipelineSize | Not available! | Not available! | Integer |  |  | 1 |
-| redisIPs | Not available! | Not available! | String[] |  |  |  |
-| redisPassword | Not available! | Not available! | String |  |  |  |
+| clusterMode | 集群模式 | 是集群模式还是单机模式 | Boolean |  |  | false |
+| databaseIndex | 数据库索引号 | 数据库索引号 | Long |  |  |  |
+| pipelineSize | 流水线大小 | Redis 发送命令流水线的大小 | Integer |  |  | 1 |
+| redisIPs | Redis IP | Redis 集群的 IP/端口 | String[] |  |  |  |
+| redisPassword | Redis 密码 | Redis 服务器密码 | String |  |  |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
-| timeout | Not available! | Not available! | Integer |  |  |  |
+| timeout | 超时 | 关闭连接的超时时间 | Integer |  |  |  |
 
 
 ## 代码示例

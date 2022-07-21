@@ -14,8 +14,8 @@ iForest 可以识别数据中异常点，在异常检测领域有比较好的效
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| inputMTableCol | Not available! | Not available! | String | ✓ |  |  |
-| outputMTableCol | Not available! | Not available! | String | ✓ |  |  |
+| inputMTableCol | 输入列名 | 输入序列的列名 | String | ✓ |  |  |
+| outputMTableCol | 输出列名 | 输出序列的列名 | String | ✓ |  |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | maxOutlierNumPerGroup | 每组最大异常点数目 | 每组最大异常点数目 | Integer |  |  |  |

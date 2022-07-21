@@ -15,11 +15,11 @@ Histogram-based Outlier Score 使用直方图统计结果，描述异常值，�
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| inputMTableCol | Not available! | Not available! | String | ✓ |  |  |
-| outputMTableCol | Not available! | Not available! | String | ✓ |  |  |
+| inputMTableCol | 输入列名 | 输入序列的列名 | String | ✓ |  |  |
+| outputMTableCol | 输出列名 | 输出序列的列名 | String | ✓ |  |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
-| k | Not available! | Not available! | Integer |  | [1, +inf) | 10 |
+| k | K | 直方图 bin 的数量 | Integer |  | [1, +inf) | 10 |
 | maxOutlierNumPerGroup | 每组最大异常点数目 | 每组最大异常点数目 | Integer |  |  |  |
 | maxOutlierRatio | 最大异常点比例 | 算法检测异常点的最大比例 | Double |  |  |  |
 | outlierThreshold | 异常评分阈值 | 只有评分大于该阈值才会被认为是异常点 | Double |  |  |  |

@@ -15,6 +15,7 @@ Python 类名：ReadImageToTensorStreamOp
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
 | relativeFilePathCol | 文件路径列 | 文件路径列 | String | ✓ | 所选列类型为 [STRING] |  |
 | rootFilePath | 文件路径 | 文件路径 | String | ✓ |  |  |
+| channelFirst | Channel维度是否放在Shape的第一位 | 默认为false，参数为false时，放在Shape的最右侧，为true时，放在Shape的最左侧。 | Boolean |  |  | false |
 | imageHeight | 图片高度 | 图片高度 | Integer |  |  |  |
 | imageWidth | 图片宽度 | 图片宽度 | Integer |  |  |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
