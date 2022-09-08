@@ -21,6 +21,8 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -141,7 +143,7 @@ public class NaiveBayesTrainBatchOp extends BatchOperator <NaiveBayesTrainBatchO
 				categoricalCols.add(colName);
 				isCate[i] = true;
 			} else if (TableUtil.findColIndex(originCategoricalColNames, colName) != -1) {
-				throw new RuntimeException("column \"" + colName + "\"'s type is " + type +
+				throw new AkIllegalOperatorParameterException("column \"" + colName + "\"'s type is " + type +
 					", which is not categorical!");
 			}
 		}
@@ -156,7 +158,7 @@ public class NaiveBayesTrainBatchOp extends BatchOperator <NaiveBayesTrainBatchO
 			type.equals(Types.BIG_INT) || type.equals(Types.LONG) || type.equals(Types.INT)) {
 			return false;
 		}
-		throw new RuntimeException("don't support the type " + type);
+		throw new AkUnsupportedOperationException("don't support the type " + type);
 	}
 
 	@Override

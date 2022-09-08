@@ -9,6 +9,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -16,7 +17,6 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.probabilistic.IDF;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import com.alibaba.alink.operator.common.outlier.CalcMidian;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -189,7 +189,7 @@ public class TimeSeriesAnomsUtils {
 			}
 			return Tuple2.of(keys, dv.getData());
 		} else {
-			throw new RuntimeException("vector format err: not sparse and dense.");
+			throw new AkIllegalDataException("vector format err: not sparse and dense.");
 		}
 
 	}

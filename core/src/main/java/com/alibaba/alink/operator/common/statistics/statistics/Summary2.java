@@ -501,7 +501,7 @@ class MeasureIteratorString extends MeasureIteratorBase {
 
 	@Override
 	public void finalResult(SummaryResultCol src) {
-		src.init(dataType, count + countMissing, count, countMissing, 0, 0, 0, 0,
+		src.init(dataType, count + countMissing, count, countMissing, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, null, null);
 	}
 }
@@ -545,7 +545,7 @@ class MeasureIteratorBoolean extends MeasureIteratorBase {
 				min = Boolean.TRUE;
 			}
 		}
-		src.init(dataType, count + countMissing, count, countMissing, 0, 0, 0,
+		src.init(dataType, count + countMissing, count, countMissing, 0, 0, 0, 0,
 			countTrue, countTrue, countTrue, countTrue, countTrue, min, max);
 	}
 }
@@ -560,6 +560,7 @@ class MeasureIteratorLong extends MeasureIteratorBase {
 	double sum3;
 	double sum4;
 	double absSum;
+	public long countZero;
 
 	public MeasureIteratorLong(Class dataType) {
 		super(dataType);
@@ -570,6 +571,7 @@ class MeasureIteratorLong extends MeasureIteratorBase {
 		minLong = Long.MAX_VALUE;
 		maxLong = Long.MIN_VALUE;
 		absSum = 0;
+		countZero = 0;
 	}
 
 	@Override
@@ -592,12 +594,16 @@ class MeasureIteratorLong extends MeasureIteratorBase {
 				minLong = d;
 				min = (Number) obj;
 			}
+			if (0 == d) {
+				countZero++;
+			}
 		}
 	}
 
 	@Override
 	public void finalResult(SummaryResultCol src) {
-		src.init(dataType, count + countMissing, count, countMissing, 0, 0, 0,
+		src.init(dataType, count + countMissing, count,
+			countMissing, 0, 0, 0, countZero,
 			sum, absSum, sum2, sum3, sum4, min, max);
 	}
 }
@@ -634,7 +640,7 @@ class MeasureIteratorDate extends MeasureIteratorBase {
 	public void finalResult(SummaryResultCol src) {
 		src.init(dataType,
 			count + countMissing, count, countMissing,
-			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0,
 			minLong, maxLong);
 	}
 }
@@ -650,6 +656,7 @@ class MeasureIteratorDouble extends MeasureIteratorBase {
 	double sum2;
 	double sum3;
 	double sum4;
+	public long countZero;
 
 	public MeasureIteratorDouble(Class dataType) {
 		super(dataType);
@@ -660,6 +667,7 @@ class MeasureIteratorDouble extends MeasureIteratorBase {
 		absSum = 0;
 		minDouble = Double.POSITIVE_INFINITY;
 		maxDouble = Double.NEGATIVE_INFINITY;
+		countZero = 0;
 	}
 
 	@Override
@@ -682,12 +690,16 @@ class MeasureIteratorDouble extends MeasureIteratorBase {
 				minDouble = d;
 				min = (Number) obj;
 			}
+			if (0.0 == d) {
+				countZero++;
+			}
 		}
 	}
 
 	@Override
 	public void finalResult(SummaryResultCol src) {
-		src.init(dataType, count + countMissing, count, countMissing, 0, 0, 0,
+		src.init(dataType, count + countMissing, count,
+			countMissing, 0, 0, 0, countZero,
 			sum, absSum, sum2, sum3, sum4, min, max);
 	}
 }

@@ -28,7 +28,11 @@ public class MemoryDataBridge implements DataBridge {
 				try {
 					return filter.filter(x);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					//if( e instanceof ExceptionWithErrorCode) {
+					//	throw (ExceptionWithErrorCode)e;
+					//}
+					//throw new AkUnclassifiedErrorException("MemoryDataBridge meets error in filter",e);
+					return false;
 				}
 			})
 			.collect(Collectors.toList());

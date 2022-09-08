@@ -15,10 +15,9 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 
-import com.alibaba.alink.common.exceptions.AkIllegalModelException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils.AkMeta;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
@@ -478,7 +477,7 @@ public class ModelStreamUtils {
 			schema, colName
 		);
 
-		Preconditions.checkState(
+		AkPreconditions.checkState(
 			schema.getFieldTypes()[colIndex].equals(colType),
 			String.format(s,
 				FlinkTypeConverter.getTypeString(colType),

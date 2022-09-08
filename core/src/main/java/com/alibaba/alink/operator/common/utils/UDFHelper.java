@@ -1,10 +1,13 @@
 package com.alibaba.alink.operator.common.utils;
 
 import com.alibaba.alink.common.io.filesystem.FilePath;
+import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.pyrunner.PyCalcRunner;
+import com.alibaba.alink.common.pyrunner.fn.BuiltInFnUtils;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.udf.BasePyBinaryFnParams;
+import com.alibaba.alink.params.udf.BasePyBuiltInFnParams;
 import com.alibaba.alink.params.udf.BasePyFileFnParams;
 import com.alibaba.alink.params.udf.HasPythonEnvFilePath;
 import com.google.gson.JsonArray;
@@ -51,6 +54,15 @@ public class UDFHelper {
 		return fnSpec;
 	}
 
+	public static JsonObject makeFnSpec(BasePyBuiltInFnParams <?> params) {
+		JsonObject fnSpec = new JsonObject();
+		fnSpec.addProperty(BuiltInFnUtils.KEY_FN_PLUGIN_NAME, params.getFnName());
+		fnSpec.addProperty(BuiltInFnUtils.KEY_FN_PLUGIN_VERSION, params.getPluginVersion());
+		fnSpec.addProperty(BuiltInFnUtils.KEY_FN_FACTORY_CONFIG,
+			JsonConverter.toJson(new ResourcePluginFactory()));
+		return fnSpec;
+	}
+
 	public static Map <String, String> makeRunConfig(BasePyFileFnParams <?> params) {
 		Map <String, String> runConfig = new HashMap <>();
 		// TODO: switch to UDF plugin
@@ -66,6 +78,10 @@ public class UDFHelper {
 			runConfig.put(PyCalcRunner.PY_PYTHON_ENV_FILE_PATH, params.getPythonEnvFilePath().serialize());
 		}
 		return runConfig;
+	}
+
+	public static Map <String, String> makeRunConfig(BasePyBuiltInFnParams <?> params) {
+		return new HashMap <>();
 	}
 
 	/**
@@ -148,5 +164,4 @@ public class UDFHelper {
 
 		return String.format("SELECT %s FROM (%s)", selectClause, joinClause);
 	}
-
 }

@@ -1,8 +1,8 @@
 package com.alibaba.alink.operator.common.tree.seriestree;
 
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.tree.FeatureMeta;
 
 /**
@@ -69,7 +69,7 @@ public class DenseData {
 	}
 
 	void resetM(int m) {
-		Preconditions.checkState(m <= this.rawBufferLen);
+		AkPreconditions.checkState(m <= this.rawBufferLen);
 		this.m = m;
 	}
 

@@ -6,8 +6,8 @@ import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
@@ -108,7 +108,7 @@ public class WriteTensorToImageMapper extends Mapper {
 		public static BufferedImage writeToImage(FloatTensor floatTensor) {
 			long[] shape = floatTensor.shape();
 
-			Preconditions.checkArgument(shape != null && shape.length == 3);
+			AkPreconditions.checkArgument(shape != null && shape.length == 3);
 
 			int numBands = (int) shape[2];
 			int width = (int) shape[1];

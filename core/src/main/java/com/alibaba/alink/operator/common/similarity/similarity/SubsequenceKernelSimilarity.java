@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.similarity.similarity;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.common.similarity.Sample;
 import com.alibaba.alink.operator.common.similarity.SimilarityUtil;
 
@@ -15,7 +17,7 @@ public class SubsequenceKernelSimilarity extends Similarity <Double> {
 
 	public SubsequenceKernelSimilarity(int k, double lambda) {
 		if (k < 0) {
-			throw new RuntimeException("k must be positive!");
+			throw new AkIllegalOperatorParameterException("k must be positive!");
 		}
 		this.k = k;
 		this.lambda = lambda;
@@ -36,7 +38,7 @@ public class SubsequenceKernelSimilarity extends Similarity <Double> {
 			}
 			//memory consumption is sizeof(long) * 2 * k * lr
 			if ((long) lr * 2 * (long) this.k > SimilarityUtil.MAX_MEMORY) {
-				throw new RuntimeException("String is Too Long for SSK, please use other method");
+				throw new AkUnclassifiedErrorException("String is Too Long for SSK, please use other method");
 			}
 			int newIndex = 1;  //newIndex=new line, 1-newIndex=old line
 			double ret = 0.;
@@ -82,7 +84,7 @@ public class SubsequenceKernelSimilarity extends Similarity <Double> {
 			}
 			//memory consumption is sizeof(long) * 2 * k * lr
 			if ((long) lr * 2 * (long) this.k > SimilarityUtil.MAX_MEMORY) {
-				throw new RuntimeException("String is Too Long for SSK, please use other method");
+				throw new AkUnclassifiedErrorException("String is Too Long for SSK, please use other method");
 			}
 			int newIndex = 1;  //newIndex=new line, 1-newIndex=old line
 			double ret = 0.;

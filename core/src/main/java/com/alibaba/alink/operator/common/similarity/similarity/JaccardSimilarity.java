@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.similarity.similarity;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.common.similarity.Sample;
 
 import java.util.Collections;
@@ -72,7 +73,7 @@ public class JaccardSimilarity extends MinHashSimilarity {
 			Collections.addAll(set, rightStr);
 			return 1.0 * (leftStr.length + rightStr.length - set.size()) / set.size();
 		}else{
-			throw new RuntimeException("Only support String and String array yet!");
+			throw new AkUnsupportedOperationException("Only support String and String array yet!");
 		}
 	}
 }

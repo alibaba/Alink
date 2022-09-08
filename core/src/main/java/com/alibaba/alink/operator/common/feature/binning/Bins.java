@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.common.feature.binning;
 
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.google.common.base.Joiner;
 
 import java.io.Serializable;
@@ -176,14 +176,14 @@ public class Bins implements Serializable {
 		 */
 		void setStatisticsData(Long total, BinTypes.ColType colType, Long positiveTotal) {
 			this.total = null == this.total ? 0L : this.total;
-			Preconditions.checkNotNull(total, "Total is NULL!");
-			Preconditions.checkNotNull(colType, "FeatureType is NULL!");
+			AkPreconditions.checkNotNull(total, "Total is NULL!");
+			AkPreconditions.checkNotNull(colType, "FeatureType is NULL!");
 
 			totalRate = 1.0 * this.total / total;
 			if (null != positiveTotal) {
 				positive = null == positive ? 0L : positive;
 				negative = this.total - positive;
-				Preconditions.checkArgument(negative >= 0,
+				AkPreconditions.checkArgument(negative >= 0,
 					"Total must be greater or equal than Positive! Total:" + this.total
 						+ "; Positive: " + positive);
 				if (this.total > 0) {

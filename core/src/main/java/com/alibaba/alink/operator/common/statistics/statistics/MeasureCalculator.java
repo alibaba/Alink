@@ -100,7 +100,7 @@ public class MeasureCalculator implements Serializable {
 	public SummaryResultCol getFinalResult() {
 		SummaryResultCol src = new SummaryResultCol();
 		src.init(Double.class, count, count, 0, 0,
-			0, 0, sum, 0.0, sum2,
+			0, 0, 0, sum, 0.0, sum2,
 			sum3, sum4, Double.valueOf(minDouble), Double.valueOf(maxDouble));
 		return src;
 	}

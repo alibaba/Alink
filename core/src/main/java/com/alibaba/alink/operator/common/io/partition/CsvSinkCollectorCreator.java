@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.io.partition;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.filesystem.copy.csv.TextOutputFormat;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil.FlattenCsvFromRow;
@@ -39,7 +40,7 @@ public class CsvSinkCollectorCreator implements SinkCollectorCreator {
 						flattenCsvFromRow.map(formatCsvFunc.map(record))
 					);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw new AkUnclassifiedErrorException("Error. ",e);
 				}
 			}
 
@@ -48,7 +49,7 @@ public class CsvSinkCollectorCreator implements SinkCollectorCreator {
 				try {
 					textOutputFormat.close();
 				} catch (IOException e) {
-					throw new RuntimeException(e);
+					throw new AkUnclassifiedErrorException("Error. ",e);
 				}
 			}
 		};

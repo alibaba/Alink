@@ -29,6 +29,8 @@ import org.apache.flink.types.Row;
 import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.InstantiationUtil;
 
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.common.io.reader.FileSplitReader;
 
 import java.io.IOException;
@@ -127,7 +129,7 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 			if (fieldClasses[i] != null) {
 				Class <? extends FieldParser <?>> parserType = FieldParser.getParserForType(fieldClasses[i]);
 				if (parserType == null) {
-					throw new RuntimeException("No parser available for type '" + fieldClasses[i].getName() + "'.");
+					throw new AkParseErrorException("No parser available for type '" + fieldClasses[i].getName() + "'.");
 				}
 
 				FieldParser <?> p = InstantiationUtil.instantiate(parserType, FieldParser.class);
@@ -370,7 +372,7 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 		}
 
 		if (tryTimes >= maxTryTimes) {
-			throw new RuntimeException("Fail to read data.");
+			throw new AkUnclassifiedErrorException("Fail to read data.");
 		}
 
 		if (read == -1) {
@@ -460,7 +462,7 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 						startPos++;
 					}
 					if (startPos + fieldDelim.length > offset + numBytes) {
-						throw new RuntimeException("Can't find next field delimiter: " + "\"" + fieldDelimStr + "\","
+						throw new AkUnclassifiedErrorException("Can't find next field delimiter: " + "\"" + fieldDelimStr + "\","
 							+ " " +
 							"Perhaps the data is invalid or do not match the schema." +
 							"The row is: " + new String(bytes, offset, numBytes));

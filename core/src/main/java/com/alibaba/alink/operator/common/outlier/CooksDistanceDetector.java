@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.probabilistic.IDF;
@@ -33,7 +34,7 @@ public class CooksDistanceDetector extends OutlierDetector {
 		int p = series.getNumCol();
 
 		if (n < p) {
-			throw new RuntimeException("rowNum must be larger than colNum-1.");
+			throw new AkIllegalOperatorParameterException("rowNum must be larger than colNum-1.");
 		}
 
 		DenseMatrix X = new DenseMatrix(n, p);
@@ -131,7 +132,7 @@ public class CooksDistanceDetector extends OutlierDetector {
 	private double getDoubleValue(MTable mTable, int iRow, int iCol) {
 		Object obj = mTable.getEntry(iRow, iCol);
 		if (null == obj) {
-			throw new RuntimeException(String.format("the entry of %s row and %s col is null.", iRow, iCol));
+			throw new AkIllegalOperatorParameterException(String.format("the entry of %s row and %s col is null.", iRow, iCol));
 		}
 		return ((Number) mTable.getEntry(iRow, iCol)).doubleValue();
 	}

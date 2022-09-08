@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,6 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -167,7 +167,7 @@ class ModelConverterUtils {
 		@Override
 		public String next() {
 			if (!hasNext()) {
-				throw new RuntimeException("Iterator do not has next value.");
+				throw new AkUnclassifiedErrorException("Iterator do not has next value.");
 			}
 			String ret = curr;
 			getNextValue();
@@ -245,7 +245,7 @@ class ModelConverterUtils {
 		@Override
 		public T next() {
 			if (!hasNext()) {
-				throw new RuntimeException("The iterator do not have next value.");
+				throw new AkUnclassifiedErrorException("The iterator do not have next value.");
 			}
 			Object ret;
 			Row modelRow = modelRows.get(order[listPos]);
@@ -295,7 +295,7 @@ class ModelConverterUtils {
 		try {
 			path = Files.createTempFile("data_rows_", ".dat");
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to create temp file for data rows.", e);
+			throw new AkUnclassifiedErrorException("Failed to create temp file for data rows.", e);
 		}
 		LOG.info("Save data rows to {}", path);
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -325,7 +325,7 @@ class ModelConverterUtils {
 				}
 			}
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to write data rows to file.", e);
+			throw new AkUnclassifiedErrorException("Failed to write data rows to file.", e);
 		}
 
 		// process meta rows
@@ -382,7 +382,7 @@ class ModelConverterUtils {
 				try {
 					channel = Files.newByteChannel(path);
 				} catch (IOException e) {
-					throw new RuntimeException(String.format("Failed create BufferReader from %s", path), e);
+					throw new AkUnclassifiedErrorException(String.format("Failed create BufferReader from %s", path), e);
 				}
 				getNextValue();
 			}
@@ -395,7 +395,7 @@ class ModelConverterUtils {
 			@Override
 			public String next() {
 				if (!hasNext()) {
-					throw new RuntimeException("DataRowsIterator have no more values.");
+					throw new AkUnclassifiedErrorException("DataRowsIterator have no more values.");
 				}
 				String ret = curr;
 				getNextValue();
@@ -413,7 +413,7 @@ class ModelConverterUtils {
 						byteBuffer.rewind();
 						segment = StandardCharsets.UTF_8.decode(byteBuffer).toString();
 					} catch (IOException e) {
-						throw new RuntimeException(String.format("Failed to read %d bytes with offset %d from %s",
+						throw new AkUnclassifiedErrorException(String.format("Failed to read %d bytes with offset %d from %s",
 							index.f2, index.f1, path));
 					}
 					if (segment.length() == 0) {

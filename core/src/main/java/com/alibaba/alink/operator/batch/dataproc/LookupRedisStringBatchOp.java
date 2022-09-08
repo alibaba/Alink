@@ -6,7 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.SelectedColsWithFirstInputSpec;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.LookupRedisStringMapper;
-import com.alibaba.alink.params.dataproc.TensorToVectorParams;
+import com.alibaba.alink.params.dataproc.LookupStringRedisParams;
 
 /**
  * batch op for lookup String type key and value in redis.
@@ -14,7 +14,7 @@ import com.alibaba.alink.params.dataproc.TensorToVectorParams;
 @SelectedColsWithFirstInputSpec
 @NameCn("Redis 表查找String类型")
 public class LookupRedisStringBatchOp extends MapBatchOp <LookupRedisStringBatchOp>
-	implements TensorToVectorParams <LookupRedisStringBatchOp> {
+	implements LookupStringRedisParams <LookupRedisStringBatchOp> {
 
 	public LookupRedisStringBatchOp() {
 		this(new Params());

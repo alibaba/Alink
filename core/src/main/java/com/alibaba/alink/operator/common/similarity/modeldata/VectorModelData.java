@@ -17,8 +17,8 @@ import java.util.List;
 
 public class VectorModelData extends NearestNeighborModelData {
 	private static final long serialVersionUID = -2940551481683238630L;
-	private final List <FastDistanceData> dictData;
-	private final FastDistance fastDistance;
+	public final List <FastDistanceData> dictData;
+	public final FastDistance fastDistance;
 
 	public VectorModelData(List <FastDistanceData> list, FastDistance distance) {
 		this.dictData = list;

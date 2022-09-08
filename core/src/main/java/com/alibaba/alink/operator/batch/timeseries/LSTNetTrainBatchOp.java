@@ -7,7 +7,6 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -21,6 +20,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
@@ -125,7 +125,7 @@ public class LSTNetTrainBatchOp extends BatchOperator <LSTNetTrainBatchOp>
 				colName = getSelectedCol();
 			}
 
-			Preconditions.checkNotNull(colName);
+			AkPreconditions.checkNotNull(colName);
 
 			final String timeCol = getTimeCol();
 
@@ -142,7 +142,7 @@ public class LSTNetTrainBatchOp extends BatchOperator <LSTNetTrainBatchOp>
 
 			String[] outputColNames = getOutputCols();
 
-			Preconditions.checkState(outputColNames != null
+			AkPreconditions.checkState(outputColNames != null
 				&& (outputColNames.length == 1 || outputColNames.length == 2));
 
 			final boolean genY = outputColNames.length == 2;

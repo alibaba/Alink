@@ -9,10 +9,9 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
 
 /**
  * A utility class for reading and writing csv files.
@@ -54,7 +53,7 @@ public class CsvUtil {
 			String line = (String) value.getField(0);
 			if (line == null || line.isEmpty()) {
 				if (!skipBlankLine) {
-					out.collect(emptyRow);
+					out.collect(new Row(colTypes.length));
 				}
 			} else {
 				Tuple2 <Boolean, Row> parsed = parser.parse(line);
@@ -62,7 +61,7 @@ public class CsvUtil {
 					out.collect(parsed.f1);
 				} else {
 					if (!lenient) {
-						throw new RuntimeException("Fail to parse line: \"" + line + "\"");
+						throw new AkParseErrorException("Fail to parse line: \"" + line + "\"");
 					} else {
 						LOG.warn("Fail to parse line: \"" + line + "\"");
 					}

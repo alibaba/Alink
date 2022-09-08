@@ -23,6 +23,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable.MTableDeserializer;
 import com.alibaba.alink.common.MTable.MTableSerializer;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.exceptions.MTableSerializerException;
 import com.alibaba.alink.common.io.filesystem.binary.BaseStreamRowSerializer;
@@ -127,7 +128,7 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 
 	private static String initSchemaStr(List <Row> rows, String[] colNames) {
 		if (rows == null || rows.size() < 1) {
-			throw new IllegalArgumentException("Values can not be empty.");
+			throw new AkIllegalArgumentException("Values can not be empty.");
 		}
 
 		Row first = rows.iterator().next();
@@ -223,7 +224,7 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 	private static String[] getCalcCols(TableSchema tableSchema, String[] selectedColNames) {
 		ArrayList <String> calcCols = new ArrayList <>();
 		String[] inColNames = selectedColNames.length == 0 ? tableSchema.getFieldNames() : selectedColNames;
-		int[] colIndices = TableUtil.findColIndices(tableSchema,inColNames);
+		int[] colIndices = TableUtil.findColIndices(tableSchema, inColNames);
 		TypeInformation <?>[] inColTypes = tableSchema.getFieldTypes();
 
 		for (int i = 0; i < inColNames.length; i++) {
@@ -348,11 +349,19 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 		}
 	}
 
+	public MTable subTable(int fromIndex, int toIndex) {
+		return new MTable(rows.subList(fromIndex, toIndex), schemaStr);
+	}
+
 	@Override
 	public String toDisplaySummary() {
+		return toDisplaySummary(displaySize);
+	}
+
+	public String toDisplaySummary(int n) {
 		StringBuilder summary = new StringBuilder("MTable(");
 		summary.append(getNumRow()).append(",").append(getColNames().length).append(")(");
-		int maxSize = Math.min(displaySize, getColNames().length);
+		int maxSize = Math.min(n, getColNames().length);
 		for (int i = 0; i < maxSize - 1; ++i) {
 			summary.append(getColNames()[i]).append(",");
 		}
@@ -366,21 +375,24 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 
 	@Override
 	public String toDisplayData(int n) {
+		StringBuilder sbd = new StringBuilder();
+		if (n == Integer.MAX_VALUE) {
+			sbd.append(toDisplaySummary(n)).append("\n");
+		}
 		if (n < 0) {
 			n = Integer.MAX_VALUE;
 		}
-		StringBuilder sbd = new StringBuilder();
 		int i = 0;
 		for (Row row : this.rows) {
 			if (i < n) {
-				if (row.getArity() <= displaySize) {
+				if (row.getArity() <= n) {
 					sbd.append(TableUtil.formatRows(row)).append("\n");
 				} else {
-					Row simpleRow = new Row(displaySize);
-					for (int j = 0; j < displaySize - 1; ++j) {
+					Row simpleRow = new Row(n);
+					for (int j = 0; j < n - 1; ++j) {
 						simpleRow.setField(j, row.getField(j));
 					}
-					simpleRow.setField(displaySize - 1, "...");
+					simpleRow.setField(n - 1, "...");
 					sbd.append(TableUtil.formatRows(simpleRow)).append("\n");
 				}
 				i++;

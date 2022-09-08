@@ -102,9 +102,14 @@ public class FullStats implements Serializable {
 											.setNumMissing(src.countMissValue)
 											.setTotNumValues(src.countTotal)
 											.setNumNonMissing(src.count)
+											.setAvgNumValues(1)
+											.setMinNumValues(1)
+											.setMaxNumValues(1)
 									)
+									.setNumZeros(src.countZero)
 									.setMax(src.maxDouble())
 									.setMin(src.minDouble())
+									.setMean(src.mean())
 									.setStdDev(src.standardDeviation())
 									.setMedian(
 										src.hasFreq()
@@ -127,6 +132,7 @@ public class FullStats implements Serializable {
 						);
 					if (src.hasFreq()) {
 						TreeMap <Object, Long> freq = src.getFrequencyMap();
+						stringBuilder.setUnique(freq.size());
 						int k = 0;
 						for (Map.Entry <Object, Long> entry : freq.entrySet()) {
 							stringBuilder.addTopValues(k++,

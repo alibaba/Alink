@@ -1,12 +1,14 @@
 package com.alibaba.alink.operator.common.dataproc.format;
 
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
+
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.params.dataproc.format.HasHandleInvalidDefaultAsError;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
 
 import java.util.Map;
 
@@ -42,7 +44,7 @@ public class VectorReader extends FormatReader {
 					if (handleInvalid.equals(HasHandleInvalidDefaultAsError.HandleInvalid.ERROR)) {
 						String failMsg = String
 							.format("colSize is larger than vector size! colSize: %s, vectorSize: %s", denseVector.size(), colNames.length);
-						throw new RuntimeException(failMsg);
+						throw new AkIllegalOperatorParameterException(failMsg);
 					}
 					return false;
 				}
@@ -61,7 +63,7 @@ public class VectorReader extends FormatReader {
 					if (handleInvalid.equals(HasHandleInvalidDefaultAsError.HandleInvalid.ERROR)) {
 						String failMsg = String
 							.format("colSize is larger than vector size! colSize: %s, vectorSize: %s", sparseVector.size(), colNames.length);
-						throw new RuntimeException(failMsg);
+						throw new AkIllegalOperatorParameterException(failMsg);
 					}
 					return false;
 				}

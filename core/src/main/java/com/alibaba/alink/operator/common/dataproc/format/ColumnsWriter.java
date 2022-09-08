@@ -9,6 +9,8 @@ import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.InstantiationUtil;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,7 +68,7 @@ public class ColumnsWriter extends FormatWriter {
 	static FieldParser <?> getFieldParser(Class typeClazz) {
 		Class <? extends FieldParser <?>> parserType = FieldParser.getParserForType(typeClazz);
 		if (parserType == null) {
-			throw new RuntimeException("No parser available for type '" + typeClazz.getName() + "'.");
+			throw new AkParseErrorException("No parser available for type '" + typeClazz.getName() + "'.");
 		}
 		return InstantiationUtil.instantiate(parserType, FieldParser.class);
 	}

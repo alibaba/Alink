@@ -23,6 +23,8 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
 import com.alibaba.alink.common.mapper.FlatModelMapper;
 import com.alibaba.alink.common.mapper.FlatModelMapperAdapter;
 import com.alibaba.alink.common.mapper.IterableModelLoader;
@@ -128,8 +130,10 @@ public class FlatModelMapBatchOp<T extends FlatModelMapBatchOp <T>> extends Batc
 			TableSchema outputSchema = flatMapper.getOutputSchema();
 			this.setOutput(resultRows, outputSchema);
 			return (T) this;
+		} catch (ExceptionWithErrorCode ex) {
+			throw ex;
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException("Error. ", ex);
 		}
 	}
 }

@@ -24,6 +24,7 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.Propert
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -102,7 +103,7 @@ public class JsonConverter {
 	/**
 	 * Exception to indict the json format error.
 	 */
-	public static class IllegalJsonFormatException extends IllegalArgumentException {
+	public static class IllegalJsonFormatException extends AkIllegalArgumentException {
 		private static final long serialVersionUID = -6774908585137282894L;
 
 		IllegalJsonFormatException(String message, Throwable cause) {

@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
@@ -266,7 +267,7 @@ public class ItemCfRecommKernel extends RecommKernel implements Cloneable {
 
 	@Override
 	public MTable recommendSimilarUsers(Object userId) {
-		throw new RuntimeException("ItemCf not support recommendSimilarUsers");
+		throw new AkUnsupportedOperationException("ItemCf not support recommendSimilarUsers");
 	}
 
 	@Override

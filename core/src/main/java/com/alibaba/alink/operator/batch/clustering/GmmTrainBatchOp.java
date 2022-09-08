@@ -20,6 +20,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -67,6 +68,7 @@ import java.util.List;
 @OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
 @ParamSelectColumnSpec(name = "vectorCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
 @NameCn("高斯混合模型训练")
+@NameEn("GMM Training")
 public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 	implements GmmTrainParams <GmmTrainBatchOp>,
 	WithModelInfoBatchOp <GmmModelInfoBatchOp.GmmModelInfo, GmmTrainBatchOp, GmmModelInfoBatchOp> {

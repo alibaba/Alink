@@ -6,8 +6,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.common.fe.def.BaseStatFeatures;
-import com.alibaba.alink.common.fe.def.InterfaceLatestStatFeatures;
+import com.alibaba.alink.common.fe.define.BaseStatFeatures;
+import com.alibaba.alink.common.fe.define.InterfaceLatestStatFeatures;
 
 public interface HasOverFeatureDefinitions<T> extends WithParams <T> {
 

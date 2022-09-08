@@ -1,7 +1,6 @@
 package com.alibaba.alink.pipeline.tuning;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.pipeline.ModelBase;
@@ -29,7 +28,7 @@ public abstract class BaseTuningModel<M extends BaseTuningModel <M>> extends Mod
 	}
 
 	public PipelineModel getBestPipelineModel() {
-		Preconditions.checkArgument(transformer instanceof PipelineModel, "Best model should be a pipeline model.");
+		AkPreconditions.checkArgument(transformer instanceof PipelineModel, "Best model should be a pipeline model.");
 
 		return (PipelineModel) transformer;
 	}

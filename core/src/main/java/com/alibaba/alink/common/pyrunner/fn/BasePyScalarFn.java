@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.pyrunner.fn;
 
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.functions.ScalarFunction;
 
@@ -41,15 +42,18 @@ public abstract class BasePyScalarFn<PYOUT, HANDLE extends PyScalarFnHandle <PYO
 	@Override
 	public void open(FunctionContext context) throws Exception {
 		super.open(context);
-
+		Tuple2 <String, Map <String, String>> updated = PyFnUtils.updateFnSpecRunConfigWithPlugin(fnSpecJson,
+			runConfig);
+		String updatedFnSpecJson = updated.f0;
+		Map <String, String> updatedRunConfig = updated.f1;
 		SerializableBiFunction <String, String, String> newRunConfigGetter = (key, defaultValue) -> {
 			if (PY_TURN_ON_LOGGING_KEY.equals(key)) {
 				return String.valueOf(AlinkGlobalConfiguration.isPrintProcessInfo());
 			} else {
-				return runConfig.getOrDefault(key, context.getJobParameter(key, defaultValue));
+				return updatedRunConfig.getOrDefault(key, context.getJobParameter(key, defaultValue));
 			}
 		};
-		runner = new PyScalarFnRunner <>(fnSpecJson, pyOutType, newRunConfigGetter);
+		runner = new PyScalarFnRunner <>(updatedFnSpecJson, pyOutType, newRunConfigGetter);
 		runner.open();
 	}
 

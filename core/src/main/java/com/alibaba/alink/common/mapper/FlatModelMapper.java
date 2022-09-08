@@ -5,6 +5,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -81,7 +83,7 @@ public abstract class FlatModelMapper extends FlatMapper {
 			| InstantiationException
 			| InvocationTargetException e) {
 
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
 	}
 }

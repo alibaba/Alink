@@ -3,8 +3,8 @@ package com.alibaba.alink.operator.common.tree.viz;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.tree.Node;
 import com.alibaba.alink.operator.common.tree.TreeModelDataConverter;
 import javax.imageio.ImageIO;
@@ -30,7 +30,7 @@ public class TreeModelViz {
 		String path, List <Row> model, int treeIndex, boolean isOverwrite) throws IOException {
 		File file = new File(path);
 
-		Preconditions.checkArgument(isOverwrite || !file.exists(), "File: %s is exists.", path);
+		AkPreconditions.checkArgument(isOverwrite || !file.exists(), "File: %s is exists.", path);
 
 		toImage(model, treeIndex, getFormat(path), new FileImageOutputStream(file));
 	}
@@ -39,7 +39,7 @@ public class TreeModelViz {
 		List <Row> model, int treeIndex, String formatName, ImageOutputStream imageOutputStream) throws IOException {
 		TreeModelDataConverter modelDataConverter = toModel(model);
 
-		Preconditions.checkArgument(
+		AkPreconditions.checkArgument(
 			treeIndex < modelDataConverter.roots.length && treeIndex >= 0,
 			"Index of tree is out of bound. treeIndex: %d", treeIndex
 		);
@@ -58,7 +58,7 @@ public class TreeModelViz {
 		String path, TreeModelDataConverter model, int treeIndex, boolean isOverwrite) throws IOException {
 		File file = new File(path);
 
-		Preconditions.checkArgument(
+		AkPreconditions.checkArgument(
 			isOverwrite || !file.exists(),
 			"File: %s is exists.", path
 		);
@@ -289,9 +289,6 @@ public class TreeModelViz {
 	}
 
 	private static void addChildren(ArrayList <Node4CalcPos> nodelist, int idx) {
-		if (idx >= nodelist.size()) {
-			throw new RuntimeException();
-		}
 		Node4CalcPos curTreeNode = nodelist.get(idx);
 		Node curNode = curTreeNode.node;
 		if (!curNode.isLeaf()) {

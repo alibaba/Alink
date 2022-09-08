@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +91,7 @@ public abstract class ModelMapper extends Mapper {
 			| InstantiationException
 			| InvocationTargetException e) {
 
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
 	}
 }

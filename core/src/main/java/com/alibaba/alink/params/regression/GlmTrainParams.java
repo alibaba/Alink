@@ -15,6 +15,7 @@ import com.alibaba.alink.params.shared.iter.HasMaxIterDefaultAs10;
 public interface GlmTrainParams<T> extends
 	RegressorTrainParams <T>,
 	HasWeightColDefaultAsNull <T>,
+	HasEpsilon <T>,
 	HasMaxIterDefaultAs10 <T> {
 
 	@NameCn("分布族")
@@ -69,13 +70,6 @@ public interface GlmTrainParams<T> extends
 		.createParamInfo("regParam", Double.class)
 		.setDescription("Sets the regularization parameter for L2 regularization")
 		.setHasDefaultValue(0.0)
-		.build();
-	@NameCn("收敛精度")
-	@DescCn("收敛精度")
-	ParamInfo <Double> EPSILON = ParamInfoFactory
-		.createParamInfo("epsilon", Double.class)
-		.setDescription("epsilon")
-		.setHasDefaultValue(1.0e-5)
 		.build();
 
 	default Family getFamily() {
@@ -140,14 +134,6 @@ public interface GlmTrainParams<T> extends
 
 	default T setRegParam(Double value) {
 		return set(REG_PARAM, value);
-	}
-
-	default Double getEpsilon() {
-		return get(EPSILON);
-	}
-
-	default Double setEpsilon() {
-		return get(EPSILON);
 	}
 
 	enum Family {

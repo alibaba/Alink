@@ -1,5 +1,12 @@
 package com.alibaba.alink.common.dl.utils;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.flink.ml.util.ShellExec;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,13 +21,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-import com.alibaba.flink.ml.util.ShellExec;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.flink.util.Preconditions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 public class ZipFileUtil {
 
@@ -30,7 +30,7 @@ public class ZipFileUtil {
         if (new File("/usr/bin/unzip").canExecute()) {
             System.out.println("unzipping with /usr/bin/unzip");
             boolean ok = ShellExec.run(String.format("/usr/bin/unzip -q -d %s %s", targetDir.getPath(), inFile.getPath()), LOG::info);
-            Preconditions.checkState(ok, "Fail to unzip " + inFile.getPath() + " to " + targetDir.getPath());
+            AkPreconditions.checkState(ok, "Fail to unzip " + inFile.getPath() + " to " + targetDir.getPath());
             System.out.println("unzip done.");
             return;
         }
@@ -43,7 +43,7 @@ public class ZipFileUtil {
 
             //We will unzip files in this folder
             final String uncompressedDirectory = targetDir.getPath();
-            Preconditions.checkArgument(targetDir.isDirectory());
+            AkPreconditions.checkArgument(targetDir.isDirectory());
 
             //Iterate over entries
             while (entries.hasMoreElements()) {
@@ -99,7 +99,7 @@ public class ZipFileUtil {
             unzipFileIntoDirectory(srcFile.getAbsolutePath(), dstDir.getAbsolutePath());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
+            throw new AkUnclassifiedErrorException("Error. ",e);
         }
     }
 

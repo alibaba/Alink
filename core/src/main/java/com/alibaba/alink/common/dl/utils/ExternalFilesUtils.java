@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.dl.utils;
 
 import com.alibaba.alink.common.dl.ExternalFilesConfig;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class ExternalFilesUtils {
 					prepareExternalNormalFile(workDir, path, rename);
 				}
 			} catch (IOException e) {
-				throw new RuntimeException("Cannot prepare file: " + path, e);
+				throw new AkUnclassifiedErrorException("Cannot prepare file: " + path, e);
 			}
 		}
 	}

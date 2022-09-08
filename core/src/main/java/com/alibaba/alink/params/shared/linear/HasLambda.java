@@ -12,7 +12,7 @@ import com.alibaba.alink.common.annotation.NameCn;
  */
 public interface HasLambda<T> extends WithParams <T> {
 
-	@NameCn("希腊字母：lambda")
+	@NameCn("惩罚因子：lambda")
 	@DescCn("惩罚因子，必选")
 	ParamInfo <Double> LAMBDA = ParamInfoFactory
 		.createParamInfo("lambda", Double.class)

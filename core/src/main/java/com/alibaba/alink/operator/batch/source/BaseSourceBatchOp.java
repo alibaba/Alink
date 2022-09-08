@@ -7,6 +7,7 @@ import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.io.HasIoName;
@@ -34,7 +35,7 @@ public abstract class BaseSourceBatchOp<T extends BaseSourceBatchOp <T>> extends
 
 	@Override
 	public final T linkFrom(BatchOperator <?>... inputs) {
-		throw new UnsupportedOperationException("Source operator does not support linkFrom()");
+		throw new AkUnsupportedOperationException("Source operator does not support linkFrom()");
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.common.utils.UDFHelper;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.dataproc.UDTFParams;
@@ -59,7 +60,7 @@ public class UDTFStreamOp extends StreamOperator <UDTFStreamOp>
 	@Override
 	public UDTFStreamOp linkFrom(StreamOperator <?>... inputs) {
 		if (null == getFunc() && null == getFuncName()) {
-			throw new IllegalArgumentException(
+			throw new AkIllegalOperatorParameterException(
 				"A TableFunction or a registered function name must be set using setFunc or setFuncName.");
 		}
 		StreamOperator <?> in = checkAndGetFirst(inputs);

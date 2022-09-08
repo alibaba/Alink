@@ -1,6 +1,9 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkParseErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -54,7 +57,7 @@ public class TensorUtil {
 		} else if (obj instanceof Number) {
 			return fromDenseVector(new DenseVector(new double[] {((Number) obj).doubleValue()}));
 		} else {
-			throw new IllegalArgumentException("Can not get the tensor from " + obj);
+			throw new AkIllegalArgumentException("Can not get the tensor from " + obj);
 		}
 	}
 
@@ -102,7 +105,7 @@ public class TensorUtil {
 				tensor = new StringTensor(shape);
 				break;
 			default:
-				throw new IllegalArgumentException("Data type is not supported: " + type);
+				throw new AkUnsupportedOperationException("Data type is not supported: " + type);
 		}
 		tensor.parseFromValueStrings(valueStrs);
 		return tensor;
@@ -114,7 +117,7 @@ public class TensorUtil {
 			.mapToInt(Integer::parseInt)
 			.toArray();
 		if (lengths.length != size) {
-			throw new IllegalArgumentException("Illegal lengths section in tensor string: " + s);
+			throw new AkIllegalDataException("Illegal lengths section in tensor string: " + s);
 		}
 		String content = (split.length > 1) ? split[1] : "";
 		String[] strs = new String[size];
@@ -213,7 +216,7 @@ public class TensorUtil {
 			case STRING:
 				return (T) new StringTensor(new Shape(size));
 			default:
-				throw new UnsupportedOperationException();
+				throw new AkUnsupportedOperationException("Failed to cast to tensor, unsupported DataType");
 		}
 	}
 
@@ -222,7 +225,7 @@ public class TensorUtil {
 			if (dim == 0) {
 				return dim;
 			} else {
-				throw new IllegalArgumentException("Dim is not 0 when nDims is 0.");
+				throw new AkIllegalDataException("Dim is not 0 when nDims is 0.");
 			}
 		}
 
@@ -230,7 +233,7 @@ public class TensorUtil {
 		final long max = nDims - 1;
 
 		if (dim < min || dim > max) {
-			throw new IllegalArgumentException(
+			throw new AkIllegalDataException(
 				String.format("Dimension is outbound. Dim: %d, min: %d, max: %d.", dim, min, max)
 			);
 		}

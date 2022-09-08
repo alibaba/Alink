@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -45,7 +46,7 @@ public final class AkSourceBatchOp extends BaseSourceBatchOp <AkSourceBatchOp>
 		try {
 			meta = AkUtils.getMetaFromPath(getFilePath());
 		} catch (IOException e) {
-			throw new IllegalArgumentException(
+			throw new AkIllegalOperatorParameterException(
 				"Could not get meta from ak file: " + getFilePath().getPathStr(), e
 			);
 		}
@@ -73,7 +74,7 @@ public final class AkSourceBatchOp extends BaseSourceBatchOp <AkSourceBatchOp>
 
 				return DataSetConversionUtil.toTable(getMLEnvironmentId(), schemaAndData.f0, schemaAndData.f1);
 			} catch (IOException e) {
-				throw new IllegalArgumentException(e);
+				throw new AkIllegalOperatorParameterException("Error. ",e);
 			}
 		}
 	}

@@ -2,6 +2,7 @@ package com.alibaba.alink.common.io.annotations;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
@@ -54,12 +55,12 @@ public class AnnotationUtilsTest extends AlinkTestBase {
 		Assert.assertTrue(AnnotationUtils.isIoOpHasTimestamp("test_fake_op_2", IOType.SourceBatch));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void testIsOpHasTimestampError() {
 		Assert.assertFalse(AnnotationUtils.isIoOpHasTimestamp("test_fake_op_1", IOType.SinkStream));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void testIsOpHasTimestampError2() {
 		Assert.assertFalse(AnnotationUtils.isIoOpHasTimestamp("A_DB_HAS_NO_NAME", IOType.SourceBatch));
 	}
@@ -87,12 +88,12 @@ public class AnnotationUtilsTest extends AlinkTestBase {
 		Assert.assertTrue(op2 instanceof FakeOp2);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void testCreateOpError1() throws Exception {
 		AnnotationUtils.createOp("test_fake_op_1", IOType.SinkBatch, new Params());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void testCreateOpError2() throws Exception {
 		AnnotationUtils.createOp("A_OP_HAS_NO_NAME", IOType.SourceBatch, new Params());
 	}

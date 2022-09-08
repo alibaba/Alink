@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -37,7 +39,7 @@ public class PrintBatchOp extends BaseSinkBatchOp <PrintBatchOp> {
 	}
 
 	@Override
-	protected PrintBatchOp sinkFrom(BatchOperator<?> in) {
+	protected PrintBatchOp sinkFrom(BatchOperator <?> in) {
 		if (null != in.getOutputTable()) {
 			try {
 				List <Row> rows = in.collect();
@@ -45,8 +47,10 @@ public class PrintBatchOp extends BaseSinkBatchOp <PrintBatchOp> {
 				for (Row row : rows) {
 					batchPrintStream.println(TableUtil.formatRows(row));
 				}
+			} catch (ExceptionWithErrorCode ex) {
+				throw ex;
 			} catch (Exception ex) {
-				throw new RuntimeException(ex);
+				throw new AkUnclassifiedErrorException("Error. ", ex);
 			}
 		}
 		return this;

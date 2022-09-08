@@ -63,6 +63,7 @@ public class EvalOutlierUtils {
 		}
 	}
 
+
 	/**
 	 * Extract the probability map from prediction details, where the details only contain the probability to be
 	 * positive.

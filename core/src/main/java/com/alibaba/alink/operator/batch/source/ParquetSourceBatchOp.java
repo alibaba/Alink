@@ -1,7 +1,6 @@
 package com.alibaba.alink.operator.batch.source;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.io.RichInputFormat;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -18,11 +17,10 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
-import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils.FileProcFunction;
-import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
+import com.alibaba.alink.common.io.filesystem.AkUtils2;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.parquet.ParquetClassLoaderFactory;
 import com.alibaba.alink.common.io.parquet.ParquetReaderFactory;
@@ -32,7 +30,6 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.io.ParquetSourceParams;
 
 import java.io.IOException;
-import java.util.List;
 
 @NameCn("parquet文件读入")
 public class ParquetSourceBatchOp extends BaseSourceBatchOp <ParquetSourceBatchOp>
@@ -70,7 +67,7 @@ public class ParquetSourceBatchOp extends BaseSourceBatchOp <ParquetSourceBatchO
 		BatchOperator <?> selected;
 		TableSchema schema;
 		try {
-			selected = AkUtils.selectPartitionBatchOp(getMLEnvironmentId(), filePath, getPartitions());
+			selected = AkUtils2.selectPartitionBatchOp(getMLEnvironmentId(), filePath, getPartitions());
 		} catch (IOException e) {
 			throw new AkIllegalOperatorParameterException("Could not find the path: " + filePath.getPathStr());
 		}

@@ -14,6 +14,7 @@ import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -56,7 +57,7 @@ public class AppendModelStreamFileSinkBatchOp extends BaseSinkBatchOp <AppendMod
 		try {
 			sink.initializeGlobal();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ",e);
 		}
 
 		DataSet <Row> writtenModel = in.getDataSet()

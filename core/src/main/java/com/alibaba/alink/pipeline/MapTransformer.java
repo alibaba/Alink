@@ -2,11 +2,13 @@ package com.alibaba.alink.pipeline;
 
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.utils.MapLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
 
@@ -27,7 +29,7 @@ public abstract class MapTransformer<T extends MapTransformer <T>>
 
 	protected MapTransformer(BiFunction <TableSchema, Params, Mapper> mapperBuilder, Params params) {
 		super(params);
-		this.mapperBuilder = Preconditions.checkNotNull(mapperBuilder, "mapperBuilder can not be null");
+		this.mapperBuilder = AkPreconditions.checkNotNull(mapperBuilder, "mapperBuilder can not be null");
 	}
 
 	@Override
@@ -38,6 +40,11 @@ public abstract class MapTransformer<T extends MapTransformer <T>>
 	@Override
 	public StreamOperator <?> transform(StreamOperator <?> input) {
 		return new MapStreamOp <>(this.mapperBuilder, this.params).linkFrom(input);
+	}
+
+	@Override
+	public LocalOperator <?> transform(LocalOperator <?> input) {
+		return postProcessTransformResult(new MapLocalOp <>(this.mapperBuilder, this.params).linkFrom(input));
 	}
 
 	@Override

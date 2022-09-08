@@ -7,13 +7,18 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.io.filesystem.FilePath;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.params.PipelineModelParams;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import static com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo.LAZY_PRINT_TRANSFORM_DATA_ENABLED;
 import static com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo.LAZY_PRINT_TRANSFORM_STAT_ENABLED;
@@ -120,7 +125,11 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 	 */
 	@Override
 	public PipelineModel fit(BatchOperator <?> input) {
-		return new PipelineModel(fit(input, false).f0).setMLEnvironmentId(input.getMLEnvironmentId());
+		PipelineModel model = new PipelineModel(fit(input, false).f0)
+			.setMLEnvironmentId(input.getMLEnvironmentId());
+
+		model.getParams().set(PipelineModelParams.TRAINING_DATA_SCHEMA, TableUtil.schema2SchemaStr(input.getSchema()));
+		return model;
 	}
 
 	@Override
@@ -129,6 +138,60 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 	}
 
 	private Tuple2 <TransformerBase <?>[], BatchOperator <?>> fit(BatchOperator <?> input, boolean withTransform) {
+		int lastEstimatorIdx = getIndexOfLastEstimator();
+		TransformerBase <?>[] transformers = new TransformerBase <?>[stages.size()];
+		for (int i = 0; i < stages.size(); i++) {
+			PipelineStageBase <?> stage = stages.get(i);
+
+			if (i <= lastEstimatorIdx) {
+				if (stage instanceof EstimatorBase) {
+					transformers[i] = ((EstimatorBase <?, ?>) stage).fit(input);
+				} else if (stage instanceof TransformerBase) {
+					transformers[i] = (TransformerBase <?>) stage;
+				}
+			} else {
+				// After lastEstimatorIdx, there're only Transformer stages, so it's safe to do type cast.
+				transformers[i] = (TransformerBase <?>) stage;
+			}
+
+			if (i < lastEstimatorIdx || withTransform) {
+				// temporarily disable lazy print transform results
+				Boolean lazyPrintTransformDataEnabled = (Boolean) transformers[i].get(
+					LAZY_PRINT_TRANSFORM_DATA_ENABLED);
+				Boolean lazyPrintTransformStatEnabled = (Boolean) transformers[i].get(
+					LAZY_PRINT_TRANSFORM_STAT_ENABLED);
+				transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, false);
+				transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, false);
+
+				input = transformers[i].transform(input);
+
+				transformers[i].set(LAZY_PRINT_TRANSFORM_DATA_ENABLED, lazyPrintTransformDataEnabled);
+				transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, lazyPrintTransformStatEnabled);
+			}
+		}
+		return new Tuple2 <>(transformers, input);
+	}
+
+	/**
+	 * Train the pipeline with batch data.
+	 *
+	 * @param input input data
+	 * @return pipeline model
+	 */
+	@Override
+	public PipelineModel fit(LocalOperator <?> input) {
+		PipelineModel model = new PipelineModel(fit(input, false).f0);
+
+		model.getParams().set(PipelineModelParams.TRAINING_DATA_SCHEMA, TableUtil.schema2SchemaStr(input.getSchema()));
+		return model;
+	}
+
+	@Override
+	public LocalOperator <?> fitAndTransform(LocalOperator <?> input) {
+		return fit(input, true).f1;
+	}
+
+	private Tuple2 <TransformerBase <?>[], LocalOperator <?>> fit(LocalOperator <?> input, boolean withTransform) {
 		int lastEstimatorIdx = getIndexOfLastEstimator();
 		TransformerBase <?>[] transformers = new TransformerBase <?>[stages.size()];
 		for (int i = 0; i < stages.size(); i++) {

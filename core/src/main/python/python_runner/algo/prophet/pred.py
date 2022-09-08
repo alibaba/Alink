@@ -89,6 +89,25 @@ class PyProphetCalc2:
                 stan_i = self.stan_init2(json.loads(stan_i))
                 dimDelta = len(stan_i['delta'])
 
+            holidays_str = conf['holidays']
+            holidays_pd = None
+            if holidays_str is not None:
+                holidays_str_splits = holidays_str.split(' ')
+                for single_holiday in holidays_str_splits:
+                    s3 = single_holiday.split(':')
+                    holiday_name = s3[0]
+                    holiday_vals = s3[1].split(",")
+                    holiday_pd = pd.DataFrame({
+                      'holiday': holiday_name,
+                      'ds': pd.to_datetime(holiday_vals),
+                      'lower_window': 0,
+                      'upper_window': 1,
+                    })
+                    if holidays_pd is None:
+                        holidays_pd = holiday_pd
+                    else:
+                        holidays_pd = pd.concat((holidays_pd, holiday_pd))
+
             #data
             ds_array = []
             y_array = []
@@ -102,7 +121,7 @@ class PyProphetCalc2:
 
             # init model
             with suppress_stdout_stderr():
-                m = Prophet(growth=growth, uncertainty_samples=uncertainty_samples)
+                m = Prophet(growth=growth, uncertainty_samples=uncertainty_samples, holidays=holidays_pd)
                 if stan_i is not None and dataLen == dimDelta + 2:
                     m.fit(df, init=stan_i)
                 elif argv2 is None or argv2[0][0] is None:

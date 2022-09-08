@@ -4,6 +4,7 @@ import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.exchange.BytesDataExchange;
 import com.alibaba.alink.common.dl.plugin.DLPredictServiceMapper.PredictorConfig;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.operator.common.pytorch.ListSerializer;
@@ -292,6 +293,6 @@ public abstract class BaseDLProcessPredictorService<T> implements DLPredictorSer
 
 	@Override
 	public List <List <?>> predictRows(List <List <?>> inputs, int batchSize) {
-		throw new UnsupportedOperationException("Not supported batch inference yet.");
+		throw new AkUnsupportedOperationException("Not supported batch inference yet.");
 	}
 }

@@ -14,6 +14,7 @@ import org.apache.flink.api.java.typeutils.TupleTypeInfo;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class ApsOp {
 		if (model.getType().isTupleType() && model.getType().getArity() == 2) {
 			mtType = ((TupleTypeInfo) model.getType()).getTypeAt(1);
 		} else {
-			throw new RuntimeException("Unsupported model type. type: " + model.getType().toString());
+			throw new AkUnclassifiedErrorException("Unsupported model type. type: " + model.getType().toString());
 		}
 
 		int nPartition = BatchOperator
@@ -312,7 +313,7 @@ public class ApsOp {
 		if (model.getType().isTupleType() && model.getType().getArity() == 2) {
 			mtType = ((TupleTypeInfo) model.getType()).getTypeAt(1);
 		} else {
-			throw new RuntimeException("Unsupported model type. type: " + model.getType().toString());
+			throw new AkUnclassifiedErrorException("Unsupported model type. type: " + model.getType().toString());
 		}
 
 		/**
@@ -389,7 +390,7 @@ public class ApsOp {
 		if (model.getType().isTupleType() && model.getType().getArity() == 2) {
 			mtType = ((TupleTypeInfo) model.getType()).getTypeAt(1);
 		} else {
-			throw new RuntimeException("Unsupported model type. type: " + model.getType().toString());
+			throw new AkUnclassifiedErrorException("Unsupported model type. type: " + model.getType().toString());
 		}
 
 		/**

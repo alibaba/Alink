@@ -2,6 +2,7 @@ package com.alibaba.alink.common.dl.utils;
 
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClient;
@@ -81,7 +82,7 @@ public class OssUtils {
         } while (objectListing.isTruncated());
 
         if (allFileNames.size() <= 0) {
-            throw new RuntimeException(String.format("oss://%s/%s not exist", bucketName, ossPath));
+            throw new AkIllegalOperatorParameterException(String.format("oss://%s/%s not exist", bucketName, ossPath));
         }
 
         for (String key : allFileNames) {

@@ -7,6 +7,8 @@ import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.LogisticRegressionTrainBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.classification.LogisticRegressionTrainLocalOp;
 import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
 import com.alibaba.alink.params.classification.LogisticRegressionPredictParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -32,4 +34,10 @@ public class LogisticRegression extends Trainer <LogisticRegression, LogisticReg
 	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new LogisticRegressionTrainBatchOp(getParams()).linkFrom(in);
 	}
+
+	@Override
+	protected LocalOperator <?> train(LocalOperator <?> in) {
+		return new LogisticRegressionTrainLocalOp(getParams()).linkFrom(in);
+	}
+
 }

@@ -3,16 +3,17 @@ package com.alibaba.alink.pipeline;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.function.TriFunction;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.utils.ModelMapLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
-import com.alibaba.alink.params.io.ModelFileSinkParams;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public abstract class MapModel<T extends MapModel <T>>
 	protected MapModel(TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder,
 					   Params params) {
 		super(params);
-		this.mapperBuilder = Preconditions.checkNotNull(mapperBuilder, "mapperBuilder can not be null");
+		this.mapperBuilder = AkPreconditions.checkNotNull(mapperBuilder, "mapperBuilder can not be null");
 	}
 
 	void validate(TableSchema modelSchema, TableSchema dataSchema) {
@@ -45,15 +46,24 @@ public abstract class MapModel<T extends MapModel <T>>
 
 	@Override
 	public BatchOperator <?> transform(BatchOperator <?> input) {
-		return postProcessTransformResult(new ModelMapBatchOp <>(this.mapperBuilder, this.params)
-			.linkFrom(this.getModelData(), input));
+		return postProcessTransformResult(
+			new ModelMapBatchOp <>(this.mapperBuilder, this.params)
+				.linkFrom(this.getModelData(), input)
+		);
 	}
 
 	@Override
 	public StreamOperator <?> transform(StreamOperator <?> input) {
 		BatchOperator <?> model = this.getModelData();
-		return new ModelMapStreamOp <>(model, this.mapperBuilder,
-			this.params).linkFrom(input);
+		return new ModelMapStreamOp <>(model, this.mapperBuilder, this.params).linkFrom(input);
+	}
+
+	@Override
+	public LocalOperator <?> transform(LocalOperator <?> input) {
+		return postProcessTransformResult(
+			new ModelMapLocalOp <>(this.mapperBuilder, this.params)
+				.linkFrom(this.getModelDataLocal(), input)
+		);
 	}
 
 	@Override

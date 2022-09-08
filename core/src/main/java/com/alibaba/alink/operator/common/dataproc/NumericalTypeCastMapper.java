@@ -5,11 +5,9 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.mapper.Mapper;
-import com.alibaba.alink.common.utils.OutputColsHelper;
-import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.dataproc.NumericalTypeCastParams;
 
@@ -115,7 +113,7 @@ public class NumericalTypeCastMapper extends Mapper {
 				}
 			};
 		} else {
-			throw new RuntimeException("Unsupported target type:" + targetType.getTypeClass().getCanonicalName());
+			throw new AkIllegalDataException("Unsupported target type:" + targetType.getTypeClass().getCanonicalName());
 		}
 	}
 }

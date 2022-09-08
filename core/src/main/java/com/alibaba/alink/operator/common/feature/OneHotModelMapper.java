@@ -6,8 +6,10 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.Functional;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -56,7 +58,7 @@ public class OneHotModelMapper extends ModelMapper {
 		 */
 		ENABLE_ELSE_ERROR(maxIdx -> maxIdx + 2, (val, vectorSize) -> {
 			if (val == null) {
-				throw new RuntimeException("Input is null!");
+				throw new AkUnclassifiedErrorException("Input is null!");
 			} else {
 				return vectorSize - 1;
 			}
@@ -85,7 +87,7 @@ public class OneHotModelMapper extends ModelMapper {
 		 * exception.
 		 */
 		DISABLE_ELSE_ERROR(maxIdx -> maxIdx + 1, (val, vectorSize) -> {
-			throw new RuntimeException("Unseen token: " + val);
+			throw new AkUnclassifiedErrorException("Unseen token: " + val);
 		});
 
 		final Functional.SerializableFunction <Long, Long> getVectorSizeFunc;
@@ -128,7 +130,7 @@ public class OneHotModelMapper extends ModelMapper {
 						return DISABLE_ELSE_ERROR;
 					}
 				default: {
-					throw new IllegalArgumentException("Invalid handle invalid strategy.");
+					throw new AkUnsupportedOperationException("Invalid handle invalid strategy.");
 				}
 			}
 		}
@@ -185,7 +187,7 @@ public class OneHotModelMapper extends ModelMapper {
 			Map <String, Long> mapper = new HashMap <>();
 			int colIdxInModel = selectedColIndicesInModel[i];
 
-			Preconditions.checkArgument(colIdxInModel >= 0, "Can not find %s in model!",
+			AkPreconditions.checkArgument(colIdxInModel >= 0, "Can not find %s in model!",
 				mapperBuilder.getSelectedCols()[i]);
 			for (Tuple3 <Integer, String, Long> record : model.modelData.tokenAndIndex) {
 				if (record.f0 == colIdxInModel) {
@@ -196,7 +198,7 @@ public class OneHotModelMapper extends ModelMapper {
 			}
 			mapperBuilder.updateIndexMapper(i, mapper);
 			Long maxIdx = mapper.values().stream().distinct().count() - 1;
-			mapper.values().forEach(index -> Preconditions
+			mapper.values().forEach(index -> AkPreconditions
 				.checkArgument(index >= 0 && index <= maxIdx, "Index must be continuous!"));
 			mapperBuilder.updateMaxIdx(i, maxIdx);
 		}
@@ -238,7 +240,7 @@ public class OneHotModelMapper extends ModelMapper {
 			selectedColIndicesInData = new int[paramsBuilder.selectedCols.length];
 			for (int i = 0; i < paramsBuilder.selectedCols.length; i++) {
 				selectedColIndicesInData[i] = TableUtil.findColIndex(tableSchema, paramsBuilder.selectedCols[i]);
-				Preconditions.checkArgument(selectedColIndicesInData[i] >= 0, "Can not find %s in data",
+				AkPreconditions.checkArgument(selectedColIndicesInData[i] >= 0, "Can not find %s in data",
 					paramsBuilder.selectedCols[i]);
 			}
 		}

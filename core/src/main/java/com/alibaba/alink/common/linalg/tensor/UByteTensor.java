@@ -1,7 +1,5 @@
 package com.alibaba.alink.common.linalg.tensor;
 
-import org.apache.flink.util.Preconditions;
-
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import org.tensorflow.ndarray.ByteNdArray;
 import org.tensorflow.ndarray.NdArrays;

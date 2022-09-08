@@ -1,7 +1,8 @@
-from .bases.j_obj_wrapper import JavaObjectWrapperWithAutoTypeConversion
+from .bases.j_obj_wrapper import JavaObjectWrapperWithAutoTypeConversion, JavaObjectWrapper
 
 __all__ = ['TableSummary', 'SparseVectorSummary', 'DenseVectorSummary',
-           'CorrelationResult', 'ChiSquareTestResult', 'ChiSquareTestResults']
+           'CorrelationResult', 'ChiSquareTestResult', 'ChiSquareTestResults',
+           'FullStats']
 
 
 class BaseSummary(JavaObjectWrapperWithAutoTypeConversion):
@@ -202,3 +203,27 @@ class ChiSquareTestResults(JavaObjectWrapperWithAutoTypeConversion):
 
     def getResult(self, colName: str):
         return self.getResult(colName)
+
+
+class FullStats(JavaObjectWrapper):
+    _j_cls_name = 'com.alibaba.alink.operator.common.statistics.statistics.FullStats'
+
+    def __init__(self, j_obj):
+        self._j_obj = j_obj
+
+    def get_j_obj(self):
+        return self._j_obj
+
+    def getDatasetFeatureStatisticsList(self):
+        j_proto_value = self.get_j_obj().getDatasetFeatureStatisticsList()
+        try:
+            # If package `tensorflow_metadata` is installed, return Python version, otherwise return Java version.
+            from tensorflow_metadata.proto import statistics_pb2
+            buffer = j_proto_value.toByteArray()
+            py_proto_value = statistics_pb2.DatasetFeatureStatisticsList()
+            py_proto_value.ParseFromString(buffer)
+            return py_proto_value
+        except ImportError:
+            return j_proto_value
+        except Exception as e:
+            raise e

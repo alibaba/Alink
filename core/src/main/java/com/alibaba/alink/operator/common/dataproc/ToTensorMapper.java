@@ -4,13 +4,15 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.tensor.DataType;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
 import com.alibaba.alink.common.linalg.tensor.StringTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.common.mapper.SISOMapper;
 import com.alibaba.alink.params.dataproc.ToTensorParams;
@@ -59,7 +61,7 @@ public class ToTensorMapper extends SISOMapper {
 					case SKIP:
 						break;
 					default:
-						throw new UnsupportedOperationException();
+						throw new AkUnsupportedOperationException("Not support exception. ");
 				}
 			}
 		}
@@ -93,14 +95,14 @@ public class ToTensorMapper extends SISOMapper {
 		if (!(tensor.getType().equals(targetDataType))) {
 			switch (handleInvalidMethod) {
 				case ERROR:
-					throw new IllegalArgumentException(
+					throw new AkIllegalOperatorParameterException(
 						String.format("Could not convert tensor %s to tensor type %s", tensor, targetDataType)
 					);
 				case SKIP:
 					tensor = null;
 					break;
 				default:
-					throw new UnsupportedOperationException();
+					throw new AkUnsupportedOperationException("Not support exception. ");
 			}
 		}
 
@@ -145,7 +147,7 @@ public class ToTensorMapper extends SISOMapper {
 			case BYTE:
 				return AlinkTypes.BYTE_TENSOR;
 			default:
-				throw new IllegalArgumentException("Unsupported tensor data type: " + targetDataType);
+				throw new AkUnsupportedOperationException("Unsupported tensor data type: " + targetDataType);
 		}
 	}
 }

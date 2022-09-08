@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.io.plugin;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+
 import static com.alibaba.alink.common.io.plugin.OsType.LINUX;
 
 public class OsUtils {
@@ -12,7 +14,7 @@ public class OsUtils {
 		} else if (p.contains("windows")) {
 			return OsType.WINDOWS;
 		} else {
-			throw new UnsupportedOperationException("Unsupported operating system: " + p);
+			throw new AkUnsupportedOperationException("Unsupported operating system: " + p);
 		}
 	}
 }

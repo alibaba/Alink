@@ -4,7 +4,9 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -78,27 +80,27 @@ public class TableUtilTest extends AlinkTestBase {
 
 	@Test
 	public void assertColExistOrTypeExceptionTest() {
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkColumnNotFoundException.class);
 		thrown.expectMessage("Can not find column: f3");
 		TableUtil.assertSelectedColExist(colNames, "f3");
 
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkColumnNotFoundException.class);
 		thrown.expectMessage("Can not find column: f3");
 		TableUtil.assertSelectedColExist(colNames, "f0", "f3");
 
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalOperatorParameterException.class);
 		thrown.expectMessage("col type must be number f2");
 		TableUtil.assertNumericalCols(tableSchema, "f2");
 
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalOperatorParameterException.class);
 		thrown.expectMessage("col type must be number f2");
 		TableUtil.assertNumericalCols(tableSchema, "f2", "f0");
 
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalOperatorParameterException.class);
 		thrown.expectMessage("col type must be string f2");
 		TableUtil.assertStringCols(tableSchema, "f2");
 
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkIllegalOperatorParameterException.class);
 		thrown.expectMessage("col type must be string f0");
 		TableUtil.assertStringCols(tableSchema, "f0", "f3");
 	}
@@ -133,7 +135,7 @@ public class TableUtilTest extends AlinkTestBase {
 
 	@Test
 	public void findColIndexWithAssertAndHintTest() {
-		thrown.expect(IllegalArgumentException.class);
+		thrown.expect(AkColumnNotFoundException.class);
 		thrown.expectMessage("Can not find column: features, do you mean: feature ?");
 
 		String[] colNames = new String[] {"id", "text", "vector", "feature"};

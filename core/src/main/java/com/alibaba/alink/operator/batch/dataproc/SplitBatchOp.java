@@ -19,8 +19,10 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -65,7 +67,7 @@ public final class SplitBatchOp extends BatchOperator <SplitBatchOp>
 		BatchOperator <?> in = checkAndGetFirst(inputs);
 		final double fraction = getFraction();
 		if (fraction < 0. || fraction > 1.0) {
-			throw new RuntimeException("invalid fraction " + fraction);
+			throw new AkIllegalOperatorParameterException("invalid fraction " + fraction);
 		}
 
 		DataSet <Row> rows = in.getDataSet();
@@ -356,7 +358,7 @@ public final class SplitBatchOp extends BatchOperator <SplitBatchOp>
 					}
 					pre = t;
 				} else if (pre.f0 > t.f0) {
-					throw new RuntimeException("Order error!");
+					throw new AkUnclassifiedErrorException("Order error!");
 				} else {
 					if (cnt - 1 == curValue) {
 						out.collect(Tuple2.of(true, t.f1));

@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.operator.batch.BatchOperator;
 
@@ -74,7 +75,7 @@ public class DirectReader implements Serializable {
 			}
 		}
 
-		throw new IllegalArgumentException("Can not find the policy: " + policy);
+		throw new AkIllegalArgumentException("Can not find the policy: " + policy);
 	}
 
 	/**
@@ -139,7 +140,7 @@ public class DirectReader implements Serializable {
 
 			return params;
 		} else {
-			throw new RuntimeException("Error properties. it has not policy key");
+			throw new AkIllegalArgumentException("Error properties. it has not policy key");
 		}
 	}
 

@@ -4,8 +4,8 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper.DiscreteMapperBuilder;
@@ -43,7 +43,7 @@ public class BucketizerMapper extends Mapper {
 			}
 		}
 
-		Preconditions.checkArgument(mapperBuilder.paramsBuilder.selectedCols.length == cutsArray.length,
+		AkPreconditions.checkArgument(mapperBuilder.paramsBuilder.selectedCols.length == cutsArray.length,
 			"The lengths of selectedCols and cusArray are not equal!");
 
 		for (int i = 0; i < mapperBuilder.paramsBuilder.selectedCols.length; i++) {

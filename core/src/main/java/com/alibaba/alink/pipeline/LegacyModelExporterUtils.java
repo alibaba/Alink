@@ -10,10 +10,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
@@ -62,10 +63,10 @@ public class LegacyModelExporterUtils {
 		String configStr;
 		try {
 			List <Row> rows = batchOp.as(new String[] {"f1", "f2"}).where("f1=-1").collect();
-			Preconditions.checkArgument(rows.size() == 1, "Invalid stages.");
+			AkPreconditions.checkArgument(rows.size() == 1, "Invalid stages.");
 			configStr = (String) rows.get(0).getField(1);
 		} catch (Exception e) {
-			throw new RuntimeException("Fail to collect stages config.", e);
+			throw new AkIllegalArgumentException("Fail to collect stages config.", e);
 		}
 		return configStr;
 	}
@@ -236,7 +237,7 @@ public class LegacyModelExporterUtils {
 				rowCollector.close();
 			}
 
-			Preconditions.checkState(meta != null,
+			AkPreconditions.checkState(meta != null,
 				"Could not find the meta row in the file: " + filePath.getPathStr());
 		} catch (Exception e) {
 			throw new IllegalArgumentException(e);

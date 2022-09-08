@@ -12,7 +12,7 @@ import com.alibaba.alink.params.similarity.StringTextApproxNearestNeighborTrainP
  */
 @NameCn("文本近似最近邻训练")
 public class TextApproxNearestNeighborTrainBatchOp
-	extends BaseNearestNeighborTrainBatchOp<TextApproxNearestNeighborTrainBatchOp>
+	extends BaseNearestNeighborTrainBatchOp <TextApproxNearestNeighborTrainBatchOp>
 	implements StringTextApproxNearestNeighborTrainParams <TextApproxNearestNeighborTrainBatchOp> {
 
 	private static final long serialVersionUID = 7849910987059476012L;

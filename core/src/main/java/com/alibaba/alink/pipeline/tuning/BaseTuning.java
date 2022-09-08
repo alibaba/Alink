@@ -15,10 +15,11 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.ExceptionUtils;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
@@ -89,7 +90,7 @@ public abstract class BaseTuning<T extends BaseTuning <T, M>, M extends BaseTuni
 
 	@Override
 	public M fit(StreamOperator <?> input) {
-		throw new UnsupportedOperationException("Tuning on stream not supported.");
+		throw new AkUnsupportedOperationException("Tuning on stream not supported.");
 	}
 
 	private M createModel(TransformerBase transformer) {
@@ -225,7 +226,7 @@ public abstract class BaseTuning<T extends BaseTuning <T, M>, M extends BaseTuni
 	}
 
 	protected Tuple2 <Pipeline, Report> findBestCV(BatchOperator <?> in, int k, PipelineCandidatesBase candidates) {
-		Preconditions.checkArgument(k > 1, "numFolds could be greater than 1.");
+		AkPreconditions.checkArgument(k > 1, "numFolds could be greater than 1.");
 		DataSet <Tuple2 <Integer, Row>> splitData = split(in, k);
 
 		int nIter = candidates.size();

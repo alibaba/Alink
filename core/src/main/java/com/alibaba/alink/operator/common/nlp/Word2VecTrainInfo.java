@@ -4,8 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import com.alibaba.alink.params.nlp.Word2VecTrainParams;
 
@@ -25,7 +25,7 @@ public class Word2VecTrainInfo implements Serializable {
 	private Params params;
 
 	public Word2VecTrainInfo(List <Row> rows) {
-		Preconditions.checkArgument(
+		AkPreconditions.checkArgument(
 			rows != null && rows.size() == 1 && rows.get(0) != null && rows.get(0).getArity() == 1,
 			"Invalid word2vec model summary."
 		);

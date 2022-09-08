@@ -7,8 +7,8 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.Propert
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.feature.binning.FeatureBinsUtil;
 
 import java.io.IOException;
@@ -69,7 +69,7 @@ public class ContinuousRanges implements Serializable {
 							Boolean isLeftOpen) {
 		this.featureName = featureName;
 		this.featureType = FeatureBinsUtil.getTypeString(type);
-		Preconditions.checkNotNull(isLeftOpen);
+		AkPreconditions.checkNotNull(isLeftOpen);
 		if (splitsArray == null) {
 			splitsArray = new Number[0];
 		}
