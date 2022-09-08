@@ -13,9 +13,10 @@ import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.sink.LibSvmSinkBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.LibSvmSinkParams;
+
+import static com.alibaba.alink.operator.local.sink.LibSvmSinkLocalOp.formatLibSvm;
 
 /**
  * StreamOperator to sink data in libsvm format.
@@ -36,7 +37,7 @@ public final class LibSvmSinkStreamOp extends BaseSinkStreamOp <LibSvmSinkStream
 	}
 
 	@Override
-	public LibSvmSinkStreamOp sinkFrom(StreamOperator<?> in) {
+	public LibSvmSinkStreamOp sinkFrom(StreamOperator <?> in) {
 		final String vectorCol = getVectorCol();
 		final String labelCol = getLabelCol();
 
@@ -50,12 +51,12 @@ public final class LibSvmSinkStreamOp extends BaseSinkStreamOp <LibSvmSinkStream
 
 				@Override
 				public Row map(Row value) throws Exception {
-					return Row.of(LibSvmSinkBatchOp
-						.formatLibSvm(value.getField(labelColIdx), value.getField(vectorColIdx), startIndex));
+					return Row.of(
+						formatLibSvm(value.getField(labelColIdx), value.getField(vectorColIdx), startIndex));
 				}
 			});
 
-		StreamOperator<?> outputStreamOp = StreamOperator.fromTable(
+		StreamOperator <?> outputStreamOp = StreamOperator.fromTable(
 			DataStreamConversionUtil
 				.toTable(getMLEnvironmentId(), outputRows, new String[] {"f"}, new TypeInformation[] {Types.STRING})
 		).setMLEnvironmentId(getMLEnvironmentId());

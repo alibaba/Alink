@@ -2,7 +2,8 @@ package com.alibaba.alink.operator.common.feature.binning;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -107,8 +108,8 @@ public class FeatureBinsCalculator implements Serializable {
 		calculator.featureName = featureName;
 		calculator.featureType = FeatureBinsUtil.getTypeString(type);
 		calculator.colType = FeatureBinsUtil.featureTypeToColType(calculator.featureType, binDivideType);
-		calculator.isLeftOpen = Preconditions.checkNotNull(isLeftOpen);
-		Preconditions.checkNotNull(splitsArray);
+		calculator.isLeftOpen = AkPreconditions.checkNotNull(isLeftOpen);
+		AkPreconditions.checkNotNull(splitsArray);
 		Tuple2 <Bins, Number[]> t = FeatureBinsUtil.createNumericBin(splitsArray);
 		calculator.bin = t.f0;
 		calculator.splitsArray = t.f1;
@@ -128,7 +129,7 @@ public class FeatureBinsCalculator implements Serializable {
 	}
 
 	public int getBinCount() {
-		Preconditions.checkNotNull(binCount, "BinCount is not set!");
+		AkPreconditions.checkNotNull(binCount, "BinCount is not set!");
 		return binCount;
 	}
 
@@ -219,9 +220,9 @@ public class FeatureBinsCalculator implements Serializable {
 	}
 
 	private void checkBeforeSetTotal(Map <Long, Long> indexTotalMap) {
-		Preconditions.checkState(indexTotalMap.size() > 0, "Total is not set!");
+		AkPreconditions.checkState(indexTotalMap.size() > 0, "Total is not set!");
 		indexTotalMap.keySet().forEach(
-			index -> Preconditions.checkArgument(index >= 0 && index < FeatureBinsUtil.getBinEncodeVectorSize(this),
+			index -> AkPreconditions.checkArgument(index >= 0 && index < FeatureBinsUtil.getBinEncodeVectorSize(this),
 				"Predict Index greater than binCounts, featureName: " + featureName + "; index: " + index
 					+ "; BinCounts: " + FeatureBinsUtil.getBinEncodeVectorSize(this)));
 		this.checkIndex();
@@ -231,7 +232,7 @@ public class FeatureBinsCalculator implements Serializable {
 	 * SplitsArray must be strictly increasing and have no duplicate values.
 	 */
 	void checkSplitsArray() {
-		Preconditions.checkNotNull(isLeftOpen, "LeftOpen is undefined");
+		AkPreconditions.checkNotNull(isLeftOpen, "LeftOpen is undefined");
 		if (null == splitsArray) {
 			splitsArray = new Number[0];
 		}
@@ -241,10 +242,10 @@ public class FeatureBinsCalculator implements Serializable {
 			this.splitsArray = t.f1;
 		} else {
 			for (int i = 1; i < splitsArray.length; i++) {
-				Preconditions.checkArgument(FeatureBinsUtil.compareNumbers(splitsArray[i], splitsArray[i - 1]) > 0,
+				AkPreconditions.checkArgument(FeatureBinsUtil.compareNumbers(splitsArray[i], splitsArray[i - 1]) > 0,
 					"SplitsArray must be strictly increasing!");
 			}
-			Preconditions.checkArgument(splitsArray.length + 1 == this.bin.normBins.size());
+			AkPreconditions.checkArgument(splitsArray.length + 1 == this.bin.normBins.size());
 		}
 	}
 
@@ -252,25 +253,25 @@ public class FeatureBinsCalculator implements Serializable {
 	 * NormBins could be empty but could not be null, and each BaseBin must contain at least one value.
 	 */
 	void checkDiscreteNormBins() {
-		Preconditions.checkNotNull(bin.normBins, "NormBins could not be NULL!");
+		AkPreconditions.checkNotNull(bin.normBins, "NormBins could not be NULL!");
 		for (Bins.BaseBin baseBin : bin.normBins) {
-			Preconditions.checkNotNull(baseBin.values, "Border Array is NULL!");
-			Preconditions.checkState(baseBin.values.size() > 0,
+			AkPreconditions.checkNotNull(baseBin.values, "Border Array is NULL!");
+			AkPreconditions.checkState(baseBin.values.size() > 0,
 				"DiscreteIntervalValuesError, size:%s", baseBin.values.size());
 		}
 	}
 
 	private void checkIndex() {
 		HashSet <Long> list = new HashSet <>();
-		Preconditions.checkNotNull(bin, "Bin is empty!");
-		Preconditions.checkNotNull(bin.normBins, "NormBinArray could not be NULL!");
+		AkPreconditions.checkNotNull(bin, "Bin is empty!");
+		AkPreconditions.checkNotNull(bin.normBins, "NormBinArray could not be NULL!");
 		//extract norm bins
 		for (Bins.BaseBin normBin : bin.normBins) {
-			Preconditions.checkArgument(normBin.index >= 0 && normBin.index < bin.normBins.size(),
+			AkPreconditions.checkArgument(normBin.index >= 0 && normBin.index < bin.normBins.size(),
 				"Index must be continuous, current index:", normBin.index + "; Norm bin size:" + bin.normBins.size());
 			list.add(normBin.index);
 		}
-		Preconditions.checkArgument(list.size() == bin.normBins.size());
+		AkPreconditions.checkArgument(list.size() == bin.normBins.size());
 		if (null != bin.nullBin) {
 			bin.nullBin.index = FeatureBinsUtil.nullIndex(bin.normBins.size());
 		} else {
@@ -352,11 +353,11 @@ public class FeatureBinsCalculator implements Serializable {
 			return;
 		}
 		int size = splitsArray.length;
-		Preconditions.checkState(size + 1 == bin.normBins.size(),
+		AkPreconditions.checkState(size + 1 == bin.normBins.size(),
 			"Norm Bin size not equal to the size of splitsArray length + 1");
 		String[] intervals = FeatureBinsUtil.cutsArrayToInterval(splitsArray, getLeftOpen());
 		List <Bins.BaseBin> list = bin.normBins;
-		Preconditions.checkState(intervals.length == list.size(), "Interval length not equal to the size of "
+		AkPreconditions.checkState(intervals.length == list.size(), "Interval length not equal to the size of "
 			+ "normBins!");
 		for (int i = 0; i < list.size(); i++) {
 			list.get(i).values = Collections.singletonList(intervals[i]);

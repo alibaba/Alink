@@ -19,15 +19,21 @@ import org.apache.flink.util.function.TriFunction;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamsIgnoredOnWebUI;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.IterableModelLoader;
 import com.alibaba.alink.common.mapper.IterableModelLoaderModelMapperAdapter;
 import com.alibaba.alink.common.mapper.IterableModelLoaderModelMapperAdapterMT;
+import com.alibaba.alink.common.mapper.ModelBunchMapperAdapter;
+import com.alibaba.alink.common.mapper.ModelBunchMapperAdapterMT;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.ModelMapperAdapter;
 import com.alibaba.alink.common.mapper.ModelMapperAdapterMT;
@@ -38,6 +44,7 @@ import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
 import com.alibaba.alink.params.mapper.ModelMapperParams;
 import com.alibaba.alink.params.shared.HasModelFilePath;
+import com.alibaba.alink.params.shared.HasPredictBatchSize;
 
 import java.util.List;
 
@@ -50,8 +57,9 @@ import java.util.List;
 })
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @ReservedColsWithSecondInputSpec
+@ParamsIgnoredOnWebUI(names = "modelFilePath")
 @Internal
-public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperator <T> implements HasModelFilePath<T> {
+public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperator <T> implements HasModelFilePath <T> {
 
 	private static final String BROADCAST_MODEL_TABLE_NAME = "broadcastModelTable";
 	private static final long serialVersionUID = 3479332090254995273L;
@@ -69,17 +77,17 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 
 	@Override
 	public T linkFrom(BatchOperator <?>... inputs) {
-		checkOpSize(2, inputs);
+		checkMinOpSize(1, inputs);
 
-		BatchOperator<?> model = inputs[0];
-		BatchOperator<?> input = inputs[1];
+		BatchOperator <?> model = inputs.length == 2 ? inputs[0] : null;
+		BatchOperator <?> input = inputs.length == 2 ? inputs[1] : inputs[0];
 
 		if (model == null && getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
 			model = new AkSourceBatchOp()
 				.setFilePath(FilePath.deserialize(getParams().get(HasModelFilePath.MODEL_FILE_PATH)))
 				.setMLEnvironmentId(getMLEnvironmentId());
 		} else if (model == null) {
-			throw new IllegalArgumentException("One of model or modelFilePath should be set.");
+			throw new AkIllegalOperatorParameterException("One of model or modelFilePath should be set.");
 		}
 
 		try {
@@ -94,8 +102,10 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 			TableSchema outputSchema = mapper.getOutputSchema();
 			setOutput(resultRows, outputSchema);
 			return (T) this;
+		} catch (ExceptionWithErrorCode ex) {
+			throw ex;
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException("Error. ", ex);
 		}
 	}
 
@@ -188,6 +198,25 @@ public class ModelMapBatchOp<T extends ModelMapBatchOp <T>> extends BatchOperato
 						}
 					})
 					.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
+			} else if (params.get(HasPredictBatchSize.PREDICT_BATCH_SIZE) != null) {
+				final int batchSize = params.get(HasPredictBatchSize.PREDICT_BATCH_SIZE);
+				if (batchSize <= 0) {
+					throw new AkIllegalOperatorParameterException("batch size must larger than 0.");
+				}
+				if (params.get(ModelMapperParams.NUM_THREADS) <= 1) {
+					return input_data
+						.getDataSet()
+						.mapPartition(new ModelBunchMapperAdapter(mapper, modelSource, batchSize))
+						.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
+				} else {
+					return input_data
+						.getDataSet()
+						.mapPartition(
+							new ModelBunchMapperAdapterMT(mapper, modelSource,
+								params.get(ModelMapperParams.NUM_THREADS), batchSize)
+						)
+						.withBroadcastSet(modelRows, BROADCAST_MODEL_TABLE_NAME);
+				}
 			} else if (params.get(ModelMapperParams.NUM_THREADS) <= 1) {
 				return input_data
 					.getDataSet()

@@ -22,6 +22,7 @@ import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.dl.data.DataTypesV2;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.flink.ml.coding.CodingException;
@@ -212,7 +213,7 @@ public class ExampleCodingConfigV2 implements Serializable {
 		Set <String> uniqueItems = new HashSet <>();
 		List <?> duplicates = names.stream().filter(o -> !uniqueItems.add(o)).collect(Collectors.toList());
 		if (!duplicates.isEmpty()) {
-			throw new IllegalArgumentException("Found duplicated column name(s): " + Joiner.on(", ").join(duplicates));
+			throw new AkIllegalArgumentException("Found duplicated column name(s): " + Joiner.on(", ").join(duplicates));
 		}
 	}
 }

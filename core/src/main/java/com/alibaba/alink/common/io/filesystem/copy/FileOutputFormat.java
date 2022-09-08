@@ -30,6 +30,7 @@ import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FileSystemUtils;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
@@ -205,7 +206,7 @@ public abstract class FileOutputFormat<IT> extends RichOutputFormat <IT>
 			try {
 				this.outputFilePath = new Path(filePath);
 			} catch (RuntimeException rex) {
-				throw new RuntimeException(
+				throw new AkUnclassifiedErrorException(
 					"Could not create a valid URI from the given file path name: " + rex.getMessage());
 			}
 		}

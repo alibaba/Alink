@@ -4,7 +4,6 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -12,6 +11,8 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 
@@ -40,13 +41,13 @@ public final class TableSourceStreamOp extends StreamOperator <TableSourceStream
 
 	public TableSourceStreamOp(Table table) {
 		super(null);
-		Preconditions.checkArgument(table != null, "The source table cannot be null.");
+		AkPreconditions.checkArgument(table != null, "The source table cannot be null.");
 		this.setOutputTable(table);
 	}
 
 	@Override
 	public TableSourceStreamOp linkFrom(StreamOperator <?>... inputs) {
-		throw new UnsupportedOperationException("Table source operator should not have any upstream to link from.");
+		throw new AkUnsupportedOperationException("Table source operator should not have any upstream to link from.");
 	}
 
 }

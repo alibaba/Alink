@@ -2,7 +2,6 @@ package com.alibaba.alink.operator.stream.source;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.io.RichInputFormat;
-import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.core.fs.FileInputSplit;
@@ -20,13 +19,12 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils.FileProcFunction;
+import com.alibaba.alink.common.io.filesystem.AkUtils2;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.parquet.ParquetClassLoaderFactory;
 import com.alibaba.alink.common.io.parquet.ParquetReaderFactory;
 import com.alibaba.alink.common.io.plugin.wrapper.RichInputFormatGenericWithClassLoader;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.ParquetSourceParams;
 
@@ -69,7 +67,7 @@ public class ParquetSourceStreamOp extends BaseSourceStreamOp <ParquetSourceStre
 		StreamOperator <?> selected;
 		TableSchema schema;
 		try {
-			selected = AkUtils.selectPartitionStreamOp(getMLEnvironmentId(), filePath, getPartitions());
+			selected = AkUtils2.selectPartitionStreamOp(getMLEnvironmentId(), filePath, getPartitions());
 		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}

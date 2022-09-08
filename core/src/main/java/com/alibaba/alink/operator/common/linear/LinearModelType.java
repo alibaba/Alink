@@ -14,6 +14,8 @@ public enum LinearModelType {
 	// Support vector machine
 	Perceptron,
 	// Perceptron
-	AFT
+	AFT,
 	// Survival regression
+	Softmax
+	//Softmax classification
 }

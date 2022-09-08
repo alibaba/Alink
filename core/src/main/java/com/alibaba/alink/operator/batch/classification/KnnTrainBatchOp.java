@@ -1,7 +1,6 @@
 package com.alibaba.alink.operator.batch.classification;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -11,6 +10,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorAssemblerBatchOp;
 import com.alibaba.alink.operator.batch.similarity.VectorNearestNeighborTrainBatchOp;
@@ -42,7 +42,7 @@ public final class KnnTrainBatchOp extends BatchOperator <KnnTrainBatchOp>
 
 	@Override
 	public KnnTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
-		Preconditions.checkArgument(getFeatureCols() == null ^ getVectorCol() == null,
+		AkPreconditions.checkArgument(getFeatureCols() == null ^ getVectorCol() == null,
 			"Must either set featureCols or vectorCol!");
 		BatchOperator in = checkAndGetFirst(inputs);
 		if (null != getFeatureCols()) {

@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.linear;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.MatVecOp;
@@ -103,7 +104,7 @@ public class UnaryLossObjFunc extends OptimObjFunc {
 				}
 			}
 		} else {
-			throw new UnsupportedOperationException("not support sparse Hessian matrix computing.");
+			throw new AkUnsupportedOperationException("not support sparse Hessian matrix computing.");
 		}
 	}
 

@@ -28,6 +28,8 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -302,7 +304,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 		BatchOperator <?> in = checkAndGetFirst(inputs);
 		if (getParams().contains(QuantileDiscretizerTrainParams.NUM_BUCKETS) && getParams().contains(
 			QuantileDiscretizerTrainParams.NUM_BUCKETS_ARRAY)) {
-			throw new RuntimeException("It can not set num_buckets and num_buckets_array at the same time.");
+			throw new AkIllegalOperatorParameterException("It can not set num_buckets and num_buckets_array at the same time.");
 		}
 
 		String[] quantileColNames =
@@ -434,7 +436,7 @@ public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <Quanti
 				}
 
 				if (curId > taskId) {
-					throw new RuntimeException("Error curId: " + curId
+					throw new AkUnclassifiedErrorException("Error curId: " + curId
 						+ ". id: " + taskId);
 				}
 

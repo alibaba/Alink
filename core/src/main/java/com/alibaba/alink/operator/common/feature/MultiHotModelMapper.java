@@ -8,9 +8,9 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.ModelMapper;
-
 import com.alibaba.alink.params.dataproc.HasHandleInvalid.HandleInvalid;
 import com.alibaba.alink.params.feature.HasEncodeWithoutWoeAndIndex.Encode;
 import com.alibaba.alink.params.feature.MultiHotPredictParams;
@@ -110,7 +110,7 @@ public class MultiHotModelMapper extends ModelMapper {
 						case SKIP:
 							continue;
 						case ERROR:
-							throw new RuntimeException("multi hot encoder err, key is not exist.");
+							throw new AkIllegalModelException("multi hot encoder err, key is not exist.");
 					}
 				}
 			}

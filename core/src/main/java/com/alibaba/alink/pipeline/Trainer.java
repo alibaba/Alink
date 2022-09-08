@@ -2,7 +2,11 @@ package com.alibaba.alink.pipeline;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.LocalMLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo;
@@ -10,6 +14,8 @@ import com.alibaba.alink.common.lazy.LazyObjectsManager;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.lazy.LocalLazyObjectsManager;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.ModelStreamScanParams;
 
@@ -52,6 +58,14 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends MapModel <M>>
 		return postProcessModel(model);
 	}
 
+	@Override
+	public M fit(LocalOperator <?> input) {
+		LocalOperator <?> trainer = postProcessTrainOp(train(input));
+		M model = createModel(trainer);
+		checkModelValidity(model, input);
+		return postProcessModel(model);
+	}
+
 	protected BatchOperator <?> postProcessTrainOp(BatchOperator <?> trainOp) {
 		LazyObjectsManager lazyObjectsManager = MLEnvironmentFactory.get(trainOp.getMLEnvironmentId())
 			.getLazyObjectsManager();
@@ -69,9 +83,31 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends MapModel <M>>
 		return trainOp;
 	}
 
+	protected LocalOperator <?> postProcessTrainOp(LocalOperator <?> trainOp) {
+		LocalLazyObjectsManager lazyObjectsManager = LocalMLEnvironment.getInstance().getLazyObjectsManager();
+		lazyObjectsManager.genLazyTrainOp(this).addValue(trainOp);
+		if (this instanceof HasLazyPrintTrainInfo) {
+			if (get(LAZY_PRINT_TRAIN_INFO_ENABLED)) {
+				((WithTrainInfo <?, ?>) trainOp).lazyPrintTrainInfo(get(LAZY_PRINT_TRAIN_INFO_TITLE));
+			}
+		}
+		if (this instanceof HasLazyPrintModelInfo) {
+			if (get(LAZY_PRINT_MODEL_INFO_ENABLED)) {
+				((WithModelInfoBatchOp <?, ?, ?>) trainOp).lazyPrintModelInfo(get(LAZY_PRINT_MODEL_INFO_TITLE));
+			}
+		}
+		return trainOp;
+	}
+
 	protected void checkModelValidity(M model, BatchOperator <?> input) {
 		if (model instanceof MapModel) {
 			((MapModel <?>) model).validate(model.getModelData().getSchema(), input.getSchema());
+		}
+	}
+
+	protected void checkModelValidity(M model, LocalOperator <?> input) {
+		if (model instanceof MapModel) {
+			((MapModel <?>) model).validate(model.getModelDataLocal().getSchema(), input.getSchema());
 		}
 	}
 
@@ -94,7 +130,7 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends MapModel <M>>
 
 	@Override
 	public M fit(StreamOperator <?> input) {
-		throw new UnsupportedOperationException("Only support batch fit!");
+		throw new AkUnsupportedOperationException("Only support batch fit!");
 	}
 
 	private M createModel(BatchOperator <?> model) {
@@ -108,15 +144,38 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends MapModel <M>>
 				.newInstance(getParams())
 				.setModelData(model);
 
+		} catch (ExceptionWithErrorCode ex) {
+			throw ex;
 		} catch (Exception ex) {
-			throw new RuntimeException(ex.toString());
+			throw new AkUnclassifiedErrorException("Error. ", ex);
+		}
+	}
+
+	private M createModel(LocalOperator <?> model) {
+		try {
+			ParameterizedType pt =
+				(ParameterizedType) this.getClass().getGenericSuperclass();
+
+			Class <M> classM = (Class <M>) pt.getActualTypeArguments()[1];
+
+			return (M) classM.getConstructor(Params.class)
+				.newInstance(getParams())
+				.setModelData(model);
+
+		} catch (ExceptionWithErrorCode ex) {
+			throw ex;
+		} catch (Exception ex) {
+			throw new AkUnclassifiedErrorException("Error. ", ex);
 		}
 	}
 
 	protected abstract BatchOperator <?> train(BatchOperator <?> in);
 
 	protected StreamOperator <?> train(StreamOperator <?> in) {
-		throw new UnsupportedOperationException("Only support batch fit!");
+		throw new AkUnsupportedOperationException("Only support batch fit!");
 	}
 
+	protected LocalOperator <?> train(LocalOperator <?> in) {
+		throw new AkUnsupportedOperationException("Not supported yet!");
+	}
 }

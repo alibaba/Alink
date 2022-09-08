@@ -4,6 +4,7 @@ import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,7 +28,7 @@ public class ResourcesPluginManagerTest extends AlinkTestBase {
 		File resourceFolder = folder.newFolder("resources");
 
 		if (!new File(resourceFolder, "a-0.1").mkdirs()) {
-			throw new RuntimeException();
+			throw new AkUnclassifiedErrorException("failed to create directory");
 		}
 	}
 

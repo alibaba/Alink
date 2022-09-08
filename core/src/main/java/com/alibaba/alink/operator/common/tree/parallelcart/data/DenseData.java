@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.tree.parallelcart.data;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.common.tree.FeatureMeta;
 import com.alibaba.alink.operator.common.tree.Node;
 import com.alibaba.alink.operator.common.tree.Preprocessing;
@@ -637,7 +638,7 @@ public final class DenseData implements Data {
 			try {
 				future.get();
 			} catch (Exception ex) {
-				throw new RuntimeException(ex);
+				throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 			}
 		}
 	}
@@ -709,7 +710,7 @@ public final class DenseData implements Data {
 			try {
 				future.get();
 			} catch (Exception ex) {
-				throw new RuntimeException(ex);
+				throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 			}
 		}
 	}

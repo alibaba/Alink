@@ -4,6 +4,9 @@ import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import com.alibaba.alink.params.io.FlinkFileSystemParams;
 
@@ -24,7 +27,7 @@ public class FlinkFileSystem extends BaseFileSystem <FlinkFileSystem> {
 
 	@Override
 	public String getSchema() {
-		throw new RuntimeException("Could not get the schema in flink file system.");
+		throw new AkUnsupportedOperationException("Could not get the schema in flink file system.");
 	}
 
 	@Override
@@ -34,11 +37,11 @@ public class FlinkFileSystem extends BaseFileSystem <FlinkFileSystem> {
 				return FileSystem.get(new Path(getParams().get(FlinkFileSystemParams.FS_URI)).toUri());
 			} else if (path != null) {
 				return FileSystem.get(path.toUri());
+			} else{
+				throw new AkIllegalOperatorParameterException("Could not create the flink file system. Both the fsUri the filePath are null.");
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
-
-		throw new RuntimeException("Could not create the flink file system. Both the fsUri the filePath are null.");
 	}
 }

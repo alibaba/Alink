@@ -15,7 +15,7 @@ import com.alibaba.alink.params.similarity.StringTextNearestNeighborTrainParams;
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("字符串最近邻训练")
 public class StringNearestNeighborTrainBatchOp
-	extends BaseNearestNeighborTrainBatchOp<StringNearestNeighborTrainBatchOp>
+	extends BaseNearestNeighborTrainBatchOp <StringNearestNeighborTrainBatchOp>
 	implements StringTextNearestNeighborTrainParams<StringNearestNeighborTrainBatchOp> {
 
 	private static final long serialVersionUID = -403468209326834983L;

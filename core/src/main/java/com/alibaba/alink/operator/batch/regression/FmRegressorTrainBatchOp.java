@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -18,6 +19,7 @@ import java.util.List;
  * Fm regression train algorithm. the input of this algorithm can be vector or table.
  */
 @NameCn("FM回归训练")
+@NameEn("FM Regression Training")
 public class FmRegressorTrainBatchOp extends FmTrainBatchOp <FmRegressorTrainBatchOp>
 	implements FmTrainParams <FmRegressorTrainBatchOp>,
 	WithModelInfoBatchOp <FmRegressorModelInfo, FmRegressorTrainBatchOp, FmRegressorModelInfoBatchOp>,

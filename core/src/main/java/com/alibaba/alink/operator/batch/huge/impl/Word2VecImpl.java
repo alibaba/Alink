@@ -33,6 +33,7 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
@@ -329,7 +330,7 @@ public class Word2VecImpl<T extends Word2VecImpl <T>> extends BatchOperator <T>
 					public Tuple3 <String, Object, Long> reduce(
 						Tuple3 <String, Object, Long> value1,
 						Tuple3 <String, Object, Long> value2) throws Exception {
-						throw new IllegalArgumentException(
+						throw new AkIllegalDataException(
 							"There are duplicated key with different type in the type table. " +
 								"duplicated key: " + value1.f0
 						);

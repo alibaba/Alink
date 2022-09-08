@@ -206,7 +206,7 @@ public class FileDownloadUtils {
 				return ossPath;
 			}
 		} else {
-			throw new UnsupportedOperationException(path);
+			throw new AkUnsupportedOperationException(path);
 		}
 	}
 }

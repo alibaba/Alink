@@ -3,8 +3,10 @@ package com.alibaba.alink.common.io.filesystem;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.binary.BinaryRecordReader;
 import com.alibaba.alink.common.io.filesystem.binary.BinaryRecordWriter;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -34,7 +36,7 @@ public class AkStream {
 	}
 
 	public AkStream(FilePath filePath, AkUtils.AkMeta akMeta) throws IOException {
-		Preconditions.checkNotNull(filePath);
+		AkPreconditions.checkNotNull(filePath);
 		this.filePath = filePath;
 		if (akMeta == null) {
 			this.akMeta = AkUtils.getMetaFromAkFile(filePath);
@@ -109,7 +111,7 @@ public class AkStream {
 					}
 					return true;
 				} catch (IOException e) {
-					throw new RuntimeException("Could not get the next reader.", e);
+					throw new AkUnclassifiedErrorException("Could not get the next reader.", e);
 				}
 			}
 
@@ -118,7 +120,7 @@ public class AkStream {
 				try {
 					return binaryRecordReader.getNextRecord();
 				} catch (IOException e) {
-					throw new RuntimeException("Could not get the next reader.", e);
+					throw new AkUnclassifiedErrorException("Could not get the next reader.", e);
 				}
 			}
 		}
@@ -159,25 +161,25 @@ public class AkStream {
 		}
 
 		public AkCollector getCollector() {
-			try {
-				return new AkCollector();
-			} catch (IOException e) {
-				throw new RuntimeException("Could not get the collector.", e);
-			}
+			return new AkCollector();
 		}
 
 		public class AkCollector implements Collector <Row>, AutoCloseable {
 			BinaryRecordWriter binaryRecordWriter;
 
-			AkCollector() throws IOException {
+			AkCollector() {
 				// Could set the new file name here.
-				zipOutputStream.putNextEntry(new ZipEntry(AkUtils.DATA_FILE));
-				binaryRecordWriter = new BinaryRecordWriter(
-					AkWriter.this.zipOutputStream,
-					TableUtil.getColNames(AkStream.this.akMeta.schemaStr),
-					TableUtil.getColTypes(AkStream.this.akMeta.schemaStr)
-				);
-				binaryRecordWriter.writeHeader();
+				try {
+					zipOutputStream.putNextEntry(new ZipEntry(AkUtils.DATA_FILE));
+					binaryRecordWriter = new BinaryRecordWriter(
+						AkWriter.this.zipOutputStream,
+						TableUtil.getColNames(AkStream.this.akMeta.schemaStr),
+						TableUtil.getColTypes(AkStream.this.akMeta.schemaStr)
+					);
+					binaryRecordWriter.writeHeader();
+				} catch (IOException e) {
+					throw new AkIllegalDataException("Could not get the collector.", e);
+				}
 			}
 
 			@Override
@@ -185,7 +187,7 @@ public class AkStream {
 				try {
 					binaryRecordWriter.writeRecord(record);
 				} catch (IOException e) {
-					throw new RuntimeException("Write the record fail.", e);
+					throw new AkIllegalDataException("Write the record fail.", e);
 				}
 			}
 
@@ -194,7 +196,7 @@ public class AkStream {
 				try {
 					AkWriter.this.close();
 				} catch (IOException e) {
-					throw new RuntimeException("Close the collector fail.", e);
+					throw new AkIllegalDataException("Close the collector fail.", e);
 				}
 			}
 		}

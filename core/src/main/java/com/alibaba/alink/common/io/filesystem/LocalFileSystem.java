@@ -6,6 +6,7 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.fs.local.LocalFileSystemFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ public final class LocalFileSystem extends BaseFileSystem <LocalFileSystem> {
 		try {
 			return loaded.create(null);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("local file load error",e);
 		}
 	}
 }

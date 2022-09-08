@@ -3,8 +3,11 @@ package com.alibaba.alink.pipeline;
 import org.apache.flink.ml.api.core.Model;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.source.AkSourceLocalOp;
 import com.alibaba.alink.params.io.ModelFileSinkParams;
 import com.alibaba.alink.params.shared.HasModelFilePath;
 
@@ -18,6 +21,7 @@ public abstract class ModelBase<M extends ModelBase <M>> extends TransformerBase
 
 	private static final long serialVersionUID = 1181492490109006467L;
 	protected BatchOperator <?> modelData;
+	protected LocalOperator <?> modelData_local;
 
 	public ModelBase() {
 		super();
@@ -26,6 +30,10 @@ public abstract class ModelBase<M extends ModelBase <M>> extends TransformerBase
 	public ModelBase(Params params) {
 		super(params);
 	}
+
+	//public boolean isLocalModel() {
+	//	return null == modelData_local ? false : true;
+	//}
 
 	/**
 	 * Get model data as Table representation.
@@ -40,7 +48,18 @@ public abstract class ModelBase<M extends ModelBase <M>> extends TransformerBase
 				.setFilePath(getModelFilePath())
 				.setMLEnvironmentId(getMLEnvironmentId());
 		} else {
-			throw new UnsupportedOperationException();
+			throw new AkIllegalDataException("Failed to get model data. ");
+		}
+	}
+
+	public LocalOperator <?> getModelDataLocal() {
+		if (this.modelData_local != null) {
+			return this.modelData_local;
+		} else if (getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
+			return new AkSourceLocalOp()
+				.setFilePath(getModelFilePath());
+		} else {
+			throw new AkIllegalDataException("Failed to get model data. ");
 		}
 	}
 
@@ -52,6 +71,11 @@ public abstract class ModelBase<M extends ModelBase <M>> extends TransformerBase
 	 */
 	public M setModelData(BatchOperator <?> modelData) {
 		this.modelData = modelData;
+		return (M) this;
+	}
+
+	public M setModelData(LocalOperator <?> modelData) {
+		this.modelData_local = modelData;
 		return (M) this;
 	}
 

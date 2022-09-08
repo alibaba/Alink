@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.tree.paralleltree;
 
 import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.ComputeFunction;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ public class TreeSplit extends ComputeFunction {
 		try {
 			treeObj.bestSplit();
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 		}
 
 		LOG.info("taskId: {}, split end", context.getTaskId());

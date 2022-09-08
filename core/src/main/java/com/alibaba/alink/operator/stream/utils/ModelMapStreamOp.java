@@ -17,6 +17,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithSecondInputSpec;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
@@ -106,7 +107,7 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 
 			return (T) this;
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 		}
 	}
 
@@ -122,7 +123,7 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 			try {
 				return AkUtils.readFromPath(filePath, filter).f1;
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw new AkUnclassifiedErrorException("Error. ",e);
 			}
 		}
 	}

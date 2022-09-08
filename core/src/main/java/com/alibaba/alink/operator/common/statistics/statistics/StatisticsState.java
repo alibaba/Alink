@@ -182,6 +182,7 @@ public class StatisticsState implements Serializable {
 		public long countNanValue;
 		public long countPositiveInfinity;
 		public long countNegativInfinity;
+		public long countZero;
 		public double sum;
 		public double sum2;
 		public double sum3;
@@ -204,7 +205,7 @@ public class StatisticsState implements Serializable {
 			try {
 				String[] fieldsOfSummaryResultCol = new String[] {
 					"dataType", "countTotal", "count", "countMissValue", "countNanValue", "countPositiveInfinity",
-					"countNegativInfinity", "sum", "sum2", "sum3", "sum4", "norm1",
+					"countNegativInfinity", "countZero", "sum", "sum2", "sum3", "sum4", "norm1",
 					"min", "max", "topItems", "bottomItems", "colName", "freq", "itvcalc"
 				};
 				Set <String> fieldsSet = new HashSet <>(Arrays.asList(fieldsOfSummaryResultCol));
@@ -239,6 +240,7 @@ public class StatisticsState implements Serializable {
 			countNanValue = src.countNanValue;
 			countPositiveInfinity = src.countPositiveInfinity;
 			countNegativInfinity = src.countNegativInfinity;
+			countZero = src.countZero;
 			sum = src.sum;
 			sum2 = src.sum2;
 			sum3 = src.sum3;
@@ -281,6 +283,7 @@ public class StatisticsState implements Serializable {
 			src.countNanValue = countNanValue;
 			src.countPositiveInfinity = countPositiveInfinity;
 			src.countNegativInfinity = countNegativInfinity;
+			src.countZero = countZero;
 			src.sum = sum;
 			src.sum2 = sum2;
 			src.sum3 = sum3;
@@ -312,6 +315,7 @@ public class StatisticsState implements Serializable {
 			pojoFields.add(new PojoField(SrcState.class.getField("countNanValue"), AlinkTypes.LONG));
 			pojoFields.add(new PojoField(SrcState.class.getField("countPositiveInfinity"), AlinkTypes.LONG));
 			pojoFields.add(new PojoField(SrcState.class.getField("countNegativInfinity"), AlinkTypes.LONG));
+			pojoFields.add(new PojoField(SrcState.class.getField("countZero"), AlinkTypes.LONG));
 			pojoFields.add(new PojoField(SrcState.class.getField("sum"), AlinkTypes.DOUBLE));
 			pojoFields.add(new PojoField(SrcState.class.getField("sum2"), AlinkTypes.DOUBLE));
 			pojoFields.add(new PojoField(SrcState.class.getField("sum3"), AlinkTypes.DOUBLE));

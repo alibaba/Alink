@@ -5,6 +5,7 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -190,7 +191,7 @@ public class FpTreeImpl implements FpTree {
 	 */
 	private FpTreeImpl project(int itemId, int minSupportCnt) {
 		if (!this.summaries.containsKey(itemId)) {
-			throw new RuntimeException("not contain item " + itemId);
+			throw new AkIllegalDataException("not contain item " + itemId);
 		}
 		Summary summary = this.summaries.get(itemId);
 		Map <Integer, Summary> projectedSummaries = new HashMap <>();

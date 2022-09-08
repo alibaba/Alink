@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,11 +57,11 @@ public abstract class ComboModelMapper extends ModelMapper {
 	@Override
 	public final void bufferMap(Row bufferRow, int[] bufferSelectedColIndices, int[] bufferResultColIndices)
 		throws Exception {
-		throw new Exception("ComboModelMapper not support bufferRow.");
+		throw new AkUnsupportedOperationException("ComboModelMapper not support bufferRow.");
 	}
 
 	@Override
 	protected final void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
-		throw new RuntimeException("ComboModelMapper not support map slice!");
+		throw new AkUnsupportedOperationException("ComboModelMapper not support map slice!");
 	}
 }

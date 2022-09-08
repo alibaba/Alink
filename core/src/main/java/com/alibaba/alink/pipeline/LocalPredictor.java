@@ -3,8 +3,9 @@ package com.alibaba.alink.pipeline;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperChain;
@@ -43,7 +44,7 @@ public class LocalPredictor {
 
 	public LocalPredictor(FilePath pipelineModelPath, TableSchema inputSchema) throws Exception {
 		this(
-			Preconditions.checkNotNull(
+			AkPreconditions.checkNotNull(
 				ModelExporterUtils
 					.loadLocalPredictorFromPipelineModelAsMappers(
 						pipelineModelPath, inputSchema
@@ -55,7 +56,7 @@ public class LocalPredictor {
 
 	public LocalPredictor(FilePath pipelineModelPath, TableSchema inputSchema, Params params) throws Exception {
 		this(
-			Preconditions.checkNotNull(
+			AkPreconditions.checkNotNull(
 				ModelExporterUtils
 					.loadLocalPredictorFromPipelineModelAsMappers(
 						pipelineModelPath, inputSchema, params
@@ -68,7 +69,7 @@ public class LocalPredictor {
 	public LocalPredictor(List <Row> pipelineModel, TableSchema modelSchema, TableSchema inputSchema)
 		throws Exception {
 		this(
-			Preconditions.checkNotNull(
+			AkPreconditions.checkNotNull(
 				ModelExporterUtils
 					.loadLocalPredictorFromPipelineModel(
 						pipelineModel, modelSchema, inputSchema
@@ -80,7 +81,7 @@ public class LocalPredictor {
 
 	public LocalPredictor(Mapper... mappers) {
 		if (null == mappers || 0 == mappers.length) {
-			throw new RuntimeException("The input mappers can not be empty.");
+			throw new AkIllegalOperationException("The input mappers can not be empty.");
 		}
 
 		this.mappers.addAll(Arrays.asList(mappers));

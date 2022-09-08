@@ -19,7 +19,8 @@
 package org.apache.flink.ml.api.misc.param;
 
 import org.apache.flink.annotation.PublicEvolving;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 /**
  * Definition of a parameter, including name, type, default value, validator and so on.
@@ -83,7 +84,7 @@ public class ParamInfo<V> {
 	 * @return the aliases of the parameter
 	 */
 	public String[] getAlias() {
-		Preconditions.checkNotNull(alias);
+		AkPreconditions.checkNotNull(alias);
 		return alias;
 	}
 

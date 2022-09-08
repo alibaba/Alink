@@ -3,7 +3,14 @@ package com.alibaba.alink.operator.batch.timeseries;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.FlattenMTableBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.JsonValueBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.TensorToVectorBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.VectorToTensorBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.format.TripleToColumnsBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.format.VectorToTripleBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.vector.VectorAssemblerBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
 import org.junit.Ignore;
@@ -164,7 +171,9 @@ public class ProphetBatchOpTest {
 		//train batch model.
 		MemSourceBatchOp source = new MemSourceBatchOp(Arrays.asList(rowsData), colNames);
 
-		source.select("to_timestamp(ds, 'yyyyMMdd') as ds, f1 as val, f2 as id")
+		source.print();
+
+		BatchOperator <?> prophetOp = source.select("to_timestamp(ds, 'yyyyMMdd') as ds, f1 as val, f2 as id")
 			.link(
 				new GroupByBatchOp()
 					.setGroupByPredicate("id")
@@ -174,18 +183,25 @@ public class ProphetBatchOpTest {
 				new ProphetBatchOp()
 					.setValueCol("data")
 					.setPredictionCol("pred")
+					.setPredictionDetailCol("pred_detail")
 					.setPredictNum(12)
-					.setUncertaintySamples(0)
+					.setUncertaintySamples(1000)
+					.setHolidays("playoff:2021-01-13,2021-01-03 superbowl:2021-02-07,2021-11-02")
 					.setReservedCols("id")
-					.setPythonEnv("file:///Users/ning.cain/soft/miniforge3/envs/py39t/")
+				//.setPythonEnv("file:///Users/ning.cain/soft/miniforge3/envs/py39t/")
 			)
 			.link(
 				new FlattenMTableBatchOp()
+					.setSelectedCol("pred_detail")
+					.setSchemaStr("ds timestamp, "
+						+ "yhat double, yhat_lower double, yhat_upper double, "
+						+ "superbowl double, superbowl_upper double, superbowl_lower double,"
+						+ "playoff double, playoff_upper double, playoff_lower double")
 					.setReservedCols("id")
-					.setSelectedCol("pred")
-					.setSchemaStr("ds string, val double")
 			)
-			.print();
+			.print()
+			;
+
 
 	}
 

@@ -2,10 +2,11 @@ package com.alibaba.alink.common.io.kafka.plugin;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.common.exceptions.AkPluginErrorException;
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
-import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.PluginDescriptor;
+import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 
@@ -32,7 +33,7 @@ public class KafkaClassLoaderFactory extends ClassLoaderFactory {
 			if (iter.hasNext()) {
 				return iter.next();
 			} else {
-				throw new RuntimeException("Could not find the class factory in classloader.");
+				throw new AkPluginErrorException("Could not find the class factory in classloader.");
 			}
 		}
 	}

@@ -19,6 +19,7 @@ import org.apache.flink.util.StringUtils;
 import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -69,6 +70,7 @@ import java.util.Map;
 @FeatureColsVectorColMutexRule
 
 @NameCn("多层感知机分类训练")
+@NameEn("Multilayer Perceptron Training")
 public final class MultilayerPerceptronTrainBatchOp
         extends BatchOperator<MultilayerPerceptronTrainBatchOp>
         implements MultilayerPerceptronTrainParams<MultilayerPerceptronTrainBatchOp> {

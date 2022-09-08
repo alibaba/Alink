@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.pytorch;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.tensor.IntTensor;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class ListSerializerTest {
 							Assert.assertEquals(inputs.get(i), outputs.get(i));
 						}
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						throw new AkUnclassifiedErrorException(e.getMessage(),e);
 					}
 				}
 			});

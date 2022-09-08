@@ -10,6 +10,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.utils.UDFHelper;
 import com.alibaba.alink.params.dataproc.UDFParams;
@@ -57,7 +58,7 @@ public class UDFBatchOp extends BatchOperator <UDFBatchOp>
 	@Override
 	public UDFBatchOp linkFrom(BatchOperator <?>... inputs) {
 		if (null == getFunc() && null == getFuncName()) {
-			throw new IllegalArgumentException(
+			throw new AkIllegalOperatorParameterException(
 				"A ScalarFunction or a registered function name must be set using setFunc or setFuncName.");
 		}
 		BatchOperator <?> in = checkAndGetFirst(inputs);

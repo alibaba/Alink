@@ -17,7 +17,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MLEnvironmentFactory;
@@ -35,6 +34,7 @@ import com.alibaba.alink.common.comqueue.ComputeFunction;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.exceptions.XGboostException;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -260,7 +260,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 		return (T) this;
 	}
 
-	private static class InitTracker extends ComputeFunction {
+	public static class InitTracker extends ComputeFunction {
 		private final XGBoostClassLoaderFactory xgBoostClassLoaderFactory;
 
 		public InitTracker(
@@ -295,7 +295,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 		}
 	}
 
-	private static class XGBoostTrain extends ComputeFunction {
+	public static class XGBoostTrain extends ComputeFunction {
 		private final Params params;
 		private final int vectorColIndex;
 		private final int labelColIndex;
@@ -384,7 +384,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 
 				return Tuple2.of(
 					vector,
-					new float[] {((Number) Preconditions.checkNotNull(row.getField(labelColIndex))).floatValue()}
+					new float[] {((Number) AkPreconditions.checkNotNull(row.getField(labelColIndex))).floatValue()}
 				);
 			},
 			params);
@@ -448,7 +448,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 		return model;
 	}
 
-	private static class RecycleTracker extends ComputeFunction {
+	public static class RecycleTracker extends ComputeFunction {
 		@Override
 		public void calc(ComContext context) {
 			if (context.getTaskId() == 0) {
@@ -458,14 +458,14 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 		}
 	}
 
-	private static class GenModel extends CompleteResultFunction {
+	public static class GenModel extends CompleteResultFunction {
 		@Override
 		public List <Row> calc(ComContext context) {
 			return context.getObj("model");
 		}
 	}
 
-	private static class InitTrackMapPartition extends RichMapPartitionFunction <Integer, Tuple2 <String, String>> {
+	public static class InitTrackMapPartition extends RichMapPartitionFunction <Integer, Tuple2 <String, String>> {
 		private final XGBoostClassLoaderFactory xgBoostClassLoaderFactory;
 		private final long trackerHandle;
 
@@ -479,6 +479,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 			throws Exception {
 
 			if (getRuntimeContext().getIndexOfThisSubtask() == 0) {
+
 				XGBoost xgBoost = XGBoostClassLoaderFactory
 					.create(xgBoostClassLoaderFactory)
 					.create();
@@ -494,11 +495,12 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 				for (Tuple2 <String, String> workerEnv : tracker.getWorkerEnvs()) {
 					out.collect(workerEnv);
 				}
+
 			}
 		}
 	}
 
-	private static class XGBoostTrainMapPartition extends RichMapPartitionFunction <Row, Tuple2 <Boolean, Row>> {
+	public static class XGBoostTrainMapPartition extends RichMapPartitionFunction <Row, Tuple2 <Boolean, Row>> {
 
 		private final Params params;
 		private final int vectorColIndex;
@@ -628,7 +630,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 		}
 	}
 
-	private static class RecycleTrackerMapPartition extends RichMapPartitionFunction <Tuple2 <Boolean, Row>, byte[]> {
+	public static class RecycleTrackerMapPartition extends RichMapPartitionFunction <Tuple2 <Boolean, Row>, byte[]> {
 		private final long trackerHandle;
 
 		public RecycleTrackerMapPartition(long trackerHandle) {this.trackerHandle = trackerHandle;}
@@ -636,6 +638,8 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 		@Override
 		public void mapPartition(Iterable <Tuple2 <Boolean, Row>> values, Collector <byte[]> out)
 			throws Exception {
+
+			values.iterator().next();
 
 			Tracker tracker = IterTaskObjKeeper.get(trackerHandle, 0);
 
@@ -647,7 +651,7 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 		}
 	}
 
-	private static class SelectSampleCol implements MapFunction <Row, Row> {
+	public static class SelectSampleCol implements MapFunction <Row, Row> {
 		private final int[] featureColIndices;
 		private final int labelColIndex;
 

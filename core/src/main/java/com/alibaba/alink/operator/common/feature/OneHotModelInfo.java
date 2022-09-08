@@ -1,8 +1,8 @@
 package com.alibaba.alink.operator.common.feature;
 
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 
@@ -36,13 +36,13 @@ public class OneHotModelInfo implements Serializable {
 	}
 
 	public Long getDistinctTokenNumber(String columnName) {
-		Preconditions.checkState(tokensMap.containsKey(columnName),
+		AkPreconditions.checkState(tokensMap.containsKey(columnName),
 			columnName + "is not contained in the model!");
 		return distinceTokenNumber.get(columnName);
 	}
 
 	public String[] getTokens(String columnName) {
-		Preconditions.checkState(tokensMap.containsKey(columnName),
+		AkPreconditions.checkState(tokensMap.containsKey(columnName),
 			columnName + "is not contained in the model!");
 		return tokensMap.get(columnName).toArray(new String[0]);
 	}

@@ -8,6 +8,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.SISOModelMapper;
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.dataproc.StringIndexerPredictParams;
@@ -51,7 +52,7 @@ public class StringIndexerModelMapper extends SISOModelMapper {
 				case ERROR:
 					throw new AkIllegalDataException("Unseen token: " + key);
 				default:
-					throw new IllegalArgumentException("Unknown strategy: " + handleInvalidStrategy);
+					throw new AkUnsupportedOperationException("Unknown strategy: " + handleInvalidStrategy);
 			}
 		}
 	}

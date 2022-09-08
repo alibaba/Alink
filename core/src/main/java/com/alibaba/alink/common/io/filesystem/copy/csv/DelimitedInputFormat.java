@@ -31,6 +31,7 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.copy.FileInputFormat;
 import org.slf4j.Logger;
@@ -391,7 +392,7 @@ public abstract class DelimitedInputFormat<OT> extends FileInputFormat <OT>
 				return stats;
 			}
 			if (numSamples < 0) {
-				throw new RuntimeException("Error: Invalid number of samples: " + numSamples);
+				throw new AkUnclassifiedErrorException("Error: Invalid number of samples: " + numSamples);
 			}
 
 			// make sure that the sampling times out after a while if the file system does not answer in time

@@ -3,6 +3,8 @@ package com.alibaba.alink.common.io.filesystem.binary;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.binary.BinaryRecordWriter.RecordWriterV1;
 import org.apache.commons.io.IOUtils;
 
@@ -56,7 +58,7 @@ public class BinaryRecordReader implements Serializable {
 			return;
 		}
 
-		throw new RuntimeException("Illegal alink format, header mismatch");
+		throw new AkIllegalDataException("Illegal alink format, header mismatch");
 	}
 
 	interface RecordReader {
@@ -105,7 +107,7 @@ public class BinaryRecordReader implements Serializable {
 			while (len > 0) {
 				int n = dataInputStream.read(bytes, start, len);
 				if (n < 0) {
-					throw new RuntimeException("unexpected end of stream.");
+					throw new AkUnclassifiedErrorException("unexpected end of stream.");
 				}
 				start += n;
 				len -= n;

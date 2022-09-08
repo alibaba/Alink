@@ -15,7 +15,7 @@ import com.alibaba.alink.params.io.RedisStringSinkParams;
 /**
  * StreamOperator to sink data to Redis.
  */
-@IoOpAnnotation(name = "redis_stream_sink", ioType = IOType.SinkStream)
+@IoOpAnnotation(name = "redis_string_stream_sink", ioType = IOType.SinkStream)
 @ParamSelectColumnSpec(name = "keyCol")
 @ParamSelectColumnSpec(name = "valueCol")
 @NameCn("导出到Redis")

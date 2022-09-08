@@ -20,7 +20,6 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.ExecutorUtils;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.OutputPorts;
@@ -35,6 +34,7 @@ import com.alibaba.alink.common.comqueue.CompleteResultFunction;
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -684,7 +684,7 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 	private static Criteria.Gain getIntervalGain(String treeType, int id) {
 		String[] intervalStrs = treeType.split(",");
 
-		Preconditions.checkState(intervalStrs.length == 2, "Error format of treeType: " + treeType);
+		AkPreconditions.checkState(intervalStrs.length == 2, "Error format of treeType: " + treeType);
 
 		return getIntervalGain(
 			Integer.parseInt(intervalStrs[0]),

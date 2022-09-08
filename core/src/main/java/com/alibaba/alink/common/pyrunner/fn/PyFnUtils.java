@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.pyrunner.fn;
 
+import org.apache.flink.api.java.tuple.Tuple2;
+
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.FileSystemDownloadUtils;
@@ -14,6 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PyFnUtils {
 
@@ -76,5 +80,18 @@ public class PyFnUtils {
 		//noinspection deprecation
 		JsonObject fnSpec = JsonConverter.gson.fromJson(fnSpecJson, JsonObject.class);
 		return downloadFilePaths(fnSpec, workDir).toString();
+	}
+
+	public static Tuple2 <String, Map <String, String>> updateFnSpecRunConfigWithPlugin(String fnSpecJson,
+																						Map <String, String> runConfig) {
+		JsonObject fnSpec = JsonConverter.gson.fromJson(fnSpecJson, JsonObject.class);
+		Tuple2 <JsonObject, Map <String, String>> fnSpecRunConfig = BuiltInFnUtils.downloadUpdateFnSpec(fnSpec);
+		JsonObject updatedFnSpec = fnSpecRunConfig.f0;
+		String updatedFnSpecJson = updatedFnSpec.toString();
+		final Map <String, String> updatedRunConfig = new HashMap <>(runConfig);
+		if (null != fnSpecRunConfig.f1) {
+			updatedRunConfig.putAll(fnSpecRunConfig.f1);
+		}
+		return Tuple2.of(updatedFnSpecJson, updatedRunConfig);
 	}
 }

@@ -8,6 +8,7 @@ import org.apache.flink.core.memory.DataInputDeserializer;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.hbase.HBase;
 import com.alibaba.alink.common.io.hbase.HBaseClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
@@ -54,7 +55,7 @@ public class LookupHBaseMapper extends Mapper {
 		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(factory.create())) {
 			hbase = HBaseClassLoaderFactory.create(factory).create(params);
 		} catch (IOException e) {
-			throw new RuntimeException("LookupHBaseMapper hbase initialization error, message is " + e.getMessage());
+			throw new AkUnclassifiedErrorException("LookupHBaseMapper hbase initialization error, message is " + e.getMessage());
 		}
 
 	}
@@ -67,7 +68,7 @@ public class LookupHBaseMapper extends Mapper {
 			try {
 				hbase.close();
 			} catch (IOException e) {
-				throw new RuntimeException("LookupHBaseMapper hbase close error, message is " + e.getMessage());
+				throw new AkUnclassifiedErrorException("LookupHBaseMapper hbase close error, message is " + e.getMessage());
 			}
 		}
 	}

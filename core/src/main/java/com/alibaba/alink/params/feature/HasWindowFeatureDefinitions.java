@@ -6,8 +6,8 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.common.fe.def.BaseStatFeatures;
-import com.alibaba.alink.common.fe.def.InterfaceWindowStatFeatures;
+import com.alibaba.alink.common.fe.define.BaseStatFeatures;
+import com.alibaba.alink.common.fe.define.InterfaceWindowStatFeatures;
 
 public interface HasWindowFeatureDefinitions<T> extends WithParams <T> {
 	@NameCn("特征定义")

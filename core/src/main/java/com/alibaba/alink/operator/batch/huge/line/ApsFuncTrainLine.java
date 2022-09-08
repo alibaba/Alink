@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.huge.line;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
 import com.alibaba.alink.operator.common.aps.ApsContext;
@@ -79,7 +80,7 @@ public class ApsFuncTrainLine extends ApsFuncTrain <Number[], float[][]> {
 			}
 			return relatedFeatures;
 		} else {
-			throw new RuntimeException();
+			throw new AkUnclassifiedErrorException("Aps server meets RuntimeException when training");
 		}
 	}
 

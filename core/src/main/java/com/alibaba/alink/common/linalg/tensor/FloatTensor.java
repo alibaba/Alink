@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.linalg.tensor;
 
 import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil.DoCalcFunctions;
 import org.tensorflow.ndarray.DoubleNdArray;
 import org.tensorflow.ndarray.FloatNdArray;
@@ -222,7 +223,9 @@ public final class FloatTensor extends NumericalTensor <Float> {
 		} else if (other instanceof FloatTensor) {
 			return (FloatTensor) other;
 		} else {
-			throw new UnsupportedOperationException();
+			throw new AkUnsupportedOperationException(String.format(
+				"Failed to cast to float tensor. tensor type: %s", other.getType()
+			));
 		}
 	}
 }

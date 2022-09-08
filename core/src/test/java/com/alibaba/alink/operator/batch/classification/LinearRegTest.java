@@ -1,11 +1,13 @@
 package com.alibaba.alink.operator.batch.classification;
 
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.regression.LinearRegPredictBatchOp;
 import com.alibaba.alink.operator.batch.regression.LinearRegTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.params.shared.HasPredictBatchSize;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +31,7 @@ public class LinearRegTest extends AlinkTestBase {
 		};
 		String[] veccolNames = new String[] {"id", "svec", "vec", "f0", "f1", "f2", "label"};
 
-		BatchOperator<?> trainData = new MemSourceBatchOp(Arrays.asList(localRows), veccolNames);
+		BatchOperator <?> trainData = new MemSourceBatchOp(Arrays.asList(localRows), veccolNames);
 		String labelColName = "label";
 		LinearRegTrainBatchOp lr = new LinearRegTrainBatchOp()
 			.setVectorCol("svec")
@@ -46,9 +48,47 @@ public class LinearRegTest extends AlinkTestBase {
 			.setPredictionCol("predLr").setVectorCol("svec")
 			.linkFrom(model, trainData).collect();
 		for (Row row : mixedResult) {
-			if ((int)row.getField(0) == 0) {
+			if ((int) row.getField(0) == 0) {
 				Assert.assertEquals(Double.parseDouble(row.getField(1).toString()), 1.9404, 0.001);
 			}
 		}
+	}
+
+	@Test
+	public void testPredictBatchSize() throws Exception {
+		Row[] localRows = new Row[] {
+			Row.of(0, "1.0 0.0 7.0 0.0 9.0 .0 .0 .0 .0 .0 .0 .0 .0 .0 .0", 2),
+			Row.of(1, "0:1.0 2:5.0 4:3.0", 3),
+			Row.of(2, "0:1.0 2:4.0 4:4.0", 1),
+			Row.of(3, "0:1.0 2:3.0 14:3.0", 4),
+			Row.of(4, "0:1.0 2:2.0 4:4.0", 5),
+			Row.of(5, "0:1.0 2:1.0 4:4.0", 6),
+			Row.of(6, "0:1.0 2:-1.0 4:4.0", 7),
+			Row.of(7, "4.0 0.0 2.0 0.0 4.0 .0 .0 .0 .0 .0 .0 .0 .0 .0 .0", 1)
+		};
+		String[] veccolNames = new String[] {"id", "svec", "label"};
+
+		BatchOperator <?> trainData = new MemSourceBatchOp(Arrays.asList(localRows), veccolNames);
+		String labelColName = "label";
+		LinearRegTrainBatchOp lr = new LinearRegTrainBatchOp()
+			.setVectorCol("svec")
+			.setStandardization(true)
+			.setWithIntercept(true)
+			.setEpsilon(1.0e-4)
+			.setOptimMethod("LBFGS")
+			.setLabelCol(labelColName)
+			.setMaxIter(5);
+
+		LinearRegTrainBatchOp model = lr.linkFrom(trainData);
+
+		BatchOperator <?> predOp = new LinearRegPredictBatchOp(
+			new Params().set(HasPredictBatchSize.PREDICT_BATCH_SIZE, 2))
+			.setReservedCols(new String[] {"id"})
+			.setPredictionCol("predLr")
+			.setVectorCol("svec")
+			.setNumThreads(2)
+			.linkFrom(model, trainData);
+
+		predOp.print();
 	}
 }

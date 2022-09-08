@@ -10,8 +10,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.pipeline.ModelExporterUtils;
@@ -69,7 +70,7 @@ public class PipelineModelMapper extends ComboModelMapper {
 		}
 		mapperList = ModelExporterUtils.loadMapperListFromStages(modelRows, modelSchema, getDataSchema());
 		if (!getOutputSchema().equals(mapperList.getOutTableSchema())) {
-			throw new RuntimeException("Load pipeline model failed.");
+			throw new AkUnclassifiedErrorException("Load pipeline model failed.");
 		}
 	}
 
@@ -130,7 +131,7 @@ public class PipelineModelMapper extends ComboModelMapper {
 			extendedModelSchema, PipelineModelMapper.SPLITER_COL_NAME
 		);
 
-		Preconditions.checkArgument(splitColIndex >= 0, "Scorecard model schema error!");
+		AkPreconditions.checkArgument(splitColIndex >= 0, "Scorecard model schema error!");
 
 		int selectColStartIndex = splitColIndex + 1;
 

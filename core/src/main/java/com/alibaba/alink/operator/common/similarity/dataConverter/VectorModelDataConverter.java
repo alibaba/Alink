@@ -10,7 +10,9 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceData;
@@ -87,7 +89,8 @@ public class VectorModelDataConverter extends NearestNeighborDataConverter <Vect
 						FastDistanceSparseData data = (FastDistanceSparseData) fastDistanceData;
 						row.setField(DATA_INDEX, data.toString());
 					} else {
-						throw new AkUnsupportedOperationException(fastDistanceData.getClass().getName() + " is not supported!");
+						throw new AkUnsupportedOperationException(
+							fastDistanceData.getClass().getName() + " is not supported!");
 					}
 					out.collect(row);
 				}
@@ -109,5 +112,39 @@ public class VectorModelDataConverter extends NearestNeighborDataConverter <Vect
 				}
 			})
 			.name("build_model");
+	}
+
+	@Override
+	public List <Row> buildIndex(MTable mt, Params params) {
+		FastDistance fastDistance = params.get(HasFastDistanceType.DISTANCE_TYPE).getFastDistance();
+		List <FastDistanceData> list = fastDistance.prepareMatrixData(mt.getRows(), 1, 0);
+
+		List <Row> tempList = new ArrayList <>();
+		RowCollector rowCollector = new RowCollector();
+		for (FastDistanceData fastDistanceData : list) {
+			Row row = new Row(ROW_SIZE);
+			if (fastDistanceData instanceof FastDistanceMatrixData) {
+				row.setField(FASTDISTANCE_TYPE_INDEX, 1L);
+				FastDistanceMatrixData data = (FastDistanceMatrixData) fastDistanceData;
+				row.setField(DATA_INDEX, data.toString());
+
+			} else if (fastDistanceData instanceof FastDistanceVectorData) {
+				row.setField(FASTDISTANCE_TYPE_INDEX, 2L);
+				FastDistanceVectorData data = (FastDistanceVectorData) fastDistanceData;
+				row.setField(DATA_INDEX, data.toString());
+			} else if (fastDistanceData instanceof FastDistanceSparseData) {
+				row.setField(FASTDISTANCE_TYPE_INDEX, 3L);
+				FastDistanceSparseData data = (FastDistanceSparseData) fastDistanceData;
+				row.setField(DATA_INDEX, data.toString());
+			} else {
+				throw new AkUnsupportedOperationException(fastDistanceData.getClass().getName() + " is not "
+					+ "supported!");
+			}
+			tempList.add(row);
+		}
+
+		save(Tuple2.of(params, tempList), rowCollector);
+
+		return rowCollector.getRows();
 	}
 }

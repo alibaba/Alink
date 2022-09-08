@@ -2,9 +2,9 @@ package com.alibaba.alink.common.io.catalog.mysql;
 
 import org.apache.flink.api.common.io.OutputFormat;
 import org.apache.flink.api.common.io.RichInputFormat;
+import org.apache.flink.api.java.io.jdbc.JDBCInputFormat;
+import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
-import org.apache.flink.connector.jdbc.JdbcInputFormat;
-import org.apache.flink.connector.jdbc.JdbcOutputFormat;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialect;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialects;
 import org.apache.flink.core.io.InputSplit;
@@ -609,7 +609,6 @@ public class MySqlCatalog extends JdbcCatalog {
 		}
 	}
 
-	@Override
 	protected int flinkType2JdbcType(DataType flinkType) {
 		return flinkType.getLogicalType().accept(new MySqlFlink2Jdbc());
 	}
@@ -618,8 +617,7 @@ public class MySqlCatalog extends JdbcCatalog {
 	protected RichInputFormat <Row, InputSplit> createInputFormat(ObjectPath objectPath, TableSchema schema)
 		throws Exception {
 
-		return JdbcInputFormat
-			.buildJdbcInputFormat()
+		return JDBCInputFormat.buildJDBCInputFormat()
 			.setUsername(getParams().get(JdbcCatalogParams.USERNAME))
 			.setPassword(getParams().get(JdbcCatalogParams.PASSWORD))
 			.setDrivername(getParams().get(JdbcCatalogParams.DRIVER_NAME))
@@ -631,8 +629,7 @@ public class MySqlCatalog extends JdbcCatalog {
 
 	@Override
 	protected OutputFormat <Row> createOutputFormat(ObjectPath objectPath, TableSchema schema, String sql) {
-		return JdbcOutputFormat
-			.buildJdbcOutputFormat()
+		return JDBCOutputFormat.buildJDBCOutputFormat()
 			.setUsername(getParams().get(JdbcCatalogParams.USERNAME))
 			.setPassword(getParams().get(JdbcCatalogParams.PASSWORD))
 			.setDrivername(getParams().get(JdbcCatalogParams.DRIVER_NAME))

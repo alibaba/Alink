@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.huge.word2vec;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
 import com.alibaba.alink.operator.common.aps.ApsContext;
@@ -80,7 +81,7 @@ public class ApsFuncIndex4PullW2V extends ApsFuncIndex4Pull <int[]> {
 
 			return outputMerger;
 		} else {
-			throw new RuntimeException();
+			throw new AkUnclassifiedErrorException("ApsFunction meets RuntimeException");
 		}
 
 	}

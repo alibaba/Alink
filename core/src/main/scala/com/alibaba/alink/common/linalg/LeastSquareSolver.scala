@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg
 
+import com.alibaba.alink.common.exceptions.{AkIllegalOperatorParameterException, AkUnclassifiedErrorException}
 import com.github.fommil.netlib.LAPACK.{getInstance => lapack}
 import org.netlib.util.intW
 
@@ -34,9 +35,9 @@ object LeastSquareSolver {
 
         // check solution
         if (info.`val` > 0) {
-            throw new IllegalArgumentException("A is rank deficient.")
+            throw new AkIllegalOperatorParameterException("A is rank deficient.");
         } else if (info.`val` < 0) {
-            throw new RuntimeException("Invalid input to lapack routine.")
+            throw new AkUnclassifiedErrorException("Invalid input to lapack routine.")
         }
     }
 }

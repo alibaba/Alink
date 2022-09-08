@@ -4,6 +4,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+
 import java.util.List;
 
 /**
@@ -30,7 +32,7 @@ public interface ModelDataConverter<M1, M2> {
 	M2 load(List <Row> rows);
 
 	default M2 loadIterable(Iterable <Row> rows) {
-		throw new UnsupportedOperationException();
+		throw new AkUnsupportedOperationException("Not support exception. ");
 	}
 
 	/**

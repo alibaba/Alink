@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.classification;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.linear.BaseLinearModelTrainBatchOp;
 import com.alibaba.alink.operator.common.linear.LinearClassifierModelInfo;
@@ -14,6 +15,7 @@ import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
  * SVM".
  */
 @NameCn("线性支持向量机训练")
+@NameEn("Linear SVM Training")
 public final class LinearSvmTrainBatchOp extends BaseLinearModelTrainBatchOp <LinearSvmTrainBatchOp>
 	implements LinearBinaryClassTrainParams <LinearSvmTrainBatchOp>,
 	WithModelInfoBatchOp <LinearClassifierModelInfo, LinearSvmTrainBatchOp, LinearSvmModelInfoBatchOp> {
