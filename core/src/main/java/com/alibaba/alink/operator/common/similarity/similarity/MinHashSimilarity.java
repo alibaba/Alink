@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.similarity.similarity;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.common.similarity.Sample;
 import com.alibaba.alink.operator.common.similarity.SimilarityUtil;
 
@@ -38,7 +39,7 @@ public class MinHashSimilarity extends Similarity <int[][]> {
 		this.r = k / b;
 		this.b = b;
 		if (k % b != 0) {
-			throw new RuntimeException("k / b != 0. k :" + k + ". b:" + b);
+			throw new AkIllegalOperatorParameterException("k / b != 0. k :" + k + ". b:" + b);
 		}
 		Random random = new Random(seed);
 		coefficientA = new int[k];

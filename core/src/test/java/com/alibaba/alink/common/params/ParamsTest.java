@@ -79,7 +79,7 @@ public class ParamsTest extends AlinkTestBase {
 			testBatchOp.linkFrom(new TestBatchOp());
 		} catch (Exception ex) {
 			Assert.assertEquals(
-				"java.lang.IllegalArgumentException: In TestBatchOp,cbbb is not member of enumType.It maybe aAA,BBB.",
+				"In TestBatchOp,cbbb is not member of enumType.It maybe aAA,BBB.",
 				ex.getMessage());
 		}
 	}

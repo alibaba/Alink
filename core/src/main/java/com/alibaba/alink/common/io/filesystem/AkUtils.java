@@ -1,12 +1,9 @@
 package com.alibaba.alink.common.io.filesystem;
 
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.flink.api.common.functions.GroupReduceFunction;
-import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.io.FilePathFilter;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.core.fs.FileInputSplit;
 import org.apache.flink.core.fs.FileStatus;
@@ -14,27 +11,24 @@ import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
-import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkParseErrorException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader.AkReadIterator;
 import com.alibaba.alink.common.io.filesystem.copy.FileInputFormat;
 import com.alibaba.alink.common.io.filesystem.copy.FileOutputFormat;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
-import com.alibaba.alink.operator.batch.sql.WhereBatchOp;
-import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.sink.Export2FileSinkStreamOp.Export2FileOutputFormat;
-import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
-import com.alibaba.alink.operator.stream.sql.WhereStreamOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
+import com.alibaba.alink.operator.local.sql.WhereLocalOp;
+import com.alibaba.alink.operator.stream.sink.Export2FileOutputFormat;
 import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedInputStream;
@@ -166,7 +160,7 @@ public class AkUtils {
 			boolean fileExists = filePath.getFileSystem().exists(filePath.getPath());
 
 			if (!fileExists) {
-				throw new IllegalArgumentException("Could not find the file: " + filePath.getPathStr());
+				throw new AkIllegalArgumentException("Could not find the file: " + filePath.getPathStr());
 			}
 
 			files.add(filePath);
@@ -200,7 +194,7 @@ public class AkUtils {
 			@Override
 			public boolean hasNext() {
 
-				Preconditions.checkState(
+				AkPreconditions.checkState(
 					akReader == null && akIterator == null || akReader != null && akIterator != null
 				);
 
@@ -230,7 +224,7 @@ public class AkUtils {
 
 						clearState();
 
-						throw new RuntimeException(e);
+						throw new AkIllegalDataException("Error. ", e);
 					}
 				}
 
@@ -396,7 +390,7 @@ public class AkUtils {
 
 					case NO_OVERWRITE:
 						// file or directory may not be overwritten
-						throw new RuntimeException(
+						throw new AkIllegalOperatorParameterException(
 							"File or directory already exists. Existing files and directories are not overwritten "
 								+ "in "
 								+
@@ -411,7 +405,7 @@ public class AkUtils {
 						break;
 
 					default:
-						throw new IllegalArgumentException("Invalid write mode: " + writeMode);
+						throw new AkUnsupportedOperationException("Invalid write mode: " + writeMode);
 				}
 			}
 
@@ -444,7 +438,7 @@ public class AkUtils {
 		getRecursionDirectories(baseFileSystem, rootPath, pathDirectories);
 
 		if (pathDirectories.size() == 0) {
-			throw new IllegalArgumentException(String.format("no data in path %s", rootPath.getPath()));
+			throw new AkIllegalOperatorParameterException(String.format("no data in path %s", rootPath.getPath()));
 		}
 
 		List <Row> rows = new ArrayList <>(pathDirectories.size());
@@ -461,98 +455,29 @@ public class AkUtils {
 		return rows;
 	}
 
-
-	public static BatchOperator <?> selectPartitionBatchOp(
+	public static LocalOperator <?> selectPartitionLocalOp(
 		Long mlEnvId, FilePath filePath, String pattern) throws IOException {
 
-		return selectPartitionBatchOp(mlEnvId, filePath, pattern, null);
+		return selectPartitionLocalOp(filePath, pattern, null);
 	}
 
-	public static BatchOperator <?> selectPartitionBatchOp(
-		Long mlEnvId, FilePath filePath, String pattern, String[] colNames) throws IOException {
+	public static LocalOperator <?> selectPartitionLocalOp(
+		FilePath filePath, String pattern, String[] colNames) throws IOException {
 
 		if (colNames == null) {
 			colNames = getPartitionColumns(filePath);
 		}
 		final int numCols = colNames.length;
-		final TypeInformation<?>[] colTypes = new TypeInformation<?>[colNames.length];
+		final TypeInformation <?>[] colTypes = new TypeInformation <?>[colNames.length];
 		for (int i = 0; i < colNames.length; ++i) {
 			colTypes[i] = AlinkTypes.STRING;
 		}
 		final TableSchema schema = new TableSchema(colNames, colTypes);
 
-		return new TableSourceBatchOp(
-			DataSetConversionUtil.toTable(
-				mlEnvId,
-				MLEnvironmentFactory
-					.get(mlEnvId)
-					.getExecutionEnvironment()
-					.fromElements(0)
-					.reduceGroup(new GroupReduceFunction <Integer, Row>() {
-						@Override
-						public void reduce(Iterable <Integer> values, Collector <Row> out) throws Exception {
-							for (Row row : listPartitions(filePath, numCols)) {
-								out.collect(row);
-							}
-						}
-					})
-					.returns(new RowTypeInfo(schema.getFieldTypes()))
-					.rebalance(),
-				schema
-			))
-			.setMLEnvironmentId(mlEnvId)
+		return new MemSourceLocalOp(listPartitions(filePath, numCols), schema)
 			.link(
-				new WhereBatchOp()
+				new WhereLocalOp()
 					.setClause(transformPattern(pattern, colNames))
-					.setMLEnvironmentId(mlEnvId)
-			);
-	}
-
-	public static StreamOperator <?> selectPartitionStreamOp(
-		Long mlEnvId, FilePath filePath, String pattern) throws IOException {
-
-		return selectPartitionStreamOp(mlEnvId, filePath, pattern, null);
-	}
-
-	public static StreamOperator <?> selectPartitionStreamOp(
-		Long mlEnvId, FilePath filePath, String pattern, String[] colNames) throws IOException {
-
-		if (colNames == null) {
-			colNames = getPartitionColumns(filePath);
-		}
-		final int numCols = colNames.length;
-		final TypeInformation<?>[] colTypes = new TypeInformation<?>[colNames.length];
-		for (int i = 0; i < colNames.length; ++i) {
-			colTypes[i] = AlinkTypes.STRING;
-		}
-		final TableSchema schema = new TableSchema(colNames, colTypes);
-
-		return new TableSourceStreamOp(
-			DataStreamConversionUtil.toTable(
-				mlEnvId,
-				MLEnvironmentFactory
-					.get(mlEnvId)
-					.getStreamExecutionEnvironment()
-					.fromElements(0)
-					.flatMap(new RichFlatMapFunction <Integer, Row>() {
-						@Override
-						public void flatMap(Integer value, Collector <Row> out) throws Exception {
-							if (value == 0) {
-								for (Row row : listPartitions(filePath, numCols)) {
-									out.collect(row);
-								}
-							}
-						}
-					})
-					.returns(new RowTypeInfo(colTypes))
-					.rebalance(),
-				schema
-			))
-			.setMLEnvironmentId(mlEnvId)
-			.link(
-				new WhereStreamOp()
-					.setClause(transformPattern(pattern, colNames))
-					.setMLEnvironmentId(mlEnvId)
 			);
 	}
 

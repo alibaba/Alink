@@ -3,8 +3,9 @@ package com.alibaba.alink.common.io.annotations;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.google.common.collect.HashBasedTable;
@@ -93,9 +94,9 @@ public class AnnotationUtils {
 		Table <String, IOType, Wrapper <AlgoOperator <?>>> table = HashBasedTable.create();
 		for (Class <?> clazz : reflections.getTypesAnnotatedWith(IoOpAnnotation.class)) {
 			try {
+				//noinspection unused
 				String name = clazz.getCanonicalName();
-				if (!AlgoOperator.class.isAssignableFrom(clazz)) {
-					LOG.error("Class annotated with @IoOpAnnotation should be subclass of AlgoOperator: {}", name);
+				if (!(AlgoOperator.class.isAssignableFrom(clazz))) {
 					continue;
 				}
 			} catch (Throwable th) {
@@ -133,7 +134,7 @@ public class AnnotationUtils {
 			FSAnnotation annotation = clazz.getAnnotation(FSAnnotation.class);
 			return annotation == null ? null : annotation.name();
 		} else {
-			throw new IllegalStateException(
+			throw new AkIllegalArgumentException(
 				"Only IO Operator, filesystem class have annotated name: " + clazz.getCanonicalName());
 		}
 	}
@@ -174,7 +175,7 @@ public class AnnotationUtils {
 	 */
 	public static BaseFileSystem <?> createFileSystem(String name, Params parameter) throws Exception {
 		Class <? extends BaseFileSystem <?>> fileSystem = FILE_SYSTEM_CLASSES.get(name);
-		Preconditions.checkArgument(fileSystem != null, "No FileSystem named %s", name);
+		AkPreconditions.checkArgument(fileSystem != null, "No FileSystem named %s", name);
 		return fileSystem.getConstructor(Params.class).newInstance(parameter);
 	}
 
@@ -188,7 +189,7 @@ public class AnnotationUtils {
 	 */
 	public static boolean isIoOpHasTimestamp(String name, IOType type) {
 		Wrapper <AlgoOperator <?>> op = IO_OP_CLASSES.get(name, type);
-		Preconditions.checkArgument(op != null, "No OP named %s has IOType: %s", name, type);
+		AkPreconditions.checkArgument(op != null, "No OP named %s has IOType: %s", name, type);
 		return op.hasTimestamp;
 	}
 
@@ -214,7 +215,7 @@ public class AnnotationUtils {
 	 */
 	public static AlgoOperator <?> createOp(String name, IOType type, Params parameter) throws Exception {
 		Wrapper <AlgoOperator <?>> op = IO_OP_CLASSES.get(name, type);
-		Preconditions.checkArgument(op != null, "No OP named %s has IOType: %s", name, type);
+		AkPreconditions.checkArgument(op != null, "No OP named %s has IOType: %s", name, type);
 		return op.clazz.getConstructor(Params.class).newInstance(parameter);
 	}
 }

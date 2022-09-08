@@ -11,20 +11,24 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
+import com.alibaba.alink.common.io.filesystem.AkUtils2;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.io.dummy.DummyOutputFormat;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.sink.Export2FileSinkStreamOp.Export2FileOutputFormat;
+import com.alibaba.alink.operator.stream.sink.Export2FileOutputFormat;
 import com.alibaba.alink.params.io.HasFilePath;
 import com.alibaba.alink.params.io.shared.HasPartitionColsDefaultAsNull;
 import com.alibaba.alink.params.io.shared.HasPartitions;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
+import java.util.List;
 
 public class Utils {
 
@@ -42,7 +46,7 @@ public class Utils {
 		final FilePath filePath = FilePath.deserialize(params.get(HasFilePath.FILE_PATH));
 		final String partitions = params.get(HasPartitions.PARTITIONS);
 
-		BatchOperator <?> selected = AkUtils
+		BatchOperator <?> selected = AkUtils2
 			.selectPartitionBatchOp(sessionId, filePath, partitions, partitionCols);
 
 		final String[] colNames = selected.getColNames();
@@ -81,7 +85,7 @@ public class Utils {
 		final FilePath filePath = FilePath.deserialize(params.get(HasFilePath.FILE_PATH));
 		final String partitions = params.get(HasPartitions.PARTITIONS);
 
-		StreamOperator <?> selected = AkUtils
+		StreamOperator <?> selected = AkUtils2
 			.selectPartitionStreamOp(sessionId, filePath, partitions, partitionCols);
 
 		final String[] colNames = selected.getColNames();

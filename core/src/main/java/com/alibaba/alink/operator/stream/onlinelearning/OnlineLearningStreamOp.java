@@ -415,6 +415,7 @@ public class OnlineLearningStreamOp extends StreamOperator <OnlineLearningStream
 				}
 			}
 			MapperChain mapperChain = loadMapperListFromStages(stages, dataSchema);
+			mapperChain.open();
 			Mapper[] mappers = new Mapper[mapperChain.getMappers().length - 1];
 			for (int i = 0; i < mapperChain.getMappers().length - 1; ++i) {
 				mappers[i] = mapperChain.getMappers()[i];

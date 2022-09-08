@@ -42,6 +42,7 @@ import com.alibaba.alink.operator.common.evaluation.EvaluationMetricsCollector;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
 import com.alibaba.alink.operator.common.evaluation.OutlierMetrics;
 import com.alibaba.alink.operator.common.outlier.OutlierDetector;
+import com.alibaba.alink.operator.common.utils.OutlierMetricsHtmlVisualizer;
 import com.alibaba.alink.params.evaluation.EvalOutlierParams;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -202,6 +203,14 @@ public class EvalOutlierBatchOp extends BatchOperator <EvalOutlierBatchOp> imple
 	@Override
 	public OutlierMetrics createMetrics(List <Row> rows) {
 		return new OutlierMetrics(rows.get(0));
+	}
+
+	public EvalOutlierBatchOp lazyVizMetrics() {
+		//noinspection unchecked
+		return lazyCollectMetrics(d -> {
+			OutlierMetricsHtmlVisualizer visualizer = OutlierMetricsHtmlVisualizer.getInstance();
+			visualizer.visualize(d);
+		});
 	}
 
 	@Override

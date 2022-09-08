@@ -8,11 +8,9 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -20,6 +18,8 @@ import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.common.utils.TimeUtil;
 import com.alibaba.alink.operator.common.evaluation.BaseMetrics;
@@ -168,8 +168,8 @@ public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 		HashSet <String> outlierValueSet = new HashSet <>(Arrays.asList(outlierValues));
 		double timeInterval = getTimeInterval();
 
-		Preconditions.checkArgument(getParams().contains(EvalOutlierStreamParams.PREDICTION_DETAIL_COL),
-			"Outlier detection evaluation must give predictionDetailCol!");
+		AkPreconditions.checkArgument(getParams().contains(EvalOutlierStreamParams.PREDICTION_DETAIL_COL),
+			new AkIllegalOperatorParameterException("Outlier detection evaluation must give predictionDetailCol!"));
 
 		String predDetailColName = getPredictionDetailCol();
 		TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predDetailColName);
@@ -178,7 +178,7 @@ public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 		data = data.map(new ReplaceLabelMapFunction(outlierValueSet, 1, 0));
 
 		DataStream <OutlierMetricsSummary> windowsStatistics = data
-			.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
+			.timeWindowAll(TimeUtil.convertTime(timeInterval))
 			.apply(new CalcOutlierMetricsSummaryWindowFunction(outlierValues));
 
 		DataStream <OutlierMetricsSummary> allStatistics = windowsStatistics

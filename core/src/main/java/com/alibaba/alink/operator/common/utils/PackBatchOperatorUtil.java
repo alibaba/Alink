@@ -7,6 +7,8 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -31,7 +33,7 @@ public class PackBatchOperatorUtil {
 	 */
 	public static BatchOperator packBatchOps(BatchOperator <?>[] batchOps) {
 		if (batchOps == null || batchOps.length == 0) {
-			throw new RuntimeException("batchOps must be set.");
+			throw new AkIllegalOperationException("batchOps must be set.");
 		}
 
 		Tuple2 <TableSchema, List <int[]>> mergeTypesAndIndices = mergeTypes(batchOps);
@@ -99,7 +101,7 @@ public class PackBatchOperatorUtil {
 				if (selectedOpIndex < 0 ||
 					selectedOpIndex >= metaData.f1.size() ||
 					selectedOpIndex >= metaData.f0.size()) {
-					throw new RuntimeException("selectedOpIndex outbound. "
+					throw new AkIllegalModelException("selectedOpIndex outbound. "
 						+ "selecedOpIndex is " + selectedOpIndex +
 						". opNum: " + metaData.f0.size() +
 						". indicesNum: " + metaData.f1.size());
@@ -113,7 +115,7 @@ public class PackBatchOperatorUtil {
 				return Tuple2.of(metaData.f0.get(selectedOpIndex).toArray(new String[0]), colIndicesArray);
 			}
 		}
-		throw new RuntimeException("model has not meta.");
+		throw new AkIllegalModelException("model has not meta.");
 	}
 
 	/**

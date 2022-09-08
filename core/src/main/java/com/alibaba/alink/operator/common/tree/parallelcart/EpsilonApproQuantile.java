@@ -1,7 +1,7 @@
 package com.alibaba.alink.operator.common.tree.parallelcart;
 
-import org.apache.flink.util.Preconditions;
-
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -206,7 +206,7 @@ public final class EpsilonApproQuantile {
 			}
 
 			if (nBig >= n) {
-				throw new RuntimeException("quantile: too many large chunk");
+				throw new AkUnclassifiedErrorException("quantile: too many large chunk");
 			}
 
 			entries.add(firstValue(src.entries));
@@ -380,7 +380,7 @@ public final class EpsilonApproQuantile {
 			double rMax = rMin + wMin;
 
 			if (sketch.temp.entries.size() == 0 || lastValue > WQSummary.lastValue(sketch.temp.entries).value) {
-				Preconditions.checkState(sketch.temp.entries.size() < maxSize);
+				AkPreconditions.checkState(sketch.temp.entries.size() < maxSize);
 				sketch.temp.entries.add(new Entry(rMin, rMax, wMin, lastValue));
 			}
 

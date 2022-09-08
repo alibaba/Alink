@@ -9,6 +9,9 @@ import org.apache.flink.core.fs.FileSystemKind;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,22 +153,22 @@ public class HttpFileReadOnlyFileSystem extends BaseFileSystem <HttpFileReadOnly
 
 		@Override
 		public boolean delete(Path f, boolean recursive) throws IOException {
-			throw new UnsupportedOperationException();
+			throw new AkUnsupportedOperationException("Not support exception. ");
 		}
 
 		@Override
 		public boolean mkdirs(Path f) throws IOException {
-			throw new UnsupportedOperationException();
+			throw new AkUnsupportedOperationException("Not support exception. ");
 		}
 
 		@Override
 		public FSDataOutputStream create(Path f, WriteMode overwriteMode) throws IOException {
-			throw new UnsupportedOperationException();
+			throw new AkUnsupportedOperationException("Not support exception. ");
 		}
 
 		@Override
 		public boolean rename(Path src, Path dst) throws IOException {
-			throw new UnsupportedOperationException();
+			throw new AkUnsupportedOperationException("Not support exception. ");
 		}
 
 		@Override
@@ -199,19 +202,19 @@ public class HttpFileReadOnlyFileSystem extends BaseFileSystem <HttpFileReadOnly
 			LOG.info("contentLength of {}, acceptRanges of {} to download {}", contentLength, acceptRanges, path);
 
 			if (contentLength < 0) {
-				throw new RuntimeException("The content length can't be determined.");
+				throw new AkUnsupportedOperationException("The content length can't be determined.");
 			}
 
 			// If the http server does not accept ranges, then we quit the program.
 			// This is because 'accept ranges' is required to achieve robustness (through re-connection),
 			// and efficiency (through concurrent read).
 			if (!splittable) {
-				throw new RuntimeException("The http server does not support range reading.");
+				throw new AkUnsupportedOperationException("The http server does not support range reading.");
 			}
 
 			return contentLength;
 		} catch (Exception e) {
-			throw new RuntimeException("Fail to connect to http server", e);
+			throw new AkUnclassifiedErrorException("Fail to connect to http server", e);
 		} finally {
 			if (headerConnection != null) {
 				headerConnection.disconnect();
@@ -277,8 +280,8 @@ public class HttpFileReadOnlyFileSystem extends BaseFileSystem <HttpFileReadOnly
 		}
 
 		private void createInternal(long start, long end) throws IOException {
-			if(start>=end){
-				throw new IllegalArgumentException("start position of http file is is lager than end position");
+			if (start >= end) {
+				throw new AkIllegalArgumentException("start position of http file is is lager than end position");
 			}
 			connection = (HttpURLConnection) path.toUri().toURL().openConnection();
 
@@ -286,7 +289,7 @@ public class HttpFileReadOnlyFileSystem extends BaseFileSystem <HttpFileReadOnly
 			connection.setConnectTimeout(CONNECTION_TIMEOUT);
 			connection.setReadTimeout(READ_TIMEOUT);
 			connection.setRequestMethod("GET");
-			connection.setRequestProperty("Range", String.format("bytes=%d-%d", start, end-1));
+			connection.setRequestProperty("Range", String.format("bytes=%d-%d", start, end - 1));
 			connection.connect();
 
 			internal = connection.getInputStream();

@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.common.tree.parallelcart.data;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -946,7 +947,7 @@ public final class SparseData implements Data {
 			try {
 				future.get();
 			} catch (Exception ex) {
-				throw new RuntimeException(ex);
+				throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 			}
 		}
 	}
@@ -1136,7 +1137,7 @@ public final class SparseData implements Data {
 			try {
 				future.get();
 			} catch (Exception ex) {
-				throw new RuntimeException(ex);
+				throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 			}
 		}
 	}

@@ -2,6 +2,7 @@ package com.alibaba.alink.common.io.plugin;
 
 import org.apache.flink.shaded.guava18.com.google.common.base.Joiner;
 
+import com.alibaba.alink.common.exceptions.AkPluginErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +110,7 @@ public class JarsPluginDirectory {
 					LOG.info("Found jar url: {}", url);
 					return url;
 				} catch (MalformedURLException e) {
-					throw new RuntimeException(e);
+					throw new AkPluginErrorException("Error.", e);
 				}
 			})
 			.toArray(URL[]::new);

@@ -3,6 +3,8 @@ package com.alibaba.alink.operator.common.io.types;
 import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,12 +35,12 @@ public class JdbcTypeConverterTest extends AlinkTestBase {
 		}
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void testUnsupportedSqlType() {
 		JdbcTypeConverter.getFlinkType(Types.TIME_WITH_TIMEZONE);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalOperatorParameterException.class)
 	public void testUnsupportedFlinkType() {
 		JdbcTypeConverter.getIntegerSqlType(TypeInformation.of(JdbcTypeConverter.class));
 	}

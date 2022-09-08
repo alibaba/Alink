@@ -3,6 +3,7 @@ package com.alibaba.alink.common.io.plugin.wrapper;
 import org.apache.flink.core.io.InputSplit;
 import org.apache.flink.core.io.InputSplitAssigner;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class InputSplitAssignerWithClassLoader implements InputSplitAssigner {
 				return raw == null ? null : new InputSplitWithClassLoader(factory, raw);
 			});
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException(e.getMessage(),e);
 		}
 	}
 
@@ -42,7 +43,7 @@ public class InputSplitAssignerWithClassLoader implements InputSplitAssigner {
 				assigner.returnInputSplit(newSplit, taskId);
 			});
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException(e.getMessage(),e);
 		}
 	}
 }

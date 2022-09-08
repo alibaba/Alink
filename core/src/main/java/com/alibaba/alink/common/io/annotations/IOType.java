@@ -23,4 +23,15 @@ public enum IOType {
 	 * Stream sink operator.
 	 */
 	SinkStream,
+
+	/**
+	 * local source operator.
+	 */
+	SourceLocal,
+
+	/**
+	 * Stream sink operator.
+	 */
+	SinkLocal,
+
 }

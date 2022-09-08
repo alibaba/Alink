@@ -25,6 +25,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -109,7 +110,7 @@ public final class HugeMultiIndexerStringPredictBatchOp
 				public void open(Configuration parameters) throws Exception {
 					List <String> metaList = getRuntimeContext().getBroadcastVariable("modelMeta");
 					if (metaList.size() != 1) {
-						throw new IllegalArgumentException("Invalid model.");
+						throw new AkIllegalModelException("Invalid model.");
 					}
 					Params meta = Params.fromJson(metaList.get(0));
 					String[] trainColNames = meta.get(HasSelectedCols.SELECTED_COLS);
@@ -118,7 +119,7 @@ public final class HugeMultiIndexerStringPredictBatchOp
 						String selectedColName = selectedCols[i];
 						int colIdxInModel = TableUtil.findColIndex(trainColNames, selectedColName);
 						if (colIdxInModel < 0) {
-							throw new RuntimeException("Can't find col in model: " + selectedColName);
+							throw new AkIllegalModelException("Can't find col in model: " + selectedColName);
 						}
 						selectedColIdxInModel[i] = colIdxInModel;
 					}

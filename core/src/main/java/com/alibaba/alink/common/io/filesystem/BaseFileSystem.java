@@ -10,6 +10,8 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.fs.RecoverableWriter;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.params.io.HasIoName;
 
@@ -45,10 +47,10 @@ public abstract class BaseFileSystem<T extends BaseFileSystem <T>> extends FileS
 			try {
 				return AnnotationUtils.createFileSystem(params.get(HasIoName.IO_NAME), params);
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw new AkUnclassifiedErrorException("create file system failed. ",e);
 			}
 		} else {
-			throw new RuntimeException("NOT a FileSystem parameter.");
+			throw new AkIllegalOperatorParameterException("NOT a FileSystem parameter.");
 		}
 	}
 

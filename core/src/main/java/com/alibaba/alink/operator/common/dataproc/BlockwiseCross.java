@@ -19,6 +19,7 @@ import org.apache.flink.api.java.typeutils.TupleTypeInfo;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +119,7 @@ public class BlockwiseCross implements Serializable {
 										} else if (order == Order.ASCENDING) {
 											return Float.compare(o2.f1, o1.f1);
 										} else {
-											throw new IllegalArgumentException("Not supported order type: " + order);
+											throw new AkUnsupportedOperationException("Not supported order type: " + order);
 										}
 									}
 								});

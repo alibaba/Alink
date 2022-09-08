@@ -2,8 +2,8 @@ package com.alibaba.alink.operator.stream.feature.aggfunc;
 
 import org.apache.flink.table.api.TableException;
 import org.apache.flink.table.functions.AggregateFunction;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.sql.builtin.agg.RankData;
 import org.junit.Test;
 
@@ -71,7 +71,7 @@ public abstract class AggFunctionTestBase<I, R, ACC> {
 		// iterate over input sets
 		List <List <I>> inputValueSets = getInputValueSets();
 		List <R> expectedResults = getExpectedResults();
-		Preconditions.checkArgument(inputValueSets.size() == expectedResults.size());
+		AkPreconditions.checkArgument(inputValueSets.size() == expectedResults.size());
 		AggregateFunction <R, ACC> aggregator = getAggregator();
 		int size = inputValueSets.size();
 		// iterate over input sets
@@ -108,7 +108,7 @@ public abstract class AggFunctionTestBase<I, R, ACC> {
 
 			List <List <I>> inputValueSets = getInputValueSets();
 			List <R> expectedResults = getExpectedResults();
-			Preconditions.checkArgument(inputValueSets.size() == expectedResults.size());
+			AkPreconditions.checkArgument(inputValueSets.size() == expectedResults.size());
 			int size = inputValueSets.size();
 			// iterate over input sets
 			for (List <I> inputValues : inputValueSets) {

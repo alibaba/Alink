@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.linalg.tensor;
 
 import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil.DoCalcFunctions;
 import org.tensorflow.ndarray.IntNdArray;
 import org.tensorflow.ndarray.NdArray;
@@ -163,6 +164,6 @@ public final class IntTensor extends NumericalTensor <Integer> {
 
 	@Override
 	public IntTensor mean(int dim, boolean keepDim) {
-		throw new UnsupportedOperationException();
+		throw new AkUnsupportedOperationException("Not support exception. ");
 	}
 }

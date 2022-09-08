@@ -6,8 +6,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.ml.api.misc.param.WithParams;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.params.shared.HasMLEnvironmentId;
 
@@ -86,7 +87,7 @@ public abstract class AlgoOperator<T extends AlgoOperator <T>>
 	 */
 	public Table getOutputTable() {
 		if (null == this.output) {
-			throw new RuntimeException(
+			throw new AkIllegalOperationException(
 				"There is no output. Please call current BatchOperator's 'link' or related method firstly, "
 					+ "or this BatchOperator has no output.");
 		} else {
@@ -297,7 +298,7 @@ public abstract class AlgoOperator<T extends AlgoOperator <T>>
 					}
 				}
 			} catch (Exception ex) {
-				throw new RuntimeException(ex);
+				throw new AkIllegalOperatorParameterException(ex.getMessage());
 			}
 		}
 	}

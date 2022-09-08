@@ -1,7 +1,8 @@
 package com.alibaba.alink.common.io.catalog.plugin;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.table.factories.Factory;
+import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
+import org.apache.flink.table.factories.TableFactory;
 
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
@@ -27,13 +28,13 @@ public class DataHubClassLoaderFactory extends ClassLoaderFactory implements Ser
 		return ClassLoaderContainer
 			.getInstance()
 			.create(
-				registerKey, distributeCache, Factory.class,
+				registerKey, distributeCache, TableFactory.class,
 				new DataHubCatalogServiceFilter(registerKey),
 				new DataHubCatalogVersionGetter()
 			);
 	}
 
-	private static class DataHubCatalogServiceFilter implements Predicate <Factory> {
+	private static class DataHubCatalogServiceFilter implements Predicate <TableFactory> {
 		private final RegisterKey registerKey;
 
 		public DataHubCatalogServiceFilter(RegisterKey registerKey) {
@@ -41,8 +42,8 @@ public class DataHubClassLoaderFactory extends ClassLoaderFactory implements Ser
 		}
 
 		@Override
-		public boolean test(Factory factory) {
-			String catalogType = factory.factoryIdentifier();
+		public boolean test(TableFactory factory) {
+			String catalogType = factory.requiredContext().get(CatalogDescriptorValidator.CATALOG_TYPE);
 
 			return catalogType != null
 				&& catalogType.equalsIgnoreCase(registerKey.getName())
@@ -51,10 +52,10 @@ public class DataHubClassLoaderFactory extends ClassLoaderFactory implements Ser
 	}
 
 	private static class DataHubCatalogVersionGetter implements
-		Function <Tuple2 <Factory, PluginDescriptor>, String> {
+		Function <Tuple2 <TableFactory, PluginDescriptor>, String> {
 
 		@Override
-		public String apply(Tuple2 <Factory, PluginDescriptor> factory) {
+		public String apply(Tuple2 <TableFactory, PluginDescriptor> factory) {
 			return factory.f1.getVersion();
 		}
 	}

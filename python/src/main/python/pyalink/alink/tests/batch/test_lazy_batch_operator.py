@@ -149,6 +149,39 @@ class TestLazyBatchOperator(unittest.TestCase):
         self.assertTrue(title1 in content)
         self.assertTrue(title2 in content)
 
+    def test_lazy_viz_statistics(self):
+        import numpy as np
+        import pandas as pd
+        data = np.array([
+            [0, "0 0 0"],
+            [1, "0.1,0.1,0.1"],
+            [2, "0.2,0.2,0.2"],
+            [3, "9 9 9"],
+            [4, "9.1 9.1 9.1"],
+            [5, "9.2 9.2 9.2"]
+        ])
+        df = pd.DataFrame({"id": data[:, 0], "vec": data[:, 1]})
+        source = BatchOperator.fromDataframe(df, schemaStr='id int, vec string')
+        source.lazyVizStatistics()
+        source.lazyVizStatistics("test")
+        BatchOperator.execute()
+
+    def test_lazy_viz_dive(self):
+        import numpy as np
+        import pandas as pd
+        data = np.array([
+            [0, "0 0 0"],
+            [1, "0.1,0.1,0.1"],
+            [2, "0.2,0.2,0.2"],
+            [3, "9 9 9"],
+            [4, "9.1 9.1 9.1"],
+            [5, "9.2 9.2 9.2"]
+        ])
+        df = pd.DataFrame({"id": data[:, 0], "vec": data[:, 1]})
+        source = BatchOperator.fromDataframe(df, schemaStr='id int, vec string')
+        source.lazyVizDive()
+        BatchOperator.execute()
+
     def test_lazy_collect_statistics_before_link(self):
         import numpy as np
         import pandas as pd

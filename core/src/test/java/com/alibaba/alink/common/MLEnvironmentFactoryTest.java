@@ -1,5 +1,6 @@
 package com.alibaba.alink.common;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,7 +10,7 @@ import org.junit.Test;
  */
 public class MLEnvironmentFactoryTest extends AlinkTestBase {
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void testInvalidMLEnvId() {
 		MLEnvironmentFactory.get(-1L);
 	}
@@ -23,7 +24,7 @@ public class MLEnvironmentFactoryTest extends AlinkTestBase {
 		Assert.assertSame(mlEnvironment, mlEnvironmentDefault);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void testSetDefault() {
 		MLEnvironment mlEnvironment = MLEnvironmentFactory.getDefault();
 		MLEnvironmentFactory.setDefault(mlEnvironment);
@@ -42,7 +43,7 @@ public class MLEnvironmentFactoryTest extends AlinkTestBase {
 		Assert.assertSame(MLEnvironmentFactory.get(mlEnvironmentId), mlEnvironment);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void remove() {
 		MLEnvironment mlEnvironment = new MLEnvironment();
 		Long mlEnvironmentId = MLEnvironmentFactory.registerMLEnvironment(mlEnvironment);

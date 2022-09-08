@@ -7,12 +7,11 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
-import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.ModelMapper;
@@ -52,7 +51,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 
 		for (int i = 0; i < mapperBuilder.paramsBuilder.selectedCols.length; i++) {
 			ContinuousRanges featureInterval = model.data.get(mapperBuilder.paramsBuilder.selectedCols[i]);
-			Preconditions.checkNotNull(featureInterval, "%s not found in model",
+			AkPreconditions.checkNotNull(featureInterval, "%s not found in model",
 				mapperBuilder.paramsBuilder.selectedCols[i]);
 			long maxIndex = (long) featureInterval.getIntervalNum() - 1;
 
@@ -187,7 +186,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 					new String[] {params.get(HasOutputCol.OUTPUT_COL)});
 			}
 			if (!params.contains(QuantileDiscretizerPredictParams.SELECTED_COLS)) {
-				Preconditions.checkArgument(
+				AkPreconditions.checkArgument(
 					encode.equals(ASSEMBLED_VECTOR),
 					"Not given selectedCols, encode must be ASSEMBLED_VECTOR!"
 				);
@@ -202,7 +201,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 					if (null == resultCols) {
 						resultCols = selectedCols;
 					}
-					Preconditions.checkArgument(resultCols.length == selectedCols.length,
+					AkPreconditions.checkArgument(resultCols.length == selectedCols.length,
 						"Input column name is not match output column name.");
 					resultColTypes = new TypeInformation[resultCols.length];
 					Arrays.fill(resultColTypes, Types.LONG);
@@ -212,7 +211,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 					if (null == resultCols) {
 						resultCols = selectedCols;
 					}
-					Preconditions.checkArgument(resultCols.length == selectedCols.length,
+					AkPreconditions.checkArgument(resultCols.length == selectedCols.length,
 						"Input column name is not match output column name.");
 					resultColTypes = new TypeInformation[resultCols.length];
 					Arrays.fill(resultColTypes, AlinkTypes.SPARSE_VECTOR);
@@ -220,7 +219,7 @@ public class QuantileDiscretizerModelMapper extends ModelMapper implements Clone
 				}
 				case ASSEMBLED_VECTOR: {
 					String[] outputCols = params.get(QuantileDiscretizerPredictParams.OUTPUT_COLS);
-					Preconditions.checkArgument(null != outputCols && outputCols.length == 1,
+					AkPreconditions.checkArgument(null != outputCols && outputCols.length == 1,
 						"When encode is ASSEMBLED_VECTOR, outputCols must be given and the length must be 1!");
 					resultColTypes = new TypeInformation[resultCols.length];
 					Arrays.fill(resultColTypes, AlinkTypes.SPARSE_VECTOR);

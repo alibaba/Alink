@@ -7,6 +7,7 @@ import org.apache.flink.core.fs.FileSystemFactory;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
@@ -52,7 +53,7 @@ public final class OssFileSystem extends BaseFileSystem <OssFileSystem> {
 					new URI(getSchema(), bucketName, null, null).toString()
 				);
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
 	}
 
@@ -91,10 +92,10 @@ public final class OssFileSystem extends BaseFileSystem <OssFileSystem> {
 				return loaded;
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
 
-		throw new RuntimeException("Could not create the oss file system. Both the bucket the filePath are null.");
+		throw new AkUnclassifiedErrorException("Could not create the oss file system. Both the bucket the filePath are null.");
 	}
 
 	@Override
@@ -121,7 +122,7 @@ public final class OssFileSystem extends BaseFileSystem <OssFileSystem> {
 				.newInstance();
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException |
 			ClassNotFoundException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
 	}
 

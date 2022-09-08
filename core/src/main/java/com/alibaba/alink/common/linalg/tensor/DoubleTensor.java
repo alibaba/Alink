@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.linalg.tensor;
 
 import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil.DoCalcFunctions;
 import org.tensorflow.ndarray.DoubleNdArray;
@@ -211,7 +212,7 @@ public final class DoubleTensor extends NumericalTensor <Double> {
 
 	public static DoubleTensor of(Tensor <?> other) {
 		if (!(other instanceof NumericalTensor)) {
-			throw new UnsupportedOperationException(
+			throw new AkUnsupportedOperationException(
 				String.format(
 					"Only numerical tensor can ben cast to double tensor. tensor type: %s", other.getType()
 				)
@@ -257,7 +258,9 @@ public final class DoubleTensor extends NumericalTensor <Double> {
 
 				return l2dTensor;
 			default:
-				throw new UnsupportedOperationException();
+				throw new AkUnsupportedOperationException(String.format(
+					"Only numerical tensor can ben cast to double tensor. tensor type: %s", other.getType()
+				));
 		}
 	}
 }

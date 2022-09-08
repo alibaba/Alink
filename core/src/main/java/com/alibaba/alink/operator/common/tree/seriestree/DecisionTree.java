@@ -2,8 +2,9 @@ package com.alibaba.alink.operator.common.tree.seriestree;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.common.tree.Criteria;
 import com.alibaba.alink.operator.common.tree.FeatureMeta;
 import com.alibaba.alink.operator.common.tree.Node;
@@ -35,7 +36,7 @@ public class DecisionTree {
 		this.params = params;
 		this.random = new Random(params.get(HasSeed.SEED));
 
-		Preconditions.checkNotNull(executorService);
+		AkPreconditions.checkNotNull(executorService);
 
 		this.executorService = executorService;
 
@@ -115,7 +116,7 @@ public class DecisionTree {
 				try {
 					gain = futures.get(j).get();
 				} catch (InterruptedException | ExecutionException e) {
-					throw new RuntimeException(e);
+					throw new AkUnclassifiedErrorException("Error. ",e);
 				}
 
 				if (gain > bestGain || bestSplitter == null) {

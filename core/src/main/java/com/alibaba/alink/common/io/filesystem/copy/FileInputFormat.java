@@ -39,8 +39,9 @@ import org.apache.flink.core.fs.FileInputSplit;
 import org.apache.flink.core.fs.FileStatus;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.fs.Path;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
@@ -54,8 +55,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /**
  * The base class for {@link RichInputFormat}s that read from files. For specific input types the
@@ -165,7 +164,7 @@ public abstract class FileInputFormat<OT> extends RichInputFormat <OT, FileInput
 	 * @return the extension of the file name or {@code null} if there is no extension.
 	 */
 	protected static String extractFileExtension(String fileName) {
-		checkNotNull(fileName);
+		AkPreconditions.checkNotNull(fileName);
 		int lastPeriodIndex = fileName.lastIndexOf('.');
 		if (lastPeriodIndex < 0) {
 			return null;
@@ -332,7 +331,7 @@ public abstract class FileInputFormat<OT> extends RichInputFormat <OT, FileInput
 		try {
 			this.setFilePath(new Path(filePath));
 		} catch (RuntimeException rex) {
-			throw new RuntimeException(
+			throw new AkUnclassifiedErrorException(
 				"Could not create a valid URI from the given file path name: " + rex.getMessage());
 		}
 	}
@@ -454,7 +453,7 @@ public abstract class FileInputFormat<OT> extends RichInputFormat <OT, FileInput
 	}
 
 	public void setFilesFilter(FilePathFilter filesFilter) {
-		this.filesFilter = Preconditions.checkNotNull(filesFilter, "Files filter should not be null");
+		this.filesFilter = AkPreconditions.checkNotNull(filesFilter, "Files filter should not be null");
 	}
 
 	// --------------------------------------------------------------------------------------------

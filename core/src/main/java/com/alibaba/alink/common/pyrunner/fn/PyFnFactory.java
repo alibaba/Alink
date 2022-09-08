@@ -21,7 +21,6 @@ import com.alibaba.alink.common.pyrunner.fn.impl.PyTensorScalarFn;
 import com.alibaba.alink.common.pyrunner.fn.impl.PyTimeScalarFn;
 import com.alibaba.alink.common.pyrunner.fn.impl.PyTimestampScalarFn;
 import com.alibaba.alink.common.pyrunner.fn.impl.PyVectorScalarFn;
-import com.alibaba.alink.common.utils.Functional.SerializableBiFunction;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -86,12 +85,11 @@ public class PyFnFactory {
 	}
 
 	public static TableFunction <Row> makeTableFn(String name, String fnSpecJson, String[] resultTypes) {
-		return PyFnFactory.makeTableFn(name, fnSpecJson, resultTypes,
-			Collections. <String, String>emptyMap()::getOrDefault);
+		return PyFnFactory.makeTableFn(name, fnSpecJson, resultTypes, Collections.emptyMap());
 	}
 
 	public static TableFunction <Row> makeTableFn(String name, String fnSpecJson, String[] resultTypes,
-												  SerializableBiFunction <String, String, String> runConfigGetter) {
-		return new PyTableFn(name, fnSpecJson, resultTypes, runConfigGetter);
+												  Map <String, String> runConfig) {
+		return new PyTableFn(name, fnSpecJson, resultTypes, runConfig);
 	}
 }

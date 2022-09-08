@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -39,7 +40,7 @@ public class VectorBiFunctionMapper extends MISOMapper {
 			case Cosine:
 				return Types.DOUBLE;
 			default:
-				throw new RuntimeException("not support yet.");
+				throw new AkUnsupportedOperationException("not support yet.");
 		}
 	}
 
@@ -63,7 +64,7 @@ public class VectorBiFunctionMapper extends MISOMapper {
 			case Cosine:
 				return MatVecOp.cosine(vec1, vec2);
 			default:
-				throw new RuntimeException("not support yet!");
+				throw new AkUnsupportedOperationException("not support yet!");
 		}
 	}
 }

@@ -16,10 +16,11 @@ import org.apache.flink.api.java.typeutils.TupleTypeInfo;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,7 +134,7 @@ public class ApsOpExpr {
 					Tuple2 <List <Tuple2 <Long, MT>>, Map <Long, Integer>> modelState
 						= IterTaskObjKeeper.get(modelStateHandle, taskId);
 
-					Preconditions.checkArgument(modelState != null, "Can't get model from state.");
+					AkPreconditions.checkArgument(modelState != null, "Can't get model from state.");
 
 					List <Tuple2 <Long, MT>> model = modelState.f0;
 					Map <Long, Integer> fid2lid = modelState.f1;
@@ -164,7 +165,7 @@ public class ApsOpExpr {
 		if (model.getType().isTupleType() && model.getType().getArity() == 2) {
 			mtType = ((TupleTypeInfo) model.getType()).getTypeAt(1);
 		} else {
-			throw new RuntimeException("Unsupported model type. type: " + model.getType().toString());
+			throw new AkUnclassifiedErrorException("Unsupported model type. type: " + model.getType().toString());
 		}
 
 		/**
@@ -420,7 +421,7 @@ public class ApsOpExpr {
 					} else {
 						modelState = IterTaskObjKeeper.get(modelStateHandle, taskId);
 						if (modelState == null) {
-							throw new RuntimeException("Fail to get model for task " + taskId);
+							throw new AkUnclassifiedErrorException("Fail to get model for task " + taskId);
 						}
 					}
 					model = modelState.f0;

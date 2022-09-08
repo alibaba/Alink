@@ -3,11 +3,10 @@ package com.alibaba.alink.common.io.plugin.wrapper;
 import org.apache.flink.core.io.InputSplit;
 import org.apache.flink.util.InstantiationUtil;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 public class InputSplitWithClassLoader implements InputSplit {
 	private static final long serialVersionUID = -7993725711297269105L;
@@ -23,7 +22,7 @@ public class InputSplitWithClassLoader implements InputSplit {
 		try {
 			serializedInputSplit = InstantiationUtil.serializeObject(inputSplit);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException(e.getMessage(),e);
 		}
 	}
 
@@ -33,7 +32,7 @@ public class InputSplitWithClassLoader implements InputSplit {
 			try {
 				inputSplit = InstantiationUtil.deserializeObject(serializedInputSplit, factory.create());
 			} catch (IOException | ClassNotFoundException e) {
-				throw new RuntimeException(e);
+				throw new AkUnclassifiedErrorException(e.getMessage(),e);
 			}
 		}
 

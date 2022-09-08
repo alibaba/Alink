@@ -2,7 +2,8 @@ package com.alibaba.alink.operator.common.regression.isotonicReg;
 
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple4;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -15,7 +16,7 @@ public class LinkedData {
 	private final IteratorArray iteratorArray;
 
 	public LinkedData(byte[] data) {
-		Preconditions.checkArgument(data.length % 24 == 0, "Invalid data!");
+		AkPreconditions.checkArgument(data.length % 24 == 0, "Invalid data!");
 		iteratorArray = new IteratorArray(data.length / 24, 0);
 		buffer = ByteBuffer.wrap(data);
 	}

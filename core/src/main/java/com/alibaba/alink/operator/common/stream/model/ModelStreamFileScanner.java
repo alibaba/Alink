@@ -7,6 +7,7 @@ import org.apache.flink.util.ExecutorUtils;
 
 import com.alibaba.alink.common.concurrent.ExecutorThreadFactory;
 import com.alibaba.alink.common.concurrent.FutureUtils;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.exceptions.ReadModelStreamModelRuntimeException;
 import com.alibaba.alink.common.exceptions.ScanFailRuntimeException;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
@@ -100,7 +101,7 @@ public class ModelStreamFileScanner {
 							try {
 								queue.put(timestamp);
 							} catch (InterruptedException e) {
-								throw new RuntimeException(e);
+								throw new AkUnclassifiedErrorException("Error. ",e);
 							}
 						}
 					},
@@ -130,7 +131,7 @@ public class ModelStreamFileScanner {
 				try {
 					return queue.take();
 				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
+					throw new AkUnclassifiedErrorException("Error. ",e);
 				}
 			}
 		};

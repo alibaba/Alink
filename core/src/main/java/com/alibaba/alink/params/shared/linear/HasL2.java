@@ -13,7 +13,7 @@ import com.alibaba.alink.params.validators.MinValidator;
  */
 public interface HasL2<T> extends WithParams <T> {
 
-	@NameCn("正则化系数")
+	@NameCn("L2 正则化系数")
 	@DescCn("L2 正则化系数，默认为0。")
 	ParamInfo <Double> L_2 = ParamInfoFactory
 		.createParamInfo("l2", Double.class)

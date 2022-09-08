@@ -4,8 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelData;
 import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelDataConverter;
@@ -37,7 +37,7 @@ public abstract class TreeModelInfo implements Serializable {
 		}
 
 		public String getCaseWhenRule() {
-			Preconditions.checkArgument(
+			AkPreconditions.checkArgument(
 				dataConverter.roots.length == 1,
 				"This is not a decision tree model. length: %d",
 				dataConverter.roots.length
@@ -46,7 +46,7 @@ public abstract class TreeModelInfo implements Serializable {
 		}
 
 		public TreeModelInfo saveTreeAsImage(String path, boolean isOverwrite) throws IOException {
-			Preconditions.checkArgument(
+			AkPreconditions.checkArgument(
 				dataConverter.roots.length == 1,
 				"This is not a decision tree model. length: %d",
 				dataConverter.roots.length
@@ -126,7 +126,7 @@ public abstract class TreeModelInfo implements Serializable {
 	}
 
 	protected String getCaseWhenRuleFromTreeId(int treeId) {
-		Preconditions.checkArgument(
+		AkPreconditions.checkArgument(
 			treeId >= 0 && treeId < dataConverter.roots.length,
 			"treeId should be in range [0, %d), treeId: %d",
 			dataConverter.roots.length,
@@ -144,7 +144,7 @@ public abstract class TreeModelInfo implements Serializable {
 
 	protected TreeModelInfo saveTreeAsImageFromTreeId(String path, int treeId, boolean isOverwrite) throws
 		IOException {
-		Preconditions.checkArgument(
+		AkPreconditions.checkArgument(
 			treeId >= 0 && treeId < dataConverter.roots.length,
 			"treeId should be in range [0, %d), treeId: %d",
 			dataConverter.roots.length,
@@ -292,7 +292,7 @@ public abstract class TreeModelInfo implements Serializable {
 					}
 				}
 
-				Preconditions.checkArgument(
+				AkPreconditions.checkArgument(
 					maxIndex >= 0,
 					"Can not find the probability: {}",
 					JsonConverter.toJson(root.getCounter().getDistributions())

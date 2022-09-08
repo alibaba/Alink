@@ -15,7 +15,7 @@ public interface HasReservedColsDefaultAsNull<T> extends WithParams <T> {
 	@DescCn("算法保留列")
 	ParamInfo <String[]> RESERVED_COLS = ParamInfoFactory
 		.createParamInfo("reservedCols", String[].class)
-		.setDescription("Names of the columns to be retained in the output table")
+		.setDescription("Retain the columns in the output table, if the columns exist in the input table.")
 		.setAlias(new String[] {"keepColNames"})
 		.setHasDefaultValue(null)
 		.build();

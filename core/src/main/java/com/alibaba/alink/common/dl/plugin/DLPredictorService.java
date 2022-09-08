@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.dl.plugin;
 
 import com.alibaba.alink.common.dl.plugin.DLPredictServiceMapper.PredictorConfig;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,11 +13,11 @@ public interface DLPredictorService {
 	// only used by TF now
 	@Deprecated
 	default void open(Map <String, Object> config) {
-		throw new UnsupportedOperationException();
+		throw new AkUnsupportedOperationException("Not implement exception. ");
 	}
 
 	default void open(PredictorConfig config) {
-		throw new UnsupportedOperationException();
+		throw new AkUnsupportedOperationException("Not implement exception. ");
 	}
 
 	void close();

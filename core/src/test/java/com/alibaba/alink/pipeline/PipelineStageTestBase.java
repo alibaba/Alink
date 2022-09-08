@@ -25,16 +25,16 @@ import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.testutil.AlinkTestBase;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import org.junit.Test;
 
 /**
  * The base class for testing the base implementation of pipeline stages, i.e. Estimators and Transformers.
  * This class is package private because we do not expect extension outside of the package.
  */
-abstract class PipelineStageTestBase extends AlinkTestBase {
+abstract class PipelineStageTestBase {
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void testMismatchTableEnvironment() {
 		Long id = MLEnvironmentFactory.getNewMLEnvironmentId();
 		MLEnvironment env = MLEnvironmentFactory.get(id);
@@ -51,7 +51,7 @@ abstract class PipelineStageTestBase extends AlinkTestBase {
 		}
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalArgumentException.class)
 	public void testNullInputTable() {
 		Long id = MLEnvironmentFactory.getNewMLEnvironmentId();
 		MLEnvironment env = MLEnvironmentFactory.get(id);

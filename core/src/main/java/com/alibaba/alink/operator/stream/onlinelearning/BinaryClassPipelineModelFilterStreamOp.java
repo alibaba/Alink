@@ -258,6 +258,7 @@ public class BinaryClassPipelineModelFilterStreamOp extends StreamOperator <Bina
 			classParams.set(HasReservedColsDefaultAsNull.RESERVED_COLS, new String[] {labelCol});
 			this.predDetailCol = classParams.get(HasPredictionDetailCol.PREDICTION_DETAIL_COL);
 			this.mapperChain = loadMapperListFromStages(stages, TableUtil.schemaStr2Schema(dataSchemaStr));
+			this.mapperChain.open();
 			return this.mapperChain.getMappers()[mapperChain.getMappers().length - 1].getOutputSchema();
 		}
 	}

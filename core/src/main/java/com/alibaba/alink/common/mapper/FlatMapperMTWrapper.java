@@ -7,6 +7,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.ExecutorUtils;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +122,7 @@ public final class FlatMapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 											try {
 												outputQueue.put(record);
 											} catch (InterruptedException e) {
-												throw new RuntimeException(e);
+												throw new AkUnclassifiedErrorException("Error. ", e);
 											}
 										}
 
@@ -132,7 +133,7 @@ public final class FlatMapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 									});
 								}
 							} catch (Exception e) {
-								throw new RuntimeException(e);
+								throw new AkUnclassifiedErrorException(e.getMessage(), e);
 							}
 						}
 					}
@@ -157,7 +158,7 @@ public final class FlatMapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 			collect(outputQueues.get(targetTid), collector);
 
 			if (!threadException.compareAndSet(null, null)) {
-				throw new RuntimeException(threadException.get());
+				throw new AkUnclassifiedErrorException(threadException.get().getMessage());
 			}
 
 			success = inputQueues.get(targetTid).offer(Row.copy(value));
@@ -168,7 +169,7 @@ public final class FlatMapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 			}
 
 			if (!threadException.compareAndSet(null, null)) {
-				throw new RuntimeException(threadException.get());
+				throw new AkUnclassifiedErrorException(threadException.get().getMessage());
 			}
 
 		} while (!success);
@@ -181,7 +182,7 @@ public final class FlatMapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 		try {
 
 			if (!threadException.compareAndSet(null, null)) {
-				throw new RuntimeException(threadException.get());
+				throw new AkUnclassifiedErrorException(threadException.get().getMessage());
 			}
 
 			boolean[] inputEofStatus = new boolean[numThreads];
@@ -213,7 +214,7 @@ public final class FlatMapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 			}
 
 			if (!threadException.compareAndSet(null, null)) {
-				throw new RuntimeException(threadException.get());
+				throw new AkUnclassifiedErrorException(threadException.get().getMessage());
 			}
 
 		} finally {

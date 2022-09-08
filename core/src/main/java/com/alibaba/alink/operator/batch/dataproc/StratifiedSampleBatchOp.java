@@ -79,9 +79,11 @@ public final class StratifiedSampleBatchOp extends BatchOperator <StratifiedSamp
 			String[] keyRatios = ratios.split(",");
 			for (String keyRatio : keyRatios) {
 				String[] ratioArray = keyRatio.split(":");
+				AkPreconditions.checkArgument(ratioArray.length == 2,
+					"Invalid format for param ratios.");
 				Double groupRatio = new Double(ratioArray[1]);
 				AkPreconditions.checkArgument(groupRatio >= 0.0 && groupRatio <= 1.0,
-					new AkIllegalArgumentException("Ratio must be in range [0, 1]."));
+					new AkIllegalArgumentException("Param ratios must be in range [0, 1]."));
 				fractionMap.put(ratioArray[0], groupRatio);
 			}
 
@@ -91,15 +93,19 @@ public final class StratifiedSampleBatchOp extends BatchOperator <StratifiedSamp
 		public void reduce(Iterable <T> values, Collector <T> out) {
 			GetFirstIterator iterator = new GetFirstIterator(values.iterator());
 			Double fraction = sampleRatio;
-			if (null == fraction || fraction < 0) {
-				Row first = (Row) iterator.getFirst();
-				if (null != first) {
-					Object key = first.getField(index);
-					fraction = fractionMap.get(String.valueOf(key));
-					AkPreconditions.checkNotNull(fraction, key + " is not contained in map!");
+			Row first = (Row) iterator.getFirst();
+			if (null != first) {
+				String key = String.valueOf(first.getField(index));
+				if (fractionMap.containsKey(key)) {
+					fraction = fractionMap.get(key);
 				} else {
-					return;
+					if (sampleRatio < 0 || sampleRatio > 1) {
+						throw new AkIllegalArgumentException("Illegal ratio  for [" + key + "]. "
+							+ "Please set proper values for ratio or ratios.");
+					}
 				}
+			} else {
+				return;
 			}
 
 			RandomSampler <T> sampler;

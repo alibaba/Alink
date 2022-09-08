@@ -8,11 +8,13 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.DataTypeDisplayInterface;
+import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -100,7 +102,7 @@ public class TableUtil {
 	 * @return the index of the targetCol, if not found, returns -1.
 	 */
 	public static int findColIndex(String[] tableCols, String targetCol) {
-		Preconditions.checkNotNull(targetCol, "targetCol is null!");
+		AkPreconditions.checkNotNull(targetCol, "targetCol is null!");
 		for (int i = 0; i < tableCols.length; i++) {
 			if (targetCol.equalsIgnoreCase(tableCols[i])) {
 				return i;
@@ -120,7 +122,7 @@ public class TableUtil {
 	public static int findColIndexWithAssert(String[] tableCols, String targetCol) {
 		int index = findColIndex(tableCols, targetCol);
 		if (index < 0) {
-			throw new IllegalArgumentException("Can not find column: " + targetCol);
+			throw new AkColumnNotFoundException("Can not find column: " + targetCol);
 		}
 		return index;
 	}
@@ -146,10 +148,10 @@ public class TableUtil {
 				}
 			}
 			if (maxSimilarity > 0.7) {
-				throw new IllegalArgumentException(
+				throw new AkColumnNotFoundException(
 					"Can not find column: " + targetCol + ", do you mean: " + similarCol + " ?");
 			} else {
-				throw new IllegalArgumentException("Can not find column: " + targetCol);
+				throw new AkColumnNotFoundException("Can not find column: " + targetCol);
 			}
 		}
 		return index;
@@ -445,7 +447,7 @@ public class TableUtil {
 			for (String selectedCol : selectedCols) {
 				if (null != selectedCol) {
 					if (!isSupportedNumericType(findColType(tableSchema, selectedCol))) {
-						throw new IllegalArgumentException("col type must be number " + selectedCol);
+						throw new AkIllegalOperatorParameterException("col type must be number " + selectedCol);
 					}
 				}
 			}
@@ -463,7 +465,7 @@ public class TableUtil {
 			for (String selectedCol : selectedCols) {
 				if (null != selectedCol) {
 					if (!isString(findColType(tableSchema, selectedCol))) {
-						throw new IllegalArgumentException("col type must be string " + selectedCol);
+						throw new AkIllegalOperatorParameterException("col type must be string " + selectedCol);
 					}
 				}
 			}
@@ -482,7 +484,7 @@ public class TableUtil {
 			for (String selectedCol : selectedCols) {
 				if (null != selectedCol) {
 					if (!isVector(findColType(tableSchema, selectedCol))) {
-						throw new IllegalArgumentException("col type must be string " + selectedCol);
+						throw new AkIllegalOperatorParameterException("col type must be string " + selectedCol);
 					}
 				}
 			}
@@ -817,7 +819,7 @@ public class TableUtil {
 		final String[] colNames = schema.getFieldNames();
 		String idCol = colNames[0];
 		if (!idCol.equalsIgnoreCase("table_id")) {
-			throw new IllegalArgumentException("The table can't be splited.");
+			throw new AkIllegalArgumentException("The table can't be splited.");
 		}
 
 		String lastCol = colNames[colNames.length - 1];

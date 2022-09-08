@@ -64,6 +64,11 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 值为负无穷的数据个数
 	 */
 	public long countNegativInfinity = 0;
+
+	/**
+	 * 值是0的个数
+	 */
+	public long countZero = 0;
 	/**
 	 * *
 	 * 数据的和
@@ -125,12 +130,12 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	}
 
 	SummaryResultCol(Class dataType) {
-		init(dataType, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		init(dataType, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	}
 
 	public SummaryResultCol(SRC src) throws ClassNotFoundException {
 		init(Class.forName(src.dataType), src.countTotal, src.count, src.countMissValue, src.countNanValue,
-			src.countPositiveInfinity, src.countNegativInfinity,
+			src.countPositiveInfinity, src.countNegativInfinity, src.countZero,
 			src.sum, src.normL1, src.sum2, src.sum3, src.sum4, src.min, src.max);
 	}
 
@@ -219,6 +224,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 			src1.countNanValue + src2.countNanValue,
 			src1.countPositiveInfinity + src2.countPositiveInfinity,
 			src1.countNegativInfinity + src2.countNegativInfinity,
+			src1.countZero + src2.countZero,
 			src1.sum + src2.sum,
 			src1.sum + src2.sum,
 			src1.sum2 + src2.sum2,
@@ -690,6 +696,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 		src.countNanValue = this.countNanValue;
 		src.countPositiveInfinity = this.countPositiveInfinity;
 		src.countNegativInfinity = this.countNegativInfinity;
+		src.countZero = this.countZero;
 		src.sum = this.sum;
 		src.sum2 = this.sum2;
 		src.sum3 = this.sum3;
@@ -865,7 +872,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	}
 
 	void init(Class dataType, long countTotal, long count, long countMissValue, long countNanValue,
-			  long countPositiveInfinity, long countNegativInfinity,
+			  long countPositiveInfinity, long countNegativInfinity, long countZero,
 			  double sum, double absSum, double sum2, double sum3, double sum4, Object minValue, Object maxValue) {
 		this.dataType = dataType;
 		if (countTotal != count + countMissValue + countNanValue + countPositiveInfinity + countNegativInfinity) {
@@ -877,6 +884,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 		this.countNanValue = countNanValue;
 		this.countPositiveInfinity = countPositiveInfinity;
 		this.countNegativInfinity = countNegativInfinity;
+		this.countZero = countZero;
 		this.sum = sum;
 		this.sum2 = sum2;
 		this.sum3 = sum3;

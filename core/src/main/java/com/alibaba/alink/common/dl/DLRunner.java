@@ -18,12 +18,10 @@
 
 package com.alibaba.alink.common.dl;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.ServerSocket;
-import java.util.Map;
+import org.apache.flink.api.java.tuple.Tuple2;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.flink.ml.cluster.master.meta.AMMeta;
 import com.alibaba.flink.ml.cluster.master.meta.AMMetaImpl;
@@ -45,12 +43,14 @@ import com.alibaba.flink.ml.util.IpHostUtil;
 import com.alibaba.flink.ml.util.MLConstants;
 import com.alibaba.flink.ml.util.MLException;
 import com.alibaba.flink.ml.util.ProtoUtil;
-
-import com.google.common.base.Preconditions;
 import org.apache.commons.io.IOUtils;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.ServerSocket;
+import java.util.Map;
 
 /**
  * This runner gets TF cluster info from Flink's broadcast variable instead of
@@ -158,7 +158,7 @@ public class DLRunner implements MLRunner, Serializable {
 
             // get cluster
             getClusterInfo();
-            Preconditions.checkNotNull(mlClusterDef);
+            AkPreconditions.checkNotNull(mlClusterDef);
             checkEnd();
 
             // set machine learning context: the cluster spec, local server ip port

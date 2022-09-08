@@ -6,6 +6,9 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.ModelMapper;
@@ -17,23 +20,27 @@ import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.onlinelearning.PipelinePredictStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
+import com.alibaba.alink.params.PipelineModelParams;
 import com.alibaba.alink.params.mapper.MapperParams;
 import com.alibaba.alink.params.shared.HasNumThreads;
 import com.alibaba.alink.pipeline.ModelExporterUtils.StageNode;
 import com.alibaba.alink.pipeline.recommendation.BaseRecommender;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
  * The model fitted by {@link Pipeline}.
  */
 public final class PipelineModel extends ModelBase <PipelineModel>
-	implements ModelStreamScanParams <PipelineModel>, LocalPredictable {
+	implements PipelineModelParams <PipelineModel>, LocalPredictable {
 
 	private static final long serialVersionUID = -7217216709192253383L;
 	TransformerBase <?>[] transformers;
@@ -47,7 +54,10 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 	}
 
 	public PipelineModel(TransformerBase <?>... transformers) {
-		super(null);
+		super(new Params());
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		params.set(PipelineModelParams.TIMESTAMP, df.format(new Date()));
+
 		if (null == transformers) {
 			this.transformers = new TransformerBase <?>[] {};
 		} else {
@@ -55,6 +65,38 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 			flattenTransformers(transformers, flattened);
 			this.transformers = flattened.toArray(new TransformerBase[0]);
 		}
+	}
+
+	public void printProfile() {
+		System.out.println("***************** PipelineModel Profile *********************************");
+		String timestamp = params.get(PipelineModelParams.TIMESTAMP);
+		String inputDataSchema = params.get(PipelineModelParams.TRAINING_DATA_SCHEMA);
+		if (timestamp != null) {
+			System.out.println("modelGenerationTimestamp : " + timestamp);
+		}
+		System.out.println("pipelineModelStages      : " + constructStagesInfo());
+		if (inputDataSchema != null) {
+			System.out.println("trainingDataSchema       : " + inputDataSchema);
+		}
+		if (params.contains(PipelineModelParams.MODEL_STREAM_FILE_PATH)) {
+			System.out.println("modelStreamFilePath      : " + getModelStreamFilePath().getPathStr());
+			System.out.println("modelStreamStartTime     : " + getModelStreamStartTime());
+			System.out.println("modelStreamScanInterval  : " + getModelStreamScanInterval());
+		}
+		System.out.println("*************************************************************************");
+	}
+
+	private String constructStagesInfo() {
+		StringBuilder stageList = new StringBuilder("[");
+		assert transformers != null;
+		stageList.append("\n\t ").append(transformers[0].getClass().getSimpleName())
+			.append(" (").append(transformers[0].params);
+		for (int i = 1; i < transformers.length; ++i) {
+			stageList.append("),\n\t ").append(transformers[i].getClass().getSimpleName())
+				.append(" (").append(transformers[i].params);
+		}
+		stageList.append(")]");
+		return stageList.toString();
 	}
 
 	public void setTransformers(TransformerBase <?>[] transformers) {
@@ -151,6 +193,15 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 				input = new PipelinePredictStreamOp(this)
 					.setNumThreads(maxCurModelNumThread).linkFrom(input);
 			}
+		}
+		return input;
+	}
+
+	@Override
+	public LocalOperator <?> transform(LocalOperator <?> input) {
+		checkParams();
+		for (TransformerBase <?> transformerBase : this.transformers) {
+			input = transformerBase.transform(input);
 		}
 		return input;
 	}
@@ -268,14 +319,15 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 		}
 
 		if (null == transformers || transformers.length == 0) {
-			throw new RuntimeException("PipelineModel is empty.");
+			throw new AkIllegalDataException("PipelineModel is empty.");
 		}
 
 		List <BatchOperator <?>> allModelData = new ArrayList <>();
 
 		for (TransformerBase <?> transformer : transformers) {
 			if (!(transformer instanceof LocalPredictable)) {
-				throw new RuntimeException(transformer.getClass().toString() + " not support local predict.");
+				throw new AkIllegalOperationException(
+					transformer.getClass().toString() + " not support local predict.");
 			}
 			if (transformer instanceof ModelBase) {
 				allModelData.add(((ModelBase <?>) transformer).getModelData());
@@ -317,12 +369,12 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 
 	@Override
 	public BatchOperator <?> getModelData() {
-		throw new UnsupportedOperationException("Unsupported getModelData in Pipeline model");
+		throw new AkUnsupportedOperationException("Unsupported getModelData in Pipeline model");
 	}
 
 	@Override
 	public PipelineModel setModelData(BatchOperator <?> modelData) {
-		throw new UnsupportedOperationException("Unsupported setModelData in Pipeline model");
+		throw new AkUnsupportedOperationException("Unsupported setModelData in Pipeline model");
 	}
 
 	/**
@@ -438,4 +490,5 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 			super(PipelineModelMapper::new, params);
 		}
 	}
+
 }

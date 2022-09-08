@@ -5,6 +5,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.dataproc.StratifiedSampleParams;
@@ -24,20 +26,15 @@ public class StratifiedSampleMapper extends FlatMapper {
 
 		this.sampleRatio = this.params.get(StratifiedSampleParams.STRATA_RATIO);
 
-		if (sampleRatio <= 0) {
-			String sampleStr = this.params.get(StratifiedSampleParams.STRATA_RATIOS);
-			this.sampleRatios = new HashMap <>();
-			String[] sp1 = sampleStr.split(",");
-			for (String sp : sp1) {
-				String[] sp2 = sp.split(":");
-				if (sp2.length != 2) {
-					throw new RuntimeException("kv format error.");
-				}
-				this.sampleRatios.put(sp2[0], Double.parseDouble(sp2[1]));
-			}
-		}
-		if (sampleRatio <= 0 && (sampleRatios.isEmpty())) {
-			throw new RuntimeException("sample ratio and sample ratios must exsit one.");
+		String sampleStr = this.params.get(StratifiedSampleParams.STRATA_RATIOS);
+		this.sampleRatios = new HashMap <>();
+		String[] sp1 = sampleStr.split(",");
+		for (String sp : sp1) {
+			String[] sp2 = sp.split(":");
+			AkPreconditions.checkArgument(sp2.length == 2, "Invalid format for param ratios.");
+			double ratio = Double.parseDouble(sp2[1]);
+			AkPreconditions.checkArgument(ratio >= 0 && ratio <= 1, "Param ratios must be in range [0, 1].");
+			this.sampleRatios.put(sp2[0], ratio);
 		}
 
 		this.strataColIdx = TableUtil.findColIndexWithAssertAndHint(dataSchema.getFieldNames(), strataColName);
@@ -51,8 +48,14 @@ public class StratifiedSampleMapper extends FlatMapper {
 	@Override
 	public void flatMap(Row row, Collector <Row> output) throws Exception {
 		double ratio = sampleRatio;
-		if (sampleRatios != null) {
-			ratio = sampleRatios.get(String.valueOf(row.getField(strataColIdx)));
+		String key = String.valueOf(row.getField(strataColIdx));
+		if (sampleRatios.containsKey(key)) {
+			ratio = sampleRatios.get(key);
+		} else {
+			if (ratio < 0 || ratio > 1) {
+				throw new AkIllegalArgumentException("Illegal ratio  for [" + key + "]. "
+					+ "Please set proper values for ratio or ratios.");
+			}
 		}
 
 		double random = Math.random();

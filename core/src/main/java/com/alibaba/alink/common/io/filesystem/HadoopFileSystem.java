@@ -8,6 +8,8 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.FileUtils;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory.HadoopFileSystemClassLoaderFactory;
@@ -115,10 +117,10 @@ public final class HadoopFileSystem extends BaseFileSystem <HadoopFileSystem> {
 				return loaded;
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("factory create failed",e);
 		}
 
-		throw new RuntimeException("Could not create the hadoop file system. Both the fsUri the filePath are null.");
+		throw new AkIllegalOperatorParameterException("Could not create the hadoop file system. Both the fsUri the filePath are null.");
 	}
 
 	private FileSystemFactory createFactory() {
@@ -137,7 +139,7 @@ public final class HadoopFileSystem extends BaseFileSystem <HadoopFileSystem> {
 				.newInstance();
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException |
 			ClassNotFoundException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
 	}
 
@@ -147,7 +149,7 @@ public final class HadoopFileSystem extends BaseFileSystem <HadoopFileSystem> {
 		File localConfDir = new File(System.getProperty("java.io.tmpdir"), FileUtils.getRandomFilename(""));
 
 		if (!localConfDir.mkdir()) {
-			throw new RuntimeException("Could not create the dir " + localConfDir.getAbsolutePath());
+			throw new AkUnclassifiedErrorException("Could not create the dir " + localConfDir.getAbsolutePath());
 		}
 
 		try (FileOutputStream outputStream =

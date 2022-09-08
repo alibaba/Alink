@@ -62,4 +62,35 @@ public class BoosterImpl implements Booster {
 		}
 	}
 
+	@Override
+	public float[][] predict(Iterator <Row> rowIterator, Function <Row, Row> preprocess,
+							 Function <Row, Tuple2 <Vector, float[]>> extractor) throws XGboostException {
+		try {
+			return booster.predict(
+				new DMatrix(
+					XGBoostUtil.asLabeledPointIterator(
+						rowIterator,
+						XGBoostUtil.asLabeledPointConverterFunction(
+							preprocess,
+							extractor
+						)
+					),
+					null
+				)
+			);
+		} catch (XGBoostError e) {
+			throw new XGboostException(e);
+		}
+	}
+
+	@Override
+	public long getNumFeatures() throws XGboostException {
+		//try {
+		//	return booster.getNumFeature();
+		//} catch (XGBoostError e) {
+		//	throw new XGboostException(e);
+		//}
+
+		throw new XGboostException("Unsupported now.");
+	}
 }

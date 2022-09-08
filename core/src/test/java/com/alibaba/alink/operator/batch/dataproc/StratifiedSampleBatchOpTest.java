@@ -4,6 +4,8 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
+import junit.framework.Assert;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -28,19 +30,9 @@ public class StratifiedSampleBatchOpTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void test1() throws Exception {
+	public void testStringStrataRatios() throws Exception {
 		StratifiedSampleBatchOp stratifiedSampleBatchOp = new StratifiedSampleBatchOp()
 			.setStrataCol(colnames[0])
-			.setStrataRatios("a:0.5,b:0.5,c:0.5,d:1.0");
-		long cnt = getSourceBatchOp().link(stratifiedSampleBatchOp).count();
-		assert cnt >= 0 && cnt <= 8;
-	}
-
-	@Test
-	public void test2() throws Exception {
-		StratifiedSampleBatchOp stratifiedSampleBatchOp = new StratifiedSampleBatchOp()
-			.setStrataCol(colnames[0])
-			.setStrataRatio(0.5)
 			.setStrataRatios("a:0.5,b:0.5,c:0.5,d:1.0");
 		long cnt = getSourceBatchOp().link(stratifiedSampleBatchOp).count();
 		assert cnt >= 0 && cnt <= 8;
@@ -51,6 +43,30 @@ public class StratifiedSampleBatchOpTest extends AlinkTestBase {
 		StratifiedSampleBatchOp stratifiedSampleBatchOp = new StratifiedSampleBatchOp()
 			.setStrataCol(colnames[2])
 			.setStrataRatios("1.1:0.5,0.9:0.5,-0.01:0.5,100.9:1.0");
+		long cnt = getSourceBatchOp().link(stratifiedSampleBatchOp).count();
+		assert cnt >= 0 && cnt <= 8;
+	}
+
+	@Test
+	public void testInCompleteRatios() throws Exception {
+		StratifiedSampleBatchOp stratifiedSampleBatchOp = new StratifiedSampleBatchOp()
+			.setStrataCol(colnames[0])
+			.setStrataRatios("a:0.5,b:0.5,c:0.5");
+		try {
+			getSourceBatchOp().link(stratifiedSampleBatchOp).count();
+			assert false;
+		} catch (Exception e) {
+			Assert.assertEquals("Illegal ratio  for [d]. "
+				+ "Please set proper values for ratio or ratios.", ExceptionUtils.getRootCause(e).getMessage());
+		}
+	}
+
+	@Test
+	public void testInCompleteRatiosWithRatioSet() throws Exception {
+		StratifiedSampleBatchOp stratifiedSampleBatchOp = new StratifiedSampleBatchOp()
+			.setStrataCol(colnames[0])
+			.setStrataRatio(0.5)
+			.setStrataRatios("a:0.5,b:0.5,c:0.5");
 		long cnt = getSourceBatchOp().link(stratifiedSampleBatchOp).count();
 		assert cnt >= 0 && cnt <= 8;
 	}

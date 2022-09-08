@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.evaluation;
 
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.JsonConverter;
 
 import java.util.HashMap;
@@ -20,7 +21,7 @@ class DefaultLabelProbMapExtractor implements LabelProbMapExtractor {
 			return JsonConverter.fromJson(json,
 				new TypeReference <HashMap <String, Double>>() {}.getType());
 		} catch (Exception e) {
-			throw new RuntimeException(
+			throw new AkUnclassifiedErrorException(
 				String.format("Failed to deserialize prediction detail: %s.", json));
 		}
 	}

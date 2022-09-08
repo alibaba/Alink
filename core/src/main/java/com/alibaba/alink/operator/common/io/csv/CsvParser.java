@@ -9,6 +9,7 @@ import org.apache.flink.util.InstantiationUtil;
 import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -65,7 +66,7 @@ public class CsvParser implements Serializable {
 			}
 			Class <? extends FieldParser <?>> parserType = FieldParser.getParserForType(typeClazz);
 			if (parserType == null) {
-				throw new RuntimeException("No parser available for type '" + typeClazz.getName() + "'.");
+				throw new AkParseErrorException("No parser available for type '" + typeClazz.getName() + "'.");
 			}
 			parsers[i] = InstantiationUtil.instantiate(parserType, FieldParser.class);
 			isString[i] = types[i].equals(Types.STRING);

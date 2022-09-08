@@ -22,6 +22,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -79,7 +80,7 @@ public final class ModelStreamFileSourceStreamOp extends BaseSourceStreamOp <Mod
 								out.collect(Tuple3.of(modelDesc.f0, modelDesc.f1, filePath));
 							}
 						} catch (IOException e) {
-							throw new RuntimeException(e);
+							throw new AkUnclassifiedErrorException("Error. ",e);
 						}
 					}
 				})
