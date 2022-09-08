@@ -7,6 +7,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.params.dataproc.SrtPredictMapperParams;
 
@@ -81,7 +83,7 @@ public class ImputerModelMapper extends ModelMapper {
 		values = tuple2.f1;
 		if (Strategy.VALUE.equals(tuple2.f0)) {
 			if (tuple2.f2 == null) {
-				throw new RuntimeException("In VALUE strategy, the filling value is necessary.");
+				throw new AkIllegalModelException("In VALUE strategy, the filling value is necessary.");
 			}
 			fillValue = tuple2.f2.toLowerCase();
 		}
@@ -127,7 +129,7 @@ public class ImputerModelMapper extends ModelMapper {
 								result.set(idx, false);
 								break;
 							default:
-								throw new IllegalArgumentException("Missing value filling policy not correct!");
+								throw new AkIllegalOperatorParameterException("Missing value filling policy not correct!");
 						}
 						break;
 					case STRING:

@@ -6,8 +6,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -47,6 +47,9 @@ public abstract class Mapper implements Serializable {
 	private MemoryTransformer transformer;
 	private SlicedSelectedSampleThreadLocal selection;
 	private SlicedSlicedResultThreadLocal result;
+
+	private SlicedSelectedSampleArrayThreadLocal selections;
+	private SlicedSlicedResultArrayThreadLocal results;
 
 	public Mapper(TableSchema dataSchema, Params params) {
 		this.dataFieldNames = dataSchema.getFieldNames();
@@ -89,6 +92,53 @@ public abstract class Mapper implements Serializable {
 		return output;
 	}
 
+	public Row[] bunchMap(Row[] rows) throws Exception {
+		Row[] outs = new Row[rows.length];
+		for (int i = 0; i < rows.length; i++) {
+			outs[i] = new Row(getOutputSchema().getFieldNames().length);
+		}
+		map(rows, outs, rows.length);
+		return outs;
+	}
+
+	public void map(Row[] rows, Row[] outs, int len) throws Exception {
+		if (outs == null) {
+			outs = new Row[len];
+			for (int i = 0; i < len; i++) {
+				outs[i] = new Row(getOutputSchema().getFieldNames().length);
+			}
+		}
+		if (outs[0] == null) {
+			for (int i = 0; i < len; i++) {
+				outs[i] = new Row(getOutputSchema().getFieldNames().length);
+			}
+		}
+
+		if (selections == null) {
+			this.selections = new SlicedSelectedSampleArrayThreadLocal(
+				TableUtil.findColIndicesWithAssertAndHint(getDataSchema(), ioSchema.f0), len);
+		}
+
+		if (this.results == null) {
+			this.results = new SlicedSlicedResultArrayThreadLocal(
+				TableUtil.findColIndicesWithAssertAndHint(getOutputSchema(), ioSchema.f1), len);
+		}
+
+		for (int i = 0; i < len; i++) {
+			transformer.transform(rows[i], outs[i]);
+		}
+
+		SlicedSelectedSample[] selectionArray = this.selections.get();
+		SlicedResult[] resultArray = this.results.get();
+
+		for (int i = 0; i < len; i++) {
+			selectionArray[i].resetInstance(rows[i]);
+			resultArray[i].resetInstance(outs[i]);
+		}
+
+		bunchMap(selectionArray, resultArray, len);
+	}
+
 	public void bufferMap(Row bufferRow, int[] bufferSelectedColIndices, int[] bufferResultColIndices)
 		throws Exception {
 
@@ -105,6 +155,12 @@ public abstract class Mapper implements Serializable {
 	}
 
 	protected abstract void map(SlicedSelectedSample selection, SlicedResult result) throws Exception;
+
+	protected void bunchMap(SlicedSelectedSample[] selections, SlicedResult[] results, int len) throws Exception {
+		for (int i = 0; i < len; i++) {
+			map(selections[i], results[i]);
+		}
+	}
 
 	public final TableSchema getDataSchema() {
 		return TableSchema.builder().fields(dataFieldNames, dataFieldTypes).build();
@@ -294,6 +350,50 @@ public abstract class Mapper implements Serializable {
 		}
 	}
 
+	protected static class SlicedSelectedSampleArrayThreadLocal
+		extends ThreadLocal <SlicedSelectedSample[]> implements Serializable {
+
+		private static final long serialVersionUID = -880790266294357596L;
+		private final int[] columnIndices;
+		private final int size;
+
+		public SlicedSelectedSampleArrayThreadLocal(int[] columnIndices, int size) {
+			this.columnIndices = columnIndices;
+			this.size = size;
+		}
+
+		@Override
+		protected SlicedSelectedSample[] initialValue() {
+			SlicedSelectedSample[] samples = new SlicedSelectedSample[size];
+			for (int i = 0; i < size; i++) {
+				samples[i] = new SlicedSelectedSample(columnIndices);
+			}
+			return samples;
+		}
+	}
+
+	protected static class SlicedSlicedResultArrayThreadLocal
+		extends ThreadLocal <SlicedResult[]> implements Serializable {
+
+		private static final long serialVersionUID = 3929812061012978137L;
+		private final int[] columnIndices;
+		private final int size;
+
+		public SlicedSlicedResultArrayThreadLocal(int[] columnIndices, int size) {
+			this.columnIndices = columnIndices;
+			this.size = size;
+		}
+
+		@Override
+		protected SlicedResult[] initialValue() {
+			SlicedResult[] samples = new SlicedResult[size];
+			for (int i = 0; i < size; i++) {
+				samples[i] = new SlicedResult(columnIndices);
+			}
+			return samples;
+		}
+	}
+
 	static class MemoryTransformer implements Serializable {
 		private final int[] reservedSelectedIndices;
 		private final int[] reservedResultIndices;
@@ -333,21 +433,22 @@ public abstract class Mapper implements Serializable {
 			this.result = new SlicedSlicedResultThreadLocal(
 				TableUtil.findColIndicesWithAssertAndHint(getOutputSchema(), ioSchema.f1)
 			);
+
 		}
 	}
 
 	protected final void checkIoSchema() {
 
 		if (null != ioSchema) {
-			Preconditions.checkState(
+			AkPreconditions.checkState(
 				ioSchema.f0 != null,
 				"Selected columns in mapper should not be null."
 			);
-			Preconditions.checkState(
+			AkPreconditions.checkState(
 				ioSchema.f1 != null,
 				"Output columns in mapper should not be null."
 			);
-			Preconditions.checkState(
+			AkPreconditions.checkState(
 				ioSchema.f2 != null,
 				"Output types in mapper should not be null."
 			);

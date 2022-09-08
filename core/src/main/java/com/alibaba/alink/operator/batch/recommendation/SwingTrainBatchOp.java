@@ -20,6 +20,7 @@ import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -27,6 +28,8 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.HugeIndexerStringPredictBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.HugeStringIndexerPredictBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.StringIndexerTrainBatchOp;
+import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
+import com.alibaba.alink.operator.common.recommendation.SwingRecommKernel;
 import com.alibaba.alink.operator.common.recommendation.SwingRecommModelConverter;
 import com.alibaba.alink.operator.common.recommendation.SwingResData;
 import com.alibaba.alink.params.recommendation.SwingTrainParams;
@@ -77,24 +80,30 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
             .select(selectedCols);
         long mlEnvId = getMLEnvironmentId();
 
-        StringIndexerTrainBatchOp model = new StringIndexerTrainBatchOp()
-            .setSelectedCol(itemCol)
-            .setMLEnvironmentId(mlEnvId)
-            .setStringOrderType("random")
-            .linkFrom(in);
-
-        HugeStringIndexerPredictBatchOp stringIndexerPredict = new HugeStringIndexerPredictBatchOp()
-            .setSelectedCols(itemCol)
-            .setOutputCols(ITEM_ID_COLNAME)
-            .setMLEnvironmentId(mlEnvId)
-            .linkFrom(model, in);
-
         TypeInformation<?> itemType = TableUtil.findColType(in.getSchema(), itemCol);
+        if (!itemType.equals(Types.STRING) && !itemType.equals(Types.INT) && !itemType.equals(Types.LONG)) {
+            throw new AkIllegalDataException("not supported item type:" + itemType + ", should be int,long or string");
+        }
+        int idIndex = 1;
+        StringIndexerTrainBatchOp model = new StringIndexerTrainBatchOp();
+        if (itemType.equals(Types.STRING)) {
+            model.setSelectedCol(itemCol)
+                .setMLEnvironmentId(mlEnvId)
+                .setStringOrderType("random")
+                .linkFrom(in);
+
+            in = new HugeStringIndexerPredictBatchOp()
+                .setSelectedCols(itemCol)
+                .setOutputCols(ITEM_ID_COLNAME)
+                .setMLEnvironmentId(mlEnvId)
+                .linkFrom(model, in);
+            idIndex = 2;
+        }
 
         //存储item ID，同用户其他item ID
-        DataSet<Tuple3 <Comparable<?>, Long, Long[]>> mainItemData = stringIndexerPredict.getDataSet()
+        DataSet<Tuple3 <Comparable<?>, Long, Long[]>> mainItemData = in.getDataSet()
             .groupBy(new RowKeySelector(0))
-            .reduceGroup(new BuildSwingData(maxUserItems, minUserItems))
+            .reduceGroup(new BuildSwingData(maxUserItems, minUserItems, idIndex))
             .name("build_main_item_data");
 
         DataSet<Row> itemSimilarity = mainItemData
@@ -103,17 +112,19 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
             .name("compute_similarity");
 
         BatchOperator<?> itemResult = BatchOperator.fromTable(DataSetConversionUtil.toTable(getMLEnvironmentId(), itemSimilarity,
-                new String[]{itemCol, "swing_items", "swing_scores"},
-                new TypeInformation[]{itemType, Types.OBJECT_ARRAY(Types.LONG), Types.OBJECT_ARRAY(Types.FLOAT)}
-            ));
+            new String[]{itemCol, "swing_items", "swing_scores"},
+            new TypeInformation[]{itemType, Types.OBJECT_ARRAY(Types.LONG), Types.OBJECT_ARRAY(Types.FLOAT)}
+        ));
 
-        HugeIndexerStringPredictBatchOp indexerPredict = new HugeIndexerStringPredictBatchOp()
-            .setSelectedCols("swing_items")
-            .setMLEnvironmentId(mlEnvId)
-            .linkFrom(model, itemResult);
-
-        DataSet<Row> modelData = indexerPredict.getDataSet()
-            .mapPartition(new BuildModelData(itemCol))
+        if (itemType.equals(Types.STRING)) {
+            itemResult = new HugeIndexerStringPredictBatchOp()
+                .setSelectedCols("swing_items")
+                .setMLEnvironmentId(mlEnvId)
+                .linkFrom(model, itemResult);
+        }
+        Params meta = getParams().set(SwingRecommKernel.ITEM_TYPE, FlinkTypeConverter.getTypeString(itemType));
+        DataSet<Row> modelData = itemResult.getDataSet()
+            .mapPartition(new BuildModelData(itemCol, meta))
             .name("build_model_data");
 
         this.setOutput(modelData, new SwingRecommModelConverter(itemType).getModelSchema());
@@ -143,10 +154,12 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
 
         int maxUserItems;
         int minUserItems;
+        int idIndex;
 
-        BuildSwingData(int maxUserItems, int minUserItems) {
+        BuildSwingData(int maxUserItems, int minUserItems, int idIndex) {
             this.maxUserItems = maxUserItems;
             this.minUserItems = minUserItems;
+            this.idIndex = idIndex;
         }
 
         @Override
@@ -154,7 +167,7 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
                            Collector<Tuple3 <Comparable<?>, Long, Long[]>> out) throws Exception {
             HashMap<Long, Comparable<?>> userItemMap = new HashMap <>();
             for (Row value : values) {
-                userItemMap.put((Long) value.getField(2), (Comparable<?>) value.getField(1));
+                userItemMap.put(Long.valueOf(String.valueOf(value.getField(idIndex))), (Comparable<?>) value.getField(1));
             }
             if (userItemMap.size() < this.minUserItems || userItemMap.size() > this.maxUserItems) {
                 return;
@@ -266,15 +279,26 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
 
     private static class BuildModelData extends RichMapPartitionFunction<Row, Row> {
         private final String itemCol;
-        BuildModelData(String itemCol) {
+        private final Params meta;
+        BuildModelData(String itemCol, Params meta) {
             this.itemCol = itemCol;
+            this.meta = meta;
         }
 
         @Override
         public void mapPartition(Iterable<Row> values, Collector<Row> out) throws Exception {
+            if (getRuntimeContext().getIndexOfThisSubtask() == 0) {
+                out.collect(Row.of(null, meta.toJson()));
+            }
             for (Row value : values) {
                 Comparable<?> originMainItem = (Comparable<?>) value.getField(0);
-                String[] items = ((String) value.getField(1)).split(",");
+                Object itemsValue = value.getField(1);
+                Object[] items;
+                if (itemsValue instanceof String) {
+                    items = ((String) value.getField(1)).split(",");
+                } else {
+                    items = (Long[]) value.getField(1);
+                }
                 Float[] similarity = (Float[]) value.getField(2);
                 SwingResData resData = new SwingResData(items, similarity, itemCol);
                 out.collect(Row.of(
@@ -284,4 +308,3 @@ public class SwingTrainBatchOp extends BatchOperator<SwingTrainBatchOp>
         }
     }
 }
-

@@ -39,10 +39,10 @@ public class RowCsvInputFormat extends CsvInputFormat <Row> implements ResultTyp
 
 	private static final long serialVersionUID = 1L;
 
-	private int arity;
-	private TypeInformation[] fieldTypeInfos;
-	private int[] fieldPosMap;
-	private boolean emptyColumnAsNull;
+	private final int arity;
+	private final TypeInformation[] fieldTypeInfos;
+	private final int[] fieldPosMap;
+	private final boolean emptyColumnAsNull;
 
 	public RowCsvInputFormat(Path filePath, TypeInformation[] fieldTypeInfos, String lineDelimiter,
 							 String fieldDelimiter, int[] selectedFields, boolean emptyColumnAsNull,

@@ -12,6 +12,7 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperAdapter;
 import com.alibaba.alink.common.mapper.MapperAdapterMT;
@@ -52,7 +53,7 @@ public class MapStreamOp<T extends MapStreamOp <T>> extends StreamOperator <T> {
 
 			return (T) this;
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 		}
 	}
 

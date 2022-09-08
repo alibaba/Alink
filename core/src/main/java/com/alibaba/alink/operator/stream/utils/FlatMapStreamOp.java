@@ -12,6 +12,7 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.mapper.FlatMapperAdapter;
 import com.alibaba.alink.common.mapper.FlatMapperAdapterMT;
@@ -50,7 +51,7 @@ public class FlatMapStreamOp<T extends FlatMapStreamOp <T>> extends StreamOperat
 			//noinspection unchecked
 			return (T) this;
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 		}
 	}
 

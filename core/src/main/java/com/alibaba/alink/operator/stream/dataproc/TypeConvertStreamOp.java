@@ -14,6 +14,9 @@ import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.VectorSerializeStreamOp;
@@ -89,7 +92,7 @@ public final class TypeConvertStreamOp extends StreamOperator <TypeConvertStream
 		int colCount = this.selectedColNames.length;
 		int allColCount = schema.getFieldNames().length;
 		if (colCount == 0) {
-			throw new RuntimeException("Input data should have at least 1 column.");
+			throw new AkIllegalOperatorParameterException("Input data should have at least 1 column.");
 		}
 
 		Set <String> colSet = new HashSet <>();
@@ -143,7 +146,7 @@ public final class TypeConvertStreamOp extends StreamOperator <TypeConvertStream
 						type = "VARCHAR";
 						break;
 					default:
-						throw new RuntimeException("Not support type:" + this.newType);
+						throw new AkUnsupportedOperationException("Not support type:" + this.newType);
 				}
 				if (i != 0) {
 					selectBuilder.append(",");
@@ -181,7 +184,7 @@ public final class TypeConvertStreamOp extends StreamOperator <TypeConvertStream
 
 		for (String colName : colExist.keySet()) {
 			if (!colExist.get(colName)) {
-				throw new RuntimeException("col:" + colName + " does not exist.");
+				throw new AkColumnNotFoundException("col:" + colName + " does not exist.");
 			}
 		}
 

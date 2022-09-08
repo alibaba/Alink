@@ -7,9 +7,10 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.ModelMapper;
@@ -76,7 +77,7 @@ public class LocalPredictorLoader implements Serializable {
 
 		Map <Long, List <Row>> rows = readPipelineModelRowsFromCsvFile(modelPath,
 			LegacyModelExporterUtils.PIPELINE_MODEL_SCHEMA);
-		Preconditions.checkState(rows.containsKey(-1L), "can't find meta in model.");
+		AkPreconditions.checkState(rows.containsKey(-1L), "can't find meta in model.");
 		String meta = (String) rows.get(-1L).get(0).getField(1);
 
 		PipelineStageBase[] transformers = constructPipelineStagesFromMeta(meta, 0L);
@@ -181,7 +182,7 @@ public class LocalPredictorLoader implements Serializable {
 		while (reader.ready()) {
 			String line = reader.readLine();
 			Tuple2 <Boolean, Row> parsed = csvParser.parse(line);
-			Preconditions.checkState(parsed.f0, "Fail to parse line: " + line);
+			AkPreconditions.checkState(parsed.f0, "Fail to parse line: " + line);
 			Long id = (Long) parsed.f1.getField(0);
 			if (rows.containsKey(id)) {
 				rows.get(id).add(parsed.f1);
@@ -221,7 +222,7 @@ public class LocalPredictorLoader implements Serializable {
 				pipelineStageBases[i] = (PipelineStageBase) clazz.getConstructor(Params.class).newInstance(
 					params[i].set(HasMLEnvironmentId.ML_ENVIRONMENT_ID, mlEnvId));
 			} catch (Exception e) {
-				throw new RuntimeException("Fail to re construct pipeline stage: ", e);
+				throw new AkIllegalDataException("Fail to re construct pipeline stage: ", e);
 			}
 		}
 		return pipelineStageBases;

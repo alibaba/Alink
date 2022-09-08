@@ -13,6 +13,7 @@ import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunctio
 import org.apache.flink.types.Row;
 import org.apache.flink.util.InstantiationUtil;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class RichParallelSourceFunctionWithClassLoader extends RichParallelSourc
 		try {
 			serializedRichParallelSourceFunction = InstantiationUtil.serializeObject(internal);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException(e.getMessage(),e);
 		}
 	}
 
@@ -47,7 +48,7 @@ public class RichParallelSourceFunctionWithClassLoader extends RichParallelSourc
 			try {
 				internal = InstantiationUtil.deserializeObject(serializedRichParallelSourceFunction, factory.create());
 			} catch (IOException | ClassNotFoundException e) {
-				throw new RuntimeException(e);
+				throw new AkUnclassifiedErrorException(e.getMessage(),e);
 			}
 		}
 

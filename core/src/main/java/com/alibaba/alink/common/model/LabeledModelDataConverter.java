@@ -8,7 +8,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.util.List;
 
@@ -93,7 +94,7 @@ public abstract class LabeledModelDataConverter<M1, M2> implements ModelDataConv
 
 	@Override
 	public TableSchema getModelSchema() {
-		Preconditions.checkArgument(labelType != null, "label type is null.");
+		AkPreconditions.checkArgument(labelType != null, "label type is null.");
 		return new TableSchema(
 			new String[] {FIRST_COL_NAME, SECOND_COL_NAME, LABEL_COL_NAME},
 			new TypeInformation[] {FIRST_COL_TYPE, SECOND_COL_TYPE, labelType}

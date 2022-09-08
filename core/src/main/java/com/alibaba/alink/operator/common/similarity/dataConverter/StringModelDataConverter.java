@@ -13,7 +13,9 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
+import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.distance.FastCategoricalDistance;
 import com.alibaba.alink.operator.common.distance.LevenshteinDistance;
@@ -26,6 +28,7 @@ import com.alibaba.alink.operator.common.similarity.similarity.LongestCommonSubs
 import com.alibaba.alink.operator.common.similarity.similarity.SubsequenceKernelSimilarity;
 import com.alibaba.alink.params.similarity.StringTextNearestNeighborTrainParams;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class StringModelDataConverter extends NearestNeighborDataConverter <StringModelData> {
@@ -104,6 +107,27 @@ public class StringModelDataConverter extends NearestNeighborDataConverter <Stri
 				}
 			})
 			.name("build_model");
+	}
+
+	@Override
+	public List <Row> buildIndex(MTable mt, Params params) {
+		FastCategoricalDistance similarity = initSimilarity(params);
+		ArrayList <Row> rows = new ArrayList <>();
+		for(Row value:mt.getRows()){
+			boolean text = params.get(TEXT);
+			Sample sample = similarity.prepareSample((String) value.getField(1), text);
+			Row row = new Row(ROW_SIZE);
+			row.setField(ID_INDEX, value.getField(0).toString());
+			if (sample.getLabel() != null) {
+				row.setField(LABEL_INDEX, sample.getLabel().toString());
+			}
+			row.setField(DATA_INDEX, sample.getStr());
+			rows.add(row);
+		}
+
+		RowCollector rowCollector = new RowCollector();
+		save(Tuple2.of(params, rows), rowCollector);
+		return rowCollector.getRows();
 	}
 
 	private static FastCategoricalDistance initSimilarity(Params params) {

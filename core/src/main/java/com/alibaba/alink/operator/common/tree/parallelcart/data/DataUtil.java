@@ -9,9 +9,9 @@ import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -48,7 +48,7 @@ public class DataUtil {
 		int column = 0;
 		int maxColumnIndex = -1;
 		for (FeatureMeta meta : featureMetas) {
-			Preconditions.checkState(
+			AkPreconditions.checkState(
 				meta.getIndex() == column++,
 				"There are empty columns. index: %d",
 				meta.getIndex()

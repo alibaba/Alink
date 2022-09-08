@@ -1,6 +1,6 @@
 package com.alibaba.alink.common.exceptions;
 
-abstract class ExceptionWithErrorCode extends RuntimeException {
+public abstract class ExceptionWithErrorCode extends RuntimeException {
 	private final ErrorCode errorCode;
 
 	public ExceptionWithErrorCode(ErrorCode errorCode, String message) {

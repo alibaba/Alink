@@ -12,6 +12,7 @@ import com.alibaba.alink.common.dl.data.DataTypesV2;
 import com.alibaba.alink.common.dl.data.TFRecordReaderImpl;
 import com.alibaba.alink.common.dl.data.TFRecordWriterImpl;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.flink.ml.cluster.node.MLContext;
 import com.alibaba.flink.ml.tensorflow2.client.DLConfig;
 import com.alibaba.flink.ml.tensorflow2.util.TFConstants;
@@ -69,7 +70,7 @@ public class DLUtils implements Serializable {
     private static DataTypesV2 toFlinkAiExtendTypes(TypeInformation<?> typeInfo) {
         DataTypesV2 type = TYPE_INFO_TO_DATA_TYPE.get(typeInfo);
         if (type == null) {
-            throw new UnsupportedOperationException("Not supported type: " + typeInfo);
+            throw new AkUnsupportedOperationException("Not supported type: " + typeInfo);
         }
         return type;
     }

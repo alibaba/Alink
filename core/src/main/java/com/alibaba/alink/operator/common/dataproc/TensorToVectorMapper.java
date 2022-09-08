@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.NumericalTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
@@ -51,7 +52,7 @@ public class TensorToVectorMapper extends SISOMapper {
 			case MIN:
 				return DoubleTensor.of(((NumericalTensor <?>) tensor).min(0, false)).toVector();
 			default:
-				throw new UnsupportedOperationException();
+				throw new AkUnsupportedOperationException("Not support exception. ");
 		}
 	}
 

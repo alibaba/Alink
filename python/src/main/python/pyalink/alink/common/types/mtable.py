@@ -219,4 +219,4 @@ class MTable(JavaObjectWrapper, DataTypeDisplay):
         return self.copy()
 
     _unsupported_j_methods = ['readCsvFromFile', 'writeCsvToFile',
-                              'sampleWithSize', 'reduceGroup', 'getSchema', 'printSummary']
+                              'sampleWithSize', 'reduceGroup', 'getSchema', 'printSummary', 'subTable']

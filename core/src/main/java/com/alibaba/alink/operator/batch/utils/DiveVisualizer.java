@@ -2,16 +2,8 @@ package com.alibaba.alink.operator.batch.utils;
 
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.JsonConverter;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,41 +14,42 @@ public class DiveVisualizer {
 
 	private static final DiveVisualizer INSTANCE = new DiveVisualizer();
 
-	private final String template;
+	private final String TEMPLATE;
+
+	private final String IFRAME_TEMPLATE;
 
 	private DiveVisualizer() {
-		try (InputStream templateStream = DiveVisualizer.class.getResourceAsStream("/facets_dive_template.html")) {
-			assert templateStream != null;
-			template = IOUtils.toString(templateStream);
-		} catch (IOException e) {
-			throw new AkUnclassifiedErrorException("Failed to read resource /facets_dive_template.html", e);
-		}
+		final String toBeReplaced
+			= "<link rel=\"import\" href=\"https://raw.githubusercontent.com/PAIR-code/facets/master/facets-dist/facets-jupyter.html\">";
+		final ClassLoader cl = getClass().getClassLoader();
+		final String replaceContent = HtmlVizUtils.readResourceContent("/facets-jupyter.html");
+		TEMPLATE = HtmlVizUtils.readResourceContent("/facets_dive_template.html")
+			.replace(toBeReplaced, replaceContent);
+		IFRAME_TEMPLATE = HtmlVizUtils.readResourceContent("/iframe_facets_dive_template.html")
+			.replace(toBeReplaced, replaceContent);
 	}
 
 	public static DiveVisualizer getInstance() {
 		return INSTANCE;
 	}
 
-	public void visualize(String jsonStr) {
-		String html = template.replace("{jsonstr}", jsonStr);
-		String path;
-		try {
-			File file = File.createTempFile("alink_statis_", ".html");
-			FileUtils.writeStringToFile(file, html, StandardCharsets.UTF_8);
-			path = file.getAbsolutePath();
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to write html to file.", e);
-		}
-		try {
-			Desktop desktop = Desktop.getDesktop();
-			desktop.open(new File(path));
-		} catch (IOException e) {
-			throw new RuntimeException("Open webpage failed.", e);
-		}
+	public String generateHtml(String jsonStr) {
+		return TEMPLATE.replace("{jsonstr}", jsonStr);
 	}
 
-	public static class DiveVisualizerConsumer implements Consumer<List<Row>> {
-		private String[] colNames;
+	public void visualize(String jsonStr) {
+		HtmlVizUtils.saveOpenHtml(generateHtml(jsonStr));
+	}
+
+	/**
+	 * Generate iframe version of HTML for Jupyter Notebook usage.
+	 */
+	public String generateIframeHtml(String jsonStr) {
+		return IFRAME_TEMPLATE.replace("{jsonstr}", jsonStr);
+	}
+
+	public static class DiveVisualizerConsumer implements Consumer <List <Row>> {
+		private final String[] colNames;
 
 		public DiveVisualizerConsumer(String[] colNames) {
 			this.colNames = colNames;
@@ -64,10 +57,10 @@ public class DiveVisualizer {
 
 		@Override
 		public void accept(List <Row> rows) {
-			List<Map <String, Object>> jsonObj = new ArrayList <>();
+			List <Map <String, Object>> jsonObj = new ArrayList <>();
 
 			for (Row row : rows) {
-				Map<String, Object> rowJsonObj = new HashMap <>();
+				Map <String, Object> rowJsonObj = new HashMap <>();
 
 				for (int i = 0; i < row.getArity(); ++i) {
 					rowJsonObj.put(colNames[i], row.getField(i));
@@ -79,5 +72,4 @@ public class DiveVisualizer {
 			DiveVisualizer.getInstance().visualize(JsonConverter.toJson(jsonObj));
 		}
 	}
-
 }

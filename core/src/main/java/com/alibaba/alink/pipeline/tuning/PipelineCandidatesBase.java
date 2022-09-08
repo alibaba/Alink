@@ -3,8 +3,8 @@ package com.alibaba.alink.pipeline.tuning;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.pipeline.EstimatorBase;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineStageBase;
@@ -57,10 +57,10 @@ public abstract class PipelineCandidatesBase {
 		int n = stages.length;
 		int[] stageIndex = new int[n];
 		for (int i = 0; i < n; i++) {
-			Preconditions.checkArgument(!(stages[i] instanceof Pipeline),
+			AkPreconditions.checkArgument(!(stages[i] instanceof Pipeline),
 				"CAN NOT directly SET parameter to the pipeline object!");
 			Integer index = stageMap.get(stages[i]);
-			Preconditions.checkState(index != null, "The pipeline NOT contains the stage!");
+			AkPreconditions.checkState(index != null, "The pipeline NOT contains the stage!");
 			stageIndex[i] = index;
 		}
 		return stageIndex;

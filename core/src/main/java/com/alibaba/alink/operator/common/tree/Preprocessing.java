@@ -26,6 +26,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -1318,7 +1319,7 @@ public final class Preprocessing {
 				}
 
 				if (curId > taskId) {
-					throw new RuntimeException("Error curId: " + curId
+					throw new AkUnclassifiedErrorException("Error curId: " + curId
 						+ ". id: " + taskId);
 				}
 

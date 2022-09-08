@@ -2,8 +2,9 @@ package com.alibaba.alink.operator.common.dataproc;
 
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 
@@ -38,7 +39,7 @@ public class MultiStringIndexerModelData {
 	 */
 	public long getNumberOfTokensOfColumn(String columnName) {
 		int colIndex = TableUtil.findColIndexWithAssertAndHint(meta.get(HasSelectedCols.SELECTED_COLS), columnName);
-		Preconditions.checkArgument(tokenNumber != null);
+		AkPreconditions.checkArgument(tokenNumber != null);
 		return tokenNumber.get(colIndex);
 	}
 
@@ -51,7 +52,7 @@ public class MultiStringIndexerModelData {
 			}
 		}
 
-		throw new IllegalArgumentException("Could not find the token.");
+		throw new AkIllegalArgumentException("Could not find the token.");
 	}
 
 	public List <String> getTokens(String column) {

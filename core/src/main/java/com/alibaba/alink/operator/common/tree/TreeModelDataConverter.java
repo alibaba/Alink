@@ -9,6 +9,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.model.LabeledModelDataConverter;
 import com.alibaba.alink.common.model.ModelParamName;
 import com.alibaba.alink.common.utils.JsonConverter;
@@ -176,7 +177,7 @@ public class TreeModelDataConverter
 
 			if (node.id < 0
 				|| node.id >= size) {
-				throw new RuntimeException("Model is broken. node index: " + node.id);
+				throw new AkIllegalModelException("Model is broken. node index: " + node.id);
 			}
 
 			serializables[node.id] = node;
@@ -185,7 +186,7 @@ public class TreeModelDataConverter
 
 		for (int i = 0; i < validSize; ++i) {
 			if (serializables[i] == null) {
-				throw new RuntimeException("Model is broken. index: " + i);
+				throw new AkIllegalModelException("Model is broken. index: " + i);
 			}
 
 			int[] nextIDs = serializables[i].nextIds;

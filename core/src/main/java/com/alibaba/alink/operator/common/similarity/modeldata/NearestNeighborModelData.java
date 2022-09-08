@@ -71,7 +71,7 @@ public class NearestNeighborModelData implements Serializable, Cloneable {
 			modelData.comparator = modelData.getQueueComparator();
 			return modelData;
 		} catch (CloneNotSupportedException e) {
-			throw new AkUnclassifiedErrorException(e.getMessage());
+			throw new AkUnclassifiedErrorException("Error. ",e);
 		}
 	}
 

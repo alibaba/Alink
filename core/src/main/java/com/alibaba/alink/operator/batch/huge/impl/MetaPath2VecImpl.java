@@ -10,6 +10,7 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.graph.MetaPathWalkBatchOp;
 import com.alibaba.alink.operator.batch.graph.RandomWalkBatchOp;
@@ -92,7 +93,7 @@ public abstract class MetaPath2VecImpl<T extends MetaPath2VecImpl <T>> extends B
 			return (T) this;
 
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 		}
 	}
 }

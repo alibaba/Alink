@@ -7,8 +7,8 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
@@ -83,7 +83,7 @@ public class KnnMapper extends ModelMapper {
 		if (null != selectedIndices) {
 			vector = new DenseVector(selectedIndices.length);
 			for (int i = 0; i < selectedIndices.length; i++) {
-				Preconditions.checkNotNull(selection.get(selectedIndices[i]), "There is NULL in featureCols!");
+				AkPreconditions.checkNotNull(selection.get(selectedIndices[i]), "There is NULL in featureCols!");
 				vector.set(i, ((Number) selection.get(selectedIndices[i])).doubleValue());
 			}
 		} else {

@@ -12,6 +12,8 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperAdapter;
 import com.alibaba.alink.common.mapper.MapperAdapterMT;
@@ -51,8 +53,10 @@ public class MapBatchOp<T extends MapBatchOp <T>> extends BatchOperator <T> {
 			this.setOutput(resultRows, mapper.getOutputSchema());
 
 			return (T) this;
+		} catch (ExceptionWithErrorCode ex) {
+			throw ex;
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException("Error. ", ex);
 		}
 	}
 

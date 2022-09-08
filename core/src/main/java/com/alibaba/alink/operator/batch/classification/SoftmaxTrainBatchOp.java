@@ -24,6 +24,7 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -87,6 +88,7 @@ import java.util.List;
 @FeatureColsVectorColMutexRule
 
 @NameCn("Softmax训练")
+@NameEn("Softmax Training")
 public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchOp>
 	implements SoftmaxTrainParams <SoftmaxTrainBatchOp>, WithTrainInfo <LinearModelTrainInfo, SoftmaxTrainBatchOp>,
 	WithModelInfoBatchOp <SoftmaxModelInfo, SoftmaxTrainBatchOp, SoftmaxModelInfoBatchOp> {
@@ -541,14 +543,14 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 
 						LinearModelData model = values.iterator().next();
 						double[] cinfo = model.convergenceInfo;
-						out.collect(Row.of(0, JsonConverter.toJson(model.getMetaInfo())));
-						out.collect(Row.of(4, JsonConverter.toJson(cinfo)));
+						out.collect(Row.of(0L, JsonConverter.toJson(model.getMetaInfo())));
+						out.collect(Row.of(4L, JsonConverter.toJson(cinfo)));
 
 					}
 				}).setParallelism(1).withBroadcastSet(model, "model");
 
 		Table summaryTable = DataSetConversionUtil.toTable(getMLEnvironmentId(), summary, new TableSchema(
-			new String[] {"title", "info"}, new TypeInformation[] {Types.INT, Types.STRING}));
+			new String[] {"title", "info"}, new TypeInformation[] {Types.LONG, Types.STRING}));
 
 		return new Table[] {summaryTable};
 	}

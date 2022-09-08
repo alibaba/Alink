@@ -1,10 +1,10 @@
 package com.alibaba.alink.operator.common.tree.parallelcart;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.comqueue.ComContext;
 import com.alibaba.alink.common.comqueue.ComputeFunction;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.tree.FeatureMeta;
 import com.alibaba.alink.operator.common.tree.parallelcart.booster.Booster;
 import com.alibaba.alink.operator.common.tree.parallelcart.communication.AllReduceT;
@@ -56,7 +56,7 @@ public final class BuildLocalSketch extends ComputeFunction {
 
 		double eps = boostingObjs.params.get(BaseGbdtTrainBatchOp.SKETCH_EPS);
 		int maxSize = maxSize(boostingObjs.params.get(BaseGbdtTrainBatchOp.SKETCH_RATIO), eps);
-		Preconditions.checkState(maxSize > 0);
+		AkPreconditions.checkState(maxSize > 0);
 
 		if (entries == null) {
 			entries = new EpsilonApproQuantile.SketchEntry[continuous];
@@ -108,7 +108,7 @@ public final class BuildLocalSketch extends ComputeFunction {
 		@Override
 		public void accept(EpsilonApproQuantile.WQSummary[] summaryLeft,
 						   EpsilonApproQuantile.WQSummary[] summaryRight) {
-			Preconditions.checkState(
+			AkPreconditions.checkState(
 				summaryLeft != null && summaryRight != null && summaryLeft.length == summaryRight.length
 			);
 

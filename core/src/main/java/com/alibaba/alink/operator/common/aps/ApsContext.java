@@ -19,9 +19,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
@@ -116,7 +116,7 @@ public class ApsContext {
 	}
 
 	public ApsContext(DataSet <Params> info) {
-		Preconditions.checkNotNull(info);
+		AkPreconditions.checkNotNull(info);
 		this.context = info
 			.map(new MapFunction <Params, Params>() {
 				private static final long serialVersionUID = 3148182956495365060L;

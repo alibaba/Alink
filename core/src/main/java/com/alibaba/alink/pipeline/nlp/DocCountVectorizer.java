@@ -5,6 +5,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.nlp.DocCountVectorizerTrainBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.nlp.DocCountVectorizerTrainLocalOp;
 import com.alibaba.alink.params.nlp.DocCountVectorizerPredictParams;
 import com.alibaba.alink.params.nlp.DocCountVectorizerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -33,4 +35,10 @@ public class DocCountVectorizer extends Trainer <DocCountVectorizer, DocCountVec
 	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new DocCountVectorizerTrainBatchOp(this.getParams()).linkFrom(in);
 	}
+
+	@Override
+	protected LocalOperator <?> train(LocalOperator <?> in) {
+		return new DocCountVectorizerTrainLocalOp(this.getParams()).linkFrom(in);
+	}
+
 }

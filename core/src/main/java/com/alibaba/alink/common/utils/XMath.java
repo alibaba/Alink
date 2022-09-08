@@ -1,6 +1,8 @@
 package com.alibaba.alink.common.utils;
 
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.apache.commons.math3.distribution.GammaDistribution;
 
 import java.math.BigDecimal;
@@ -135,7 +137,7 @@ public class XMath {
 
 	public static double gamma(int n) {
 		if (n <= 0) {
-			throw new RuntimeException("para is out of range!");
+			throw new AkUnclassifiedErrorException("para is out of range!");
 		} else if (n < 173) {
 			double r = 1.0;
 			for (int i = 2; i < n; i++) {
@@ -149,7 +151,7 @@ public class XMath {
 
 	public static double gamma(double x) {
 		if (x <= 0 || Double.isNaN(x)) {
-			throw new RuntimeException("para is out of range!");
+			throw new AkUnclassifiedErrorException("para is out of range!");
 		} else if (x <= 140) {
 			if (x < 0.5) {
 				return Math.PI / (Math.sin(x * Math.PI) * gamma(1.0 - x));
@@ -176,7 +178,7 @@ public class XMath {
 
 	public static double lnGamma(double x) {
 		if (x <= 0) {
-			throw new RuntimeException("para is out of range!");
+			throw new AkUnclassifiedErrorException("para is out of range!");
 		}
 		double t = ckLanczos[0];
 		for (int i = 1; i < ckLanczos.length; i++) {
@@ -232,14 +234,14 @@ public class XMath {
 
 	public static double beta(double x, double y) {
 		if ((x <= 0) || (y <= 0)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkUnclassifiedErrorException("Input parameter out of range!");
 		}
 		return Math.exp(lnGamma(x) + lnGamma(y) - lnGamma(x + y));
 	}
 
 	public static double regularizedIncompleteBetaFunction(double x, double a, double b) {
 		if ((a <= 0) || (b <= 0) || (x < 0) || (x > 1)) {
-			throw new RuntimeException("Input parameter out of range!");
+			throw new AkUnclassifiedErrorException("Input parameter out of range!");
 		}
 		if (x > (double) (a + 1) / (double) (a + b + 2)) {
 			return 1 - subRegularizedIncompleteBetaFunction(1 - x, b, a);
@@ -299,7 +301,7 @@ public class XMath {
 
 	public static double round(double v, int scale) {
 		if (scale < 0) {
-			throw new IllegalArgumentException(
+			throw new AkIllegalArgumentException(
 				"The scale must be a positive integer or zero");
 		}
 		BigDecimal b = new BigDecimal(Double.toString(v));

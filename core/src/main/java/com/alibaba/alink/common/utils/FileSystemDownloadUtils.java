@@ -3,10 +3,10 @@ package com.alibaba.alink.common.utils;
 import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.core.fs.FileStatus;
 import org.apache.flink.core.fs.Path;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import org.apache.commons.io.IOUtils;
@@ -62,7 +62,7 @@ public class FileSystemDownloadUtils {
 	public static void downloadDirectory(FilePath filePath, java.nio.file.Path localDir) throws IOException {
 		BaseFileSystem <?> fileSystem = filePath.getFileSystem();
 		FileStatus fileStatus = fileSystem.getFileStatus(filePath.getPath());
-		Preconditions.checkArgument(fileStatus.isDir(), "filePath must a directory.");
+		AkPreconditions.checkArgument(fileStatus.isDir(), "filePath must a directory.");
 
 		Files.createDirectories(localDir);
 
@@ -92,7 +92,7 @@ public class FileSystemDownloadUtils {
 		throws IOException {
 		BaseFileSystem <?> fileSystem = filePath.getFileSystem();
 		FileStatus fileStatus = fileSystem.getFileStatus(filePath.getPath());
-		Preconditions.checkArgument(fileStatus.isDir(), "filePath must a directory.");
+		AkPreconditions.checkArgument(fileStatus.isDir(), "filePath must a directory.");
 
 		Files.createDirectories(localDir);
 		List <Path> paths = fileSystem.listFiles(filePath.getPath());

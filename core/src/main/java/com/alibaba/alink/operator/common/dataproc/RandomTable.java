@@ -7,6 +7,7 @@ import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.probabilistic.XRandom;
 
 import java.util.Map;
@@ -140,7 +141,7 @@ public class RandomTable extends TableFunction <Row> {
 				}
 
 			} else {
-				throw (new RuntimeException("not support this distribution."));
+				throw (new AkUnsupportedOperationException("not support this distribution."));
 			}
 		}
 

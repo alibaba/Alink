@@ -14,7 +14,7 @@ import com.alibaba.alink.params.similarity.VectorNearestNeighborTrainParams;
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量最近邻训练")
 public class VectorNearestNeighborTrainBatchOp
-	extends BaseNearestNeighborTrainBatchOp<VectorNearestNeighborTrainBatchOp>
+	extends BaseNearestNeighborTrainBatchOp <VectorNearestNeighborTrainBatchOp>
 	implements VectorNearestNeighborTrainParams<VectorNearestNeighborTrainBatchOp> {
 
 	private static final long serialVersionUID = 2532932064450519601L;

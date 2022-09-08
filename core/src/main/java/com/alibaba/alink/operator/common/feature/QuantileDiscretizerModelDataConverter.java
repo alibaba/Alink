@@ -6,8 +6,8 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.model.SimpleModelDataConverter;
 import com.google.common.reflect.TypeToken;
 
@@ -120,7 +120,7 @@ public class QuantileDiscretizerModelDataConverter
 
 	public double getFeatureValue(String featureName, int index) {
 		ContinuousRanges featureInterval = data.get(featureName);
-		Preconditions.checkNotNull(featureInterval);
+		AkPreconditions.checkNotNull(featureInterval);
 		return featureInterval.splitsArray[index].doubleValue();
 	}
 

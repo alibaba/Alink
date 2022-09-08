@@ -24,6 +24,9 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkIllegalModelException;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
 import com.alibaba.alink.common.lazy.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -110,7 +113,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 			.fromElements(new Object());
 		Params params = getParams();
 		if (params.contains(HasFeatureCols.FEATURE_COLS) && params.contains(HasVectorCol.VECTOR_COL)) {
-			throw new RuntimeException("featureCols and vectorCol cannot be set at the same time.");
+			throw new AkIllegalOperatorParameterException("featureCols and vectorCol cannot be set at the same time.");
 		}
 		params.set(LinearTrainParams.WEIGHT_COL, this.getCensorCol());
 		DataSet <Tuple3 <Double, Object, Vector>> initData = BaseLinearModelTrainBatchOp
@@ -166,7 +169,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 					try {
 						assert (model.hasInterceptItem == params.get(HasWithIntercept.WITH_INTERCEPT));
 					} catch (Exception e) {
-						throw new RuntimeException("initial model is not compatible with data and parameter setting.");
+						throw new AkIllegalModelException("initial model is not compatible with data and parameter setting.");
 					}
 					out.collect(model.coefVector);
 				}
@@ -235,11 +238,11 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 				//this is the current time, and it cannot be negative.
 				double val = (double) row.f1;
 				if (val <= 0) {
-					throw new IllegalArgumentException("Survival Time must be greater than 0!");
+					throw new AkIllegalArgumentException("Survival Time must be greater than 0!");
 				}
 				//judge whether the weight is legal or not.
 				if (!weight.equals(0.0) && !weight.equals(1.0)) {
-					throw new IllegalArgumentException("Censor must be 1.0 or 0.0!");
+					throw new AkIllegalArgumentException("Censor must be 1.0 or 0.0!");
 				}
 				Vector aVector;
 				if (tmpVector instanceof SparseVector) {

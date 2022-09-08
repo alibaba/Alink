@@ -11,10 +11,12 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.AlgoOperator;
@@ -255,7 +257,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 	@Deprecated
 	public String getTableName() {
 		Table outputTable = getOutputTable();
-		Preconditions.checkNotNull(outputTable, "This output table is null.");
+		AkPreconditions.checkNotNull(outputTable, "This output table is null.");
 		return outputTable.toString();
 	}
 
@@ -298,9 +300,9 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 
 	public StreamOperator<?> getSideOutput(int idx) {
 		if (null == this.getSideOutputTables()) {
-			throw new RuntimeException("There is no side output.");
+			throw new AkIllegalOperationException("There is no side output.");
 		} else if (idx < 0 && idx >= this.getSideOutputTables().length) {
-			throw new RuntimeException("There is no  side output.");
+			throw new AkIllegalOperationException("There is no  side output.");
 		} else {
 			return new TableSourceStreamOp(this.getSideOutputTables()[idx]).setMLEnvironmentId(getMLEnvironmentId());
 		}
@@ -364,7 +366,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 
 	private static <T> StreamExecutionEnvironment getExecutionEnvironment(
 		Function <T, StreamExecutionEnvironment> getFunction, T[] types) {
-		Preconditions.checkState(types != null && types.length > 0,
+		AkPreconditions.checkState(types != null && types.length > 0,
 			"The operators must not be empty when get StreamExecutionEnvironment");
 
 		StreamExecutionEnvironment env = null;
@@ -377,13 +379,13 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 			StreamExecutionEnvironment executionEnv = getFunction.apply(type);
 
 			if (env != null && env != executionEnv) {
-				throw new RuntimeException("The operators must be runing in the same StreamExecutionEnvironment");
+				throw new AkUnclassifiedErrorException("The operators must be runing in the same StreamExecutionEnvironment");
 			}
 
 			env = executionEnv;
 		}
 
-		Preconditions.checkNotNull(env,
+		AkPreconditions.checkNotNull(env,
 			"Could not find the StreamExecutionEnvironment in the operators. " +
 				"There is a bug. Please contact the developer.");
 

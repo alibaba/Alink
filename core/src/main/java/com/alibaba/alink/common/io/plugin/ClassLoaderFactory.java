@@ -1,8 +1,10 @@
 package com.alibaba.alink.common.io.plugin;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
+
 import java.io.Serializable;
 import java.security.PrivilegedExceptionAction;
-import java.util.Map;
 
 public abstract class ClassLoaderFactory implements Serializable {
 
@@ -30,16 +32,19 @@ public abstract class ClassLoaderFactory implements Serializable {
 		try {
 			doAs(action);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
 	}
 
 	public <T> T doAsThrowRuntime(PrivilegedExceptionAction <T> action) {
 		try {
 			return doAs(action);
+		} catch (ExceptionWithErrorCode e) {
+			throw e;
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
+
 	}
 
 	public <T> T doAs(PrivilegedExceptionAction <T> action) throws Exception {

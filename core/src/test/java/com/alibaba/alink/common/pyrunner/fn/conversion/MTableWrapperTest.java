@@ -3,6 +3,7 @@ package com.alibaba.alink.common.pyrunner.fn.conversion;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ public class MTableWrapperTest {
 			writer.flush();
 			content = stringWriter.toString();
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to write MTable to StringWriter.", e);
+			throw new AkUnclassifiedErrorException("Failed to write MTable to StringWriter.", e);
 		}
 		String expectedSchemaStr = "i INT,l BIGINT,f FLOAT,d DOUBLE,s VARCHAR,b BOOLEAN";
 		Assert.assertEquals(csvContent, content);

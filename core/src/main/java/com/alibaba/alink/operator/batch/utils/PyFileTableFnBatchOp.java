@@ -27,6 +27,6 @@ public class PyFileTableFnBatchOp extends BasePyTableFnBatchOp <PyFileTableFnBat
 	protected TableFunction <?> getPyTableFn(String funcName) {
 		JsonObject fnSpec = UDFHelper.makeFnSpec(this);
 		Map <String, String> runConfig = UDFHelper.makeRunConfig(this);
-		return PyFnFactory.makeTableFn(funcName, fnSpec.toString(), getResultTypes(), runConfig::getOrDefault);
+		return PyFnFactory.makeTableFn(funcName, fnSpec.toString(), getResultTypes(), runConfig);
 	}
 }

@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.linalg.tensor;
 
 import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil.DoCalcFunctions;
 import org.tensorflow.ndarray.IntNdArray;
 import org.tensorflow.ndarray.LongNdArray;
@@ -164,7 +165,7 @@ public final class LongTensor extends NumericalTensor <Long> {
 
 	@Override
 	public LongTensor mean(int dim, boolean keepDim) {
-		throw new UnsupportedOperationException();
+		throw new AkUnsupportedOperationException("Not support exception. ");
 	}
 
 	public static LongTensor of(Tensor <?> other) {
@@ -182,7 +183,9 @@ public final class LongTensor extends NumericalTensor <Long> {
 		} else if (other instanceof LongTensor) {
 			return (LongTensor) other;
 		} else {
-			throw new UnsupportedOperationException();
+			throw new AkUnsupportedOperationException(String.format(
+				"Failed to cast to long tensor. tensor type: %s", other.getType()
+			));
 		}
 	}
 }

@@ -1,6 +1,6 @@
 package com.alibaba.alink.operator.common.regression.isotonicReg;
 
-import org.apache.flink.util.Preconditions;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 /**
  * This class helps the byte array blocks operate like a linked list.
@@ -17,8 +17,8 @@ class IteratorArray {
 	private int point;
 
 	IteratorArray(int length, int point) {
-		Preconditions.checkArgument(length > 0, "length must be positive!");
-		Preconditions.checkArgument(point < length && point >= 0, "point out of range!");
+		AkPreconditions.checkArgument(length > 0, "length must be positive!");
+		AkPreconditions.checkArgument(point < length && point >= 0, "point out of range!");
 		this.prevIndex = new int[length];
 		this.nextIndex = new int[length];
 		for (int i = 0; i < length; i++) {

@@ -17,7 +17,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -31,6 +30,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
@@ -200,7 +200,7 @@ public class DeepARTrainBatchOp extends BatchOperator <DeepARTrainBatchOp>
 				colName = getSelectedCol();
 			}
 
-			Preconditions.checkNotNull(colName);
+			AkPreconditions.checkNotNull(colName);
 
 			final String timeCol = getTimeCol();
 
@@ -314,7 +314,7 @@ public class DeepARTrainBatchOp extends BatchOperator <DeepARTrainBatchOp>
 
 			String[] outputColNames = getOutputCols();
 
-			Preconditions.checkState(outputColNames != null
+			AkPreconditions.checkState(outputColNames != null
 				&& (outputColNames.length == 2 || outputColNames.length == 3));
 
 			final boolean genY = outputColNames.length == 3;

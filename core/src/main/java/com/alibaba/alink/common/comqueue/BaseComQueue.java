@@ -19,6 +19,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import org.apache.commons.lang3.SerializationUtils;
@@ -215,7 +216,7 @@ public class BaseComQueue<Q extends BaseComQueue <Q>> implements Serializable {
 						((ChainedComputation) com).name()
 						: "computation@" + computation.getClass().getSimpleName());
 			} else {
-				throw new RuntimeException("Unsupported op in iterative queue.");
+				throw new AkUnsupportedOperationException("Unsupported op in iterative queue.");
 			}
 		}
 

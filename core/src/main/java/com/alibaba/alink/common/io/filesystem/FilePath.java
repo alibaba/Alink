@@ -4,8 +4,10 @@ import org.apache.flink.core.fs.FSDataInputStream;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.FileUtils;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
@@ -99,7 +101,7 @@ public final class FilePath implements Serializable {
 		}
 	}
 
-	public static String download(FilePath folder, String fileName) throws IOException {
+	public static String download(FilePath folder, String fileName) {
 		// local
 		if (folder.getFileSystem() instanceof LocalFileSystem) {
 			return folder.getPathStr();
@@ -109,39 +111,43 @@ public final class FilePath implements Serializable {
 		String scheme = folder.getPath().toUri().getScheme();
 
 		if (!localConfDir.mkdir()) {
-			throw new RuntimeException("Could not create the dir " + localConfDir.getAbsolutePath());
+			throw new AkUnclassifiedErrorException("Could not create the dir " + localConfDir.getAbsolutePath());
 		}
 
-		try (FileOutputStream outputStream = new FileOutputStream(
-			Paths.get(localConfDir.getPath(), fileName).toFile())) {
-			// http
-			if (scheme != null && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))) {
-				try (HttpFileSplitReader reader
-						 = new HttpFileSplitReader(new Path(folder.getPath(), fileName).toString())) {
+		try {
+			try (FileOutputStream outputStream = new FileOutputStream(
+				Paths.get(localConfDir.getPath(), fileName).toFile())) {
+				// http
+				if (scheme != null && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))) {
+					try (HttpFileSplitReader reader
+							 = new HttpFileSplitReader(new Path(folder.getPath(), fileName).toString())) {
 
-					long fileLen = reader.getFileLength();
-					reader.open(null, 0, fileLen);
+						long fileLen = reader.getFileLength();
+						reader.open(null, 0, fileLen);
 
-					int offset = 0;
-					byte[] buffer = new byte[1024];
+						int offset = 0;
+						byte[] buffer = new byte[1024];
 
-					while (offset < fileLen) {
-						int len = reader.read(buffer, offset, 1024);
-						outputStream.write(buffer, offset, len);
-						offset += len;
+						while (offset < fileLen) {
+							int len = reader.read(buffer, offset, 1024);
+							outputStream.write(buffer, offset, len);
+							offset += len;
+						}
+
 					}
+				} else {
+					// file system
+					try (FSDataInputStream inputStream
+							 = folder.getFileSystem().open(new Path(folder.getPath(), fileName))) {
 
+						IOUtils.copy(inputStream, outputStream);
+					}
 				}
-			} else {
-				// file system
-				try (FSDataInputStream inputStream
-						 = folder.getFileSystem().open(new Path(folder.getPath(), fileName))) {
 
-					IOUtils.copy(inputStream, outputStream);
-				}
+				return localConfDir.getAbsolutePath();
 			}
-
-			return localConfDir.getAbsolutePath();
+		} catch (IOException e) {
+			throw new AkUnclassifiedErrorException("FilePath download error.", e);
 		}
 	}
 
@@ -162,7 +168,7 @@ public final class FilePath implements Serializable {
 	}
 
 	private void init() {
-		Preconditions.checkNotNull(path, "Must be set path.");
+		AkPreconditions.checkNotNull(path, "Must be set path.");
 
 		if (fileSystem == null) {
 
@@ -184,11 +190,11 @@ public final class FilePath implements Serializable {
 
 					String[] hostParsed = authority.split("\u0001");
 
-					Preconditions.checkArgument(hostParsed.length == 2);
+					AkPreconditions.checkArgument(hostParsed.length == 2);
 
 					String[] endpointAndAk = hostParsed[1].split("\u0002");
 
-					Preconditions.checkArgument(endpointAndAk.length == 3);
+					AkPreconditions.checkArgument(endpointAndAk.length == 3);
 
 					String bucketName = hostParsed[0];
 					String endpoint = endpointAndAk[0];
@@ -241,7 +247,7 @@ public final class FilePath implements Serializable {
 				try {
 					localFileSystem = AnnotationUtils.createFileSystem(fileSystemName, new Params());
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw new AkUnclassifiedErrorException("Error. ", e);
 				}
 
 				String fileSystemSchema;
@@ -294,7 +300,7 @@ public final class FilePath implements Serializable {
 			if (rewrittenUri != null) {
 				uri = rewrittenUri;
 			} else {
-				throw new IllegalArgumentException("The file system URI '" + fsUri +
+				throw new AkIllegalOperatorParameterException("The file system URI '" + fsUri +
 					"' declares no scheme and cannot be interpreted relative to the default file system URI ("
 					+ defaultUri + ").");
 			}
@@ -304,7 +310,7 @@ public final class FilePath implements Serializable {
 		if (uri.getScheme().equals("file") && uri.getAuthority() != null && !uri.getAuthority().isEmpty()) {
 			String supposedUri = "file:///" + uri.getAuthority() + uri.getPath();
 
-			throw new IllegalArgumentException(
+			throw new AkIllegalOperatorParameterException(
 				"Found local file path with authority '" + uri.getAuthority() + "' in path '"
 					+ uri.toString() + "'. Hint: Did you forget a slash? (correct path would be '" + supposedUri
 					+ "')");

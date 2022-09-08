@@ -25,12 +25,12 @@ public class NaiveBayesTextModelInfo implements Serializable {
     public NaiveBayesTextModelInfo() {
     }
 
-    NaiveBayesTextModelInfo(DenseMatrix theta,
-                            double[] piArray,
-                            Object[] labels,
-                            int vectorSize,
-                            String vectorColName,
-                            String modelType) {
+    public NaiveBayesTextModelInfo(DenseMatrix theta,
+								   double[] piArray,
+								   Object[] labels,
+								   int vectorSize,
+								   String vectorColName,
+								   String modelType) {
         this.theta = theta;
         this.piArray = piArray;
         this.labels = labels;

@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -38,7 +39,7 @@ public class ToVectorMapper extends SISOMapper {
 				case SKIP:
 					break;
 				default:
-					throw new UnsupportedOperationException();
+					throw new AkUnclassifiedErrorException(ex.getMessage());
 			}
 		}
 		if (vec == null) {

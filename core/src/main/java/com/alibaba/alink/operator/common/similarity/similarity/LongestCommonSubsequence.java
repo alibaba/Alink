@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.similarity.similarity;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.common.similarity.Sample;
 
 /**
@@ -28,7 +29,7 @@ public class LongestCommonSubsequence extends Similarity <Double> {
 		lenR = right.length() + 1;
 		//memory consumption is sizeof(long) * 2 * lenR
 		if (2 * (long) lenR > MAX_MEMORY) {
-			throw new RuntimeException("String is Too Long for LCS, please use other method");
+			throw new AkUnclassifiedErrorException("String is Too Long for LCS, please use other method");
 		}
 		int[][] matrix = new int[2][lenR];
 		int newIndex = 1;
@@ -65,7 +66,7 @@ public class LongestCommonSubsequence extends Similarity <Double> {
 		lenR = right.length + 1;
 		//memory consumption is sizeof(long) * 2 * lenR
 		if (2 * (long) lenR > MAX_MEMORY) {
-			throw new RuntimeException("String is Too Long for LCS, please use other method");
+			throw new AkUnclassifiedErrorException("String is Too Long for LCS, please use other method");
 		}
 		int[][] matrix = new int[2][lenR];
 		int newIndex = 1;

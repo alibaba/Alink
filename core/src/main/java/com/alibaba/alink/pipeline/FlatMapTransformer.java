@@ -2,8 +2,8 @@ package com.alibaba.alink.pipeline;
 
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.utils.FlatMapBatchOp;
@@ -27,7 +27,7 @@ public abstract class FlatMapTransformer<T extends FlatMapTransformer <T>>
 
 	protected FlatMapTransformer(BiFunction <TableSchema, Params, FlatMapper> flatMapperBuilder, Params params) {
 		super(params);
-		this.flatMapperBuilder = Preconditions.checkNotNull(flatMapperBuilder, "flatMapperBuilder can not be null");
+		this.flatMapperBuilder = AkPreconditions.checkNotNull(flatMapperBuilder, "flatMapperBuilder can not be null");
 	}
 
 	@Override

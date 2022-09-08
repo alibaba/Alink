@@ -5,7 +5,9 @@ import org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo;
 import org.apache.flink.api.common.typeinfo.SqlTimeTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.ObjectArrayTypeInfo;
-import org.apache.flink.util.Preconditions;
+
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 
 import java.sql.Types;
 import java.util.Collections;
@@ -77,7 +79,7 @@ public class JdbcTypeConverter {
 		} else if (type instanceof ObjectArrayTypeInfo || type instanceof PrimitiveArrayTypeInfo) {
 			return Types.ARRAY;
 		} else {
-			throw new IllegalArgumentException("Unsupported type: " + type);
+			throw new AkIllegalOperatorParameterException("Unsupported type: " + type);
 		}
 	}
 
@@ -90,7 +92,7 @@ public class JdbcTypeConverter {
 	 */
 	public static TypeInformation <?> getFlinkType(int typeIndex) {
 		TypeInformation <?> typeInformation = MAP_INDEX_TO_FLINK_TYPE.get(typeIndex);
-		Preconditions.checkArgument(typeInformation != null, "Unsupported type: %s", typeIndex);
+		AkPreconditions.checkArgument(typeInformation != null, "Unsupported type: %s", typeIndex);
 		return typeInformation;
 	}
 

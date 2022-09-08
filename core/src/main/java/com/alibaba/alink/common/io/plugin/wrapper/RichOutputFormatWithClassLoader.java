@@ -9,6 +9,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.InstantiationUtil;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class RichOutputFormatWithClassLoader extends RichOutputFormat <Row>
 		try {
 			serializedOutputFormat = InstantiationUtil.serializeObject(outputFormat);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException(e.getMessage(),e);
 		}
 	}
 
@@ -39,7 +40,7 @@ public class RichOutputFormatWithClassLoader extends RichOutputFormat <Row>
 			try {
 				outputFormat = InstantiationUtil.deserializeObject(serializedOutputFormat, factory.create());
 			} catch (IOException | ClassNotFoundException e) {
-				throw new RuntimeException(e);
+				throw new AkUnclassifiedErrorException(e.getMessage(),e);
 			}
 		}
 

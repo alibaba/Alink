@@ -5,7 +5,7 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.common.fe.def.day.BaseDaysStatFeatures;
+import com.alibaba.alink.common.fe.define.day.BaseDaysStatFeatures;
 import com.alibaba.alink.params.shared.colname.HasTimeCol;
 
 public interface GenerateFeatureOfLatestDayParams<T> extends HasTimeCol <T> {

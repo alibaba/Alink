@@ -2,6 +2,8 @@ package com.alibaba.alink.common.dl.plugin;
 
 import com.alibaba.alink.common.dl.exchange.BytesDataExchange;
 import com.alibaba.alink.common.dl.plugin.DLPredictServiceMapper.PredictorConfig;
+import com.alibaba.alink.common.exceptions.AkNullPointerException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
 import com.alibaba.alink.operator.common.pytorch.ListSerializer;
@@ -89,7 +91,7 @@ public class ProcessPredictorRunner implements Closeable {
 
 		ClassLoaderFactory factory = config.factory;
 		if (null == factory) {
-			throw new RuntimeException("factory in config is null.");
+			throw new AkNullPointerException("factory in config is null.");
 		}
 		ClassLoader classLoader = factory.create();
 		try (TemporaryClassLoaderContext ignored = TemporaryClassLoaderContext.of(classLoader)) {
@@ -98,7 +100,7 @@ public class ProcessPredictorRunner implements Closeable {
 			boolean deleted = new File(readyFilename).delete();
 			if (!deleted) {
 				if (inThread) {
-					throw new RuntimeException("Failed to delete procReadyFile.");
+					throw new AkUnclassifiedErrorException("Failed to delete procReadyFile.");
 				} else {
 					System.exit(1);
 				}
@@ -120,7 +122,7 @@ public class ProcessPredictorRunner implements Closeable {
 			mainImpl(args);
 		} catch (Exception e) {
 			if (inThread) {
-				throw new RuntimeException("Exception caught in the inference process: ", e);
+				throw new AkUnclassifiedErrorException("Exception caught in the inference process: ", e);
 			} else {
 				LOG.error("Exception caught in the inference process:", e);
 				System.err.println("Exception caught in the inference process: ");

@@ -13,13 +13,13 @@ import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.io.LibSvmSinkBatchParams;
 import com.alibaba.alink.params.io.LibSvmSinkParams;
+
+import static com.alibaba.alink.operator.local.sink.LibSvmSinkLocalOp.formatLibSvm;
 
 /**
  * Sink the data to files in libsvm format.
@@ -39,31 +39,6 @@ public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
 		super(AnnotationUtils.annotatedName(LibSvmSinkBatchOp.class), params);
 	}
 
-	public static String formatLibSvm(Object label, Object vector, int startIndex) {
-		String labelStr = "";
-		if (label != null) {
-			labelStr = String.valueOf(label);
-		}
-		String vectorStr = "";
-		if (vector != null) {
-			if (vector instanceof String) {
-				if (((String) vector).startsWith(("[")) && ((String) vector).endsWith("]")) {
-					vector = ((String) vector).substring(1, ((String) vector).length() - 1);
-				}
-			}
-			Vector v = VectorUtil.getVector(vector);
-			if (v instanceof DenseVector) {
-				v = toSparseVector((DenseVector) v);
-			}
-			int[] indices = ((SparseVector) v).getIndices();
-			for (int i = 0; i < indices.length; i++) {
-				indices[i] = indices[i] + startIndex;
-			}
-			vectorStr = VectorUtil.serialize(v);
-		}
-		return labelStr + " " + vectorStr;
-	}
-
 	private static SparseVector toSparseVector(DenseVector v) {
 		int[] indices = new int[v.size()];
 		double[] values = v.getData();
@@ -74,7 +49,7 @@ public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
 	}
 
 	@Override
-	public LibSvmSinkBatchOp sinkFrom(BatchOperator<?> in) {
+	public LibSvmSinkBatchOp sinkFrom(BatchOperator <?> in) {
 		final String vectorCol = getVectorCol();
 		final String labelCol = getLabelCol();
 
@@ -94,7 +69,7 @@ public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
 				}
 			});
 
-		BatchOperator<?> outputBatchOp = BatchOperator.fromTable(
+		BatchOperator <?> outputBatchOp = BatchOperator.fromTable(
 			DataSetConversionUtil.toTable(
 				getMLEnvironmentId(), outputRows, new String[] {"f"}, new TypeInformation[] {Types.STRING}
 			)
