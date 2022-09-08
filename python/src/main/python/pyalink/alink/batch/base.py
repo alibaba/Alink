@@ -8,7 +8,7 @@ from .lazy_evaluation import pipe_j_lazy_to_py_callbacks
 from ..common.sql.sql_query_utils import register_table_name, sql_query
 from ..common.types.bases.algo_operator import AlgoOperator
 from ..common.types.bases.params import Params
-from ..common.types.conversion.java_method_call import auto_convert_java_type
+from ..common.types.conversion.java_method_call import auto_convert_java_type, call_java_method
 from ..common.types.conversion.type_converters import py_list_to_j_array, dataframeToOperator, \
     lazy_collect_to_dataframes, collectToDataframes, j_value_to_py_value
 from ..common.utils.printing import print_with_title
@@ -296,6 +296,43 @@ class BatchOperator(AlgoOperator):
         :return: `self`
         """
         return self.lazyCollectStatistics(lambda summary: print_with_title(summary, title))
+
+    def lazyVizStatistics(self, tableName: str = None):
+        from .operator_with_methods import InternalFullStatsBatchOp
+        internalFullStatsBatchOp = InternalFullStatsBatchOp().linkFrom(self)
+        new_table_names = [tableName] if tableName is not None else []
+        internalFullStatsBatchOp.lazyVizFullStats(new_table_names)
+        return self
+
+    def lazyVizDive(self):
+        def console_callback(df: pandas.DataFrame):
+            s = df.to_json(orient='records')
+            j_dive_visualizer = get_java_class("com.alibaba.alink.operator.batch.utils.DiveVisualizer").getInstance()
+            call_java_method(j_dive_visualizer.visualize, s)
+
+        def ipython_callback(df: pandas.DataFrame):
+            s = df.to_json(orient='records')
+            j_dive_visualizer = get_java_class("com.alibaba.alink.operator.batch.utils.DiveVisualizer").getInstance()
+            srcdoc = call_java_method(j_dive_visualizer.generateIframeHtml, s)
+            from html import escape
+            html = """\
+            <iframe srcdoc='{srcdoc}' id='facets-dive-iframe' width="100%" height="500px"></iframe>
+            <script>
+                facets_dive_iframe = document.getElementById('facets-dive-iframe');
+                facets_dive_iframe.id = "";
+                setTimeout(() => {
+                    facets_dive_iframe.setAttribute('height', facets_dive_iframe.contentWindow.document.body.offsetHeight + 'px')
+                }, 1500)
+            </script>
+            """.replace('{srcdoc}', escape(srcdoc))
+
+            from IPython.display import display, HTML
+            display(HTML(html))
+
+        from ..common.utils.packages import in_ipython
+        callback = ipython_callback if in_ipython() else console_callback
+        self.sampleWithSize(10000).lazyCollectToDataframe(callback)
+        return self
 
 
 class BaseSourceBatchOp(BatchOperator, ABC):

@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.utils;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
@@ -62,7 +63,7 @@ public class UDFBatchOpTest extends AlinkTestBase {
 		Assert.assertEquals(expected, results);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalOperatorParameterException.class)
 	public void testEmptyFunc() {
 		MemSourceBatchOp src = new MemSourceBatchOp(new Object[][] {
 			new Object[] {"1", "a", 1L},

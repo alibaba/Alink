@@ -18,6 +18,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -244,7 +245,7 @@ public class ApsEnv<DT, MT> implements Serializable {
 				e.printStackTrace();
 				System.out.println("ckpt retry:  j: " + j);
 				if (j == RETRY_TIMES - 1) {
-					throw new RuntimeException(e);
+					throw new AkUnclassifiedErrorException("Error. ",e);
 				}
 				continue;
 			}

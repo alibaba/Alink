@@ -4,8 +4,10 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.SISOMapper;
 import com.alibaba.alink.params.dataproc.ToMTableParams;
 import com.alibaba.alink.params.shared.HasHandleInvalid.HandleInvalidMethod;
@@ -31,7 +33,7 @@ public class ToMTableMapper extends SISOMapper {
 			} else if (input instanceof MTable) {
 				mTable = (MTable) input;
 			} else {
-				throw new RuntimeException("Input type not support yet.");
+				throw new AkUnsupportedOperationException("Input type not support yet.");
 			}
 		} catch (Exception ex) {
 			switch (handleInvalidMethod) {
@@ -40,7 +42,7 @@ public class ToMTableMapper extends SISOMapper {
 				case SKIP:
 					break;
 				default:
-					throw new UnsupportedOperationException();
+					throw new AkUnclassifiedErrorException(ex.getMessage());
 			}
 		}
 		return mTable;

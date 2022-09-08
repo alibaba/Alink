@@ -9,6 +9,7 @@ import org.apache.flink.core.memory.DataOutputSerializer;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.redis.Redis;
 import com.alibaba.alink.common.io.redis.RedisClassLoaderFactory;
 import com.alibaba.alink.params.io.RedisParams;
@@ -69,7 +70,7 @@ public class RedisUtil {
             try {
                 rowKey = keySerializer.deserialize(keyDeserializer);
             } catch (Exception e) {
-                throw new IllegalArgumentException("Row TypeInformation and Redis key are inconsistent");
+                throw new AkIllegalOperatorParameterException("Row TypeInformation and Redis key are inconsistent");
             }
             result.put(rowKey, key);
         }
@@ -84,7 +85,7 @@ public class RedisUtil {
         try {
             valueInputView.setBuffer(value, 0, value.length);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Row TypeInformation and Redis Value are inconsistent");
+            throw new AkIllegalOperatorParameterException("Row TypeInformation and Redis Value are inconsistent");
         }
         return valueSerializer.deserialize(valueInputView);
     }
@@ -101,7 +102,7 @@ public class RedisUtil {
         try {
             keySerializer.serialize(key, keyOutputView);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Row TypeInformation and Redis key are inconsistent");
+            throw new AkIllegalOperatorParameterException("Row TypeInformation and Redis key are inconsistent");
         }
         int length = keyOutputView.length();
         byte[] ret = Arrays.copyOfRange(keyOutputView.getSharedBuffer(), 0, length);

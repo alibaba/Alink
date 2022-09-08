@@ -4,6 +4,8 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.Serializable;
@@ -98,12 +100,6 @@ public class OutputColsHelper implements Serializable {
 		outputColsPosInResult = new int[outputColNames.length];
 		Arrays.fill(outputColsPosInResult, -1);
 		int index = 0;
-		HashSet<String> inputColNameSet = new HashSet <>(Arrays.asList(inputColNames));
-		for (String reservedName : toReservedCols) {
-			if (!(inputColNameSet.contains(reservedName))) {
-				throw new RuntimeException("Reserved col name (" + reservedName + ") not exists in input col names.");
-			}
-		}
 		for (int i = 0; i < inputColNames.length; i++) {
 			int key = ArrayUtils.indexOf(outputColNames, inputColNames[i]);
 			if (key >= 0) {
@@ -175,7 +171,7 @@ public class OutputColsHelper implements Serializable {
 	public Row getResultRow(Row input, Row output) {
 		int numOutputs = outputColsPosInResult.length;
 		if (output.getArity() != numOutputs) {
-			throw new IllegalArgumentException("Invalid output size");
+			throw new AkIllegalOperatorParameterException("Invalid output size");
 		}
 		int resultLength = reservedCols.length + outputColNames.length;
 		Row result = new Row(resultLength);

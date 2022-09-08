@@ -1,7 +1,5 @@
 package com.alibaba.alink.common.linalg.tensor;
 
-import org.apache.flink.util.Preconditions;
-
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import org.tensorflow.ndarray.NdArray;
 import org.tensorflow.ndarray.NdArrays;
@@ -9,7 +7,7 @@ import org.tensorflow.ndarray.StdArrays;
 import org.tensorflow.ndarray.buffer.DataBuffer;
 import org.tensorflow.ndarray.buffer.DataBuffers;
 
-public final class StringTensor extends Tensor <String> {
+public final class StringTensor extends Tensor <String> { 
 
 	public StringTensor(Shape shape) {
 		this(NdArrays.ofObjects(String.class, shape.toNdArrayShape()));

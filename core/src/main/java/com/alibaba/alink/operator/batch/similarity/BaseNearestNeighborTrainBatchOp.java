@@ -28,7 +28,7 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCol;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "idCol", portIndices = 0)
 @ParamSelectColumnSpec(name = "selectCol")
-public abstract class BaseNearestNeighborTrainBatchOp<T extends BaseNearestNeighborTrainBatchOp<T>>
+public abstract class BaseNearestNeighborTrainBatchOp<T extends BaseNearestNeighborTrainBatchOp <T>>
 	extends BatchOperator <T> {
 	private static final long serialVersionUID = 8494407021938399142L;
 

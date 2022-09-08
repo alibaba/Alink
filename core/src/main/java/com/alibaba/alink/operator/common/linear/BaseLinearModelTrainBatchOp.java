@@ -677,11 +677,11 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 
 					for (Tuple5 <String, String[], double[], double[], double[]> r : tuple5s) {
 						if (r.f1.length < NUM_COLLECT_THRESHOLD) {
-							out.collect(Row.of(0, r.f0));
-							out.collect(Row.of(1, JsonConverter.toJson(r.f1)));
-							out.collect(Row.of(2, JsonConverter.toJson(r.f2)));
-							out.collect(Row.of(3, JsonConverter.toJson(r.f3)));
-							out.collect(Row.of(4, JsonConverter.toJson(r.f4)));
+							out.collect(Row.of(0L, r.f0));
+							out.collect(Row.of(1L, JsonConverter.toJson(r.f1)));
+							out.collect(Row.of(2L, JsonConverter.toJson(r.f2)));
+							out.collect(Row.of(3L, JsonConverter.toJson(r.f3)));
+							out.collect(Row.of(4L, JsonConverter.toJson(r.f4)));
 						} else {
 							List <Tuple3 <String, Double, Double>> array = new ArrayList <>(r.f1.length);
 							int startIdx = hasInterception ? 1 : 0;
@@ -703,18 +703,18 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 								importance[destIdx] = array.get(srcIdx).f2;
 							}
 
-							out.collect(Row.of(0, r.f0));
-							out.collect(Row.of(1, JsonConverter.toJson(colName)));
-							out.collect(Row.of(2, JsonConverter.toJson(weight)));
-							out.collect(Row.of(3, JsonConverter.toJson(importance)));
-							out.collect(Row.of(4, JsonConverter.toJson(r.f4)));
+							out.collect(Row.of(0L, r.f0));
+							out.collect(Row.of(1L, JsonConverter.toJson(colName)));
+							out.collect(Row.of(2L, JsonConverter.toJson(weight)));
+							out.collect(Row.of(3L, JsonConverter.toJson(importance)));
+							out.collect(Row.of(4L, JsonConverter.toJson(r.f4)));
 						}
 					}
 				}
 			});
 
 		Table summaryTable = DataSetConversionUtil.toTable(environmentId, summary, new TableSchema(
-			new String[] {"id", "info"}, new TypeInformation[] {Types.INT, Types.STRING}));
+			new String[] {"id", "info"}, new TypeInformation[] {Types.LONG, Types.STRING}));
 		Table importanceTable = DataSetConversionUtil.toTable(environmentId, importance, new TableSchema(
 			new String[] {"col_name", "importance"}, new TypeInformation[] {Types.STRING, Types.DOUBLE}));
 		Table weightTable = DataSetConversionUtil.toTable(environmentId, weights, new TableSchema(

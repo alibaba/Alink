@@ -7,6 +7,7 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeRefe
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.dl.utils.ZipFileUtil;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.DistributePluginException;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FilePath;
@@ -82,7 +83,7 @@ public class PluginDownloader {
 			Map <String, List <String>> allVersions = resourcePluginConfigs.get(pluginName).versions;
 			return new ArrayList <>(allVersions.keySet());
 		} else {
-			throw new IllegalArgumentException("plugin [" + pluginName + "] not found!");
+			throw new AkIllegalOperatorParameterException("plugin [" + pluginName + "] not found!");
 		}
 	}
 
@@ -145,7 +146,7 @@ public class PluginDownloader {
 				);
 			}
 		} else {
-			throw new IllegalArgumentException("plugin [" + pluginName + "] not found!");
+			throw new AkIllegalOperatorParameterException("plugin [" + pluginName + "] not found!");
 		}
 	}
 
@@ -431,11 +432,11 @@ public class PluginDownloader {
 			if (versions.containsKey(pluginVersion)) {
 				return versions.get(pluginVersion);
 			} else {
-				throw new IllegalArgumentException(
+				throw new AkIllegalOperatorParameterException(
 					"plugin [" + pluginName + "], version [" + pluginVersion + "] not found!");
 			}
 		} else {
-			throw new IllegalArgumentException("plugin [" + pluginName + "] not found!");
+			throw new AkIllegalOperatorParameterException("plugin [" + pluginName + "] not found!");
 		}
 	}
 
@@ -448,11 +449,11 @@ public class PluginDownloader {
 			if (versions.containsKey(pluginVersion)) {
 				return versions.get(pluginVersion);
 			} else {
-				throw new IllegalArgumentException(
+				throw new AkIllegalOperatorParameterException(
 					"plugin [" + pluginName + "], version [" + pluginVersion + "] not found!");
 			}
 		} else {
-			throw new IllegalArgumentException("plugin [" + pluginName + "] not found!");
+			throw new AkIllegalOperatorParameterException("plugin [" + pluginName + "] not found!");
 		}
 	}
 
@@ -464,7 +465,7 @@ public class PluginDownloader {
 		} else if (resourcePluginConfigs.containsKey(pluginName)) {
 			return resourcePluginConfigs.get(pluginName).defaultVersion;
 		} else {
-			throw new IllegalArgumentException("plugin [" + pluginName + "] not found!");
+			throw new AkIllegalOperatorParameterException("plugin [" + pluginName + "] not found!");
 		}
 	}
 

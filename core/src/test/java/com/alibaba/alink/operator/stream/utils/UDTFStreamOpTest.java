@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.stream.utils;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.testutil.AlinkTestBase;
@@ -29,7 +30,7 @@ public class UDTFStreamOpTest extends AlinkTestBase {
 		StreamOperator.execute();
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AkIllegalOperatorParameterException.class)
 	public void testUdtfEmptyFunc() throws Exception {
 		MemSourceStreamOp src = new MemSourceStreamOp(new Object[][] {
 			new Object[] {"1", "a b", 1L},

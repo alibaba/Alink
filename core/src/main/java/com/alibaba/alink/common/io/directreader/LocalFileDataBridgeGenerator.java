@@ -3,6 +3,7 @@ package com.alibaba.alink.common.io.directreader;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.exceptions.AkFlinkExecutionErrorException;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 
@@ -18,7 +19,7 @@ public class LocalFileDataBridgeGenerator implements DataBridgeGenerator {
 			file = File.createTempFile("alink-data-bridge-", ".ak");
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> file.delete()));
 		} catch (IOException e) {
-			throw new RuntimeException("Cannot create temp file.");
+			throw new AkUnclassifiedErrorException("Cannot create temp file.");
 		}
 		new AkSinkBatchOp()
 			.setFilePath(file.getAbsolutePath())

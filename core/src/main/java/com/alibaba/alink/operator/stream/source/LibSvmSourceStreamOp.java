@@ -13,7 +13,7 @@ import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import com.alibaba.alink.operator.batch.source.LibSvmSourceBatchOp;
+import com.alibaba.alink.operator.local.source.LibSvmSourceLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.LibSvmSourceParams;
 
@@ -38,7 +38,7 @@ public final class LibSvmSourceStreamOp extends BaseSourceStreamOp <LibSvmSource
 	@Override
 	public Table initializeDataSource() {
 
-		StreamOperator<?> source = new CsvSourceStreamOp()
+		StreamOperator <?> source = new CsvSourceStreamOp()
 			.setMLEnvironmentId(getMLEnvironmentId())
 			.setFilePath(getFilePath())
 			.setFieldDelimiter("\n")
@@ -54,10 +54,10 @@ public final class LibSvmSourceStreamOp extends BaseSourceStreamOp <LibSvmSource
 				@Override
 				public Row map(Row value) throws Exception {
 					String line = (String) value.getField(0);
-					Tuple2 <Double, Vector> labelAndFeatures = LibSvmSourceBatchOp.parseLibSvmFormat(line, startIndex);
+					Tuple2 <Double, Vector> labelAndFeatures = LibSvmSourceLocalOp.parseLibSvmFormat(line, startIndex);
 					return Row.of(labelAndFeatures.f0, labelAndFeatures.f1);
 				}
 			});
-		return DataStreamConversionUtil.toTable(getMLEnvironmentId(), data, LibSvmSourceBatchOp.LIB_SVM_TABLE_SCHEMA);
+		return DataStreamConversionUtil.toTable(getMLEnvironmentId(), data, LibSvmSourceLocalOp.LIB_SVM_TABLE_SCHEMA);
 	}
 }

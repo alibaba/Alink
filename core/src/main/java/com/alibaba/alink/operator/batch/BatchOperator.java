@@ -14,13 +14,13 @@ import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.AbstractID;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkFlinkExecutionErrorException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
@@ -328,7 +328,7 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	@Deprecated
 	public String getTableName() {
 		Table outputTable = getOutputTable();
-		Preconditions.checkNotNull(outputTable, "This output table is null.");
+		AkPreconditions.checkNotNull(outputTable, "This output table is null.");
 		return outputTable.toString();
 	}
 
@@ -475,7 +475,7 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 
 	private static <T> ExecutionEnvironment getExecutionEnvironment(
 		Function <T, ExecutionEnvironment> getFunction, T[] types) {
-		Preconditions.checkState(types != null && types.length > 0,
+		AkPreconditions.checkState(types != null && types.length > 0,
 			"The operators must not be empty when get ExecutionEnvironment");
 
 		ExecutionEnvironment env = null;
@@ -495,7 +495,7 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 			env = executionEnv;
 		}
 
-		Preconditions.checkNotNull(env,
+		AkPreconditions.checkNotNull(env,
 			"Could not find the ExecutionEnvironment in the operators. " +
 				"There is a bug. Please contact the developer.");
 

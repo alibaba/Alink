@@ -6,6 +6,7 @@ import org.apache.flink.core.fs.FileSystemFactory;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory.S3FileSystemClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
@@ -45,7 +46,7 @@ public abstract class S3FileSystem<T extends S3FileSystem <T>> extends BaseFileS
 					new URI(getSchema(), bucketName, null, null).toString()
 				);
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException(e);
+			throw new AkUnclassifiedErrorException("Error. ", e);
 		}
 	}
 
@@ -104,7 +105,7 @@ public abstract class S3FileSystem<T extends S3FileSystem <T>> extends BaseFileS
 					loaded = factory.create(localPath.toUri());
 					return loaded;
 				} catch (IOException e) {
-					throw new RuntimeException(e);
+					throw new AkUnclassifiedErrorException("Error. ", e);
 				}
 			}
 		}

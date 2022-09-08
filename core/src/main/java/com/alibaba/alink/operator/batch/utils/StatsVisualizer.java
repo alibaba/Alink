@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.batch.utils;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
@@ -9,61 +8,33 @@ import com.alibaba.alink.metadata.def.shaded.com.google.protobuf.InvalidProtocol
 import com.alibaba.alink.metadata.def.shaded.com.google.protobuf.util.JsonFormat;
 import com.alibaba.alink.metadata.def.v0.DatasetFeatureStatistics;
 import com.alibaba.alink.metadata.def.v0.DatasetFeatureStatisticsList;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
 public class StatsVisualizer {
-	private static final Logger LOG = LoggerFactory.getLogger(StatsVisualizer.class);
-
 	private static final StatsVisualizer INSTANCE = new StatsVisualizer();
 
-	private final String template;
-	private final String newTemplate;
+	private final String TEMPLATE;
+
+	private final String IFRAME_TEMPLATE;
+	private final String NEW_TEMPLATE;
 
 	private StatsVisualizer() {
-		try (InputStream templateStream = StatsVisualizer.class.getResourceAsStream("/facets_template.html");
-			 InputStream newTemplateStream = StatsVisualizer.class.getResourceAsStream("/mtvis.html")) {
-			assert templateStream != null;
-			assert newTemplateStream != null;
-			template = IOUtils.toString(templateStream);
-			newTemplate = IOUtils.toString(newTemplateStream);
-		} catch (IOException e) {
-			throw new AkUnclassifiedErrorException("Failed to read resource /facets_template.html", e);
-		}
+		final String toBeReplaced
+			= "<link rel=\"import\" href=\"https://raw.githubusercontent.com/PAIR-code/facets/master/facets-dist/facets-jupyter.html\">";
+		final ClassLoader cl = getClass().getClassLoader();
+		final String replaceContent = HtmlVizUtils.readResourceContent("/facets-jupyter.html");
+		TEMPLATE = HtmlVizUtils.readResourceContent("/facets_template.html")
+			.replace(toBeReplaced, replaceContent);
+		IFRAME_TEMPLATE = HtmlVizUtils.readResourceContent("/iframe_facets_template.html")
+			.replace(toBeReplaced, replaceContent);
+		NEW_TEMPLATE = HtmlVizUtils.readResourceContent("/mtvis.html");
 	}
 
 	public static StatsVisualizer getInstance() {
 		return INSTANCE;
-	}
-
-	private static void saveOpenHtml(String html) {
-		String path;
-		try {
-			File file = File.createTempFile("alink_stats_", ".html");
-			FileUtils.writeStringToFile(file, html, StandardCharsets.UTF_8);
-			path = file.getAbsolutePath();
-		} catch (IOException e) {
-			throw new AkUnclassifiedErrorException("Failed to write html to file.", e);
-		}
-		try {
-			Desktop desktop = Desktop.getDesktop();
-			desktop.open(new File(path));
-			if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
-				System.out.println("Opening webpage: " + path);
-			}
-		} catch (Exception e) {
-			LOG.info("Open webpage {} failed.", path, e);
-		}
 	}
 
 	private String generateHtmlTitle(DatasetFeatureStatisticsList datasetFeatureStatisticsList,
@@ -82,16 +53,24 @@ public class StatsVisualizer {
 		return title;
 	}
 
-	private String generateHtml(DatasetFeatureStatisticsList datasetFeatureStatisticsList,
-								String[] newTableNames) {
+	public String generateHtml(DatasetFeatureStatisticsList datasetFeatureStatisticsList, String[] newTableNames) {
 		String protoStr = Base64.getEncoder().encodeToString(datasetFeatureStatisticsList.toByteArray());
 		String title = generateHtmlTitle(datasetFeatureStatisticsList, newTableNames);
-		return template.replace("{title}", title).replace("{protostr}", protoStr);
+		return TEMPLATE.replace("{title}", title).replace("{protostr}", protoStr);
 	}
 
 	public void visualize(DatasetFeatureStatisticsList datasetFeatureStatisticsList, String[] newTableNames) {
 		String html = generateHtml(datasetFeatureStatisticsList, newTableNames);
-		saveOpenHtml(html);
+		HtmlVizUtils.saveOpenHtml(html);
+	}
+
+	/**
+	 * Generate iframe version of HTML for Jupyter Notebook usage.
+	 */
+	@SuppressWarnings("unused")
+	public String generateIframeHtml(DatasetFeatureStatisticsList datasetFeatureStatisticsList) {
+		String protoStr = Base64.getEncoder().encodeToString(datasetFeatureStatisticsList.toByteArray());
+		return IFRAME_TEMPLATE.replace("{protostr}", protoStr);
 	}
 
 	@Internal
@@ -106,13 +85,13 @@ public class StatsVisualizer {
 		}
 		String b64ProtoJson = Base64.getEncoder().encodeToString(protoJson.getBytes(StandardCharsets.UTF_8));
 		String title = generateHtmlTitle(datasetFeatureStatisticsList, newTableNames);
-		return newTemplate.replace("{title}", title).replace("{b64_proto_json}", b64ProtoJson);
+		return NEW_TEMPLATE.replace("{title}", title).replace("{b64_proto_json}", b64ProtoJson);
 	}
 
 	@Internal
 	public void visualizeNew(DatasetFeatureStatisticsList datasetFeatureStatisticsList,
 							 String[] newTableNames) {
 		String html = generateHtmlNew(datasetFeatureStatisticsList, newTableNames);
-		saveOpenHtml(html);
+		HtmlVizUtils.saveOpenHtml(html);
 	}
 }

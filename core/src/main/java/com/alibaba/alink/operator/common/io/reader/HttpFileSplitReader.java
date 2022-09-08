@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.io.reader;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.common.io.csv.CsvFileInputSplit;
 
 import java.io.IOException;
@@ -65,19 +66,19 @@ public class HttpFileSplitReader implements FileSplitReader, AutoCloseable {
 			boolean splitable = acceptRanges != null && acceptRanges.equalsIgnoreCase("bytes");
 
 			if (contentLength < 0) {
-				throw new RuntimeException("The content length can't be determined.");
+				throw new AkUnclassifiedErrorException("The content length can't be determined.");
 			}
 
 			// If the http server does not accept ranges, then we quit the program.
 			// This is because 'accept ranges' is required to achieve robustness (through re-connection),
 			// and efficiency (through concurrent read).
 			if (!splitable) {
-				throw new RuntimeException("The http server does not support range reading.");
+				throw new AkUnclassifiedErrorException("The http server does not support range reading.");
 			}
 
 			return contentLength;
 		} catch (Exception e) {
-			throw new RuntimeException("Fail to connect to http server", e);
+			throw new AkUnclassifiedErrorException("Fail to connect to http server", e);
 		} finally {
 			if (headerConnection != null) {
 				headerConnection.disconnect();

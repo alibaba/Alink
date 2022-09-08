@@ -14,6 +14,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.MTableUtil;
+import com.alibaba.alink.common.MTableUtil.GroupFunction;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.params.evaluation.EvalMultiClassParams;
@@ -26,9 +29,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import static com.alibaba.alink.operator.batch.evaluation.EvalMultiLabelBatchOp.LABELS;
@@ -289,7 +292,7 @@ public class ClassificationEvaluationUtil implements Serializable {
 	 *                      always 0.
 	 * @return a map of label and ID, label array.
 	 */
-	public static Tuple2 <Map <Object, Integer>, Object[]> buildLabelIndexLabelArray(HashSet <Object> set,
+	public static Tuple2 <Map <Object, Integer>, Object[]> buildLabelIndexLabelArray(Set <Object> set,
 																					 boolean binary,
 																					 String positiveValue,
 																					 TypeInformation <?> labelType,
@@ -637,8 +640,116 @@ public class ClassificationEvaluationUtil implements Serializable {
 		}
 	}
 
+	public static List <Tuple3 <Double, Boolean, Double>> calcSampleStatistics(
+		List <Row> data, Tuple2 <Map <Object, Integer>, Object[]> labels, TypeInformation <?> labelType) {
+		return calcSampleStatistics(data, labels, labelType, 0.5, new DefaultLabelProbMapExtractor());
+	}
+
+	public static List <Tuple3 <Double, Boolean, Double>> calcSampleStatistics(
+		List <Row> data, Tuple2 <Map <Object, Integer>, Object[]> labels, TypeInformation <?> labelType,
+		Double decisionThreshold, LabelProbMapExtractor extractor) {
+		ArrayList <Tuple3 <Double, Boolean, Double>> list = new ArrayList <>();
+		for (Row row : data) {
+			Tuple3 <Double, Boolean, Double> t = getBinaryDetailStatistics(row, labels.f1, labelType, extractor);
+			if (null != t) {
+				list.add(t);
+			}
+		}
+		list.add(Tuple3.of(decisionThreshold, true, Double.NaN));
+		return list;
+	}
+
+	public static AccurateBinaryMetricsSummary calLabelPredDetailLocal(Tuple2 <Map <Object, Integer>, Object[]> labels,
+																	   List <Tuple3 <Double, Boolean, Double>> values,
+																	   Double decisionThreshold) {
+		BinaryPartitionSummary statistics = new BinaryPartitionSummary(0, -Double.MAX_VALUE, 0, 0);
+		values.forEach(t -> updateBinaryPartitionSummary(statistics, t, decisionThreshold));
+
+		values.sort(new Comparator <Tuple3 <Double, Boolean, Double>>() {
+			@Override
+			public int compare(Tuple3 <Double, Boolean, Double> o1, Tuple3 <Double, Boolean, Double> o2) {
+				return -o1.f0.compareTo(o2.f0);
+			}
+		});
+
+		ArrayList <BinaryPartitionSummary> binaryPartitionSummaries = new ArrayList <>();
+		binaryPartitionSummaries.add(statistics);
+		Tuple2 <Boolean, long[]> t = reduceBinaryPartitionSummary(binaryPartitionSummaries, 0);
+		long startIndex = t.f1[CUR_FALSE] + t.f1[CUR_TRUE] + 1;
+		long total = t.f1[TOTAL_TRUE] + t.f1[TOTAL_FALSE];
+
+		//Double, Long, Boolean
+		List <Row> out = new ArrayList <>();
+		for (Tuple3 <Double, Boolean, Double> t3 : values) {
+			if (!isMiddlePoint(t3, decisionThreshold)) {
+				out.add(Row.of(t3.f0, total - startIndex + 1, t3.f1));
+				startIndex++;
+			}
+		}
+
+		MTable mt = new MTable(out, "f0 double, f1 long, f2 boolean");
+
+		out = MTableUtil.groupFunc(mt, new String[] {"f0"}, new GroupFunction() {
+			@Override
+			public void calc(List <Row> values, Collector <Row> out) {
+				long sum = 0;
+				long cnt = 0;
+				long positiveCnt = 0;
+				for (Row row : values) {
+					sum += (Long) row.getField(1);
+					cnt++;
+					if ((Boolean) row.getField(2)) {
+						positiveCnt++;
+					}
+				}
+				out.collect(Row.of(1. * sum / cnt * positiveCnt));
+			}
+		});
+
+		double auc = 0.0;
+		for (Row row : out) {
+			auc += (Double) row.getField(0);
+		}
+
+
+		boolean firstBin = t.f0;
+		long[] countValues = t.f1;
+		long totalTrue = countValues[TOTAL_TRUE];
+		long totalFalse = countValues[TOTAL_FALSE];
+		if (totalTrue == 0) {
+			LOG.warn("There is no positive sample in data!");
+		}
+		if (totalFalse == 0) {
+			LOG.warn("There is no negative sample in data!");
+		}
+		if (totalTrue > 0 && totalFalse > 0) {
+			auc = (auc - 1. * totalTrue * (totalTrue + 1) / 2) / (totalTrue * totalFalse);
+		} else {
+			auc = Double.NaN;
+		}
+		double largestThreshold = Double.POSITIVE_INFINITY;
+
+		AccurateBinaryMetricsSummary summary =
+			new AccurateBinaryMetricsSummary(labels.f1, decisionThreshold, 0.0, 0L, auc);
+		double[] tprFprPrecision = new double[RECORD_LEN];
+		for (Tuple3 <Double, Boolean, Double> t3 : values) {
+			updateAccurateBinaryMetricsSummary(
+				t3,
+				summary,
+				countValues,
+				tprFprPrecision,
+				firstBin,
+				decisionThreshold,
+				largestThreshold);
+		}
+
+		return summary;
+
+	}
+
 	/**
-	 * For every sample, convert the label-score map to simple statistics, including: score to be positive, is real positive, and log loss.
+	 * For every sample, convert the label-score map to simple statistics, including: score to be positive, is real
+	 * positive, and log loss.
 	 *
 	 * @param data              data samples where 1st field real label and 2nd field is the prediction details
 	 * @param labels            contains 1 entry: label-index map and label array

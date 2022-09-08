@@ -10,6 +10,7 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.graph.Node2VecWalkBatchOp;
 import com.alibaba.alink.operator.batch.sql.JoinBatchOp;
@@ -63,7 +64,7 @@ public abstract class Node2VecImpl<T extends Node2VecImpl <T>> extends BatchOper
 			return (T) this;
 
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 		}
 	}
 

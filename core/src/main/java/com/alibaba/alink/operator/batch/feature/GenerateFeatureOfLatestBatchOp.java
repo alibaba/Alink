@@ -12,7 +12,7 @@ import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.feature.GenerateFeatureOfLatestParams;
 import com.alibaba.alink.common.fe.GenerateFeatureUtil;
-import com.alibaba.alink.common.fe.def.BaseStatFeatures;
+import com.alibaba.alink.common.fe.define.BaseStatFeatures;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;

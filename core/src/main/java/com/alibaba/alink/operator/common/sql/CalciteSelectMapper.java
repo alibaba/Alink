@@ -5,6 +5,7 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
+import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
@@ -83,7 +84,7 @@ public class CalciteSelectMapper extends Mapper {
 		addScalarFunctionConsumer.accept("TO_BASE64", StringFunctions.TOBASE64);
 		addScalarFunctionConsumer.accept("LPAD", StringFunctions.LPAD);
 		addScalarFunctionConsumer.accept("RPAD", StringFunctions.RPAD);
-		//addScalarFunctionConsumer.accept("REGEXP_REPLACE", StringFunctions.REGEXP_REPLACE);
+		addScalarFunctionConsumer.accept("REGEXP_REPLACE", StringFunctions.REGEXP_REPLACE);
 		addScalarFunctionConsumer.accept("REGEXP_EXTRACT", StringFunctions.REGEXP_EXTRACT);
 
 		addScalarFunctionConsumer.accept("LTRIM", BuiltInMethod.LTRIM.method);
@@ -201,8 +202,11 @@ public class CalciteSelectMapper extends Mapper {
 	static Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchemaImpl(TableSchema dataSchema,
 																							Params params) {
 		String clause = params.get(SelectParams.CLAUSE);
-		MemSourceBatchOp source = new MemSourceBatchOp(Collections.emptyList(), dataSchema);
+		Long newMLEnvId = MLEnvironmentFactory.getNewMLEnvironmentId();
+		MemSourceBatchOp source = new MemSourceBatchOp(Collections.emptyList(), dataSchema)
+			.setMLEnvironmentId(newMLEnvId);
 		TableSchema outputSchema = source.linkTo(new SelectBatchOp().setClause(clause)).getSchema();
+		MLEnvironmentFactory.remove(newMLEnvId);
 		return Tuple4.of(
 			dataSchema.getFieldNames(),
 			outputSchema.getFieldNames(),

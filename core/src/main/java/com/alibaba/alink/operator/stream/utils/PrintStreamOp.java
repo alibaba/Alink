@@ -17,6 +17,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.utils.DataStreamConversionUtil;
@@ -97,7 +98,7 @@ public class PrintStreamOp extends StreamOperator <PrintStreamOp> {
 					}).addSink(new PrintStreamOp.StreamPrintListRowSinkFunction());
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
 		}
 		this.setOutputTable(in.getOutputTable());
 		return this;

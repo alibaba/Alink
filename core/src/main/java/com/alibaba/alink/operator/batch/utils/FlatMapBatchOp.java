@@ -12,6 +12,8 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.common.mapper.FlatMapperAdapter;
 import com.alibaba.alink.common.mapper.FlatMapperAdapterMT;
@@ -50,8 +52,10 @@ public class FlatMapBatchOp<T extends FlatMapBatchOp <T>> extends BatchOperator 
 			this.setOutput(resultRows, resultSchema);
 			//noinspection unchecked
 			return (T) this;
+		} catch (ExceptionWithErrorCode ex) {
+			throw ex;
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new AkUnclassifiedErrorException("Error. ", ex);
 		}
 	}
 

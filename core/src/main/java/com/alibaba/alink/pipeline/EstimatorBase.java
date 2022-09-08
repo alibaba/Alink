@@ -4,11 +4,13 @@ import org.apache.flink.ml.api.core.Estimator;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.apache.flink.util.Preconditions;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
 import com.alibaba.alink.params.io.ModelFileSinkParams;
@@ -35,8 +37,8 @@ public abstract class EstimatorBase<E extends EstimatorBase <E, M>, M extends Mo
 
 	@Override
 	public M fit(TableEnvironment tEnv, Table input) {
-		Preconditions.checkArgument(input != null, "Input CAN NOT BE null!");
-		Preconditions.checkArgument(
+		AkPreconditions.checkArgument(input != null, "Input CAN NOT BE null!");
+		AkPreconditions.checkArgument(
 			tableEnvOf(input) == tEnv,
 			"The input table is not in the specified table environment.");
 		return fit(input);
@@ -49,7 +51,7 @@ public abstract class EstimatorBase<E extends EstimatorBase <E, M>, M extends Mo
 	 * @return a model trained to fit on the given Table.
 	 */
 	public M fit(Table input) {
-		Preconditions.checkArgument(input != null, "Input CAN NOT BE null!");
+		AkPreconditions.checkArgument(input != null, "Input CAN NOT BE null!");
 		if (tableEnvOf(input) instanceof StreamTableEnvironment) {
 			TableSourceStreamOp source = new TableSourceStreamOp(input);
 			if (this.params.contains(ML_ENVIRONMENT_ID)) {
@@ -92,7 +94,15 @@ public abstract class EstimatorBase<E extends EstimatorBase <E, M>, M extends Mo
 	 * @return the model series trained to fit on the streaming data from given StreamOperator.
 	 */
 	public M fit(StreamOperator <?> input) {
-		throw new UnsupportedOperationException("NOT supported yet!");
+		throw new AkUnsupportedOperationException("NOT supported yet!");
+	}
+
+	public M fit(LocalOperator <?> input) {
+		throw new AkUnsupportedOperationException("NOT supported yet!");
+	}
+
+	public LocalOperator <?> fitAndTransform(LocalOperator <?> input) {
+		return this.fit(input).transform(input);
 	}
 
 }

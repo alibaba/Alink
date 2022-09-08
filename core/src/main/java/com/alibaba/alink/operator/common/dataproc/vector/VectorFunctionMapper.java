@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -105,7 +106,7 @@ public class VectorFunctionMapper extends SISOMapper {
 					}
 				}
 			} else {
-				throw new RuntimeException("Not implemented yet!");
+				throw new AkUnimplementedOperationException("Not implemented yet!");
 			}
 		} else {
 			DenseVector dv = (DenseVector) vectorInput;
@@ -126,7 +127,7 @@ public class VectorFunctionMapper extends SISOMapper {
 					}
 				}
 			} else {
-				throw new RuntimeException("Not implemented yet!");
+				throw new AkUnimplementedOperationException("Not implemented yet!");
 			}
 		}
 

@@ -2,6 +2,8 @@ package com.alibaba.alink.params.validators;
 
 import org.apache.flink.ml.api.misc.param.ParamValidator;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+
 import java.io.Serializable;
 
 /**
@@ -32,7 +34,7 @@ public class Validator<T> implements Serializable, ParamValidator <T> {
 			.append(toString());
 
 		if (!validate(value)) {
-			throw new RuntimeException(sbd.toString());
+			throw new AkUnclassifiedErrorException(sbd.toString());
 		}
 	}
 

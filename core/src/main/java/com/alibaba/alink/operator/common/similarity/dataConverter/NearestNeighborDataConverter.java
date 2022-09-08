@@ -10,9 +10,10 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.model.ModelDataConverter;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -113,6 +114,10 @@ public abstract class NearestNeighborDataConverter<T extends NearestNeighborMode
 	}
 
 	public abstract DataSet <Row> buildIndex(BatchOperator in, Params params);
+
+	public List<Row> buildIndex(MTable mt, Params params) {
+		throw new AkUnsupportedOperationException("To be implemented.");
+	}
 
 	protected abstract TableSchema getModelDataSchema();
 

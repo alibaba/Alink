@@ -27,6 +27,7 @@ import org.apache.flink.types.parser.StringValueParser;
 import org.apache.flink.util.InstantiationUtil;
 
 import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -312,7 +313,7 @@ public abstract class GenericCsvInputFormat<OT> extends DelimitedInputFormat <OT
 			if (fieldTypes[i] != null) {
 				Class <? extends FieldParser <?>> parserType = FieldParser.getParserForType(fieldTypes[i]);
 				if (parserType == null) {
-					throw new RuntimeException("No parser available for type '" + fieldTypes[i].getName() + "'.");
+					throw new AkIllegalOperatorParameterException("No parser available for type '" + fieldTypes[i].getName() + "'.");
 				}
 
 				FieldParser <?> p = InstantiationUtil.instantiate(parserType, FieldParser.class);

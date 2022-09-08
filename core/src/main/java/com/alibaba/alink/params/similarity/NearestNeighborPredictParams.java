@@ -5,13 +5,13 @@ import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.params.mapper.SISOMapperParams;
+import com.alibaba.alink.params.mapper.SISOModelMapperParams;
 import com.alibaba.alink.params.validators.MinValidator;
 
 /**
  * Parameters for nearest neighbor predict.
  */
-public interface NearestNeighborPredictParams<T> extends SISOMapperParams <T> {
+public interface NearestNeighborPredictParams<T> extends SISOModelMapperParams <T> {
 
 	@NameCn("radius值")
 	@DescCn("radius值")

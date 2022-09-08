@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.huge.line;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
 import com.alibaba.alink.operator.common.aps.ApsContext;
@@ -75,7 +76,7 @@ public class ApsIndexFunc4PullLine extends ApsFuncIndex4Pull <Number[]> {
 
 			return outputMerger;
 		} else {
-			throw new RuntimeException();
+			throw new AkUnclassifiedErrorException("Aps server meets RuntimeException when pulling index");
 		}
 	}
 

@@ -18,6 +18,7 @@ import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
 import com.alibaba.alink.common.mapper.FlatMapperAdapter;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.utils.DataSetConversionUtil;
@@ -204,7 +205,7 @@ public class BaseOutlierBatchOp<T extends BaseOutlierBatchOp <T>> extends MapBat
 				StringBuilder keyBuilder = new StringBuilder();
 				for (int i = 0; i < groupColIndices.length; i++) {
 					if (null == value.getField(i)) {
-						throw new RuntimeException("There is NULL value in group col!");
+						throw new AkColumnNotFoundException("There is NULL value in group col!");
 					}
 					keyBuilder.append(value.getField(groupColIndices[i]));
 					keyBuilder.append("\001");

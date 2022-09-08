@@ -17,6 +17,7 @@ public class SRC implements AlinkSerializable {
 	public long countNanValue;
 	public long countPositiveInfinity;
 	public long countNegativInfinity;
+	public long countZero;
 	public double sum;
 	public double sum2;
 	public double sum3;

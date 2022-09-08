@@ -2,6 +2,7 @@ package com.alibaba.alink.common.linalg.tensor;
 
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import org.tensorflow.ndarray.BooleanNdArray;
 import org.tensorflow.ndarray.ByteNdArray;
 import org.tensorflow.ndarray.DoubleNdArray;
@@ -139,7 +140,7 @@ public class TensorInternalUtils {
 				return createStringTensor(stringNdArray);
 			}
 			default:
-				throw new UnsupportedOperationException("Unsupported tensor type " + dataType);
+				throw new AkUnsupportedOperationException("Unsupported tensor type " + dataType);
 		}
 	}
 
@@ -207,7 +208,7 @@ public class TensorInternalUtils {
 				throw new AkUnclassifiedErrorException("Cannot serialize StringTensor to bytes:", e);
 			}
 		} else {
-			throw new UnsupportedOperationException("Unsupported tensor type: " + tensor.getClass().getName());
+			throw new AkUnsupportedOperationException("Unsupported tensor type: " + tensor.getClass().getName());
 		}
 	}
 }

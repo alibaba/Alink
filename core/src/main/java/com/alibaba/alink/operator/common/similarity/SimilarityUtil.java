@@ -2,6 +2,8 @@ package com.alibaba.alink.operator.common.similarity;
 
 import org.apache.flink.api.java.tuple.Tuple2;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+
 import java.util.Arrays;
 import java.util.PriorityQueue;
 
@@ -59,7 +61,7 @@ public class SimilarityUtil {
 				res[i] = s[i].hashCode();
 			}
 		} else {
-			throw new RuntimeException("Only support String[] and String.");
+			throw new AkUnclassifiedErrorException("Only support String[] and String.");
 		}
 		Arrays.sort(res);
 		return res;

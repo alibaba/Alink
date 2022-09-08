@@ -26,6 +26,7 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.SelectedColsWithFirstInputSpec;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -232,7 +233,7 @@ public final class HugeStringIndexerPredictBatchOp
 									index = null;
 									break;
 								case ERROR:
-									throw new RuntimeException("Unknown token.");
+									throw new AkIllegalDataException("Unknown token.");
 							}
 						}
 

@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.pyrunner;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.slf4j.Logger;
@@ -132,6 +134,8 @@ public class TarFileUtil {
                 Files.setPosixFilePermissions(p, parsePerms(mode));
             } catch (UnsupportedOperationException e) {
                 //Ignored the file system we are on does not support this, so don't do it.
+            } catch (AkUnsupportedOperationException e){
+                //Ignored the file system we are on does not support this, so don't do it.
             }
         }
     }
@@ -149,7 +153,7 @@ public class TarFileUtil {
                 }
             }
         } catch(IOException e) {
-            throw new RuntimeException(e);
+            throw new AkUnclassifiedErrorException("Error. ",e);
         }
     }
 

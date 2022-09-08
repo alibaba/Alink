@@ -6,9 +6,10 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.InstantiationUtil;
-import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.StringUtils;
 
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.JsonConverter;
 import javax.annotation.Nullable;
 import com.jayway.jsonpath.JsonPath;
@@ -38,7 +39,7 @@ public class StringParsers {
 
 		public JsonParser(String[] fieldNames, TypeInformation[] fieldTypes) {
 			this.fieldNames = fieldNames;
-			Preconditions.checkArgument(fieldNames.length == fieldTypes.length);
+			AkPreconditions.checkArgument(fieldNames.length == fieldTypes.length);
 			this.isString = new boolean[fieldNames.length];
 			this.parsers = new FieldParser[fieldNames.length];
 
@@ -85,7 +86,7 @@ public class StringParsers {
 
 		public KvParser(String[] fieldNames, TypeInformation[] fieldTypes, String colDelimiter, String valDelimiter) {
 			this.fieldNames = fieldNames;
-			Preconditions.checkArgument(fieldNames.length == fieldTypes.length);
+			AkPreconditions.checkArgument(fieldNames.length == fieldTypes.length);
 			this.isString = new boolean[fieldNames.length];
 			this.parsers = new FieldParser[fieldNames.length];
 
@@ -157,7 +158,7 @@ public class StringParsers {
 	static FieldParser <?> getFieldParser(Class typeClazz) {
 		Class <? extends FieldParser <?>> parserType = FieldParser.getParserForType(typeClazz);
 		if (parserType == null) {
-			throw new RuntimeException("No parser available for type '" + typeClazz.getName() + "'.");
+			throw new AkParseErrorException("No parser available for type '" + typeClazz.getName() + "'.");
 		}
 		return InstantiationUtil.instantiate(parserType, FieldParser.class);
 	}

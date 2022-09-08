@@ -6,6 +6,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.ExecutorUtils;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,15 +16,12 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 
@@ -62,7 +60,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 	private transient long numInputRecords = 0L;
 	private transient long numOutputRecords = 0L;
 	private transient Collector <Row> collector;
-	private transient AtomicReference<Throwable> threadException;
+	private transient AtomicReference <Throwable> threadException;
 
 	public MapperMTWrapper(int numThreads, SupplierWithException <FunctionWithException <Row, Row>> supplier) {
 		this.numThreads = numThreads;
@@ -119,7 +117,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 									outputQueue.put(output); // blocking put
 								}
 							} catch (Exception e) {
-								throw new RuntimeException(e);
+								throw new AkUnclassifiedErrorException("Error. ", e);
 							}
 						}
 					}
@@ -146,7 +144,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 			writeSuccess = inputQueues.get(targetTid).offer(Row.copy(value)); // non-blocking write
 			if (!writeSuccess) {
 				if (!threadException.compareAndSet(null, null)) {
-					throw new RuntimeException(threadException.get());
+					throw new AkUnclassifiedErrorException(threadException.get().getMessage());
 				}
 
 				targetTid = (targetTid + 1) % numThreads;
@@ -169,7 +167,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 				writeSuccess = inputQueues.get(i).offer(new Row(0)); // non-blocking write
 				if (!writeSuccess) {
 					if (!threadException.compareAndSet(null, null)) {
-						throw new RuntimeException(threadException.get());
+						throw new AkUnclassifiedErrorException(threadException.get().getMessage());
 					}
 					Thread.yield();
 				}
@@ -184,7 +182,7 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 		}
 
 		if (!threadException.compareAndSet(null, null)) {
-			throw new RuntimeException(threadException.get());
+			throw new AkUnclassifiedErrorException(threadException.get().getMessage());
 		}
 	}
 
@@ -194,7 +192,9 @@ public final class MapperMTWrapper extends RichFlatMapFunction <Row, Row> {
 	 * @param readUntilEOF If true, read til the end of the queue; otherwise read as many as possible.
 	 * @param collector    collector of row.
 	 */
-	private long drainRead(BlockingQueue <Row> queue, boolean readUntilEOF, AtomicReference<Throwable> threadException, Collector <Row> collector)
+	private long drainRead(BlockingQueue <Row> queue, boolean readUntilEOF,
+						   AtomicReference <Throwable> threadException,
+						   Collector <Row> collector)
 		throws Exception {
 		long numRead = 0L;
 		if (readUntilEOF) {

@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg
 
+import com.alibaba.alink.common.exceptions.{AkIllegalArgumentException, AkIllegalOperatorParameterException, AkUnclassifiedErrorException}
 import com.github.fommil.netlib.LAPACK.{getInstance => lapack}
 import org.netlib.util.intW
 
@@ -24,9 +25,9 @@ object LinearSolver {
         lapack.dposv("U", n, nrhs, A.getData, n, B.getData, n, info)
         // check solution
         if (info.`val` > 0) {
-            throw new IllegalArgumentException("A is not positive definite.")
+            throw new AkIllegalArgumentException("A is not positive definite.")
         } else if (info.`val` < 0) {
-            throw new RuntimeException("Invalid input to lapack routine.")
+            throw new AkUnclassifiedErrorException("Invalid input to lapack routine.")
         }
     }
 
@@ -56,9 +57,9 @@ object LinearSolver {
 
         // check solution
         if (info.`val` > 0) {
-            throw new IllegalArgumentException("A is singular.")
+            throw new AkIllegalOperatorParameterException("A is singular.")
         } else if (info.`val` < 0) {
-            throw new RuntimeException("Invalid input to lapack routine.")
+            throw new AkUnclassifiedErrorException("Invalid input to lapack routine.")
         }
     }
 
@@ -79,9 +80,9 @@ object LinearSolver {
         lapack.dgesv(n, nrhs, A.getData, n, ipiv, B.getData, n, info)
         // check solution
         if (info.`val` > 0) {
-            throw new IllegalArgumentException("A is singular.")
+            throw new AkIllegalOperatorParameterException("A is singular.")
         } else if (info.`val` < 0) {
-            throw new RuntimeException("Invalid input to lapack routine.")
+            throw new AkUnclassifiedErrorException("Invalid input to lapack routine.")
         }
     }
 
@@ -115,9 +116,9 @@ object LinearSolver {
 
         // check solution
         if (info.`val` > 0) {
-            throw new IllegalArgumentException("A is rank deficient.")
+            throw new AkIllegalOperatorParameterException("A is rank deficient.")
         } else if (info.`val` < 0) {
-            throw new RuntimeException("Invalid input to lapack routine.")
+            throw new AkUnclassifiedErrorException("Invalid input to lapack routine.")
         }
     }
 

@@ -1,13 +1,14 @@
 package com.alibaba.alink.operator.batch.source;
 
 import org.apache.flink.table.api.Table;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 
 /**
@@ -22,13 +23,13 @@ public final class TableSourceBatchOp extends BatchOperator <TableSourceBatchOp>
 
 	public TableSourceBatchOp(Table table) {
 		super(null);
-		Preconditions.checkArgument(table != null, "The source table cannot be null.");
+		AkPreconditions.checkArgument(table != null, "The source table cannot be null.");
 		this.setOutputTable(table);
 	}
 
 	@Override
 	public TableSourceBatchOp linkFrom(BatchOperator <?>... inputs) {
-		throw new UnsupportedOperationException("Table source operator should not have any upstream to link from.");
+		throw new AkUnsupportedOperationException("Table source operator should not have any upstream to link from.");
 	}
 
 }

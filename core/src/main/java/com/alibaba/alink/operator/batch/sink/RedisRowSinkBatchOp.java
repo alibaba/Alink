@@ -16,7 +16,7 @@ import com.alibaba.alink.params.io.RedisRowSinkParams;
 /**
  * Sink to redis.
  */
-@IoOpAnnotation(name = "redis", ioType = IOType.SinkBatch)
+@IoOpAnnotation(name = "redis_row", ioType = IOType.SinkBatch)
 @ParamSelectColumnSpec(name = "keyCols")
 @ParamSelectColumnSpec(name = "valueCols")
 @NameCn("导出到Redis")

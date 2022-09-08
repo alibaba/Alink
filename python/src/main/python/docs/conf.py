@@ -22,7 +22,7 @@ copyright = '2022, xuyang1706,chengscu,Fanoid,hapsunday,liulfy,lqb11,Xiafei Qiu,
 author = 'xuyang1706,chengscu,Fanoid,hapsunday,liulfy,lqb11,Xiafei Qiu,shaomengwang,cainingnk,weibo.zwb'
 
 # The full version, including alpha/beta/rc tags
-release = '1.5.4'
+release = '1.5.8'
 
 
 # -- General configuration ---------------------------------------------------

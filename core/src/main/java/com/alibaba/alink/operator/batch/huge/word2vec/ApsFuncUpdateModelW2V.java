@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.batch.huge.word2vec;
 
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.common.aps.ApsFuncUpdateModel;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public class ApsFuncUpdateModelW2V extends ApsFuncUpdateModel <float[]> {
 
 	public float[] update1(float[] oldFeaVal, List <float[]> newFeaVals) {
 		if (null == newFeaVals || newFeaVals.size() < 1) {
-			throw new RuntimeException();
+			throw new AkUnclassifiedErrorException("ApsFunction meets RuntimeException");
 		}
 
 		float inverseCnt = 1.f / newFeaVals.size();

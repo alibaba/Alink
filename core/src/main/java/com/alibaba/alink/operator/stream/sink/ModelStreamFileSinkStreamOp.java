@@ -27,6 +27,7 @@ import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -199,7 +200,7 @@ public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelSt
 									try {
 										localFileModelStreamSink.open(value.f0, value.f1);
 									} catch (IOException e) {
-										throw new RuntimeException(e);
+										throw new AkUnclassifiedErrorException("Error. ",e);
 									}
 
 									localFileModelStreamSink.collect(value.f2);
@@ -212,7 +213,7 @@ public final class ModelStreamFileSinkStreamOp extends BaseSinkStreamOp <ModelSt
 									try {
 										localFileModelStreamSink.open(value.f0, value.f1);
 									} catch (IOException e) {
-										throw new RuntimeException(e);
+										throw new AkUnclassifiedErrorException("Error. ",e);
 									}
 
 									localFileModelStreamSink.collect(value.f2);

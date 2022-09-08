@@ -1,8 +1,8 @@
 package com.alibaba.alink.operator.common.feature;
 
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.feature.binning.FeatureBinsUtil;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 
@@ -37,7 +37,7 @@ public class QuantileDiscretizerModelInfo implements Serializable {
 	}
 
 	public Number[] getCutsArray(String columnName) {
-		Preconditions.checkState(cutsArray.containsKey(columnName), columnName + "is not contained in the model!");
+		AkPreconditions.checkState(cutsArray.containsKey(columnName), columnName + "is not contained in the model!");
 		return cutsArray.get(columnName).toArray(new Number[0]);
 	}
 

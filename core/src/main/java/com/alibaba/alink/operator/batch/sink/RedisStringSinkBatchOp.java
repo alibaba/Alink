@@ -16,7 +16,7 @@ import com.alibaba.alink.params.io.RedisStringSinkParams;
 /**
  * Sink to redis.
  */
-@IoOpAnnotation(name = "redis", ioType = IOType.SinkBatch)
+@IoOpAnnotation(name = "redis_string", ioType = IOType.SinkBatch)
 @ParamSelectColumnSpec(name = "keyCols")
 @ParamSelectColumnSpec(name = "valueCols")
 @NameCn("kv均为String的数据导出到Redis")

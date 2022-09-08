@@ -12,8 +12,8 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeRefe
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -92,7 +92,7 @@ public class KDTreeModelDataConverter extends NearestNeighborDataConverter <KDTr
 
 	@Override
 	public DataSet <Row> buildIndex(BatchOperator in, Params params) {
-		Preconditions.checkArgument(params.get(VectorApproxNearestNeighborTrainParams.METRIC)
+		AkPreconditions.checkArgument(params.get(VectorApproxNearestNeighborTrainParams.METRIC)
 				.equals(VectorApproxNearestNeighborTrainParams.Metric.EUCLIDEAN),
 			"KDTree solver only supports Euclidean distance!");
 		EuclideanDistance distance = new EuclideanDistance();

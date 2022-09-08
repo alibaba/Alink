@@ -1,5 +1,7 @@
 package com.alibaba.alink.operator.common.timeseries;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -7,6 +9,8 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
+import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.pyrunner.PyMIMOCalcHandle;
@@ -15,9 +19,12 @@ import com.alibaba.alink.common.utils.CloseableThreadLocal;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.params.dl.HasPythonEnv;
 import com.alibaba.alink.params.timeseries.ProphetParams;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,6 +94,10 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 		conf.put("uncertainty_samples", String.valueOf(this.params.get(ProphetParams.UNCERTAINTY_SAMPLES)));
 		conf.put("init_model", this.params.get(ProphetParams.STAN_INIT));
 
+		if (params.contains(ProphetParams.HOLIDAYS)) {
+			conf.put("holidays", params.get(ProphetParams.HOLIDAYS));
+		}
+
 		List <Row> inputs = new ArrayList <>();
 		SimpleDateFormat dataFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (int i = 0; i < historyTimes.length; i++) {
@@ -130,9 +141,50 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 
 		String model = (String) outputs.get(0).getField(0);
 		String detail = (String) outputs.get(0).getField(1);
+
+		JSONObject a = (JSONObject) JSON.parse(detail);
+		String[] detailColNames = a.keySet().toArray(new String[0]);
+		int detailColNum = detailColNames.length;
+		TypeInformation <?>[] detailColTypes = new TypeInformation <?>[detailColNum];
+		for (int i = 0; i < detailColNum; i++) {
+			detailColTypes[i] = AlinkTypes.DOUBLE;
+		}
+
+		Row[] rows = null;
+
+		int detailRowNum = -1;
+		for (int i = 0; i < detailColNum; i++) {
+			JSONObject b = (JSONObject) a.get(detailColNames[i]);
+			if (detailRowNum < 0) {
+				detailRowNum = b.size();
+				rows = new Row[detailRowNum];
+				for (int j = 0; j < detailRowNum; j++) {
+					rows[j] = new Row(detailColNum);
+				}
+			}
+			for (String ak : b.keySet()) {
+				int rowIdx = Integer.parseInt(ak);
+				if (b.get(ak) instanceof BigDecimal) {
+					rows[rowIdx].setField(i, ((BigDecimal) b.get(ak)).doubleValue());
+				} else {
+					long val = (Long) b.get(ak);
+					if (detailColNames[i].equals("ds")) {
+						detailColTypes[i] = AlinkTypes.SQL_TIMESTAMP;
+						val -= 28800000;
+						rows[rowIdx].setField(i, new Timestamp(val));
+					} else {
+						detailColTypes[i] = Types.LONG;
+						rows[rowIdx].setField(i, val);
+					}
+				}
+			}
+		}
+
+		MTable detailMTable = new MTable(rows, detailColNames, detailColTypes);
+
 		double[] predictVals = JsonConverter.fromJson((String) outputs.get(0).getField(2), double[].class);
 		LOG.info("Leaving warmStartProphet");
-		return Tuple3.of(model, detail, predictVals);
+		return Tuple3.of(model, JsonConverter.toJson(detailMTable), predictVals);
 	}
 
 }

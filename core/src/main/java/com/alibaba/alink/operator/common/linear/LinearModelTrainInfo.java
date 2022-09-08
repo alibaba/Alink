@@ -31,15 +31,15 @@ public final class LinearModelTrainInfo implements Serializable {
 	public LinearModelTrainInfo(List <Row> rows) {
 		DecimalFormat df = new DecimalFormat("#0.00000000");
 		for (Row r : rows) {
-			if ((int) r.getField(0) == 0) {
+			if ((long) r.getField(0) == 0L) {
 				this.meta = JsonConverter.fromJson((String) r.getField(1), Params.class);
-			} else if ((int) r.getField(0) == 1) {
+			} else if ((long) r.getField(0) == 1L) {
 				colNames = JsonConverter.fromJson((String) r.getField(1), String[].class);
-			} else if ((int) r.getField(0) == 2) {
+			} else if ((long) r.getField(0) == 2L) {
 				weight = JsonConverter.fromJson((String) r.getField(1), double[].class);
-			} else if ((int) r.getField(0) == 3) {
+			} else if ((long) r.getField(0) == 3L) {
 				importance = JsonConverter.fromJson((String) r.getField(1), double[].class);
-			} else if ((int) r.getField(0) == 4) {
+			} else if ((long) r.getField(0) == 4L) {
 				double[] cinfo = JsonConverter.fromJson((String) r.getField(1), double[].class);
 				int size = cinfo.length / 3;
 				this.convInfo = new String[size];

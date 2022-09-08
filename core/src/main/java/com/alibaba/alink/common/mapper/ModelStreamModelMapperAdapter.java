@@ -7,6 +7,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamFileScanner;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamFileScanner.ScanTask;
@@ -39,7 +40,7 @@ public class ModelStreamModelMapperAdapter extends Mapper {
 		initializeSliced();
 
 		if (!ModelStreamUtils.useModelStreamFile(params)) {
-			throw new IllegalArgumentException("Should be set the file path of model stream.");
+			throw new AkIllegalOperatorParameterException("Should be set the file path of model stream.");
 		}
 
 		this.modelPath = FilePath.deserialize(params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH));

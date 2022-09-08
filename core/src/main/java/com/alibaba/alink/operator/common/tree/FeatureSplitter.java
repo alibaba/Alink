@@ -1,9 +1,9 @@
 package com.alibaba.alink.operator.common.tree;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.params.shared.tree.HasMaxLeaves;
 import com.alibaba.alink.params.shared.tree.HasMinInfoGain;
 import com.alibaba.alink.params.shared.tree.HasMinSampleRatioPerChild;
@@ -53,8 +53,8 @@ public abstract class FeatureSplitter implements Cloneable {
 
 	public void fillNode(Node node) {
 		count();
-		Preconditions.checkNotNull(total);
-		Preconditions.checkNotNull(missing);
+		AkPreconditions.checkNotNull(total);
+		AkPreconditions.checkNotNull(missing);
 		node.setCounter(total.clone().add(missing).toLabelCounter());
 		if (canSplit) {
 			node.setFeatureIndex(featureMeta.getIndex())

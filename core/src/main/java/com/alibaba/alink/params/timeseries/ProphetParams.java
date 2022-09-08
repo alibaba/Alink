@@ -26,6 +26,23 @@ public interface ProphetParams<T> extends
 		return set(UNCERTAINTY_SAMPLES, value);
 	}
 
+	@NameCn("节假日")
+	@DescCn("节假日，格式是 playoff:2008-01-13,2009-01-03 superbowl: 2010-02-07,2014-02-02")
+	ParamInfo <String> HOLIDAYS = ParamInfoFactory
+		.createParamInfo("holidays", String.class)
+		.setDescription("holidays")
+		.setHasDefaultValue(null)
+		.build();
+
+	default String getHolidays() {
+		return get(HOLIDAYS);
+	}
+
+	default T setHolidays(String value) {
+		return set(HOLIDAYS, value);
+	}
+
+
 	@NameCn("初始值")
 	@DescCn("初始值")
 	ParamInfo <String> STAN_INIT = ParamInfoFactory

@@ -29,6 +29,7 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterTaskObjKeeper;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.graph.RandomWalkBatchOp.RandomWalkCommunicationUnit;
@@ -457,7 +458,7 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 							prevVertices[physicalDstId].add(node2VecWalkPathEngine.getPrevVertex(walkId));
 							break;
 						default:
-							throw new RuntimeException(
+							throw new AkUnclassifiedErrorException(
 								"Illegal state here: Remote state must be one of [GET_NUM_OF_NEIGHBORS, "
 									+ "SAMPLE_A_NEIGHBOR and CHECK_NEXT_NODE_NEIGHBOR_CONTAINS_PREV_VERTEX]");
 					}
@@ -658,7 +659,7 @@ public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchO
 								}
 								break;
 							default:
-								throw new RuntimeException(
+								throw new AkUnclassifiedErrorException(
 									"Illegal state here: Remote state must be one of [GET_NUM_OF_NEIGHBORS, "
 										+ "SAMPLE_A_NEIGHBOR and CHECK_NEXT_NODE_NEIGHBOR_CONTAINS_PREV_VERTEX]");
 						}

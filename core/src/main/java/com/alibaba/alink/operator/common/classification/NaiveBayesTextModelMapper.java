@@ -1,12 +1,12 @@
 package com.alibaba.alink.operator.common.classification;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -46,7 +46,7 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
 			this.vectorColName = params.get(NaiveBayesTextPredictParams.VECTOR_COL);
 			vectorIndex = TableUtil.findColIndex(colNames, vectorColName);
 			if (vectorIndex == -1) {
-				throw new RuntimeException("the predict vector is not in the predict data schema.");
+				throw new AkColumnNotFoundException("the predict vector is not in the predict data schema.");
 			}
 		}
 	}
@@ -115,7 +115,7 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
 			DenseVector denseVec = (DenseVector) vec;
 			for (int j = 0; j < colSize; ++j) {
 				double value = denseVec.get(j);
-				Preconditions.checkArgument(value == 0. || value == 1.,
+				AkPreconditions.checkArgument(value == 0. || value == 1.,
 					"Bernoulli naive Bayes requires 0 or 1 feature values.");
 			}
 			if (colSize < denseVec.size()) {
@@ -135,7 +135,7 @@ public class NaiveBayesTextModelMapper extends RichModelMapper {
 					break;
 				}
 				double value = values[i];
-				Preconditions.checkArgument(value == 0. || value == 1.,
+				AkPreconditions.checkArgument(value == 0. || value == 1.,
 					"Bernoulli naive Bayes requires 0 or 1 feature values.");
 			}
 			NaiveBayesBLASUtil.gemv(1, modelData.minMat, sparseVec, 0, prob);

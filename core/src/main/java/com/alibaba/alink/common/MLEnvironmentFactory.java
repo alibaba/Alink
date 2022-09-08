@@ -1,5 +1,7 @@
 package com.alibaba.alink.common;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+
 import java.util.HashMap;
 
 /**
@@ -44,7 +46,7 @@ public class MLEnvironmentFactory {
 			if (mlEnvId.equals(DEFAULT_ML_ENVIRONMENT_ID)) {
 				setDefault(new MLEnvironment());
 			} else {
-				throw new IllegalArgumentException(
+				throw new AkIllegalArgumentException(
 					String.format("Cannot find MLEnvironment for MLEnvironmentId %s." +
 						" Did you get the MLEnvironmentId by calling getNewMLEnvironmentId?", mlEnvId));
 			}
@@ -70,7 +72,7 @@ public class MLEnvironmentFactory {
 	 */
 	public static synchronized void setDefault(MLEnvironment env) {
 		if (map.containsKey(DEFAULT_ML_ENVIRONMENT_ID)) {
-			throw new IllegalArgumentException("The default MLEnvironment should be set only once.");
+			throw new AkIllegalArgumentException("The default MLEnvironment should be set only once.");
 		}
 
 		map.put(DEFAULT_ML_ENVIRONMENT_ID, env);

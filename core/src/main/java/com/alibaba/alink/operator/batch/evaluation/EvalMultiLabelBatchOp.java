@@ -28,6 +28,7 @@ import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil.ReduceBaseMetrics;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil.SaveDataAsParams;
 import com.alibaba.alink.operator.common.evaluation.MultiLabelMetrics;
+import com.alibaba.alink.operator.local.evaluation.EvalMultiLabelLocalOp;
 import com.alibaba.alink.params.evaluation.EvalMultiLabelParams;
 
 import java.util.HashSet;
@@ -94,43 +95,7 @@ public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 
 				@Override
 				public Tuple3 <HashSet <Object>, Class, Integer> map(Row value) {
-					HashSet <Object> hashSet = new HashSet <>();
-					if (!EvaluationUtil.checkRowFieldNotNull(value)) {
-						return Tuple3.of(hashSet, null, 0);
-					}
-					List <Object> labels = EvaluationUtil.extractDistinctLabel((String) value.getField(0),
-						labelKObject);
-					List <Object> predictions = EvaluationUtil.extractDistinctLabel((String) value.getField(1),
-						predictionKObject);
-					Class labelClass = null;
-					Class predictionClass = null;
-					Class outputClass;
-					if (labels.size() > 0) {
-						labelClass = labels.get(0).getClass();
-					}
-					if (predictions.size() > 0) {
-						predictionClass = predictions.get(0).getClass();
-					}
-					if (labelClass == null) {
-						outputClass = predictionClass;
-						hashSet.addAll(predictions);
-					} else if (predictionClass == null) {
-						outputClass = labelClass;
-						hashSet.addAll(labels);
-					} else if (labelClass.equals(predictionClass)) {
-						outputClass = labelClass;
-						hashSet.addAll(labels);
-						hashSet.addAll(predictions);
-					} else {
-						outputClass = String.class;
-						for (Object object : labels) {
-							hashSet.add(object.toString());
-						}
-						for (Object object : predictions) {
-							hashSet.add(object.toString());
-						}
-					}
-					return Tuple3.of(hashSet, outputClass, Math.max(labels.size(), predictions.size()));
+					return EvalMultiLabelLocalOp.subGetLabelNumberAndMaxK(value, labelKObject, predictionKObject);
 				}
 			}).reduce(new ReduceFunction <Tuple3 <HashSet <Object>, Class, Integer>>() {
 				private static final long serialVersionUID = -2831334156409607751L;

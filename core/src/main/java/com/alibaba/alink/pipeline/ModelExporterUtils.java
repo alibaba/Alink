@@ -13,10 +13,11 @@ import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.filesystem.AkStream;
 import com.alibaba.alink.common.io.filesystem.AkStream.AkReader;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
@@ -505,7 +506,7 @@ public class ModelExporterUtils {
 	}
 
 	// deserialize
-	private static Tuple2 <StageNode[], Params> deserializeMeta(Row metaRow, TableSchema schema, final int offset) {
+	public static Tuple2 <StageNode[], Params> deserializeMeta(Row metaRow, TableSchema schema, final int offset) {
 		String[] metaAndParams = ((String) metaRow.getField(1)).split(META_DELIMITER);
 		Map <String, String> meta = JsonConverter.fromJson(metaAndParams[0]
 			, new TypeReference <Map <String, String>>() {}.getType()
@@ -568,6 +569,7 @@ public class ModelExporterUtils {
 						.forName(stageNode.identifier)
 						.getConstructor(Params.class)
 						.newInstance(stageNode.params);
+					stageNode.stage.setMLEnvironmentId(unpacked.getMLEnvironmentId());
 				}
 			} catch (ClassNotFoundException
 				| NoSuchMethodException
@@ -847,7 +849,7 @@ public class ModelExporterUtils {
 
 		Arrays.sort(order, Comparator.comparing(o -> ((Long) pipelineModel.get(o).getField(idColIndex))));
 
-		Preconditions.checkState(!pipelineModel.isEmpty(), "Model to load should not be empty.");
+		AkPreconditions.checkState(!pipelineModel.isEmpty(), "Model to load should not be empty.");
 
 		StageNode[] stages = deserializePipelineStagesFromMeta(pipelineModel.get(order[0]), modelSchema);
 
@@ -1004,7 +1006,7 @@ public class ModelExporterUtils {
 				.mapperBuilder
 				.apply(inputSchema, mapTransformer.getParams());
 		} else {
-			throw new RuntimeException("not support yet.");
+			throw new AkUnsupportedOperationException("not support yet.");
 		}
 
 		if (mapper instanceof ComboModelMapper) {

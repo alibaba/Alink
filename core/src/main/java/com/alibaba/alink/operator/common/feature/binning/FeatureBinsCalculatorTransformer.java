@@ -1,8 +1,8 @@
 package com.alibaba.alink.operator.common.feature.binning;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.util.Preconditions;
 
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.common.feature.ContinuousRanges;
 
 /**
@@ -62,7 +62,7 @@ public class FeatureBinsCalculatorTransformer {
 			builder.tryToUpdateBins(featureBins.getBin());
 			builder.checkSplitsArray();
 			builder.calcStatistics();
-			Preconditions.checkState(null == builder.bin.elseBin, "Numeric bin should not have else bin!");
+			AkPreconditions.checkState(null == builder.bin.elseBin, "Numeric bin should not have else bin!");
 		}
 		return builder;
 	}
@@ -77,7 +77,7 @@ public class FeatureBinsCalculatorTransformer {
 	}
 
 	public static ContinuousRanges toContinuousFeatureInterval(FeatureBinsCalculator featureBinsCalculator) {
-		Preconditions.checkArgument(featureBinsCalculator.isNumeric(),
+		AkPreconditions.checkArgument(featureBinsCalculator.isNumeric(),
 			"Discrete featureBorder can not be transformed to ContinuousFeatureInterval");
 		return new ContinuousRanges(
 			featureBinsCalculator.getFeatureName(),

@@ -11,6 +11,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.mapper.ComboModelMapper;
@@ -132,7 +133,7 @@ public class OneVsRestModelMapper extends ComboModelMapper {
 				setOutputSchema = setMapper.getOutputSchema();
 			}
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new AkUnclassifiedErrorException("Error. ",e);
 		}
 
 		String[] reserveColNamesRaw = params.get(OneVsRestPredictParams.RESERVED_COLS);

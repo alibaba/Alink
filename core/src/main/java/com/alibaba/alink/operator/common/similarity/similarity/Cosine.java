@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.similarity.similarity;
 
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.common.similarity.Sample;
 
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class Cosine extends Similarity <Double> {
 	 */
 	public Cosine(int k) {
 		if (k <= 0) {
-			throw new RuntimeException("k must be positive!");
+			throw new AkIllegalOperatorParameterException("k must be positive!");
 		}
 		this.k = k;
 	}
