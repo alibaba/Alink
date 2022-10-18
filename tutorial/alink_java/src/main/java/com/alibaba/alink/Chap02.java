@@ -43,7 +43,7 @@ public class Chap02 {
     }
 
     /*
-     * https://www.yuque.com/pinshu/alink_tutorial/book_java_2_5_1
+     * http://alinklab.cn/tutorial/book_java_02_5_1.html
      */
     static void c_5_1() throws Exception {
         CsvSourceBatchOp source = new CsvSourceBatchOp()

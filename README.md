@@ -9,8 +9,8 @@
 <img src="https://img.alicdn.com/tfs/TB1kQU0sQY2gK0jSZFgXXc5OFXa-614-554.png" height="25%" width="25%">
 </div>
 
-- Alink文档：https://www.yuque.com/pinshu/alink_doc
-- Alink使用指南：https://www.yuque.com/pinshu/alink_guide
+- Alink组件列表：http://alinklab.cn/manual/index.html
+- Alink教程：http://alinklab.cn/tutorial/index.html
 - Alink插件下载器：https://www.yuque.com/pinshu/alink_guide/plugin_downloader
 
 #### Alink教程
@@ -18,12 +18,13 @@
 <img src="https://img.alicdn.com/imgextra/i2/O1CN01Z7sbCr1Hg22gLIsdk_!!6000000000786-0-tps-1280-781.jpg" height="50%" width="50%">
 </div>
 
-- Alink教程：https://www.yuque.com/pinshu/alink_tutorial
+- Alink教程（Java版）：http://alinklab.cn/tutorial/book_java.html
+- Alink教程（Python版）：http://alinklab.cn/tutorial/book_python.html
 - 源代码地址：https://github.com/alibaba/Alink/tree/master/tutorial
-- Java版的数据和资料链接：https://www.yuque.com/pinshu/alink_tutorial/book_java_reference
-- Python版的数据和资料链接：https://www.yuque.com/pinshu/alink_tutorial/book_python_reference
-- Alink教程(Java版)代码的运行攻略：https://www.yuque.com/pinshu/alink_tutorial/book_java_code_help
-- Alink教程(Python版)代码的运行攻略：https://www.yuque.com/pinshu/alink_tutorial/book_python_code_help
+- Java版的数据和资料链接：http://alinklab.cn/tutorial/book_java_00_reference.html
+- Python版的数据和资料链接：http://alinklab.cn/tutorial/book_python_00_reference.html
+- Alink教程(Java版)代码的运行攻略  http://alinklab.cn/tutorial/book_java_00_code_help.html
+- Alink教程(Python版)代码的运行攻略  http://alinklab.cn/tutorial/book_python_00_code_help.html
 
 #### 开源算法列表
 
