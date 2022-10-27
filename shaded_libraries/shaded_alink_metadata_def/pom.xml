@@ -4,15 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.alibaba.alink</groupId>
-        <artifactId>alink_shaded</artifactId>
-        <version>0.5-SNAPSHOT</version>
-    </parent>
-
     <groupId>com.alibaba.alink</groupId>
     <artifactId>shaded_alink_metadata_def</artifactId>
-    <version>3.21.1-0.5-SNAPSHOT</version>
+    <version>3.21.1-0.6-SNAPSHOT</version>
 
     <properties>
         <protobuf.version>3.21.1</protobuf.version>
@@ -62,8 +56,8 @@
                     </filters>
                     <relocations combine.self="override">
                         <relocation>
-                            <pattern>com.google.protobuf</pattern>
-                            <shadedPattern>com.alibaba.alink.metadata.def.shaded.com.google.protobuf</shadedPattern>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>com.alibaba.alink.metadata.def.shaded.com.google</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>org.tensorflow.metadata</pattern>
