@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.source.AkSourceLocalOp;
 import com.alibaba.alink.params.io.ModelFileSinkParams;
@@ -22,6 +23,7 @@ public abstract class ModelBase<M extends ModelBase <M>> extends TransformerBase
 	private static final long serialVersionUID = 1181492490109006467L;
 	protected BatchOperator <?> modelData;
 	protected LocalOperator <?> modelData_local;
+	protected ModelFileData modelFileData;
 
 	public ModelBase() {
 		super();
@@ -31,18 +33,19 @@ public abstract class ModelBase<M extends ModelBase <M>> extends TransformerBase
 		super(params);
 	}
 
-	//public boolean isLocalModel() {
-	//	return null == modelData_local ? false : true;
-	//}
-
 	/**
 	 * Get model data as Table representation.
 	 *
 	 * @return the Table
 	 */
 	public BatchOperator <?> getModelData() {
-		if (this.modelData != null) {
+		if (null != this.modelData) {
 			return this.modelData;
+		} else if (null != this.modelData_local) {
+			return new MemSourceBatchOp(modelData_local.getOutputTable())
+				.setMLEnvironmentId(getMLEnvironmentId());
+		} else if (null != this.modelFileData) {
+			return this.modelFileData.getBatchData(getMLEnvironmentId());
 		} else if (getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
 			return new AkSourceBatchOp()
 				.setFilePath(getModelFilePath())
@@ -53,8 +56,10 @@ public abstract class ModelBase<M extends ModelBase <M>> extends TransformerBase
 	}
 
 	public LocalOperator <?> getModelDataLocal() {
-		if (this.modelData_local != null) {
+		if (null!= this.modelData_local ) {
 			return this.modelData_local;
+		} else if (null != this.modelFileData) {
+			return this.modelFileData.getLocalData();
 		} else if (getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
 			return new AkSourceLocalOp()
 				.setFilePath(getModelFilePath());

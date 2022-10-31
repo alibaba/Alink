@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.similarity;
 
 import com.alibaba.alink.operator.common.similarity.dataConverter.KDTreeModelDataConverter;
 import com.alibaba.alink.operator.common.similarity.dataConverter.LSHModelDataConverter;
+import com.alibaba.alink.operator.common.similarity.dataConverter.LocalLSHModelDataConverter;
 import com.alibaba.alink.operator.common.similarity.dataConverter.NearestNeighborDataConverter;
 
 /**
@@ -15,7 +16,12 @@ public enum Solver {
 	/**
 	 * LSH approximation.
 	 */
-	LSH(new LSHModelDataConverter());
+	LSH(new LSHModelDataConverter()),
+
+	/**
+	 * LSH approximation for local operator.
+	 */
+	LOCAL_LSH(new LocalLSHModelDataConverter());
 
 	private NearestNeighborDataConverter dataConverter;
 

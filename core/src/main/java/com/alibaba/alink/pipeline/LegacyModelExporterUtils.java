@@ -13,6 +13,7 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.StringUtils;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
@@ -29,6 +30,8 @@ import com.alibaba.alink.operator.batch.utils.VectorSerializeBatchOp;
 import com.alibaba.alink.operator.common.io.csv.CsvFormatter;
 import com.alibaba.alink.operator.common.io.csv.CsvParser;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.source.TableSourceLocalOp;
 import com.alibaba.alink.params.io.CsvSourceParams;
 import com.alibaba.alink.params.shared.HasMLEnvironmentId;
 import com.jayway.jsonpath.JsonPath;
@@ -36,6 +39,7 @@ import com.jayway.jsonpath.JsonPath;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,6 +64,19 @@ public class LegacyModelExporterUtils {
 	 */
 	@Deprecated
 	static String extractMetaOfPipelineStages(BatchOperator <?> batchOp) {
+		String configStr;
+		try {
+			List <Row> rows = batchOp.as(new String[] {"f1", "f2"}).where("f1=-1").collect();
+			AkPreconditions.checkArgument(rows.size() == 1, "Invalid stages.");
+			configStr = (String) rows.get(0).getField(1);
+		} catch (Exception e) {
+			throw new AkIllegalArgumentException("Fail to collect stages config.", e);
+		}
+		return configStr;
+	}
+
+	@Deprecated
+	static String extractMetaOfPipelineStages(LocalOperator <?> batchOp) {
 		String configStr;
 		try {
 			List <Row> rows = batchOp.as(new String[] {"f1", "f2"}).where("f1=-1").collect();
@@ -119,6 +136,38 @@ public class LegacyModelExporterUtils {
 		return Arrays.asList(pipelineStageBases);
 	}
 
+	@Deprecated
+	static List <PipelineStageBase <?>> unpackPipelineStages(LocalOperator <?> localOp,
+															 String[] clazzNames, Params[] params,
+															 TableSchema[] schemas) {
+		int numPipelineStages = clazzNames.length;
+		PipelineStageBase <?>[] pipelineStageBases = new PipelineStageBase[numPipelineStages];
+		for (int i = 0; i < numPipelineStages; i++) {
+			try {
+				Class <?> clazz = Class.forName(clazzNames[i]);
+				pipelineStageBases[i] = (PipelineStageBase <?>) clazz.getConstructor(Params.class).newInstance(
+					params[i]);
+			} catch (Exception e) {
+				throw new RuntimeException(String.format("Fail to re construct transformer %s.", clazzNames[i]), e);
+			}
+
+			LocalOperator <?> packed = localOp.as(new String[] {"f1", "f2"}).where("f1=" + i);
+			if (pipelineStageBases[i] instanceof PipelineModel) {
+				LocalOperator <?> data = unpackBatchOp(packed, schemas[i]);
+				pipelineStageBases[i] = new PipelineModel(unpackTransformersArray(data));
+			} else if (pipelineStageBases[i] instanceof ModelBase <?>) {
+				if (schemas[i] != null) {
+					LocalOperator <?> data = unpackBatchOp(packed, schemas[i]);
+					((ModelBase <?>) pipelineStageBases[i]).setModelData(data);
+				}
+			} else if (pipelineStageBases[i] instanceof Pipeline) {
+				LocalOperator <?> data = unpackBatchOp(packed, schemas[i]);
+				pipelineStageBases[i] = new Pipeline(unpackPipelineStages(data).toArray(new PipelineStageBase[0]));
+			}
+		}
+		return Arrays.asList(pipelineStageBases);
+	}
+
 	/**
 	 * Unpack transformers array from a BatchOperator.
 	 */
@@ -128,8 +177,18 @@ public class LegacyModelExporterUtils {
 	}
 
 	@Deprecated
+	static TransformerBase <?>[] unpackTransformersArray(LocalOperator <?> localOp) {
+		return unpackPipelineStages(localOp).toArray(new TransformerBase <?>[0]);
+	}
+
+	@Deprecated
 	static TransformerBase <?>[] unpackTransformersArray(BatchOperator <?> batchOp, Row metaRow) {
 		return unpackPipelineStages(batchOp, metaRow).toArray(new TransformerBase <?>[0]);
+	}
+
+	@Deprecated
+	static TransformerBase <?>[] unpackTransformersArray(LocalOperator <?> localOp, Row metaRow) {
+		return unpackPipelineStages(localOp, metaRow).toArray(new TransformerBase <?>[0]);
 	}
 
 	@Deprecated
@@ -138,8 +197,18 @@ public class LegacyModelExporterUtils {
 	}
 
 	@Deprecated
+	static List <PipelineStageBase <?>> unpackPipelineStages(LocalOperator <?> localOp) {
+		return unpackPipelineStages(localOp, extractMetaOfPipelineStages(localOp));
+	}
+
+	@Deprecated
 	static List <PipelineStageBase <?>> unpackPipelineStages(BatchOperator <?> batchOp, Row metaRow) {
 		return unpackPipelineStages(batchOp, extractMetaOfPipelineStages(metaRow));
+	}
+
+	@Deprecated
+	static List <PipelineStageBase <?>> unpackPipelineStages(LocalOperator <?> localOp, Row metaRow) {
+		return unpackPipelineStages(localOp, extractMetaOfPipelineStages(metaRow));
 	}
 
 	@Deprecated
@@ -158,6 +227,24 @@ public class LegacyModelExporterUtils {
 			}
 		}
 		return unpackPipelineStages(batchOp, clazzNames, params, schemas);
+	}
+
+	@Deprecated
+	static List <PipelineStageBase <?>> unpackPipelineStages(LocalOperator <?> localOp, String meta) {
+		String[] clazzNames = JsonConverter.fromJson(JsonPath.read(meta, "$.clazz").toString(), String[].class);
+		String[] params0 = JsonConverter.fromJson(JsonPath.read(meta, "$.param").toString(), String[].class);
+		String[] schemas0 = JsonConverter.fromJson(JsonPath.read(meta, "$.schema").toString(), String[].class);
+		Params[] params = new Params[params0.length];
+		TableSchema[] schemas = new TableSchema[schemas0.length];
+		for (int i = 0; i < params0.length; i++) {
+			params[i] = Params.fromJson(params0[i]);
+		}
+		for (int i = 0; i < schemas0.length; i++) {
+			if (!StringUtils.isNullOrWhitespaceOnly(schemas0[i])) {
+				schemas[i] = TableUtil.schemaStr2Schema(schemas0[i]);
+			}
+		}
+		return unpackPipelineStages(localOp, clazzNames, params, schemas);
 	}
 
 	/**
@@ -185,6 +272,18 @@ public class LegacyModelExporterUtils {
 
 		return BatchOperator.fromTable(DataSetConversionUtil.toTable(data.getMLEnvironmentId(), rows, schema))
 			.setMLEnvironmentId(data.getMLEnvironmentId());
+	}
+
+	@Deprecated
+	private static LocalOperator <?> unpackBatchOp(LocalOperator <?> data, TableSchema schema) {
+		MTable mt = data.getOutputTable();
+		final TypeInformation <?>[] types = schema.getFieldTypes();
+		CsvParser parser = new CsvParser(types, "^", '\'');
+		List <Row> results = new ArrayList <>();
+		for (Row value : mt.getRows()) {
+			results.add(parser.parse((String) value.getField(1)).f1);
+		}
+		return new TableSourceLocalOp(new MTable(results, schema));
 	}
 
 	@Deprecated
@@ -439,6 +538,22 @@ public class LegacyModelExporterUtils {
 	}
 
 	@Deprecated
+	public static Pipeline load(LocalOperator <?> localOp, Row metaRow) {
+		if (!LegacyModelExporterUtils.isLegacyPipelineModel(localOp.getSchema())) {
+			return new Pipeline(
+				ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
+					localOp,
+					ModelExporterUtils.deserializePipelineStagesFromMeta(metaRow, localOp.getSchema()),
+					localOp.getSchema()
+				).toArray(new PipelineStageBase <?>[0])
+			);
+		} else {
+			return new Pipeline(
+				LegacyModelExporterUtils.unpackPipelineStages(localOp, metaRow).toArray(new PipelineStageBase[0]));
+		}
+	}
+
+	@Deprecated
 	public static Pipeline collectLoad(BatchOperator <?> batchOp) {
 		if (!LegacyModelExporterUtils.isLegacyPipelineModel(batchOp.getSchema())) {
 			return Pipeline.collectLoad(batchOp);
@@ -531,6 +646,21 @@ public class LegacyModelExporterUtils {
 			);
 		} else {
 			return new PipelineModel(LegacyModelExporterUtils.unpackTransformersArray(batchOp, metaRow));
+		}
+	}
+
+	@Deprecated
+	public static PipelineModel loadPipelineModel(LocalOperator <?> localOp, Row metaRow) {
+		if (!LegacyModelExporterUtils.isLegacyPipelineModel(localOp.getSchema())) {
+			return new PipelineModel(
+				ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
+					localOp,
+					ModelExporterUtils.deserializePipelineStagesFromMeta(metaRow, localOp.getSchema()),
+					localOp.getSchema()
+				).toArray(new TransformerBase <?>[0])
+			);
+		} else {
+			return new PipelineModel(LegacyModelExporterUtils.unpackTransformersArray(localOp, metaRow));
 		}
 	}
 

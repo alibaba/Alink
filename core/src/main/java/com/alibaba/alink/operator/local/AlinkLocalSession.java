@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -146,9 +147,36 @@ public class AlinkLocalSession {
 			});
 	}
 
-	public static class TaskRunner {
+	private static <T> void joinAllTasks(List <CompletableFuture<T>> tasks) {
 
-		private final AtomicReference<Throwable> exception = new AtomicReference <>();
+		final AtomicReference<Throwable> exception = new AtomicReference <>();
+
+		CompletableFuture
+			.allOf(tasks.toArray(new CompletableFuture[0]))
+			.exceptionally(
+				throwable -> {
+					exception.compareAndSet(null, throwable);
+					LOG.error("Execute multiple tasks error.", throwable);
+					return null;
+				}
+			)
+			.join();
+
+		tasks.clear();
+
+		Throwable throwable = exception.get();
+
+		if (throwable != null) {
+
+			if (throwable instanceof ExceptionWithErrorCode) {
+				throw (ExceptionWithErrorCode) throwable;
+			}
+
+			throw new AkUnclassifiedErrorException("Run task error.", throwable);
+		}
+	}
+
+	public static class TaskRunner {
 
 		private final ArrayList <CompletableFuture <Void>> tasks = new ArrayList <>();
 
@@ -157,36 +185,11 @@ public class AlinkLocalSession {
 		}
 
 		public void join() {
-			CompletableFuture
-				.allOf(tasks.toArray(new CompletableFuture[0]))
-				.exceptionally(
-					throwable -> {
-						exception.compareAndSet(null, throwable);
-						LOG.error("Execute multiple tasks error.", throwable);
-						return null;
-					}
-				)
-				.join();
-
-			tasks.clear();
-
-			Throwable throwable = exception.get();
-
-			if (throwable != null) {
-
-				if (throwable instanceof ExceptionWithErrorCode) {
-					throw (ExceptionWithErrorCode) throwable;
-				}
-
-				throw new AkUnclassifiedErrorException("Run task error.", throwable);
-			}
+			joinAllTasks(tasks);
 		}
 	}
 
-
 	public static class IOTaskRunner {
-
-		private final AtomicReference<Throwable> exception = new AtomicReference <>();
 
 		private final ArrayList <CompletableFuture <Void>> tasks = new ArrayList <>();
 
@@ -195,29 +198,7 @@ public class AlinkLocalSession {
 		}
 
 		public void join() {
-			CompletableFuture
-				.allOf(tasks.toArray(new CompletableFuture[0]))
-				.exceptionally(
-					throwable -> {
-						exception.compareAndSet(null, throwable);
-						LOG.error("Execute multiple tasks error.", throwable);
-						return null;
-					}
-				)
-				.join();
-
-			tasks.clear();
-
-			Throwable throwable = exception.get();
-
-			if (throwable != null) {
-
-				if (throwable instanceof ExceptionWithErrorCode) {
-					throw (ExceptionWithErrorCode) throwable;
-				}
-
-				throw new AkUnclassifiedErrorException("Run task error.", throwable);
-			}
+			joinAllTasks(tasks);
 		}
 	}
 }

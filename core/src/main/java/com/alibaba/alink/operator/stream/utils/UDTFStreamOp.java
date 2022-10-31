@@ -1,7 +1,7 @@
 package com.alibaba.alink.operator.stream.utils;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.table.functions.TableFunction;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;

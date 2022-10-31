@@ -10,7 +10,7 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.ShuffleBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.RebalanceBatchOp;
 import com.alibaba.alink.params.dl.BaseDLTableModelTrainParams;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -70,7 +70,7 @@ public abstract class BaseDLTableModelTrainBatchOp<T extends BaseDLTableModelTra
 			input = input.select(getSelectedCols());
 		}
 
-		input = new ShuffleBatchOp().linkFrom(input);
+		input = new RebalanceBatchOp().linkFrom(input);
 
 		ExternalFilesConfig externalFiles = getUserFiles()
 			.addFilePaths(resPyFiles)

@@ -7,6 +7,8 @@ import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.classification.SoftmaxTrainBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.classification.SoftmaxTrainLocalOp;
 import com.alibaba.alink.params.classification.SoftmaxPredictParams;
 import com.alibaba.alink.params.classification.SoftmaxTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -30,5 +32,10 @@ public class Softmax extends Trainer <Softmax, SoftmaxModel> implements
 	@Override
 	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new SoftmaxTrainBatchOp(getParams()).linkFrom(in);
+	}
+
+	@Override
+	protected LocalOperator <?> train(LocalOperator <?> in) {
+		return new SoftmaxTrainLocalOp(getParams()).linkFrom(in);
 	}
 }

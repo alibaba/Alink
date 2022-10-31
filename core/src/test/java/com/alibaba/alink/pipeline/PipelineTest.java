@@ -1,9 +1,17 @@
 package com.alibaba.alink.pipeline;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple4;
+import org.apache.flink.api.scala.typeutils.Types;
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
+
+import com.alibaba.alink.common.mapper.Mapper;
+import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.pipeline.feature.Binarizer;
 import com.alibaba.alink.pipeline.feature.QuantileDiscretizer;
 import com.alibaba.alink.pipeline.feature.QuantileDiscretizerModel;
@@ -12,28 +20,21 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.List;
+import java.util.function.BiFunction;
+
+import static org.junit.Assert.assertEquals;
 
 public class PipelineTest extends AlinkTestBase {
 
 	/**
-	 * Create a mocked transformer which return the input identically.
+	 * Create a temp transformer for test.
 	 *
 	 * @param name name of the transformer
-	 * @return the mocked transformer
+	 * @return the transformer
 	 */
-	private static TransformerBase mockTransformer(String name) {
-		TransformerBase transformer = mock(TransformerBase.class, name);
-		when(transformer.transform(any(BatchOperator.class)))
-			.thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-		when(transformer.transform(any(StreamOperator.class)))
-			.thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-		return transformer;
+	private TransformerBase mockTransformer(String name) {
+		return new TempTransformer(TempMapper::new, new Params().set("name", name));
 	}
 
 	@Test
@@ -60,26 +61,18 @@ public class PipelineTest extends AlinkTestBase {
 	}
 
 	/**
-	 * Create a mocked estimator and model pair. The mocked model will return the input identically.
+	 * Create an estimator and model pair for test.
 	 *
 	 * @param name name postfix of estimator.
-	 * @return mocked estimator and model pair.
+	 * @return estimator and model pair.
 	 */
-	private static Pair <EstimatorBase, ModelBase> mockEstimator(String name) {
-		ModelBase model = mock(ModelBase.class, "model_" + name);
-		EstimatorBase estimator = mock(EstimatorBase.class, "estimator_" + name);
-		when(estimator.fit(any(BatchOperator.class))).thenReturn(model);
-		when(estimator.fit(any(StreamOperator.class))).thenReturn(model);
-		when(model.transform(any(BatchOperator.class)))
-			.thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-		when(model.transform(any(StreamOperator.class)))
-			.thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-		return ImmutablePair.of(estimator, model);
+	private Pair <EstimatorBase, ModelBase> mockEstimator(String name) {
+		return ImmutablePair.of(new TempEstimatorBase(name), new TempMapModel(name));
 	}
 
 	@Test
-	public void testFit() {
-		BatchOperator data = new MemSourceBatchOp(new Object[] {1}, "colName");
+	public void testFit() throws Exception {
+		BatchOperator data = new MemSourceBatchOp(new Object[] {"init"}, "name");
 
 		TransformerBase stage1 = mockTransformer("stage1");
 		TransformerBase stage2 = mockTransformer("stage2");
@@ -90,31 +83,27 @@ public class PipelineTest extends AlinkTestBase {
 
 		Pipeline pipe = new Pipeline().add(stage1).add(stage2).add(stage3.getLeft())
 			.add(stage4).add(stage5.getLeft()).add(stage6);
-		pipe.fit(data);
+		List <Row> results = pipe.fitAndTransform(data).collect();
 
-		// The transform methods of the first 2 transformers should be invoked.
-		// because they are expected transform input data to fit estimators.
-		verify(stage1, times(1)).transform(any(BatchOperator.class));
-		verify(stage2, times(1)).transform(any(BatchOperator.class));
+		assertEquals("init_stage1_stage2_stage3_stage4_stage5_stage6", results.get(0).getField(0));
 
-		// Verify that estimator of stage 3 is fitted.
-		verify(stage3.getLeft(), times(1)).fit(any(BatchOperator.class));
-		// And the generated model is used to transform data for estimator on stage 5.
-		verify(stage3.getRight(), times(1)).transform(any(BatchOperator.class));
-
-		verify(stage4, times(1)).transform(any(BatchOperator.class));
-
-		// Verify that estimator of stage 5 is fitted.
-		verify(stage5.getLeft(), times(1)).fit(any(BatchOperator.class));
-		// But we don't have to transform data with the generated model.
-		verify(stage5.getRight(), never()).transform(any(BatchOperator.class));
-
-		verify(stage6, never()).transform(any(BatchOperator.class));
+		results = stage1.transform(data).collect();
+		assertEquals("init_stage1", results.get(0).getField(0));
+		results = stage2.transform(data).collect();
+		assertEquals("init_stage2", results.get(0).getField(0));
+		results = stage3.getValue().transform(data).collect();
+		assertEquals("init_stage3", results.get(0).getField(0));
+		results = stage4.transform(data).collect();
+		assertEquals("init_stage4", results.get(0).getField(0));
+		results = stage5.getValue().transform(data).collect();
+		assertEquals("init_stage5", results.get(0).getField(0));
+		results = stage5.getValue().transform(data).collect();
+		assertEquals("init_stage5", results.get(0).getField(0));
 	}
 
 	@Test
-	public void testFitWithoutEstimators() {
-		BatchOperator data = new MemSourceBatchOp(new Object[] {1}, "colName");
+	public void testFitWithoutEstimators() throws Exception {
+		BatchOperator data = new MemSourceBatchOp(new Object[] {"init"}, "name");
 
 		TransformerBase stage1 = mockTransformer("stage1");
 		TransformerBase stage2 = mockTransformer("stage2");
@@ -122,13 +111,90 @@ public class PipelineTest extends AlinkTestBase {
 		TransformerBase stage4 = mockTransformer("stage4");
 
 		Pipeline pipe = new Pipeline().add(stage1).add(stage2).add(stage3).add(stage4);
-		pipe.fit(data);
+		List <Row> results = pipe.fitAndTransform(data).collect();
 
-		// Never need to transform data since there're no estimators.
-		verify(stage1, never()).transform(any(BatchOperator.class));
-		verify(stage2, never()).transform(any(BatchOperator.class));
-		verify(stage3, never()).transform(any(BatchOperator.class));
-		verify(stage4, never()).transform(any(BatchOperator.class));
+		assertEquals("init_stage1_stage2_stage3_stage4", results.get(0).getField(0));
+
+		results = stage1.transform(data).collect();
+		assertEquals("init_stage1", results.get(0).getField(0));
+		results = stage2.transform(data).collect();
+		assertEquals("init_stage2", results.get(0).getField(0));
+		results = stage3.transform(data).collect();
+		assertEquals("init_stage3", results.get(0).getField(0));
+		results = stage4.transform(data).collect();
+		assertEquals("init_stage4", results.get(0).getField(0));
 	}
 
+	public static class TempTransformer extends MapTransformer {
+
+		protected TempTransformer(
+			BiFunction <TableSchema, Params, Mapper> mapperBuilder,
+			Params params) {
+			super(mapperBuilder, params);
+		}
+	}
+
+	public static class TempMapper extends Mapper {
+
+		public TempMapper(TableSchema dataSchema, Params params) {
+			super(dataSchema, params);
+		}
+
+		@Override
+		protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+			result.set(0, selection.get(0) + "_" + params.get("name", String.class));
+		}
+
+		@Override
+		protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(TableSchema dataSchema,
+																							   Params params) {
+			return Tuple4.of(new String[] {"name"}, new String[] {"name"}, new TypeInformation[] {Types.STRING()},
+				new String[] {});
+		}
+	}
+
+	public static class TempMapModel extends MapModel {
+
+		public TempMapModel(String name) {
+			super(TempModelMapper::new, new Params().set("name", name));
+			modelData = new MemSourceBatchOp(new Object[] {"init"}, "model");
+		}
+	}
+
+	public static class TempEstimatorBase extends EstimatorBase {
+
+		public TempEstimatorBase(String name) {
+			super(new Params().set("name", name));
+		}
+
+		@Override
+		public ModelBase fit(BatchOperator input) {
+			return new TempMapModel(params.get("name", String.class));
+		}
+	}
+
+	public static class TempModelMapper extends ModelMapper {
+
+		public TempModelMapper(Object o, Object o1, Object o2) {
+			super((TableSchema) o, (TableSchema) o1, (Params) o2);
+		}
+
+		@Override
+		protected void map(SlicedSelectedSample selection, SlicedResult result) throws Exception {
+			result.set(0, selection.get(0) + "_" + params.get("name", String.class));
+		}
+
+		@Override
+		protected Tuple4 <String[], String[], TypeInformation <?>[], String[]> prepareIoSchema(TableSchema modelSchema,
+																							   TableSchema dataSchema,
+																							   Params params) {
+			return Tuple4.of(new String[] {"name"}, new String[] {"name"}, new TypeInformation[] {Types.STRING()},
+				new String[] {});
+		}
+
+		@Override
+		public void loadModel(List <Row> modelRows) {
+
+		}
+	}
 }
