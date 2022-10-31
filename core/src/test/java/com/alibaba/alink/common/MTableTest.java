@@ -14,6 +14,7 @@ import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -194,6 +195,34 @@ public class MTableTest {
 		Assert.assertNotNull(((MTable) resultRow.getField(3)).getRows());
 		Assert.assertTrue(((MTable) resultRow.getField(3)).getRows().isEmpty());
 		Assert.assertEquals(schemaStr, ((MTable) resultRow.getField(3)).getSchemaStr());
+	}
+
+	@Test
+	public void testSummary() {
+		List <Row> rows = new ArrayList <>();
+
+		rows.add(Row.of(1, "a", 0.1, -1));
+		rows.add(Row.of(2, "b", 0.5, 3));
+
+		String col1 = "col1";
+		String col2 = "col2";
+		String col3 = "col3";
+		double delta = 1e-19;
+		MTable mTable = new MTable(rows, "col0 int, col1 string, col2 double, col3 int");
+
+		TableSummary summary1 = mTable.summary();
+		TableSummary summary2 = mTable.summary("col1", "col2");
+		TableSummary summary3 = mTable.summary("col1", "col3");
+
+		Assert.assertEquals(summary1.mean(col2), summary2.mean(col2), delta);
+		Assert.assertEquals(summary1.mean(col3), summary3.mean(col3), delta);
+		Assert.assertEquals(summary1.sum(col2), summary2.sum(col2), delta);
+		Assert.assertEquals(summary1.sum(col3), summary3.sum(col3), delta);
+		Assert.assertEquals(summary1.standardDeviation(col2), summary2.standardDeviation(col2), delta);
+
+		Assert.assertEquals(summary1.sum(col1), Double.NaN, delta);
+		Assert.assertEquals(summary2.sum(col1), Double.NaN, delta);
+		Assert.assertEquals(summary3.sum(col1), Double.NaN, delta);
 	}
 
 	@Test

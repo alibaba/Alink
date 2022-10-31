@@ -50,13 +50,13 @@ public abstract class BaseNearestNeighborTrainLocalOp<T extends BaseNearestNeigh
 
 		String selectedCol = getParams().get(HasSelectedCol.SELECTED_COL);
 		String idCol = getParams().get(HasIdCol.ID_COL);
-		TypeInformation idType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), idCol);
+		TypeInformation <?> idType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), idCol);
 		getParams().set(NearestNeighborDataConverter.ID_TYPE, FlinkTypeConverter.getTypeString(idType));
 
-		NearestNeighborDataConverter modelData = getParams().get(TRAIN_TYPE).dataConverter.apply(getParams());
+		NearestNeighborDataConverter <?> modelData = getParams().get(TRAIN_TYPE).dataConverter.apply(getParams());
 		modelData.setIdType(idType);
 
-		List <Row> out = modelData.buildIndex(in.getOutputTable().select(new String[] {idCol, selectedCol}), getParams());
+		List <Row> out = modelData.buildIndex(in.getOutputTable().select(idCol, selectedCol), getParams());
 
 		this.setOutputTable(new MTable(out, modelData.getModelSchema()));
 

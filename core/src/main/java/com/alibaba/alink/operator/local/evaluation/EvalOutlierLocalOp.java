@@ -32,6 +32,7 @@ import com.alibaba.alink.operator.common.evaluation.EvalOutlierUtils.ProbMapExtr
 import com.alibaba.alink.operator.common.evaluation.MultiClassMetrics;
 import com.alibaba.alink.operator.common.evaluation.OutlierMetrics;
 import com.alibaba.alink.operator.common.outlier.OutlierDetector;
+import com.alibaba.alink.operator.common.utils.OutlierMetricsHtmlVisualizer;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.params.evaluation.EvalOutlierParams;
 import org.apache.commons.lang3.StringUtils;
@@ -188,12 +189,12 @@ public class EvalOutlierLocalOp extends LocalOperator <EvalOutlierLocalOp> imple
 
 	}
 
-	//public EvalOutlierLocalOp lazyVizMetrics() {
-	//	//noinspection unchecked
-	//	return lazyCollectMetrics(d -> {
-	//		OutlierMetricsHtmlVisualizer visualizer = OutlierMetricsHtmlVisualizer.getInstance();
-	//		visualizer.visualize(d);
-	//	});
-	//}
+	public EvalOutlierLocalOp lazyVizMetrics() {
+		//noinspection unchecked
+		return lazyCollectMetrics(d -> {
+			OutlierMetricsHtmlVisualizer visualizer = OutlierMetricsHtmlVisualizer.getInstance();
+			visualizer.visualize(d);
+		});
+	}
 
 }

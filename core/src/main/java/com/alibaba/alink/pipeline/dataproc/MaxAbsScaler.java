@@ -6,6 +6,8 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.MaxAbsScalerTrainBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.dataproc.MaxAbsScalerTrainLocalOp;
 import com.alibaba.alink.params.dataproc.MaxAbsScalerPredictParams;
 import com.alibaba.alink.params.dataproc.MaxAbsScalerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -33,6 +35,11 @@ public class MaxAbsScaler extends Trainer <MaxAbsScaler, MaxAbsScalerModel> impl
 	@Override
 	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new MaxAbsScalerTrainBatchOp(this.getParams()).linkFrom(in);
+	}
+
+	@Override
+	protected LocalOperator <?> train(LocalOperator <?> in) {
+		return new MaxAbsScalerTrainLocalOp(this.getParams()).linkFrom(in);
 	}
 }
 

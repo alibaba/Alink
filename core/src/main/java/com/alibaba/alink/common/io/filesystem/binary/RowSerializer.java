@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class RowSerializer implements Serializable {
+public class RowSerializer implements BaseRowSerializer, Serializable {
 
 	private static final long serialVersionUID = -542406479129743102L;
 	private static final int START_SIZE_OUTPUT_VIEW = 8 * 1024 * 1024;
@@ -23,11 +23,12 @@ public class RowSerializer implements Serializable {
 
 	public RowSerializer(String[] fieldNames, TypeInformation<?>[] fieldTypes) {
 		RowTypeInfo rowTypeInfo = new RowTypeInfo(fieldTypes, fieldNames);
-		this.serializer = rowTypeInfo.createLegacySerializer(new ExecutionConfig());
+		this.serializer = rowTypeInfo.createSerializer(new ExecutionConfig());
 		this.outputView = new DataOutputSerializer(START_SIZE_OUTPUT_VIEW);
 		this.inputView = new DataInputDeserializer();
 	}
 
+	@Override
 	public byte[] serialize(Row row) throws IOException {
 		serializer.serialize(row, outputView);
 		int length = outputView.length();
@@ -36,6 +37,7 @@ public class RowSerializer implements Serializable {
 		return ret;
 	}
 
+	@Override
 	public Row deserialize(byte[] bytes) throws IOException {
 		inputView.setBuffer(bytes, 0, bytes.length);
 		return serializer.deserialize(inputView);

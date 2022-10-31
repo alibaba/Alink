@@ -5,7 +5,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
@@ -21,6 +20,7 @@ import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.sink.AkSinkLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.onlinelearning.PipelinePredictStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
@@ -35,6 +35,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
+import static com.alibaba.alink.pipeline.ModelExporterUtils.assertPipelineModelColNames;
+import static com.alibaba.alink.pipeline.ModelExporterUtils.assertPipelineModelOp;
 
 /**
  * The model fitted by {@link Pipeline}.
@@ -406,9 +409,67 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 	 * Save the pipeline model to a filepath using ak file.
 	 */
 	public void save(FilePath filePath, boolean overwrite, int numFiles) {
-		save().link(
+		save(filePath, overwrite, numFiles, "auto");
+	}
+
+	public void save(FilePath filePath, boolean overwrite, int numFiles, String mode) {
+		mode = mode.toLowerCase();
+		if (mode.equals("batch")) {
+			saveBatch(filePath, overwrite, numFiles);
+		} else if (mode.equals("local")) {
+			saveLocal(filePath, overwrite, numFiles);
+		} else if (mode.equals("auto")) {
+			Tuple2 <Boolean, Boolean> t2 = checkModels(this.transformers);
+			boolean containModel = t2.f0;
+			boolean useBatchMode = t2.f1;
+			if (containModel && useBatchMode) {
+				saveBatch(filePath, overwrite, numFiles);
+			} else {
+				saveLocal(filePath, overwrite, numFiles);
+
+				// Note: this will cause BatchOperator#execute to submit a new meaningless job when no other sinks.
+				ModelExporterUtils.createEmptyBatchSourceSink(getMLEnvironmentId());
+			}
+		} else {
+			throw new AkIllegalOperationException("Not support this save mode : " + mode);
+		}
+	}
+
+	public static Tuple2 <Boolean, Boolean> checkModels(PipelineStageBase <?>[] stages) {
+		boolean containModel = false;
+		boolean useBatchMode = false;
+		for (PipelineStageBase <?> stage : stages) {
+			if (stage instanceof ModelBase) {
+				containModel = true;
+				ModelBase model = (ModelBase) stage;
+				if (null != model.modelData) {
+					useBatchMode = true;
+					break;
+				} else if (null != model.modelFileData) {
+					ModelPipeFileData modelPipeFileData = model.modelFileData.modelPipeFileData;
+					if (null != modelPipeFileData.sourceBatch) {
+						useBatchMode = true;
+						break;
+					}
+				}
+			}
+		}
+		return new Tuple2 <>(containModel, useBatchMode);
+	}
+
+	private void saveBatch(FilePath filePath, boolean overwrite, int numFiles) {
+		saveBatch().link(
 			new AkSinkBatchOp()
 				.setMLEnvironmentId(getMLEnvironmentId())
+				.setFilePath(filePath)
+				.setOverwriteSink(overwrite)
+				.setNumFiles(numFiles)
+		);
+	}
+
+	private void saveLocal(FilePath filePath, boolean overwrite, int numFiles) {
+		saveLocal().link(
+			new AkSinkLocalOp()
 				.setFilePath(filePath)
 				.setOverwriteSink(overwrite)
 				.setNumFiles(numFiles)
@@ -418,9 +479,17 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 	/**
 	 * Pack the pipeline model to a BatchOperator.
 	 */
-	public BatchOperator <?> save() {
+	@Deprecated
+	public BatchOperator <?> save() {return saveBatch();}
+
+	private BatchOperator <?> saveBatch() {
 		checkParams();
 		return ModelExporterUtils.serializePipelineStages(Arrays.asList(transformers), params);
+	}
+
+	public LocalOperator <?> saveLocal() {
+		checkParams();
+		return ModelExporterUtils.serializePipelineStagesLocal(Arrays.asList(transformers), params);
 	}
 
 	public static TableSchema getOutSchema(PipelineModel pipelineModel, TableSchema inputSchema) {
@@ -447,10 +516,23 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 	}
 
 	public static PipelineModel load(FilePath filePath) {
-		return load(filePath, MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID);
+		Tuple2 <TableSchema, Row> schemaAndMeta = ModelExporterUtils.loadMetaFromAkFile(filePath);
+		assertPipelineModelColNames(schemaAndMeta.f0.getFieldNames());
+		Tuple2 <StageNode[], Params> stagesAndParams
+			= ModelExporterUtils.deserializePipelineStagesAndParamsFromMeta(schemaAndMeta.f1, schemaAndMeta.f0);
+
+		PipelineModel pipelineModel = new PipelineModel(stagesAndParams.f1);
+		pipelineModel.setTransformers(ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
+				new ModelPipeFileData(filePath),
+				stagesAndParams.f0,
+				schemaAndMeta.f0
+			).toArray(new TransformerBase <?>[0])
+		);
+		return pipelineModel;
 	}
 
 	public static PipelineModel collectLoad(BatchOperator <?> batchOp) {
+		assertPipelineModelOp(batchOp);
 		Tuple2 <StageNode[], Params> pipeData = ModelExporterUtils.collectMetaFromOp(batchOp);
 		PipelineModel pipelineModel = new PipelineModel(pipeData.f1);
 		pipelineModel.setTransformers(ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
@@ -461,15 +543,27 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 		return pipelineModel;
 	}
 
+	public static PipelineModel collectLoad(LocalOperator <?> localOp) {
+		Tuple2 <StageNode[], Params> pipeData = ModelExporterUtils.collectMetaFromOp(localOp);
+		PipelineModel pipelineModel = new PipelineModel(pipeData.f1);
+		pipelineModel.setTransformers(ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
+			localOp,
+			pipeData.f0,
+			localOp.getSchema()
+		).toArray(new TransformerBase <?>[0]));
+		return pipelineModel;
+	}
+
 	@Deprecated
 	public static PipelineModel load(FilePath filePath, Long mlEnvId) {
 		Tuple2 <TableSchema, Row> schemaAndMeta = ModelExporterUtils.loadMetaFromAkFile(filePath);
+		assertPipelineModelColNames(schemaAndMeta.f0.getFieldNames());
 		Tuple2 <StageNode[], Params> stagesAndParams
 			= ModelExporterUtils.deserializePipelineStagesAndParamsFromMeta(schemaAndMeta.f1, schemaAndMeta.f0);
 
 		PipelineModel pipelineModel = new PipelineModel(stagesAndParams.f1);
 		pipelineModel.setTransformers(ModelExporterUtils. <TransformerBase <?>>fillPipelineStages(
-				new AkSourceBatchOp()
+			new AkSourceBatchOp()
 					.setFilePath(filePath)
 					.setMLEnvironmentId(mlEnvId),
 				stagesAndParams.f0,

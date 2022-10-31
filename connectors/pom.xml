@@ -5,7 +5,7 @@
     <parent>
         <artifactId>alink</artifactId>
         <groupId>com.alibaba.alink</groupId>
-        <version>1.5-SNAPSHOT</version>
+        <version>1.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -20,10 +20,10 @@
         <module>connector-jdbc</module>
         <module>connector-hive</module>
         <module>connector-redis</module>
+        <module>connector-hbase</module>
         <module>filesystem</module>
         <module>connector-parquet-0.11</module>
         <module>connector-datahub</module>
-        <module>connector-hbase</module>
     </modules>
 
 </project>

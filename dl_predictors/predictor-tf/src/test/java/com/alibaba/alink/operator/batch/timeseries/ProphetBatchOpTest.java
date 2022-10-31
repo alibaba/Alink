@@ -11,8 +11,10 @@ import com.alibaba.alink.operator.batch.dataproc.VectorToTensorBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.format.TripleToColumnsBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.format.VectorToTripleBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorAssemblerBatchOp;
+import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
+import com.alibaba.alink.params.timeseries.ProphetParams.SeasonalityMode;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -185,24 +187,80 @@ public class ProphetBatchOpTest {
 					.setPredictionCol("pred")
 					.setPredictionDetailCol("pred_detail")
 					.setPredictNum(12)
-					.setUncertaintySamples(1000)
-					.setHolidays("playoff:2021-01-13,2021-01-03 superbowl:2021-02-07,2021-11-02")
+					//.setUncertaintySamples(1000)
+					.setHolidays("playoff:2021-05-03,2021-01-03 superbowl:2021-02-07,2021-11-02")
+					//.setGrowth("logistic")
+					.setGrowth("linear")
+					.setCap(6.0)
+					.setFloor(1.0)
+					.setChangePoints("2021-05-02,2021-05-07")
+					.setChangePointRange(0.5)
+					.setChangePointPriorScale(0.05)
+					.setNChangePoint(24)
+					.setHolidaysPriorScale(0.05)
+					//.setDailySeasonality("true")
+					//.setWeeklySeasonality("true")
+					//.setYearlySeasonality("true")
+					//.setDailySeasonality("false")
+					//.setWeeklySeasonality("false")
+					//.setYearlySeasonality("false")
+					.setDailySeasonality("auto")
+					.setWeeklySeasonality("auto")
+					.setYearlySeasonality("auto")
+					.setIntervalWidth(0.6)
+					.setSeasonalityMode("ADDITIVE")
+					//.setSeasonalityMode("MULTIPLICATIVE")
+					.setSeasonalityPriorScale(0.05)
+					.setIncludeHistory(false)
 					.setReservedCols("id")
-				//.setPythonEnv("file:///Users/ning.cain/soft/miniforge3/envs/py39t/")
 			)
 			.link(
 				new FlattenMTableBatchOp()
 					.setSelectedCol("pred_detail")
+					//.setSchemaStr("ds timestamp, "
+					//	+ "yhat double, yhat_lower double, yhat_upper double")
 					.setSchemaStr("ds timestamp, "
 						+ "yhat double, yhat_lower double, yhat_upper double, "
 						+ "superbowl double, superbowl_upper double, superbowl_lower double,"
 						+ "playoff double, playoff_upper double, playoff_lower double")
 					.setReservedCols("id")
 			)
-			.print()
-			;
-
-
+			.print();
 	}
+
+	//@Test
+	//public void test3() throws Exception {
+	//	AlinkGlobalConfiguration.setPrintProcessInfo(true);
+	//
+	//	BatchOperator <?> source = new CsvSourceBatchOp()
+	//		.setFilePath("/Users/ning.cain/data/prophet_testdata.csv")
+	//		.setSchemaStr("dt string,money double,pid string")
+	//		.setIgnoreFirstLine(true);
+	//
+	//	source.select("to_timestamp(dt, 'yyyy-MM-dd') as ds, money as val, pid as id")
+	//		.link(
+	//			new GroupByBatchOp()
+	//				.setGroupByPredicate("id")
+	//				.setSelectClause("id, mtable_agg(ds, val) as data")
+	//		)
+	//		.link(
+	//			new ProphetBatchOp()
+	//				.setValueCol("data")
+	//				.setPredictionCol("pred")
+	//				.setPredictionDetailCol("pred_detail")
+	//				.setPredictNum(12)
+	//				.setUncertaintySamples(1000)
+	//				.setReservedCols("id")
+	//		)
+	//		.link(
+	//			new FlattenMTableBatchOp()
+	//				.setSelectedCol("pred_detail")
+	//				.setSchemaStr("ds timestamp, "
+	//					+ "yhat double, yhat_lower double, yhat_upper double")
+	//				.setReservedCols("id")
+	//		)
+	//		.print();
+	//
+	//}
 
 }
