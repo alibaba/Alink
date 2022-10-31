@@ -66,6 +66,7 @@ import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -199,28 +200,29 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 	public TableSummary summary(String... selectedColNames) {
 		TableSchema schema = getSchema();
 		TableSummarizer srt = new TableSummarizer(
-			//selectedColNames.length == 0 ? schema.getFieldNames() : selectedColNames,
 			schema.getFieldNames(),
 			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema, selectedColNames)), true);
 		for (Row row : this.rows) {
 			srt.visit(row);
 		}
-		return srt.toSummary();
+		return srt.toSummary(selectedColNames);
 	}
 
 	//summary for data from fromId line to endId line, include fromId and exclude endId.
 	public TableSummary subSummary(String[] selectedColNames, int fromId, int endId) {
 		TableSchema schema = getSchema();
 		TableSummarizer srt = new TableSummarizer(
-			//	selectedColNames.length == 0 ? schema.getFieldNames() : selectedColNames,
 			schema.getFieldNames(),
 			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema, selectedColNames)), true);
 		for (int i = Math.max(fromId, 0); i < Math.min(endId, this.getNumRow()); i++) {
 			srt.visit(this.rows.get(i));
 		}
-		return srt.toSummary();
+		return srt.toSummary(selectedColNames);
 	}
 
+	/**
+	 * exclude columns that are not supported types and not in selected columns
+	 */
 	private static String[] getCalcCols(TableSchema tableSchema, String[] selectedColNames) {
 		ArrayList <String> calcCols = new ArrayList <>();
 		String[] inColNames = selectedColNames.length == 0 ? tableSchema.getFieldNames() : selectedColNames;
@@ -274,6 +276,14 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 		}
 
 		return new MTable(q.stream().map(item -> item.f1).collect(Collectors.toList()), schemaStr);
+	}
+
+	public MTable sampleWithSizeReplacement(int numSamples, Random rnd) {
+		List <Row> chosenRows = IntStream.range(0, numSamples)
+			.map(d -> rnd.nextInt() % numSamples)
+			.mapToObj(rows::get)
+			.collect(Collectors.toList());
+		return new MTable(chosenRows, schemaStr);
 	}
 
 	/**

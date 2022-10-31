@@ -1,13 +1,13 @@
 import base64
+import io
+import json
 import logging
 import os
 import shutil
 import struct
 
-from flink_ml_framework.java_file import JavaFile
-
-import io
 import tensorflow as tf
+from flink_ml_framework.java_file import JavaFile
 
 if tf.__version__ >= '2.0':
     tf = tf.compat.v1
@@ -33,6 +33,33 @@ def convert_java_queue_file_to_repeatable_dataset(java_file: JavaFile, output_da
             data_file.close()
             break
     return tf.data.TFRecordDataset(output_data_path), cnt
+
+
+def find_timestamp_dir(saved_model_dir):
+    timestamp_dir = saved_model_dir
+    for d in os.listdir(saved_model_dir):
+        timestamp_dir = os.path.join(saved_model_dir, d)
+        if os.path.isdir(timestamp_dir):
+            break
+    return timestamp_dir
+
+
+def pack_dir_to_file(directory: str, chunk_size: int):
+    """
+    directory should be a
+    :param directory:
+    :return:
+    """
+    shutil.make_archive(base_name=directory, format='zip', root_dir=directory)
+    zip_file = directory + ".zip"
+    zip_size = os.path.getsize(zip_file)
+    chunks = (zip_size - 1) // chunk_size + 1
+    return {
+        'name': zip_file,
+        'size': zip_size,
+        'chunk_size': chunk_size,
+        'chunks': chunks,
+    }
 
 
 def output_model_to_flink(model_dir, output_writer):
@@ -72,6 +99,42 @@ def output_model_to_flink(model_dir, output_writer):
                 }))
             chunk_id = chunk_id + 1
             output_writer.write(example)
+
+
+def output_model_ckpt_to_flink(saved_model_dir, latest_ckpt_dir, output_writer):
+    """
+    Pack saved model directory and latest checkpoint dir to zip files, then output the bytes of the zip file to Flink.
+    """
+    chunk_size = 1024 * 1024
+    file_summaries = []
+    timestamp_dir = find_timestamp_dir(saved_model_dir)
+    file_summaries.append(pack_dir_to_file(timestamp_dir, chunk_size))
+    file_summaries.append(pack_dir_to_file(latest_ckpt_dir, chunk_size))
+
+    example = tf.train.Example(features=tf.train.Features(
+        feature={
+            'model_id': tf.train.Feature(int64_list=tf.train.Int64List(value=[0])),
+            'model_info': tf.train.Feature(
+                bytes_list=tf.train.BytesList(value=[json.dumps(file_summaries).encode('utf8')])),
+        }))
+    output_writer.write(example)
+
+    chunk_id = 0
+    for file_summary in file_summaries:
+        name = file_summary['name']
+        with open(name, 'rb') as f:
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+                chunk = base64.b64encode(chunk)
+                chunk_id += 1
+                example = tf.train.Example(features=tf.train.Features(
+                    feature={
+                        'model_id': tf.train.Feature(int64_list=tf.train.Int64List(value=[chunk_id])),
+                        'model_info': tf.train.Feature(bytes_list=tf.train.BytesList(value=[chunk])),
+                    }))
+                output_writer.write(example)
 
 
 def unpack_model_from_flink(model_path, work_dir):

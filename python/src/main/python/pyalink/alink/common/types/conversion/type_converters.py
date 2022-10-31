@@ -1,16 +1,15 @@
-import os
-
 import deprecation
 import numpy as np
+import os
 import pandas as pd
 
 from ....py4j_util import get_java_class
 
 # Basic type conversion
 _G_ALINK_TYPE_TO_PTYPE = {
-    'BOOL': 'boolean',
-    'BOOLEAN': 'boolean',
-    'JAVA.LANG.BOOLEAN': 'boolean',
+    'BOOL': 'bool',
+    'BOOLEAN': 'bool',
+    'JAVA.LANG.BOOLEAN': 'bool',
 
     'TINYINT': 'Int8',
     'BYTE': 'Int8',
@@ -33,10 +32,10 @@ _G_ALINK_TYPE_TO_PTYPE = {
     'DOUBLE': 'float64',
     'JAVA.LANG.DOUBLE': 'float64',
 
-    'STRING': 'string',
-    'VARCHAR': 'string',
-    'LONGVARCHAR': 'string',
-    'JAVA.LANG.STRING': 'string',
+    'STRING': 'object',
+    'VARCHAR': 'object',
+    'LONGVARCHAR': 'object',
+    'JAVA.LANG.STRING': 'object',
 
     'DATETIME': 'datetime64',
     'JAVA.SQL.TIMESTAMP': 'datetime64',
@@ -52,13 +51,13 @@ def j_type_to_py_type(t):
     elif typeclass_name in ['java.lang.Long', 'java.lang.Integer', 'int', 'long']:
         return pd.Int64Dtype()
     elif typeclass_name == 'java.lang.String':
-        return pd.StringDtype()
+        return np.object
     elif typeclass_name == 'java.sql.Timestamp':
         return np.datetime64
     elif typeclass_name == "com.alibaba.alink.common.linalg.Vector" or typeclass_name == "com.alibaba.alink.common.linalg.DenseVector" or typeclass_name == "com.alibaba.alink.common.linalg.SparseVector":
-        return pd.StringDtype()
+        return np.str
     elif typeclass_name in ["java.lang.Boolean", 'boolean']:
-        return pd.BooleanDtype()
+        return np.bool
     else:
         print("Java type is not supported in Python for automatic conversion of values: %s" % typeclass_name)
         return t
@@ -214,6 +213,20 @@ def schema_type_to_py_type(raw_type):
         return np.object
 
 
+def adjust_dataframe_types(df, colnames, coltypes):
+    for (colname, coltype) in zip(colnames, coltypes):
+        col = df[colname]
+        py_type = schema_type_to_py_type(coltype)
+        if not pd.api.types.is_float_dtype(py_type) \
+                and not pd.api.types.is_integer_dtype(py_type) \
+                and col.isnull().values.any():
+            print("Warning: null values exist in column %s, making it cannot be cast to type: %s automatically" % (
+                colname, str(coltype)))
+            continue
+        df = df.astype({colname: py_type}, copy=False, errors='ignore')
+    return df
+
+
 # operator(s) -> dataframe(s)
 
 def post_convert(df: pd.DataFrame, colnames, coltypes):
@@ -248,7 +261,7 @@ def csv_content_to_dataframe(content, colnames, coltypes):
     force_dtypes = {
         colname: _G_ALINK_TYPE_TO_PTYPE.get(coltype, 'object')
         for colname, coltype in zip(colnames, coltypes)
-        if coltype not in ["TIMESTAMP", 'JAVA.SQL.TIMESTAMP', 'DATETIME']
+        if coltype in ["VARCHAR", "STRING"]
     }
     date_colnames = [
         colname
@@ -257,6 +270,10 @@ def csv_content_to_dataframe(content, colnames, coltypes):
     ]
     df = pd.read_csv(StringIO(content), names=colnames, dtype=force_dtypes, parse_dates=date_colnames,
                      true_values=["True", "true"], false_values=["False", "false"])
+    # As all empty strings are read as NaN, we transform them to None
+    df = df.where(df.notnull(), None)
+    # For float/int columns, there are specialized types to represent values with null values, we adjust their types
+    df = adjust_dataframe_types(df, colnames, coltypes)
     return post_convert(df, colnames, coltypes)
 
 

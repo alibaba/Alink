@@ -50,13 +50,13 @@ public class ParamUtil {
 	 * @param cls the class of operator
 	 * @return
 	 */
-	public static List <ParamInfo> getParametersByOperator(Class cls) {
-		Stream <ParamInfo> s = getAllFields(cls)
+	public static List <ParamInfo <?>> getParametersByOperator(Class <?> cls) {
+		Stream <ParamInfo <?>> s = getAllFields(cls)
 			.filter(x -> Modifier.isStatic(x.getModifiers()) && Modifier.isFinal(x.getModifiers()))
 			.filter(x -> ParamInfo.class.isAssignableFrom(x.getType()))
-			.map(x -> {
+			. <ParamInfo <?>>map(x -> {
 				try {
-					return (ParamInfo) x.get(null);
+					return (ParamInfo <?>) x.get(null);
 				} catch (Exception ex) {
 					return null;
 				}
@@ -70,7 +70,7 @@ public class ParamUtil {
 				.filter(x -> ParamInfo.class.isAssignableFrom(x.getReturnType()))
 				.map(x -> {
 					try {
-						return ((ParamInfo) x.invoke(obj));
+						return ((ParamInfo <?>) x.invoke(obj));
 					} catch (IllegalAccessException | InvocationTargetException e) {
 						return null;
 					}

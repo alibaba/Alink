@@ -7,6 +7,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.similarity.lsh.BaseLSH;
@@ -21,11 +22,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * LSH is usually used to search nearest neighbor or join similar items. Here, we realized
- * the function of approxNearestNeighbors and approxSimilarityJoin for Euclidean distance
- * and Jaccard distance.
+ * LSH is usually used to search nearest neighbor or join similar items. Here, we realized the function of
+ * approxNearestNeighbors and approxSimilarityJoin for Euclidean distance and Jaccard distance.
  */
 public class LocalitySensitiveHashApproxFunctions {
+	public static BaseLSH buildLSH(Params params, int vectorSize) {
+		VectorApproxNearestNeighborTrainParams.Metric metric = params
+			.get(VectorApproxNearestNeighborTrainParams.METRIC);
+
+		long seed = params.get(VectorApproxNearestNeighborTrainParams.SEED);
+		int numProjectionsPerTable = params.get(VectorApproxNearestNeighborTrainParams.NUM_PROJECTIONS_PER_TABLE);
+		int numHashTables = params.get(VectorApproxNearestNeighborTrainParams.NUM_HASH_TABLES);
+
+		switch (metric) {
+			case JACCARD: {
+				return new MinHashLSH(seed, numProjectionsPerTable, numHashTables);
+			}
+			case EUCLIDEAN: {
+				return new BucketRandomProjectionLSH(seed, vectorSize,
+					numProjectionsPerTable, numHashTables,
+					params.get(VectorApproxNearestNeighborTrainParams.PROJECTION_WIDTH));
+			}
+			default: {
+				throw new AkUnsupportedOperationException("Metric not supported: " + metric);
+			}
+		}
+	}
+
 	public static DataSet <BaseLSH> buildLSH(BatchOperator in, Params params, String vectorCol) {
 		DataSet <BaseLSH> lsh;
 		VectorApproxNearestNeighborTrainParams.Metric metric = params.get(

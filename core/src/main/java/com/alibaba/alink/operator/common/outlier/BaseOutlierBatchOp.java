@@ -63,28 +63,41 @@ public class BaseOutlierBatchOp<T extends BaseOutlierBatchOp <T>> extends MapBat
 	public T linkFrom(BatchOperator <?>... inputs) {
 		BatchOperator <?> in = checkAndGetFirst(inputs);
 
-		//Step 1 : Grouped the input rows into MTables
-		BatchOperator <?> inGrouped = group2MTables(in, getParams());
+		if (null == getParams().get(OutlierParams.GROUP_COLS)
+			&& !getParams().contains(HasMaxSampleNumPerGroup.MAX_SAMPLE_NUM_PER_GROUP)
+			&& supportDealWholeData()
+		) {
 
-		//Step 2 : detect the outlier for each MTable
-		Mapper mapper = mapperBuilder.apply(
-			inGrouped.getSchema(),
-			getParams().clone()
-				.set(HasInputMTableCol.INPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
-				.set(HasOutputMTableCol.OUTPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
-				.set(HasDetectLast.DETECT_LAST, false)
-		);
-		DataSet <Row> resultRows = MapBatchOp.calcResultRows(inGrouped, mapper, getParams());
+			setOutputTable(dealWholeData(in));
 
-		//Step 3 : Flatten the MTables to final results
-		Table resultTable = flattenMTable(
-			resultRows, in.getSchema(), mapper.getOutputSchema(), getParams(), getMLEnvironmentId()
-		);
+		}else {
+			//Step 1 : Grouped the input rows into MTables
+			BatchOperator <?> inGrouped = group2MTables(in, getParams());
 
-		setOutputTable(resultTable);
+			//Step 2 : detect the outlier for each MTable
+			Mapper mapper = mapperBuilder.apply(
+				inGrouped.getSchema(),
+				getParams().clone()
+					.set(HasInputMTableCol.INPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
+					.set(HasOutputMTableCol.OUTPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
+					.set(HasDetectLast.DETECT_LAST, false)
+			);
+			DataSet <Row> resultRows = MapBatchOp.calcResultRows(inGrouped, mapper, getParams());
+
+			//Step 3 : Flatten the MTables to final results
+			Table resultTable = flattenMTable(
+				resultRows, in.getSchema(), mapper.getOutputSchema(), getParams(), getMLEnvironmentId()
+			);
+
+			setOutputTable(resultTable);
+		}
 
 		return (T) this;
 	}
+
+	protected boolean supportDealWholeData() {return false;}
+
+	protected Table dealWholeData(BatchOperator <?> in) {return null;}
 
 	/**
 	 * make data by group into MTable, and split by maxSampleNumPerGroup.

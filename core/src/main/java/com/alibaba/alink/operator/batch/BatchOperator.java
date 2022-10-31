@@ -110,6 +110,11 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		return next;
 	}
 
+	protected <B extends BatchOperator <?>> B lazyLink(B next) {
+		next.lazyLinkFrom(this);
+		return next;
+	}
+
 	/**
 	 * Link from others {@link BatchOperator}.
 	 * <p>
@@ -137,6 +142,40 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	 * @return the linked this object
 	 */
 	public abstract T linkFrom(BatchOperator <?>... inputs);
+
+	/**
+	 * Lazily link from others {@link BatchOperator}. The actual {@link BatchOperator#linkFrom} is called only when all
+	 * `inputs` have output tables.
+	 *
+	 * @param inputs the linked inputs.
+	 * @return this.
+	 */
+	protected T lazyLinkFrom(BatchOperator <?>... inputs) {
+		if (Arrays.stream(inputs).allMatch(d -> !d.isNullOutputTable() || d instanceof BaseSourceBatchOp)) {
+			return linkFrom(inputs);
+		}
+		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(this);
+		//noinspection unchecked
+		Consumer <BatchOperator <?>>[] callbacks = new Consumer[inputs.length];
+		for (int i = 0; i < inputs.length; i += 1) {
+			if (i > 0) {
+				final int cnt = i;
+				callbacks[i] = d -> {
+					LazyEvaluation <BatchOperator <?>> lazyOpAfterLinked =
+						lazyObjectsManager.genLazyOpAfterLinked(inputs[cnt - 1]);
+					lazyOpAfterLinked.addCallback(callbacks[cnt - 1]);
+				};
+			} else {
+				callbacks[i] = d -> this.linkFrom(inputs);
+			}
+		}
+		for (int i = 0; i < inputs.length; i += 1) {
+			LazyEvaluation <BatchOperator <?>> lazyOpAfterLinked = lazyObjectsManager.genLazyOpAfterLinked(inputs[i]);
+			lazyOpAfterLinked.addCallback(callbacks[i]);
+		}
+		//noinspection unchecked
+		return (T) this;
+	}
 
 	/**
 	 * create a new BatchOperator from table.
@@ -565,7 +604,9 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 
 	public T lazyPrint(int n, String title) {
 		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(this);
-		BatchOperator <?> op = n > 0 ? this.firstN(n) : this;
+		BatchOperator <?> op = n > 0
+			? lazyLink(new FirstNBatchOp().setSize(n).setMLEnvironmentId(getMLEnvironmentId()))
+			: this;
 		LazyEvaluation <Pair <BatchOperator <?>, List <Row>>> lazyRowOps = lazyObjectsManager.genLazySink(op);
 		lazyRowOps.addCallback(d -> {
 			if (null != title) {
@@ -615,7 +656,16 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	}
 
 	public final T lazyVizDive() {
-		sampleWithSize(10000).lazyCollect(new DiveVisualizerConsumer(getColNames()));
+		final int defaultNumSamples = 10000;
+		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(this);
+		LazyEvaluation <BatchOperator <?>> lazyOpAfterLinked = lazyObjectsManager.genLazyOpAfterLinked(this);
+		lazyOpAfterLinked.addCallback(d -> {
+			new SampleWithSizeBatchOp()
+				.setSize(defaultNumSamples)
+				.lazyCollect(new DiveVisualizerConsumer(d.getColNames()))
+				.linkFrom(d);
+		});
+		//noinspection unchecked
 		return (T) this;
 	}
 
@@ -624,8 +674,10 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 	}
 
 	public final T lazyVizStatistics(String tableName) {
-		InternalFullStatsBatchOp internalFullStatsBatchOp = new InternalFullStatsBatchOp().linkFrom(this);
-		internalFullStatsBatchOp.lazyVizFullStats(new String[] {tableName});
+		lazyLink(new InternalFullStatsBatchOp()
+			.setMLEnvironmentId(getMLEnvironmentId())
+			.lazyVizFullStats(new String[] {tableName})
+		);
 		//noinspection unchecked
 		return (T) this;
 	}

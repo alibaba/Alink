@@ -79,6 +79,9 @@ public abstract class BaseSinkLocalOp<T extends BaseSinkLocalOp <T>> extends Loc
 		final IOTaskRunner ioTaskRunner = new IOTaskRunner();
 
 		try {
+			// Todo: need to mock the configuration.
+			outputFormat.configure(new Configuration());
+
 			if (outputFormat instanceof InitializeOnMaster) {
 				((InitializeOnMaster) outputFormat).initializeGlobal(numThreads);
 			}
@@ -93,42 +96,42 @@ public abstract class BaseSinkLocalOp<T extends BaseSinkLocalOp <T>> extends Loc
 				if (cnt <= 0) {continue;}
 
 				ioTaskRunner.submit(() -> {
-						OutputFormat <T> localOutputFormat = SerializationUtils.deserialize(serialized);
+					OutputFormat <T> localOutputFormat = SerializationUtils.deserialize(serialized);
 
-						// Todo: need to mock the configuration.
-						localOutputFormat.configure(new Configuration());
+					// Todo: need to mock the configuration.
+					localOutputFormat.configure(new Configuration());
 
-						if (localOutputFormat instanceof RichOutputFormat) {
-							//((RichOutputFormat <Row>) localOutputFormat)
-							//	.setRuntimeContext(new LocalOutputFormatRuntimeContext());
+					if (localOutputFormat instanceof RichOutputFormat) {
+						//((RichOutputFormat <Row>) localOutputFormat)
+						//	.setRuntimeContext(new LocalOutputFormatRuntimeContext());
+					}
+
+					try {
+						localOutputFormat.open(curThread, numThreads);
+
+						for (int j = start; j < start + cnt; ++j) {
+							localOutputFormat.writeRecord(input.get(j));
 						}
 
-						try {
-							localOutputFormat.open(curThread, numThreads);
-
-							for (int j = start; j < start + cnt; ++j) {
-								localOutputFormat.writeRecord(input.get(j));
-							}
-
-						} catch (IOException e) {
-							if (localOutputFormat instanceof CleanupWhenUnsuccessful) {
-								try {
-									((CleanupWhenUnsuccessful) localOutputFormat).tryCleanupOnError();
-								} catch (Exception sub) {
-									sub.printStackTrace();
-									// pass
-								}
-							}
-
-							e.printStackTrace();
-
-						} finally {
+					} catch (IOException e) {
+						if (localOutputFormat instanceof CleanupWhenUnsuccessful) {
 							try {
-								localOutputFormat.close();
-							} catch (Exception ex) {
-								ex.printStackTrace();
+								((CleanupWhenUnsuccessful) localOutputFormat).tryCleanupOnError();
+							} catch (Exception sub) {
+								sub.printStackTrace();
+								// pass
 							}
 						}
+
+						e.printStackTrace();
+
+					} finally {
+						try {
+							localOutputFormat.close();
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
 					}
 				);
 			}

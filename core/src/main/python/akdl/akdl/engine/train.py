@@ -9,6 +9,7 @@ if tf.__version__ >= '2.0':
 
 from .inputs import get_dataset_fn, parse_feature_specs, get_feature_placeholders
 from ..runner.config import TrainTaskConfig
+from .early_stopping import stop_if_no_increase_hook, stop_if_no_decrease_hook
 
 
 def train_estimator(estimator: tf.estimator.Estimator, input_config, train_config, export_config,
@@ -17,6 +18,7 @@ def train_estimator(estimator: tf.estimator.Estimator, input_config, train_confi
     label_col = input_config['label_col']
 
     feature_specs = parse_feature_specs(example_config)
+    print(f'feature_specs = {feature_specs}')
     dataset_fn = get_dataset_fn(
         feature_specs=feature_specs,
         label_col=label_col,
@@ -48,7 +50,22 @@ def train_estimator_one_worker(estimator: tf.estimator.Estimator, input_config, 
         label_col=label_col,
         **train_config
     )
-    train_spec = tf.estimator.TrainSpec(dataset_fn)
+
+    hooks = []
+    if 'early_stopping_patience_steps' in train_config and 'save_checkpoints_steps' in train_config \
+            and 'metric_bigger' in export_config and 'best_exporter_metric' in export_config:
+        early_stopping_patience = train_config['early_stopping_patience_steps']
+        save_checkpoints_steps = train_config['save_checkpoints_steps']
+        metric_bigger = export_config['metric_bigger']
+        best_exporter_metric = export_config['best_exporter_metric']
+        if metric_bigger:
+            stop_hook = stop_if_no_increase_hook
+        else:
+            stop_hook = stop_if_no_decrease_hook
+        # NOTE: when running in distribution mode, `run_every_secs` is not supported
+        hooks.append(stop_hook(estimator, best_exporter_metric, early_stopping_patience,
+                               run_every_secs=None, run_every_steps=save_checkpoints_steps))
+    train_spec = tf.estimator.TrainSpec(dataset_fn, hooks=hooks)
 
     if 'valid_raw_dataset_fn' in train_config:
         kwargs: dict = train_config.copy()
@@ -92,7 +109,8 @@ def train_estimator_one_worker(estimator: tf.estimator.Estimator, input_config, 
     else:
         raise ValueError("Unsupported exporter_type " + exporter_type)
 
-    eval_spec = tf.estimator.EvalSpec(valid_dataset_fn, throttle_secs=0, start_delay_secs=0, exporters=[exporter])
+    eval_spec = tf.estimator.EvalSpec(valid_dataset_fn, steps=None, throttle_secs=0, start_delay_secs=0,
+                                      exporters=[exporter])
     tf.estimator.train_and_evaluate(estimator, train_spec, eval_spec)
 
     if (task_config.task_type == 'chief' and task_config.task_index == 0) or \

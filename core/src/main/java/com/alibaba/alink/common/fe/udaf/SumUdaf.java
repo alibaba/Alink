@@ -131,7 +131,7 @@ public class SumUdaf extends BaseUdaf <ArrayList <Double>, SumData> {
 	}
 
 	public static class SumData {
-		public final double[][][] mat;
+		public final Double[][][] mat;
 		public final int rows;
 		public final int cols;
 		public final int numCondition;
@@ -140,11 +140,15 @@ public class SumUdaf extends BaseUdaf <ArrayList <Double>, SumData> {
 			this.rows = rows;
 			this.cols = cols;
 			this.numCondition = numCondition;
-			this.mat = new double[numCondition][rows][cols];
+			this.mat = new Double[numCondition][rows][cols];
 		}
 
 		public void addData(int conditionIndex, int rowIndex, int windowIdx, double val) {
-			mat[conditionIndex][rowIndex][windowIdx] += val;
+			if (mat[conditionIndex][rowIndex][windowIdx] == null) {
+				mat[conditionIndex][rowIndex][windowIdx] = val;
+			} else {
+				mat[conditionIndex][rowIndex][windowIdx] += val;
+			}
 		}
 
 		public void retract(int conditionIndex, int rowIndex, int minLevel, double val) {
@@ -157,7 +161,7 @@ public class SumUdaf extends BaseUdaf <ArrayList <Double>, SumData> {
 			for (int ic = 0; ic < numCondition; ic++) {
 				for (int i = 0; i < rows; i++) {
 					for (int j = 0; j < cols; j++) {
-						mat[ic][i][j] = 0;
+						mat[ic][i][j] = null;
 					}
 				}
 			}
@@ -167,7 +171,11 @@ public class SumUdaf extends BaseUdaf <ArrayList <Double>, SumData> {
 			for (int ic = 0; ic < numCondition; ic++) {
 				for (int i = 0; i < rows; i++) {
 					for (int j = 0; j < cols; j++) {
-						mat[ic][i][j] += data.mat[ic][i][j];
+						if (mat[ic][i][j] == null) {
+							mat[ic][i][j] = data.mat[ic][i][j];
+						} else if (mat[ic][i][j] != null && data.mat[ic][i][j] != null) {
+							mat[ic][i][j] += data.mat[ic][i][j];
+						}
 					}
 				}
 			}

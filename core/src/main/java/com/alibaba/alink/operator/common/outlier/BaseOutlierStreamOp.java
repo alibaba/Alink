@@ -16,11 +16,13 @@ import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.dataproc.FlattenMTableMapper;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.OverCountWindowStreamOp;
+import com.alibaba.alink.operator.stream.feature.OverTimeWindowStreamOp;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
 import com.alibaba.alink.params.dataproc.FlattenMTableParams;
 import com.alibaba.alink.params.feature.featuregenerator.HasPrecedingRows;
 import com.alibaba.alink.params.feature.featuregenerator.HasPrecedingTime;
 import com.alibaba.alink.params.feature.featuregenerator.OverCountWindowParams;
+import com.alibaba.alink.params.feature.featuregenerator.OverTimeWindowParams;
 import com.alibaba.alink.params.outlier.HasDetectLast;
 import com.alibaba.alink.params.outlier.HasInputMTableCol;
 import com.alibaba.alink.params.outlier.HasOutputMTableCol;
@@ -67,21 +69,35 @@ public class BaseOutlierStreamOp<T extends BaseOutlierStreamOp <T>> extends MapS
 	}
 
 	public static StreamOperator <?> group2MTables(StreamOperator <?> input_data, Params params) {
+		String[] inputCols = input_data.getColNames();
+		String timeCol = params.get(HasTimeColDefaultAsNull.TIME_COL);
+		if (null == timeCol) {
+			timeCol = "alink_outlier_current_timestamp_col";
+			input_data = input_data.select("*, CURRENT_TIMESTAMP AS " + timeCol);
+		}
 		Params cur_params = new Params();
 		cur_params
-			.set(OverCountWindowParams.TIME_COL, params.get(HasTimeColDefaultAsNull.TIME_COL))
-			.set(OverCountWindowParams.PRECEDING_ROWS, params.get(HasPrecedingRows.PRECEDING_ROWS))
+			.set(OverCountWindowParams.TIME_COL, timeCol)
 			.set(OverCountWindowParams.CLAUSE,
-				"MTABLE_AGG(" + Joiner.on(", ").join(input_data.getColNames())
+				"MTABLE_AGG(" + Joiner.on(", ").join(inputCols)
 					+ ") AS " + OutlierDetector.TEMP_MTABLE_COL
 			);
 		if (params.contains(OutlierParams.GROUP_COLS)) {
 			cur_params.set(OverCountWindowParams.GROUP_COLS, params.get(OutlierParams.GROUP_COLS));
 		}
 
-		return input_data.link(
-			new OverCountWindowStreamOp(cur_params)
-				.setMLEnvironmentId(input_data.getMLEnvironmentId()));
+		if (null != params.get(HasPrecedingTime.PRECEDING_TIME)) {
+			cur_params.set(OverTimeWindowParams.PRECEDING_TIME, params.get(HasPrecedingTime.PRECEDING_TIME));
+			return input_data.link(
+				new OverTimeWindowStreamOp(cur_params)
+					.setMLEnvironmentId(input_data.getMLEnvironmentId())
+			);
+		} else {
+			cur_params.set(OverCountWindowParams.PRECEDING_ROWS, params.get(HasPrecedingRows.PRECEDING_ROWS));
+			return input_data.link(
+				new OverCountWindowStreamOp(cur_params)
+					.setMLEnvironmentId(input_data.getMLEnvironmentId()));
+		}
 	}
 
 	public static Table flattenMTable(DataStream <Row> inputRows, TableSchema input_schema,

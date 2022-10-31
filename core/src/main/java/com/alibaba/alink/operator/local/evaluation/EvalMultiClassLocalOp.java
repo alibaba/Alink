@@ -20,17 +20,19 @@ import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
 import com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil;
+import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
 import com.alibaba.alink.operator.common.evaluation.MultiClassMetrics;
 import com.alibaba.alink.operator.common.evaluation.MultiMetricsSummary;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.params.evaluation.EvalBinaryClassParams;
 import com.alibaba.alink.params.evaluation.EvalMultiClassParams;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getDetailStatistics;
-import static com.alibaba.alink.operator.local.evaluation.EvalBinaryClassLocalOp.calcLabels;
 
 /**
  * Multi classification evaluation.
@@ -91,13 +93,42 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 			}
 		}
 
-		Tuple2 <Map <Object, Integer>, Object[]> labels = calcLabels(data, false, positiveValue, labelType);
+		Tuple2 <Map <Object, Integer>, Object[]> labels = calcLabels(data, false, positiveValue, labelType, type);
 		MultiMetricsSummary summary = (MultiMetricsSummary) getDetailStatistics(data, false, labels, labelType);
 		this.metrics = summary.toMetrics();
 
 		setOutputTable(new MTable(new Row[] {metrics.serialize()}, new TableSchema(
 			new String[] {"multiclass_eval_result"}, new TypeInformation[] {Types.STRING})));
 		return this;
+	}
+
+	private static Tuple2 <Map <Object, Integer>, Object[]> calcLabels(
+		List <Row> data, boolean binary, final String positiveValue, TypeInformation <?> labelType,
+		ClassificationEvaluationUtil.Type type
+	) {
+		switch (type) {
+			case PRED_RESULT: {
+				HashSet <Object> labels = new HashSet <>();
+				for (Row row : data) {
+					if (null != row.getField(0)) {
+						labels.add(row.getField(0));
+					}
+					if (null != row.getField(1)) {
+						labels.add(row.getField(1));
+					}
+				}
+				return ClassificationEvaluationUtil.buildLabelIndexLabelArray(
+					labels, binary, positiveValue, labelType, true);
+			}
+			case PRED_DETAIL: {
+				Set <Object> labels = EvaluationUtil.extractLabelProbMap(data.get(0), labelType).keySet();
+				return ClassificationEvaluationUtil.buildLabelIndexLabelArray(
+					labels, binary, positiveValue, labelType, true);
+			}
+			default: {
+				throw new AkUnsupportedOperationException("Unsupported evaluation type: " + type);
+			}
+		}
 	}
 
 	@Override

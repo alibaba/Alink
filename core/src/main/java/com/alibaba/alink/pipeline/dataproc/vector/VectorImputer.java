@@ -5,6 +5,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorImputerTrainBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.dataproc.vector.VectorImputerTrainLocalOp;
 import com.alibaba.alink.params.dataproc.vector.VectorImputerPredictParams;
 import com.alibaba.alink.params.dataproc.vector.VectorImputerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -36,6 +38,11 @@ public class VectorImputer extends Trainer <VectorImputer, VectorImputerModel> i
 	@Override
 	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new VectorImputerTrainBatchOp(params).linkFrom(in);
+	}
+
+	@Override
+	protected LocalOperator <?> train(LocalOperator <?> in) {
+		return new VectorImputerTrainLocalOp(params).linkFrom(in);
 	}
 }
 

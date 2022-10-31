@@ -70,7 +70,7 @@ public class OcsvmDetectorTest {
 			Tuple3.of(false, -0.0030486807108451863, null),
 			Tuple3.of(false, -0.00562383575012948, null),
 			Tuple3.of(false, -0.0042307218010080305, null),
-			Tuple3.of(false, 5.087645602586122E-7, null),
+			Tuple3.of(true, 5.087645602586122E-7, null),
 			Tuple3.of(true, 1.981080792664693, null),
 			Tuple3.of(true, 1.9810807927054253, null),
 			Tuple3.of(true, 1.981080792664693, null)
@@ -78,7 +78,6 @@ public class OcsvmDetectorTest {
 
 		Assert.assertEquals(expected.length, results.length);
 		for (int i = 0; i < results.length; ++i) {
-			System.out.println(i + " " + results[i]);
 			Assert.assertEquals(expected[i].f0, results[i].f0);
 			Assert.assertEquals(expected[i].f1, results[i].f1, EPS);
 			Assert.assertEquals(expected[i].f2, results[i].f2);

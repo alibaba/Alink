@@ -108,6 +108,10 @@ class BaseEntry(abc.ABC):
         if key in properties:
             user_params[key] = properties[key]
 
+        save_latest_ckpt = bool(user_params.get('ALINK:save_latest_checkpoint', False))
+        print(f'save_latest_ckpt = {save_latest_ckpt}', flush=True)
+        latest_ckpt_dir = os.path.join(work_dir, 'latest_ckpt') if save_latest_ckpt else None
+
         output_writer = DirectOutputWriter(tf_context.from_java(), tf_context.to_java())
 
         locals_copy = locals().copy()

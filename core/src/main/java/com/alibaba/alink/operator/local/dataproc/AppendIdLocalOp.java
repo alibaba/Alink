@@ -54,6 +54,7 @@ public final class AppendIdLocalOp extends LocalOperator <AppendIdLocalOp>
 				out.setField(i, in.getField(i));
 			}
 			out.setField(m, k);
+			k += 1;
 			list.add(out);
 		}
 

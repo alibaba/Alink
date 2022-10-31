@@ -62,6 +62,7 @@ class PyProphetCalc2:
     #argv1: data, argv2: init model
     def calc(self, conf, argv1, argv2):
         print("Entering Python calc", flush=True)
+        print(conf)
         try:
             growth = conf['growth']
             if growth is None:
@@ -83,12 +84,55 @@ class PyProphetCalc2:
             else:
                 uncertainty_samples = int(uncertainty_samples)
 
+            capVal = conf['cap']
+            if capVal is not None:
+                capVal = float(capVal)
+
+            floorVal = conf['floor']
+            if floorVal is not None:
+                floorVal = float(floorVal)
+
+            holidays_prior_scale = float(conf['holidays_prior_scale'])
+            n_changepoints = int(conf['n_change_point'])
+            changepoint_range = float(conf['change_point_range'])
+            changepoint_prior_scale = float(conf['changepoint_prior_scale'])
+            interval_width = float(conf['interval_width'])
+            seasonality_prior_scale = float(conf['seasonality_prior_scale'])
+            seasonality_mode = conf['seasonality_mode']
+            mcmc_samples = int(conf['mcmc_samples'])
+
+            yearly_seasonality = conf['yearly_seasonality']
+            weekly_seasonality = conf['weekly_seasonality']
+            daily_seasonality = conf['daily_seasonality']
+            if  yearly_seasonality == 'true':
+                yearly_seasonality = True
+            if  yearly_seasonality == 'false':
+                yearly_seasonality = False
+            if  weekly_seasonality == 'true':
+                weekly_seasonality = True
+            if  weekly_seasonality == 'false':
+                weekly_seasonality = False
+            if  daily_seasonality == 'true':
+                daily_seasonality = True
+            if  daily_seasonality == 'false':
+                daily_seasonality = False
+
+            include_history = conf['include_history']
+            if include_history == 'true':
+                include_history = True
+            if include_history == 'false':
+                include_history = False
+
+            changepoints = conf['changepoints']
+            if changepoints is not None:
+                changepoints = changepoints.split(',')
 
             stan_i = conf['init_model']
             if stan_i is not None:
                 stan_i = self.stan_init2(json.loads(stan_i))
                 dimDelta = len(stan_i['delta'])
 
+            # holidays
             holidays_str = conf['holidays']
             holidays_pd = None
             if holidays_str is not None:
@@ -116,12 +160,30 @@ class PyProphetCalc2:
                 y_array.append(row[1])
             list_of_tuples = list(zip(ds_array, y_array))
             df = pd.DataFrame(list_of_tuples, columns=['ds', 'y'])
+            if capVal is not None:
+                df['cap'] = capVal
+            if floorVal is not None:
+                df['floor'] = floorVal
 
             dataLen = len(list_of_tuples)
 
             # init model
             with suppress_stdout_stderr():
-                m = Prophet(growth=growth, uncertainty_samples=uncertainty_samples, holidays=holidays_pd)
+                m = Prophet(growth = growth,
+                            uncertainty_samples = uncertainty_samples,
+                            holidays = holidays_pd,
+                            n_changepoints = n_changepoints,
+                            changepoint_range = changepoint_range,
+                            seasonality_mode = seasonality_mode,
+                            seasonality_prior_scale = seasonality_prior_scale,
+                            holidays_prior_scale = holidays_prior_scale,
+                            changepoint_prior_scale = changepoint_prior_scale,
+                            interval_width = interval_width,
+                            changepoints =  changepoints,
+                            yearly_seasonality = yearly_seasonality,
+                            weekly_seasonality = weekly_seasonality,
+                            daily_seasonality = daily_seasonality,
+                            mcmc_samples = mcmc_samples)
                 if stan_i is not None and dataLen == dimDelta + 2:
                     m.fit(df, init=stan_i)
                 elif argv2 is None or argv2[0][0] is None:
@@ -134,9 +196,22 @@ class PyProphetCalc2:
                     m.fit(df, init=stan_init(init_model))
 
             future = m.make_future_dataframe(periods=predict_num, freq=freq, include_history=False)
+            if capVal is not None:
+                future['cap'] = capVal
+            if floorVal is not None:
+                future['floor'] = floorVal
             pout = m.predict(future)
 
-            self._collector.collectRow(model_to_json(m), pout.to_json(), json.dumps(pout.yhat.values.tolist()))
+            if include_history:
+                future2 = m.make_future_dataframe(periods=predict_num, freq=freq, include_history=True)
+                if capVal is not None:
+                    future2['cap'] = capVal
+                if floorVal is not None:
+                    future2['floor'] = floorVal
+                pout2 = m.predict(future2)
+                self._collector.collectRow(model_to_json(m), pout2.to_json(), json.dumps(pout.yhat.values.tolist()))
+            else:
+                self._collector.collectRow(model_to_json(m), pout.to_json(), json.dumps(pout.yhat.values.tolist()))
         except BaseException as ex:
             print({}.format(ex), flush=True)
             raise ex

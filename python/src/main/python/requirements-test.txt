@@ -3,3 +3,4 @@ flake8
 pytest
 pytest-html
 pytest-xdist
+pytest-forked

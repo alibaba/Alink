@@ -308,11 +308,12 @@ public abstract class TreeModelInfo implements Serializable {
 
 		if (root.getCategoricalSplit() != null) {
 			boolean first = true;
-			for (int index : root.getCategoricalSplit()) {
-				if (index < 0) {
-					continue;
-				}
 
+			int[] categoricalSplit = root.getCategoricalSplit();
+
+			int children = root.getNextNodes().length;
+
+			for (int i = 0; i < children; ++i) {
 				StringBuilder subSbd = new StringBuilder();
 				if (first) {
 					subSbd.append(" CASE WHEN ");
@@ -322,11 +323,28 @@ public abstract class TreeModelInfo implements Serializable {
 
 				first = false;
 
-				subSbd.append(featureCols[root.getFeatureIndex()]);
-				subSbd.append(" = ");
-				subSbd.append(multiStringIndexerModelData.getToken(featureCols[root.getFeatureIndex()], (long) index));
+				boolean localFirst = true;
+
+				for (int j = 0; j < root.getCategoricalSplit().length; ++j) {
+
+					if (root.getCategoricalSplit()[j] == i) {
+						if (!localFirst) {
+							subSbd.append(" or ");
+						}
+
+						subSbd.append(featureCols[root.getFeatureIndex()]);
+						subSbd.append(" = ");
+						subSbd.append(
+							multiStringIndexerModelData
+								.getToken(featureCols[root.getFeatureIndex()], (long) j)
+						);
+
+						localFirst = false;
+					}
+				}
+
 				subSbd.append(" THEN ");
-				appendNode(root.getNextNodes()[index], featureCols, subSbd);
+				appendNode(root.getNextNodes()[i], featureCols, subSbd);
 				sbd.append(subSbd);
 			}
 			sbd.append(" END");
