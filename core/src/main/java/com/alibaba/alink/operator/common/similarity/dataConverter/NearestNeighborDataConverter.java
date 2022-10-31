@@ -64,7 +64,9 @@ public abstract class NearestNeighborDataConverter<T extends NearestNeighborMode
 
 		STRINGMODELDATACONVERTER(new StringModelDataConverter()),
 
-		VECTORMODELDATACONVERTER(new VectorModelDataConverter());
+		VECTORMODELDATACONVERTER(new VectorModelDataConverter()),
+
+		LOCALLSHMODELDATACONVERTER(new LocalLSHModelDataConverter());
 
 		public NearestNeighborDataConverter getDataConverter() {
 			return dataConverter;

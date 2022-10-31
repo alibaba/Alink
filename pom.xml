@@ -7,7 +7,7 @@
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink</artifactId>
     <packaging>pom</packaging>
-    <version>1.5-SNAPSHOT</version>
+    <version>1.6-SNAPSHOT</version>
 
     <name>alink</name>
     <description>Alink is the Machine Learning algorithm platform based on Flink, developed by the PAI team of Alibaba computing platform.</description>
@@ -91,8 +91,8 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <alink.flink.major.version>1.13</alink.flink.major.version>
-        <flink.version>1.13.0</flink.version>
+        <alink.flink.major.version>1.12</alink.flink.major.version>
+        <flink.version>1.12.1</flink.version>
         <alink.scala.major.version>2.11</alink.scala.major.version>
         <scala.version>2.11.12</scala.version>
         <alink.mvn.apache-httpclient.version>4.5.3</alink.mvn.apache-httpclient.version>

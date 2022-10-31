@@ -6,6 +6,7 @@ import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.common.linalg.VectorUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 
 import java.util.Arrays;
 
@@ -277,6 +278,58 @@ public class TableSummarizer extends BaseSummarizer {
 		summary.numericalColIndices = numericalColIndices;
 
 		summary.colNames = colNames;
+
+		return summary;
+	}
+
+	/**
+	 * get summary result of selected columns.
+	 */
+	public TableSummary toSummary(String[] selectedColNames) {
+		if (selectedColNames.length == 0) {
+			return toSummary();
+		}
+		TableSummary summary = new TableSummary();
+		int[] selectedColIndex = TableUtil.findColIndices(colNames, selectedColNames);
+		int n = selectedColNames.length;
+
+		summary.count = count;
+		summary.sum = new DenseVector(n);
+		summary.squareSum = new DenseVector(n);
+		summary.sum3 = new DenseVector(n);
+		summary.normL1 = new DenseVector(n);
+		summary.min = new DenseVector(n);
+		summary.max = new DenseVector(n);
+		summary.numMissingValue = new DenseVector(n);
+		summary.numericalColIndices = new int[n];
+
+		for (int i = 0; i < selectedColIndex.length; i++) {
+			int targetIndex = selectedColIndex[i];
+			int targetIndexInDenseVector = -1;
+
+			for (int j = 0; j < numericalColIndices.length; j++) {
+				if (targetIndex == numericalColIndices[j]) {
+					targetIndexInDenseVector = j;
+				}
+			}
+			if (targetIndexInDenseVector == -1) {
+				summary.numericalColIndices[i] = -1;
+				continue;
+			}
+
+			summary.sum.set(i, sum.get(targetIndexInDenseVector));
+			summary.squareSum.set(i, squareSum.get(targetIndexInDenseVector));
+			summary.sum3.set(i, sum3.get(targetIndexInDenseVector));
+			summary.normL1.set(i, normL1.get(targetIndexInDenseVector));
+			summary.min.set(i, min.get(targetIndexInDenseVector));
+			summary.max.set(i, max.get(targetIndexInDenseVector));
+
+			summary.numMissingValue.set(i, numMissingValue.get(targetIndexInDenseVector));
+			summary.numericalColIndices[i] = TableUtil.findColIndex(selectedColNames,
+				colNames[numericalColIndices[targetIndexInDenseVector]]);
+		}
+
+		summary.colNames = selectedColNames;
 
 		return summary;
 	}

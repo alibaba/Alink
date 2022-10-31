@@ -218,5 +218,5 @@ class MTable(JavaObjectWrapper, DataTypeDisplay):
     def copy(self) -> 'MTable':
         return self.copy()
 
-    _unsupported_j_methods = ['readCsvFromFile', 'writeCsvToFile',
+    _unsupported_j_methods = ['readCsvFromFile', 'writeCsvToFile', 'sampleWithSizeReplacement',
                               'sampleWithSize', 'reduceGroup', 'getSchema', 'printSummary', 'subTable']

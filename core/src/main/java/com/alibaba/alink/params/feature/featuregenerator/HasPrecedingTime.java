@@ -14,7 +14,7 @@ public interface HasPrecedingTime<T> extends WithParams <T> {
 	ParamInfo <String> PRECEDING_TIME = ParamInfoFactory
 		.createParamInfo("precedingTime", String.class)
 		.setDescription("time interval")
-		.setRequired()
+		.setHasDefaultValue(null)
 		.build();
 
 	default String getPrecedingTime() {return get(PRECEDING_TIME);}

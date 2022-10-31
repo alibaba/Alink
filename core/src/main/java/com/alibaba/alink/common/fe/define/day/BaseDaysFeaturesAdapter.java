@@ -10,7 +10,6 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-import java.io.Serializable;
 import java.lang.reflect.Type;
 
 public class BaseDaysFeaturesAdapter<T> implements JsonSerializer <T>, JsonDeserializer <T> {
@@ -42,7 +41,7 @@ public class BaseDaysFeaturesAdapter<T> implements JsonSerializer <T>, JsonDeser
 			klass = Class.forName(className);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			throw new AkIllegalStateException(e.getMessage());
+			throw new AkIllegalStateException(String.format("Failed to find class %s", className), e);
 		}
 		return context.deserialize(jsonObject.get(INSTANCE), klass);
 	}

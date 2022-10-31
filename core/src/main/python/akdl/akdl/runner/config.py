@@ -13,11 +13,12 @@ class BaseConfig:
 
 
 class TrainTaskConfig(BaseConfig):
-    def __init__(self, dataset_file, dataset_length, saved_model_dir, **kwargs):
+    def __init__(self, dataset_file, dataset_length, saved_model_dir, latest_ckpt_dir=None, **kwargs):
         super(TrainTaskConfig, self).__init__(**kwargs)
         self.dataset_file = dataset_file
         self.dataset_length = dataset_length
         self.saved_model_dir = saved_model_dir
+        self.latest_ckpt_dir = latest_ckpt_dir
 
 
 class BatchTaskConfig(BaseConfig):

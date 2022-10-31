@@ -547,7 +547,6 @@ public class SqliteCatalog extends JdbcCatalog {
 		}
 	}
 
-	@Override
 	protected int flinkType2JdbcType(DataType flinkType) {
 		return flinkType.getLogicalType().accept(new SqliteFlink2Jdbc());
 	}

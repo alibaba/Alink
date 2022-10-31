@@ -5,23 +5,23 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.sink.AkSinkLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.PipelineModelParams;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 
 import static com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo.LAZY_PRINT_TRANSFORM_DATA_ENABLED;
 import static com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo.LAZY_PRINT_TRANSFORM_STAT_ENABLED;
+import static com.alibaba.alink.pipeline.PipelineModel.getOutSchema;
 
 /**
  * A pipeline is a linear workflow which chains {@link EstimatorBase}s and {@link TransformerBase}s to execute an
@@ -138,6 +138,7 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 	}
 
 	private Tuple2 <TransformerBase <?>[], BatchOperator <?>> fit(BatchOperator <?> input, boolean withTransform) {
+		TableSchema initSchema = input.getSchema();
 		int lastEstimatorIdx = getIndexOfLastEstimator();
 		TransformerBase <?>[] transformers = new TransformerBase <?>[stages.size()];
 		for (int i = 0; i < stages.size(); i++) {
@@ -169,6 +170,7 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 				transformers[i].set(LAZY_PRINT_TRANSFORM_STAT_ENABLED, lazyPrintTransformStatEnabled);
 			}
 		}
+		getOutSchema(new PipelineModel(transformers), initSchema);
 		return new Tuple2 <>(transformers, input);
 	}
 
@@ -299,9 +301,46 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 	 * Save the pipeline to a filepath using ak file.
 	 */
 	public void save(FilePath filePath, boolean overwrite, int numFiles) {
-		save().link(
+		save(filePath, overwrite, numFiles, "auto");
+	}
+
+	public void save(FilePath filePath, boolean overwrite, int numFiles, String mode) {
+		mode = mode.toLowerCase();
+		if (mode.equals("batch")) {
+			saveBatch(filePath, overwrite, numFiles);
+		} else if (mode.equals("local")) {
+			saveLocal(filePath, overwrite, numFiles);
+		} else if (mode.equals("auto")) {
+			Tuple2 <Boolean, Boolean> t2 =
+				PipelineModel.checkModels(this.stages.toArray(new PipelineStageBase <?>[0]));
+			boolean containModel = t2.f0;
+			boolean useBatchMode = t2.f1;
+			if (containModel && useBatchMode) {
+				saveBatch(filePath, overwrite, numFiles);
+			} else {
+				saveLocal(filePath, overwrite, numFiles);
+
+				// Note: this will cause BatchOperator#execute to submit a new meaningless job when no other sinks.
+				ModelExporterUtils.createEmptyBatchSourceSink(getMLEnvironmentId());
+			}
+		} else {
+			throw new AkIllegalOperationException("Not support this save mode : " + mode);
+		}
+	}
+
+	private void saveBatch(FilePath filePath, boolean overwrite, int numFiles) {
+		saveBatch().link(
 			new AkSinkBatchOp()
 				.setMLEnvironmentId(getMLEnvironmentId())
+				.setFilePath(filePath)
+				.setOverwriteSink(overwrite)
+				.setNumFiles(numFiles)
+		);
+	}
+
+	private void saveLocal(FilePath filePath, boolean overwrite, int numFiles) {
+		saveLocal().link(
+			new AkSinkLocalOp()
 				.setFilePath(filePath)
 				.setOverwriteSink(overwrite)
 				.setNumFiles(numFiles)
@@ -311,8 +350,17 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 	/**
 	 * Pack the pipeline to a BatchOperator.
 	 */
+	@Deprecated
 	public BatchOperator <?> save() {
+		return saveBatch();
+	}
+
+	private BatchOperator <?> saveBatch() {
 		return ModelExporterUtils.serializePipelineStages(stages, params);
+	}
+
+	public LocalOperator <?> saveLocal() {
+		return ModelExporterUtils.serializePipelineStagesLocal(stages, params);
 	}
 
 	/**
@@ -323,7 +371,17 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 	}
 
 	public static Pipeline load(FilePath filePath) {
-		return load(filePath, MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID);
+		Tuple2 <TableSchema, Row> schemaAndMeta = ModelExporterUtils.loadMetaFromAkFile(filePath);
+
+		return new Pipeline(
+			ModelExporterUtils.fillPipelineStages(
+				new ModelPipeFileData(filePath),
+				ModelExporterUtils.deserializePipelineStagesFromMeta(
+					schemaAndMeta.f1, schemaAndMeta.f0
+				),
+				schemaAndMeta.f0
+			).toArray(new PipelineStageBase[0])
+		);
 	}
 
 	public static Pipeline collectLoad(BatchOperator <?> batchOp) {

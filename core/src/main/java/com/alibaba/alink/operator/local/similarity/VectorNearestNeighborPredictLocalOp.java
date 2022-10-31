@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -164,7 +165,7 @@ public class VectorNearestNeighborPredictLocalOp extends LocalOperator <VectorNe
 							double[] sqQuery = new double[nSubQuery];
 							for (int i = 0; i < nSubQuery; i++) {
 								DenseVector denseVector =
-									VectorUtil.getDenseVector(mtQuery.getRow(i).getField(indexVecCol));
+									VectorUtil.getDenseVector(mtQuery.getRow(i+startQuery).getField(indexVecCol));
 								if (cosine) {
 									sqQuery[i] = denseVector.normL2();
 									denseVector.scaleEqual(1.0 / sqQuery[i]);
@@ -278,7 +279,9 @@ public class VectorNearestNeighborPredictLocalOp extends LocalOperator <VectorNe
 									//}
 								}
 							}
-
+							if (AlinkGlobalConfiguration.isPrintProcessInfo() && (startQuery - localStartQuery) % (MAX_NUM_SUB_QUERY*2) == 0) {
+								System.out.printf("one thread predict %d vec\n", startQuery - localStartQuery);
+							}
 						}
 					}
 				);

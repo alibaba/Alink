@@ -57,26 +57,39 @@ public class BaseOutlierLocalOp<T extends BaseOutlierLocalOp <T>> extends MapLoc
 	public T linkFrom(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
-		//Step 1 : Grouped the input rows into MTables
-		LocalOperator <?> inGrouped = group2MTables(in, getParams());
+		if (null == getParams().get(OutlierParams.GROUP_COLS)
+			&& !getParams().contains(HasMaxSampleNumPerGroup.MAX_SAMPLE_NUM_PER_GROUP)
+			&& supportDealWholeData()
+		) {
 
-		//Step 2 : detect the outlier for each MTable
-		Mapper mapper = mapperBuilder.apply(
-			inGrouped.getSchema(),
-			getParams().clone()
-				.set(HasInputMTableCol.INPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
-				.set(HasOutputMTableCol.OUTPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
-				.set(HasDetectLast.DETECT_LAST, false)
-		);
-		List <Row> resultRows = MapLocalOp.execMapper(inGrouped, mapper, getParams());
+			setOutputTable(dealWholeData(in));
 
-		//Step 3 : Flatten the MTables to final results
-		MTable resultTable = flattenMTable(resultRows, in.getSchema(), mapper.getOutputSchema(), getParams());
+		} else {
+			//Step 1 : Grouped the input rows into MTables
+			LocalOperator <?> inGrouped = group2MTables(in, getParams());
 
-		setOutputTable(resultTable);
+			//Step 2 : detect the outlier for each MTable
+			Mapper mapper = mapperBuilder.apply(
+				inGrouped.getSchema(),
+				getParams().clone()
+					.set(HasInputMTableCol.INPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
+					.set(HasOutputMTableCol.OUTPUT_MTABLE_COL, OutlierDetector.TEMP_MTABLE_COL)
+					.set(HasDetectLast.DETECT_LAST, false)
+			);
+			List <Row> resultRows = MapLocalOp.execMapper(inGrouped, mapper, getParams());
+
+			//Step 3 : Flatten the MTables to final results
+			MTable resultTable = flattenMTable(resultRows, in.getSchema(), mapper.getOutputSchema(), getParams());
+
+			setOutputTable(resultTable);
+		}
 
 		return (T) this;
 	}
+
+	protected boolean supportDealWholeData() {return false;}
+
+	protected MTable dealWholeData(LocalOperator <?> in) {return null;}
 
 	public static LocalOperator <?> group2MTables(LocalOperator <?> in, Params params) {
 		RowCollector rowCollector = new RowCollector();

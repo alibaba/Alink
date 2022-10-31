@@ -11,7 +11,7 @@ public interface AsUndirectedGraph<T> extends WithParams <T> {
 	@NameCn("是否为无向图")
 	@DescCn("是否为无向图")
 	ParamInfo <Boolean> AS_UNDIRECTED_GRAPH = ParamInfoFactory
-		.createParamInfo("isUndirectedGraph", Boolean.class)
+		.createParamInfo("asUndirectedGraph", Boolean.class)
 		.setDescription("whether the graph is undirected")
 		.setHasDefaultValue(true)
 		.build();
