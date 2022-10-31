@@ -63,6 +63,11 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 	 */
 	List <Tuple2 <Double, ConfusionMatrix>> threshCMs;
 
+	/**
+	 * Confusion matrix corresponding to the decision threshold
+	 */
+	ConfusionMatrix decisionThreshMatrix;
+
 	public OutlierMetricsSummary(long total, Object[] labels, String[] allValueStrings, String[] outlierValueStrings,
 								 double minOutlierScore, double maxNormalScore,
 								 List <Tuple2 <Double, ConfusionMatrix>> threshCMs) {
@@ -73,6 +78,13 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 		this.maxNormalScore = maxNormalScore;
 		this.total = total;
 		this.threshCMs = threshCMs;
+
+		Tuple3 <ConfusionMatrix[], double[], EvaluationCurve[]> threshCurves =
+			extractThreshCurves(threshCMs, total);
+		double decisionThreshold = (minOutlierScore + maxNormalScore) / 2.;
+		int middleIndex = getMiddleThresholdIndex(threshCurves.f1, decisionThreshold);
+		ConfusionMatrix[] matrices = threshCurves.f0;
+		this.decisionThreshMatrix = matrices[middleIndex];
 	}
 
 	@Override
@@ -94,12 +106,8 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 		// TODO: sample curves
 
 		setCurvePointsParams(params, threshCurves);
-		ConfusionMatrix[] matrices = threshCurves.f0;
 		setComputationsArrayParams(params, threshCurves.f1, threshCurves.f0);
-
-		double decisionThreshold = (minOutlierScore + maxNormalScore) / 2.;
-		int middleIndex = getMiddleThresholdIndex(threshCurves.f1, decisionThreshold);
-		setMiddleThreParams(params, matrices[middleIndex], labelStrs);
+		setMiddleThreParams(params, decisionThreshMatrix, labelStrs);
 
 		params.set(OutlierMetrics.OUTLIER_VALUE_ARRAY, outlierValueStrings);
 		params.set(OutlierMetrics.LABEL_ARRAY, allValueStrings);
@@ -260,6 +268,10 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 
 		//noinspection unchecked
 		threshCMs = filterCloseEntries(mergeConfusionMatrixLists(threshCMs, other.threshCMs), NUM_THRESH_CMS_LIMIT);
+
+		LongMatrix m = new LongMatrix(decisionThreshMatrix.longMatrix.getMatrix());
+		m.plusEqual(other.decisionThreshMatrix.longMatrix);
+		decisionThreshMatrix = new ConfusionMatrix(m);
 		return this;
 	}
 
@@ -302,7 +314,7 @@ public class OutlierMetricsSummary implements BaseMetricsSummary <OutlierMetrics
 			lorenzCurve[k] = new EvaluationCurvePoint(pr, tpr, threshold[k]);
 		}
 
-		threshold[0] = 1.;
+		threshold[0] = Double.MAX_VALUE;
 		data[0] = new ConfusionMatrix(new long[][] {{0, 0}, {totalTrue, totalFalse}});
 
 		rocCurve[0] = new EvaluationCurvePoint(0, 0, threshold[0]);

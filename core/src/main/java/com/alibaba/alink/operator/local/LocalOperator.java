@@ -16,12 +16,21 @@ import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.lazy.LazyEvaluation;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.SampleBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.SampleWithSizeBatchOp;
+import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.batch.utils.DiveVisualizer.DiveVisualizerConsumer;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
+import com.alibaba.alink.operator.local.dataproc.FirstNLocalOp;
+import com.alibaba.alink.operator.local.dataproc.SampleLocalOp;
+import com.alibaba.alink.operator.local.dataproc.SampleWithSizeLocalOp;
 import com.alibaba.alink.operator.local.lazy.LocalLazyObjectsManager;
 import com.alibaba.alink.operator.local.source.BaseSourceLocalOp;
+import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
 import com.alibaba.alink.operator.local.source.TableSourceLocalOp;
 import com.alibaba.alink.operator.local.sql.GroupByLocalOp;
+import com.alibaba.alink.operator.local.statistics.InternalFullStatsLocalOp;
 import com.alibaba.alink.operator.local.statistics.SummarizerLocalOp;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -120,6 +129,23 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	@Deprecated
 	public MTable[] getSideOutputs() {
 		return getSideOutputTables();
+	}
+
+	public LocalOperator <?> getSideOutput(int idx) {
+		if (null == this.getSideOutputTables()) {
+			throw new AkIllegalOperationException("There is no side output. "
+				+ "Please call 'link' method firstly, or this BatchOperator has no SideOutput.");
+		} else if (idx < 0 || idx >= this.getSideOutputTables().length) {
+			throw new AkIllegalOperationException(
+				"The index of side output, #" + idx + " , is out of range. Total number of side outputs is "
+					+ this.getSideOutputCount() + ".");
+		} else {
+			return new MemSourceLocalOp(this.getSideOutputTables()[idx]);
+		}
+	}
+
+	public int getSideOutputCount() {
+		return null == this.getSideOutputTables() ? 0 : this.getSideOutputTables().length;
 	}
 
 	/**
@@ -245,6 +271,11 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 		return next;
 	}
 
+	protected <B extends LocalOperator <?>> B lazyLink(B next) {
+		next.lazyLinkFrom(this);
+		return next;
+	}
+
 	/**
 	 * Link from others {@link LocalOperator}.
 	 * <p>
@@ -272,6 +303,40 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	 * @return the linked this object
 	 */
 	public abstract T linkFrom(LocalOperator <?>... inputs);
+
+	/**
+	 * Lazily link from others {@link LocalOperator}. The actual {@link LocalOperator#linkFrom} is called only when all
+	 * `inputs` have output tables.
+	 *
+	 * @param inputs the linked inputs.
+	 * @return this.
+	 */
+	protected T lazyLinkFrom(LocalOperator <?>... inputs) {
+		if (Arrays.stream(inputs).allMatch(d -> !d.isNullOutputTable() || d instanceof BaseSourceLocalOp)) {
+			return linkFrom(inputs);
+		}
+		LocalLazyObjectsManager lazyObjectsManager = LocalLazyObjectsManager.getLazyObjectsManager(this);
+		//noinspection unchecked
+		Consumer <LocalOperator <?>>[] callbacks = new Consumer[inputs.length];
+		for (int i = 0; i < inputs.length; i += 1) {
+			if (i > 0) {
+				final int cnt = i;
+				callbacks[i] = d -> {
+					LazyEvaluation <LocalOperator <?>> lazyOpAfterLinked =
+						lazyObjectsManager.genLazyOpAfterLinked(inputs[cnt - 1]);
+					lazyOpAfterLinked.addCallback(callbacks[cnt - 1]);
+				};
+			} else {
+				callbacks[i] = d -> this.linkFrom(inputs);
+			}
+		}
+		for (int i = 0; i < inputs.length; i += 1) {
+			LazyEvaluation <LocalOperator <?>> lazyOpAfterLinked = lazyObjectsManager.genLazyOpAfterLinked(inputs[i]);
+			lazyOpAfterLinked.addCallback(callbacks[i]);
+		}
+		//noinspection unchecked
+		return (T) this;
+	}
 
 	public LocalOperator <?> select(String fields) {
 		return LocalMLEnvironment.getInstance().getSqlExecutor().select(this, fields);
@@ -384,8 +449,20 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 			String.format("The %snd of side-outputs is null. Maybe the operator has not been linked.", index));
 	}
 
+	public LocalOperator <?> sample(double ratio) {
+		return link(new SampleLocalOp().setRatio(ratio));
+	}
+
+	public LocalOperator <?> sample(double ratio, boolean withReplacement) {
+		return link(new SampleLocalOp().setRatio(ratio).setWithReplacement(withReplacement));
+	}
+
 	public LocalOperator <?> sampleWithSize(int numSamples) {
-		return new TableSourceLocalOp(getOutputTable().sampleWithSize(numSamples, new Random()));
+		return link(new SampleWithSizeLocalOp().setSize(numSamples));
+	}
+
+	public LocalOperator <?> sampleWithSize(int numSamples, boolean withReplacement) {
+		return link(new SampleWithSizeLocalOp().setSize(numSamples).setWithReplacement(withReplacement));
 	}
 
 	/**
@@ -469,7 +546,7 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 
 	public T lazyPrint(int n, String title) {
 		LocalLazyObjectsManager lazyObjectsManager = LocalLazyObjectsManager.getLazyObjectsManager(this);
-		LocalOperator <?> op = n > 0 ? this.firstN(n) : this;
+		LocalOperator <?> op = n > 0 ? this.lazyLink(new FirstNLocalOp().setSize(n)) : this;
 		LazyEvaluation <Pair <LocalOperator <?>, List <Row>>> lazyRowOps = lazyObjectsManager.genLazySink(op);
 		lazyRowOps.addCallback(d -> {
 			if (null != title) {
@@ -510,8 +587,7 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	}
 
 	private LocalOperator <?> firstN(int n) {
-		MTable mtable = this.getOutputTable();
-		return new TableSourceLocalOp(mtable.subTable(0, Math.min(n, mtable.getNumRow())));
+		return link(new FirstNLocalOp().setSize(n));
 	}
 
 	public T print() {
@@ -533,9 +609,28 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 		return (T) this;
 	}
 
-	public T vizDive() {
-		new DiveVisualizerConsumer(getColNames())
-			.accept(getOutputTable().sampleWithSize(10000, new Random()).getRows());
+	public final T lazyVizDive() {
+		final int defaultNumSamples = 10000;
+		LocalLazyObjectsManager lazyObjectsManager = LocalLazyObjectsManager.getLazyObjectsManager(this);
+		LazyEvaluation <LocalOperator <?>> lazyOpAfterLinked = lazyObjectsManager.genLazyOpAfterLinked(this);
+		lazyOpAfterLinked.addCallback(d -> {
+			new SampleWithSizeLocalOp()
+				.setSize(defaultNumSamples)
+				.lazyCollect(new DiveVisualizerConsumer(d.getColNames()))
+				.linkFrom(d);
+		});
+		//noinspection unchecked
+		return (T) this;
+	}
+
+	public final T lazyVizStatistics() {
+		return lazyVizStatistics(getOutputTable().toString());
+	}
+
+	public final T lazyVizStatistics(String tableName) {
+		lazyLink(new InternalFullStatsLocalOp()
+			.lazyVizFullStats(new String[] {tableName}));
+		//noinspection unchecked
 		return (T) this;
 	}
 

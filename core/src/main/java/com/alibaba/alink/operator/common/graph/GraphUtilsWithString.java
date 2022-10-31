@@ -139,12 +139,11 @@ public class GraphUtilsWithString {
                 public void open(Configuration parameters) throws Exception {
                     super.open(parameters);
                     sortInfo = getRuntimeContext().getBroadcastVariable("sortPartitionId");
-                    sortInfo.sort(new Comparator <Tuple2 <Integer, Long>>() {
-                        @Override
-                        public int compare(Tuple2 <Integer, Long> o1, Tuple2 <Integer, Long> o2) {
-                            return o1.f0.compareTo(o2.f0);
-                        }
-                    });
+                    // Calling getBroadcastVariable in different slots of a same TM gives a same reference.
+                    //noinspection SynchronizeOnNonFinalField
+                    synchronized (sortInfo) {
+                        sortInfo.sort(Comparator.comparing(o -> o.f0));
+                    }
                     long cumSum = 0;
                     for (int i = 0; i < sortInfo.size(); i++) {
                         long temp = sortInfo.get(i).f1;

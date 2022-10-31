@@ -17,9 +17,16 @@ def generate_run_config(
         log_step_count_steps=10,
         keep_checkpoint_max=1,
         device_count=None,
+        gpu_devices=None,
         **kwargs
 ) -> RunConfig:
-    if device_count is None:
+    if gpu_devices is not None and len(gpu_devices) > 0:
+        os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
+        os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(map(str, gpu_devices))
+        print('Selecting GPU ID={}'.format(gpu_devices), flush=True)
+        device_count = {'GPU': len(gpu_devices)}
+        os.environ.pop('TF_CONFIG', None)
+    elif device_count is None:
         device_count = {'CPU': 1}
 
     strategy = None
@@ -28,6 +35,10 @@ def generate_run_config(
     if 'TF_CONFIG' not in os.environ:
         # single machine
         strategy = None
+        if gpu_devices is not None and len(gpu_devices) > 1:
+            devices = list(map(lambda d: "/gpu:" + str(d), gpu_devices))
+            print(f'devices = {devices}', flush=True)
+            strategy = tf.distribute.MirroredStrategy(devices=devices)
     else:
         tf_config = json.loads(os.environ['TF_CONFIG'])
         task_type = tf_config['task']['type']
@@ -47,7 +58,6 @@ def generate_run_config(
         else:
             # single worker, i.e., the chief worker
             strategy = None
-            # strategy = tf.distribute.MirroredStrategy()
 
     if tf.__version__ >= '2.0':
         session_config = tf.ConfigProto(
@@ -55,6 +65,7 @@ def generate_run_config(
             inter_op_parallelism_threads=inter_op_parallelism_threads,
             allow_soft_placement=True,
             log_device_placement=log_device_placement)
+        session_config.gpu_options.allow_growth = True
         config = tf.estimator.RunConfig(
             train_distribute=strategy,
             eval_distribute=None,
@@ -70,6 +81,7 @@ def generate_run_config(
             allow_soft_placement=True,
             log_device_placement=log_device_placement,
             device_filters=device_filters)
+        session_config.gpu_options.allow_growth = True
         config: RunConfig = tf.estimator.RunConfig(
             train_distribute=strategy,
             eval_distribute=None,
@@ -77,5 +89,6 @@ def generate_run_config(
             save_checkpoints_steps=save_checkpoints_steps,
             log_step_count_steps=log_step_count_steps,
             keep_checkpoint_max=keep_checkpoint_max)
+    print(f'run config = {config}', flush=True)
 
     return config

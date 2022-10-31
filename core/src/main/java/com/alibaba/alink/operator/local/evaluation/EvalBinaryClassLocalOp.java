@@ -62,7 +62,7 @@ public class EvalBinaryClassLocalOp extends LocalOperator <EvalBinaryClassLocalO
 		super(params);
 	}
 
-	public static Tuple2 <Map <Object, Integer>, Object[]> calcLabels(
+	private static Tuple2 <Map <Object, Integer>, Object[]> calcLabels(
 		List <Row> data, boolean binary, final String positiveValue, TypeInformation <?> labelType
 	) {
 		Set <Object> labels = EvaluationUtil.extractLabelProbMap(data.get(0), labelType).keySet();

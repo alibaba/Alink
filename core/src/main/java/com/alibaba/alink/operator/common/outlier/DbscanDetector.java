@@ -208,9 +208,11 @@ public class DbscanDetector extends OutlierDetector {
 		private int[] pre;
 		private int[] num;
 		private final int n;
+		private  int groupNum;
 
 		public UnionJoin(int n) {
 			this.n = n;
+			this.groupNum = n;
 			this.pre = new int[n];
 			this.num = new int[n];
 			for (int i = 0; i < n; i++) {pre[i] = i;}
@@ -244,12 +246,14 @@ public class DbscanDetector extends OutlierDetector {
 				num[y] += num[x];
 				num[x] = 0;
 			}
+			groupNum--;
 			return true;
 		}
 
 		public int getN() {
 			return n;
 		}
+		public int getGroupNum() {return groupNum;}
 
 		public int getClusterSize(int i) {
 			return this.num[this.find(i)];

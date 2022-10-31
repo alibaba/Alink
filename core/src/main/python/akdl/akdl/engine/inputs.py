@@ -29,7 +29,11 @@ def parse_feature_specs(example_config):
         dtype_str = feature_config['dtype']
         shape = feature_config['shape']
         dtype = dtype_str_map[dtype_str]
-        feature_specs[name] = tf.FixedLenFeature(shape, dtype)
+        feature_type = feature_config.get('feature_type', tf.FixedLenFeature)
+        if feature_type == tf.FixedLenSequenceFeature:
+            feature_specs[name] = feature_type(shape, dtype, allow_missing=True)
+        else:
+            feature_specs[name] = feature_type(shape, dtype)
     return feature_specs
 
 
@@ -63,10 +67,13 @@ def get_dataset(feature_specs,
                 num_parallel_calls: int = 8,
                 shuffle_factor: int = 10,
                 prefetch_buffer_size: int = None,
-                **kwargs):
+                post_process_dataset=None,
+                **_):
     dataset = raw_dataset_fn()
     dataset = dataset.map(get_example_parser(feature_specs, label_col),
                           num_parallel_calls=num_parallel_calls)
+    if post_process_dataset:
+        dataset = post_process_dataset(dataset)
     if shuffle_factor and shuffle_factor > 0:
         dataset = dataset.shuffle(buffer_size=batch_size * shuffle_factor)
     dataset = dataset.repeat(num_epochs).batch(batch_size)

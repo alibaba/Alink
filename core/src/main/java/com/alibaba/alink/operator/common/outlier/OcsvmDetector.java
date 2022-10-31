@@ -29,7 +29,6 @@ public class OcsvmDetector extends OutlierDetector {
 		String vecCol = params.get(OcsvmDetectorParams.VECTOR_COL);
 		series = vecCol != null ? series.select(vecCol)
 			: series.select(params.get(OcsvmDetectorParams.FEATURE_COLS));
-		double nu = params.get(OcsvmDetectorParams.NU);
 		OcsvmTrain ocsvmTrain = new OcsvmTrain(params);
 		OcsvmPredict ocsvmPredict = new OcsvmPredict(params);
 
@@ -38,18 +37,10 @@ public class OcsvmDetector extends OutlierDetector {
 		int iStart = detectLast ? series.getNumRow() - 1 : 0;
 
 		Tuple3 <Boolean, Double, Map <String, String>>[] results = new Tuple3[series.getNumRow() - iStart];
-		double[] scores = new double[series.getNumRow()];
 
 		for (int i = iStart; i < series.getNumRow(); i++) {
-			scores[i] = ocsvmPredict.predict(series.getRow(i));
-			results[i] = Tuple3.of(scores[i] > 0, scores[i], null);
-		}
-
-		Arrays.sort(scores);
-		int idx = (int) (series.getNumRow() * (1 - nu));
-		double threshold = scores[idx];
-		for (Tuple3 <Boolean, Double, Map <String, String>> t3 : results) {
-			t3.f0 = t3.f1 > threshold;
+			double score = ocsvmPredict.predict(series.getRow(i));
+			results[i - iStart] = Tuple3.of(score > 0, score, null);
 		}
 		return results;
 	}
@@ -67,7 +58,7 @@ public class OcsvmDetector extends OutlierDetector {
 
 		public OcsvmModelData train(MTable input) {
 			Vector[] sample = OutlierUtil.getVectors(input, params);
-			if (Math.abs(params.get(OcsvmDetectorParams.GAMMA)) < 1.0e-18) {
+			if (params.get(OcsvmDetectorParams.GAMMA) < 1.0e-18) {
 				params.set(OcsvmDetectorParams.GAMMA, 1.0 / sample[0].size());
 			}
 			OcsvmModelData ocsvmModelData = new OcsvmModelData();
@@ -75,7 +66,7 @@ public class OcsvmDetector extends OutlierDetector {
 			ocsvmModelData.kernelType = getKernelType();
 			ocsvmModelData.coef0 = getCoef0();
 			ocsvmModelData.degree = getDegree();
-			ocsvmModelData.gamma = getGamma();
+			ocsvmModelData.gamma = params.get(OcsvmDetectorParams.GAMMA);
 			ocsvmModelData.vectorCol = getVectorCol();
 			SvmModelData[] modelArray = new SvmModelData[1];
 			modelArray[0] = svmTrain(sample, params);

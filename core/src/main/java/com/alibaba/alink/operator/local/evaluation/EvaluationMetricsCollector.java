@@ -13,22 +13,6 @@ import java.util.function.Consumer;
  * Collector the evaluation metrics to local.
  */
 public interface EvaluationMetricsCollector<S, T extends LocalOperator <T>> {
-
-	//S collectMetrics() ;
-	//
-	//default T printMetrics() {
-	//	return printMetrics(null);
-	//}
-	//
-	//default T printMetrics(String title) {
-	//		if (null != title) {
-	//			System.out.println(title);
-	//		}
-	//		System.out.println(collectMetrics());
-	//		return (T)this;
-	//}
-
-
 	S createMetrics(List <Row> rows);
 
 	default T lazyPrintMetrics() {

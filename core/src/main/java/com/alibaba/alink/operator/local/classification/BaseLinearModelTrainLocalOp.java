@@ -158,7 +158,8 @@ public abstract class BaseLinearModelTrainLocalOp<T extends BaseLinearModelTrain
 			Integer featSize = t4.f2;
 			Object[] labelValues = t4.f3;
 
-			DenseVector initModelCoefs = (null == initModel) ? DenseVector.zeros(featSize * (labelValues.length - 1)) :
+			DenseVector initModelCoefs = (null == initModel) ?
+				DenseVector.zeros(featSize * (isRegProc ? 1 : (labelValues.length - 1))) :
 				initializeModelCoefs(initModel.getOutputTable().getRows(), featSize, meanVar, params, linearModelType);
 
 			if (LinearModelType.Softmax == linearModelType) {
@@ -679,7 +680,9 @@ public abstract class BaseLinearModelTrainLocalOp<T extends BaseLinearModelTrain
 			Double weight = weightIdx != -1 ? ((Number) row.getField(weightIdx)).doubleValue() : 1.0;
 			Object val = row.getField(labelIdx);
 
-			labelValues.add(val);
+			if (!isRegProc) {
+				labelValues.add(val);
+			}
 
 			if (null == val) {
 				hasLabelNull = true;

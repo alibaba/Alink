@@ -6,6 +6,8 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.StandardScalerTrainBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.dataproc.StandardScalerTrainLocalOp;
 import com.alibaba.alink.params.dataproc.StandardPredictParams;
 import com.alibaba.alink.params.dataproc.StandardTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -32,6 +34,11 @@ public class StandardScaler extends Trainer <StandardScaler, StandardScalerModel
 	@Override
 	protected BatchOperator <?> train(BatchOperator <?> in) {
 		return new StandardScalerTrainBatchOp(this.getParams()).linkFrom(in);
+	}
+
+	@Override
+	protected LocalOperator <?> train(LocalOperator <?> in) {
+		return new StandardScalerTrainLocalOp(this.getParams()).linkFrom(in);
 	}
 }
 

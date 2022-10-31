@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.Internal;
@@ -23,7 +24,7 @@ import com.alibaba.alink.params.shared.HasNumThreads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -76,19 +77,26 @@ public class MapLocalOp<T extends MapLocalOp <T>> extends LocalOperator <T> {
 
 		final TaskRunner taskRunner = new TaskRunner();
 
-		final ArrayList <Row> output = new ArrayList <>(in.getOutputTable().getRows());
-		final int numRows = in.getOutputTable().getNumRow();
+		final List <Row> input = in.getOutputTable().getRows();
+		final int numRows = input.size();
+		final List <Row> output = Arrays.asList(new Row[numRows]);
 
 		for (int i = 0; i < numThreads; ++i) {
 			final int start = (int) AlinkLocalSession.DISTRIBUTOR.startPos(i, numThreads, numRows);
 			final int cnt = (int) AlinkLocalSession.DISTRIBUTOR.localRowCnt(i, numThreads, numRows);
 
-			if(cnt<=0) continue;
+			if (cnt <= 0) {continue;}
 
+			int finalI = i;
 			taskRunner.submit(() -> {
+				int counter = 0;
 					for (int j = start; j < start + cnt; j++) {
+						counter += 1;
+						if (AlinkGlobalConfiguration.isPrintProcessInfo() && (counter % (1024 * 8) == 0)) {
+							System.out.printf("thread %d processed %d%n", finalI, counter);
+						}
 						try {
-							output.set(j, mapper.map(output.get(j)));
+							output.set(j, mapper.map(input.get(j)));
 						} catch (Exception e) {
 							LOG.error("Execute mapper error.", e);
 							throw new AkIllegalDataException("Map error on the data : " + output.get(j).toString());

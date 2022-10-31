@@ -15,6 +15,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
@@ -36,8 +37,13 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.common.io.dummy.DummyOutputFormat;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
+import com.alibaba.alink.operator.local.source.TableSourceLocalOp;
+import com.alibaba.alink.operator.local.sql.UnionAllLocalOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.params.io.ModelFileSinkParams;
 import com.alibaba.alink.params.shared.HasModelFilePath;
@@ -229,6 +235,24 @@ public class ModelExporterUtils {
 		}
 
 		return Tuple2.of(merged.toArray(new TypeInformation <?>[0]), bIdx);
+	}
+
+	public static void assertPipelineModelOp(BatchOperator <?> modelOp) {
+		assertPipelineModelColNames(modelOp.getColNames());
+	}
+
+	public static void assertPipelineModelColNames(String[] names){
+		if (!names[0].equals(ID_COL_NAME)) {
+			throw new AkIllegalArgumentException(
+				"The current operator is not a PipelineModel operator, please check your code.");
+		}
+		for (int i = 1; i < names.length; ++i) {
+			String col = MODEL_COL_PREFIX + (i - 1);
+			if (!names[i].equals(col)) {
+				throw new AkIllegalArgumentException(
+					"The current operator is not a PipelineModel operator, please check your code.");
+			}
+		}
 	}
 
 	private static TypeInformation <?>[] getTypes(PipelineStageBase <?> stage) {
@@ -482,6 +506,55 @@ public class ModelExporterUtils {
 		return localPacked[0];
 	}
 
+	private static LocalOperator <?> preOrderSerialize(
+		StageNode[] stages, LocalOperator <?> packed, final TableSchema schema, final int offset) {
+
+		if (stages == null || stages.length == 0) {
+			return packed;
+		}
+
+		final int len = schema.getFieldTypes().length;
+		final long[] id = new long[1];
+		final LocalOperator <?>[] localPacked = new LocalOperator <?>[] {packed};
+
+		Consumer <Integer> serializeModelData = lp -> {
+
+			StageNode stageNode = stages[lp];
+
+			if (stageNode.parent >= 0
+				&& stageNode.schemaIndices != null
+				&& stageNode.children == null
+				&& stageNode.stage instanceof ModelBase <?>) {
+
+				ModelBase <?> model = ((ModelBase <?>) stageNode.stage);
+
+				final long localId = id[0];
+				final int[] localSchemaIndices = stageNode.schemaIndices;
+
+				ArrayList <Row> modelData = new ArrayList <>();
+				for (Row value : model.getModelDataLocal().getOutputTable().getRows()) {
+					Row ret = new Row(len);
+					ret.setField(0, localId);
+					for (int i = 0; i < localSchemaIndices.length; ++i) {
+						ret.setField(localSchemaIndices[i] + offset, value.getField(i));
+					}
+					modelData.add(ret);
+				}
+
+				localPacked[0] = new UnionAllLocalOp().linkFrom(
+					localPacked[0],
+					new MemSourceLocalOp(modelData, schema)
+				);
+			}
+
+			id[0]++;
+		};
+
+		preOrder(stages, serializeModelData);
+
+		return localPacked[0];
+	}
+
 	static BatchOperator <?> serializePipelineStages(List <PipelineStageBase <?>> stages, Params params) {
 
 		StageNode[] stageNodes = preOrderConstructStages(stages);
@@ -501,6 +574,27 @@ public class ModelExporterUtils {
 			new MemSourceBatchOp(Collections.singletonList(metaRow), finalSchema)
 				.setMLEnvironmentId(stages.size() > 0 ? stages.get(0).getMLEnvironmentId() :
 					MLEnvironmentFactory.DEFAULT_ML_ENVIRONMENT_ID),
+			finalSchema,
+			1);
+	}
+
+	static LocalOperator <?> serializePipelineStagesLocal(List <PipelineStageBase <?>> stages, Params params) {
+
+		StageNode[] stageNodes = preOrderConstructStages(stages);
+
+		TypeInformation <?>[] typesWithPrefix
+			= preOrderCorrectIndex(postOrderCreateSchema(stageNodes), PREFIX_TYPES);
+
+		TableSchema finalSchema = new TableSchema(
+			ArrayUtils.addAll(new String[] {ID_COL_NAME}, appendPrefix(MODEL_COL_PREFIX, typesWithPrefix.length)),
+			ArrayUtils.addAll(new TypeInformation[] {Types.LONG}, typesWithPrefix)
+		);
+
+		Row metaRow = serializeMeta(stageNodes, finalSchema.getFieldTypes().length, params);
+
+		return preOrderSerialize(
+			stageNodes,
+			new MemSourceLocalOp(new MTable(new Row[] {metaRow}, finalSchema)),
 			finalSchema,
 			1);
 	}
@@ -670,6 +764,175 @@ public class ModelExporterUtils {
 		return result;
 	}
 
+	private static <T extends PipelineStageBase <?>> List <T> postOrderDeserialize(
+		StageNode[] stages, LocalOperator <?> unpacked, final TableSchema schema, final int offset) {
+
+		if (stages == null || stages.length == 0) {
+			return new ArrayList <>();
+		}
+
+		final long[] id = new long[] {stages.length - 1};
+		final LocalOperator <?>[] deserialized = new LocalOperator <?>[] {unpacked};
+
+		List <T> result = new ArrayList <>();
+
+		Consumer <Integer> deserializer = lp -> {
+			StageNode stageNode = stages[lp];
+
+			try {
+				if (stageNode.identifier != null) {
+					stageNode.stage = (PipelineStageBase <?>) Class
+						.forName(stageNode.identifier)
+						.getConstructor(Params.class)
+						.newInstance(stageNode.params);
+				}
+			} catch (ClassNotFoundException
+					 | NoSuchMethodException
+					 | InstantiationException
+					 | IllegalAccessException
+					 | InvocationTargetException ex) {
+
+				throw new IllegalArgumentException(ex);
+			}
+
+			// leaf node.
+			if (stageNode.children == null) {
+
+				if (stageNode.stage == null
+					|| stageNode.stage.getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
+
+					// pass
+				} else if (stageNode.stage instanceof ModelBase <?>) {
+
+					final long localId = id[0];
+					final int[] localSchemaIndices = stageNode.schemaIndices;
+					MTable rawData = deserialized[0].getOutputTable();
+					List <Row> modelData = new ArrayList <>();
+					List <Row> notModelData = new ArrayList <>();
+					for (Row value : rawData.getRows()) {
+						if (value.getField(0).equals(localId)) {
+							Row ret = new Row(localSchemaIndices.length);
+							for (int i = 0; i < localSchemaIndices.length; ++i) {
+								ret.setField(i, value.getField(localSchemaIndices[i] + offset));
+							}
+							modelData.add(ret);
+						} else {
+							notModelData.add(value);
+						}
+					}
+					LocalOperator <?> model = new TableSourceLocalOp(new MTable(modelData,
+						new TableSchema(stageNode.colNames, stageNode.types)));
+					((ModelBase <?>) stageNode.stage).setModelData(model);
+
+					deserialized[0] = new TableSourceLocalOp(new MTable(notModelData, schema));
+				}
+			} else {
+				List <T> pipelineStageBases = new ArrayList <>();
+
+				for (int i = 0; i < stageNode.children.length; ++i) {
+					pipelineStageBases.add((T) stages[stageNode.children[i]].stage);
+				}
+
+				if (stageNode.stage == null) {
+					result.addAll(pipelineStageBases);
+					return;
+				}
+
+				if (stageNode.stage instanceof Pipeline) {
+					stageNode.stage = new Pipeline(pipelineStageBases.toArray(new PipelineStageBase <?>[0]));
+				} else if (stageNode.stage instanceof PipelineModel) {
+					stageNode.stage = new PipelineModel(pipelineStageBases.toArray(new TransformerBase <?>[0]));
+				} else {
+					throw new IllegalArgumentException("Unsupported stage.");
+				}
+			}
+
+			id[0]--;
+		};
+
+		postOrder(stages, deserializer);
+
+		return result;
+	}
+
+	private static <T extends PipelineStageBase <?>> List <T> postOrderDeserialize(
+		StageNode[] stages, ModelPipeFileData modelPipeFileData, final TableSchema schema, final int offset) {
+
+		if (stages == null || stages.length == 0) {
+			return new ArrayList <>();
+		}
+
+		final long[] id = new long[] {stages.length - 1};
+
+		List <T> result = new ArrayList <>();
+
+		Consumer <Integer> deserializer = lp -> {
+			StageNode stageNode = stages[lp];
+
+			try {
+				if (stageNode.identifier != null) {
+					stageNode.stage = (PipelineStageBase <?>) Class
+						.forName(stageNode.identifier)
+						.getConstructor(Params.class)
+						.newInstance(stageNode.params);
+				}
+			} catch (ClassNotFoundException
+				| NoSuchMethodException
+				| InstantiationException
+				| IllegalAccessException
+				| InvocationTargetException ex) {
+
+				throw new IllegalArgumentException(ex);
+			}
+
+			// leaf node.
+			if (stageNode.children == null) {
+
+				if (stageNode.stage == null
+					|| stageNode.stage.getParams().get(HasModelFilePath.MODEL_FILE_PATH) != null) {
+
+					// pass
+				} else if (stageNode.stage instanceof ModelBase <?>) {
+
+					final long localId = id[0];
+					final int[] localSchemaIndices = stageNode.schemaIndices;
+
+					((ModelBase <?>) stageNode.stage).modelFileData = new ModelFileData(modelPipeFileData, localId,
+						offset, localSchemaIndices, new TableSchema(stageNode.colNames, stageNode.types));
+
+				}
+
+			} else {
+
+				List <T> pipelineStageBases = new ArrayList <>();
+
+				for (int i = 0; i < stageNode.children.length; ++i) {
+					pipelineStageBases.add((T) stages[stageNode.children[i]].stage);
+				}
+
+				if (stageNode.stage == null) {
+					result.addAll(pipelineStageBases);
+					return;
+				}
+
+				if (stageNode.stage instanceof Pipeline) {
+					stageNode.stage = new Pipeline(pipelineStageBases.toArray(new PipelineStageBase <?>[0]));
+				} else if (stageNode.stage instanceof PipelineModel) {
+					stageNode.stage = new PipelineModel(pipelineStageBases.toArray(new TransformerBase <?>[0]));
+				} else {
+					throw new IllegalArgumentException("Unsupported stage.");
+				}
+
+			}
+
+			id[0]--;
+		};
+
+		postOrder(stages, deserializer);
+
+		return result;
+	}
+
 	private static <T extends PipelineStageBase <?>> List <T> postOrderUnPackWithoutModelData(StageNode[] stages) {
 
 		if (stages == null || stages.length == 0) {
@@ -754,6 +1017,13 @@ public class ModelExporterUtils {
 		);
 	}
 
+	static Tuple2 <StageNode[], Params> collectMetaFromOp(LocalOperator <?> packed) {
+		return deserializeMeta(
+			packed.filter(String.format("%s < 0", ID_COL_NAME)).collect().get(0),
+			packed.getSchema(), 1
+		);
+	}
+
 	public static StageNode[] deserializePipelineStagesFromMeta(Row metaRow, TableSchema schema) {
 		return deserializeMeta(metaRow, schema, 1).f0;
 	}
@@ -764,8 +1034,19 @@ public class ModelExporterUtils {
 
 	static <T extends PipelineStageBase <?>> List <T> fillPipelineStages(
 		BatchOperator <?> packed, StageNode[] stages, TableSchema schema) {
+		return postOrderDeserialize(stages, packed, schema, 1);
+	}
+
+	static <T extends PipelineStageBase <?>> List <T> fillPipelineStages(
+		LocalOperator <?> packed, StageNode[] stages, TableSchema schema) {
 
 		return postOrderDeserialize(stages, packed, schema, 1);
+	}
+
+	static <T extends PipelineStageBase <?>> List <T> fillPipelineStages(
+		ModelPipeFileData modelPipeFileData, StageNode[] stages, TableSchema schema) {
+
+		return postOrderDeserialize(stages, modelPipeFileData, schema, 1);
 	}
 
 	public static <T extends PipelineStageBase <?>> List <T> constructPipelineStagesFromMeta(
@@ -1095,5 +1376,13 @@ public class ModelExporterUtils {
 		}
 
 		return cursor;
+	}
+
+	static void createEmptyBatchSourceSink(Long mlEnvId) {
+		MLEnvironmentFactory
+			.get(mlEnvId)
+			.getExecutionEnvironment()
+			.fromElements(1)
+			.output(new DummyOutputFormat <>());
 	}
 }

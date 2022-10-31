@@ -68,7 +68,7 @@ public class StringIndexerUtil {
 	public static DataSet <Tuple3 <Integer, String, Long>> indexRandom(
 		DataSet <Row> data, final long startIndex, final boolean ignoreNull) {
 
-		DataSet <Tuple2 <Integer, String>> flattened =  flattenTokens(data, ignoreNull);
+		DataSet <Tuple2 <Integer, String>> flattened = flattenTokens(data, ignoreNull);
 		DataSet <Tuple2 <Integer, String>> distinctTokens;
 		if (ignoreNull) {
 			distinctTokens = flattened.groupBy(0, 1)
@@ -90,7 +90,7 @@ public class StringIndexerUtil {
 					public void reduce(Iterable <Tuple2 <Integer, String>> values,
 									   Collector <Tuple2 <Integer, String>> out) throws Exception {
 						boolean containNull = false;
-						HashSet<String> tokenSet = new HashSet <>();
+						HashSet <String> tokenSet = new HashSet <>();
 						for (Tuple2 <Integer, String> value : values) {
 							if (value.f1 == null) {
 								if (!containNull) {
@@ -152,7 +152,7 @@ public class StringIndexerUtil {
 	public static DataSet <Tuple3 <Integer, String, Long>> distinct(DataSet <Row> data,
 																	final long startIndex,
 																	final boolean ignoreNull) {
-		DataSet <Tuple2 <Integer, String>> flattened =  flattenTokens(data, ignoreNull);
+		DataSet <Tuple2 <Integer, String>> flattened = flattenTokens(data, ignoreNull);
 		DataSet <Tuple2 <Integer, String>> distinctTokens;
 		if (ignoreNull) {
 			distinctTokens = flattened.groupBy(0, 1)
@@ -174,7 +174,7 @@ public class StringIndexerUtil {
 					public void reduce(Iterable <Tuple2 <Integer, String>> values,
 									   Collector <Tuple2 <Integer, String>> out) throws Exception {
 						boolean containNull = false;
-						HashSet<String> tokenSet = new HashSet <>();
+						HashSet <String> tokenSet = new HashSet <>();
 						for (Tuple2 <Integer, String> value : values) {
 							if (value.f1 == null) {
 								if (!containNull) {
@@ -214,13 +214,13 @@ public class StringIndexerUtil {
 				}
 			})
 			.groupBy(0)
-			.reduceGroup(new GroupReduceFunction <Tuple3<Integer, String, Long>, Tuple3<Integer, String, Long>>() {
+			.reduceGroup(new GroupReduceFunction <Tuple3 <Integer, String, Long>, Tuple3 <Integer, String, Long>>() {
 				@Override
 				public void reduce(Iterable <Tuple3 <Integer, String, Long>> values,
 								   Collector <Tuple3 <Integer, String, Long>> out) throws Exception {
 					int columnIndex = -1;
 					long nullNumber = 0;
-					HashMap<String, Long> tokenNumber = new HashMap <>();
+					HashMap <String, Long> tokenNumber = new HashMap <>();
 					for (Tuple3 <Integer, String, Long> value : values) {
 						if (columnIndex == -1) {
 							columnIndex = value.f0;
