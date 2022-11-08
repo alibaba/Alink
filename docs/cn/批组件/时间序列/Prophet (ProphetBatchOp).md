@@ -45,12 +45,28 @@ Prophet适用于具有明显的内在规律的数据, 例如：
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| cap | cap | cap | Double |  |  | null |
+| changePointPriorScale | changepoint_prior_scale | changepoint_prior_scale | Double |  |  | 0.05 |
+| changePointRange | change_point_range | change_point_range | Double |  |  | 0.8 |
+| changePoints | changepoints | changepoints | String |  |  | null |
+| dailySeasonality | daily_seasonality | daily_seasonality | String |  |  | "auto" |
+| floor | floor | floor | Double |  |  | null |
+| growth | growth | growth | String |  | "LINEAR", "LOGISTIC", "FLAT" | "LINEAR" |
+| holidays | 节假日 | 节假日，格式是 playoff:2008-01-13,2009-01-03 superbowl: 2010-02-07,2014-02-02 | String |  |  | null |
+| holidaysPriorScale | holidays_prior_scale | holidays_prior_scale | Double |  |  | 10.0 |
+| includeHistory | include_history | include_history | Boolean |  |  | false |
+| intervalWidth | interval_width | interval_width | Double |  |  | 0.8 |
+| mcmcSamples | mcmc_samples | mcmc_samples | Integer |  |  | 0 |
+| nChangePoint | n_change_point | n_change_point | Integer |  |  | 25 |
 | predictNum | 预测条数 | 预测条数 | Integer |  |  | 1 |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
-| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  |  | "" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| seasonalityMode | seasonality_mode | seasonality_mode | String |  | "MULTIPLICATIVE", "ADDITIVE" | "ADDITIVE" |
+| seasonalityPriorScale | seasonality_prior_scale | seasonality_prior_scale | Double |  |  | 10.0 |
 | stanInit | 初始值 | 初始值 | String |  |  | null |
 | uncertaintySamples | 用来计算指标的采样数目 | 用来计算指标的采样数目，设置成0，不计算指标。 | Integer |  |  | 1000 |
+| weeklySeasonality | weekly_seasonality | weekly_seasonality | String |  |  | "auto" |
+| yearlySeasonality | yearly_seasonality | yearly_seasonality | String |  |  | "auto" |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 ## 代码示例

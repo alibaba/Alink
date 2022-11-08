@@ -16,7 +16,7 @@ Python 类名：TypeConvertBatchOp
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| targetType | 目标类型 | 转换为的类型，类型应该为JDBC Type。 | String | ✓ | "STRING", "VARCHAR", "FLOAT", "DOUBLE", "INT", "BIGINT", "LONG", "BOOLEAN" |  |
+| targetType | 目标类型 | 转换为的类型，类型应该为JDBC Type。 | String | ✓ | "STRING", "VARCHAR", "FLOAT", "DOUBLE", "INT", "BIGINT", "LONG", "BOOLEAN", "DECIMAL" |  |
 | selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  |  | null |
 
 

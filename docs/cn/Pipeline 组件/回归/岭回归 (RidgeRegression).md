@@ -23,7 +23,7 @@ Python 类名：RidgeRegression
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
-| lambda | 希腊字母：lambda | 惩罚因子，必选 | Double | ✓ |  |  |
+| lambda | 惩罚因子：lambda | 惩罚因子，必选 | Double | ✓ |  |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | [0.0, +inf) | 1.0E-6 |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  |  | null |

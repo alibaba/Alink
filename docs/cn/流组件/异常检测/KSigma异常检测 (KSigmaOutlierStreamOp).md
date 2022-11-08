@@ -11,13 +11,13 @@ KSigma算法是一种常用的异常检测算法,如果整体数据服从正态�
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| precedingTime | 时间窗口大小 | 时间窗口大小 | String | ✓ |  |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | direction | 方向 | 检测异常的方向 | String |  | "POSITIVE", "NEGATIVE", "BOTH" | "BOTH" |
 | featureCol | 特征列名 | 特征列名，默认选最左边的列 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | groupCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |
 | outlierThreshold | 异常评分阈值 | 只有评分大于该阈值才会被认为是异常点 | Double |  |  |  |
 | precedingRows | 数据窗口大小 | 数据窗口大小 | Integer |  |  | null |
+| precedingTime | 时间窗口大小 | 时间窗口大小 | String |  |  | null |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
 | timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String |  |  | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |

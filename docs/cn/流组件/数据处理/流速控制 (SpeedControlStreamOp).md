@@ -33,7 +33,7 @@ df = pd.DataFrame([
 
 streamData = StreamOperator.fromDataframe(df, schemaStr='f0 int, f1 int, label int')
 
-streamData.link(SpeedControlStreamOp().setTimeInterval(1000)).print()
+streamData.link(SpeedControlStreamOp().setTimeInterval(1.)).print()
 
 StreamOperator.execute()
 ```
@@ -52,7 +52,7 @@ public class SpeedControlTest {
 	@Test
 	public void onlineTrainAndFilter() throws Exception {
 		StreamOperator<?> streamData = new RandomTableSourceStreamOp().setNumCols(2).setMaxRows(10L);
-		streamData.link(new SpeedControlStreamOp().setTimeInterval(1000)).print();
+		streamData.link(new SpeedControlStreamOp().setTimeInterval(1.)).print();
 		StreamOperator.execute();
 	}
 }

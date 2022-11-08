@@ -17,7 +17,7 @@ Alink将遍历目录下的分区名和分区值，构造分区表：
 06 | 17
 06 | 18
 
-使用SQL语句查找分区，例如：AkSourceStreamOp.setPartitions("day = '17'")，分区选择语法参考[《Flink SQL 内置函数》](https://www.yuque.com/pinshu/alink_tutorial/list_sql_function)，分区值为String类型。
+使用SQL语句查找分区，例如：AkSourceStreamOp.setPartitions("day = '17'")，分区选择语法参考[《Flink SQL 内置函数》](http://alinklab.cn/tutorial/appendix_aggregate_function.html)，分区值为String类型。
 
 ## 参数说明
 
@@ -48,7 +48,7 @@ df = pd.DataFrame([
 
 batchData = BatchOperator.fromDataframe(df, schemaStr='f0 int, f1 int, label int')
 
-filePath = "/tmp/test_alink_file_sink";
+filePath = "/tmp/test_alink_file_stream_sink";
 
 # write file to local disk
 batchData.link(AkSinkBatchOp()\

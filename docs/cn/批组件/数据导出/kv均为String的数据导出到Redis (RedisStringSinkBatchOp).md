@@ -42,8 +42,8 @@ batchData = BatchOperator.fromDataframe(df, schemaStr='id string,val double')
 
 batchData.link(RedisStringSinkBatchOp()\
 			.setRedisIPs(redisIP)\
-			.setKeyCol(["id"])\
-			.setValueCol(["val"])\
+			.setKeyCol("id")\
+			.setValueCol("val")\
 			.setPluginVersion("2.9.0"))
 			
 BatchOperator.execute()

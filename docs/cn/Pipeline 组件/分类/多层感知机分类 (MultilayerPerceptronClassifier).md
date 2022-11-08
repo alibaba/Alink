@@ -36,7 +36,7 @@ Python 类名：MultilayerPerceptronClassifier
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  |  | null |
 | initialWeights | 初始权重值 | 初始权重值 | DenseVector |  |  | null |
 | l1 | L1 正则化系数 | L1 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
-| l2 | 正则化系数 | L2 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
+| l2 | L2 正则化系数 | L2 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
 | maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |

@@ -14,7 +14,7 @@ OverTime窗口是OverWindow的一种，基于OverWindow，使用聚合函数进�
 ### Clause
 clause当前支持全部flink支持的聚合函数，并在此基础上额外支持了一系列聚合函数。
 
-详细用法请参考 https://www.yuque.com/pinshu/alink_tutorial/list_aggregate_function
+详细用法请参考 http://alinklab.cn/tutorial/appendix_aggregate_function.html
 
 ### 窗口
 
@@ -31,10 +31,10 @@ Alink支持的窗口, 其中Group窗口是输出窗口聚合统计量，OVER窗�
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | clause | 运算语句 | 运算语句 | String | ✓ |  |  |
-| precedingTime | 时间窗口大小 | 时间窗口大小 | String | ✓ |  |  |
 | timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String | ✓ | 所选列类型为 [TIMESTAMP] |  |
 | groupCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |
 | latency | 水位线的延迟 | 水位线的延迟，默认0.0 | Double |  |  | 0.0 |
+| precedingTime | 时间窗口大小 | 时间窗口大小 | String |  |  | null |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | watermarkType | 水位线的类别 | 水位线的类别 | String |  | "PERIOD", "PUNCTUATED" | "PERIOD" |
 

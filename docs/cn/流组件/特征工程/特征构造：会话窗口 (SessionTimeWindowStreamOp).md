@@ -14,7 +14,7 @@ Python 类名：SessionTimeWindowStreamOp
 ### Clause
 clause当前支持全部flink支持的聚合函数，并在此基础上额外支持了一系列聚合函数。
 
-详细用法请参考 https://www.yuque.com/pinshu/alink_tutorial/list_aggregate_function
+详细用法请参考 http://alinklab.cn/tutorial/appendix_aggregate_function.html
 
 ### 窗口
 

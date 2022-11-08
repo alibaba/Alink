@@ -19,7 +19,7 @@ Python 类名：VectorApproxNearestNeighborTrainBatchOp
 | numProjectionsPerTable | 每个哈希表中的哈希函数个数 | 每个哈希表中的哈希函数个数 | Integer |  |  | 1 |
 | projectionWidth | 桶的宽度 | 桶的宽度 | Double |  |  | 1.0 |
 | seed | 采样种子 | 采样种子 | Long |  |  | 0 |
-| solver | 近似方法 | 近似方法，包括KDTREE和LSH | String |  | "KDTREE", "LSH" | "KDTREE" |
+| solver | 近似方法 | 近似方法，包括KDTREE和LSH | String |  | "KDTREE", "LSH", "LOCAL_LSH" | "KDTREE" |
 
 
 ## 代码示例

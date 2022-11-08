@@ -28,7 +28,6 @@ score值越大表示样本构成的簇越稀疏；对于规模大于minPoints的
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| precedingTime | 时间窗口大小 | 时间窗口大小 | String | ✓ |  |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN", "COSINE", "INNERPRODUCT", "CITYBLOCK", "JACCARD", "PEARSON" | "EUCLIDEAN" |
 | epsilon | Not available! | Not available! | Double |  | [0.0, +inf) |  |
@@ -37,6 +36,7 @@ score值越大表示样本构成的簇越稀疏；对于规模大于minPoints的
 | minPoints | Not available! | Not available! | Integer |  | [0, +inf) | 3 |
 | outlierThreshold | 异常评分阈值 | 只有评分大于该阈值才会被认为是异常点 | Double |  |  |  |
 | precedingRows | 数据窗口大小 | 数据窗口大小 | Integer |  |  | null |
+| precedingTime | 时间窗口大小 | 时间窗口大小 | String |  |  | null |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
 | tensorCol | tensor列 | tensor列 | String |  | 所选列类型为 [BOOL_TENSOR, BYTE_TENSOR, DOUBLE_TENSOR, FLOAT_TENSOR, INT_TENSOR, LONG_TENSOR, STRING, STRING_TENSOR, TENSOR, UBYTE_TENSOR] | null |
 | timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String |  |  | null |
@@ -57,16 +57,16 @@ import numpy as np
 import pandas as pd
 
 data = pd.DataFrame([
-			[0,1, 49.0, 2.0, datetime.datetime.fromtimestamp(1512057600000)],
-			[1,1, 50.0, 2.0, datetime.datetime.fromtimestamp(1512144000000)],
-			[2,1, 50.0, 1.0, datetime.datetime.fromtimestamp(1512230400000)],
-			[3,0, 2.0, 5.0, datetime.datetime.fromtimestamp(1512316800000)],
-			[4,0, 2.0, 5.0, datetime.datetime.fromtimestamp(1512403200000)],
-			[5,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512489600000)],
-			[6,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512576000000)],
-			[7,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512662400000)],
-			[8,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512748800000)],
-			[9,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512835200000)]
+			[0,1, 49.0, 2.0, datetime.datetime.fromtimestamp(1512057600000 / 1000)],
+			[1,1, 50.0, 2.0, datetime.datetime.fromtimestamp(1512144000000 / 1000)],
+			[2,1, 50.0, 1.0, datetime.datetime.fromtimestamp(1512230400000 / 1000)],
+			[3,0, 2.0, 5.0, datetime.datetime.fromtimestamp(1512316800000 / 1000)],
+			[4,0, 2.0, 5.0, datetime.datetime.fromtimestamp(1512403200000 / 1000)],
+			[5,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512489600000 / 1000)],
+			[6,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512576000000 / 1000)],
+			[7,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512662400000 / 1000)],
+			[8,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512748800000 / 1000)],
+			[9,0, 3.0, 4.0, datetime.datetime.fromtimestamp(1512835200000 / 1000)]
 ])
 dataOp = dataframeToOperator(data, schemaStr='id int, group_id int, f0 double, f1 double, ts timestamp', op_type='stream')
 outlierOp = DbscanOutlierStreamOp()\
