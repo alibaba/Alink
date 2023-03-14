@@ -22,22 +22,22 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
-import com.alibaba.alink.common.exceptions.AkFlinkExecutionErrorException;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.OutputColsHelper;
 import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -46,8 +46,7 @@ import com.alibaba.alink.operator.common.clustering.kmeans.KMeansPredictModelDat
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansTrainModelData;
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansUtil;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
-import com.alibaba.alink.operator.common.evaluation.EvaluationUtil.AllDataMerge;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.clustering.StreamingKMeansParams;
 import com.alibaba.alink.params.shared.colname.HasPredictionCol;
@@ -73,6 +72,7 @@ import java.util.List;
 })
 @ReservedColsWithFirstInputSpec
 @NameCn("流式K均值聚类")
+@NameEn("Streaming Kmeans")
 public final class StreamingKMeansStreamOp extends StreamOperator <StreamingKMeansStreamOp>
 	implements StreamingKMeansParams <StreamingKMeansStreamOp> {
 	private static final long serialVersionUID = -7631814863449716946L;

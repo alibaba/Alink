@@ -16,6 +16,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -24,7 +25,6 @@ import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.graph.GraphUtilsWithString;
 import com.alibaba.alink.params.graph.ConnectedComponentParams;
 import com.alibaba.alink.params.graph.HasSetStable;
 
@@ -37,6 +37,7 @@ import com.alibaba.alink.params.graph.HasSetStable;
 @ParamSelectColumnSpec(name = "edgeSourceCol", portIndices = 0)
 @ParamSelectColumnSpec(name = "edgeTargetCol", portIndices = 0)
 @NameCn("最大联通分量")
+@NameEn("ConnectedComponents")
 public class ConnectedComponentsBatchOp extends BatchOperator <ConnectedComponentsBatchOp>
 	implements ConnectedComponentParams <ConnectedComponentsBatchOp> {
 	private static final long serialVersionUID = -7920188555691775911L;

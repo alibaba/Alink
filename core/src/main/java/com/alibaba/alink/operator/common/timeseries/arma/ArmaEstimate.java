@@ -54,6 +54,7 @@ public abstract class ArmaEstimate {
 
 	private double arFunc(double x) {
 		double result = 1;
+		//? -
 		for (int i = 0; i < this.arCoef.length; i++) {
 			result = result - Math.pow(x, i + 1) * arCoef[i];
 		}

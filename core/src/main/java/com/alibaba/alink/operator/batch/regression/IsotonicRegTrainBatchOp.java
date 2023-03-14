@@ -12,6 +12,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamCond;
 import com.alibaba.alink.common.annotation.ParamCond.CondType;
@@ -29,6 +30,7 @@ import com.alibaba.alink.operator.common.regression.IsotonicRegressionConverter;
 import com.alibaba.alink.operator.common.regression.IsotonicRegressionModelData;
 import com.alibaba.alink.operator.common.regression.isotonicReg.LinkedData;
 import com.alibaba.alink.params.regression.IsotonicRegTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 import com.google.common.collect.Lists;
 
 import java.nio.ByteBuffer;
@@ -66,6 +68,8 @@ import java.util.List;
 )
 
 @NameCn("保序回归训练")
+@NameEn("Isotonic Regression Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.regression.IsotonicRegression")
 public final class IsotonicRegTrainBatchOp extends BatchOperator <IsotonicRegTrainBatchOp>
 	implements IsotonicRegTrainParams <IsotonicRegTrainBatchOp> {
 

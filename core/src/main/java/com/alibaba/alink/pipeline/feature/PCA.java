@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.feature.PcaTrainBatchOp;
 import com.alibaba.alink.params.feature.PcaPredictParams;
 import com.alibaba.alink.params.feature.PcaTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -31,8 +29,4 @@ public class PCA extends Trainer <PCA, PCAModel> implements
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new PcaTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

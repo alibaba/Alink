@@ -18,6 +18,7 @@ import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -27,8 +28,8 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.lazy.WithTrainInfo;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
@@ -45,6 +46,7 @@ import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.params.shared.linear.HasWithIntercept;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +76,8 @@ import java.util.List;
 @FeatureColsVectorColMutexRule
 
 @NameCn("生存回归训练")
+@NameEn("Aft Survival Regression Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.regression.AftSurvivalRegression")
 public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTrainBatchOp>
 	implements AftRegTrainParams <AftSurvivalRegTrainBatchOp>,
 	WithTrainInfo <LinearModelTrainInfo, AftSurvivalRegTrainBatchOp>,
@@ -200,7 +204,7 @@ public class AftSurvivalRegTrainBatchOp extends BatchOperator <AftSurvivalRegTra
 				}
 			});
 		this.setSideOutputTables(
-			BaseLinearModelTrainBatchOp.getSideTablesOfCoefficient(modelRows, initData, featSize,
+			BaseLinearModelTrainBatchOp.getSideTablesOfCoefficient(coefVectorSet.project(1), modelRows, initData, featSize,
 				params.get(LinearTrainParams.FEATURE_COLS),
 				params.get(LinearTrainParams.WITH_INTERCEPT),
 				getMLEnvironmentId()));

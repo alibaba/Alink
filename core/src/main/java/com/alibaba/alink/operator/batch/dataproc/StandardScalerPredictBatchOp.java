@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -19,6 +20,7 @@ import com.alibaba.alink.params.dataproc.StandardPredictParams;
 	@PortSpec(value = PortType.DATA, desc = PortDesc.PREDICT_INPUT_DATA)
 })
 @NameCn("标准化批预测")
+@NameEn("Standard Scaler Batch Predict")
 public final class StandardScalerPredictBatchOp extends ModelMapBatchOp <StandardScalerPredictBatchOp>
 	implements StandardPredictParams <StandardScalerPredictBatchOp> {
 

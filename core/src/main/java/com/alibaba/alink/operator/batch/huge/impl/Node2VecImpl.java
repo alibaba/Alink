@@ -15,7 +15,6 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.graph.Node2VecWalkBatchOp;
 import com.alibaba.alink.operator.batch.sql.JoinBatchOp;
 import com.alibaba.alink.operator.common.aps.ApsCheckpoint;
-import com.alibaba.alink.operator.common.graph.GraphEmbedding;
 import com.alibaba.alink.params.nlp.Node2VecParams;
 
 @InputPorts(values = @PortSpec(value = PortType.DATA, desc = PortDesc.GRAPH))

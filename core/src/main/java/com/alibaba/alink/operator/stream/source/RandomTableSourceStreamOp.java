@@ -5,10 +5,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.source.RandomTableSourceUtils;
+import com.alibaba.alink.operator.common.utils.RandomTableSourceUtils;
 import com.alibaba.alink.operator.common.dataproc.RandomTable;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.RandomTableSourceStreamParams;
@@ -26,6 +27,7 @@ import java.util.Map;
  */
 @IoOpAnnotation(name = "random_table", ioType = IOType.SourceStream)
 @NameCn("随机生成结构数据源")
+@NameEn("Random Table Source")
 public final class RandomTableSourceStreamOp extends BaseSourceStreamOp <RandomTableSourceStreamOp>
 	implements RandomTableSourceStreamParams <RandomTableSourceStreamOp> {
 

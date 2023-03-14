@@ -6,6 +6,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -28,6 +29,7 @@ import com.alibaba.alink.params.io.CsvSourceParams;
  */
 @IoOpAnnotation(name = "csv", ioType = IOType.SourceStream)
 @NameCn("CSV文件数据源")
+@NameEn("CSV Source")
 public class CsvSourceStreamOp extends BaseSourceStreamOp <CsvSourceStreamOp>
 	implements CsvSourceParams <CsvSourceStreamOp> {
 

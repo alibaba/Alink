@@ -8,19 +8,21 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelDataConverter;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,6 +39,8 @@ import static com.alibaba.alink.operator.common.dataproc.SortUtils.OBJECT_COMPAR
 @OutputPorts(values = {@PortSpec(PortType.MODEL)})
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("等宽离散化训练")
+@NameEn("Equal Width Discretize Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.feature.EqualWidthDiscretizer")
 public final class EqualWidthDiscretizerTrainBatchOp extends BatchOperator <EqualWidthDiscretizerTrainBatchOp>
 	implements QuantileDiscretizerTrainParams <EqualWidthDiscretizerTrainBatchOp>,
 	WithModelInfoBatchOp <EqualWidthDiscretizerModelInfoBatchOp.EqualWidthDiscretizerModelInfo,
@@ -101,8 +105,8 @@ public final class EqualWidthDiscretizerTrainBatchOp extends BatchOperator <Equa
 		@Override
 		public void flatMap(TableSummary tableSummary, Collector <Row> collector) {
 			for (String colName : tableSummary.getColNames()) {
-				double min = tableSummary.min(colName);
-				double max = tableSummary.max(colName);
+				double min = tableSummary.minDouble(colName);
+				double max = tableSummary.maxDouble(colName);
 				collector.collect(Row.of(TableUtil.findColIndexWithAssertAndHint(colNames, colName),
 					getSplitPointsFromMinMax(min, max,
 						colNameBucketNumber.get(colName))));

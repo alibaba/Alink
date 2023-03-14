@@ -1,14 +1,14 @@
 package com.alibaba.alink.operator.local.source;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.scala.typeutils.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.StringUtils;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -75,6 +75,6 @@ public final class LibSvmSourceLocalOp extends BaseSourceLocalOp <LibSvmSourceLo
 	}
 
 	public static final TableSchema LIB_SVM_TABLE_SCHEMA = new TableSchema(new String[] {"label", "features"},
-		new TypeInformation[] {Types.DOUBLE(), AlinkTypes.VECTOR});
+		new TypeInformation[] {Types.DOUBLE, AlinkTypes.VECTOR});
 
 }

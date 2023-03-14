@@ -17,6 +17,14 @@ public interface PipelineModelParams<T> extends
 		.setHasDefaultValue(null)
 		.build();
 
+	default T setTrainDataSchema(String schemaStr) {
+		return set(TRAINING_DATA_SCHEMA, schemaStr);
+	}
+
+	default String getTrainDataSchema() {
+		return get(TRAINING_DATA_SCHEMA);
+	}
+
 	@NameCn("timestamp")
 	@DescCn("Timestamp of the pipeline model.")
 	ParamInfo <String> TIMESTAMP = ParamInfoFactory

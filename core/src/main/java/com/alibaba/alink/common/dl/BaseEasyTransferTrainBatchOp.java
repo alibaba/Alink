@@ -16,7 +16,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.dl.utils.PythonFileUtils;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;

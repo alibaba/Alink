@@ -1,7 +1,5 @@
 package com.alibaba.alink.common;
 
-import org.apache.flink.runtime.util.EnvironmentInformation;
-
 import com.alibaba.alink.common.io.plugin.PluginConfig;
 import com.alibaba.alink.common.io.plugin.PluginDownloader;
 

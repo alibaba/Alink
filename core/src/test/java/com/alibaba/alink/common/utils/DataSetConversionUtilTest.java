@@ -10,6 +10,7 @@ import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;

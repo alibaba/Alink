@@ -36,7 +36,7 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.huge.word2vec.ApsIteratorW2V;
 import com.alibaba.alink.operator.batch.huge.word2vec.ApsSerializeDataW2V;

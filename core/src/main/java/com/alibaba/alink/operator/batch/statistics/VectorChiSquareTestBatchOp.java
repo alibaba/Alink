@@ -5,6 +5,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -35,6 +36,7 @@ import java.util.function.Consumer;
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @ParamSelectColumnSpec(name = "labelCol")
 @NameCn("向量卡方检验")
+@NameEn("Vector ChiSquare Test")
 public final class VectorChiSquareTestBatchOp extends BatchOperator <VectorChiSquareTestBatchOp>
 	implements VectorChiSquareTestParams <VectorChiSquareTestBatchOp> {
 

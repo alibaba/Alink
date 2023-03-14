@@ -5,12 +5,13 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.operator.local.dataproc.AppendIdLocalOp;
 import com.alibaba.alink.operator.local.source.TableSourceLocalOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class LocalOperatorTest {
+public class LocalOperatorTest extends AlinkTestBase {
 	private static final Row[] data = new Row[] {
 		Row.of(1L, 1L, 0.6),
 		Row.of(2L, 2L, 0.8),

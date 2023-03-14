@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.clustering.KMeansTrainBatchOp;
 import com.alibaba.alink.params.clustering.KMeansPredictParams;
 import com.alibaba.alink.params.clustering.KMeansTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -33,8 +31,4 @@ public class KMeans extends Trainer <KMeans, KMeansModel> implements
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new KMeansTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

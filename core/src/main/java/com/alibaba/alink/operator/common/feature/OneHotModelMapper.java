@@ -7,20 +7,27 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.utils.Functional;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.feature.OneHotTrainBatchOp;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper.DiscreteParamsBuilder;
 import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.HasEnableElse;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
+import com.alibaba.alink.params.feature.OneHotTrainParams;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 
+import scala.Int;
+
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +37,7 @@ import java.util.Map;
 public class OneHotModelMapper extends ModelMapper {
 	private static final long serialVersionUID = -6192598346177373139L;
 	OneHotMapperBuilder mapperBuilder;
+	private final String[] inputPredictColNames;
 
 	/**
 	 * Deal with the abnormal cases.
@@ -145,10 +153,16 @@ public class OneHotModelMapper extends ModelMapper {
 	 */
 	public OneHotModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
+		if (params.contains(OneHotPredictParams.SELECTED_COLS)) {
+			inputPredictColNames = params.get(OneHotPredictParams.SELECTED_COLS);
+		} else {
+			inputPredictColNames = null;
+		}
 	}
 
 	/**
 	 * get size of vector with all columns encoding.
+	 *
 	 * @return size of vector.
 	 */
 	public int getSize() {
@@ -164,6 +178,19 @@ public class OneHotModelMapper extends ModelMapper {
 	public void loadModel(List <Row> modelRows) {
 		OneHotModelData model = new OneHotModelDataConverter().load(modelRows);
 		String[] trainColNames = model.modelData.meta.get(HasSelectedCols.SELECTED_COLS);
+
+		if (null != inputPredictColNames) {
+			HashSet <String> trainColSet = new HashSet <>();
+			for (String trainColName : trainColNames) {
+				trainColSet.add(trainColName);
+			}
+			for (String predictColName : inputPredictColNames) {
+				if (!trainColSet.contains(predictColName)) {
+					throw new AkIllegalArgumentException(
+						"Column '" + predictColName + "' has not been precessed in OneHot model training.");
+				}
+			}
+		}
 
 		//to be compatible with previous versions
 		if (null == mapperBuilder.getSelectedCols()) {
@@ -320,4 +347,25 @@ public class OneHotModelMapper extends ModelMapper {
 		mapperBuilder.map(selection, result);
 	}
 
+	public static boolean isEnableElse(Params params) {
+		int[] thresholdArray;
+
+		if (!params.contains(OneHotTrainParams.DISCRETE_THRESHOLDS_ARRAY)) {
+			thresholdArray = new int[] {params.get(OneHotTrainParams.DISCRETE_THRESHOLDS)};
+		} else {
+			thresholdArray = Arrays.stream(params.get(OneHotTrainParams.DISCRETE_THRESHOLDS_ARRAY)).mapToInt(
+				Integer::intValue).toArray();
+		}
+
+		return isEnableElse(thresholdArray);
+	}
+
+	public static boolean isEnableElse(int[] thresholdArray) {
+		for (int threshold : thresholdArray) {
+			if (threshold > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

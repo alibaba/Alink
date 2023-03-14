@@ -4,6 +4,7 @@ import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -12,6 +13,8 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
+import org.apache.flink.api.java.utils.DataSetUtils;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
@@ -22,11 +25,12 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.HugeStringIndexerUtil;
@@ -36,10 +40,14 @@ import com.alibaba.alink.params.dataproc.SparseFeatureIndexerTrainParams;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.PriorityQueue;
 
 @InputPorts(values = @PortSpec(value = PortType.DATA))
-@OutputPorts(values = @PortSpec(value = PortType.MODEL))
+@OutputPorts(values = {
+		@PortSpec(value = PortType.MODEL, desc = PortDesc.MODEL_INFO),
+		@PortSpec(value = PortType.DATA, desc = PortDesc.FEATURE_FREQUENCY)
+})
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPE)
 @NameCn("稀疏特征编码训练")
 @NameEn("Sparse Feature Indexer Train")
@@ -64,12 +72,26 @@ public class SparseFeatureIndexerTrainBatchOp extends BatchOperator <SparseFeatu
 		String feaSplit = getSpareFeatureDelimiter();
 		String feaValueSplit = getKvValDelimiter();
 		boolean hasWeight = getHasValue();
+		double minSupport = getMinPercent();
+		String[] candidateTags = getCandidateTags();
 		BatchOperator in = checkAndGetFirst(inputs);
 		TypeInformation feaType = TableUtil.findColType(in.getSchema(), featureColName);
 		if (!feaType.equals(Types.STRING)) {
 			throw new AkIllegalDataException("featureColName type must be string, but input type is " + feaType);
 		}
 		DataSet <Row> dataset = in.select(featureColName).getDataSet();
+
+		DataSet <Long> cnt = DataSetUtils.countElementsPerPartition(dataset)
+			.sum(1)
+			.map(new MapFunction <Tuple2 <Integer, Long>, Long>() {
+				private static final long serialVersionUID = -8507632108475760763L;
+
+				@Override
+				public Long map(Tuple2 <Integer, Long> value) {
+					return value.f1;
+				}
+			}).name("statics_sample_number");
+
 		DataSet<Tuple2 <Integer, String>> feaFreSta = dataset.flatMap(
 			new FlatMapFunction <Row, Tuple2 <Integer, String>>() {
 				@Override
@@ -105,6 +127,19 @@ public class SparseFeatureIndexerTrainBatchOp extends BatchOperator <SparseFeatu
 					return Tuple2.of(value1.f0 + value2.f0, value1.f1);
 				}
 			}).name("split_and_count_fea_frequency");
+		if (candidateTags != null && candidateTags.length > 0) {
+			feaFreSta = feaFreSta.filter(new RichFilterFunction <Tuple2 <Integer, String>>() {
+				@Override
+				public boolean filter(Tuple2 <Integer, String> value) throws Exception {
+					for (String tag : candidateTags) {
+						if (value.f1.contains(tag)) {
+							return true;
+						}
+					}
+					return false;
+				}
+			}).name("filter_candidate_fea_tag");
+		}
 		this.setSideOutputTables(
 			new Table[] {DataSetConversionUtil.toTable(getMLEnvironmentId(),feaFreSta.map(
 				new MapFunction <Tuple2 <Integer, String>, Row>() {
@@ -122,6 +157,22 @@ public class SparseFeatureIndexerTrainBatchOp extends BatchOperator <SparseFeatu
 						return value.f0 >= minFrequency;
 					}
 				}).name("filter_less_frequency_fea");
+		} else if (minSupport > 0) {
+			feaFreSta = feaFreSta
+				.filter(new RichFilterFunction <Tuple2 <Integer, String>>() {
+					private Integer count;
+
+					@Override
+					public void open(Configuration parameters) throws Exception {
+						List <Long> countList = getRuntimeContext().getBroadcastVariable("count");
+						count = (int) Math.floor(countList.get(0) * minSupport);
+					}
+					@Override
+					public boolean filter(Tuple2 <Integer, String> value) throws Exception {
+						return value.f0 >= count;
+					}
+				}).withBroadcastSet(cnt, "count")
+				.name("filter_less_frequency_fea");
 		}
 
 		if (topN > 0) {

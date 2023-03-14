@@ -12,7 +12,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.util.HashMap;

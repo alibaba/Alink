@@ -21,6 +21,7 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.dataproc.MaxAbsScalerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * MaxAbsScaler transforms a dataSet of rows, rescaling each feature to range
@@ -31,6 +32,7 @@ import com.alibaba.alink.params.dataproc.MaxAbsScalerTrainParams;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("绝对值最大化训练")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.MaxAbsScaler")
 public class MaxAbsScalerTrainLocalOp extends LocalOperator <MaxAbsScalerTrainLocalOp>
 	implements MaxAbsScalerTrainParams <MaxAbsScalerTrainLocalOp>,
 	WithModelInfoLocalOp <MaxAbsScalarModelInfo, MaxAbsScalerTrainLocalOp, MaxAbsScalerModelInfoLocalOp> {

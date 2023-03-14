@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.clustering.GmmTrainBatchOp;
 import com.alibaba.alink.params.clustering.GmmPredictParams;
 import com.alibaba.alink.params.clustering.GmmTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -39,8 +37,4 @@ public class GaussianMixture extends Trainer <GaussianMixture, GaussianMixtureMo
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new GmmTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

@@ -14,17 +14,18 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.filesystem.copy.csv.RowCsvInputFormat;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.partition.CsvSourceCollectorCreator;
-import com.alibaba.alink.operator.common.io.partition.Utils;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import com.alibaba.alink.operator.stream.source.BaseSourceStreamOp;
+import com.alibaba.alink.operator.stream.utils.DataStreamUtil;
 import com.alibaba.alink.params.io.CsvSourceParams;
 
 import java.io.IOException;
@@ -104,12 +105,13 @@ public final class InternalCsvSourceStreamOp extends BaseSourceStreamOp <Interna
 			Tuple2 <DataStream <Row>, TableSchema> schemaAndData;
 
 			try {
-				schemaAndData = Utils.readFromPartitionStream(
+				schemaAndData = DataStreamUtil.readFromPartitionStream(
 					getParams(), getMLEnvironmentId(),
-					new CsvSourceCollectorCreator(dummySchema, rowDelim, ignoreFirstLine)
+					new CsvSourceCollectorCreator(dummySchema, rowDelim, ignoreFirstLine, quoteChar)
 				);
 			} catch (IOException e) {
-				throw new IllegalStateException(e);
+				throw new AkIllegalDataException(
+					String.format("Fail to list directories in %s and select partitions", getFilePath().getPathStr()));
 			}
 
 			rows = schemaAndData.f0;

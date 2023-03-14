@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -16,6 +17,7 @@ import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
  */
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("分位数离散化预测")
+@NameEn("Quantile discretizer prediction")
 public class QuantileDiscretizerPredictStreamOp extends ModelMapStreamOp <QuantileDiscretizerPredictStreamOp>
 	implements QuantileDiscretizerPredictParams <QuantileDiscretizerPredictStreamOp> {
 

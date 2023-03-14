@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.dataproc;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.SelectedColsWithSecondInputSpec;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -18,6 +19,7 @@ import com.alibaba.alink.params.dataproc.LookupParams;
 @ParamSelectColumnSpec(name="mapValueCols",portIndices = 0)
 @SelectedColsWithSecondInputSpec
 @NameCn("表查找")
+@NameEn("Lookup Operation")
 public class LookupStreamOp extends ModelMapStreamOp <LookupStreamOp>
 	implements LookupParams<LookupStreamOp> {
 

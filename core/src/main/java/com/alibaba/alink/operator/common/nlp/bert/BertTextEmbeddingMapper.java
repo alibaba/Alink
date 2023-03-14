@@ -6,7 +6,7 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.dl.BertResources;
 import com.alibaba.alink.common.dl.plugin.TFPredictorClassLoaderFactory;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;

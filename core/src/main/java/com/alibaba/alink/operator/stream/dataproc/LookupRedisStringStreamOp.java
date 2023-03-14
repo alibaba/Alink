@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.dataproc;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.SelectedColsWithFirstInputSpec;
 import com.alibaba.alink.operator.common.dataproc.LookupRedisStringMapper;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.dataproc.LookupStringRedisParams;
  */
 @SelectedColsWithFirstInputSpec
 @NameCn("Redis 表查找String类型")
+@NameEn("Lookup Redis For String Type Key")
 public class LookupRedisStringStreamOp extends MapStreamOp <LookupRedisStringStreamOp>
 	implements LookupStringRedisParams <LookupRedisStringStreamOp> {
 

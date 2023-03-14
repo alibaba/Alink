@@ -56,7 +56,7 @@ public class MaxAbsScalerModelDataConverter extends RichModelDataConverter <Tabl
 		double[] maxAbs = new double[colNames.length];
 		for (int i = 0; i < colNames.length; i++) {
 			//max(|min, max|)
-			maxAbs[i] = Math.max(Math.abs(modelData.min(colNames[i])), Math.abs(modelData.max(colNames[i])));
+			maxAbs[i] = Math.max(Math.abs(modelData.minDouble(colNames[i])), Math.abs(modelData.maxDouble(colNames[i])));
 		}
 
 		List <String> data = new ArrayList <>();

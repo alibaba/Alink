@@ -1,6 +1,6 @@
 package com.alibaba.alink.common.annotation;
 
-import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineModel;

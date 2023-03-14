@@ -48,7 +48,7 @@ public class UnaryLossObjFunc extends OptimObjFunc {
 	 * @return the loss value and weight value.
 	 */
 	@Override
-	protected double calcLoss(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector) {
+	public double calcLoss(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector) {
 		double eta = getEta(labelVector, coefVector);
 		return this.unaryLossFunc.loss(eta, labelVector.f1);
 	}
@@ -61,7 +61,7 @@ public class UnaryLossObjFunc extends OptimObjFunc {
 	 * @param updateGrad  gradient need to update.
 	 */
 	@Override
-	protected void updateGradient(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
+	public void updateGradient(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
 								  DenseVector updateGrad) {
 		double eta = getEta(labelVector, coefVector);
 		double div = labelVector.f0 * unaryLossFunc.derivative(eta, labelVector.f1);
@@ -76,7 +76,7 @@ public class UnaryLossObjFunc extends OptimObjFunc {
 	 * @param updateHessian hessian matrix need to update.
 	 */
 	@Override
-	protected void updateHessian(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
+	public void updateHessian(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
 								 DenseMatrix updateHessian) {
 		Vector vec = labelVector.f2;
 		double eta = getEta(labelVector, coefVector);

@@ -6,6 +6,7 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -13,7 +14,7 @@ import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.io.csv.CsvTypeConverter;
-import com.alibaba.alink.operator.common.io.csv.InternalCsvSourceBatchOp;
+import com.alibaba.alink.operator.common.io.csv.InternalCsvSourceBetaBatchOp;
 import com.alibaba.alink.params.io.CsvSourceParams;
 
 /**
@@ -28,6 +29,7 @@ import com.alibaba.alink.params.io.CsvSourceParams;
  */
 @IoOpAnnotation(name = "csv", ioType = IOType.SourceBatch)
 @NameCn("CSV文件读入")
+@NameEn("CSV Source")
 public class CsvSourceBatchOp extends BaseSourceBatchOp <CsvSourceBatchOp>
 	implements CsvSourceParams <CsvSourceBatchOp> {
 
@@ -75,7 +77,7 @@ public class CsvSourceBatchOp extends BaseSourceBatchOp <CsvSourceBatchOp>
 				TableUtil.schema2SchemaStr(new TableSchema(colNames, CsvTypeConverter.rewriteColTypes(colTypes)))
 			);
 
-		BatchOperator <?> source = new InternalCsvSourceBatchOp(rawCsvParams);
+			BatchOperator <?> source = new InternalCsvSourceBetaBatchOp(rawCsvParams);
 
 		source = CsvTypeConverter.toTensorPipelineModel(getParams(), colNames, colTypes).transform(source);
 		source = CsvTypeConverter.toVectorPipelineModel(getParams(), colNames, colTypes).transform(source);

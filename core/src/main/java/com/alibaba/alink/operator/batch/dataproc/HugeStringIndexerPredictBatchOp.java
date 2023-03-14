@@ -21,6 +21,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -48,6 +49,7 @@ import static com.alibaba.alink.params.dataproc.HasHandleInvalid.HandleInvalid.S
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @SelectedColsWithFirstInputSpec
 @NameCn("并行ID化预测")
+@NameEn("Huge String Indexer Prediction")
 public final class HugeStringIndexerPredictBatchOp
 	extends BatchOperator <HugeStringIndexerPredictBatchOp>
 	implements HugeMultiStringIndexerPredictParams<HugeStringIndexerPredictBatchOp> {

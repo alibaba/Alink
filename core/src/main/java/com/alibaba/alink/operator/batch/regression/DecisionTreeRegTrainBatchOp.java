@@ -3,7 +3,8 @@ package com.alibaba.alink.operator.batch.regression;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.annotation.NameEn;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.BaseRandomForestTrainBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
 import com.alibaba.alink.operator.common.tree.TreeUtil;
@@ -11,6 +12,7 @@ import com.alibaba.alink.params.regression.DecisionTreeRegTrainParams;
 import com.alibaba.alink.params.shared.tree.HasFeatureSubsamplingRatio;
 import com.alibaba.alink.params.shared.tree.HasNumTreesDefaltAs10;
 import com.alibaba.alink.params.shared.tree.HasSubsamplingRatio;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * The random forest use the bagging to prevent the overfitting.
@@ -33,7 +35,9 @@ import com.alibaba.alink.params.shared.tree.HasSubsamplingRatio;
  * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
 @NameCn("决策树回归训练")
-public final class DecisionTreeRegTrainBatchOp extends BaseRandomForestTrainBatchOp <DecisionTreeRegTrainBatchOp>
+@NameEn("Decision Tree Regression Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.regression.DecisionTreeRegressor")
+public class DecisionTreeRegTrainBatchOp extends BaseRandomForestTrainBatchOp <DecisionTreeRegTrainBatchOp>
 	implements DecisionTreeRegTrainParams <DecisionTreeRegTrainBatchOp>,
 	WithModelInfoBatchOp <TreeModelInfo.DecisionTreeModelInfo, DecisionTreeRegTrainBatchOp,
 		DecisionTreeRegModelInfoBatchOp> {

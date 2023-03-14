@@ -36,9 +36,9 @@ import org.apache.flink.table.types.utils.TypeConversions;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.params.shared.HasOverwriteSink;
 
 import java.sql.Connection;

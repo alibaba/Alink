@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -41,6 +42,7 @@ import com.alibaba.alink.params.recommendation.FmRecommBinaryImplicitTrainParams
 @ParamSelectColumnSpec(name = "itemCategoricalFeatureCols", portIndices = 2)
 
 @NameCn("FM二分类隐式训练")
+@NameEn("Fm Recommend Binary Implicit Training")
 public final class FmRecommBinaryImplicitTrainBatchOp
 	extends BatchOperator <FmRecommBinaryImplicitTrainBatchOp>
 	implements FmRecommBinaryImplicitTrainParams <FmRecommBinaryImplicitTrainBatchOp> {

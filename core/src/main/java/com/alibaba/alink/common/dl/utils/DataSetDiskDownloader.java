@@ -15,7 +15,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.DownloadUtils;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.flink.ml.util.IpHostUtil;

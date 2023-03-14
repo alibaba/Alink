@@ -11,6 +11,7 @@ import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
@@ -34,13 +35,13 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkIllegalModelException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.lazy.WithTrainInfo;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -61,6 +62,7 @@ import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
 import com.alibaba.alink.params.shared.linear.HasL1;
 import com.alibaba.alink.params.shared.linear.LinearTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,8 +91,10 @@ import java.util.List;
 
 @NameCn("Softmax训练")
 @NameEn("Softmax Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.Softmax")
 public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchOp>
-	implements SoftmaxTrainParams <SoftmaxTrainBatchOp>, WithTrainInfo <LinearModelTrainInfo, SoftmaxTrainBatchOp>,
+	implements SoftmaxTrainParams <SoftmaxTrainBatchOp>,
+	WithTrainInfo <LinearModelTrainInfo, SoftmaxTrainBatchOp>,
 	WithModelInfoBatchOp <SoftmaxModelInfo, SoftmaxTrainBatchOp, SoftmaxModelInfoBatchOp> {
 	private static final long serialVersionUID = 2291776467437931890L;
 
@@ -255,7 +259,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 
 		this.setOutput(modelRows, new LinearModelDataConverter(labelType).getModelSchema());
 
-		this.setSideOutputTables(getSideTablesOfCoefficient(modelRows));
+		this.setSideOutputTables(getSideTablesOfCoefficient(modelRows, coefs.project(1)));
 		return this;
 	}
 
@@ -483,9 +487,7 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 								 Collector <Row> collector) throws Exception {
 			List <DenseVector> coefVectors = new ArrayList <>();
 			boolean hasIntercept = this.meta.get(ModelParamName.HAS_INTERCEPT_ITEM);
-			double[] convInfo = null;
 			for (Tuple2 <DenseVector, double[]> coefVector : iterable) {
-				convInfo = coefVector.f1;
 				this.meta.set(ModelParamName.VECTOR_SIZE, coefVector.f0.size() / (labelSize - 1)
 					- (hasIntercept ? 1 : 0));
 				this.meta.set(ModelParamName.LOSS_CURVE, coefVector.f1);
@@ -514,12 +516,11 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 			}
 
 			LinearModelData modelData = new LinearModelData(labelType, meta, featureNames, coefVectors.get(0));
-			modelData.convergenceInfo = convInfo;
 			new LinearModelDataConverter(this.labelType).save(modelData, collector);
 		}
 	}
 
-	private Table[] getSideTablesOfCoefficient(DataSet <Row> modelRow) {
+	private Table[] getSideTablesOfCoefficient(DataSet <Row> modelRow, DataSet<Tuple1 <double[]>> convergenceInfo) {
 		DataSet <LinearModelData> model = modelRow.mapPartition(new MapPartitionFunction <Row, LinearModelData>() {
 			private static final long serialVersionUID = 2063366042018382802L;
 
@@ -542,12 +543,14 @@ public final class SoftmaxTrainBatchOp extends BatchOperator <SoftmaxTrainBatchO
 					public void mapPartition(Iterable <LinearModelData> values, Collector <Row> out) {
 
 						LinearModelData model = values.iterator().next();
-						double[] cinfo = model.convergenceInfo;
+						double[] cinfo = ((Tuple1 <double[]>)getRuntimeContext().getBroadcastVariable("cinfo").get(0)).f0;
 						out.collect(Row.of(0L, JsonConverter.toJson(model.getMetaInfo())));
 						out.collect(Row.of(4L, JsonConverter.toJson(cinfo)));
 
 					}
-				}).setParallelism(1).withBroadcastSet(model, "model");
+				}).setParallelism(1)
+			.withBroadcastSet(model, "model")
+			.withBroadcastSet(convergenceInfo, "cinfo");
 
 		Table summaryTable = DataSetConversionUtil.toTable(getMLEnvironmentId(), summary, new TableSchema(
 			new String[] {"title", "info"}, new TypeInformation[] {Types.LONG, Types.STRING}));

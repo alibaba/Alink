@@ -3,8 +3,7 @@ package com.alibaba.alink.operator.batch.classification;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
-import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 import com.alibaba.alink.operator.common.linear.SoftmaxModelInfo;
 
 import java.util.List;
@@ -27,8 +26,4 @@ public class SoftmaxModelInfoBatchOp
 		return new SoftmaxModelInfo(rows);
 	}
 
-	@Override
-	protected BatchOperator <?> processModel() {
-		return this;
-	}
 }

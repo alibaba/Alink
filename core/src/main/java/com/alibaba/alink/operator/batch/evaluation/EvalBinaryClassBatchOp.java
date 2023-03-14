@@ -12,6 +12,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -53,6 +54,7 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.extrac
 @ParamSelectColumnSpec(name = "labelCol")
 @ParamSelectColumnSpec(name = "predictionDetailCol", allowedTypeCollections = TypeCollections.STRING_TYPE)
 @NameCn("二分类评估")
+@NameEn("Eval Binary Class")
 public class EvalBinaryClassBatchOp extends BatchOperator <EvalBinaryClassBatchOp> implements
 	EvalBinaryClassParams <EvalBinaryClassBatchOp>,
 	EvaluationMetricsCollector <BinaryClassMetrics, EvalBinaryClassBatchOp> {

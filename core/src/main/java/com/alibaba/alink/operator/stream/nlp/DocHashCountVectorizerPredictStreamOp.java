@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.nlp;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -17,6 +18,7 @@ import com.alibaba.alink.params.nlp.DocHashCountVectorizerPredictParams;
  */
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("文本哈希特征生成预测")
+@NameEn("Document hash count vectorizer prediction")
 public class DocHashCountVectorizerPredictStreamOp extends ModelMapStreamOp <DocHashCountVectorizerPredictStreamOp>
 	implements DocHashCountVectorizerPredictParams <DocHashCountVectorizerPredictStreamOp> {
 	private static final long serialVersionUID = 2575430297675390769L;

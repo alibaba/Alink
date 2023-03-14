@@ -33,8 +33,8 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.io.annotations.CatalogAnnotation;
 import com.alibaba.alink.common.io.catalog.plugin.DataHubClassLoaderFactory;
-import com.alibaba.alink.common.io.plugin.wrapper.RichParallelSourceFunctionWithClassLoader;
-import com.alibaba.alink.common.io.plugin.wrapper.RichSinkFunctionWithClassLoader;
+import com.alibaba.alink.operator.stream.source.RichParallelSourceFunctionWithClassLoader;
+import com.alibaba.alink.operator.stream.sink.RichSinkFunctionWithClassLoader;
 import com.alibaba.alink.params.io.DataHubParams;
 
 import java.lang.reflect.InvocationTargetException;

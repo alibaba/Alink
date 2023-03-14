@@ -1,9 +1,10 @@
 package com.alibaba.alink.operator.common.outlier;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import junit.framework.TestCase;
 import org.junit.Test;
 
-public class DynamicTimeWarpingDetectorTest extends TestCase {
+public class DynamicTimeWarpingDetectorTest extends AlinkTestBase {
 
 	@Test
 	public void testDtw() {

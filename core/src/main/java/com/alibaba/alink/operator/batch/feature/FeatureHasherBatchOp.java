@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -23,6 +24,7 @@ import com.alibaba.alink.params.feature.FeatureHasherParams;
 @ParamSelectColumnSpec(name = "selectedCols")
 @ParamSelectColumnSpec(name = "categoricalCols")
 @NameCn("特征哈希")
+@NameEn("Feature Hasher")
 public final class FeatureHasherBatchOp extends MapBatchOp <FeatureHasherBatchOp>
 	implements FeatureHasherParams <FeatureHasherBatchOp> {
 	private static final long serialVersionUID = 6037792513321750824L;

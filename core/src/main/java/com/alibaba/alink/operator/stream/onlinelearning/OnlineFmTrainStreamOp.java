@@ -30,6 +30,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DataBridge;
@@ -48,7 +49,7 @@ import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.LossFunction;
 import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
 import com.alibaba.alink.operator.common.fm.FmModelData;
 import com.alibaba.alink.operator.common.fm.FmModelDataConverter;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.onlinelearning.FtrlTrainStreamOp.PrepareBatchSample;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
@@ -69,6 +70,7 @@ import static com.alibaba.alink.operator.common.optim.FmOptimizer.calcY;
 
 @Internal
 @NameCn("在线FM训练")
+@NameEn("Online Factorization Machine training")
 public final class OnlineFmTrainStreamOp extends StreamOperator <OnlineFmTrainStreamOp>
 	implements OnlineFmTrainParams <OnlineFmTrainStreamOp> {
 
@@ -459,8 +461,7 @@ public final class OnlineFmTrainStreamOp extends StreamOperator <OnlineFmTrainSt
 					.set(ModelParamName.VECTOR_SIZE, modelData.vectorSize)
 					.set(ModelParamName.FEATURE_COL_NAMES, modelData.featureColNames)
 					.set(ModelParamName.LABEL_VALUES, labelValues)
-					.set(ModelParamName.DIM, modelData.dim)
-					.set(ModelParamName.LOSS_CURVE, modelData.convergenceInfo);
+					.set(ModelParamName.DIM, modelData.dim);
 				long currentTime = System.currentTimeMillis();
 				out.collect(Tuple2.of(-currentTime, Tuple3.of((long) modelData.vectorSize + 2, null, meta.toJson())));
 

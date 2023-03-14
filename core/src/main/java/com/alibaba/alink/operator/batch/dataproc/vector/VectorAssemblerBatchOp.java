@@ -2,8 +2,13 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
+import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorAssemblerMapper;
@@ -17,8 +22,11 @@ import com.alibaba.alink.params.dataproc.vector.VectorAssemblerParams;
  *
  * this operator can transform batch data.
  */
-@ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@InputPorts(values = @PortSpec(value = PortType.DATA))
+@OutputPorts(values = @PortSpec(value = PortType.DATA))
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_AND_VECTOR_TYPES)
 @NameCn("向量聚合")
+@NameEn("Vector Assembler")
 public final class VectorAssemblerBatchOp extends MapBatchOp <VectorAssemblerBatchOp>
 	implements VectorAssemblerParams <VectorAssemblerBatchOp> {
 

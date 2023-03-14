@@ -2,7 +2,7 @@ package com.alibaba.alink.common.pyrunner.fn;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;

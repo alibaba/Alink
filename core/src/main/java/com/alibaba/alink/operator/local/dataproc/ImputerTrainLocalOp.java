@@ -22,6 +22,7 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.dataproc.ImputerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Imputer completes missing values in a dataSet, but only same type of columns can be selected at the same time.
@@ -37,6 +38,7 @@ import com.alibaba.alink.params.dataproc.ImputerTrainParams;
 @ParamSelectColumnSpec(name = "selectedCols",
 	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("缺失值填充训练")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.Imputer")
 public class ImputerTrainLocalOp extends LocalOperator <ImputerTrainLocalOp>
 	implements ImputerTrainParams <ImputerTrainLocalOp>,
 	WithModelInfoLocalOp <ImputerModelInfo, ImputerTrainLocalOp, ImputerModelInfoLocalOp> {

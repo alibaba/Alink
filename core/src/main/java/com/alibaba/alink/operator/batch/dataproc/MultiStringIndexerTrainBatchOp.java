@@ -30,6 +30,7 @@ import com.alibaba.alink.params.dataproc.HasSelectedColTypes;
 import com.alibaba.alink.params.dataproc.HasStringOrderTypeDefaultAsRandom;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerTrainParams;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Encode several columns of strings to bigint type indices. The indices are consecutive bigint type
@@ -50,6 +51,7 @@ import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.INT_LONG_STRING_TYPES)
 @NameCn("多字段字符串编码训练")
 @NameEn("Multiple String Indexer Train")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.MultiStringIndexer")
 public final class MultiStringIndexerTrainBatchOp
 	extends BatchOperator <MultiStringIndexerTrainBatchOp>
 	implements MultiStringIndexerTrainParams <MultiStringIndexerTrainBatchOp> {

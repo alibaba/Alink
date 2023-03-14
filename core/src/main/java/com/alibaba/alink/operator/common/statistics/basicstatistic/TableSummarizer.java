@@ -1,14 +1,21 @@
 package com.alibaba.alink.operator.common.statistics.basicstatistic;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.linalg.MatVecOp;
-import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.common.statistics.statistics.BaseMeasureIterator;
+import com.alibaba.alink.operator.common.statistics.statistics.BooleanMeasureIterator;
+import com.alibaba.alink.operator.common.statistics.statistics.DateMeasureIterator;
+import com.alibaba.alink.operator.common.statistics.statistics.StatisticsIteratorFactory;
+import com.alibaba.alink.operator.common.statistics.statistics.NumberMeasureIterator;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * It is summary for table， it will calculate statistics and return TableSummary.
@@ -18,9 +25,40 @@ public class TableSummarizer extends BaseSummarizer {
 
 	private static final long serialVersionUID = 4588962274305185787L;
 	/**
-	 * col names which will calculate.
+	 * col names.
 	 */
 	public String[] colNames;
+
+	/**
+	 * col types.
+	 */
+	TypeInformation <?>[] colTypes;
+
+	/**
+	 * simple statistics for a col.
+	 */
+	BaseMeasureIterator[] statIterators;
+
+	/**
+	 * col number.
+	 */
+	private int n;
+
+	/**
+	 * num of numerical cols, boolean cols and date cols.
+	 */
+	private int numberN;
+
+	/**
+	 * numerical col and boolean col indices:
+	 * if col is numerical or boolean , it will calculate cov and corr.
+	 */
+	private int[] numericalColIndices;
+
+	/**
+	 * Intermediate variable which will used in Visit function.
+	 */
+	private Double[] vals;
 
 	/**
 	 * the value of ith row and jth col is sum of the ith variance
@@ -43,52 +81,6 @@ public class TableSummarizer extends BaseSummarizer {
 	DenseMatrix xyCount;
 
 	/**
-	 * numerical col indices:
-	 * if col is numerical, it will calculate all statistics, otherwise only count, numMissingValue.
-	 */
-	private int[] numericalColIndices;
-
-	/**
-	 * the number of missing value of all columns.
-	 */
-	private DenseVector numMissingValue;
-
-	/**
-	 * sum_i = sum(x_i) when x_i is not null.
-	 */
-	protected DenseVector sum;
-
-	/**
-	 * squareSum_i = sum(x_i * x_i) when x_i is not null.
-	 */
-	protected DenseVector squareSum;
-
-	/**
-	 * sum3_i = sum(x_i * x_i * x_i) when x_i is not null.
-	 */
-	protected DenseVector sum3;
-
-	/**
-	 * min_i = min(x_i) when x_i is not null.
-	 */
-	protected DenseVector min;
-
-	/**
-	 * max_i = max(x_i) when x_i is not null.
-	 */
-	protected DenseVector max;
-
-	/**
-	 * normL1_i = normL1(x_i) = sum(|x_i|) when x_i is not null.
-	 */
-	protected DenseVector normL1;
-
-	/**
-	 * Intermediate variable which will used in Visit function.
-	 */
-	private Double[] vals;
-
-	/**
 	 * default constructor.
 	 */
 	private TableSummarizer() {
@@ -99,18 +91,22 @@ public class TableSummarizer extends BaseSummarizer {
 	 * if calculateOuterProduct is false, outerProduct，xSum, xSquareSum, xyCount are not be used,
 	 * these are for correlation and covariance.
 	 */
-	public TableSummarizer(String[] selectedColNames, int[] numericalColIndices, boolean calculateOuterProduct) {
-		this.colNames = selectedColNames;
+	public TableSummarizer(TableSchema tableSchema, boolean calculateOuterProduct) {
+		this.colNames = tableSchema.getFieldNames();
+		this.colTypes = tableSchema.getFieldTypes();
 		this.calculateOuterProduct = calculateOuterProduct;
-		this.numericalColIndices = numericalColIndices;
+		this.n = this.colNames.length;
+		this.numericalColIndices = calcCovColIndices(new TableSchema(this.colNames, this.colTypes));
+		this.numberN = this.numericalColIndices.length;
 	}
 
 	/**
 	 * given row, incremental calculate statistics.
 	 */
 	public BaseSummarizer visit(Row row) {
-		int n = row.getArity();
-		int numberN = numericalColIndices.length;
+		if (this.n != row.getArity()) {
+			throw new AkIllegalStateException("row size is not equal with table col num.");
+		}
 
 		if (count == 0) {
 			init();
@@ -118,39 +114,27 @@ public class TableSummarizer extends BaseSummarizer {
 
 		count++;
 
-		for (int i = 0; i < n; i++) {
-			Object obj = row.getField(i);
-			if (obj == null) {
-				numMissingValue.add(i, 1);
-			}
+		for (int i = 0; i < this.n; i++) {
+			this.statIterators[i].visit(row.getField(i));
 		}
 
-		for (int i = 0; i < numberN; i++) {
-			Object obj = row.getField(numericalColIndices[i]);
-			if (obj != null) {
-				if (obj instanceof Boolean) {
-					vals[i] = (boolean) obj ? 1.0 : 0.0;
+		if (calculateOuterProduct) {
+			for (int i = 0; i < numberN; i++) {
+				Object obj = row.getField(numericalColIndices[i]);
+				if (obj != null) {
+					if (obj instanceof Boolean) {
+						vals[i] = (boolean) obj ? 1.0 : 0.0;
+					} else {
+						vals[i] = ((Number) obj).doubleValue();
+					}
 				} else {
-					vals[i] = ((Number) obj).doubleValue();
+					vals[i] = null;
 				}
-			} else {
-				vals[i] = null;
 			}
-		}
-		for (int i = 0; i < numberN; i++) {
-			if (vals[i] != null) {
-				double val = vals[i];
+			for (int i = 0; i < numberN; i++) {
+				if (vals[i] != null) {
+					double val = vals[i];
 
-				max.set(i, Math.max(val, max.get(i)));
-				min.set(i, Math.min(val, min.get(i)));
-
-				sum.add(i, val);
-				squareSum.add(i, val * val);
-				sum3.add(i, val * val * val);
-
-				normL1.add(i, Math.abs(val));
-
-				if (calculateOuterProduct) {
 					for (int j = i; j < numberN; j++) {
 						if (vals[j] != null) {
 							outerProduct.add(i, j, val * vals[j]);
@@ -170,73 +154,6 @@ public class TableSummarizer extends BaseSummarizer {
 		return this;
 	}
 
-	/**
-	 * n is the number of columns participating in the calculation.
-	 */
-	private void init() {
-		int n = colNames.length;
-		int numberN = numericalColIndices.length;
-
-		numMissingValue = new DenseVector(n);
-		sum = new DenseVector(numberN);
-		squareSum = new DenseVector(numberN);
-		sum3 = new DenseVector(numberN);
-		normL1 = new DenseVector(numberN);
-
-		double[] minVals = new double[numberN];
-		Arrays.fill(minVals, Double.MAX_VALUE);
-		min = new DenseVector(minVals);
-
-		double[] maxVals = new double[numberN];
-		Arrays.fill(maxVals, -Double.MAX_VALUE);
-		max = new DenseVector(maxVals);
-
-		if (calculateOuterProduct) {
-			outerProduct = new DenseMatrix(numberN, numberN);
-			xSum = new DenseMatrix(numberN, numberN);
-			xSquareSum = new DenseMatrix(numberN, numberN);
-			xyCount = new DenseMatrix(numberN, numberN);
-		}
-
-		vals = new Double[numberN];
-	}
-
-	/**
-	 * merge left and right, return  a new summary. left will be changed.
-	 */
-	public static TableSummarizer merge(TableSummarizer left, TableSummarizer right) {
-		if (right.count == 0) {
-			return left;
-		}
-
-		if (left.count == 0) {
-			return right.copy();
-		}
-
-		left.count += right.count;
-		left.numMissingValue.plusEqual(right.numMissingValue);
-		left.sum.plusEqual(right.sum);
-		left.squareSum.plusEqual(right.squareSum);
-		left.sum3.plusEqual(right.sum3);
-		left.normL1.plusEqual(right.normL1);
-		MatVecOp.apply(left.min, right.min, left.min, Math::min);
-		MatVecOp.apply(left.max, right.max, left.max, Math::max);
-
-		if (left.outerProduct != null && right.outerProduct != null) {
-			left.outerProduct.plusEquals(right.outerProduct);
-			left.xSum.plusEquals(right.xSum);
-			left.xSquareSum.plusEquals(right.xSquareSum);
-			left.xyCount.plusEquals(right.xyCount);
-		} else if (left.outerProduct == null && right.outerProduct != null) {
-			left.outerProduct = right.outerProduct.clone();
-			left.xSum = right.xSum.clone();
-			left.xSquareSum = right.xSquareSum.clone();
-			left.xyCount = right.xyCount.clone();
-		}
-
-		return left;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder sbd = new StringBuilder()
@@ -244,17 +161,9 @@ public class TableSummarizer extends BaseSummarizer {
 			.append(count)
 			.append("\n");
 		if (count != 0) {
-			sbd.append("sum: ")
-				.append(VectorUtil.toString(sum))
-				.append("\n")
-				.append("squareSum: ")
-				.append(VectorUtil.toString(squareSum))
-				.append("\n")
-				.append("min: ")
-				.append(VectorUtil.toString(min))
-				.append("\n")
-				.append("max: ")
-				.append(VectorUtil.toString(max));
+			for (int i = 0; i < this.n; i++) {
+				sbd.append(this.colNames[i]).append(": ").append(this.statIterators[i]);
+			}
 		}
 
 		return sbd.toString();
@@ -266,70 +175,62 @@ public class TableSummarizer extends BaseSummarizer {
 	public TableSummary toSummary() {
 		TableSummary summary = new TableSummary();
 
-		summary.count = count;
-		summary.sum = sum;
-		summary.squareSum = squareSum;
-		summary.sum3 = sum3;
-		summary.normL1 = normL1;
-		summary.min = min;
-		summary.max = max;
-
-		summary.numMissingValue = numMissingValue;
 		summary.numericalColIndices = numericalColIndices;
-
 		summary.colNames = colNames;
-
-		return summary;
-	}
-
-	/**
-	 * get summary result of selected columns.
-	 */
-	public TableSummary toSummary(String[] selectedColNames) {
-		if (selectedColNames.length == 0) {
-			return toSummary();
-		}
-		TableSummary summary = new TableSummary();
-		int[] selectedColIndex = TableUtil.findColIndices(colNames, selectedColNames);
-		int n = selectedColNames.length;
-
 		summary.count = count;
-		summary.sum = new DenseVector(n);
-		summary.squareSum = new DenseVector(n);
-		summary.sum3 = new DenseVector(n);
-		summary.normL1 = new DenseVector(n);
-		summary.min = new DenseVector(n);
-		summary.max = new DenseVector(n);
-		summary.numMissingValue = new DenseVector(n);
-		summary.numericalColIndices = new int[n];
+		summary.sum = new DenseVector(this.numberN);
+		summary.sum2 = new DenseVector(this.numberN);
+		summary.sum3 = new DenseVector(this.numberN);
+		summary.sum4 = new DenseVector(this.numberN);
+		summary.normL1 = new DenseVector(this.numberN);
+		summary.minDouble = new DenseVector(this.numberN);
+		summary.maxDouble = new DenseVector(this.numberN);
+		summary.numMissingValue = new long[this.n];
+		summary.min = new Object[this.numberN];
+		summary.max = new Object[this.numberN];
 
-		for (int i = 0; i < selectedColIndex.length; i++) {
-			int targetIndex = selectedColIndex[i];
-			int targetIndexInDenseVector = -1;
+		if (count > 0) {
+			for (int i = 0; i < this.n; i++) {
+				summary.numMissingValue[i] = this.statIterators[i].missingCount();
+			}
 
-			for (int j = 0; j < numericalColIndices.length; j++) {
-				if (targetIndex == numericalColIndices[j]) {
-					targetIndexInDenseVector = j;
+			for (int i = 0; i < this.numberN; i++) {
+				BaseMeasureIterator <?, ?> iterator = this.statIterators[this.numericalColIndices[i]];
+				if (iterator instanceof NumberMeasureIterator) {
+					NumberMeasureIterator <?> numberIterator = (NumberMeasureIterator <?>) iterator;
+					summary.sum.set(i, numberIterator.sum);
+					summary.sum2.set(i, numberIterator.sum2);
+					summary.sum3.set(i, numberIterator.sum3);
+					summary.sum4.set(i, numberIterator.sum4);
+					summary.minDouble.set(i, numberIterator.min.doubleValue());
+					summary.maxDouble.set(i, numberIterator.max.doubleValue());
+					summary.normL1.set(i, numberIterator.normL1);
+					summary.min[i] = numberIterator.min;
+					summary.max[i] = numberIterator.max;
+				} else if (iterator instanceof BooleanMeasureIterator) {
+					BooleanMeasureIterator boolIterator = (BooleanMeasureIterator) iterator;
+					summary.sum.set(i, boolIterator.countTrue);
+					summary.sum2.set(i, boolIterator.countTrue);
+					summary.sum3.set(i, boolIterator.countTrue);
+					summary.sum4.set(i, boolIterator.countTrue);
+					summary.normL1.set(i, boolIterator.countTrue);
+					summary.minDouble.set(i, boolIterator.countFalse > 0 ? 0.0 : 1.0);
+					summary.maxDouble.set(i, boolIterator.countTrue > 0 ? 1.0 : 0.0);
+					summary.min[i] = boolIterator.countFalse <= 0;
+					summary.max[i] = boolIterator.countTrue > 0;
+				} else if (iterator instanceof DateMeasureIterator) {
+					DateMeasureIterator <?> dateIterator = (DateMeasureIterator <?>) iterator;
+					summary.sum.set(i, Double.NaN);
+					summary.sum2.set(i, Double.NaN);
+					summary.sum3.set(i, Double.NaN);
+					summary.sum4.set(i, Double.NaN);
+					summary.minDouble.set(i, dateIterator.min.getTime());
+					summary.maxDouble.set(i, dateIterator.max.getTime());
+					summary.min[i] = dateIterator.min;
+					summary.max[i] = dateIterator.max;
 				}
 			}
-			if (targetIndexInDenseVector == -1) {
-				summary.numericalColIndices[i] = -1;
-				continue;
-			}
-
-			summary.sum.set(i, sum.get(targetIndexInDenseVector));
-			summary.squareSum.set(i, squareSum.get(targetIndexInDenseVector));
-			summary.sum3.set(i, sum3.get(targetIndexInDenseVector));
-			summary.normL1.set(i, normL1.get(targetIndexInDenseVector));
-			summary.min.set(i, min.get(targetIndexInDenseVector));
-			summary.max.set(i, max.get(targetIndexInDenseVector));
-
-			summary.numMissingValue.set(i, numMissingValue.get(targetIndexInDenseVector));
-			summary.numericalColIndices[i] = TableUtil.findColIndex(selectedColNames,
-				colNames[numericalColIndices[targetIndexInDenseVector]]);
 		}
-
-		summary.colNames = selectedColNames;
 
 		return summary;
 	}
@@ -397,11 +298,10 @@ public class TableSummarizer extends BaseSummarizer {
 		if (outerProduct == null) {
 			return null;
 		}
-		int nStat = numMissingValue.size();
 
-		double[][] cov = new double[nStat][nStat];
-		for (int i = 0; i < nStat; i++) {
-			for (int j = 0; j < nStat; j++) {
+		double[][] cov = new double[this.n][this.n];
+		for (int i = 0; i < this.n; i++) {
+			for (int j = 0; j < this.n; j++) {
 				cov[i][j] = Double.NaN;
 			}
 		}
@@ -420,30 +320,98 @@ public class TableSummarizer extends BaseSummarizer {
 	}
 
 	/**
-	 *
+	 * clone.
 	 */
 	TableSummarizer copy() {
 		TableSummarizer srt = new TableSummarizer();
 		srt.colNames = colNames.clone();
 		srt.count = count;
-		srt.numericalColIndices = numericalColIndices.clone();
 		if (count != 0) {
-			srt.numMissingValue = numMissingValue.clone();
-			srt.sum = sum.clone();
-			srt.squareSum = squareSum.clone();
-			srt.sum3 = sum3.clone();
-			srt.normL1 = normL1.clone();
-			srt.min = min.clone();
-			srt.max = max.clone();
+			srt.statIterators = new BaseMeasureIterator[this.n];
+			for (int i = 0; i < this.n; i++) {
+				srt.statIterators[i] = this.statIterators[i].clone();
+			}
 		}
 
-		if (outerProduct != null) {
-			srt.outerProduct = outerProduct.clone();
-			srt.xSum = xSum.clone();
-			srt.xSquareSum = xSquareSum.clone();
-			srt.xyCount = xyCount.clone();
+		if (this.outerProduct != null) {
+			srt.numericalColIndices = this.numericalColIndices.clone();
+			srt.outerProduct = this.outerProduct.clone();
+			srt.xSum = this.xSum.clone();
+			srt.xSquareSum = this.xSquareSum.clone();
+			srt.xyCount = this.xyCount.clone();
 		}
 
 		return srt;
+	}
+
+	/**
+	 * n is the number of columns participating in the calculation.
+	 */
+	private void init() {
+		this.statIterators = new BaseMeasureIterator[this.n];
+		for (int i = 0; i < this.n; i++) {
+			this.statIterators[i] = StatisticsIteratorFactory.getMeasureIterator(colTypes[i]);
+		}
+
+		if (calculateOuterProduct) {
+			vals = new Double[numberN];
+			outerProduct = new DenseMatrix(numberN, numberN);
+			xSum = new DenseMatrix(numberN, numberN);
+			xSquareSum = new DenseMatrix(numberN, numberN);
+			xyCount = new DenseMatrix(numberN, numberN);
+		}
+	}
+
+	/**
+	 * col indices which col type is number or boolean or date.
+	 */
+	private int[] calcCovColIndices(TableSchema tableSchema) {
+		List <Integer> indicesList = new ArrayList <>();
+		for (int i = 0; i < tableSchema.getFieldNames().length; i++) {
+			TypeInformation <?> type = tableSchema.getFieldType(i).get();
+			if (TableUtil.isSupportedNumericType(type)
+				|| TableUtil.isSupportedBoolType(type)
+			 	|| TableUtil.isSupportedDateType(type)) {
+				indicesList.add(i);
+			}
+		}
+		return indicesList.stream().mapToInt(Integer::valueOf).toArray();
+	}
+
+	/**
+	 * merge left and right, return  a new summary. left will be changed.
+	 */
+	public static TableSummarizer merge(TableSummarizer left, TableSummarizer right) {
+		if (right.count == 0) {
+			return left;
+		}
+
+		if (left.count == 0) {
+			return right.copy();
+		}
+
+		left.count += right.count;
+
+		if (left.n != right.n) {
+			throw new AkIllegalStateException("left stat cols is not equal with right stat cols");
+		}
+
+		for (int i = 0; i < left.n; i++) {
+			left.statIterators[i].merge(right.statIterators[i]);
+		}
+
+		if (left.outerProduct != null && right.outerProduct != null) {
+			left.outerProduct.plusEquals(right.outerProduct);
+			left.xSum.plusEquals(right.xSum);
+			left.xSquareSum.plusEquals(right.xSquareSum);
+			left.xyCount.plusEquals(right.xyCount);
+		} else if (left.outerProduct == null && right.outerProduct != null) {
+			left.outerProduct = right.outerProduct.clone();
+			left.xSum = right.xSum.clone();
+			left.xSquareSum = right.xSquareSum.clone();
+			left.xyCount = right.xyCount.clone();
+		}
+
+		return left;
 	}
 }

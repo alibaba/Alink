@@ -11,10 +11,11 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.List;
  */
 @IoOpAnnotation(name = MemSourceStreamOp.NAME, ioType = IOType.SourceStream)
 @NameCn("内存数据源")
+@NameEn("Memory Source")
 public final class MemSourceStreamOp extends BaseSourceStreamOp <MemSourceStreamOp> {
 
 	static final String NAME = "memory";

@@ -4,11 +4,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
 import com.alibaba.alink.params.sql.JoinParams;
 
 /**
@@ -18,6 +18,7 @@ import com.alibaba.alink.params.sql.JoinParams;
 @InputPorts(values = {@PortSpec(PortType.DATA), @PortSpec(PortType.DATA)})
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @NameCn("SQL操作：LeftOuterJoin")
+@NameEn("SQL LeftOuterJoin Operation")
 public final class LeftOuterJoinBatchOp extends BaseSqlApiBatchOp <LeftOuterJoinBatchOp>
 	implements JoinParams <LeftOuterJoinBatchOp> {
 

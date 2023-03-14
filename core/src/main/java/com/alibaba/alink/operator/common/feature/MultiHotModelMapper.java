@@ -7,7 +7,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.ModelMapper;
@@ -30,11 +31,12 @@ public class MultiHotModelMapper extends ModelMapper {
 	private static final long serialVersionUID = 7431062592310976413L;
 
 	private MultiHotModelData model;
-	private String[] selectedCols;
+	private final String[] inputPredictColNames;
 	private final HandleInvalid handleInvalid;
 	private final Encode encode;
 	private int offsetSize = 0;
 	boolean enableElse = false;
+
 
 	public MultiHotModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
@@ -43,12 +45,27 @@ public class MultiHotModelMapper extends ModelMapper {
 		if (handleInvalid.equals(HandleInvalid.KEEP)) {
 			offsetSize = 1;
 		}
+		if(params.contains(MultiHotPredictParams.SELECTED_COLS)) {
+			inputPredictColNames = params.get(MultiHotPredictParams.SELECTED_COLS);
+		}else{
+			inputPredictColNames = null;
+		}
 	}
 
 	@Override
 	public void loadModel(List <Row> modelRows) {
 		this.model = new MultiHotModelDataConverter().load(modelRows);
-		this.enableElse = this.model.getEnableElse(selectedCols);
+		this.enableElse = this.model.getEnableElse(inputPredictColNames);
+
+		if (null != inputPredictColNames) {
+			Set <String> trainColSet = model.modelData.keySet();
+			for (String predictColName : inputPredictColNames) {
+				if (!trainColSet.contains(predictColName)) {
+					throw new AkIllegalArgumentException(
+						"Column '" + predictColName + "' has not been precessed in OneHot model training.");
+				}
+			}
+		}
 	}
 
 	@Override
@@ -59,12 +76,12 @@ public class MultiHotModelMapper extends ModelMapper {
 		if (reservedCols == null) {
 			reservedCols = dataSchema.getFieldNames();
 		}
-		this.selectedCols = params.get(MultiHotPredictParams.SELECTED_COLS);
 
 		String[] outputCols = params.get(MultiHotPredictParams.OUTPUT_COLS);
 		TypeInformation <?>[] outputTypes = new TypeInformation <?>[outputCols.length];
 		Arrays.fill(outputTypes, AlinkTypes.SPARSE_VECTOR);
-		return Tuple4.of(this.selectedCols, outputCols, outputTypes, reservedCols);
+		return Tuple4.of(params.get(MultiHotPredictParams.SELECTED_COLS),
+			outputCols, outputTypes, reservedCols);
 	}
 
 	@Override
@@ -79,7 +96,7 @@ public class MultiHotModelMapper extends ModelMapper {
 		} else if (encode.equals(Encode.VECTOR)) {
 			for (int i = 0; i < selection.length(); ++i) {
 				String str = (String) selection.get(i);
-				Tuple2 <Integer, int[]> indices = getSingleIndicesAndSize(selectedCols[i], str);
+				Tuple2 <Integer, int[]> indices = getSingleIndicesAndSize(inputPredictColNames[i], str);
 				double[] vals = new double[indices.f1.length];
 				Arrays.fill(vals, 1.0);
 				if (indices.f1.length != 0) {
@@ -129,7 +146,7 @@ public class MultiHotModelMapper extends ModelMapper {
 		int cnt = 0;
 		for (int i = 0; i < selection.length(); ++i) {
 			String str = (String) selection.get(i);
-			Tuple2 <Integer, int[]> t2 = getSingleIndicesAndSize(this.selectedCols[i], str);
+			Tuple2 <Integer, int[]> t2 = getSingleIndicesAndSize(this.inputPredictColNames[i], str);
 			for (int j = 0; j < t2.f1.length; ++j) {
 				set.add(cnt + t2.f1[j]);
 			}

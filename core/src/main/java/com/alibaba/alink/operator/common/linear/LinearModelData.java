@@ -35,7 +35,6 @@ public class LinearModelData implements Serializable {
 	public Object[] labelValues = null;
 	public LinearModelType linearModelType;
 	public boolean hasInterceptItem = true;
-	public double[] convergenceInfo;//
 	public TypeInformation labelType;//
 
 	/**

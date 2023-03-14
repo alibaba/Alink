@@ -25,8 +25,4 @@ public class RidgeRegModelInfoLocalOp
 		return new LinearRegressorModelInfo(rows);
 	}
 
-	@Override
-	protected LocalOperator <?> processModel() {
-		return this;
-	}
 }

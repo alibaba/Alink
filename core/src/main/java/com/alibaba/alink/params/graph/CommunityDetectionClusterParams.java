@@ -11,22 +11,8 @@ public interface CommunityDetectionClusterParams<T> extends
 	CommonGraphParams <T>,
 	HasEdgeWeightCol <T>,
 	HasMaxIterDefaultAs50 <T>,
-	HasVertexCol <T> {
-
-	ParamInfo <String> VERTEX_COL = ParamInfoFactory
-		.createParamInfo("vertexCol", String.class)
-		.setDescription("source vertex of edge")
-		.setAlias(new String[]{"fromVertexCol"})
-		.setRequired()
-		.build();
-
-	default String getVertexCol() {
-		return get(VERTEX_COL);
-	}
-
-	default T setVertexCol(String value) {
-		return set(VERTEX_COL, value);
-	}
+	HasVertexCol <T>,
+	HasVertexWeightCol <T> {
 
 	@NameCn("delta")
 	@DescCn("delta参数")

@@ -2,10 +2,11 @@ package com.alibaba.alink.operator.stream.sql;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.common.sql.SelectUtils;
 import com.alibaba.alink.operator.common.sql.SimpleSelectMapper;
-import com.alibaba.alink.operator.common.sql.StreamSqlOperators;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
 import com.alibaba.alink.params.sql.SelectParams;
@@ -14,6 +15,7 @@ import com.alibaba.alink.params.sql.SelectParams;
  * Select the fields of a stream operator.
  */
 @NameCn("SQL操作：Select")
+@NameEn("SQL：Select")
 public final class SelectStreamOp extends BaseSqlApiStreamOp <SelectStreamOp>
 	implements SelectParams <SelectStreamOp> {
 
@@ -52,6 +54,7 @@ public final class SelectStreamOp extends BaseSqlApiStreamOp <SelectStreamOp>
 		return this;
 	}
 
+	@Internal
 	private class SimpleSelectStreamOp extends MapStreamOp <SimpleSelectStreamOp>
 		implements SelectParams <SimpleSelectStreamOp> {
 

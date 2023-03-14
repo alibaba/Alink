@@ -4,6 +4,8 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.io.shared.HasEndPoint;
 import com.alibaba.alink.params.io.shared.HasFileSystemUri;
 import com.alibaba.alink.params.io.shared.HasPluginVersion;
@@ -13,6 +15,8 @@ public interface S3FileSystemParams<T> extends WithParams <T>,
 	HasFileSystemUri <T>,
 	HasPluginVersion <T> {
 
+	@NameCn("访问ID")
+	@DescCn("访问ID")
 	ParamInfo <String> ACCESS_KEY = ParamInfoFactory
 		.createParamInfo("accessKey", String.class)
 		.setDescription("access key")
@@ -28,6 +32,8 @@ public interface S3FileSystemParams<T> extends WithParams <T>,
 		return set(ACCESS_KEY, value);
 	}
 
+	@NameCn("密钥")
+	@DescCn("密钥")
 	ParamInfo <String> SECRET_KEY = ParamInfoFactory
 		.createParamInfo("secretKey", String.class)
 		.setDescription("secret key")
@@ -43,6 +49,8 @@ public interface S3FileSystemParams<T> extends WithParams <T>,
 		return set(SECRET_KEY, value);
 	}
 
+	@NameCn("是否允许pathStyleAccess")
+	@DescCn("是否允许pathStyleAccess")
 	ParamInfo <Boolean> PATH_STYLE_ACCESS = ParamInfoFactory
 		.createParamInfo("pathStyleAccess", Boolean.class)
 		.setDescription("path style access")

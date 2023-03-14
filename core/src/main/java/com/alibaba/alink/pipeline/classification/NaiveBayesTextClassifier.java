@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.NaiveBayesTextTrainBatchOp;
 import com.alibaba.alink.params.classification.NaiveBayesTextPredictParams;
 import com.alibaba.alink.params.classification.NaiveBayesTextTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -34,11 +32,6 @@ public class NaiveBayesTextClassifier
 
 	public NaiveBayesTextClassifier(Params params) {
 		super(params);
-	}
-
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new NaiveBayesTextTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 
 }

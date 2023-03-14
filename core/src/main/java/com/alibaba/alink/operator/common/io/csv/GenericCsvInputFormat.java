@@ -20,7 +20,6 @@ package com.alibaba.alink.operator.common.io.csv;
 
 import org.apache.flink.api.common.io.DefaultInputSplitAssigner;
 import org.apache.flink.api.common.io.InputFormat;
-import org.apache.flink.api.common.io.ParseException;
 import org.apache.flink.api.common.io.statistics.BaseStatistics;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.configuration.Configuration;
@@ -29,6 +28,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.InstantiationUtil;
 
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.operator.common.io.reader.FileSplitReader;
@@ -103,7 +103,9 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 
 	private void initBuffers() {
 		if (BUFFER_SIZE <= this.lineDelim.length) {
-			throw new IllegalArgumentException("Buffer size must be greater than length of delimiter.");
+			throw new AkIllegalDataException(String.format(
+				"Buffer size is %d, and delimiter length is %d. Buffer size must be greater than length of delimiter.",
+				BUFFER_SIZE, this.lineDelim.length));
 		}
 
 		if (this.readBuffer == null || this.readBuffer.length != BUFFER_SIZE) {
@@ -129,7 +131,8 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 			if (fieldClasses[i] != null) {
 				Class <? extends FieldParser <?>> parserType = FieldParser.getParserForType(fieldClasses[i]);
 				if (parserType == null) {
-					throw new AkParseErrorException("No parser available for type '" + fieldClasses[i].getName() + "'.");
+					throw new AkParseErrorException(
+						"No parser available for type '" + fieldClasses[i].getName() + "'.");
 				}
 
 				FieldParser <?> p = InstantiationUtil.instantiate(parserType, FieldParser.class);
@@ -160,7 +163,8 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 		this.bytesRead = 0L;
 
 		initBuffers();
-		this.reader.open(split, split.start, split.end - 1);
+		//this.reader.open(split, split.start, split.end - 1);
+		this.reader.open(split);
 		this.readerClosed = false;
 		initializeParsers();
 
@@ -306,7 +310,7 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 
 				// check against the maximum record length
 				if (((long) countInWrapBuffer) + count > LINE_LENGTH_LIMIT) {
-					throw new IOException("The record length exceeded the maximum record length (" +
+					throw new AkIllegalDataException("The record length exceeded the maximum record length (" +
 						LINE_LENGTH_LIMIT + ").");
 				}
 
@@ -366,7 +370,8 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 			// unexpected EOF encountered, re-establish the connection
 			if (read < 0) {
 				this.reader.close();
-				this.reader.open(this.split, this.split.start + bytesRead, this.split.end - 1);
+				//this.reader.open(this.split, this.split.start + bytesRead, this.split.end - 1);
+				this.reader.reopen(this.split, this.split.start + bytesRead);
 			}
 			tryTimes++;
 		}
@@ -446,7 +451,7 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 				} else if (parser.getErrorState() == FieldParser.ParseErrorState.EMPTY_COLUMN) {
 					reuseRow.setField(field, null);
 				} else {
-					throw new ParseException(
+					throw new AkParseErrorException(
 						String.format("Parsing error for column %1$s of row '%2$s' originated by %3$s: %4$s.",
 							field, new String(bytes, offset, numBytes), parser.getClass().getSimpleName(),
 							parser.getErrorState()));
@@ -462,10 +467,11 @@ public class GenericCsvInputFormat implements InputFormat <Row, CsvFileInputSpli
 						startPos++;
 					}
 					if (startPos + fieldDelim.length > offset + numBytes) {
-						throw new AkUnclassifiedErrorException("Can't find next field delimiter: " + "\"" + fieldDelimStr + "\","
-							+ " " +
-							"Perhaps the data is invalid or do not match the schema." +
-							"The row is: " + new String(bytes, offset, numBytes));
+						throw new AkParseErrorException(
+							"Can't find next field delimiter: " + "\"" + fieldDelimStr + "\","
+								+ " " +
+								"Perhaps the data is invalid or do not match the schema." +
+								"The row is: " + new String(bytes, offset, numBytes));
 					}
 					startPos += fieldDelim.length;
 				}

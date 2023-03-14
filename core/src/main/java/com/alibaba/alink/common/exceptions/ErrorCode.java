@@ -18,7 +18,8 @@ enum ErrorCode {
 	ILLEGAL_ARGUMENT(Type.PLATFORM, Level.ERROR, 0x1005L, "Illegal argument"),
 	ILLEGAL_STATE(Type.PLATFORM, Level.ERROR, 0x1006L, "Illegal state"),
 	NULL_POINTER(Type.PLATFORM, Level.ERROR, 0x1007L, "Null pointer"),
-	;
+	// For PyAlink usage
+	JAVA_SIDE_ERROR(Type.PLATFORM, Level.ERROR, 0x1008L, "Java side error, check enclosed error");
 
 	private final Type type;
 	private final Level level;

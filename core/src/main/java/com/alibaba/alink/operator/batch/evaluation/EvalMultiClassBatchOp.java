@@ -13,6 +13,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -52,6 +53,7 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getMul
 @ParamSelectColumnSpec(name = "predictionCol")
 @ParamSelectColumnSpec(name = "predictionDetailCol", allowedTypeCollections = TypeCollections.STRING_TYPE)
 @NameCn("多分类评估")
+@NameEn("Eval Multi Class")
 public class EvalMultiClassBatchOp extends BatchOperator <EvalMultiClassBatchOp>
 	implements EvalMultiClassParams <EvalMultiClassBatchOp>,
 	EvaluationMetricsCollector <MultiClassMetrics, EvalMultiClassBatchOp> {

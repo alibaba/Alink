@@ -3,10 +3,8 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
-import com.alibaba.alink.operator.batch.dataproc.ImputerModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 import com.alibaba.alink.operator.common.dataproc.ImputerModelInfo;
-import com.alibaba.alink.params.dataproc.ImputerTrainParams;
 import com.alibaba.alink.params.dataproc.vector.VectorImputerTrainParams;
 
 import java.util.List;

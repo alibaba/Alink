@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.timeseries;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.linear.LinearModelMapper;
 import com.alibaba.alink.operator.common.timeseries.ProphetModelMapper;
@@ -10,6 +11,7 @@ import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.timeseries.ProphetPredictParams;
 
 @NameCn("Prophet预测")
+@NameEn("Prophet Prediction")
 public class ProphetPredictStreamOp extends ModelMapStreamOp <ProphetPredictStreamOp>
 	implements ProphetPredictParams <ProphetPredictStreamOp> {
 

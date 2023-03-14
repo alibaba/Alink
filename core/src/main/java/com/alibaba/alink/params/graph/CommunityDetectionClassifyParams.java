@@ -10,7 +10,8 @@ public interface CommunityDetectionClassifyParams<T> extends
 	CommonGraphParams <T>,
 	HasEdgeWeightCol <T>,
 	HasMaxIterDefaultAs50 <T>,
-	HasVertexCol <T> {
+	HasVertexCol <T>,
+	HasVertexWeightCol <T> {
 
 	@NameCn("输入点表中标签所在列")
 	@DescCn("输入点表中标签所在列")

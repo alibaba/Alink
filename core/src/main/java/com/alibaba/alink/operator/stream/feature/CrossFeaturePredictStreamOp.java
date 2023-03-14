@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.feature.CrossFeatureModelMapper;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.feature.CrossFeaturePredictParams;
  * Cross selected columns to build new vector type data.
  */
 @NameCn("Cross特征预测")
+@NameEn("Cross feature prediction")
 public class CrossFeaturePredictStreamOp extends ModelMapStreamOp<CrossFeaturePredictStreamOp>
 	implements CrossFeaturePredictParams <CrossFeaturePredictStreamOp> {
 

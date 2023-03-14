@@ -3,7 +3,7 @@ package com.alibaba.alink.operator.batch.clustering;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 
 import java.util.List;
 

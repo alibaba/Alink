@@ -12,6 +12,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -23,6 +24,7 @@ import com.alibaba.alink.operator.common.nlp.DocHashCountVectorizerModelData;
 import com.alibaba.alink.operator.common.nlp.DocHashCountVectorizerModelDataConverter;
 import com.alibaba.alink.operator.common.nlp.NLPConstant;
 import com.alibaba.alink.params.nlp.DocHashCountVectorizerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,6 +41,8 @@ import static org.apache.flink.shaded.guava18.com.google.common.hash.Hashing.mur
 @OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("文本哈希特征生成训练")
+@NameEn("DocHash Count Vectorizer Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.nlp.DocHashCountVectorizer")
 public class DocHashCountVectorizerTrainBatchOp extends BatchOperator <DocHashCountVectorizerTrainBatchOp>
 	implements DocHashCountVectorizerTrainParams <DocHashCountVectorizerTrainBatchOp> {
 	private static final long serialVersionUID = 6469196128919853279L;

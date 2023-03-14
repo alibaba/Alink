@@ -39,7 +39,8 @@ public interface HasTargetType<T> extends WithParams <T> {
 		INT,
 		BIGINT,
 		LONG,
-		BOOLEAN
+		BOOLEAN,
+		DECIMAL
 	}
 
 }

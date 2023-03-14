@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.CartTrainBatchOp;
 import com.alibaba.alink.params.classification.CartPredictParams;
 import com.alibaba.alink.params.classification.CartTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -26,11 +24,6 @@ public class Cart extends Trainer <Cart, CartModel> implements
 
 	public Cart(Params params) {
 		super(params);
-	}
-
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new CartTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 
 }

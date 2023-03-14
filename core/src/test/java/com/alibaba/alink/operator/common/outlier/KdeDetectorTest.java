@@ -13,12 +13,13 @@ import com.alibaba.alink.params.outlier.HasKDEKernelType.KernelType;
 import com.alibaba.alink.params.outlier.HasOutputMTableCol;
 import com.alibaba.alink.params.outlier.KdeDetectorParams;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Map;
 
-public class KdeDetectorTest {
+public class KdeDetectorTest extends AlinkTestBase {
 
 	private static final double EPS = 1e-4;
 

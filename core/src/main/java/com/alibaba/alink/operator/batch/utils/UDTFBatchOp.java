@@ -7,6 +7,7 @@ import org.apache.flink.table.functions.TableFunction;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.ObjectUtils;
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @NameCn("UDTF")
+@NameEn("UDTF")
 public class UDTFBatchOp extends BatchOperator <UDTFBatchOp>
 	implements UDTFParams <UDTFBatchOp> {
 

@@ -15,7 +15,6 @@ public interface BucketizerParams<T> extends
 
 	@NameCn("多列的切分点")
 	@DescCn("多列的切分点")
-
 	ParamInfo <double[][]> CUTS_ARRAY = ParamInfoFactory
 		.createParamInfo("cutsArray", double[][].class)
 		.setDescription("Cut points array, each of them is used for the corresponding selected column.")
@@ -29,6 +28,8 @@ public interface BucketizerParams<T> extends
 		return set(CUTS_ARRAY, value);
 	}
 
+	@NameCn("切分点数组")
+	@DescCn("切分点数组")
 	ParamInfo <String[]> CUTS_ARRAY_STR = ParamInfoFactory
 		.createParamInfo("cutsArrayStr", String[].class)
 		.setDescription("Cut points array, each of them is used for the corresponding selected column.")

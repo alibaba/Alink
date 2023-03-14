@@ -79,6 +79,9 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 				TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predResultColName);
 
 				data = in.select(new String[] {labelColName, predResultColName}).getOutputTable().getRows();
+				Tuple2 <Map <Object, Integer>, Object[]> labels = calcLabels(data, false, positiveValue, labelType, type);
+				MultiMetricsSummary summary =  EvaluationUtil.getMultiClassMetrics(data, labels);
+				this.metrics = summary.toMetrics();
 				break;
 			}
 			case PRED_DETAIL: {
@@ -86,16 +89,15 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 				TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predDetailColName);
 
 				data = in.select(new String[] {labelColName, predDetailColName}).getOutputTable().getRows();
+				Tuple2 <Map <Object, Integer>, Object[]> labels = calcLabels(data, false, positiveValue, labelType, type);
+				MultiMetricsSummary summary = (MultiMetricsSummary) getDetailStatistics(data, false, labels, labelType);
+				this.metrics = summary.toMetrics();
 				break;
 			}
 			default: {
 				throw new AkUnsupportedOperationException("Unsupported evaluation type: " + type);
 			}
 		}
-
-		Tuple2 <Map <Object, Integer>, Object[]> labels = calcLabels(data, false, positiveValue, labelType, type);
-		MultiMetricsSummary summary = (MultiMetricsSummary) getDetailStatistics(data, false, labels, labelType);
-		this.metrics = summary.toMetrics();
 
 		setOutputTable(new MTable(new Row[] {metrics.serialize()}, new TableSchema(
 			new String[] {"multiclass_eval_result"}, new TypeInformation[] {Types.STRING})));

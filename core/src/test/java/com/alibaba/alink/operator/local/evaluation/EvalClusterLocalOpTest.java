@@ -1,0 +1,130 @@
+package com.alibaba.alink.operator.local.evaluation;
+
+import org.apache.flink.ml.api.misc.param.Params;
+import org.apache.flink.types.Row;
+
+import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.evaluation.ClusterMetrics;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
+import com.alibaba.alink.pipeline.clustering.KMeans;
+import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class EvalClusterLocalOpTest extends AlinkTestBase {
+	private static Row[] rows = new Row[] {
+		Row.of("a", "0,0,0"),
+		Row.of("a", "0.1,0.1,0.1"),
+		Row.of("a", "0.2,0.2,0.2"),
+		Row.of("b", "9,9,9"),
+		Row.of("b", "9.1,9.1,9.1"),
+		Row.of("b", "9.2,9.2,9.2")
+	};
+
+	@Test
+	public void test() throws Exception {
+		MemSourceBatchOp inOp = new MemSourceBatchOp(Arrays.asList(rows), new String[] {"label", "Y"});
+		KMeans train = new KMeans()
+			.setVectorCol("Y")
+			.setPredictionCol("pred")
+			.setK(2);
+		BatchOperator <?> results = train.fit(inOp).transform(inOp);
+
+		MTable mtable = results.collectMTable();
+		MemSourceLocalOp source = new MemSourceLocalOp(mtable);
+
+		ClusterMetrics metrics = new EvalClusterLocalOp(new Params())
+			.setPredictionCol("pred")
+			.setVectorCol("Y")
+			.setLabelCol("label")
+			.linkFrom(source)
+			.collectMetrics();
+
+		Assert.assertEquals(metrics.getVrc(), 12150.00, 0.01);
+		Assert.assertEquals(metrics.getCp(), 0.115, 0.01);
+		Assert.assertEquals(metrics.getCount().intValue(), 6);
+		Assert.assertEquals(metrics.getDb(), 0.014, 0.01);
+		Assert.assertEquals(metrics.getSp(), 15.58, 0.01);
+		Assert.assertEquals(metrics.getK().intValue(), 2);
+		Assert.assertEquals(metrics.getSsb(), 364.5, 0.01);
+		Assert.assertEquals(metrics.getSsw(), 0.119, 0.01);
+		Assert.assertEquals(metrics.getPurity(), 1.0, 0.01);
+		Assert.assertEquals(metrics.getNmi(), 1.0, 0.01);
+		Assert.assertEquals(metrics.getAri(), 1.0, 0.01);
+		Assert.assertEquals(metrics.getRi(), 1.0, 0.01);
+		Assert.assertEquals(metrics.getSilhouetteCoefficient(), 0.99, 0.01);
+		System.out.println(metrics.toString());
+	}
+
+	@Test
+	public void testNoVector() throws Exception {
+		MemSourceBatchOp inOp = new MemSourceBatchOp(Arrays.asList(rows), new String[] {"label", "Y"});
+
+		KMeans train = new KMeans()
+			.setVectorCol("Y")
+			.setPredictionCol("pred")
+			.setK(2);
+
+		BatchOperator <?> results = train.fit(inOp).transform(inOp);
+
+		MTable mtable = results.collectMTable();
+		MemSourceLocalOp source = new MemSourceLocalOp(mtable);
+
+		ClusterMetrics metrics = new EvalClusterLocalOp()
+			.setPredictionCol("pred")
+			.linkFrom(source)
+			.collectMetrics();
+
+		Assert.assertEquals(metrics.getCount().intValue(), 6);
+		Assert.assertArrayEquals(metrics.getClusterArray(), new String[] {"0", "1"});
+	}
+
+	/**
+	 * DBSCAN may produce results with only 1 cluster. The evaluation operator is expected to give metrics to indicate
+	 * such bad situation.
+	 */
+	@Test
+	public void testOnlyOneCluster() {
+		List <Row> rows = Arrays.asList(
+			Row.of(0L, "0,0,0"),
+			Row.of(0L, "0.1,0.1,0.1"),
+			Row.of(0L, "0.2,0.2,0.2")
+		);
+		MemSourceLocalOp source = new MemSourceLocalOp(rows, new String[] {"pred", "vec"});
+		ClusterMetrics metrics = new EvalClusterLocalOp(new Params())
+			.setPredictionCol("pred")
+			.setVectorCol("vec")
+			.linkFrom(source)
+			.collectMetrics();
+		Assert.assertEquals(0., metrics.getVrc(), 0.01);
+		Assert.assertEquals(0., metrics.getSp(), 0.01);
+		Assert.assertEquals(1., metrics.getSilhouetteCoefficient(), 0.01);
+		Assert.assertEquals(Double.POSITIVE_INFINITY, metrics.getDb(), 0.01);
+	}
+
+	@Test
+	public void testEmtpyDataset() {
+		List <Row> rows = Arrays.asList(
+			Row.of(0L, "0,0,0"),
+			Row.of(0L, "0.1,0.1,0.1"),
+			Row.of(0L, "0.2,0.2,0.2")
+		);
+		LocalOperator <?> source = new MemSourceLocalOp(rows, new String[] {"pred", "vec"});
+		source = source.filter("pred > 0");
+		ClusterMetrics metrics = new EvalClusterLocalOp(new Params())
+			.setPredictionCol("pred")
+			.setVectorCol("vec")
+			.linkFrom(source)
+			.collectMetrics();
+		Assert.assertEquals(0., metrics.getVrc(), 0.01);
+		Assert.assertEquals(0., metrics.getSp(), 0.01);
+		Assert.assertEquals(-1., metrics.getSilhouetteCoefficient(), 0.01);
+		Assert.assertEquals(Double.POSITIVE_INFINITY, metrics.getDb(), 0.01);
+	}
+}

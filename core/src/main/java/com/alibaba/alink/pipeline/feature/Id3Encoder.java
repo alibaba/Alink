@@ -3,8 +3,6 @@ package com.alibaba.alink.pipeline.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.Id3TrainBatchOp;
 import com.alibaba.alink.params.classification.Id3TrainParams;
 import com.alibaba.alink.params.feature.Id3EncoderParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -23,8 +21,4 @@ public class Id3Encoder extends Trainer <Id3Encoder, Id3EncoderModel> implements
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new Id3TrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

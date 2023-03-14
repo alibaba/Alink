@@ -3,11 +3,13 @@ package com.alibaba.alink.operator.batch.timeseries;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.timeseries.AutoGarchMapper;
 import com.alibaba.alink.params.timeseries.AutoGarchParams;
 
 @NameCn("AutoGarch")
+@NameEn("Auto Graph")
 public final class AutoGarchBatchOp extends MapBatchOp<AutoGarchBatchOp>
 	implements AutoGarchParams <AutoGarchBatchOp> {
 

@@ -13,6 +13,7 @@ import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple5;
@@ -37,22 +38,16 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
-import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
-import com.alibaba.alink.common.lazy.WithTrainInfo;
+import com.alibaba.alink.operator.batch.utils.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.linear.unarylossfunc.LogLossFunc;
-import com.alibaba.alink.operator.common.linear.unarylossfunc.PerceptronLossFunc;
-import com.alibaba.alink.operator.common.linear.unarylossfunc.SmoothHingeLossFunc;
-import com.alibaba.alink.operator.common.linear.unarylossfunc.SquareLossFunc;
-import com.alibaba.alink.operator.common.linear.unarylossfunc.SvrLossFunc;
 import com.alibaba.alink.operator.common.optim.Lbfgs;
 import com.alibaba.alink.operator.common.optim.Optimizer;
 import com.alibaba.alink.operator.common.optim.OptimizerFactory;
@@ -192,7 +187,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 
 		DataSet <Tuple3 <Double, Double, Vector>>
 			trainData = preProcess(initData, params, isRegProc, meanVar, labelValues, featSize);
-		DataSet <DenseVector> initModelDataSet = getInitialModel(initModel, featSize, meanVar, params, linearModelType);
+		DataSet <DenseVector> initModelDataSet = getInitialModel(initModel, featSize, meanVar, params,
+			linearModelType);
 
 		// Solve the optimization problem.
 		DataSet <Tuple2 <DenseVector, double[]>> coefVectorSet = optimize(params, featSize,
@@ -215,7 +211,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 		// Convert the model rows to table.
 		this.setOutput(modelRows, new LinearModelDataConverter(labelType).getModelSchema());
 
-		this.setSideOutputTables(getSideTablesOfCoefficient(modelRows, initData, featSize,
+		this.setSideOutputTables(getSideTablesOfCoefficient(coefVectorSet.project(1), modelRows, initData, featSize,
 			params.get(LinearTrainParams.FEATURE_COLS),
 			params.get(LinearTrainParams.WITH_INTERCEPT),
 			getMLEnvironmentId()));
@@ -227,48 +223,51 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 														DataSet <DenseVector[]> meanVar,
 														Params params,
 														final LinearModelType localLinearModelType) {
-		 return initModel == null ? null : initModel.getDataSet().reduceGroup(
-			new RichGroupReduceFunction <Row, DenseVector>() {
-				@Override
-				public void reduce(Iterable <Row> values, Collector <DenseVector> out) {
-					int featSize = (int) getRuntimeContext().getBroadcastVariable("featSize").get(0);
-					DenseVector[] meanVar =
-						(DenseVector[]) getRuntimeContext().getBroadcastVariable("meanVar").get(0);
-					List <Row> modelRows = new ArrayList <>(0);
-					for (Row row : values) {
-						modelRows.add(row);
-					}
-					LinearModelData model = new LinearModelDataConverter().load(modelRows);
+		return initModel == null ? null : initModel.getDataSet().reduceGroup(
+				new RichGroupReduceFunction <Row, DenseVector>() {
+					@Override
+					public void reduce(Iterable <Row> values, Collector <DenseVector> out) {
+						int featSize = (int) getRuntimeContext().getBroadcastVariable("featSize").get(0);
+						DenseVector[] meanVar =
+							(DenseVector[]) getRuntimeContext().getBroadcastVariable("meanVar").get(0);
+						List <Row> modelRows = new ArrayList <>(0);
+						for (Row row : values) {
+							modelRows.add(row);
+						}
+						LinearModelData model = new LinearModelDataConverter().load(modelRows);
 
-					if (!(model.hasInterceptItem == params.get(HasWithIntercept.WITH_INTERCEPT))) {
-						throw new AkIllegalArgumentException("Initial linear model is not compatible with parameter setting."
-							+ "InterceptItem parameter setting error.");
-					}
-					if (!(model.linearModelType == localLinearModelType)) {
-						throw new AkIllegalArgumentException("Initial linear model is not compatible with parameter setting."
-							+ "linearModelType setting error.");
-					}
-					if (!(model.vectorSize == featSize)) {
-						throw new AkIllegalDataException("Initial linear model is not compatible with training data. "
-							+ " vector size not equal, vector size in init model is : " + model.vectorSize +
-							" and vector size of train data is : " + featSize);
-					}
-					int n = meanVar[0].size();
-					if (model.hasInterceptItem) {
-						double sum = 0.0;
-						for (int i = 1; i < n; ++i) {
-							sum += model.coefVector.get(i) * meanVar[0].get(i);
-							model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(i));
+						if (!(model.hasInterceptItem == params.get(HasWithIntercept.WITH_INTERCEPT))) {
+							throw new AkIllegalArgumentException(
+								"Initial linear model is not compatible with parameter setting."
+									+ "InterceptItem parameter setting error.");
 						}
-						model.coefVector.set(0, model.coefVector.get(0) + sum);
-					} else {
-						for (int i = 0; i < n; ++i) {
-							model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(i));
+						if (!(model.linearModelType == localLinearModelType)) {
+							throw new AkIllegalArgumentException(
+								"Initial linear model is not compatible with parameter setting."
+									+ "linearModelType setting error.");
 						}
+						if (!(model.vectorSize == featSize)) {
+							throw new AkIllegalDataException("Initial linear model is not compatible with training "
+								+ "data. "
+								+ " vector size not equal, vector size in init model is : " + model.vectorSize +
+								" and vector size of train data is : " + featSize);
+						}
+						int n = meanVar[0].size();
+						if (model.hasInterceptItem) {
+							double sum = 0.0;
+							for (int i = 1; i < n; ++i) {
+								sum += model.coefVector.get(i) * meanVar[0].get(i);
+								model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(i));
+							}
+							model.coefVector.set(0, model.coefVector.get(0) + sum);
+						} else {
+							for (int i = 0; i < n; ++i) {
+								model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(i));
+							}
+						}
+						out.collect(model.coefVector);
 					}
-					out.collect(model.coefVector);
-				}
-			})
+				})
 			.withBroadcastSet(featSize, "featSize")
 			.withBroadcastSet(meanVar, "meanVar");
 	}
@@ -462,25 +461,25 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 			});
 	}
 
-	public static Table[] getSideTablesOfCoefficient(DataSet <Row> modelRow,
+	public static Table[] getSideTablesOfCoefficient(DataSet <Tuple1 <double[]>> coefInfo,
+													 DataSet <Row> modelRows,
 													 DataSet <Tuple3 <Double, Object, Vector>> inputData,
 													 DataSet <Integer> vecSize,
 													 final String[] featureNames,
 													 final boolean hasInterception,
 													 long environmentId) {
-		DataSet <LinearModelData> model = modelRow.mapPartition(new MapPartitionFunction <Row, LinearModelData>() {
-			private static final long serialVersionUID = 2063366042018382802L;
+		DataSet <LinearModelData> model = modelRows.mapPartition(new MapPartitionFunction <Row, LinearModelData>() {
+                       private static final long serialVersionUID = 2063366042018382802L;
 
-			@Override
-			public void mapPartition(Iterable <Row> values, Collector <LinearModelData> out) {
-				List <Row> rows = new ArrayList <>();
-				for (Row row : values) {
-					rows.add(row);
-				}
-				out.collect(new LinearModelDataConverter().load(rows));
-			}
-		}).setParallelism(1);
-
+                      @Override
+                       public void mapPartition(Iterable <Row> values, Collector <LinearModelData> out) {
+				                              List <Row> rows = new ArrayList <>();
+				                               for (Row row : values) {
+				                                      rows.add(row);
+				                              }
+				                              out.collect(new LinearModelDataConverter().load(rows));
+			                     }
+          }).setParallelism(1);
 		DataSet <Tuple5 <String, String[], double[], double[], double[]>> allInfo = inputData
 			.mapPartition(
 				new RichMapPartitionFunction <Tuple3 <Double, Object, Vector>, Tuple3 <Integer, double[], double[]>>
@@ -570,15 +569,19 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 				Tuple5 <String, String[], double[], double[], double[]>>() {
 				private static final long serialVersionUID = 7815111101106759520L;
 				private DenseVector coefVec;
-				private LinearModelData model;
+				private Tuple2 <DenseVector, double[]> model;
 				private double[] cinfo;
+				private Params metaInfo;
 
 				@Override
 				public void open(Configuration parameters) throws Exception {
 					super.open(parameters);
-					model = ((LinearModelData) getRuntimeContext().getBroadcastVariable("model").get(0));
+					cinfo = ((Tuple1 <double[]>) getRuntimeContext().getBroadcastVariable(
+						"cinfo").get(0)).f0;
+					LinearModelData model = (LinearModelData) getRuntimeContext().getBroadcastVariable(
+						"model").get(0);
 					coefVec = model.coefVector;
-					cinfo = model.convergenceInfo;
+					metaInfo = model.getMetaInfo();
 				}
 
 				@Override
@@ -613,11 +616,13 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 					}
 
 					out.collect(
-						Tuple5.of(JsonConverter.toJson(model.getMetaInfo()), colNames, coefVec.getData(),
+						Tuple5.of(JsonConverter.toJson(metaInfo), colNames, coefVec.getData(),
 							importance, cinfo));
 
 				}
-			}).setParallelism(1).withBroadcastSet(model, "model");
+			}).setParallelism(1)
+			.withBroadcastSet(model, "model")
+			.withBroadcastSet(coefInfo, "cinfo");
 
 		DataSet <Row> importance = allInfo.mapPartition(
 			new MapPartitionFunction <Tuple5 <String, String[], double[], double[], double[]>, Row>() {
@@ -793,7 +798,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 		}
 		// Loss object function
 		DataSet <OptimObjFunc> objFunc = session.getExecutionEnvironment()
-			.fromElements(getObjFunction(modelType, params));
+			.fromElements(OptimObjFunc.getObjFunction(modelType, params));
 		Optimizer optimizer;
 		if (params.contains(LinearTrainParams.OPTIM_METHOD)) {
 			LinearTrainParams.OptimMethod method = params.get(LinearTrainParams.OPTIM_METHOD);
@@ -807,41 +812,6 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 		return optimizer.optimize();
 	}
 
-	/**
-	 * Get obj function.
-	 *
-	 * @param modelType Model type.
-	 * @param params    Parameters for train.
-	 * @return			Obj function.
-	 */
-	public static OptimObjFunc getObjFunction(LinearModelType modelType, Params params) {
-		OptimObjFunc objFunc;
-		// For different model type, we must set corresponding loss object function.
-		switch (modelType) {
-			case LinearReg:
-				objFunc = new UnaryLossObjFunc(new SquareLossFunc(), params);
-				break;
-			case SVR:
-				double svrTau = params.get(LinearSvrTrainParams.TAU);
-				objFunc = new UnaryLossObjFunc(new SvrLossFunc(svrTau), params);
-				break;
-			case LR:
-				objFunc = new UnaryLossObjFunc(new LogLossFunc(), params);
-				break;
-			case SVM:
-				objFunc = new UnaryLossObjFunc(new SmoothHingeLossFunc(), params);
-				break;
-			case Perceptron:
-				objFunc = new UnaryLossObjFunc(new PerceptronLossFunc(), params);
-				break;
-			case AFT:
-				objFunc = new AftRegObjFunc(params);
-				break;
-			default:
-				throw new AkUnimplementedOperationException("Linear model type is Not implemented yet!");
-		}
-		return objFunc;
-	}
 
 	/**
 	 * Transform train data to Tuple3 format.
@@ -912,6 +882,8 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 					featureColTypes[i] = "short";
 				} else if (type.equals(Types.BOOLEAN)) {
 					featureColTypes[i] = "bool";
+				} else if (type.equals(Types.BIG_DEC)) {
+					featureColTypes[i] = "decimal";
 				} else {
 					throw new AkIllegalArgumentException(
 						"Linear algorithm only support numerical data type. Current type is : " + type);
@@ -942,68 +914,68 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 		final boolean standardization = params.get(LinearTrainParams.STANDARDIZATION);
 		final boolean hasIntercept = params.get(LinearTrainParams.WITH_INTERCEPT);
 		return initData.mapPartition(
-			new RichMapPartitionFunction <Tuple3 <Double, Object, Vector>, Tuple3 <Double, Double, Vector>>() {
-				private static final long serialVersionUID = -3931917328901089041L;
-				private DenseVector[] meanVar;
-				private Object[] labelValues = null;
-				private int featureSize;
+				new RichMapPartitionFunction <Tuple3 <Double, Object, Vector>, Tuple3 <Double, Double, Vector>>() {
+					private static final long serialVersionUID = -3931917328901089041L;
+					private DenseVector[] meanVar;
+					private Object[] labelValues = null;
+					private int featureSize;
 
-				@Override
-				public void open(Configuration parameters) {
-					this.meanVar = (DenseVector[]) getRuntimeContext()
-						.getBroadcastVariable(MEAN_VAR).get(0);
-					this.labelValues = (Object[]) getRuntimeContext()
-						.getBroadcastVariable(LABEL_VALUES).get(0);
-					this.featureSize = (int) getRuntimeContext().getBroadcastVariable("featureSize").get(0);
-					modifyMeanVar(standardization, meanVar);
-				}
+					@Override
+					public void open(Configuration parameters) {
+						this.meanVar = (DenseVector[]) getRuntimeContext()
+							.getBroadcastVariable(MEAN_VAR).get(0);
+						this.labelValues = (Object[]) getRuntimeContext()
+							.getBroadcastVariable(LABEL_VALUES).get(0);
+						this.featureSize = (int) getRuntimeContext().getBroadcastVariable("featureSize").get(0);
+						modifyMeanVar(standardization, meanVar);
+					}
 
-				@Override
-				public void mapPartition(Iterable <Tuple3 <Double, Object, Vector>> values,
-										 Collector <Tuple3 <Double, Double, Vector>> out) {
-					for (Tuple3 <Double, Object, Vector> value : values) {
-						Vector aVector = value.f2;
+					@Override
+					public void mapPartition(Iterable <Tuple3 <Double, Object, Vector>> values,
+											 Collector <Tuple3 <Double, Double, Vector>> out) {
+						for (Tuple3 <Double, Object, Vector> value : values) {
+							Vector aVector = value.f2;
 
-						if (value.f0 > 0) {
-							Double label = isRegProc ? Double.parseDouble(value.f1.toString())
-								: (value.f1.equals(labelValues[0]) ? 1.0 : -1.0);
-							if (aVector instanceof DenseVector) {
-								if (aVector.size() < featureSize) {
-									DenseVector tmp = new DenseVector(featureSize);
-									for (int i = 0; i < aVector.size(); ++i) {
-										tmp.set(i, aVector.get(i));
-									}
-									aVector = tmp;
-								}
-								if (standardization) {
-									if (hasIntercept) {
+							if (value.f0 > 0) {
+								Double label = isRegProc ? Double.parseDouble(value.f1.toString())
+									: (value.f1.equals(labelValues[0]) ? 1.0 : -1.0);
+								if (aVector instanceof DenseVector) {
+									if (aVector.size() < featureSize) {
+										DenseVector tmp = new DenseVector(featureSize);
 										for (int i = 0; i < aVector.size(); ++i) {
-											aVector.set(i,
-												(aVector.get(i) - meanVar[0].get(i)) / meanVar[1].get(i));
+											tmp.set(i, aVector.get(i));
 										}
-									} else {
-										for (int i = 0; i < aVector.size(); ++i) {
-											aVector.set(i, aVector.get(i) / meanVar[1].get(i));
+										aVector = tmp;
+									}
+									if (standardization) {
+										if (hasIntercept) {
+											for (int i = 0; i < aVector.size(); ++i) {
+												aVector.set(i,
+													(aVector.get(i) - meanVar[0].get(i)) / meanVar[1].get(i));
+											}
+										} else {
+											for (int i = 0; i < aVector.size(); ++i) {
+												aVector.set(i, aVector.get(i) / meanVar[1].get(i));
+											}
 										}
 									}
-								}
-							} else {
-								if (standardization) {
-									int[] indices = ((SparseVector) aVector).getIndices();
-									double[] vals = ((SparseVector) aVector).getValues();
-									for (int i = 0; i < indices.length; ++i) {
-										vals[i] = vals[i] / meanVar[1].get(indices[i]);
+								} else {
+									if (standardization) {
+										int[] indices = ((SparseVector) aVector).getIndices();
+										double[] vals = ((SparseVector) aVector).getValues();
+										for (int i = 0; i < indices.length; ++i) {
+											vals[i] = vals[i] / meanVar[1].get(indices[i]);
+										}
+									}
+									if (aVector.size() == -1 || aVector.size() == 0) {
+										((SparseVector) aVector).setSize(featureSize);
 									}
 								}
-								if (aVector.size() == -1 || aVector.size() == 0) {
-									((SparseVector) aVector).setSize(featureSize);
-								}
+								out.collect(Tuple3.of(value.f0, label, aVector));
 							}
-							out.collect(Tuple3.of(value.f0, label, aVector));
 						}
 					}
-				}
-			}).withBroadcastSet(meanVar, MEAN_VAR)
+				}).withBroadcastSet(meanVar, MEAN_VAR)
 			.withBroadcastSet(labelValues, LABEL_VALUES)
 			.withBroadcastSet(featSize, "featureSize");
 	}
@@ -1096,7 +1068,6 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 		}
 
 		LinearModelData modelData = new LinearModelData(labelType, meta, featureNames, coefVector.f0);
-		modelData.convergenceInfo = coefVector.f1;
 		modelData.labelName = meta.get(LinearTrainParams.LABEL_COL);
 		modelData.featureTypes = meta.get(ModelParamName.FEATURE_TYPES);
 

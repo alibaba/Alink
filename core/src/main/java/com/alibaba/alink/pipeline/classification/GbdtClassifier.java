@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.GbdtTrainBatchOp;
 import com.alibaba.alink.params.classification.GbdtPredictParams;
 import com.alibaba.alink.params.classification.GbdtTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -46,8 +44,4 @@ public class GbdtClassifier extends Trainer <GbdtClassifier, GbdtClassificationM
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new GbdtTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
@@ -24,7 +25,7 @@ import java.util.Random;
 import java.util.function.Function;
 
 @RunWith(Parameterized.class)
-public class TensorInternalUtilsTest {
+public class TensorInternalUtilsTest extends AlinkTestBase {
 
 	private final Object arr;
 	private final Tensor <?> tensor;

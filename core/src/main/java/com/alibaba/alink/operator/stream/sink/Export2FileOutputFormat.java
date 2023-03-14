@@ -15,7 +15,7 @@ import com.alibaba.alink.common.io.filesystem.AkStream.AkWriter.AkCollector;
 import com.alibaba.alink.common.io.filesystem.AkUtils.AkMeta;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.filesystem.copy.FileOutputFormat;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;

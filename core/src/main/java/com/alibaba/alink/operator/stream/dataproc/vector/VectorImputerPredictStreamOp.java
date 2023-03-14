@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.dataproc.vector;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorImputerModelMapper;
 import com.alibaba.alink.operator.common.tree.predictors.TreeModelEncoderModelMapper;
@@ -19,6 +20,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorImputerPredictParams;
  * If value, will replace missing value with the value.
  */
 @NameCn("向量缺失值填充预测")
+@NameEn("Vector imputer prediction")
 public class VectorImputerPredictStreamOp extends ModelMapStreamOp <VectorImputerPredictStreamOp>
 	implements VectorImputerPredictParams <VectorImputerPredictStreamOp> {
 

@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.regression;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -16,6 +17,7 @@ import com.alibaba.alink.params.recommendation.FmPredictParams;
 @ParamSelectColumnSpec(name = "vectorCol",
 	allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("FM回归预测")
+@NameEn("FM regression prediction")
 public final class FmRegressorPredictStreamOp extends ModelMapStreamOp <FmRegressorPredictStreamOp>
 	implements FmPredictParams <FmRegressorPredictStreamOp> {
 

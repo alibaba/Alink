@@ -5,8 +5,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.LinearSvmTrainBatchOp;
 import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
 import com.alibaba.alink.params.classification.LinearSvmPredictParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -28,11 +26,6 @@ public class LinearSvm extends Trainer <LinearSvm, LinearSvmModel>
 
 	public LinearSvm(Params params) {
 		super(params);
-	}
-
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new LinearSvmTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 
 }

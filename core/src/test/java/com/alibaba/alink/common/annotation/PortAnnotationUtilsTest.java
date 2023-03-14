@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 
 import com.alibaba.alink.operator.batch.classification.BertTextPairClassifierTrainBatchOp;
 import com.alibaba.alink.operator.common.outlier.BaseOutlierBatchOp;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PortAnnotationUtilsTest {
+public class PortAnnotationUtilsTest extends AlinkTestBase {
 
 	@Test
 	public void printAnnotations() {

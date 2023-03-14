@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.dl.BaseDLStreamOp;
 import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.params.tensorflow.TensorFlowParams;
@@ -19,6 +20,7 @@ import static com.alibaba.alink.common.dl.utils.DLLauncherUtils.adjustNumWorkers
  * Any number of outputs are allowed from TF scripts, even no outputs.
  */
 @NameCn("TensorFlow2自定义脚本")
+@NameEn("TensorFlow2")
 public class TensorFlow2StreamOp extends BaseDLStreamOp <TensorFlow2StreamOp>
 	implements TensorFlowParams <TensorFlow2StreamOp> {
 

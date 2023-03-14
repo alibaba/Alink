@@ -484,10 +484,10 @@ public class Interval4Calc {
 		dis.tags = new String[n + 1];
 		if (ic.nCol > 0) {
 			dis.nCol = ic.nCol;
-			dis.mcs = new MeasureCalculator[n][dis.nCol];
+			dis.mcs = new IntervalMeasureCalculator[n][dis.nCol];
 			for (int i = 0; i < n; i++) {
 				for (int j = 0; j < dis.nCol; j++) {
-					dis.mcs[i][j] = new MeasureCalculator();
+					dis.mcs[i][j] = new IntervalMeasureCalculator();
 				}
 			}
 		}

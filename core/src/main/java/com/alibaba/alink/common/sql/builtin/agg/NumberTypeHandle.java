@@ -5,28 +5,37 @@ import org.apache.flink.api.common.typeinfo.Types;
 
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 
+import java.math.BigDecimal;
+
 public class NumberTypeHandle {
 
-
 	private TypeInformation dataType = null;
+
 	NumberTypeHandle(Object data) {
 		getType(data);
 	}
 
 	Number transformData(Number inputData) {
-		Double data = inputData.doubleValue();
-		if (Types.LONG.equals(dataType)) {
-			return data.longValue();
+		if (Types.DOUBLE.equals(dataType)) {
+			return inputData.doubleValue();
+		} else if (Types.LONG.equals(dataType)) {
+			return inputData.longValue();
 		} else if (Types.INT.equals(dataType)) {
-			return data.intValue();
-		} else if (Types.SHORT.equals(dataType)) {
-			return data.shortValue();
+			return inputData.intValue();
 		} else if (Types.FLOAT.equals(dataType)) {
-			return data.floatValue();
+			return inputData.floatValue();
+		} else if (Types.SHORT.equals(dataType)) {
+			return inputData.shortValue();
 		} else if (Types.BYTE.equals(dataType)) {
-			return data.byteValue();
-		} else if (Types.DOUBLE.equals(dataType)) {
-			return data;
+			return inputData.byteValue();
+		} else if (Types.BIG_DEC.equals(dataType)) {
+			if (inputData instanceof BigDecimal) {
+				return inputData;
+			} else if (inputData instanceof Double || inputData instanceof Float) {
+				return new BigDecimal(inputData.doubleValue());
+			} else {
+				return new BigDecimal(inputData.longValue());
+			}
 		}
 		throw new AkUnsupportedOperationException("Do not support this type: " + dataType);
 	}
@@ -44,6 +53,8 @@ public class NumberTypeHandle {
 			dataType = Types.FLOAT;
 		} else if (data instanceof Byte) {
 			dataType = Types.BYTE;
+		} else if (data instanceof BigDecimal) {
+			dataType = Types.BIG_DEC;
 		} else {
 			throw new AkUnsupportedOperationException("We only support double, long, int, float, short, byte.");
 		}

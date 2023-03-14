@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -22,6 +23,7 @@ import com.alibaba.alink.params.similarity.NearestNeighborPredictParams;
 })
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("字符串最近邻预测")
+@NameEn("String Nearest Neighbor Prediction")
 public class StringNearestNeighborPredictBatchOp extends ModelMapBatchOp <StringNearestNeighborPredictBatchOp>
 	implements NearestNeighborPredictParams <StringNearestNeighborPredictBatchOp> {
 

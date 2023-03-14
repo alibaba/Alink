@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.dataproc.format;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.utils.FlatMapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.format.AnyToTripleFlatMapper;
@@ -14,6 +15,7 @@ import com.alibaba.alink.params.dataproc.format.ToTripleParams;
  */
 
 @NameCn("")
+@Internal
 class AnyToTripleBatchOp<T extends AnyToTripleBatchOp <T>> extends FlatMapBatchOp <T>
 	implements ToTripleParams <T> {
 

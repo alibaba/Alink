@@ -9,7 +9,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;

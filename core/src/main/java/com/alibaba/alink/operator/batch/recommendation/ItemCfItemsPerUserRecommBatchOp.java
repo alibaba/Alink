@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.recommendation;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.common.recommendation.ItemCfRecommKernel;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
 import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
@@ -11,6 +12,7 @@ import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
  * Recommend similar items for the given item.
  */
 @NameCn("ItemCf：ItemsPerUser推荐")
+@NameEn("ItemCf Items Per User Recommend")
 public class ItemCfItemsPerUserRecommBatchOp extends BaseRecommBatchOp <ItemCfItemsPerUserRecommBatchOp>
 	implements BaseItemsPerUserRecommParams <ItemCfItemsPerUserRecommBatchOp> {
 
