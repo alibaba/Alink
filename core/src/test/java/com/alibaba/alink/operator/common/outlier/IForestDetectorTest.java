@@ -10,10 +10,11 @@ import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.params.outlier.HasInputMTableCol;
 import com.alibaba.alink.params.outlier.HasOutputMTableCol;
 import com.alibaba.alink.params.outlier.IForestDetectorParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class IForestDetectorTest {
+public class IForestDetectorTest extends AlinkTestBase {
 
 	@Test
 	public void testMTableImmutable() throws Exception {

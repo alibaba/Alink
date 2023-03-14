@@ -8,7 +8,7 @@ public class Interval4Display {
 	public int n;
 	public long[] count = null;
 	public int nCol = -1;
-	public MeasureCalculator[][] mcs = null;
+	public IntervalMeasureCalculator[][] mcs = null;
 	public String[] tags = null;
 	public String step = null;
 

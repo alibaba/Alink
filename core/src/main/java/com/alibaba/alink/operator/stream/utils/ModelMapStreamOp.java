@@ -1,11 +1,15 @@
 package com.alibaba.alink.operator.stream.utils;
 
 import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.Partitioner;
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
+import org.apache.flink.util.Collector;
 import org.apache.flink.util.function.TriFunction;
 
 import com.alibaba.alink.common.MTable;
@@ -30,8 +34,7 @@ import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
-import com.alibaba.alink.operator.common.stream.model.PredictProcess;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
@@ -79,6 +82,32 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 
 		this.model = model;
 		this.mapperBuilder = mapperBuilder;
+	}
+
+	public static DataStream <Row> broadcastStream(DataStream <Row> input) {
+		return input
+			.flatMap(new RichFlatMapFunction <Row, Tuple2 <Integer, Row>>() {
+				private static final long serialVersionUID = 6421400378693673120L;
+
+				@Override
+				public void flatMap(Row row, Collector <Tuple2 <Integer, Row>> out)
+					throws Exception {
+					int numTasks = getRuntimeContext().getNumberOfParallelSubtasks();
+					for (int i = 0; i < numTasks; ++i) {
+						out.collect(Tuple2.of(i, row));
+					}
+				}
+			}).partitionCustom(new Partitioner <Integer>() {
+
+				@Override
+				public int partition(Integer key, int numPartitions) {return key;}
+			}, 0).map(new MapFunction <Tuple2 <Integer, Row>, Row>() {
+
+				@Override
+				public Row map(Tuple2 <Integer, Row> value) throws Exception {
+					return value.f1;
+				}
+			});
 	}
 
 	@Override
@@ -165,7 +194,7 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 		if (modelStream != null) {
 			return input_data
 				.getDataStream()
-				.connect(ModelStreamUtils.broadcastStream(modelStream))
+				.connect(broadcastStream(modelStream))
 				.flatMap(
 					new PredictProcess(
 						modelSchema, input_data.getSchema(), params, mapperBuilder, modelDataBridge,

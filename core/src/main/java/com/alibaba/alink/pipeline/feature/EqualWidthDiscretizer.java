@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.feature.EqualWidthDiscretizerTrainBatchOp;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -29,8 +27,4 @@ public class EqualWidthDiscretizer extends Trainer <EqualWidthDiscretizer, Quant
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new EqualWidthDiscretizerTrainBatchOp(getParams()).linkFrom(in);
-	}
 }

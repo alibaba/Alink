@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -16,6 +17,7 @@ import com.alibaba.alink.params.feature.MultiHotPredictParams;
  */
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("多热编码预测")
+@NameEn("Multi-hot prediction")
 public class MultiHotPredictStreamOp extends ModelMapStreamOp <MultiHotPredictStreamOp>
 	implements MultiHotPredictParams <MultiHotPredictStreamOp> {
 

@@ -11,13 +11,14 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.params.feature.GenerateFeatureOfWindowParams;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.fe.GenerateFeatureUtil;
 import com.alibaba.alink.common.fe.define.BaseStatFeatures;
 import com.alibaba.alink.common.fe.define.InterfaceWindowStatFeatures;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.params.feature.GenerateFeatureOfWindowParams;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
  * Generate Feature Window.
  */
 @NameCn("窗口特征生成")
+@NameEn("Generate Feature of Window")
 public class GenerateFeatureOfWindowBatchOp extends BatchOperator <GenerateFeatureOfWindowBatchOp>
 	implements GenerateFeatureOfWindowParams <GenerateFeatureOfWindowBatchOp> {
 

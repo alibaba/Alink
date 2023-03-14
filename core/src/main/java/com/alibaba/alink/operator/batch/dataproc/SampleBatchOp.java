@@ -7,6 +7,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -21,6 +22,7 @@ import java.util.Random;
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @NameCn("随机采样")
+@NameEn("Data Sampling")
 public final class SampleBatchOp extends BatchOperator <SampleBatchOp>
 	implements SampleParams <SampleBatchOp> {
 

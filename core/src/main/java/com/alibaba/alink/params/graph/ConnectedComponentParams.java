@@ -11,6 +11,8 @@ public interface ConnectedComponentParams<T> extends
 	HasMaxIterDefaultAs50 <T>
 {
 
+	@NameCn("边的源顶点")
+	@DescCn("边的源顶点")
 	ParamInfo <String> VERTEX_COL = ParamInfoFactory
 		.createParamInfo("vertexCol", String.class)
 		.setDescription("source vertex of edge")

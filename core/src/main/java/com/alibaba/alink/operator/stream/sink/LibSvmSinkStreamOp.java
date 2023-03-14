@@ -8,10 +8,11 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.io.LibSvmSinkParams;
@@ -23,6 +24,7 @@ import static com.alibaba.alink.operator.local.sink.LibSvmSinkLocalOp.formatLibS
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SinkStream)
 @NameCn("LibSvm文件导出")
+@NameEn("LibSvm Sink")
 public final class LibSvmSinkStreamOp extends BaseSinkStreamOp <LibSvmSinkStreamOp>
 	implements LibSvmSinkParams <LibSvmSinkStreamOp> {
 

@@ -119,7 +119,6 @@ public class LinearModelDataConverter extends LabeledModelDataConverter <LinearM
 		modelData.featureColTypes = data.featureTypes;
 		modelData.coefVector = data.coefVector;
 		modelData.coefVectors = data.coefVectors;
-		modelData.convergenceInfo = data.convergenceInfo;
 		return modelData;
 	}
 
@@ -130,7 +129,6 @@ public class LinearModelDataConverter extends LabeledModelDataConverter <LinearM
 		data.featureNames = modelData.featureColNames;
 		data.featureTypes = modelData.featureColTypes;
 		data.coefVector = modelData.coefVector;
-		data.convergenceInfo = modelData.convergenceInfo;
 
 		if (data.modelName.equals("softmax")) {
 			double[] w = modelData.coefVector.getData();

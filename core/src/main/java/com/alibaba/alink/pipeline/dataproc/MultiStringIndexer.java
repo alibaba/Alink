@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.MultiStringIndexerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
 import com.alibaba.alink.params.dataproc.MultiStringIndexerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -40,8 +38,4 @@ public class MultiStringIndexer extends Trainer <MultiStringIndexer, MultiString
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new MultiStringIndexerTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

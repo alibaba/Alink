@@ -10,6 +10,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -32,6 +33,7 @@ import com.alibaba.alink.params.dataproc.LookupParams;
 @ParamSelectColumnSpec(name="mapKeyCols")
 @ParamSelectColumnSpec(name="mapValueCols")
 @NameCn("HugeLookup")
+@NameEn("HugeLookup")
 public class HugeLookupBatchOp extends BatchOperator <HugeLookupBatchOp>
 	implements LookupParams <HugeLookupBatchOp> {
 

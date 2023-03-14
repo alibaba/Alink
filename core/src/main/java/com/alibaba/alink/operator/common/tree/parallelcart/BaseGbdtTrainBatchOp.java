@@ -27,7 +27,7 @@ import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
@@ -148,7 +148,7 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 				HasCategoricalCols.CATEGORICAL_COLS,
 				TableUtil.getCategoricalCols(
 					in.getSchema(),
-					Preprocessing.checkAndGetOptionalFeatureCols(getParams(), this),
+					TableUtil.getOptionalFeatureCols(in.getSchema(), getParams()),
 					getParams().contains(GbdtTrainParams.CATEGORICAL_COLS) ? getParams()
 						.get(GbdtTrainParams.CATEGORICAL_COLS) : null
 				)
@@ -167,7 +167,7 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 				FlinkTypeConverter.getTypeString(
 					TableUtil.findColTypes(
 						in.getSchema(),
-						Preprocessing.checkAndGetOptionalFeatureCols(getParams(), this)
+						TableUtil.getOptionalFeatureCols(in.getSchema(), getParams())
 					)
 				)
 			);
@@ -179,7 +179,7 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 			}
 		}
 
-		String[] trainColNames = trainColsWithGroup();
+		String[] trainColNames = trainColsWithGroup(in.getSchema());
 
 		//check label if has null value or not.
 		final String labelColName = this.getParams().get(HasLabelCol.LABEL_COL);
@@ -433,7 +433,7 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 		}
 	}
 
-	private String[] trainColsWithGroup() {
+	private String[] trainColsWithGroup(TableSchema schema) {
 		// group column
 		List <String> trainCols = new ArrayList <>();
 		if (LossUtils.isRanking(getParams().get(LossUtils.LOSS_TYPE))) {
@@ -447,7 +447,7 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 			);
 		} else {
 			trainCols.addAll(Arrays.asList(
-				Preprocessing.checkAndGetOptionalFeatureCols(getParams(), this)
+				TableUtil.getOptionalFeatureCols(schema, getParams())
 			));
 		}
 

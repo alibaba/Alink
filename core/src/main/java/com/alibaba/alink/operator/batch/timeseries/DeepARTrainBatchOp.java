@@ -18,9 +18,11 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamCond;
 import com.alibaba.alink.common.annotation.ParamCond.CondType;
@@ -37,7 +39,7 @@ import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -81,6 +83,7 @@ import java.util.Map;
 	)
 )
 @NameCn("DeepAR训练")
+@NameEn("Deep AR Training")
 public class DeepARTrainBatchOp extends BatchOperator <DeepARTrainBatchOp>
 	implements DeepARTrainParams <DeepARTrainBatchOp> {
 
@@ -175,6 +178,7 @@ public class DeepARTrainBatchOp extends BatchOperator <DeepARTrainBatchOp>
 		return this;
 	}
 
+	@Internal
 	private static class DeepARPreProcessBatchOp extends BatchOperator <DeepARPreProcessBatchOp>
 		implements DeepARPreProcessParams <DeepARPreProcessBatchOp> {
 

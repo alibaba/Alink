@@ -9,19 +9,21 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelDataConverter;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorStandardScalerModelInfo;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.dataproc.vector.VectorStandardTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * StandardScaler transforms a dataSet, normalizing each feature to have unit standard deviation and/or zero mean.
@@ -31,6 +33,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorStandardTrainParams;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量标准化训练")
+@NameEn("Vector Standard Scaler Train")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.vector.VectorStandardScaler")
 public final class VectorStandardScalerTrainBatchOp extends BatchOperator <VectorStandardScalerTrainBatchOp>
 	implements VectorStandardTrainParams <VectorStandardScalerTrainBatchOp>,
 	WithModelInfoBatchOp <VectorStandardScalerModelInfo, VectorStandardScalerTrainBatchOp,

@@ -1,6 +1,5 @@
 package com.alibaba.alink.common.sql.builtin.agg;
 
-
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.sql.builtin.agg.BaseSummaryUdaf.SummaryData;
 
@@ -47,7 +46,6 @@ public abstract class BaseSummaryUdaf extends BaseUdaf <Object, SummaryData> {
 	public SummaryData createAccumulator() {
 		return new SummaryData(excludeLast);
 	}
-
 
 	public static class SummaryData {
 		public long count = 0;
@@ -202,6 +200,9 @@ public abstract class BaseSummaryUdaf extends BaseUdaf <Object, SummaryData> {
 		}
 
 		public void merge(SummaryData data) {
+			if (this.handle == null) {
+				this.handle = data.handle;
+			}
 			sum += data.sum;
 			count += data.count;
 			squareSum += data.squareSum;
@@ -231,7 +232,6 @@ public abstract class BaseSummaryUdaf extends BaseUdaf <Object, SummaryData> {
 			}
 			return true;
 		}
-
 
 	}
 }

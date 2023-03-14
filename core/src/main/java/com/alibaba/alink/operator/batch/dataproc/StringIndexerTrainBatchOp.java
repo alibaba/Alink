@@ -28,6 +28,7 @@ import com.alibaba.alink.operator.common.dataproc.HugeStringIndexerUtil;
 import com.alibaba.alink.operator.common.dataproc.StringIndexerModelDataConverter;
 import com.alibaba.alink.params.dataproc.HasStringOrderTypeDefaultAsRandom;
 import com.alibaba.alink.params.dataproc.StringIndexerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Encode one column of strings to bigint type indices.
@@ -49,6 +50,7 @@ import com.alibaba.alink.params.dataproc.StringIndexerTrainParams;
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.INT_LONG_STRING_TYPES)
 @NameCn("字符串编码训练")
 @NameEn("String Indexer Train")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.StringIndexer")
 public final class StringIndexerTrainBatchOp
 	extends BatchOperator <StringIndexerTrainBatchOp>
 	implements StringIndexerTrainParams <StringIndexerTrainBatchOp> {

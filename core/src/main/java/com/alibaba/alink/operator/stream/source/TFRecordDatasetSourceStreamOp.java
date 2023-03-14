@@ -6,11 +6,12 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.TFRecordDatasetUtils.TFRecordDatasetInputFormat;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.params.io.TFRecordDatasetSourceParams;
@@ -20,6 +21,7 @@ import com.alibaba.alink.params.io.TFRecordDatasetSourceParams;
  */
 @IoOpAnnotation(name = "tfrecord", ioType = IOType.SourceStream)
 @NameCn("TFRecordDataset文件读入")
+@NameEn("TFRecord Dataset Source")
 public final class TFRecordDatasetSourceStreamOp extends BaseSourceStreamOp <TFRecordDatasetSourceStreamOp>
 	implements TFRecordDatasetSourceParams <TFRecordDatasetSourceStreamOp> {
 	

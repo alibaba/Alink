@@ -9,15 +9,16 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.common.io.partition.AkSourceCollectorCreator;
-import com.alibaba.alink.operator.common.io.partition.Utils;
+import com.alibaba.alink.operator.stream.utils.DataStreamUtil;
 import com.alibaba.alink.params.io.AkSourceParams;
 
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.io.IOException;
  */
 @IoOpAnnotation(name = "ak", ioType = IOType.SourceStream)
 @NameCn("AK文件数据源")
+@NameEn("AK Source")
 public final class AkSourceStreamOp extends BaseSourceStreamOp <AkSourceStreamOp>
 	implements AkSourceParams <AkSourceStreamOp> {
 	private static final long serialVersionUID = -1632712937397561402L;
@@ -68,7 +70,7 @@ public final class AkSourceStreamOp extends BaseSourceStreamOp <AkSourceStreamOp
 			try {
 
 				Tuple2 <DataStream <Row>, TableSchema> schemaAndData =
-					Utils.readFromPartitionStream(
+					DataStreamUtil.readFromPartitionStream(
 						getParams(), getMLEnvironmentId(),
 						new AkSourceCollectorCreator(meta)
 					);

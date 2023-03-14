@@ -1,10 +1,9 @@
 package com.alibaba.alink.common.dl.utils;
 
-import org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.dl.coding.TFExampleConversionV2;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
@@ -176,7 +175,7 @@ public class TFExampleConversionUtils {
 				bb.addValue(ByteString.copyFrom(stringTensor.getString(i), StandardCharsets.UTF_8));
 			}
 			featureBuilder.setBytesList(bb);
-		} else if (PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO.equals(type)) {
+		} else if (AlinkTypes.VARBINARY.equals(type)) {
 			Builder bb = BytesList.newBuilder();
 			bb.addValue(ByteString.copyFrom((byte[]) val));
 			featureBuilder.setBytesList(bb);
@@ -270,7 +269,7 @@ public class TFExampleConversionUtils {
 				AkPreconditions.checkArgument(byteStringList.size() > 0,
 					new AkIllegalDataException("no BYTES values in the feature."));
 				return byteStringList.get(0).toString(StandardCharsets.UTF_8);
-			} else if (PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO.equals(type)) {
+			} else if (AlinkTypes.VARBINARY.equals(type)) {
 				AkPreconditions.checkArgument(byteStringList.size() > 0,
 					new AkIllegalDataException("no BYTES values in the feature."));
 				return byteStringList.get(0).toByteArray();

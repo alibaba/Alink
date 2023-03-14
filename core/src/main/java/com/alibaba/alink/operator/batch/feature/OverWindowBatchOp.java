@@ -1,19 +1,21 @@
 package com.alibaba.alink.operator.batch.feature;
 
-import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
+import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.operators.SortedGrouping;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -27,8 +29,9 @@ import com.alibaba.alink.common.sql.builtin.agg.LastDistinctValueUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.LastTimeUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.LastValueUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.ListAggUdaf;
+import com.alibaba.alink.common.sql.builtin.agg.MTableAgg;
 import com.alibaba.alink.common.sql.builtin.agg.SumLastUdaf;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
@@ -44,6 +47,7 @@ import static com.alibaba.alink.operator.common.feature.featurebuilder.WindowRes
  * Batch over window feature builder.
  */
 @NameCn("特征构造：OverWindow")
+@NameEn("Over Window Feature Builder")
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @ParamSelectColumnSpec(name = "partitionCols")
@@ -80,7 +84,8 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 		int[] reversedIndices = TableUtil.findColIndices(inputColNames, reversedCols);
 
 		String sqlClause = getClause();
-		FeatureClause[] featureClauses = FeatureClauseUtil.extractFeatureClauses(sqlClause);
+		FeatureClause[] featureClauses = FeatureClauseUtil.extractFeatureClauses(sqlClause, in.getSchema(),
+			orderBy);
 
 		DataSet <Row> res;
 		if (partitionBys != null) {
@@ -197,7 +202,7 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 		return Tuple2.of(orderIndices, orderTypes);
 	}
 
-	private static class GroupOperation implements GroupReduceFunction <Row, Row> {
+	private static class GroupOperation extends RichGroupReduceFunction <Row, Row> {
 		FeatureClause[] featureClauses;
 		int sessionId;
 		int[] partitionByIndices;
@@ -209,10 +214,15 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 					   int[] partitionByIndices, int[] reversedIndices, String[] inputColNames) {
 			this.featureClauses = featureClauses;
 			this.orderIndices = orderIndices;
-			this.sessionId = SessionSharedData.getNewSessionId();
 			this.partitionByIndices = partitionByIndices;
 			this.reversedIndices = reversedIndices;
 			this.inputColNames = inputColNames;
+		}
+
+		@Override
+		public void open(Configuration parameters) throws Exception {
+			//new open func in worker, so sessionId new here, not constructor.
+			this.sessionId = SessionSharedData.getNewSessionId();
 		}
 
 		@Override
@@ -236,7 +246,7 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 					}
 				}
 
-				BaseUdaf<?, ?>[] calcs = (BaseUdaf<?, ?>[]) SessionSharedData.get(keys.toString(), sessionId);
+				BaseUdaf <?, ?>[] calcs = (BaseUdaf <?, ?>[]) SessionSharedData.get(keys.toString(), sessionId);
 				if (calcs == null) {
 					calcs = new BaseUdaf[featureClauses.length];
 					for (int i = 0; i < featureClauses.length; i++) {
@@ -250,6 +260,7 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 				} else {
 					index++;
 				}
+
 				for (int i = 0; i < featureClauses.length; i++) {
 
 					/*
@@ -258,7 +269,7 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 
 					  Beside, 'distinct' and 'all' are not supported.
 					 */
-					BaseUdaf<?, ?> udaf = calcs[i];
+					BaseUdaf <?, ?> udaf = calcs[i];
 					if (udaf instanceof LastValueUdaf || udaf instanceof LastDistinctValueUdaf ||
 						udaf instanceof LastTimeUdaf || udaf instanceof SumLastUdaf) {
 						int kLength = featureClauses[i].inputParams.length;
@@ -272,7 +283,7 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 						if (udaf instanceof LastDistinctValueUdaf) {
 							for (int j = 0; j < kLength; j++) {
 								aggInputData[inputIndex++] = value.getField(
-									TableUtil.findColIndex(inputColNames, (String) featureClauses[j].inputParams[0]));
+									TableUtil.findColIndex(inputColNames, (String) featureClauses[i].inputParams[0]));
 							}
 						} else {
 							for (int j = 0; j < kLength; j++) {
@@ -298,6 +309,16 @@ public class OverWindowBatchOp extends BatchOperator <OverWindowBatchOp>
 						udaf.accumulateBatch(thisData);
 					} else if (udaf instanceof CountUdaf) {
 						udaf.accumulateBatch(0);
+					} else if (udaf instanceof MTableAgg) {
+						Object[] aggInputData = new Object[featureClauses[i].inputParams.length + 1];
+						aggInputData[0] = value.getField(
+							TableUtil.findColIndex(inputColNames, featureClauses[i].inColName));
+						for (int j = 0; j < featureClauses[i].inputParams.length; j++) {
+							aggInputData[1 + j] = value.getField(
+								TableUtil.findColIndex(inputColNames, (String)featureClauses[i].inputParams[j]));
+						}
+
+						udaf.accumulateBatch(aggInputData);
 					} else {
 						Object[] aggInputData = new Object[featureClauses[i].inputParams.length + 1];
 						aggInputData[0] = value.getField(

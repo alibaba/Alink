@@ -10,6 +10,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -18,7 +19,7 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.EigenSolver;
@@ -27,10 +28,11 @@ import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.feature.pca.PcaModelData;
 import com.alibaba.alink.operator.common.feature.pca.PcaModelDataConverter;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummarizer;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.feature.PcaTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +48,8 @@ import java.util.List;
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("主成分分析训练")
+@NameEn("Pca Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.feature.PCA")
 public final class PcaTrainBatchOp extends BatchOperator <PcaTrainBatchOp>
 	implements PcaTrainParams <PcaTrainBatchOp>,
 	WithModelInfoBatchOp <PcaModelData, PcaTrainBatchOp, PcaModelInfoBatchOp> {

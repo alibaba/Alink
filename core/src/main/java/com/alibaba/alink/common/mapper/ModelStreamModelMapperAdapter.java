@@ -9,9 +9,9 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamFileScanner;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamFileScanner.ScanTask;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamFileScanner;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamFileScanner.ScanTask;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.params.ModelStreamScanParams;
 
 import java.sql.Timestamp;

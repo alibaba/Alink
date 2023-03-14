@@ -12,9 +12,10 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -23,7 +24,7 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -58,6 +59,7 @@ import java.util.TreeMap;
 @ParamSelectColumnSpec(name = "rateCol",
 	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("ItemCf训练")
+@NameEn("ItemCf Training")
 public class ItemCfTrainBatchOp extends BatchOperator <ItemCfTrainBatchOp>
 	implements ItemCfRecommTrainParams <ItemCfTrainBatchOp>,
 	WithModelInfoBatchOp <ItemCfModelInfo, ItemCfTrainBatchOp, ItemCfModelInfoBatchOp> {

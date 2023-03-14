@@ -11,7 +11,12 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamCond;
+import com.alibaba.alink.common.annotation.ParamCond.CondType;
+import com.alibaba.alink.common.annotation.ParamMutexRule;
+import com.alibaba.alink.common.annotation.ParamMutexRule.ActionType;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
@@ -19,15 +24,16 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.ImputerModelDataConverter;
 import com.alibaba.alink.operator.common.dataproc.ImputerModelInfo;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.params.dataproc.ImputerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Imputer completes missing values in a dataSet, but only same type of columns can be selected at the same time.
@@ -43,6 +49,16 @@ import com.alibaba.alink.params.dataproc.ImputerTrainParams;
 @ParamSelectColumnSpec(name = "selectedCols",
 	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("缺失值填充训练")
+@NameEn("Imputer Train")
+@ParamMutexRule(
+	name = "fillValue", type = ActionType.SHOW,
+	cond = @ParamCond(
+		name = "strategy",
+		type = CondType.WHEN_IN_VALUES,
+		values = "VALUE"
+	)
+)
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.Imputer")
 public class ImputerTrainBatchOp extends BatchOperator <ImputerTrainBatchOp>
 	implements ImputerTrainParams <ImputerTrainBatchOp>,
 	WithModelInfoBatchOp<ImputerModelInfo, ImputerTrainBatchOp, ImputerModelInfoBatchOp> {

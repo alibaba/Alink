@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.nlp;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
@@ -23,6 +24,7 @@ import com.alibaba.alink.params.nlp.Word2VecPredictParams;
  */
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("Word2Vec预测")
+@NameEn("Word2Vec Prediction")
 public class Word2VecPredictBatchOp extends ModelMapBatchOp <Word2VecPredictBatchOp>
 	implements Word2VecPredictParams <Word2VecPredictBatchOp> {
 	private static final long serialVersionUID = 1415195739005424277L;

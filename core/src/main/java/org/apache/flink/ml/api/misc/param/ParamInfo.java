@@ -22,6 +22,8 @@ import org.apache.flink.annotation.PublicEvolving;
 
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 
+import java.io.Serializable;
+
 /**
  * Definition of a parameter, including name, type, default value, validator and so on.
  *
@@ -45,7 +47,7 @@ import com.alibaba.alink.common.exceptions.AkPreconditions;
  * @param <V> the type of the param value
  */
 @PublicEvolving
-public class ParamInfo<V> {
+public class ParamInfo<V> implements Serializable {
 	private final String name;
 	private final String[] alias;
 	private final String description;

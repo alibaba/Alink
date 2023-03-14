@@ -10,14 +10,15 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.params.feature.GenerateFeatureOfLatestParams;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.fe.GenerateFeatureUtil;
 import com.alibaba.alink.common.fe.define.BaseStatFeatures;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.FlattenMTableBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.params.feature.GenerateFeatureOfLatestParams;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Map;
  * Latest Feature Window.
  */
 @NameCn("Latest特征生成")
+@NameEn("Generate Feature of Latest")
 public class GenerateFeatureOfLatestBatchOp extends BatchOperator <GenerateFeatureOfLatestBatchOp>
 	implements GenerateFeatureOfLatestParams <GenerateFeatureOfLatestBatchOp> {
 

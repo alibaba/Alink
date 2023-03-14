@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -14,6 +15,7 @@ import com.alibaba.alink.params.io.TsvSourceParams;
  */
 @IoOpAnnotation(name = "tsv", ioType = IOType.SourceStream)
 @NameCn("TSV文件数据源")
+@NameEn("TSV Source")
 public final class TsvSourceStreamOp extends BaseSourceStreamOp <TsvSourceStreamOp>
 	implements TsvSourceParams <TsvSourceStreamOp> {
 

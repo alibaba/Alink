@@ -40,8 +40,7 @@ public class PackBatchOperatorUtilTest extends AlinkTestBase {
 			modelSchema.getFieldTypes());
 
 		assertEquals(7, rows.size());
-		TableSummarizer summarizer = new TableSummarizer(modelSchema.getFieldNames(), new int[] {0, 2, 3, 4, 5, 6},
-			false);
+		TableSummarizer summarizer = new TableSummarizer(modelSchema, false);
 		for (Row row : rows) {
 			summarizer.visit(row);
 		}

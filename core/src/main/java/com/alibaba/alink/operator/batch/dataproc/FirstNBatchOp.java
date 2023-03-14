@@ -6,6 +6,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -19,6 +20,7 @@ import com.alibaba.alink.params.dataproc.FirstNParams;
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @NameCn("前N个数")
+@NameEn("FirstN")
 public class FirstNBatchOp extends BatchOperator <FirstNBatchOp>
 	implements FirstNParams <FirstNBatchOp> {
 

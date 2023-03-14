@@ -7,6 +7,7 @@ import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -14,7 +15,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.recommendation.AlsModelInfo;
 import com.alibaba.alink.operator.common.recommendation.HugeMfAlsImpl;
@@ -54,6 +55,7 @@ import static com.alibaba.alink.operator.batch.recommendation.AlsModelInfoBatchO
 @ParamSelectColumnSpec(name = "rateCol",
 	allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("ALS训练")
+@NameEn("ALS Training")
 public final class AlsTrainBatchOp
 	extends BatchOperator <AlsTrainBatchOp>
 	implements AlsTrainParams <AlsTrainBatchOp>,

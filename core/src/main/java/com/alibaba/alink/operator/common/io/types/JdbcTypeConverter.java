@@ -44,7 +44,7 @@ public class JdbcTypeConverter {
 		m1.put(SqlTimeTypeInfo.TIME, Types.TIME);
 		m1.put(SqlTimeTypeInfo.TIMESTAMP, Types.TIMESTAMP);
 		m1.put(BasicTypeInfo.BIG_DEC_TYPE_INFO, Types.DECIMAL);
-		m1.put(PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO, Types.BINARY);
+		m1.put(PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO, Types.VARBINARY);
 		MAP_FLINK_TYPE_TO_INDEX = Collections.unmodifiableMap(m1);
 
 		HashMap <Integer, TypeInformation <?>> m3 = new HashMap <>();
@@ -62,7 +62,7 @@ public class JdbcTypeConverter {
 		m3.put(Types.TIME, SqlTimeTypeInfo.TIME);
 		m3.put(Types.TIMESTAMP, SqlTimeTypeInfo.TIMESTAMP);
 		m3.put(Types.DECIMAL, BasicTypeInfo.BIG_DEC_TYPE_INFO);
-		m3.put(Types.BINARY, PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO);
+		m3.put(Types.VARBINARY, PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO);
 		MAP_INDEX_TO_FLINK_TYPE = Collections.unmodifiableMap(m3);
 	}
 

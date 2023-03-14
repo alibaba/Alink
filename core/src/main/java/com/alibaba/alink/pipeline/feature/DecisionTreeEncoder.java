@@ -3,8 +3,6 @@ package com.alibaba.alink.pipeline.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.C45TrainBatchOp;
 import com.alibaba.alink.params.classification.DecisionTreeTrainParams;
 import com.alibaba.alink.params.feature.DecisionTreeEncoderParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -23,8 +21,4 @@ public class DecisionTreeEncoder extends Trainer <DecisionTreeEncoder, DecisionT
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new C45TrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

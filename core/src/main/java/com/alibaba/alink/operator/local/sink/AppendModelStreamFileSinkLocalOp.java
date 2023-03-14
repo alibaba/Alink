@@ -11,8 +11,8 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.common.stream.model.FileModelStreamSink;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.FileModelStreamSink;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.params.io.AppendModelStreamFileSinkParams;
 

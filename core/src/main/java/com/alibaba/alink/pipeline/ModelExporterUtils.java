@@ -30,7 +30,7 @@ import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.MapperChain;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.PipelineModelMapper;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -39,7 +39,7 @@ import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.common.io.dummy.DummyOutputFormat;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
 import com.alibaba.alink.operator.local.source.TableSourceLocalOp;
@@ -1290,12 +1290,14 @@ public class ModelExporterUtils {
 			throw new AkUnsupportedOperationException("not support yet.");
 		}
 
-		if (mapper instanceof ComboModelMapper) {
-			((ComboModelMapper) mapper).newMapperList();
-		}
+		if(data != null) {
+			if (mapper instanceof ComboModelMapper) {
+				((ComboModelMapper) mapper).newMapperList();
+			}
 
-		if (mapper instanceof ComboMapper) {
-			((ComboMapper) mapper).newMapperList();
+			if (mapper instanceof ComboMapper) {
+				((ComboMapper) mapper).newMapperList();
+			}
 		}
 		return mapper;
 	}

@@ -1,12 +1,13 @@
 package com.alibaba.alink.operator.batch.utils;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
 import org.apache.flink.table.functions.ScalarFunction;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.ObjectUtils;
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @NameCn("UDF")
+@NameEn("UDF")
 public class UDFBatchOp extends BatchOperator <UDFBatchOp>
 	implements UDFParams <UDFBatchOp> {
 

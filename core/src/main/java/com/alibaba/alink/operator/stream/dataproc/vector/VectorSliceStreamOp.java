@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.dataproc.vector;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorSliceMapper;
@@ -15,6 +16,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorSliceParams;
  */
 @ParamSelectColumnSpec(name = "selectedCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
 @NameCn("向量切片")
+@NameEn("Vector slice")
 public final class VectorSliceStreamOp extends MapStreamOp <VectorSliceStreamOp>
 	implements VectorSliceParams <VectorSliceStreamOp> {
 

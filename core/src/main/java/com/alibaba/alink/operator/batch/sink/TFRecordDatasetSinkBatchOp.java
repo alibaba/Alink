@@ -4,6 +4,7 @@ import org.apache.flink.core.fs.FileSystem.WriteMode;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -16,7 +17,8 @@ import com.alibaba.alink.params.io.TFRecordDatasetSinkParams;
  * Sink batch op data to a file system with TFRecordDataset format.
  */
 @IoOpAnnotation(name = "tfrecord", ioType = IOType.SinkBatch)
-@NameCn("TFRecordDataset文件导出")
+@NameCn("TFRecord Dataset文件导出")
+@NameEn("TFRecord Dataset Sink")
 public final class TFRecordDatasetSinkBatchOp extends BaseSinkBatchOp <TFRecordDatasetSinkBatchOp>
 	implements TFRecordDatasetSinkParams <TFRecordDatasetSinkBatchOp> {
 

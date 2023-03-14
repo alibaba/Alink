@@ -15,16 +15,17 @@ import com.alibaba.alink.pipeline.dataproc.JsonValue;
 import com.alibaba.alink.pipeline.dataproc.vector.VectorAssembler;
 import com.alibaba.alink.pipeline.feature.MultiHotEncoder;
 import com.alibaba.alink.pipeline.feature.OneHotEncoder;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class RecommendationRankingStreamOpTest {
+public class RecommendationRankingStreamOpTest extends AlinkTestBase {
 
-	 @Test
-	 public void test() throws Exception {
+	@Test
+	public void test() throws Exception {
 		Row[] predArray = new Row[] {
 			Row.of("u6", "0.0 1.0", 0.0, 1.0, 1, "{\"data\":{\"iid\":[18,19,88]},"
 				+ "\"schema\":\"iid INT\"}")
@@ -41,7 +42,7 @@ public class RecommendationRankingStreamOpTest {
 		};
 		BatchOperator <?> trainData = new MemSourceBatchOp(Arrays.asList(trainArray),
 			new String[] {"uid", "uf", "f0", "f1", "labels", "iid"});
-		StreamOperator <?> predData =  new MemSourceStreamOp(Arrays.asList(predArray),
+		StreamOperator <?> predData = new MemSourceStreamOp(Arrays.asList(predArray),
 			new String[] {"uid", "uf", "f0", "f1", "labels", "ilist"})
 			.link(new ToMTableStreamOp().setSelectedCol("ilist"));
 
@@ -79,13 +80,13 @@ public class RecommendationRankingStreamOpTest {
 			.setTopN(2)
 			.setRankingCol("score")
 			.setReservedCols("uid", "labels");
-	    StreamOperator<?> result = rank.linkFrom(predData);
+		StreamOperator <?> result = rank.linkFrom(predData);
 
-		 CollectSinkStreamOp sop = result.link(new CollectSinkStreamOp());
-		 StreamOperator.execute();
-		 List<Row> list = sop.getAndRemoveValues();
-		 Assert.assertEquals(JsonConverter.toJson(list.get(0).getField(2)),
-			 "{\"data\":{\"iid\":[18,88],\"score\":[0.9999999999999553,0"
-				 + ".9999999999999472]},\"schema\":\"iid INT,score DOUBLE\"}");
+		CollectSinkStreamOp sop = result.link(new CollectSinkStreamOp());
+		StreamOperator.execute();
+		List <Row> list = sop.getAndRemoveValues();
+		Assert.assertEquals(JsonConverter.toJson(list.get(0).getField(2)),
+			"{\"data\":{\"iid\":[18,88],\"score\":[0.9999999999999553,0"
+				+ ".9999999999999472]},\"schema\":\"iid INT,score DOUBLE\"}");
 	}
 }

@@ -7,15 +7,16 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.copy.csv.TextOutputFormat;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.utils.DataSetUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil.FlattenCsvFromRow;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil.FormatCsvFunc;
 import com.alibaba.alink.operator.common.io.partition.CsvSinkCollectorCreator;
-import com.alibaba.alink.operator.common.io.partition.Utils;
 import com.alibaba.alink.params.io.CsvSinkBatchParams;
 
 /**
@@ -24,6 +25,7 @@ import com.alibaba.alink.params.io.CsvSinkBatchParams;
 
 @IoOpAnnotation(name = "csv", ioType = IOType.SinkBatch)
 @NameCn("CSV文件导出")
+@NameEn("Csv Sink")
 public final class CsvSinkBatchOp extends BaseSinkBatchOp <CsvSinkBatchOp>
 	implements CsvSinkBatchParams <CsvSinkBatchOp> {
 
@@ -41,10 +43,10 @@ public final class CsvSinkBatchOp extends BaseSinkBatchOp <CsvSinkBatchOp>
 	public CsvSinkBatchOp sinkFrom(BatchOperator <?> in) {
 		if (getPartitionCols() != null) {
 
-			Utils.partitionAndWriteFile(
+			DataSetUtil.partitionAndWriteFile(
 				in,
 				new CsvSinkCollectorCreator(
-					new FormatCsvFunc(in.getColTypes(), getFieldDelimiter(), getQuoteChar()),
+					new FormatCsvFunc(in.getColTypes(), getFieldDelimiter(), getRowDelimiter(), getQuoteChar()),
 					new FlattenCsvFromRow(getRowDelimiter()),
 					getRowDelimiter()
 				),
@@ -55,6 +57,7 @@ public final class CsvSinkBatchOp extends BaseSinkBatchOp <CsvSinkBatchOp>
 
 			final String filePath = getFilePath().getPathStr();
 			final String fieldDelim = getFieldDelimiter();
+			final String rowDelim = getRowDelimiter();
 			final int numFiles = getNumFiles();
 			final TypeInformation <?>[] types = in.getColTypes();
 			final Character quoteChar = getQuoteChar();
@@ -65,7 +68,7 @@ public final class CsvSinkBatchOp extends BaseSinkBatchOp <CsvSinkBatchOp>
 			}
 
 			DataSet <String> textLines = in.getDataSet()
-				.map(new FormatCsvFunc(types, fieldDelim, quoteChar))
+				.map(new FormatCsvFunc(types, fieldDelim, rowDelim, quoteChar))
 				.map(new FlattenCsvFromRow(getRowDelimiter()));
 
 			TextOutputFormat <String> tof = new TextOutputFormat <>(

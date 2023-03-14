@@ -27,6 +27,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
@@ -40,7 +41,7 @@ import com.alibaba.alink.common.mapper.MapperChain;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.onlinelearning.kernel.FmOnlineLearningKernel;
 import com.alibaba.alink.operator.stream.onlinelearning.kernel.LinearOnlineLearningKernel;
@@ -77,6 +78,7 @@ import static com.alibaba.alink.pipeline.ModelExporterUtils.loadStagesFromPipeli
  * will scan this path and rebase pipeline model with this model stream.
  */
 @NameCn("在线学习")
+@NameEn("Online learning")
 public class OnlineLearningStreamOp extends StreamOperator <OnlineLearningStreamOp>
 	implements OnlineLearningTrainParams <OnlineLearningStreamOp> {
 

@@ -16,7 +16,6 @@ import com.alibaba.alink.operator.batch.graph.MetaPathWalkBatchOp;
 import com.alibaba.alink.operator.batch.graph.RandomWalkBatchOp;
 import com.alibaba.alink.operator.batch.sql.JoinBatchOp;
 import com.alibaba.alink.operator.common.aps.ApsCheckpoint;
-import com.alibaba.alink.operator.common.graph.GraphEmbedding;
 import com.alibaba.alink.params.nlp.MetaPath2VecParams;
 
 @InputPorts(values = {

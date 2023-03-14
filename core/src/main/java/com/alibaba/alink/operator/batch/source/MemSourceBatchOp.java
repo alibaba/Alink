@@ -10,9 +10,10 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 
 import java.util.Arrays;
@@ -23,6 +24,7 @@ import java.util.List;
  */
 @IoOpAnnotation(name = MemSourceBatchOp.NAME, ioType = IOType.SourceBatch)
 @NameCn("内存数据读入")
+@NameEn("Memory Source")
 public final class MemSourceBatchOp extends BaseSourceBatchOp <MemSourceBatchOp> {
 
 	static final String NAME = "memory";

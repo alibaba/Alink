@@ -12,6 +12,7 @@ import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
+import com.alibaba.alink.params.io.HasIoName;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -92,6 +93,9 @@ public final class FilePath implements Serializable {
 		}
 
 		public FilePath toFilePath() {
+			if (params != null && params.contains(HasIoName.IO_NAME) && params.get(HasIoName.IO_NAME).equals("local")) {
+				return new FilePath(path, new LocalFileSystem());
+			}
 			return new FilePath(path, params == null ? null : BaseFileSystem.of(params));
 		}
 
@@ -174,15 +178,21 @@ public final class FilePath implements Serializable {
 
 			URI uri = path.toUri();
 			String schema = uri.getScheme();
+			//String schema = rewriteUri(uri).getScheme();
+
+			if (null==schema || schema.equals("file")) {
+				fileSystem = new LocalFileSystem();
+				return;
+			}
 
 			// for http
-			if (schema != null && (schema.equals("http") || schema.equals("https"))) {
+			if (schema.equals("http") || schema.equals("https")) {
 				fileSystem = new HttpFileReadOnlyFileSystem();
 				return;
 			}
 
 			// for oss
-			if (schema != null && schema.equals("oss")) {
+			if (schema.equals("oss")) {
 				String authority = CsvUtil.unEscape(uri.getAuthority());
 
 				if (authority.contains("\u0001") && authority.contains("\u0002")) {
@@ -237,7 +247,6 @@ public final class FilePath implements Serializable {
 				}
 			}
 
-			schema = rewriteUri(path.toUri()).getScheme();
 
 			List <String> allFileSystemNames = AnnotationUtils.allFileSystemNames();
 
@@ -270,52 +279,52 @@ public final class FilePath implements Serializable {
 		}
 	}
 
-	private static URI rewriteUri(URI fsUri) {
-		final URI uri;
-
-		if (fsUri.getScheme() != null) {
-			uri = fsUri;
-		} else {
-			// Apply the default fs scheme
-			final URI defaultUri = org.apache.flink.core.fs.local.LocalFileSystem.getLocalFsURI();
-			URI rewrittenUri = null;
-
-			try {
-				rewrittenUri = new URI(defaultUri.getScheme(), null, defaultUri.getHost(),
-					defaultUri.getPort(), fsUri.getPath(), null, null);
-			} catch (URISyntaxException e) {
-				// for local URIs, we make one more try to repair the path by making it absolute
-				if (defaultUri.getScheme().equals("file")) {
-					try {
-						rewrittenUri = new URI(
-							"file", null,
-							new Path(new File(fsUri.getPath()).getAbsolutePath()).toUri().getPath(),
-							null);
-					} catch (URISyntaxException ignored) {
-						// could not help it...
-					}
-				}
-			}
-
-			if (rewrittenUri != null) {
-				uri = rewrittenUri;
-			} else {
-				throw new AkIllegalOperatorParameterException("The file system URI '" + fsUri +
-					"' declares no scheme and cannot be interpreted relative to the default file system URI ("
-					+ defaultUri + ").");
-			}
-		}
-
-		// print a helpful pointer for malformed local URIs (happens a lot to new users)
-		if (uri.getScheme().equals("file") && uri.getAuthority() != null && !uri.getAuthority().isEmpty()) {
-			String supposedUri = "file:///" + uri.getAuthority() + uri.getPath();
-
-			throw new AkIllegalOperatorParameterException(
-				"Found local file path with authority '" + uri.getAuthority() + "' in path '"
-					+ uri.toString() + "'. Hint: Did you forget a slash? (correct path would be '" + supposedUri
-					+ "')");
-		}
-
-		return uri;
-	}
+	//private static URI rewriteUri(URI fsUri) {
+	//	final URI uri;
+	//
+	//	if (fsUri.getScheme() != null) {
+	//		uri = fsUri;
+	//	} else {
+	//		// Apply the default fs scheme
+	//		final URI defaultUri = org.apache.flink.core.fs.local.LocalFileSystem.getLocalFsURI();
+	//		URI rewrittenUri = null;
+	//
+	//		try {
+	//			rewrittenUri = new URI(defaultUri.getScheme(), null, defaultUri.getHost(),
+	//				defaultUri.getPort(), fsUri.getPath(), null, null);
+	//		} catch (URISyntaxException e) {
+	//			// for local URIs, we make one more try to repair the path by making it absolute
+	//			if (defaultUri.getScheme().equals("file")) {
+	//				try {
+	//					rewrittenUri = new URI(
+	//						"file", null,
+	//						new Path(new File(fsUri.getPath()).getAbsolutePath()).toUri().getPath(),
+	//						null);
+	//				} catch (URISyntaxException ignored) {
+	//					// could not help it...
+	//				}
+	//			}
+	//		}
+	//
+	//		if (rewrittenUri != null) {
+	//			uri = rewrittenUri;
+	//		} else {
+	//			throw new AkIllegalOperatorParameterException("The file system URI '" + fsUri +
+	//				"' declares no scheme and cannot be interpreted relative to the default file system URI ("
+	//				+ defaultUri + ").");
+	//		}
+	//	}
+	//
+	//	// print a helpful pointer for malformed local URIs (happens a lot to new users)
+	//	if (uri.getScheme().equals("file") && uri.getAuthority() != null && !uri.getAuthority().isEmpty()) {
+	//		String supposedUri = "file:///" + uri.getAuthority() + uri.getPath();
+	//
+	//		throw new AkIllegalOperatorParameterException(
+	//			"Found local file path with authority '" + uri.getAuthority() + "' in path '"
+	//				+ uri.toString() + "'. Hint: Did you forget a slash? (correct path would be '" + supposedUri
+	//				+ "')");
+	//	}
+	//
+	//	return uri;
+	//}
 }

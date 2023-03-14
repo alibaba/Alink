@@ -4,7 +4,8 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.VectorType;
 import com.alibaba.alink.common.linalg.tensor.DataType;
 import com.alibaba.alink.params.dataproc.ToTensorParams;
@@ -76,7 +77,7 @@ public class CsvTypeConverter {
 			return DataType.BOOLEAN;
 		}
 
-		throw new IllegalArgumentException("Unsupported tensor type. " + typeInformation);
+		throw new AkUnsupportedOperationException("Unsupported tensor type. " + typeInformation);
 	}
 
 	public static PipelineModel toTensorPipelineModel(
@@ -117,7 +118,7 @@ public class CsvTypeConverter {
 			return VectorType.SPARSE;
 		}
 
-		throw new IllegalArgumentException("Unsupported vector type. " + typeInformation);
+		throw new AkUnsupportedOperationException("Unsupported vector type. " + typeInformation);
 	}
 
 	public static PipelineModel toVectorPipelineModel(

@@ -24,6 +24,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -32,7 +33,7 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
@@ -42,7 +43,7 @@ import com.alibaba.alink.operator.common.evaluation.ClusterMetricsSummary;
 import com.alibaba.alink.operator.common.evaluation.EvaluationMetricsCollector;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
 import com.alibaba.alink.operator.common.evaluation.LongMatrix;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.SparseVectorSummary;
 import com.alibaba.alink.params.evaluation.EvalClusterParams;
@@ -64,6 +65,7 @@ import java.util.Map;
 @ParamSelectColumnSpec(name = "predictionCol")
 @ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("聚类评估")
+@NameEn("Eval Cluster")
 public final class EvalClusterBatchOp extends BatchOperator<EvalClusterBatchOp>
     implements EvalClusterParams<EvalClusterBatchOp>, EvaluationMetricsCollector<ClusterMetrics, EvalClusterBatchOp> {
     public static final String SILHOUETTE_COEFFICIENT = "silhouetteCoefficient";

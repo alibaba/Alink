@@ -16,6 +16,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
@@ -25,13 +26,14 @@ import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.parquet.ParquetClassLoaderFactory;
 import com.alibaba.alink.common.io.parquet.ParquetReaderFactory;
 import com.alibaba.alink.common.io.plugin.wrapper.RichInputFormatGenericWithClassLoader;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.io.ParquetSourceParams;
 
 import java.io.IOException;
 
-@NameCn("parquet文件读入")
+@NameCn("Parquet文件读入")
+@NameEn("Parquet Source")
 public class ParquetSourceBatchOp extends BaseSourceBatchOp <ParquetSourceBatchOp>
 	implements ParquetSourceParams <ParquetSourceBatchOp> {
 

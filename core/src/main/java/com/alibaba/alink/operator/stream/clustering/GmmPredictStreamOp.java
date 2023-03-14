@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.clustering;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -17,6 +18,7 @@ import com.alibaba.alink.params.clustering.GmmPredictParams;
 
 @ParamSelectColumnSpec(name = "vectorCol", portIndices = 1, allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("高斯混合模型预测")
+@NameEn("Gmm Prediction")
 public final class GmmPredictStreamOp extends ModelMapStreamOp <GmmPredictStreamOp>
 	implements GmmPredictParams <GmmPredictStreamOp> {
 

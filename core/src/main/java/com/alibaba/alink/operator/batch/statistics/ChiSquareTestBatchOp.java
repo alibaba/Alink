@@ -5,6 +5,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -35,6 +36,7 @@ import java.util.function.Consumer;
 @ParamSelectColumnSpec(name = "selectedCols")
 @ParamSelectColumnSpec(name = "labelCol")
 @NameCn("卡方检验")
+@NameEn("ChiSquare Test")
 public final class ChiSquareTestBatchOp extends BatchOperator <ChiSquareTestBatchOp>
 	implements ChiSquareTestParams <ChiSquareTestBatchOp> {
 

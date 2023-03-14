@@ -8,12 +8,13 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.io.LibSvmSinkBatchParams;
@@ -26,6 +27,7 @@ import static com.alibaba.alink.operator.local.sink.LibSvmSinkLocalOp.formatLibS
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SinkBatch)
 @NameCn("LibSvm文件导出")
+@NameEn("LibSvm Sink")
 public final class LibSvmSinkBatchOp extends BaseSinkBatchOp <LibSvmSinkBatchOp>
 	implements LibSvmSinkBatchParams <LibSvmSinkBatchOp> {
 

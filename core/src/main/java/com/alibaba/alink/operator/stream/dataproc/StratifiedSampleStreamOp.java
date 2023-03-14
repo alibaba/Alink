@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -19,6 +20,7 @@ import com.alibaba.alink.params.dataproc.StratifiedSampleParams;
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @ParamSelectColumnSpec(name = "strataCol", portIndices = 0)
 @NameCn("分层随机采样")
+@NameEn("Stratified Sample")
 public final class StratifiedSampleStreamOp extends FlatMapStreamOp <StratifiedSampleStreamOp>
 	implements StratifiedSampleParams <StratifiedSampleStreamOp> {
 

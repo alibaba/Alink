@@ -21,9 +21,10 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -36,7 +37,6 @@ import com.alibaba.alink.operator.batch.huge.line.ApsSerializeDataLine;
 import com.alibaba.alink.operator.batch.huge.line.ApsSerializeModelLine;
 import com.alibaba.alink.operator.common.aps.ApsContext;
 import com.alibaba.alink.operator.common.aps.ApsEnv;
-import com.alibaba.alink.operator.common.graph.GraphUtilsWithString;
 import com.alibaba.alink.operator.common.nlp.WordCountUtil;
 import com.alibaba.alink.params.graph.LineParams;
 import com.alibaba.alink.params.nlp.HasBatchSize;
@@ -51,6 +51,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @ParamSelectColumnSpec(name="targetCol", allowedTypeCollections = TypeCollections.INT_LONG_STRING_TYPES)
 @ParamSelectColumnSpec(name="weightCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("Line")
+@NameEn("Line")
 public class LineBatchOp extends BatchOperator <LineBatchOp>
 	implements LineParams <LineBatchOp> {
 

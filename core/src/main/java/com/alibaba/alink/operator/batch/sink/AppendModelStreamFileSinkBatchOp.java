@@ -12,6 +12,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
@@ -21,8 +22,8 @@ import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.stream.model.FileModelStreamSink;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.FileModelStreamSink;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.params.io.AppendModelStreamFileSinkParams;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.sql.Timestamp;
 @IoOpAnnotation(name = "append_model_stream", ioType = IOType.SinkBatch)
 @InputPorts(values = {@PortSpec(PortType.MODEL)})
 @NameCn("模型流导出")
+@NameEn("Append Model Stream File Sink")
 public class AppendModelStreamFileSinkBatchOp extends BaseSinkBatchOp <AppendModelStreamFileSinkBatchOp>
 	implements AppendModelStreamFileSinkParams <AppendModelStreamFileSinkBatchOp> {
 

@@ -2,13 +2,12 @@ package com.alibaba.alink.common.sql.builtin.agg;
 
 import org.apache.flink.api.java.tuple.Tuple3;
 
-import com.alibaba.alink.common.exceptions.AkIllegalDataException;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.sql.builtin.agg.LastDistinctValueUdaf.LastDistinctSaveFirst;
 
 import java.sql.Timestamp;
 
-
-public class LastDistinctValueUdaf extends BaseUdaf<Object, LastDistinctSaveFirst> {
+public class LastDistinctValueUdaf extends BaseUdaf <Object, LastDistinctSaveFirst> {
 	private double timeInterval = -1;
 	private final boolean considerNull;
 
@@ -25,7 +24,6 @@ public class LastDistinctValueUdaf extends BaseUdaf<Object, LastDistinctSaveFirs
 		this.considerNull = false;
 	}
 
-
 	@Override
 	public Object getValue(LastDistinctSaveFirst accumulator) {
 		return accumulator.query();
@@ -39,15 +37,29 @@ public class LastDistinctValueUdaf extends BaseUdaf<Object, LastDistinctSaveFirs
 		return new LastDistinctSaveFirst(timeInterval, considerNull);
 	}
 
+	//key, valueCol, timeCol, timeInterval
 	@Override
 	public void accumulate(LastDistinctSaveFirst acc, Object... values) {
-		if (values.length != 4) {
-			throw new AkIllegalDataException("");
+		if (values.length != 3 && values.length != 4) {
+			throw new AkIllegalArgumentException("values length must be 3 or 4.");
 		}
-		Object key = values[0];
-		Object value = values[1];
-		Object eventTime = values[2];
-		acc.setTimeInterval(Double.parseDouble(values[3].toString()));
+		Object key = null;
+		Object value = null;
+		Object eventTime = null;
+		double timeInterval = 0;
+		if (4 == values.length) {
+			key = values[0];
+			value = values[1];
+			eventTime = values[2];
+			timeInterval = Double.parseDouble(values[3].toString());
+		} else {
+			key = values[0];
+			value = values[0];
+			eventTime = values[1];
+			timeInterval = Double.parseDouble(values[2].toString());
+		}
+
+		acc.setTimeInterval(timeInterval);
 		acc.addOne(key, value, eventTime);
 		acc.setLastKey(key);
 		acc.setLastTime(eventTime);
@@ -128,7 +140,7 @@ public class LastDistinctValueUdaf extends BaseUdaf<Object, LastDistinctSaveFirs
 		}
 
 		void addOne(Object key, Object value, double currentTime) {
-			Tuple3<Object, Object, Double> currentNode = Tuple3.of(key, value, currentTime);
+			Tuple3 <Object, Object, Double> currentNode = Tuple3.of(key, value, currentTime);
 			if (firstObj == null) {
 				firstObj = currentNode;
 			} else if (secondObj == null) {
@@ -167,7 +179,6 @@ public class LastDistinctValueUdaf extends BaseUdaf<Object, LastDistinctSaveFirs
 				}
 			}
 		}
-
 
 		public void addOne(Object key, Object value, Object currentTime) {
 			if (currentTime instanceof Timestamp) {

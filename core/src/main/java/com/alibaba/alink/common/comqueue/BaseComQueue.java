@@ -1,6 +1,5 @@
 package com.alibaba.alink.common.comqueue;
 
-import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
@@ -79,17 +78,14 @@ public class BaseComQueue<Q extends BaseComQueue <Q>> implements Serializable {
 		return thisAsQ();
 	}
 
-	@VisibleForTesting
 	int getMaxIter() {
 		return maxIter;
 	}
 
-	@VisibleForTesting
 	List <ComQueueItem> getQueue() {
 		return queue;
 	}
 
-	@VisibleForTesting
 	CompareCriterionFunction getCompareCriterion() {
 		return compareCriterion;
 	}
@@ -607,7 +603,6 @@ public class BaseComQueue<Q extends BaseComQueue <Q>> implements Serializable {
 	//		}
 	//	}
 
-	@VisibleForTesting
 	static class DistributeData extends ComputeFunction {
 		private static final long serialVersionUID = -1105584217517972610L;
 		private final List <String> cacheDataObjNames;

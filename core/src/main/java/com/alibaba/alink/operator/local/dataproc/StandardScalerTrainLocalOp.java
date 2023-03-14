@@ -22,6 +22,7 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.dataproc.StandardTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * StandardScaler transforms a dataset, normalizing each feature to have unit standard deviation and/or zero mean.
@@ -30,6 +31,7 @@ import com.alibaba.alink.params.dataproc.StandardTrainParams;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("标准化训练")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.StandardScaler")
 public class StandardScalerTrainLocalOp extends LocalOperator <StandardScalerTrainLocalOp>
 	implements StandardTrainParams <StandardScalerTrainLocalOp>,
 	WithModelInfoLocalOp <StandardScalerModelInfo, StandardScalerTrainLocalOp, StandardScalerModelInfoLocalOp> {

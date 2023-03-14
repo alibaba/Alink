@@ -1,53 +1,73 @@
 package com.alibaba.alink.operator.common.io.partition;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.core.fs.FileInputSplit;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.io.filesystem.AkUtils;
+import com.alibaba.alink.common.io.filesystem.AkUtils.FileProcFunction;
 import com.alibaba.alink.common.io.filesystem.FilePath;
-import com.alibaba.alink.common.io.filesystem.copy.csv.RowCsvInputFormat;
+import com.alibaba.alink.operator.common.io.csv.GenericCsvInputFormatBeta;
+import com.alibaba.alink.operator.common.io.reader.FSFileSplitReader;
 
 import java.io.IOException;
 
 public class CsvSourceCollectorCreator implements SourceCollectorCreator {
 
-	private final TableSchema dummySchema;
-
 	private final String rowDelim;
+
+	private final Character quoteChar;
 
 	private final boolean ignoreFirstLine;
 
-	public CsvSourceCollectorCreator(TableSchema dummySchema, String rowDelim, boolean ignoreFirstLine) {
-		this.dummySchema = dummySchema;
+	private final String[] dataFieldNames;
+
+	private final TypeInformation[] dataFieldTypes;
+
+	public CsvSourceCollectorCreator(TableSchema dummySchema, String rowDelim, boolean ignoreFirstLine,
+									 Character quoteChar) {
+		this.dataFieldNames = dummySchema.getFieldNames();
+		this.dataFieldTypes = dummySchema.getFieldTypes();
 		this.rowDelim = rowDelim;
 		this.ignoreFirstLine = ignoreFirstLine;
+		this.quoteChar = quoteChar;
 	}
 
 	@Override
 	public TableSchema schema() {
-		return dummySchema;
+		return new TableSchema(dataFieldNames, dataFieldTypes);
 	}
 
 	@Override
 	public void collect(FilePath filePath, Collector <Row> collector) throws IOException {
-		RowCsvInputFormat inputFormat = new RowCsvInputFormat(
-			filePath.getPath(), dummySchema.getFieldTypes(),
-			rowDelim, rowDelim, new int[] {0}, true,
-			filePath.getFileSystem()
-		);
-		inputFormat.setSkipFirstLineAsHeader(ignoreFirstLine);
+		AkUtils.getFromFolderForEach(
+			filePath,
+			new FileProcFunction <FilePath, Boolean>() {
+				@Override
+				public Boolean apply(FilePath filePath) throws IOException {
+					FSFileSplitReader reader = new FSFileSplitReader(filePath);
+					GenericCsvInputFormatBeta inputFormat = reader.getInputFormat(rowDelim, ignoreFirstLine,
+						quoteChar);
 
-		try {
-			inputFormat.open(new FileInputSplit(1, filePath.getPath(), 0, -1, null));
+					try {
+						inputFormat.open(new FileInputSplit(1, filePath.getPath(), 0, reader.getFileLength(), null));
 
-			while (!inputFormat.reachedEnd()) {
-				collector.collect(inputFormat.nextRecord(null));
-			}
+						while (!inputFormat.reachedEnd()) {
+							Row record = inputFormat.nextRecord(null);
+							if (record != null) {
+								collector.collect(record);
+							} else {
+								break;
+							}
+						}
 
-		} finally {
-			inputFormat.close();
-		}
-
+					} finally {
+						inputFormat.close();
+					}
+					return true;
+				}
+			});
 	}
 }

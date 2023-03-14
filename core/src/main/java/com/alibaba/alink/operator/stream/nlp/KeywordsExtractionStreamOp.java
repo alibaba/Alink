@@ -7,6 +7,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -26,6 +27,7 @@ import com.alibaba.alink.params.nlp.KeywordsExtractionStreamParams;
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("关键词抽取")
+@NameEn("Keywords extraction")
 public final class KeywordsExtractionStreamOp extends StreamOperator <KeywordsExtractionStreamOp>
 	implements KeywordsExtractionStreamParams <KeywordsExtractionStreamOp> {
 	private static final long serialVersionUID = 7089771952234251214L;

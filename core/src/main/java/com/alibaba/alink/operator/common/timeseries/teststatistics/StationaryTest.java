@@ -43,7 +43,7 @@ public class StationaryTest {
 		double[][] result = new double[2][1];
 
 		int n = data.length;
-		double[] acf = TsMethod.computeACF(data, h).get(0);
+		double[] acf = TsMethod.acf(data, h).get(0);
 		double q = 0;
 		for (int j = 1; j <= h; j++) {
 			q = q + acf[j] / (n - j);
@@ -66,7 +66,7 @@ public class StationaryTest {
 		return result;
 	}
 
-	public KPSS kpss(double[] data) {
+	public static KPSS kpss(double[] data) {
 		KPSS kpss = new KPSS();
 		kpss.kpssTest(data.clone(), 1, 1);
 		return kpss;

@@ -60,9 +60,9 @@ public class TreeUtil {
 		}
 	}
 
-	public static String[] trainColNames(Params params) {
+	public static String[] trainColNames(Params params, String[] featureCols) {
 		ArrayList <String> colNames = new ArrayList <>(
-			Arrays.asList(params.get(HasFeatureCols.FEATURE_COLS))
+			Arrays.asList(featureCols)
 		);
 
 		if (params.contains(HasLabelCol.LABEL_COL)) {

@@ -14,12 +14,13 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
@@ -40,6 +41,7 @@ import java.util.List;
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
 @NameCn("多标签分类评估")
+@NameEn("Eval Multi Label")
 public class EvalMultiLabelBatchOp extends BatchOperator <EvalMultiLabelBatchOp>
 	implements EvalMultiLabelParams <EvalMultiLabelBatchOp>,
 	EvaluationMetricsCollector <MultiLabelMetrics, EvalMultiLabelBatchOp> {

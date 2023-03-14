@@ -10,20 +10,22 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.ImputerModelInfo;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorImputerModelDataConverter;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.dataproc.vector.VectorImputerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Imputer completes missing values in a dataSet, but only same type of columns can be selected at the same time.
@@ -39,6 +41,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorImputerTrainParams;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量缺失值填充训练")
+@NameEn("Vector Imputer Train")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.vector.VectorImputer")
 public class VectorImputerTrainBatchOp extends BatchOperator <VectorImputerTrainBatchOp>
 	implements VectorImputerTrainParams <VectorImputerTrainBatchOp>,
 	WithModelInfoBatchOp <ImputerModelInfo, VectorImputerTrainBatchOp, VectorImputerModelInfoBatchOp> {
@@ -95,7 +99,8 @@ public class VectorImputerTrainBatchOp extends BatchOperator <VectorImputerTrain
 		} else if (Strategy.VALUE.equals(strategy)) {
 			return false;
 		} else {
-			throw new AkIllegalOperatorParameterException("Only support \"MAX\", \"MEAN\", \"MIN\" and \"VALUE\" strategy.");
+			throw new AkIllegalOperatorParameterException(
+				"Only support \"MAX\", \"MEAN\", \"MIN\" and \"VALUE\" strategy.");
 		}
 	}
 

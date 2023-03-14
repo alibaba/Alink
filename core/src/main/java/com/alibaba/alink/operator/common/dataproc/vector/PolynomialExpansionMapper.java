@@ -1,12 +1,11 @@
 package com.alibaba.alink.operator.common.dataproc.vector;
 
-import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -40,7 +39,6 @@ public class PolynomialExpansionMapper extends SISOMapper {
 	 * @param degree the degree of the polynomial.
 	 * @return the polynomial size.
 	 */
-	@VisibleForTesting
 	static int getPolySize(int num, int degree) {
 		if (num == 0) {
 			return 1;

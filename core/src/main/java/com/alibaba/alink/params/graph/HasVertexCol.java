@@ -20,16 +20,4 @@ public interface HasVertexCol<T> extends WithParams <T> {
 	default String getVertexCol() {return get(VERTEX_COL);}
 
 	default T setVertexCol(String value) {return set(VERTEX_COL, value);}
-
-	@NameCn("点的权重所在列")
-	@DescCn("点的权重所在列，如果不输入就自动补为1。")
-	ParamInfo <String> VERTEX_WEIGHT_COL = ParamInfoFactory
-		.createParamInfo("vertexWeightCol", String.class)
-		.setDescription("vertex Weight Col")
-		.setHasDefaultValue(null)
-		.build();
-
-	default String getVertexWeightCol() {return get(VERTEX_WEIGHT_COL);}
-
-	default T setVertexWeightCol(String value) {return set(VERTEX_WEIGHT_COL, value);}
 }

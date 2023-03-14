@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -15,6 +16,7 @@ import com.alibaba.alink.params.io.HasCatalogObject;
  */
 @IoOpAnnotation(name = "catalog", ioType = IOType.SourceBatch)
 @NameCn("Catalog读入")
+@NameEn("Catalog Source")
 public class CatalogSourceBatchOp extends BaseSourceBatchOp <CatalogSourceBatchOp>
 	implements HasCatalogObject <CatalogSourceBatchOp> {
 

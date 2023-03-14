@@ -8,13 +8,14 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.params.feature.GenerateFeatureOfLatestParams;
 import com.alibaba.alink.common.fe.GenerateFeatureUtil;
 import com.alibaba.alink.common.fe.define.InterfaceNStatFeatures;
 import com.alibaba.alink.common.fe.define.BaseStatFeatures;
 import com.alibaba.alink.common.fe.define.InterfaceTimeIntervalStatFeatures;
 import com.alibaba.alink.common.fe.define.InterfaceTimeSlotStatFeatures;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.TableSourceStreamOp;
@@ -25,6 +26,7 @@ import java.sql.Timestamp;
  * Latest Feature Window.
  */
 @NameCn("Latest特征生成")
+@NameEn("Latest-feature generator")
 public class GenerateFeatureOfLatestStreamOp extends StreamOperator <GenerateFeatureOfLatestStreamOp>
 	implements GenerateFeatureOfLatestParams <GenerateFeatureOfLatestStreamOp> {
 

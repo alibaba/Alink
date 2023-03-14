@@ -9,7 +9,7 @@ import com.alibaba.alink.params.shared.colname.HasSelectedColsDefaultAsNull;
 import com.alibaba.alink.params.tensorflow.TFTableModelTrainParams;
 import com.alibaba.alink.params.tensorflow.savedmodel.HasInferSelectedColsDefaultAsNull;
 import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
-import com.alibaba.alink.pipeline.Trainer;
+import com.alibaba.alink.pipeline.TrainerLegacy;
 
 /**
  * A general trainer to train a TensorFlow model from custom TensorFlow (version 1.15) scripts and to produce a {@link
@@ -20,7 +20,7 @@ import com.alibaba.alink.pipeline.Trainer;
  * columns, and {@link TFTableModelTrainer#fit} is overridden for setting this parameter to the predictor.
  */
 @NameCn("TF 表模型")
-public class TFTableModelTrainer extends Trainer <TFTableModelTrainer, TFTableModelPredictor>
+public class TFTableModelTrainer extends TrainerLegacy <TFTableModelTrainer, TFTableModelPredictor>
 	implements TFTableModelTrainParams <TFTableModelTrainer>, TFTableModelPredictParams <TFTableModelTrainer>,
 	HasInferSelectedColsDefaultAsNull <TFTableModelTrainer> {
 

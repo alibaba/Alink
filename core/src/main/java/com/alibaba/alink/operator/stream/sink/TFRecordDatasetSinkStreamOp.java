@@ -6,6 +6,7 @@ import org.apache.flink.streaming.api.functions.sink.OutputFormatSinkFunction;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -19,6 +20,7 @@ import com.alibaba.alink.params.io.TFRecordDatasetSinkParams;
  */
 @IoOpAnnotation(name = "tfrecord", ioType = IOType.SinkStream)
 @NameCn("TFRecordDataset文件导出")
+@NameEn("TFRecord Dataset Sink")
 public final class TFRecordDatasetSinkStreamOp extends BaseSinkStreamOp <TFRecordDatasetSinkStreamOp>
 	implements TFRecordDatasetSinkParams <TFRecordDatasetSinkStreamOp> {
 

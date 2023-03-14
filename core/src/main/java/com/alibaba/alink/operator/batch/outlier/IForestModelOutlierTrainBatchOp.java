@@ -37,6 +37,7 @@ import com.alibaba.alink.operator.common.outlier.OutlierUtil;
 import com.alibaba.alink.params.outlier.WithMultiVarParams;
 import com.alibaba.alink.params.dataproc.HasTargetType.TargetType;
 import com.alibaba.alink.params.dataproc.NumericalTypeCastParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,7 @@ import java.util.stream.Collectors;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @NameCn("IForest模型异常检测训练")
 @NameEn("IForest model outlier")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.outlier.IForestModelOutlier")
 public class IForestModelOutlierTrainBatchOp
 	extends BatchOperator <IForestModelOutlierTrainBatchOp>
 	implements IForestTrainParams <IForestModelOutlierTrainBatchOp> {

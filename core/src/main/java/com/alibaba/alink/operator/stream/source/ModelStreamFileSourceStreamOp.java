@@ -19,6 +19,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -28,10 +29,10 @@ import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.FilePath;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamFileScanner;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamFileScanner.ScanTask;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamFileScanner;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamFileScanner.ScanTask;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.params.io.ModelStreamFileSourceParams;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 @InputPorts()
 @OutputPorts(values = @PortSpec(value = PortType.MODEL_STREAM))
 @NameCn("流式模型流输入")
+@NameEn("Model Stream File Source")
 public final class ModelStreamFileSourceStreamOp extends BaseSourceStreamOp <ModelStreamFileSourceStreamOp>
 	implements ModelStreamFileSourceParams <ModelStreamFileSourceStreamOp> {
 

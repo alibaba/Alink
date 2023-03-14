@@ -1,38 +1,41 @@
 package com.alibaba.alink.common.utils;
 
-import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.configuration.Configuration;
-import org.apache.flink.table.api.Table;
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
-import com.alibaba.alink.common.DataTypeDisplayInterface;
+import com.alibaba.alink.common.type.AlinkTypes;
+import com.alibaba.alink.common.viz.DataTypeDisplayInterface;
 import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
-import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.common.similarity.similarity.LevenshteinSimilarity;
+import com.alibaba.alink.params.shared.colname.HasFeatureColsDefaultAsNull;
+import com.alibaba.alink.params.shared.colname.HasGroupColDefaultAsNull;
+import com.alibaba.alink.params.shared.colname.HasLabelCol;
+import com.alibaba.alink.params.shared.colname.HasLabelColDefaultAsNull;
+import com.alibaba.alink.params.shared.colname.HasSelectedColsDefaultAsNull;
+import com.alibaba.alink.params.shared.colname.HasWeightCol;
+import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
 import com.google.common.base.Joiner;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO;
 
 /**
  * Utility to operator to interact with Table contents, such as rows and columns.
@@ -42,9 +45,10 @@ public class TableUtil {
 	public static final Set <String> STRING_TYPE_SET = new HashSet <>();
 	private static final LevenshteinSimilarity levenshteinSimilarity = new LevenshteinSimilarity();
 	public static final int DISPLAY_SIZE = 6;
+	public static final String HEX = "0123456789abcdef";
 
 	static {
-		STRING_TYPE_MAP.put("VARBINARY", BYTE_PRIMITIVE_ARRAY_TYPE_INFO);
+		STRING_TYPE_MAP.put("VARBINARY", AlinkTypes.VARBINARY);
 		STRING_TYPE_MAP.put("VECTOR", AlinkTypes.VECTOR);
 		STRING_TYPE_MAP.put("DENSE_VECTOR", AlinkTypes.DENSE_VECTOR);
 		STRING_TYPE_MAP.put("SPARSE_VECTOR", AlinkTypes.SPARSE_VECTOR);
@@ -397,6 +401,25 @@ public class TableUtil {
 	}
 
 	/**
+	 * Determine whether it is date type.
+	 * @param dataType the dataType to determine.
+	 * @return whether it is date type.
+	 */
+	public static boolean isSupportedDateType(TypeInformation <?> dataType) {
+		return Types.SQL_DATE.equals(dataType)
+			|| Types.SQL_TIMESTAMP.equals(dataType)
+			|| Types.SQL_TIME.equals(dataType);
+	}
+
+	/**
+	 * Determine whether it is boolean type.
+	 * @param dataType the dataType to determine.
+	 * @return whether it is boolean type.
+	 */
+	public static boolean isSupportedBoolType(TypeInformation <?> dataType) {
+		return Types.BOOLEAN.equals(dataType);
+	}
+	/**
 	 * Determine whether it is a string type.
 	 *
 	 * @param dataType the dataType to determine.
@@ -602,6 +625,40 @@ public class TableUtil {
 		return res.toArray(new String[0]);
 	}
 
+	public static String[] getOptionalFeatureCols(TableSchema tableSchema, Params params) {
+		if (params.contains(HasFeatureColsDefaultAsNull.FEATURE_COLS)) {
+			return params.get(HasFeatureColsDefaultAsNull.FEATURE_COLS);
+		}
+
+		if (params.contains(HasSelectedColsDefaultAsNull.SELECTED_COLS)) {
+			return params.get(HasSelectedColsDefaultAsNull.SELECTED_COLS);
+		}
+
+		String[] featureCols = ArrayUtils.clone(tableSchema.getFieldNames());
+
+		if (params.contains(HasWeightColDefaultAsNull.WEIGHT_COL)) {
+			featureCols = ArrayUtils.removeElements(featureCols, params.get(HasWeightColDefaultAsNull.WEIGHT_COL));
+		}
+
+		if (params.contains(HasWeightCol.WEIGHT_COL)) {
+			featureCols = ArrayUtils.removeElements(featureCols, params.get(HasWeightCol.WEIGHT_COL));
+		}
+
+		if (params.contains(HasGroupColDefaultAsNull.GROUP_COL)) {
+			featureCols = ArrayUtils.removeElements(featureCols, params.get(HasGroupColDefaultAsNull.GROUP_COL));
+		}
+
+		if (params.contains(HasLabelCol.LABEL_COL)) {
+			featureCols = ArrayUtils.removeElements(featureCols, params.get(HasLabelCol.LABEL_COL));
+		}
+
+		if (params.contains(HasLabelColDefaultAsNull.LABEL_COL)) {
+			featureCols = ArrayUtils.removeElements(featureCols, params.get(HasLabelColDefaultAsNull.LABEL_COL));
+		}
+
+		return featureCols;
+	}
+
 	/**
 	 * format the column names as header of markdown.
 	 */
@@ -628,7 +685,7 @@ public class TableUtil {
 			}
 		}
 
-		return sbd.toString() + "\n" + sbdSplitter.toString();
+		return sbd + "\n" + sbdSplitter;
 	}
 
 	/**
@@ -644,7 +701,7 @@ public class TableUtil {
 				sbd.append("|");
 			}
 			Object obj = row.getField(i);
-			if (obj instanceof Double || obj instanceof Float) {
+			if (obj instanceof Double || obj instanceof Float || obj instanceof BigDecimal) {
 				sbd.append(String.format("%.4f", ((Number) obj).doubleValue()));
 			} else if (obj instanceof DataTypeDisplayInterface) {
 				if (obj instanceof DenseVector || obj instanceof SparseVector) {
@@ -702,6 +759,16 @@ public class TableUtil {
 						sbd.append(" ");
 					}
 				}
+			} else if (obj instanceof byte[]) {
+				int byteSize = ((byte[]) obj).length;
+				sbd.append("byte[").append(byteSize).append("] ");
+				byte[] byteArray = byteSize > DISPLAY_SIZE ? Arrays.copyOfRange((byte[]) obj, 0, DISPLAY_SIZE)
+					: (byte[]) obj;
+				for (byte b : byteArray) {
+					sbd.append(HEX.charAt((b >> 4) & 0x0f));
+					sbd.append(HEX.charAt(b & 0x0f));
+				}
+				sbd.append((byteSize > DISPLAY_SIZE ? "..." : ""));
 			} else {
 				sbd.append(obj);
 			}
@@ -744,120 +811,51 @@ public class TableUtil {
 		return Joiner.on("`,`").appendTo(new StringBuilder("`"), colNames).append("`").toString();
 	}
 
-	/**
-	 * open ends here
-	 **/
 
-	public static Table concatTables(Table[] tables, Long sessionId) {
-		final int[] numCols = new int[tables.length];
-		final List <String> allColNames = new ArrayList <>();
-		final List <TypeInformation <?>> allColTypes = new ArrayList <>();
-		allColNames.add("table_id");
-		allColTypes.add(Types.LONG);
-		for (int i = 0; i < tables.length; i++) {
-			if (tables[i] == null) {
-				numCols[i] = 0;
-			} else {
-				numCols[i] = tables[i].getSchema().getFieldNames().length;
-				String[] prefixedColNames = tables[i].getSchema().getFieldNames().clone();
-				for (int j = 0; j < prefixedColNames.length; j++) {
-					prefixedColNames[j] = String.format("t%d_%s", i, prefixedColNames[j]);
-				}
-				allColNames.addAll(Arrays.asList(prefixedColNames));
-				allColTypes.addAll(Arrays.asList(tables[i].getSchema().getFieldTypes()));
-			}
-		}
-
-		if (allColNames.size() == 1) {
-			return null;
-		}
-
-		DataSet <Row> allRows = null;
-		int startCol = 1;
-		final int numAllCols = allColNames.size();
-		for (int i = 0; i < tables.length; i++) {
-			if (tables[i] == null) {
-				continue;
-			}
-			final int constStartCol = startCol;
-			final int iTable = i;
-			DataSet <Row> rows = BatchOperator.fromTable(tables[i]).setMLEnvironmentId(sessionId).getDataSet();
-			rows = rows.map(new RichMapFunction <Row, Row>() {
-				private static final long serialVersionUID = -8085823678072944808L;
-				transient Row reused;
-
-				@Override
-				public void open(Configuration parameters) {
-					reused = new Row(numAllCols);
-				}
-
-				@Override
-				public Row map(Row value) {
-					for (int i = 0; i < numAllCols; i++) {
-						reused.setField(i, null);
-					}
-					reused.setField(0, (long) iTable);
-					for (int i = 0; i < numCols[iTable]; i++) {
-						reused.setField(constStartCol + i, value.getField(i));
-					}
-					return reused;
-				}
-			});
-			if (allRows == null) {
-				allRows = rows;
-			} else {
-				allRows = allRows.union(rows);
-			}
-			startCol += numCols[i];
-		}
-		return DataSetConversionUtil.toTable(sessionId, allRows, allColNames.toArray(new String[0]),
-			allColTypes.toArray(new TypeInformation[0]));
-	}
-
-	public static Table[] splitTable(Table table) {
-		TableSchema schema = table.getSchema();
-		final String[] colNames = schema.getFieldNames();
-		String idCol = colNames[0];
-		if (!idCol.equalsIgnoreCase("table_id")) {
-			throw new AkIllegalArgumentException("The table can't be splited.");
-		}
-
-		String lastCol = colNames[colNames.length - 1];
-		int maxTableId = Integer.parseInt(lastCol.substring(1, lastCol.indexOf('_')));
-		int numTables = maxTableId + 1;
-
-		int[] numColsOfEachTable = new int[numTables];
-		for (int i = 1; i < colNames.length; i++) {
-			int tableId = Integer.parseInt(colNames[i].substring(1, lastCol.indexOf('_')));
-			numColsOfEachTable[tableId]++;
-		}
-
-		Table[] splited = new Table[numTables];
-		int startCol = 1;
-		for (int i = 0; i < numTables; i++) {
-			if (numColsOfEachTable[i] == 0) {
-				continue;
-			}
-			String[] selectedCols = Arrays.copyOfRange(colNames, startCol, startCol + numColsOfEachTable[i]);
-			BatchOperator <?> sub = BatchOperator.fromTable(table)
-				.where(String.format("%s=%d", "table_id", i))
-				.select(selectedCols);
-
-			// recover the col names
-			String prefix = String.format("t%d_", i);
-			StringBuilder sbd = new StringBuilder();
-			for (int j = 0; j < selectedCols.length; j++) {
-				if (j > 0) {
-					sbd.append(",");
-				}
-				sbd.append(selectedCols[j].substring(prefix.length()));
-			}
-			sub = sub.as(sbd.toString());
-			splited[i] = sub.getOutputTable();
-			startCol += numColsOfEachTable[i];
-		}
-		return splited;
-	}
+	//public static Table[] splitTable(Table table) {
+	//	TableSchema schema = table.getSchema();
+	//	final String[] colNames = schema.getFieldNames();
+	//	String idCol = colNames[0];
+	//	if (!idCol.equalsIgnoreCase("table_id")) {
+	//		throw new AkIllegalArgumentException("The table can't be splited.");
+	//	}
+	//
+	//	String lastCol = colNames[colNames.length - 1];
+	//	int maxTableId = Integer.parseInt(lastCol.substring(1, lastCol.indexOf('_')));
+	//	int numTables = maxTableId + 1;
+	//
+	//	int[] numColsOfEachTable = new int[numTables];
+	//	for (int i = 1; i < colNames.length; i++) {
+	//		int tableId = Integer.parseInt(colNames[i].substring(1, lastCol.indexOf('_')));
+	//		numColsOfEachTable[tableId]++;
+	//	}
+	//
+	//	Table[] splited = new Table[numTables];
+	//	int startCol = 1;
+	//	for (int i = 0; i < numTables; i++) {
+	//		if (numColsOfEachTable[i] == 0) {
+	//			continue;
+	//		}
+	//		String[] selectedCols = Arrays.copyOfRange(colNames, startCol, startCol + numColsOfEachTable[i]);
+	//		BatchOperator <?> sub = BatchOperator.fromTable(table)
+	//			.where(String.format("%s=%d", "table_id", i))
+	//			.select(selectedCols);
+	//
+	//		// recover the col names
+	//		String prefix = String.format("t%d_", i);
+	//		StringBuilder sbd = new StringBuilder();
+	//		for (int j = 0; j < selectedCols.length; j++) {
+	//			if (j > 0) {
+	//				sbd.append(",");
+	//			}
+	//			sbd.append(selectedCols[j].substring(prefix.length()));
+	//		}
+	//		sub = sub.as(sbd.toString());
+	//		splited[i] = sub.getOutputTable();
+	//		startCol += numColsOfEachTable[i];
+	//	}
+	//	return splited;
+	//}
 
 	public static Row getRow(Row row, int... keepIdxs) {
 		Row res = null;

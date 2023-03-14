@@ -2,7 +2,6 @@ package com.alibaba.alink.operator.common.statistics.statistics;
 
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
-import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 
 import java.io.Serializable;
@@ -52,7 +51,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 	 * *
 	 * 每个基本区间内数据的基本统计计算量
 	 */
-	public MeasureCalculator[][] mcs = null;
+	public IntervalMeasureCalculator[][] mcs = null;
 	public int magnitude; // magnitude < n <= 10 * magnitude
 	public long startIndex;
 
@@ -75,7 +74,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 		this(start, step, count, null, magnitude);
 	}
 
-	public IntervalCalculator(double start, double step, long[] count, MeasureCalculator[][] mcs, int magnitude) {
+	public IntervalCalculator(double start, double step, long[] count, IntervalMeasureCalculator[][] mcs, int magnitude) {
 		this(Double.class, Math.round(start / step), Math.round(Math.log10(step)) - 1000, count, mcs, magnitude);
 	}
 
@@ -87,7 +86,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 		this(start, step, count, null, magnitude);
 	}
 
-	public IntervalCalculator(long start, long step, long[] count, MeasureCalculator[][] mcs, int magnitude) {
+	public IntervalCalculator(long start, long step, long[] count, IntervalMeasureCalculator[][] mcs, int magnitude) {
 		this(Long.class, start, step, count, mcs, magnitude);
 	}
 
@@ -95,7 +94,7 @@ public class IntervalCalculator implements Cloneable, Serializable {
 		this(type, start, step, count, null, DefaultMagnitude);
 	}
 
-	IntervalCalculator(Class type, long start, long step, long[] count, MeasureCalculator[][] mcs, int magnitude) {
+	IntervalCalculator(Class type, long start, long step, long[] count, IntervalMeasureCalculator[][] mcs, int magnitude) {
 		if (Double.class == type || Float.class == type) {
 			this.type = "Decimal";
 		} else if (Long.class == type || Integer.class == type) {
@@ -245,11 +244,11 @@ public class IntervalCalculator implements Cloneable, Serializable {
 	}
 
 	public static IntervalCalculator getEmptyInterval(long min, long max, int nCol, int magnitude) {
-		MeasureCalculator[][] tmpmcs = null;
+		IntervalMeasureCalculator[][] tmpmcs = null;
 		if (nCol > 0) {
-			tmpmcs = new MeasureCalculator[1][nCol];
+			tmpmcs = new IntervalMeasureCalculator[1][nCol];
 			for (int i = 0; i < nCol; i++) {
-				tmpmcs[0][i] = new MeasureCalculator();
+				tmpmcs[0][i] = new IntervalMeasureCalculator();
 			}
 		}
 
@@ -277,11 +276,11 @@ public class IntervalCalculator implements Cloneable, Serializable {
 			}
 
 			long minBD = calcIntervalValBD(min, stepBD).longValue();
-			MeasureCalculator[][] tmpmcs = null;
+			IntervalMeasureCalculator[][] tmpmcs = null;
 			if (nCol > 0) {
-				tmpmcs = new MeasureCalculator[1][nCol];
+				tmpmcs = new IntervalMeasureCalculator[1][nCol];
 				for (int i = 0; i < nCol; i++) {
-					tmpmcs[0][i] = new MeasureCalculator();
+					tmpmcs[0][i] = new IntervalMeasureCalculator();
 				}
 			}
 
@@ -487,8 +486,8 @@ public class IntervalCalculator implements Cloneable, Serializable {
 		return this.count.clone();
 	}
 
-	public MeasureCalculator[] updateMeasureCalculatorsByCol(int idx) throws Exception {
-		MeasureCalculator[] measureCalculators = new MeasureCalculator[n];
+	public IntervalMeasureCalculator[] updateMeasureCalculatorsByCol(int idx) throws Exception {
+		IntervalMeasureCalculator[] measureCalculators = new IntervalMeasureCalculator[n];
 		for (int i = 0; i < this.mcs.length; i++) {
 			measureCalculators[i] = mcs[i][idx];
 		}
@@ -706,10 +705,10 @@ public class IntervalCalculator implements Cloneable, Serializable {
 		}
 
 		if (null != this.mcs) {
-			MeasureCalculator[][] mscNew = new MeasureCalculator[nNew][this.nCol];
+			IntervalMeasureCalculator[][] mscNew = new IntervalMeasureCalculator[nNew][this.nCol];
 			for (int i = 0; i < nNew; i++) {
 				for (int j = 0; j < this.nCol; j++) {
-					mscNew[i][j] = new MeasureCalculator();
+					mscNew[i][j] = new IntervalMeasureCalculator();
 				}
 			}
 			for (int i = 0; i < n; i++) {

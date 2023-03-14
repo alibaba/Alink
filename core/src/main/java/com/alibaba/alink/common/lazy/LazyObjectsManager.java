@@ -4,10 +4,12 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 import com.alibaba.alink.params.shared.HasMLEnvironmentId;
 import com.alibaba.alink.pipeline.EstimatorBase;
 import com.alibaba.alink.pipeline.ModelBase;
 import com.alibaba.alink.pipeline.Trainer;
+import com.alibaba.alink.pipeline.TrainerLegacy;
 import com.alibaba.alink.pipeline.TransformerBase;
 import com.alibaba.alink.pipeline.tuning.BaseTuning;
 import com.alibaba.alink.pipeline.tuning.Report;
@@ -77,7 +79,15 @@ public class LazyObjectsManager {
 		return genLazyObject(trainer, lazyTrainOps);
 	}
 
+	public LazyEvaluation <BatchOperator <?>> genLazyTrainOp(TrainerLegacy <?, ?> trainer) {
+		return genLazyObject(trainer, lazyTrainOps);
+	}
+
 	public LazyEvaluation <ModelBase <?>> genLazyModel(Trainer <?, ?> trainer) {
+		return genLazyObject(trainer, lazyModels);
+	}
+
+	public LazyEvaluation <ModelBase <?>> genLazyModel(TrainerLegacy <?, ?> trainer) {
 		return genLazyObject(trainer, lazyModels);
 	}
 

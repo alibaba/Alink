@@ -12,7 +12,7 @@ import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunctio
 import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.io.catalog.datahub.datastream.util.DatahubClientProvider;
 import com.aliyun.datahub.client.model.Field;
 import com.aliyun.datahub.client.model.FieldType;

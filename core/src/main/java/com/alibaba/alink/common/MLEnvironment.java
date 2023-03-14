@@ -7,19 +7,19 @@ import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.Table;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.MTable.MTableKryoSerializer;
+import com.alibaba.alink.common.MTable.MTableKryoSerializerV2;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.lazy.LazyObjectsManager;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
 import com.alibaba.alink.common.linalg.tensor.TensorKryoSerializer;
-import com.alibaba.alink.common.sql.builtin.BuildInAggRegister;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.common.sql.builtin.BuiltInAggRegister;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
@@ -104,20 +104,22 @@ public class MLEnvironment {
 		this.streamEnv = streamEnv;
 		this.streamTableEnv = streamTableEnv;
 		if (this.env != null) {
-			env.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializer());
+			env.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializerV2());
 			env.addDefaultKryoSerializer(Tensor.class, new TensorKryoSerializer());
 		}
 		if (this.streamEnv != null) {
-			streamEnv.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializer());
+			streamEnv.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializerV2());
 			streamEnv.addDefaultKryoSerializer(Tensor.class, new TensorKryoSerializer());
 		}
 		if (this.batchTableEnv != null) {
-			BuildInAggRegister.registerUdf(this.batchTableEnv);
-			BuildInAggRegister.registerUdaf(this.batchTableEnv);
+			BuiltInAggRegister.registerUdf(this.batchTableEnv);
+			BuiltInAggRegister.registerUdtf(this.batchTableEnv);
+			BuiltInAggRegister.registerUdaf(this.batchTableEnv);
 		}
 		if (this.streamTableEnv != null) {
-			BuildInAggRegister.registerUdf(this.streamTableEnv);
-			BuildInAggRegister.registerUdaf(this.streamTableEnv);
+			BuiltInAggRegister.registerUdf(this.streamTableEnv);
+			BuiltInAggRegister.registerUdtf(this.streamTableEnv);
+			BuiltInAggRegister.registerUdaf(this.streamTableEnv);
 		}
 	}
 
@@ -150,7 +152,7 @@ public class MLEnvironment {
 				env = ExecutionEnvironment.getExecutionEnvironment();
 			}
 
-			env.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializer());
+			env.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializerV2());
 			env.addDefaultKryoSerializer(Tensor.class, new TensorKryoSerializer());
 		}
 		return env;
@@ -166,7 +168,7 @@ public class MLEnvironment {
 	public StreamExecutionEnvironment getStreamExecutionEnvironment() {
 		if (null == streamEnv) {
 			streamEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-			streamEnv.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializer());
+			streamEnv.addDefaultKryoSerializer(MTable.class, new MTableKryoSerializerV2());
 			streamEnv.addDefaultKryoSerializer(Tensor.class, new TensorKryoSerializer());
 		}
 		return streamEnv;
@@ -182,8 +184,9 @@ public class MLEnvironment {
 	public BatchTableEnvironment getBatchTableEnvironment() {
 		if (null == batchTableEnv) {
 			batchTableEnv = BatchTableEnvironment.create(getExecutionEnvironment());
-			BuildInAggRegister.registerUdf(this.batchTableEnv);
-			BuildInAggRegister.registerUdaf(this.batchTableEnv);
+			BuiltInAggRegister.registerUdf(batchTableEnv);
+			BuiltInAggRegister.registerUdtf(batchTableEnv);
+			BuiltInAggRegister.registerUdaf(batchTableEnv);
 		}
 		return batchTableEnv;
 	}
@@ -197,16 +200,10 @@ public class MLEnvironment {
 	 */
 	public StreamTableEnvironment getStreamTableEnvironment() {
 		if (null == streamTableEnv) {
-			streamTableEnv = StreamTableEnvironment
-				.create(
-					getStreamExecutionEnvironment(),
-					EnvironmentSettings
-						.newInstance()
-						.useOldPlanner()
-						.build()
-				);
-			BuildInAggRegister.registerUdf(this.streamTableEnv);
-			BuildInAggRegister.registerUdaf(this.streamTableEnv);
+			streamTableEnv = StreamTableEnvironment.create(getStreamExecutionEnvironment());
+			BuiltInAggRegister.registerUdf(streamTableEnv);
+			BuiltInAggRegister.registerUdtf(streamTableEnv);
+			BuiltInAggRegister.registerUdaf(streamTableEnv);
 		}
 		return streamTableEnv;
 	}
@@ -257,7 +254,7 @@ public class MLEnvironment {
 	 */
 	public Table createBatchTable(List <Row> rows, String[] colNames) {
 		if (rows == null || rows.size() < 1) {
-			throw new IllegalArgumentException("Values can not be empty.");
+			throw new AkIllegalArgumentException("Values can not be empty.");
 		}
 
 		Row first = rows.iterator().next();
@@ -297,7 +294,7 @@ public class MLEnvironment {
 	 */
 	public Table createStreamTable(List <Row> rows, String[] colNames) {
 		if (rows == null || rows.size() < 1) {
-			throw new IllegalArgumentException("Values can not be empty.");
+			throw new AkIllegalArgumentException("Values can not be empty.");
 		}
 
 		Row first = rows.iterator().next();

@@ -4,10 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.vector.VectorMinMaxScalerTrainBatchOp;
-import com.alibaba.alink.operator.local.LocalOperator;
-import com.alibaba.alink.operator.local.dataproc.vector.VectorMinMaxScalerTrainLocalOp;
 import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerPredictParams;
 import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -33,14 +29,5 @@ public class VectorMinMaxScaler extends Trainer <VectorMinMaxScaler, VectorMinMa
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new VectorMinMaxScalerTrainBatchOp(this.getParams()).linkFrom(in);
-	}
-
-	@Override
-	protected LocalOperator <?> train(LocalOperator <?> in) {
-		return new VectorMinMaxScalerTrainLocalOp(this.getParams()).linkFrom(in);
-	}
 }
 

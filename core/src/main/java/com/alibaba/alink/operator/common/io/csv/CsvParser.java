@@ -8,7 +8,7 @@ import org.apache.flink.types.parser.FieldParser;
 import org.apache.flink.util.InstantiationUtil;
 import org.apache.flink.util.StringUtils;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.exceptions.AkParseErrorException;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -183,6 +183,9 @@ public class CsvParser implements Serializable {
 			}
 			if (token.equals("\"\"")) {
 				return Tuple2.of(true, null); // spark output's null value as ""
+			}
+			if (quoteChar != null && token.startsWith(quoteChar.toString()) && token.endsWith(quoteChar.toString())) {
+				token = token.substring(1, token.length() - 1);
 			}
 			byte[] bytes = token.getBytes();
 			parser.resetErrorStateAndParse(bytes, 0, bytes.length, fieldDelim.getBytes(), null);

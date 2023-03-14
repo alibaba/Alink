@@ -22,6 +22,7 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.dataproc.MinMaxScalerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * MinMaxScaler transforms a dataSet of rows, rescaling each feature
@@ -32,6 +33,7 @@ import com.alibaba.alink.params.dataproc.MinMaxScalerTrainParams;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("归一化训练")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.MinMaxScaler")
 public class MinMaxScalerTrainLocalOp extends LocalOperator <MinMaxScalerTrainLocalOp>
 	implements MinMaxScalerTrainParams <MinMaxScalerTrainLocalOp>,
 	WithModelInfoLocalOp <MinMaxScalerModelInfo, MinMaxScalerTrainLocalOp, MinMaxScalerModelInfoLocalOp> {

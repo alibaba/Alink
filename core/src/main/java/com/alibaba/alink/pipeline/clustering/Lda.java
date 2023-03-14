@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.clustering.LdaTrainBatchOp;
 import com.alibaba.alink.params.clustering.LdaPredictParams;
 import com.alibaba.alink.params.clustering.LdaTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -28,8 +26,4 @@ public class Lda extends Trainer <Lda, LdaModel> implements
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new LdaTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }
