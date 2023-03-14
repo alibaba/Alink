@@ -320,17 +320,4 @@ public class EvaluationUtilTest extends AlinkTestBase {
 		EvaluationUtil.extractLabelProbMap(Row.of(null, "a, b, c"), Types.LONG);
 	}
 
-	@Test
-	public void binaryClassOneLabel() {
-		Row[] rows =
-			new Row[] {
-				Row.of("prefix1", "{\"prefix1\": 0.9, \"prefix0\": 0.1}"),
-				Row.of("prefix1", "{\"prefix1\": 0.8, \"prefix0\": 0.2}"),
-				Row.of("prefix1", "{\"prefix1\": 0.7, \"prefix0\": 0.3}"),
-				Row.of("prefix1", "{\"prefix1\": 0.75, \"prefix0\": 0.25}"),
-				Row.of("prefix1", "{\"prefix1\": 0.6, \"prefix0\": 0.4}")
-			};
-		BaseMetricsSummary baseMetric = getDetailStatistics(Arrays.asList(rows), null, true, Types.STRING);
-		Assert.assertEquals(Double.compare(((BinaryClassMetrics) baseMetric.toMetrics()).getAuc(), Double.NaN), 0);
-	}
 }

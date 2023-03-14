@@ -16,10 +16,11 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.dataproc.AppendIdBatchParams;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @InputPorts(values = {@PortSpec(PortType.DATA)})
 @OutputPorts(values = {@PortSpec(PortType.DATA)})
 @NameCn("添加id列")
+@NameEn("Append Id")
 public final class AppendIdBatchOp extends BatchOperator <AppendIdBatchOp>
 	implements AppendIdBatchParams <AppendIdBatchOp> {
 	public final static String appendIdColName = "append_id";

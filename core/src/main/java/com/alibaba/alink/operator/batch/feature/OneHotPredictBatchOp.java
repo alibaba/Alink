@@ -3,6 +3,8 @@ package com.alibaba.alink.operator.batch.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.feature.OneHotModelMapper;
 import com.alibaba.alink.params.feature.OneHotPredictParams;
@@ -12,6 +14,8 @@ import com.alibaba.alink.params.feature.OneHotPredictParams;
  * sparse binary vectors.
  */
 @NameCn("独热编码预测")
+@NameEn("OneHot Encoder Predict")
+@ParamSelectColumnSpec(name = "selectedCols", portIndices = {1})
 public final class OneHotPredictBatchOp extends ModelMapBatchOp <OneHotPredictBatchOp>
 	implements OneHotPredictParams <OneHotPredictBatchOp> {
 

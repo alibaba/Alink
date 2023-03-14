@@ -19,6 +19,7 @@ import org.apache.flink.util.NumberSequenceIterator;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -70,6 +71,7 @@ import java.util.Map;
 @ParamSelectColumnSpec(name = "targetCol", portIndices = 0, allowedTypeCollections = {TypeCollections.INT_LONG_TYPES, TypeCollections.STRING_TYPES})
 @ParamSelectColumnSpec(name = "weightCol", portIndices = 0, allowedTypeCollections = {TypeCollections.NUMERIC_TYPES})
 @NameCn("随机游走")
+@NameEn("Random Walk")
 public final class RandomWalkBatchOp extends BatchOperator <RandomWalkBatchOp>
 	implements RandomWalkParams <RandomWalkBatchOp> {
 

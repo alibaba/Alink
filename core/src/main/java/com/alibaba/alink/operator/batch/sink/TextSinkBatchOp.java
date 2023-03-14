@@ -5,6 +5,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
@@ -17,6 +18,7 @@ import com.alibaba.alink.params.io.TextSinkBatchParams;
  */
 @IoOpAnnotation(name = "text", ioType = IOType.SinkBatch)
 @NameCn("Text文件导出")
+@NameEn("Text Sink")
 public final class TextSinkBatchOp extends BaseSinkBatchOp <TextSinkBatchOp>
 	implements TextSinkBatchParams <TextSinkBatchOp> {
 

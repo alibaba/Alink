@@ -24,6 +24,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -32,7 +33,6 @@ import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.graph.GraphUtilsWithString;
 import com.alibaba.alink.params.graph.MultiSourceShortestPathParams;
 import org.apache.commons.lang3.StringUtils;
 
@@ -55,6 +55,7 @@ import java.util.HashSet;
 @ParamSelectColumnSpec(name = "edgeTargetCol", portIndices = 0)
 @ParamSelectColumnSpec(name = "edgeWeightCol", portIndices = 0)
 @NameCn("多源最短路径")
+@NameEn("Multi Source Shortest Path")
 public class MultiSourceShortestPathBatchOp extends BatchOperator <MultiSourceShortestPathBatchOp>
 	implements MultiSourceShortestPathParams <MultiSourceShortestPathBatchOp> {
 	private static final long serialVersionUID = -1637471953684406867L;

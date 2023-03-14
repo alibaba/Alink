@@ -7,9 +7,10 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -38,6 +39,7 @@ import java.util.Set;
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @ParamSelectColumnSpec(name = "selectedCols", portIndices = 0)
 @NameCn("类型转换")
+@NameEn("Type convert")
 public final class TypeConvertStreamOp extends StreamOperator <TypeConvertStreamOp>
 	implements TypeConvertParams <TypeConvertStreamOp> {
 

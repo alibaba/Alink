@@ -26,7 +26,7 @@ import com.alibaba.alink.operator.common.evaluation.BinaryClassMetrics;
 import com.alibaba.alink.operator.common.evaluation.BinaryMetricsSummary;
 import com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.evaluation.EvalBinaryClassParams;
 import com.alibaba.alink.params.onlinelearning.BinaryClassModelFilterParams;

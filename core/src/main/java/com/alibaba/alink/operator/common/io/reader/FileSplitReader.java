@@ -1,6 +1,8 @@
 package com.alibaba.alink.operator.common.io.reader;
 
-import com.alibaba.alink.operator.common.io.csv.CsvFileInputSplit;
+import org.apache.flink.core.io.InputSplit;
+
+import com.alibaba.alink.operator.common.io.csv.GenericCsvInputFormatBeta;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -13,7 +15,9 @@ public interface FileSplitReader extends Serializable {
 	/**
 	 * Open for reading data range [start, end]
 	 */
-	void open(CsvFileInputSplit split, long start, long end) throws IOException;
+	void open(InputSplit split) throws IOException;
+
+	void reopen(InputSplit split, long splitStart) throws IOException;
 
 	/**
 	 * Close the reader.
@@ -43,4 +47,18 @@ public interface FileSplitReader extends Serializable {
 	 * @return The length.
 	 */
 	long getFileLength();
+
+	long getSplitLength();
+
+	long getSplitStart();
+
+	long getSplitEnd();
+
+	long getSplitNumber();
+
+	GenericCsvInputFormatBeta getInputFormat(String lineDelim, boolean ignoreFirstLine, Character quoteChar);
+
+	GenericCsvInputFormatBeta convertFileSplitToInputFormat(String lineDelim, boolean ignoreFirstLine, Character quoteChar);
+
+	InputSplit convertStringToSplitObject(String splitStr);
 }

@@ -14,7 +14,7 @@ import org.apache.flink.util.StringUtils;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;

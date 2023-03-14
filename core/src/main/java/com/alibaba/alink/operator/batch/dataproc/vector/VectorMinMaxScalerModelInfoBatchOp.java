@@ -3,7 +3,7 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelInfo;
 
 import java.util.List;

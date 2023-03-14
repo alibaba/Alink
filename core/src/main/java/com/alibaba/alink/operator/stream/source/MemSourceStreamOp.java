@@ -1,6 +1,5 @@
 package com.alibaba.alink.operator.stream.source;
 
-import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -11,9 +10,10 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 
 import java.util.Arrays;
@@ -24,6 +24,7 @@ import java.util.List;
  */
 @IoOpAnnotation(name = MemSourceStreamOp.NAME, ioType = IOType.SourceStream)
 @NameCn("内存数据源")
+@NameEn("Memory Source")
 public final class MemSourceStreamOp extends BaseSourceStreamOp <MemSourceStreamOp> {
 
 	static final String NAME = "memory";
@@ -78,8 +79,7 @@ public final class MemSourceStreamOp extends BaseSourceStreamOp <MemSourceStream
 		TypeInformation <?>[] colTypes = mt.getColTypes();
 		DataStream <Row> dataStream = MLEnvironmentFactory.get(mlEnvironmentId)
 			.getStreamExecutionEnvironment()
-			.fromCollection(mt.getRows(), new RowTypeInfo(colTypes))
-			.assignTimestampsAndWatermarks(WatermarkStrategy.forMonotonousTimestamps());
+			.fromCollection(mt.getRows(), new RowTypeInfo(colTypes));
 		return DataStreamConversionUtil.toTable(mlEnvironmentId, dataStream, mt.getColNames(), colTypes);
 	}
 

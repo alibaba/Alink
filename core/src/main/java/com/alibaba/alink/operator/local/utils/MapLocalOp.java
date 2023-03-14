@@ -87,14 +87,8 @@ public class MapLocalOp<T extends MapLocalOp <T>> extends LocalOperator <T> {
 
 			if (cnt <= 0) {continue;}
 
-			int finalI = i;
 			taskRunner.submit(() -> {
-				int counter = 0;
 					for (int j = start; j < start + cnt; j++) {
-						counter += 1;
-						if (AlinkGlobalConfiguration.isPrintProcessInfo() && (counter % (1024 * 8) == 0)) {
-							System.out.printf("thread %d processed %d%n", finalI, counter);
-						}
 						try {
 							output.set(j, mapper.map(input.get(j)));
 						} catch (Exception e) {

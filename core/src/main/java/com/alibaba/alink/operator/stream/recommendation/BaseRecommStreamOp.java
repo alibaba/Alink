@@ -26,10 +26,11 @@ import com.alibaba.alink.operator.common.recommendation.RecommAdapterMT;
 import com.alibaba.alink.operator.common.recommendation.RecommKernel;
 import com.alibaba.alink.operator.common.recommendation.RecommMapper;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
-import com.alibaba.alink.operator.common.stream.model.PredictProcess;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
+import com.alibaba.alink.operator.stream.utils.PredictProcess;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
+import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.params.mapper.ModelMapperParams;
 
@@ -115,7 +116,7 @@ public class BaseRecommStreamOp<T extends BaseRecommStreamOp <T>> extends Stream
 			if (modelStream != null) {
 				resultRows = in
 					.getDataStream()
-					.connect(ModelStreamUtils.broadcastStream(modelStream))
+					.connect(ModelMapStreamOp.broadcastStream(modelStream))
 					.flatMap(
 						new PredictProcess(
 							modelSchema, in.getSchema(), getParams(), recommKernelBuilder, recommType, modelDataBridge,

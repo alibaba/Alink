@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.recommendation;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.recommendation.AlsRecommKernel;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.recommendation.BaseSimilarUsersRecommParams;
  * Recommend similar items for the given item in stream format.
  */
 @NameCn("ALS：相似users推荐")
+@NameEn("Alternating least square similar users recommendation")
 public class AlsSimilarUsersRecommStreamOp extends BaseRecommStreamOp <AlsSimilarUsersRecommStreamOp>
 	implements BaseSimilarUsersRecommParams <AlsSimilarUsersRecommStreamOp> {
 

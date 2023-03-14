@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.recommendation;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.recommendation.ItemCfRecommKernel;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.recommendation.BaseItemsPerUserRecommParams;
  * Recommend items for user with itemCF model.
  */
 @NameCn("ItemCf：ItemsPerUser推荐")
+@NameEn("Item collaborative filtering items per-user recommendation")
 public class ItemCfItemsPerUserRecommStreamOp
 	extends BaseRecommStreamOp <ItemCfItemsPerUserRecommStreamOp>
 	implements BaseItemsPerUserRecommParams <ItemCfItemsPerUserRecommStreamOp> {

@@ -19,6 +19,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -27,11 +28,11 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -52,9 +53,10 @@ import com.alibaba.alink.operator.common.clustering.lda.UpdateLambdaAndAlpha;
 import com.alibaba.alink.operator.common.nlp.DocCountVectorizerModelData;
 import com.alibaba.alink.operator.common.nlp.DocCountVectorizerModelMapper;
 import com.alibaba.alink.operator.common.nlp.FeatureType;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.clustering.LdaTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 import com.google.common.collect.Lists;
 import org.apache.commons.math3.random.RandomDataGenerator;
 
@@ -81,6 +83,8 @@ import static org.apache.flink.shaded.guava18.com.google.common.hash.Hashing.mur
 })
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("LDA训练")
+@NameEn("LDA Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.clustering.Lda")
 public class LdaTrainBatchOp extends BatchOperator <LdaTrainBatchOp>
 	implements LdaTrainParams <LdaTrainBatchOp>,
 	WithModelInfoBatchOp <LdaModelInfo, LdaTrainBatchOp, LdaModelInfoBatchOp> {

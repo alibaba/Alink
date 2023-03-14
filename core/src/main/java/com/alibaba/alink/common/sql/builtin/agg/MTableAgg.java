@@ -1,6 +1,7 @@
 package com.alibaba.alink.common.sql.builtin.agg;
 
-import org.apache.flink.types.Row;
+import
+	org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -16,6 +17,11 @@ public class MTableAgg extends BaseUdaf <MTable, List <Row>> {
 	private String schemaStr;
 	private final boolean dropLast;
 	private int sortColIdx;
+
+	//for json converter.
+	public MTableAgg() {
+		this(false);
+	}
 
 	public MTableAgg(boolean dropLast) {
 		this.dropLast = dropLast;

@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.FeatureColsVectorColMutexRule;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -15,6 +16,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.vector.VectorAssemblerBatchOp;
 import com.alibaba.alink.operator.batch.similarity.VectorNearestNeighborTrainBatchOp;
 import com.alibaba.alink.params.classification.KnnTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * KNN is to classify unlabeled observations by assigning them to the class of the most similar labeled examples.
@@ -26,6 +28,8 @@ import com.alibaba.alink.params.classification.KnnTrainParams;
 @FeatureColsVectorColMutexRule
 @ParamSelectColumnSpec(name = "labelCol")
 @NameCn("最近邻分类训练")
+@NameEn("Knn Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.KnnClassifier")
 public final class KnnTrainBatchOp extends BatchOperator <KnnTrainBatchOp>
 	implements KnnTrainParams <KnnTrainBatchOp> {
 	private static final long serialVersionUID = -3118065094037473283L;

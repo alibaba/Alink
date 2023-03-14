@@ -26,6 +26,7 @@ import com.alibaba.alink.params.dataproc.HasSelectedColTypes;
 import com.alibaba.alink.params.feature.HasEnableElse;
 import com.alibaba.alink.params.feature.OneHotTrainParams;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +42,7 @@ import java.util.Map.Entry;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @SelectedColsWithFirstInputSpec
 @NameCn("独热编码训练")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.feature.OneHotEncoder")
 public final class OneHotTrainLocalOp extends LocalOperator <OneHotTrainLocalOp>
 	implements OneHotTrainParams <OneHotTrainLocalOp>,
 	WithModelInfoLocalOp <OneHotModelInfo, OneHotTrainLocalOp, OneHotModelInfoLocalOp> {

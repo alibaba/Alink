@@ -3,8 +3,6 @@ package com.alibaba.alink.pipeline.clustering;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.clustering.GeoKMeansTrainBatchOp;
 import com.alibaba.alink.params.clustering.GeoKMeansPredictParams;
 import com.alibaba.alink.params.clustering.GeoKMeansTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -29,8 +27,4 @@ public class GeoKMeans extends Trainer <GeoKMeans, KMeansModel> implements
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new GeoKMeansTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

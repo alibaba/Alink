@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -20,6 +21,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorStandardPredictParams;
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @ReservedColsWithSecondInputSpec
 @NameCn("向量标准化预测")
+@NameEn("Vector Standard Scaler Prediction")
 public final class VectorStandardScalerPredictBatchOp extends ModelMapBatchOp <VectorStandardScalerPredictBatchOp>
 	implements VectorStandardPredictParams <VectorStandardScalerPredictBatchOp> {
 

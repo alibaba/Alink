@@ -12,6 +12,8 @@ import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
 
+import java.util.List;
+
 /**
  * Accelerated failure time Regression object function.
  */
@@ -66,7 +68,7 @@ public class AftRegObjFunc extends OptimObjFunc {
 	 * @return the loss value and weight.
 	 */
 	@Override
-	protected double calcLoss(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector) {
+	public double calcLoss(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector) {
 		/*
 		 * loss = censor * coefVector.get(coefVector.size() - 1) - censor * epsilon + Math.exp(epsilon)
 		 * the last one of coefVector is the log(sigma)
@@ -84,7 +86,7 @@ public class AftRegObjFunc extends OptimObjFunc {
 	 * @param updateGrad  gradient need to update.
 	 */
 	@Override
-	protected void updateGradient(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
+	public void updateGradient(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
 								  DenseVector updateGrad) {
 
 		double sigma = Math.exp(coefVector.get(coefVector.size() - 1));
@@ -116,7 +118,7 @@ public class AftRegObjFunc extends OptimObjFunc {
 	 * @param updateHessian hessian matrix need to update.
 	 */
 	@Override
-	protected void updateHessian(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
+	public void updateHessian(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
 								 DenseMatrix updateHessian) {
 		double sigma = Math.exp(coefVector.get(coefVector.size() - 1));
 		double epsilon = (labelVector.f1 - getDotProduct(labelVector.f2, coefVector)) / sigma;
@@ -317,7 +319,7 @@ public class AftRegObjFunc extends OptimObjFunc {
 	 */
 	@Override
 	public double[] constraintCalcSearchValues(
-		Iterable <Tuple3 <Double, Double, Vector>> labelVectors,
+		List <Tuple3 <Double, Double, Vector>> labelVectors,
 		DenseVector coefVector, DenseVector dirVec, double beta, int numStep) {
 		double[] losses = new double[numStep + 1];
 		double[] coefArray = coefVector.getData();

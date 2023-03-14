@@ -22,7 +22,6 @@ public class SoftmaxObjFunc extends OptimObjFunc {
 	 * k1 = numClass - 1
 	 */
 	private final int k1;
-	private Tuple2 <double[], double[]> etas = null;
 
 	/**
 	 * Constructor.
@@ -42,7 +41,7 @@ public class SoftmaxObjFunc extends OptimObjFunc {
 	 * @return the loss value and weight value.
 	 */
 	@Override
-	protected double calcLoss(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector) {
+	public double calcLoss(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector) {
 		int featDim = coefVector.size() / k1;
 		double[] weights = coefVector.getData();
 		double sumExp = 1;
@@ -95,13 +94,9 @@ public class SoftmaxObjFunc extends OptimObjFunc {
 		DenseVector dirVec, double beta, int numStep) {
 		double[] losses = new double[numStep + 1];
 		double[] stateValues = new double[numStep + 1];
+		Tuple2 <double[], double[]> etas = Tuple2.of(new double[k1 + 1], new double[k1 + 1]);
 
 		for (Tuple3 <Double, Double, Vector> labelVector : labelVectors) {
-			if (etas == null) {
-				double[] f0 = new double[k1 + 1];
-				double[] f1 = new double[k1 + 1];
-				etas = Tuple2.of(f0, f1);
-			}
 			calcEta(labelVector, coefVector, dirVec, beta, etas);
 			int yk = labelVector.f1.intValue();
 
@@ -180,7 +175,7 @@ public class SoftmaxObjFunc extends OptimObjFunc {
 	 * @param updateGrad  gradient need to update.
 	 */
 	@Override
-	protected void updateGradient(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
+	public void updateGradient(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
 								  DenseVector updateGrad) {
 		double[] phi = calcPhi(labelVector, coefVector);
 
@@ -268,7 +263,7 @@ public class SoftmaxObjFunc extends OptimObjFunc {
 	 * @param updateHessian hessian matrix need to update.
 	 */
 	@Override
-	protected void updateHessian(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
+	public void updateHessian(Tuple3 <Double, Double, Vector> labelVector, DenseVector coefVector,
 								 DenseMatrix updateHessian) {
 		double[] phi = calcPhi(labelVector, coefVector);
 		int featDim = coefVector.size() / k1;

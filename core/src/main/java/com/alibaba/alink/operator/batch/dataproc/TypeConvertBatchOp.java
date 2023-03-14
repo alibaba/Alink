@@ -7,9 +7,10 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.Types;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -37,6 +38,7 @@ import java.util.Set;
 @InputPorts(values = {@PortSpec(PortType.DATA)})
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @NameCn("类型转换")
+@NameEn("Type Converter")
 public final class TypeConvertBatchOp extends BatchOperator <TypeConvertBatchOp>
 	implements TypeConvertParams <TypeConvertBatchOp> {
 
@@ -149,6 +151,10 @@ public final class TypeConvertBatchOp extends BatchOperator <TypeConvertBatchOp>
 					case "string":
 						outTypes[i] = Types.STRING();
 						type = "VARCHAR";
+						break;
+					case "decimal":
+						outTypes[i] = Types.DECIMAL();
+						type = "DECIMAL";
 						break;
 					default:
 						throw new AkUnsupportedOperationException("Not support type:" + this.newType);

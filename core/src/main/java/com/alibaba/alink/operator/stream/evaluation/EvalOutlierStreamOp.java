@@ -8,11 +8,9 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -20,8 +18,10 @@ import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.common.utils.TimeUtil;
+import com.alibaba.alink.operator.stream.utils.TimeUtil;
 import com.alibaba.alink.operator.common.evaluation.BaseMetrics;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
 import com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil;
@@ -55,7 +55,7 @@ import static com.alibaba.alink.operator.common.evaluation.EvalOutlierUtils.extr
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = @PortSpec(PortType.EVAL_METRICS))
 @NameCn("异常检测评估")
-@NameEn("Evaluation of Outlier Detection")
+@NameEn("Evaluation for outlier detection")
 public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 	implements EvalOutlierStreamParams <EvalOutlierStreamOp> {
 
@@ -122,7 +122,7 @@ public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 		double[] scores = sampleStats.f3;
 
 		int numPosLabels = 0, numNegLabels = 0;
-		double minPosScore = Double.MAX_VALUE, maxNegScore = Double.MIN_VALUE;
+		double minPosScore = Double.MAX_VALUE, maxNegScore = -Double.MAX_VALUE;
 		for (int k = 0; k < n; k += 1) {
 			if (labels[k]) {
 				numPosLabels += 1;
@@ -168,8 +168,8 @@ public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 		HashSet <String> outlierValueSet = new HashSet <>(Arrays.asList(outlierValues));
 		double timeInterval = getTimeInterval();
 
-		Preconditions.checkArgument(getParams().contains(EvalOutlierStreamParams.PREDICTION_DETAIL_COL),
-			"Outlier detection evaluation must give predictionDetailCol!");
+		AkPreconditions.checkArgument(getParams().contains(EvalOutlierStreamParams.PREDICTION_DETAIL_COL),
+			new AkIllegalOperatorParameterException("Outlier detection evaluation must give predictionDetailCol!"));
 
 		String predDetailColName = getPredictionDetailCol();
 		TableUtil.assertSelectedColExist(in.getColNames(), labelColName, predDetailColName);
@@ -178,8 +178,9 @@ public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 		data = data.map(new ReplaceLabelMapFunction(outlierValueSet, 1, 0));
 
 		DataStream <OutlierMetricsSummary> windowsStatistics = data
-			.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
-			.apply(new CalcOutlierMetricsSummaryWindowFunction(outlierValues));
+			.timeWindowAll(TimeUtil.convertTime(timeInterval))
+			.apply(new CalcOutlierMetricsSummaryWindowFunction(outlierValues))
+			.setParallelism(1);
 
 		DataStream <OutlierMetricsSummary> allStatistics = windowsStatistics
 			.map(new AccSummaryMapFunction <>())

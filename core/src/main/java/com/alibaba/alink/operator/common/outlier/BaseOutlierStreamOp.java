@@ -7,11 +7,11 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.mapper.FlatMapperAdapter;
 import com.alibaba.alink.common.mapper.Mapper;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.dataproc.FlattenMTableMapper;
 import com.alibaba.alink.operator.stream.StreamOperator;

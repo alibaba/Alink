@@ -1,6 +1,6 @@
 package com.alibaba.alink.common.linalg;
 
-import com.alibaba.alink.common.DataTypeDisplayInterface;
+import com.alibaba.alink.common.viz.DataTypeDisplayInterface;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.VectorUtil.VectorSerialType;

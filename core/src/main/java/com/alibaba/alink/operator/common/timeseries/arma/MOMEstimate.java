@@ -4,6 +4,9 @@ import com.alibaba.alink.operator.common.timeseries.TsMethod;
 
 import java.util.ArrayList;
 
+/**
+ * Yule-Walker method.
+ */
 public class MOMEstimate extends ArmaEstimate {
 
 	public MOMEstimate() {}
@@ -51,7 +54,7 @@ public class MOMEstimate extends ArmaEstimate {
 	 * noise.
 	 */
 	private ArrayList <double[]> momComputeAR(double[] data, int p) {
-		double[] acvf = TsMethod.computeACVF(data.clone(), p);
+		double[] acvf = TsMethod.acvf(data.clone(), p);
 		double[][] coef = TsMethod.levinson(acvf);
 
 		ArrayList <double[]> result = new ArrayList <double[]>();
@@ -70,7 +73,7 @@ public class MOMEstimate extends ArmaEstimate {
 	private ArrayList <double[]> momComputeMA(double[] data, int q) {
 		//estimate order p
 		int p = (int) Math.log(data.length);
-		double[] acvf = TsMethod.computeACVF(data, p);
+		double[] acvf = TsMethod.acvf(data, p);
 		double[][] arCoef = TsMethod.levinson(acvf);
 		double[] phi = arCoef[p];
 		phi[0] = -1;
@@ -98,7 +101,7 @@ public class MOMEstimate extends ArmaEstimate {
 	}
 
 	private ArrayList <double[]> momComputeARMA(double[] data, int p, int q) {
-		double[] allACVF = TsMethod.computeACVF(data, p + q);
+		double[] allACVF = TsMethod.acvf(data, p + q);
 		double[] arACVF = new double[p + 1];
 		System.arraycopy(allACVF, q, arACVF, 0, arACVF.length);
 

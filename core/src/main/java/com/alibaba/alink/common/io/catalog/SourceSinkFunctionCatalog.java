@@ -10,7 +10,7 @@ import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 
 public abstract class SourceSinkFunctionCatalog extends BaseCatalog {
 	public SourceSinkFunctionCatalog(Params params) {

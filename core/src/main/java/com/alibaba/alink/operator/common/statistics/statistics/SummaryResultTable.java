@@ -6,7 +6,6 @@ import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.slidingwindow.windowtree.DeepCloneable;
-import com.alibaba.alink.operator.common.statistics.basicstat.WindowTable;
 import com.alibaba.alink.params.statistics.HasStatLevel_L1;
 
 import java.io.Serializable;
@@ -99,7 +98,7 @@ public class SummaryResultTable implements Serializable, Cloneable, DeepCloneabl
 		ArrayList <Row> emptyArray = new ArrayList <>(1);
 		emptyArray.add(empty);
 		WindowTable wt = new WindowTable(colNames, colTypes, emptyArray);
-		SummaryResultTable srt = Summary2.streamSummary(wt, colNames, 10, 10, 100, 10, statLevel);
+		SummaryResultTable srt = SrtUtil.streamSummary(wt, colNames, 10, 10, 100, 10, statLevel);
 		for (int i = 0; i < srt.src.length; ++i) {
 			srt.src[i].countTotal = srt.src[i].count = 0;
 		}

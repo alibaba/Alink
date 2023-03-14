@@ -7,9 +7,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
-import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.redis.Redis;
 import com.alibaba.alink.common.io.redis.RedisClassLoaderFactory;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -17,7 +16,6 @@ import com.alibaba.alink.params.io.RedisParams;
 import com.alibaba.alink.params.io.RedisStringSinkParams;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class RedisStringOutputFormat extends RichOutputFormat <Row> {
 

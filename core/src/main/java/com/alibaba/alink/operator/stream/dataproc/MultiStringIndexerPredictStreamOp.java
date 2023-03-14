@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -27,6 +28,7 @@ import com.alibaba.alink.params.dataproc.MultiStringIndexerPredictParams;
 })
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.INT_LONG_STRING_TYPES)
 @NameCn("MultiStringIndexer预测")
+@NameEn("Multi String Indexer Prediction")
 public final class MultiStringIndexerPredictStreamOp
 	extends ModelMapStreamOp <MultiStringIndexerPredictStreamOp>
 	implements MultiStringIndexerPredictParams <MultiStringIndexerPredictStreamOp> {

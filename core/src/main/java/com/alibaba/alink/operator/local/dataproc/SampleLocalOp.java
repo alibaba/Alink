@@ -42,13 +42,13 @@ public final class SampleLocalOp extends LocalOperator <SampleLocalOp>
 
 		boolean withReplacement = getWithReplacement();
 		double fraction = getRatio();
-		long seed = (null != getRandomSeed()) ? 0 : getRandomSeed();
+		long seed = (null == getRandomSeed()) ? 201706 : getRandomSeed();
 
 		RandomSampler <Row> sampler;
 		if (withReplacement) {
-			sampler = new PoissonSampler <>(fraction, seed);
+			sampler = new PoissonSampler <Row>(fraction, seed);
 		} else {
-			sampler = new BernoulliSampler <>(fraction, seed);
+			sampler = new BernoulliSampler <Row>(fraction, seed);
 		}
 		Iterator <Row> sampled = sampler.sample(in.getOutputTable().getRows().iterator());
 

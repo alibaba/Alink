@@ -9,7 +9,8 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.common.annotation.NameEn;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.HopTimeWindowStreamOp;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
  * hot product StreamOp
  */
 @NameCn("热点推荐")
+@NameEn("Hot product")
 public class HotProductStreamOp extends StreamOperator <HotProductStreamOp>
 	implements HotProductParams <HotProductStreamOp> {
 

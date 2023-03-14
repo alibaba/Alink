@@ -8,7 +8,7 @@ import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
 
 public interface HasDiscreteThresholdsArray<T> extends WithParams <T> {
-	@NameCn("离散个数阈值")
+	@NameCn("离散个数阈值数组")
 	@DescCn("离散个数阈值，每一列对应数组中一个元素。")
 	ParamInfo <Integer[]> DISCRETE_THRESHOLDS_ARRAY = ParamInfoFactory
 		.createParamInfo("discreteThresholdsArray", Integer[].class)

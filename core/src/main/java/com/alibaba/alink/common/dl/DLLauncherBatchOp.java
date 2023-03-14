@@ -38,7 +38,7 @@ import com.alibaba.alink.common.io.plugin.OsType;
 import com.alibaba.alink.common.io.plugin.OsUtils;
 import com.alibaba.alink.common.io.plugin.ResourcePluginFactory;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.utils.DataSetUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.FirstReducer;

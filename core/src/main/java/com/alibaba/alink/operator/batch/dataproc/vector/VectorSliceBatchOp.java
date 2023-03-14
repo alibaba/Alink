@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorSliceMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorSliceParams;
@@ -12,6 +13,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorSliceParams;
  * original features. It is useful for extracting features from a vector column.
  */
 @NameCn("向量切片")
+@NameEn("Vector Slice")
 public final class VectorSliceBatchOp extends MapBatchOp <VectorSliceBatchOp>
 	implements VectorSliceParams <VectorSliceBatchOp> {
 

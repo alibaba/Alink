@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.TransformerBase;
 
@@ -36,5 +37,15 @@ public abstract class BaseGridSearch<T extends BaseGridSearch <T, M>, M extends 
 		return Tuple2.of(best.f0.fit(in), best.f1);
 	}
 
+	@Override
+	protected Tuple2 <TransformerBase, Report> tuning(LocalOperator <?> in) {
+		PipelineCandidatesGrid candidates = new PipelineCandidatesGrid(getEstimator(), getParamGrid());
+		Tuple2 <Pipeline, Report> best = findBest(in, candidates);
+		return Tuple2.of(best.f0.fit(in), best.f1);
+	}
+
 	protected abstract Tuple2 <Pipeline, Report> findBest(BatchOperator <?> in, PipelineCandidatesGrid candidates);
+
+	protected abstract Tuple2 <Pipeline, Report> findBest(LocalOperator <?> in, PipelineCandidatesGrid candidates);
+
 }

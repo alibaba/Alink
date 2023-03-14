@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.dataproc.vector;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorAssemblerMapper;
@@ -20,6 +21,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorAssemblerParams;
  */
 @ParamSelectColumnSpec(name = "selectedCols", portIndices = 0, allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量聚合")
+@NameEn("Vector assembler")
 public final class VectorAssemblerStreamOp extends MapStreamOp <VectorAssemblerStreamOp>
 	implements VectorAssemblerParams <VectorAssemblerStreamOp> {
 

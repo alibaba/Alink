@@ -3,7 +3,6 @@ package com.alibaba.alink.common.sql.builtin.agg;
 
 public class CountUdaf extends BaseSummaryUdaf {
 
-
 	public CountUdaf() {
 		this(false);
 	}
@@ -44,4 +43,5 @@ public class CountUdaf extends BaseSummaryUdaf {
 		}
 		acc.retractData(1);
 	}
+
 }

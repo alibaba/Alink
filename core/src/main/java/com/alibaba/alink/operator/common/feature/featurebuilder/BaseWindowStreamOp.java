@@ -29,7 +29,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.ReservedColsWithFirstInputSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.feature.featurebuilder.FeatureClauseUtil.ClauseInfo;
 import com.alibaba.alink.operator.stream.StreamOperator;
@@ -138,14 +138,11 @@ public abstract class BaseWindowStreamOp<T extends BaseWindowStreamOp <T>>
 			.setMLEnvironmentId(getMLEnvironmentId());
 
 		if (this instanceof BaseOverWindowStreamOp) {
-			//rename ROW_TIME_COL_NAME to timeCol for watermark.
+			//rename ROW_TIME_COL_NAME to timeCol for watermark. ??
 			String[] tmpColNames = res.getColNames();
 			StringBuilder sbd = new StringBuilder();
 			for (String tmpColName : tmpColNames) {
-				if (timeCol.equals(tmpColName)) {
-					sbd.append(",");
-					sbd.append(ROW_TIME_COL_NAME).append(" as ").append(tmpColName);
-				} else if (tmpColName.equals(ROW_TIME_COL_NAME)) {
+				if (tmpColName.equals(ROW_TIME_COL_NAME)) {
 					// pass
 				} else {
 					sbd.append(",");

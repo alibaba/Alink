@@ -22,6 +22,7 @@ import com.alibaba.alink.operator.common.nlp.NLPConstant;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.params.nlp.DocCountVectorizerTrainParams;
 import com.alibaba.alink.params.nlp.DocHashCountVectorizerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import java.util.Map;
 @OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("文本特征生成训练")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.nlp.DocCountVectorizer")
 public final class DocCountVectorizerTrainLocalOp extends LocalOperator <DocCountVectorizerTrainLocalOp>
 	implements DocCountVectorizerTrainParams <DocCountVectorizerTrainLocalOp> {
 	private static final String WORD_COL_NAME = "word";

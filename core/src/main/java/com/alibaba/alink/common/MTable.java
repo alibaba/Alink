@@ -31,8 +31,10 @@ import com.alibaba.alink.common.io.filesystem.binary.RowStreamSerializer;
 import com.alibaba.alink.common.io.filesystem.binary.RowStreamSerializerV2;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.common.viz.DataTypeDisplayInterface;
 import com.alibaba.alink.operator.common.io.csv.CsvFormatter;
 import com.alibaba.alink.operator.common.io.csv.CsvParser;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummarizer;
@@ -197,60 +199,25 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 		return MTableUtil.select(this, colIndexes);
 	}
 
+	/**
+	 * summary for MTable.
+	 */
 	public TableSummary summary(String... selectedColNames) {
-		TableSchema schema = getSchema();
-		TableSummarizer srt = new TableSummarizer(
-			schema.getFieldNames(),
-			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema, selectedColNames)), true);
-		for (Row row : this.rows) {
-			srt.visit(row);
-		}
-		return srt.toSummary(selectedColNames);
+		return subSummary(selectedColNames, 0, this.getNumRow());
 	}
 
 	//summary for data from fromId line to endId line, include fromId and exclude endId.
 	public TableSummary subSummary(String[] selectedColNames, int fromId, int endId) {
-		TableSchema schema = getSchema();
-		TableSummarizer srt = new TableSummarizer(
-			schema.getFieldNames(),
-			TableUtil.findColIndicesWithAssertAndHint(schema, getCalcCols(schema, selectedColNames)), true);
+		if (null == selectedColNames || 0 == selectedColNames.length) {
+			selectedColNames = this.getColNames();
+		}
+		TableSchema schema = new TableSchema(selectedColNames, TableUtil.findColTypes(getSchema(), selectedColNames));
+		int[] selectColIndices = TableUtil.findColIndices(getSchema(), selectedColNames);
+		TableSummarizer srt = new TableSummarizer(schema, false);
 		for (int i = Math.max(fromId, 0); i < Math.min(endId, this.getNumRow()); i++) {
-			srt.visit(this.rows.get(i));
+			srt.visit(Row.project(this.rows.get(i), selectColIndices));
 		}
-		return srt.toSummary(selectedColNames);
-	}
-
-	/**
-	 * exclude columns that are not supported types and not in selected columns
-	 */
-	private static String[] getCalcCols(TableSchema tableSchema, String[] selectedColNames) {
-		ArrayList <String> calcCols = new ArrayList <>();
-		String[] inColNames = selectedColNames.length == 0 ? tableSchema.getFieldNames() : selectedColNames;
-		int[] colIndices = TableUtil.findColIndices(tableSchema, inColNames);
-		TypeInformation <?>[] inColTypes = tableSchema.getFieldTypes();
-
-		for (int i = 0; i < inColNames.length; i++) {
-			if (isSupportedType(inColTypes[colIndices[i]])) {
-				calcCols.add(inColNames[i]);
-			}
-		}
-
-		return calcCols.toArray(new String[0]);
-	}
-
-	private static boolean isSupportedType(TypeInformation <?> dataType) {
-		return Types.DOUBLE.equals(dataType)
-			|| Types.LONG.equals(dataType)
-			|| Types.BYTE.equals(dataType)
-			|| Types.INT.equals(dataType)
-			|| Types.FLOAT.equals(dataType)
-			|| Types.SHORT.equals(dataType)
-			|| Types.BIG_DEC.equals(dataType)
-			|| Types.BOOLEAN.equals(dataType);
-	}
-
-	public void printSummary(String... selectedColNames) {
-		System.out.println(summary(selectedColNames).toString());
+		return srt.toSummary();
 	}
 
 	/**

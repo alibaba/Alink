@@ -7,6 +7,9 @@ import org.apache.flink.core.fs.FileSystemFactory;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
+import com.alibaba.alink.common.exceptions.AkParseErrorException;
+import com.alibaba.alink.common.exceptions.AkPluginErrorException;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import com.alibaba.alink.common.io.filesystem.plugin.FileSystemClassLoaderFactory;
@@ -53,7 +56,8 @@ public final class OssFileSystem extends BaseFileSystem <OssFileSystem> {
 					new URI(getSchema(), bucketName, null, null).toString()
 				);
 		} catch (URISyntaxException e) {
-			throw new AkUnclassifiedErrorException("Error. ", e);
+			throw new AkParseErrorException(
+				"Syntax error in OSS file system URI, please check your bucket name: " + bucketName, e);
 		}
 	}
 
@@ -79,23 +83,28 @@ public final class OssFileSystem extends BaseFileSystem <OssFileSystem> {
 		FileSystemFactory factory = createFactory();
 		factory.configure(conf);
 
+		URI uri = null;
 		try {
 			if (getParams().get(OssFileSystemParams.FS_URI) != null) {
+				uri = new Path(getParams().get(OssFileSystemParams.FS_URI)).toUri();
 				try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(factory.getClassLoader())) {
-					loaded = factory.create(new Path(getParams().get(OssFileSystemParams.FS_URI)).toUri());
+					loaded = factory.create(uri);
 				}
 				return loaded;
 			} else if (path != null) {
+				uri = path.toUri();
 				try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(factory.getClassLoader())) {
-					loaded = factory.create(path.toUri());
+					loaded = factory.create(uri);
 				}
 				return loaded;
+			} else {
+				throw new AkIllegalArgumentException(
+					"Could not create the oss file system, as both the bucket and the filePath are null.");
 			}
 		} catch (IOException e) {
-			throw new AkUnclassifiedErrorException("Error. ", e);
+			throw new AkUnclassifiedErrorException(
+				"Failed to create OSS file system from URI: " + uri.toString(), e);
 		}
-
-		throw new AkUnclassifiedErrorException("Could not create the oss file system. Both the bucket the filePath are null.");
 	}
 
 	@Override
@@ -122,7 +131,7 @@ public final class OssFileSystem extends BaseFileSystem <OssFileSystem> {
 				.newInstance();
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException |
 			ClassNotFoundException e) {
-			throw new AkUnclassifiedErrorException("Error. ", e);
+			throw new AkPluginErrorException("Failed to load OSSFileSystemFactory or create its instance. ", e);
 		}
 	}
 

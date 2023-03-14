@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
@@ -18,7 +19,8 @@ import com.alibaba.alink.params.io.HBaseSinkParams;
  */
 @IoOpAnnotation(name = "hbase_batch_sink", ioType = IOType.SinkBatch)
 @ParamSelectColumnSpec(name = "rowKeyCol", allowedTypeCollections = TypeCollections.STRING_TYPE)
-@NameCn("导出到HBase")
+@NameCn("HBase导出")
+@NameEn("HBase Sink")
 public final class HBaseSinkBatchOp extends BaseSinkBatchOp <HBaseSinkBatchOp>
 	implements HBaseSinkParams <HBaseSinkBatchOp> {
 

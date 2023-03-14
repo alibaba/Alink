@@ -5,6 +5,7 @@ import org.apache.flink.table.functions.ScalarFunction;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -57,6 +58,7 @@ import java.util.Arrays;
 @ParamSelectColumnSpec(name = "itemCategoricalFeatureCols", portIndices = 2)
 
 @NameCn("FM推荐训练")
+@NameEn("Fm Recommend Training")
 public final class FmRecommTrainBatchOp
         extends BatchOperator<FmRecommTrainBatchOp>
         implements FmRecommTrainParams<FmRecommTrainBatchOp> {

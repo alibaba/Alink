@@ -16,19 +16,8 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 public class FeatureLabelUtil {
 
 	public static Vector getVectorFeature(Object input, boolean hasInterceptItem, Integer vectorSize) {
-		Vector aVector;
 		Vector vec = VectorUtil.getVector(input);
-		if (vec instanceof SparseVector) {
-			SparseVector tmp = (SparseVector) vec;
-			if (null != vectorSize && tmp.size() > 0) {
-				tmp.setSize(vectorSize);
-			}
-			aVector = hasInterceptItem ? tmp.prefix(1.0) : tmp;
-		} else {
-			DenseVector tmp = (DenseVector) vec;
-			aVector = hasInterceptItem ? tmp.prefix(1.0) : tmp;
-		}
-		return aVector;
+		return hasInterceptItem ? vec.prefix(1.0) : vec;
 	}
 
 	/**

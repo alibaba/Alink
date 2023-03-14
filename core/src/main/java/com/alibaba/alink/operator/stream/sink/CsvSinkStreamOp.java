@@ -9,6 +9,7 @@ import org.apache.flink.streaming.api.functions.sink.OutputFormatSinkFunction;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -22,6 +23,7 @@ import com.alibaba.alink.params.io.CsvSinkParams;
  */
 @IoOpAnnotation(name = "csv", ioType = IOType.SinkStream)
 @NameCn("CSV文件导出")
+@NameEn("CSV Sink")
 public final class CsvSinkStreamOp extends BaseSinkStreamOp <CsvSinkStreamOp>
 	implements CsvSinkParams <CsvSinkStreamOp> {
 

@@ -41,7 +41,7 @@ import com.alibaba.alink.common.mapper.ModelStreamModelMapperAdapter;
 import com.alibaba.alink.common.model.BroadcastVariableModelSource;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.params.mapper.ModelMapperParams;
 import com.alibaba.alink.params.shared.HasModelFilePath;
 import com.alibaba.alink.params.shared.HasPredictBatchSize;

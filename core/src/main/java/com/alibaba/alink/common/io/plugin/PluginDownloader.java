@@ -1,6 +1,5 @@
 package com.alibaba.alink.common.io.plugin;
 
-import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.shaded.guava18.com.google.common.io.Files;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.type.TypeReference;
@@ -369,7 +368,6 @@ public class PluginDownloader {
 		isResourcePluginConfigLoaded = true;
 	}
 
-	@VisibleForTesting
 	void loadConfigFromString(String jsonString) {
 		if (!isJarsPluginConfigLoaded) {
 			jarsPluginConfigs = JsonConverter.fromJson(jsonString,
@@ -378,7 +376,6 @@ public class PluginDownloader {
 		isJarsPluginConfigLoaded = true;
 	}
 
-	@VisibleForTesting
 	void loadResourceConfigFromString(String jsonString) {
 		if (!isResourcePluginConfigLoaded) {
 			resourcePluginConfigs = JsonConverter.fromJson(jsonString,

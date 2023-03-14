@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 public class CsvFormatter {
 	private TypeInformation[] types;
 	private String fieldDelim;
+	private String rowDelim;
 	private String quoteChar;
 	private String escapeChar;
 
@@ -25,6 +26,25 @@ public class CsvFormatter {
 	public CsvFormatter(TypeInformation[] types, String fieldDelim, @Nullable Character quoteChar) {
 		this.types = types;
 		this.fieldDelim = fieldDelim;
+		this.rowDelim = null;
+		if (quoteChar != null) {
+			this.quoteChar = quoteChar.toString();
+			this.escapeChar = this.quoteChar;
+		}
+	}
+
+	/**
+	 * The Constructor.
+	 *
+	 * @param types      Column types.
+	 * @param fieldDelim Field delimiter in the text line.
+	 * @param quoteChar  Quoting character. Used to quote a string field if it has field delimiters.
+	 */
+	public CsvFormatter(TypeInformation[] types, String fieldDelim, @Nullable String rowDelim,
+						@Nullable Character quoteChar) {
+		this.types = types;
+		this.fieldDelim = fieldDelim;
+		this.rowDelim = rowDelim;
 		if (quoteChar != null) {
 			this.quoteChar = quoteChar.toString();
 			this.escapeChar = this.quoteChar;
@@ -49,7 +69,8 @@ public class CsvFormatter {
 			}
 			if (quoteChar != null && types[i].equals(Types.STRING)) {
 				String str = (String) v;
-				if (str.isEmpty() || str.contains(fieldDelim) || str.contains(quoteChar)) {
+				if (str.isEmpty() || str.contains(fieldDelim) || str.contains(quoteChar) ||
+					(rowDelim != null && str.contains(rowDelim))) {
 					sbd.append(quoteChar);
 					sbd.append(str.replace(quoteChar, escapeChar + quoteChar));
 					sbd.append(quoteChar);

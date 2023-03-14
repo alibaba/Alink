@@ -5,10 +5,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.source.RandomTableSourceUtils;
+import com.alibaba.alink.operator.common.utils.RandomTableSourceUtils;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.RandomTable;
 import com.alibaba.alink.params.io.RandomTableSourceBatchParams;
@@ -26,6 +27,7 @@ import java.util.Map;
  */
 @IoOpAnnotation(name = "random_table", ioType = IOType.SourceBatch)
 @NameCn("随机生成结构数据源")
+@NameEn("Random Table Source")
 public final class RandomTableSourceBatchOp extends BaseSourceBatchOp <RandomTableSourceBatchOp>
 	implements RandomTableSourceBatchParams <RandomTableSourceBatchOp> {
 

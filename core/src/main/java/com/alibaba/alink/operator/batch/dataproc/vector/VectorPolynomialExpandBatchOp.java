@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.dataproc.vector;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
@@ -16,6 +17,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorPolynomialExpandParams;
  */
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量多项式展开")
+@NameEn("Vector Polynomial Expand")
 public final class VectorPolynomialExpandBatchOp extends MapBatchOp <VectorPolynomialExpandBatchOp>
 	implements VectorPolynomialExpandParams <VectorPolynomialExpandBatchOp> {
 

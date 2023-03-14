@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.regression;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
@@ -29,6 +30,7 @@ import com.alibaba.alink.params.regression.RandomForestRegPredictParams;
  * @see <a href="https://en.wikipedia.org/wiki/Random_forest">Random_forest</a>
  */
 @NameCn("随机森林回归预测")
+@NameEn("Random Forest Regresion Predict")
 public final class RandomForestRegPredictStreamOp extends ModelMapStreamOp <RandomForestRegPredictStreamOp>
 	implements RandomForestRegPredictParams <RandomForestRegPredictStreamOp> {
 	private static final long serialVersionUID = -3161797668236111772L;

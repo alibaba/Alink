@@ -2,6 +2,7 @@ package com.alibaba.alink.pipeline.tuning;
 
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.pipeline.ModelBase;
 import com.alibaba.alink.pipeline.PipelineModel;
@@ -23,9 +24,15 @@ public abstract class BaseTuningModel<M extends BaseTuningModel <M>> extends Mod
 	}
 
 	@Override
+	public LocalOperator <?> transform(LocalOperator <?> input) {
+		return postProcessTransformResult(this.transformer.transform(input));
+	}
+
+	@Override
 	public StreamOperator <?> transform(StreamOperator <?> input) {
 		return this.transformer.transform(input);
 	}
+
 
 	public PipelineModel getBestPipelineModel() {
 		AkPreconditions.checkArgument(transformer instanceof PipelineModel, "Best model should be a pipeline model.");

@@ -11,6 +11,7 @@ import org.apache.flink.table.api.Table;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -23,6 +24,7 @@ import static java.lang.Thread.sleep;
  * Stream sources that represents a range of integers.
  */
 @NameCn("数值队列数据源")
+@NameEn("Numeric Sequence Source")
 @InputPorts
 @OutputPorts(values = @PortSpec(PortType.DATA))
 public final class NumSeqSourceStreamOp extends BaseSourceStreamOp <NumSeqSourceStreamOp> {

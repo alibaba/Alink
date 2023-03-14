@@ -1,11 +1,12 @@
 package com.alibaba.alink.common.pyrunner.fn.conversion;
 
 import com.alibaba.alink.common.linalg.DenseVector;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class DenseVectorWrapperTest {
+public class DenseVectorWrapperTest extends AlinkTestBase{
 	private static final double EPS = 1e-6;
 
 	@Test

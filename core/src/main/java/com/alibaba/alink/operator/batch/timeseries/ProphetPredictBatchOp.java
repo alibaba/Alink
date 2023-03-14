@@ -3,12 +3,14 @@ package com.alibaba.alink.operator.batch.timeseries;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.timeseries.ProphetModelMapper;
 import com.alibaba.alink.params.timeseries.ProphetPredictParams;
 
 
 @NameCn("Prophet预测")
+@NameEn("Prophet Prediction")
 public class ProphetPredictBatchOp extends ModelMapBatchOp<ProphetPredictBatchOp>
 	implements ProphetPredictParams<ProphetPredictBatchOp> {
 

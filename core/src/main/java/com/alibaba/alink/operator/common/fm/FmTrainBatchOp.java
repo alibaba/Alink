@@ -129,7 +129,6 @@ public class FmTrainBatchOp<T extends FmTrainBatchOp<T>> extends BaseFmTrainBatc
                 params.get(FmTrainParams.LAMBDA_2)};
             modelData.labelColName = params.get(FmTrainParams.LABEL_COL);
             modelData.task = params.get(ModelParamName.TASK);
-            modelData.convergenceInfo = value.f1;
             if (!isRegProc) {
                 modelData.labelValues = this.labelValues;
             } else {

@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -22,6 +23,7 @@ import java.util.Random;
 @InputPorts(values = {@PortSpec(PortType.DATA)})
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @NameCn("数据Rebalance")
+@NameEn("Data Rebalance")
 public final class RebalanceBatchOp extends BatchOperator <RebalanceBatchOp> {
 	private static final long serialVersionUID = -4236329417415800780L;
 

@@ -8,7 +8,7 @@ import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
 
 public interface XlsSourceParams<T> extends WithParams <T>,
-	HasFilePath <T>, HasIgnoreFirstLine <T>, HasSchemaStr <T> {
+	HasFilePath <T>, HasIgnoreFirstLine <T>, HasSchemaStr <T> ,HasLenient<T>{
 	@NameCn("表格的Sheet编号")
 	@DescCn("表格的Sheet编号")
 	ParamInfo <Integer> SHEET_INDEX = ParamInfoFactory

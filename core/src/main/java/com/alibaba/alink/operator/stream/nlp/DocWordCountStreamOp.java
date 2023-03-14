@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -22,6 +23,7 @@ import com.alibaba.alink.params.nlp.DocWordCountParams;
 @ParamSelectColumnSpec(name = "docIdCol")
 @ParamSelectColumnSpec(name = "contentCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("文本词频统计")
+@NameEn("Document word count")
 public final class DocWordCountStreamOp extends StreamOperator <DocWordCountStreamOp>
 	implements DocWordCountParams <DocWordCountStreamOp> {
 

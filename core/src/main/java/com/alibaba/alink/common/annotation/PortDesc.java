@@ -38,7 +38,14 @@ public enum PortDesc implements Internationalizable {
 	ASSOCIATION_PATTERNS,
 	ASSOCIATION_RULES,
 	GRPAH_EDGES,
-	GRAPH_VERTICES;
+	GRAPH_VERTICES,
+	INPUT_DICT_DATA,
+	INPUT_QUERY_DATA,
+	FEATURE_FREQUENCY,
+
+	SIMILAR_ITEM_PAIRS,
+	FEATURE_HASH_RESULTS,
+	MIN_HASH_RESULTS;
 
 	public static final ResourceBundle PORT_DESC_CN_BUNDLE = ResourceBundle.getBundle(
 		"i18n/port_desc", new Locale("zh", "CN"), new UTF8Control());

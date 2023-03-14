@@ -13,13 +13,14 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.regression.GlmModelData;
@@ -30,6 +31,7 @@ import com.alibaba.alink.operator.common.regression.glm.GlmUtil;
 import com.alibaba.alink.operator.common.regression.glm.GlmUtil.GlmModelSummary;
 import com.alibaba.alink.operator.common.regression.glm.GlmUtil.WeightedLeastSquaresModel;
 import com.alibaba.alink.params.regression.GlmTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Generalized Linear Model. https://en.wikipedia.org/wiki/Generalized_linear_model.
@@ -45,6 +47,8 @@ import com.alibaba.alink.params.regression.GlmTrainParams;
 @ParamSelectColumnSpec(name = "labelCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @ParamSelectColumnSpec(name = "weightCol", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("广义线性回归训练")
+@NameEn("GLM Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.regression.GeneralizedLinearRegression")
 public final class GlmTrainBatchOp extends BatchOperator <GlmTrainBatchOp>
 	implements GlmTrainParams <GlmTrainBatchOp>,
 	WithModelInfoBatchOp <GlmModelInfo, GlmTrainBatchOp, GlmModelInfoBatchOp> {

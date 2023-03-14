@@ -13,11 +13,12 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.MultiStringIndexerModelData;
@@ -27,6 +28,7 @@ import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.params.dataproc.HasSelectedColTypes;
 import com.alibaba.alink.params.feature.CrossFeatureTrainParams;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -38,6 +40,8 @@ import java.util.List;
 @OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
 @ParamSelectColumnSpec(name = "selectedCols")
 @NameCn("Cross特征训练")
+@NameEn("Cross Feature Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.feature.CrossFeature")
 public class CrossFeatureTrainBatchOp extends BatchOperator <CrossFeatureTrainBatchOp>
 	implements CrossFeatureTrainParams <CrossFeatureTrainBatchOp> {
 

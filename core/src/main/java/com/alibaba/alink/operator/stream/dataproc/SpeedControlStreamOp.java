@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -19,6 +20,7 @@ import static java.lang.Thread.sleep;
 @InputPorts(values = {@PortSpec(PortType.ANY)})
 @OutputPorts()
 @NameCn("流速控制")
+@NameEn("Speed Control")
 public class SpeedControlStreamOp extends StreamOperator <SpeedControlStreamOp>
 	implements SpeedControlParams <SpeedControlStreamOp> {
 

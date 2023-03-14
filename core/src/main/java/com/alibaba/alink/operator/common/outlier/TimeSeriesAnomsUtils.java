@@ -1,12 +1,8 @@
 package com.alibaba.alink.operator.common.outlier;
 
 import org.apache.flink.api.common.functions.RichMapFunction;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
@@ -15,10 +11,7 @@ import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.probabilistic.IDF;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -103,52 +96,6 @@ public class TimeSeriesAnomsUtils {
 		}
 	}
 
-	//this is for time series algo.
-	public static Table getStreamTable(long id, DataStream <Row> data,
-									   Tuple2 <String[], TypeInformation[]> schema, TypeInformation[] groupTypes) {
-		String[] colNames = schema.f0;
-		TypeInformation[] colTypes = schema.f1;
-		return getStreamTable(id, data, colNames, colTypes, groupTypes);
-	}
-
-	//this is for no use graph algo.
-	public static Table getStreamTable(long id, DataStream <Row> data,
-									   String[] colNames, TypeInformation[] colTypes, TypeInformation[] groupTypes) {
-		boolean containsIdCol = colNames[0] != null;
-		if (!containsIdCol) {
-			colNames[0] = "tempId";
-			colTypes[0] = TypeInformation.of(Comparable.class);
-		}
-		if (groupTypes != null) {
-			System.arraycopy(groupTypes, 0, colTypes, 0, groupTypes.length);
-		}
-		Table table = DataStreamConversionUtil.toTable(id, data, colNames, colTypes);
-		if (!containsIdCol) {
-			String[] outColNames = Arrays.copyOfRange(colNames, 1, colNames.length);
-			table = table.select(join(outColNames, ","));
-		}
-		return table;
-	}
-
-	public static Table getBatchTable(long id, DataSet <Row> data,
-									  Tuple2 <String[], TypeInformation[]> schema, TypeInformation[] groupTypes) {
-		String[] colNames = schema.f0;
-		TypeInformation[] colTypes = schema.f1;
-		boolean containsIdCol = groupTypes != null;
-		if (!containsIdCol) {
-			colNames[0] = "tempId";
-			colTypes[0] = TypeInformation.of(Comparable.class);
-		} else {
-			System.arraycopy(groupTypes, 0, colTypes, 0, groupTypes.length);
-		}
-		Table table = DataSetConversionUtil.toTable(id, data, colNames, colTypes);
-		if (!containsIdCol) {
-			String[] outColNames = Arrays.copyOfRange(colNames, 1, colNames.length);
-			table = table.select(join(outColNames, ","));
-		}
-		return table;
-	}
-
 	//transform double array data to string.
 	public static String transformData(double[] data) {
 		StringBuilder sb = new StringBuilder(String.valueOf(data[0]));
@@ -158,7 +105,7 @@ public class TimeSeriesAnomsUtils {
 		return sb.toString();
 	}
 
-	private static String join(String[] stringArray, String on) {
+	public static String join(String[] stringArray, String on) {
 
 		int length = stringArray.length;
 		if (length == 1) {

@@ -39,7 +39,7 @@ public class CalcLosses extends ComputeFunction {
 
 	@Override
 	public void calc(ComContext context) {
-		Iterable <Tuple3 <Double, Double, Vector>> labledVectors = context.getObj(OptimVariable.trainData);
+		List <Tuple3 <Double, Double, Vector>> labledVectors = context.getObj(OptimVariable.trainData);
 		Tuple2 <DenseVector, double[]> dir = context.getObj(OptimVariable.dir);
 		Tuple2 <DenseVector, Double> coef = context.getObj(OptimVariable.currentCoef);
 		if (objFunc == null) {

@@ -6,6 +6,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.functions.sink.OutputFormatSinkFunction;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
@@ -30,6 +31,7 @@ import java.util.Map;
  */
 @IoOpAnnotation(name = "export_2_file", ioType = IOType.SinkStream)
 @NameCn("流导出到文件")
+@NameEn("Export To File Sink")
 public final class Export2FileSinkStreamOp extends BaseSinkStreamOp <Export2FileSinkStreamOp>
 	implements Export2FileSinkParams <Export2FileSinkStreamOp> {
 

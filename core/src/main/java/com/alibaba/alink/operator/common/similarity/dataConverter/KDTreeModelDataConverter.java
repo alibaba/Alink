@@ -21,7 +21,7 @@ import com.alibaba.alink.operator.common.distance.EuclideanDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
 import com.alibaba.alink.operator.common.similarity.KDTree;
 import com.alibaba.alink.operator.common.similarity.modeldata.KDTreeModelData;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.similarity.VectorApproxNearestNeighborTrainParams;
 

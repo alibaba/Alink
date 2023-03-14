@@ -5,7 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
@@ -90,10 +90,14 @@ public class DbscanLocalOp extends LocalOperator <DbscanLocalOp>
 			}
 		}
 
-		Boolean useApproxAlgo = getParams().contains(HasNumHashTables.NUM_HASH_TABLES) &&
+		Boolean useApproxAlgo =getUseApproxAlgo(); 
+		/*
+		** useApproxAlgo is decided by users, the old conditional operator is deprecated 
+		useApproxAlgo = getParams().contains(HasNumHashTables.NUM_HASH_TABLES) &&
 			getParams().contains(HasNumProjectionsPerTable.NUM_PROJECTIONS_PER_TABLE) &&
 			getParams().contains(HasProjectionWidth.PROJECTION_WIDTH) ? true :
 			numData > MAX_ACCURATE_DISTANCE_NUM ? true : false;
+		 */
 		LocalOperator neighbors = calculateNeighbors(in, in, topN, useApproxAlgo, getParams(), getParams());
 
 		nnPredictColIndex = getNearestNeighborResultColIndex(neighbors);

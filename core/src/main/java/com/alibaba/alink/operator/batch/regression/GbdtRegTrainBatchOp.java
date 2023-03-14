@@ -3,12 +3,14 @@ package com.alibaba.alink.operator.batch.regression;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.annotation.NameEn;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
 import com.alibaba.alink.operator.common.tree.parallelcart.BaseGbdtTrainBatchOp;
 import com.alibaba.alink.operator.common.tree.parallelcart.loss.LossType;
 import com.alibaba.alink.operator.common.tree.parallelcart.loss.LossUtils;
 import com.alibaba.alink.params.regression.GbdtRegTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Gradient Boosting(often abbreviated to GBDT or GBM) is a popular supervised learning model.
@@ -31,7 +33,9 @@ import com.alibaba.alink.params.regression.GbdtRegTrainParams;
  * for an introduction on data-parallel, feature-parallel, etc., algorithms to construct decision forests.
  */
 @NameCn("GBDT回归训练")
-public final class GbdtRegTrainBatchOp extends BaseGbdtTrainBatchOp <GbdtRegTrainBatchOp>
+@NameEn("GBDT Regression Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.regression.GbdtRegressor")
+public class GbdtRegTrainBatchOp extends BaseGbdtTrainBatchOp <GbdtRegTrainBatchOp>
 	implements GbdtRegTrainParams <GbdtRegTrainBatchOp>,
 	WithModelInfoBatchOp <TreeModelInfo.GbdtModelInfo, GbdtRegTrainBatchOp, GbdtRegModelInfoBatchOp> {
 

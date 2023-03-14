@@ -87,7 +87,13 @@ public class FmModelMapper extends RichModelMapper {
 	}
 
 	private static double logit(double y) {
-		return 1. / (1. + Math.exp(-y));
+		if (y < -37) {
+			return 0.0;
+		} else if (y > 34) {
+			return 1.0;
+		} else {
+			return 1.0 / (1.0 + Math.exp(-y));
+		}
 	}
 
 	public FmModelData getModel() {

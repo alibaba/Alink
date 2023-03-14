@@ -11,7 +11,7 @@ import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil;
 import com.alibaba.alink.operator.common.tensorflow.TFTableModelPredictModelMapper;
 import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;

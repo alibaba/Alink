@@ -5,6 +5,10 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.feature.CrossFeaturePredictLocalOp;
+import com.alibaba.alink.operator.local.feature.CrossFeatureTrainLocalOp;
+import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.feature.HashCrossFeatureStreamOp;
 import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
@@ -56,6 +60,34 @@ public class CrossFeatureTest extends AlinkTestBase {
 			.linkFrom(train, data);
 
 		assertListRowEqual(expected, pred.collect(), 0);
+	}
+
+	@Test
+	public void testCrossLocal() throws Exception {
+		List <Row> expected = Arrays.asList(
+			Row.of(1, "1.0", "1.0", 1.0000, 1, VectorUtil.getVector("$36$0:1.0")),
+			Row.of(2, "1.0", "1.0", 0.0000, 1, VectorUtil.getVector("$36$9:1.0")),
+			Row.of(3, "1.0", "0.0", 1.0000, 1, VectorUtil.getVector("$36$6:1.0")),
+			Row.of(4, "1.0", "0.0", 1.0000, 1, VectorUtil.getVector("$36$6:1.0")),
+			Row.of(5, "2.0", "3.0", null, 0, VectorUtil.getVector("$36$22:1.0")),
+			Row.of(6, "2.0", "3.0", 1.0000, 0, VectorUtil.getVector("$36$4:1.0")),
+			Row.of(7, "0.0", "1.0", 2.0000, 0, VectorUtil.getVector("$36$29:1.0")),
+			Row.of(8, "0.0", "1.0", 1.0000, 0, VectorUtil.getVector("$36$2:1.0"))
+		);
+
+		LocalOperator <?> data = new MemSourceLocalOp(array, vecColNames);
+
+		CrossFeatureTrainLocalOp train = new CrossFeatureTrainLocalOp()
+			.setSelectedCols("f0", "f1", "f2")
+			.linkFrom(data);
+
+		train.lazyPrint(-1, "model");
+		//train.getSideOutput(0).lazyPrint(-1, "side output");
+
+		CrossFeaturePredictLocalOp pred = new CrossFeaturePredictLocalOp()
+			.setOutputCol("cross")
+			.linkFrom(train, data)
+			.print();
 	}
 
 	@Test

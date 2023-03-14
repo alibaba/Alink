@@ -19,6 +19,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamCond;
 import com.alibaba.alink.common.annotation.ParamCond.CondType;
@@ -30,7 +31,7 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.SortUtils;
@@ -45,6 +46,7 @@ import com.alibaba.alink.operator.common.feature.quantile.PairComparable;
 import com.alibaba.alink.operator.common.tree.Preprocessing;
 import com.alibaba.alink.params.feature.QuantileDiscretizerTrainParams;
 import com.alibaba.alink.params.statistics.HasRoundMode;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,6 +84,8 @@ import java.util.stream.StreamSupport;
 	)
 )
 @NameCn("分位数离散化训练")
+@NameEn("Quantile Discretizer Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.feature.QuantileDiscretizer")
 public final class QuantileDiscretizerTrainBatchOp extends BatchOperator <QuantileDiscretizerTrainBatchOp>
 	implements QuantileDiscretizerTrainParams <QuantileDiscretizerTrainBatchOp>,
 	WithModelInfoBatchOp <QuantileDiscretizerModelInfo, QuantileDiscretizerTrainBatchOp,

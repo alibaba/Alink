@@ -25,8 +25,4 @@ public class SoftmaxModelInfoLocalOp
 		return new SoftmaxModelInfo(rows);
 	}
 
-	@Override
-	protected LocalOperator <?> processModel() {
-		return this;
-	}
 }

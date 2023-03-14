@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
@@ -12,7 +13,8 @@ import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.mapper.Mapper;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.common.mapper.PipelineModelMapper;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.AkSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
@@ -22,7 +24,8 @@ import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.sink.AkSinkLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.onlinelearning.PipelinePredictStreamOp;
+import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
+import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
 import com.alibaba.alink.params.PipelineModelParams;
 import com.alibaba.alink.params.mapper.MapperParams;
@@ -138,7 +141,7 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 
 				BatchOperator <?> pipelineExpandModel = model.save();
 				TableSchema outSchema = getOutSchema(model, input.getSchema());
-				input = new PipelinePredictBatchOp()
+				input = new InnerPredictBatchOp()
 					.setMLEnvironmentId(input.getMLEnvironmentId())
 					.setNumThreads(maxCurModelNumThread)
 					.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_NAMES, outSchema.getFieldNames())
@@ -193,8 +196,22 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 				if (0 >= maxCurModelNumThread) {
 					maxCurModelNumThread = MapperParams.NUM_THREADS.getDefaultValue();
 				}
-				input = new PipelinePredictStreamOp(this)
-					.setNumThreads(maxCurModelNumThread).linkFrom(input);
+
+				BatchOperator <?> pipelineModelOp = model.save();
+				TableSchema outSchema = getOutSchema(model, input.getSchema());
+				InnerPredictStreamOp pipePredictOp = new InnerPredictStreamOp(pipelineModelOp)
+					.setMLEnvironmentId(input.getMLEnvironmentId())
+					.setNumThreads(maxCurModelNumThread)
+					.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_NAMES, outSchema.getFieldNames())
+					.set(PipelineModelMapper.PIPELINE_TRANSFORM_OUT_COL_TYPES,
+						FlinkTypeConverter.getTypeString(outSchema.getFieldTypes()));
+				input = (params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH) == null) ?
+					pipePredictOp.linkFrom(input) :
+					pipePredictOp.linkFrom(input, new ModelStreamFileSourceStreamOp()
+						.setFilePath(FilePath.deserialize(params.get(ModelStreamScanParams.MODEL_STREAM_FILE_PATH)))
+						.setScanInterval(params.get(ModelStreamScanParams.MODEL_STREAM_SCAN_INTERVAL))
+						.setStartTime(params.get(ModelStreamScanParams.MODEL_STREAM_START_TIME))
+						.setSchemaStr(TableUtil.schema2SchemaStr(pipelineModelOp.getSchema())));
 			}
 		}
 		return input;
@@ -573,16 +590,37 @@ public final class PipelineModel extends ModelBase <PipelineModel>
 		return pipelineModel;
 	}
 
-	static class PipelinePredictBatchOp extends ModelMapBatchOp <PipelinePredictBatchOp>
-		implements MapperParams <PipelinePredictBatchOp> {
+	@Internal
+	static class InnerPredictBatchOp extends ModelMapBatchOp <InnerPredictBatchOp>
+		implements MapperParams <InnerPredictBatchOp> {
 
-		PipelinePredictBatchOp() {
+		InnerPredictBatchOp() {
 			this(new Params());
 		}
 
-		PipelinePredictBatchOp(Params params) {
+		InnerPredictBatchOp(Params params) {
 			super(PipelineModelMapper::new, params);
 		}
 	}
 
+	@Internal
+	private static class InnerPredictStreamOp extends ModelMapStreamOp <InnerPredictStreamOp>
+		implements MapperParams <InnerPredictStreamOp> {
+
+		InnerPredictStreamOp() {
+			super(PipelineModelMapper::new, new Params());
+		}
+
+		InnerPredictStreamOp(Params params) {
+			super(PipelineModelMapper::new, params);
+		}
+
+		public InnerPredictStreamOp(BatchOperator <?> model) {
+			this(model, new Params());
+		}
+
+		InnerPredictStreamOp(BatchOperator <?> model, Params params) {
+			super(model, PipelineModelMapper::new, params);
+		}
+	}
 }

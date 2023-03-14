@@ -4,6 +4,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,7 +14,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 
-public class MTableWrapperTest {
+public class MTableWrapperTest extends AlinkTestBase {
 
 	@Test
 	public void testFromJava() {

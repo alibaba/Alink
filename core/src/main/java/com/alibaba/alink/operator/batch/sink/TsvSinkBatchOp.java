@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.sink;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -14,6 +15,7 @@ import com.alibaba.alink.params.io.TsvSinkBatchParams;
  */
 @IoOpAnnotation(name = "tsv", ioType = IOType.SinkBatch)
 @NameCn("TSV文件导出")
+@NameEn("TSV Sink")
 public final class TsvSinkBatchOp extends BaseSinkBatchOp <TsvSinkBatchOp>
 	implements TsvSinkBatchParams <TsvSinkBatchOp> {
 

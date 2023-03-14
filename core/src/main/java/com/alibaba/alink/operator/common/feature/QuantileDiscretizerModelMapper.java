@@ -8,7 +8,8 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
@@ -20,11 +21,13 @@ import com.alibaba.alink.params.dataproc.HasHandleInvalid;
 import com.alibaba.alink.params.feature.HasEncodeWithoutWoe;
 import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
 import com.alibaba.alink.params.shared.colname.HasOutputCol;
+import com.alibaba.alink.params.shared.colname.HasSelectedCols;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -37,15 +40,35 @@ import static com.alibaba.alink.params.feature.HasEncodeWithoutWoe.Encode.ASSEMB
 public class QuantileDiscretizerModelMapper extends ModelMapper implements Cloneable {
 	private static final long serialVersionUID = 5400967430347827818L;
 	private DiscreteMapperBuilder mapperBuilder;
+	private final String[] inputPredictColNames;
 
 	public QuantileDiscretizerModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
+		if(params.contains(QuantileDiscretizerPredictParams.SELECTED_COLS)) {
+			inputPredictColNames = params.get(QuantileDiscretizerPredictParams.SELECTED_COLS);
+		}else{
+			inputPredictColNames = null;
+		}
 	}
 
 	@Override
 	public void loadModel(List <Row> modelRows) {
 		QuantileDiscretizerModelDataConverter model = new QuantileDiscretizerModelDataConverter();
 		model.load(modelRows);
+
+		String[] trainColNames = model.meta.get(HasSelectedCols.SELECTED_COLS);
+		if (null != inputPredictColNames) {
+			HashSet <String> trainColSet = new HashSet <>();
+			for (String trainColName : trainColNames) {
+				trainColSet.add(trainColName);
+			}
+			for (String predictColName : inputPredictColNames) {
+				if (!trainColSet.contains(predictColName)) {
+					throw new AkIllegalArgumentException(
+						"Column '" + predictColName + "' has not been precessed in QuantileDiscretizer model training.");
+				}
+			}
+		}
 
 		mapperBuilder = new DiscreteMapperBuilder(params, getDataSchema());
 

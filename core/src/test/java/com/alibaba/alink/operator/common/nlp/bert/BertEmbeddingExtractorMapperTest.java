@@ -8,7 +8,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
 import com.alibaba.alink.common.linalg.tensor.IntTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.params.tensorflow.bert.HasLayer;
 import com.alibaba.alink.params.tensorflow.bert.HasHiddenStatesCol;
 import com.alibaba.alink.params.tensorflow.bert.HasLengthCol;

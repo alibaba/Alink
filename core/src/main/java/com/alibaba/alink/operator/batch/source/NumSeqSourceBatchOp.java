@@ -14,10 +14,11 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.params.io.NumSeqSourceParams;
 
 /**
@@ -25,6 +26,7 @@ import com.alibaba.alink.params.io.NumSeqSourceParams;
  */
 @IoOpAnnotation(name = "num_seq", ioType = IOType.SourceBatch)
 @NameCn("数值队列数据源")
+@NameEn("Number Sequence Source")
 public final class NumSeqSourceBatchOp extends BaseSourceBatchOp <NumSeqSourceBatchOp>
 	implements NumSeqSourceParams <NumSeqSourceBatchOp> {
 

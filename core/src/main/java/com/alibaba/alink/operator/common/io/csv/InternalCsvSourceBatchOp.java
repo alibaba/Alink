@@ -14,16 +14,17 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.Internal;
+import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.io.filesystem.copy.csv.RowCsvInputFormat;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;
+import com.alibaba.alink.operator.batch.utils.DataSetUtil;
 import com.alibaba.alink.operator.common.io.partition.CsvSourceCollectorCreator;
-import com.alibaba.alink.operator.common.io.partition.Utils;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import com.alibaba.alink.params.io.CsvSourceParams;
 
@@ -123,12 +124,13 @@ public final class InternalCsvSourceBatchOp extends BaseSourceBatchOp <InternalC
 			Tuple2 <DataSet <Row>, TableSchema> schemaAndData;
 
 			try {
-				schemaAndData = Utils.readFromPartitionBatch(
+				schemaAndData = DataSetUtil.readFromPartitionBatch(
 					getParams(), getMLEnvironmentId(),
-					new CsvSourceCollectorCreator(dummySchema, rowDelim, ignoreFirstLine)
+					new CsvSourceCollectorCreator(dummySchema, rowDelim, ignoreFirstLine, quoteChar)
 				);
 			} catch (IOException e) {
-				throw new IllegalStateException(e);
+				throw new AkUnclassifiedErrorException(
+					String.format("Fail to list directories in %s and select partitions", getFilePath().getPathStr()));
 			}
 
 			rows = schemaAndData.f0;

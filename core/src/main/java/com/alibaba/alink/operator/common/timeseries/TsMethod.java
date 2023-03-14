@@ -28,22 +28,21 @@ public class TsMethod {
 
 	/*
 	 * Order is how many points forward for counting, ranging from 1 to order+1.
+	 * acvf_h = cov(x_(h+t), x_t)
 	 */
-	public static double[] computeACVF(double[] data, int order) {
+	public static double[] acvf(double[] data, int order) {
 		if (order >= data.length) {
-			throw new AkIllegalOperatorParameterException("Order for ComputeACVF must be smaller than length of data.");
+			throw new AkIllegalOperatorParameterException("Order for ComputeACVF must be smaller than length of data"
+				+ ".");
 		}
 
 		double mean = mean(data);
 		//order=p indicates ACVF.length=p+1, from cor(0) to cor(p)
 		double[] acvf = new double[order + 1];
-		for (int i = 0; i < data.length; i++) {
-			data[i] -= data[i] - mean;
-		}
 		for (int h = 0; h < acvf.length; h++) {
 			double cor = 0;
 			for (int i = h; i < data.length; i++) {
-				cor = cor + data[i] * data[i - h];
+				cor = cor + (data[i] - mean) * (data[i - h] - mean);
 			}
 			acvf[h] = cor / (data.length - h);
 		}
@@ -52,9 +51,10 @@ public class TsMethod {
 
 	/*
 	 * Compute confidence interval using bartlett's formula.
+	 * return <acf, confidence interval>
 	 */
-	public static ArrayList <double[]> computeACF(double[] data, int order) {
-		double[] acvf = computeACVF(data, order);
+	public static ArrayList <double[]> acf(double[] data, int order) {
+		double[] acvf = acvf(data, order);
 		double[] acf = new double[acvf.length];
 		ArrayList <double[]> result = new ArrayList <double[]>();
 
@@ -82,7 +82,7 @@ public class TsMethod {
 	 * Compute PACF using Levinson Algorithm
 	 */
 	public static double[] computePACF(double[] data, int order) {
-		double[] acvf = computeACVF(data, order);
+		double[] acvf = acvf(data, order);
 		double[][] phi = levinson(acvf);
 		double[] pacf = new double[acvf.length + 1];
 		pacf[0] = 1;
