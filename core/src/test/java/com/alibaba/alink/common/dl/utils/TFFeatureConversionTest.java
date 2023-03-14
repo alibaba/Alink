@@ -3,7 +3,7 @@ package com.alibaba.alink.common.dl.utils;
 import org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.linalg.tensor.ByteTensor;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
@@ -12,6 +12,7 @@ import com.alibaba.alink.common.linalg.tensor.LongTensor;
 import com.alibaba.alink.common.linalg.tensor.Shape;
 import com.alibaba.alink.common.linalg.tensor.StringTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import com.alibaba.flink.ml.tf2.shaded.com.google.protobuf.ByteString;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Longs;
@@ -32,7 +33,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
-public class TFFeatureConversionTest {
+public class TFFeatureConversionTest extends AlinkTestBase {
 	private final Object val;
 	private final TypeInformation <?> type;
 	private final Feature feature;

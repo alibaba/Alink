@@ -12,7 +12,6 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.schema.ScannableTable;
 import org.apache.calcite.schema.impl.AbstractTable;
-import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.Pair;
 
 import java.util.Arrays;
@@ -29,7 +28,7 @@ class MTableTable extends AbstractTable implements ScannableTable {
 		String[] names = mTable.getColNames();
 		final JavaTypeFactory typeFactory = (JavaTypeFactory) relDataTypeFactory;
 		RelDataType[] types = Arrays.stream(mTable.getColTypes())
-			.map(d -> SqlTypeUtil.addCharsetAndCollation(typeFactory.createJavaType(d.getTypeClass()), typeFactory))
+			.map(d -> typeFactory.createJavaType(d.getTypeClass()))
 			.toArray(RelDataType[]::new);
 		return typeFactory.createStructType(Pair.zip(names, types));
 	}

@@ -15,7 +15,6 @@ import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.MTableUtil.FlatMapFunction;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.io.filesystem.copy.csv.RowCsvInputFormat;
-import com.alibaba.alink.common.utils.RowCollector;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.io.csv.CsvUtil;
 import com.alibaba.alink.operator.common.io.csv.GenericCsvInputFormat;
@@ -23,7 +22,6 @@ import com.alibaba.alink.operator.common.io.partition.CsvSourceCollectorCreator;
 import com.alibaba.alink.operator.common.io.partition.LocalUtils;
 import com.alibaba.alink.operator.common.io.reader.HttpFileSplitReader;
 import com.alibaba.alink.params.io.CsvSourceParams;
-
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
@@ -95,7 +93,7 @@ final class InternalCsvSourceLocalOp extends BaseSourceLocalOp <InternalCsvSourc
 
 			try {
 				schemaAndData = LocalUtils.readFromPartitionLocal(getParams(),
-					new CsvSourceCollectorCreator(dummySchema, rowDelim, ignoreFirstLine)
+					new CsvSourceCollectorCreator(dummySchema, rowDelim, ignoreFirstLine, quoteChar)
 				);
 			} catch (IOException e) {
 				throw new IllegalStateException(e);

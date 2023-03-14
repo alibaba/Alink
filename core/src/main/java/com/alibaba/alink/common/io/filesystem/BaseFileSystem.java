@@ -10,7 +10,7 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.core.fs.RecoverableWriter;
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.params.io.HasIoName;
@@ -35,7 +35,9 @@ public abstract class BaseFileSystem<T extends BaseFileSystem <T>> extends FileS
 		} else {
 			this.params = params.clone();
 		}
-		this.params.set(HasIoName.IO_NAME, AnnotationUtils.annotatedName(this.getClass()));
+		if (!this.params.contains(HasIoName.IO_NAME)) {
+			this.params.set(HasIoName.IO_NAME, AnnotationUtils.annotatedName(this.getClass()));
+		}
 	}
 
 	Params getParams() {
@@ -47,10 +49,14 @@ public abstract class BaseFileSystem<T extends BaseFileSystem <T>> extends FileS
 			try {
 				return AnnotationUtils.createFileSystem(params.get(HasIoName.IO_NAME), params);
 			} catch (Exception e) {
-				throw new AkUnclassifiedErrorException("create file system failed. ",e);
+				throw new AkUnclassifiedErrorException(String.format("create %s file system failed. ", params.get(HasIoName.IO_NAME)),e);
 			}
 		} else {
-			throw new AkIllegalOperatorParameterException("NOT a FileSystem parameter.");
+			String errorMsg = "params doesn't contain parameter " + HasIoName.IO_NAME;
+			if (params.contains(HasIoName.IO_NAME)) {
+				errorMsg = params.get(HasIoName.IO_NAME) + " is not a supported FileSystem.";
+			}
+			throw new AkIllegalArgumentException(errorMsg);
 		}
 	}
 

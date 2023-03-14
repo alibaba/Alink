@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.common.feature.BucketizerMapper;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
 import com.alibaba.alink.params.feature.BucketizerParams;
@@ -15,6 +16,7 @@ import com.alibaba.alink.params.feature.BucketizerParams;
  * each column used the corresponding splits.
  */
 @NameCn("分桶")
+@NameEn("Bucketizer")
 public class BucketizerStreamOp extends MapStreamOp <BucketizerStreamOp>
 	implements BucketizerParams <BucketizerStreamOp> {
 	private static final long serialVersionUID = -3837154543787425055L;

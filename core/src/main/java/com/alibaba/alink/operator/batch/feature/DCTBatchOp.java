@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -20,7 +21,8 @@ import com.alibaba.alink.params.feature.DCTParams;
 @InputPorts(values = {@PortSpec(PortType.DATA)})
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @ParamSelectColumnSpec(name = "selectedCol")
-@NameCn("离散余弦变换")
+@NameCn("Discrete Cosine Transform")
+@NameEn("Cross Feature Training")
 public class DCTBatchOp extends MapBatchOp <DCTBatchOp>
 	implements DCTParams <DCTBatchOp> {
 

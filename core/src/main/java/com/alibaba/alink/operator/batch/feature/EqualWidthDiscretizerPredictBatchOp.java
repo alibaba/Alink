@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.SelectedColsWithSecondInputSpec;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
@@ -15,6 +16,7 @@ import com.alibaba.alink.params.feature.QuantileDiscretizerPredictParams;
  */
 @SelectedColsWithSecondInputSpec
 @NameCn("等宽离散化预测")
+@NameEn("Equal Width Discretize Prediction")
 public final class EqualWidthDiscretizerPredictBatchOp extends ModelMapBatchOp <EqualWidthDiscretizerPredictBatchOp>
 	implements QuantileDiscretizerPredictParams <EqualWidthDiscretizerPredictBatchOp> {
 

@@ -2,7 +2,14 @@ package com.alibaba.alink.pipeline.dataproc.vector;
 
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
+import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
+import com.alibaba.alink.common.annotation.PortSpec;
+import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorAssemblerMapper;
 import com.alibaba.alink.params.dataproc.vector.VectorAssemblerParams;
 import com.alibaba.alink.pipeline.MapTransformer;
@@ -16,6 +23,7 @@ import com.alibaba.alink.pipeline.MapTransformer;
  * this operator cam transform batch data.
  */
 @NameCn("向量聚合")
+@NameEn("Vector Assembler")
 public class VectorAssembler extends MapTransformer <VectorAssembler>
 	implements VectorAssemblerParams <VectorAssembler> {
 

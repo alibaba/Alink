@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.classification;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.dl.BaseEasyTransferTrainBatchOp;
@@ -11,6 +12,7 @@ import com.alibaba.alink.common.dl.TaskType;
 import com.alibaba.alink.params.dl.HasTaskType;
 import com.alibaba.alink.params.tensorflow.bert.BertTextPairTrainParams;
 import com.alibaba.alink.params.tensorflow.bert.HasTaskName;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Train a text pair classifier using Bert models.
@@ -19,6 +21,8 @@ import com.alibaba.alink.params.tensorflow.bert.HasTaskName;
 @ParamSelectColumnSpec(name = "textPairCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @ParamSelectColumnSpec(name = "labelCol")
 @NameCn("Bert文本对分类训练")
+@NameEn("Bert Text Pair Classifier Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.BertTextPairClassifier")
 public class BertTextPairClassifierTrainBatchOp
 	extends BaseEasyTransferTrainBatchOp <BertTextPairClassifierTrainBatchOp>
 	implements BertTextPairTrainParams <BertTextPairClassifierTrainBatchOp> {

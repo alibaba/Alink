@@ -4,12 +4,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.utils.FlatModelMapBatchOp;
 import com.alibaba.alink.operator.common.regression.tensorflow.TFTableModelRegressionFlatModelMapper;
 import com.alibaba.alink.params.regression.TFTableModelRegressionPredictParams;
 
 @Internal
 @NameCn("TF表模型回归预测")
+@NameEn("TF Table Model Regression Prediction")
 public class TFTableModelRegressorPredictBatchOp<T extends TFTableModelRegressorPredictBatchOp <T>>
 	extends FlatModelMapBatchOp <T> implements TFTableModelRegressionPredictParams <T> {
 

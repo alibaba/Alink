@@ -26,6 +26,7 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.DenseVectorSu
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.dataproc.vector.VectorStandardTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * StandardScaler transforms a dataSet, normalizing each feature to have unit standard deviation and/or zero mean.
@@ -35,6 +36,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorStandardTrainParams;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量标准化训练")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.vector.VectorStandardScaler")
 public final class VectorStandardScalerTrainLocalOp extends LocalOperator <VectorStandardScalerTrainLocalOp>
 	implements VectorStandardTrainParams <VectorStandardScalerTrainLocalOp>,
 	WithModelInfoLocalOp <VectorStandardScalerModelInfo, VectorStandardScalerTrainLocalOp,

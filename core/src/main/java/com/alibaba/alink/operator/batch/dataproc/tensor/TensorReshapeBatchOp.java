@@ -3,11 +3,13 @@ package com.alibaba.alink.operator.batch.dataproc.tensor;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.tensor.TensorReshapeMapper;
 import com.alibaba.alink.params.dataproc.tensor.TensorReshapeParams;
 
 @NameCn("张量重组")
+@NameEn("Tensor Reshape")
 public final class TensorReshapeBatchOp extends MapBatchOp <TensorReshapeBatchOp>
 	implements TensorReshapeParams <TensorReshapeBatchOp> {
 

@@ -17,7 +17,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.DataSetWrapperBatchOp;
@@ -88,7 +88,7 @@ public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 
 		OneVsRestModel oneVsRestModel = new OneVsRestModel(classifier.getParams().clone().merge(this.getParams()));
 		oneVsRestModel.setModelData(BatchOperator.fromTable(
-			TableUtil.concatTables(new Table[] {modelMeta, modelData, allLabels.getOutputTable()},
+			concatTables(new Table[] {modelMeta, modelData, allLabels.getOutputTable()},
 				getMLEnvironmentId())
 		));
 		return oneVsRestModel;
@@ -97,6 +97,72 @@ public class OneVsRest extends EstimatorBase <OneVsRest, OneVsRestModel>
 	public OneVsRest setClassifier(EstimatorBase<?, ?> classifier) {
 		this.classifier = classifier;
 		return this;
+	}
+
+	private static Table concatTables(Table[] tables, Long sessionId) {
+		final int[] numCols = new int[tables.length];
+		final List <String> allColNames = new ArrayList <>();
+		final List <TypeInformation <?>> allColTypes = new ArrayList <>();
+		allColNames.add("table_id");
+		allColTypes.add(Types.LONG);
+		for (int i = 0; i < tables.length; i++) {
+			if (tables[i] == null) {
+				numCols[i] = 0;
+			} else {
+				numCols[i] = tables[i].getSchema().getFieldNames().length;
+				String[] prefixedColNames = tables[i].getSchema().getFieldNames().clone();
+				for (int j = 0; j < prefixedColNames.length; j++) {
+					prefixedColNames[j] = String.format("t%d_%s", i, prefixedColNames[j]);
+				}
+				allColNames.addAll(Arrays.asList(prefixedColNames));
+				allColTypes.addAll(Arrays.asList(tables[i].getSchema().getFieldTypes()));
+			}
+		}
+
+		if (allColNames.size() == 1) {
+			return null;
+		}
+
+		DataSet <Row> allRows = null;
+		int startCol = 1;
+		final int numAllCols = allColNames.size();
+		for (int i = 0; i < tables.length; i++) {
+			if (tables[i] == null) {
+				continue;
+			}
+			final int constStartCol = startCol;
+			final int iTable = i;
+			DataSet <Row> rows = BatchOperator.fromTable(tables[i]).setMLEnvironmentId(sessionId).getDataSet();
+			rows = rows.map(new RichMapFunction <Row, Row>() {
+				private static final long serialVersionUID = -8085823678072944808L;
+				transient Row reused;
+
+				@Override
+				public void open(Configuration parameters) {
+					reused = new Row(numAllCols);
+				}
+
+				@Override
+				public Row map(Row value) {
+					for (int i = 0; i < numAllCols; i++) {
+						reused.setField(i, null);
+					}
+					reused.setField(0, (long) iTable);
+					for (int i = 0; i < numCols[iTable]; i++) {
+						reused.setField(constStartCol + i, value.getField(i));
+					}
+					return reused;
+				}
+			});
+			if (allRows == null) {
+				allRows = rows;
+			} else {
+				allRows = allRows.union(rows);
+			}
+			startCol += numCols[i];
+		}
+		return DataSetConversionUtil.toTable(sessionId, allRows, allColNames.toArray(new String[0]),
+			allColTypes.toArray(new TypeInformation[0]));
 	}
 
 	private static BatchOperator <?> generateTrainData(

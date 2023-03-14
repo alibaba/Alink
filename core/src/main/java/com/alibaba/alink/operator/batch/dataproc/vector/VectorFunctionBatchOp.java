@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -22,6 +23,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorFunctionParams;
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
 @NameCn("向量函数")
+@NameEn("Vector Function")
 public final class VectorFunctionBatchOp extends MapBatchOp <VectorFunctionBatchOp>
 	implements VectorFunctionParams <VectorFunctionBatchOp> {
 

@@ -112,10 +112,6 @@ public final class BinaryMetricsSummary
 
 		setCurveAreaParams(params, matrixThreCurve.f2);
 
-		if(Arrays.stream(negativeBin).sum() == 0 || Arrays.stream(positiveBin).sum() == 0){
-			params.set(BinaryClassMetrics.AUC, Double.NaN);
-		}
-
 		Tuple3 <ConfusionMatrix[], double[], EvaluationCurve[]> sampledMatrixThreCurve = sample(
 			PROBABILITY_INTERVAL, matrixThreCurve);
 

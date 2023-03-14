@@ -6,10 +6,10 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.sql.builtin.agg.MTableAgg;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
 import com.alibaba.alink.params.sql.GroupByParams;
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
  * Apply the "group by" operation on the input batch operator.
  */
 @NameCn("SQL操作：GroupBy")
+@NameEn("SQL GroupBy Operation")
 public final class GroupByBatchOp extends BaseSqlApiBatchOp <GroupByBatchOp>
 	implements GroupByParams <GroupByBatchOp> {
 

@@ -3,7 +3,8 @@ package com.alibaba.alink.operator.batch.classification;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.annotation.NameEn;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.BaseRandomForestTrainBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
 import com.alibaba.alink.operator.common.tree.TreeUtil;
@@ -11,12 +12,15 @@ import com.alibaba.alink.params.classification.CartTrainParams;
 import com.alibaba.alink.params.shared.tree.HasFeatureSubsamplingRatio;
 import com.alibaba.alink.params.shared.tree.HasNumTreesDefaltAs10;
 import com.alibaba.alink.params.shared.tree.HasSubsamplingRatio;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Fit a cart model.
  */
 @NameCn("CART决策树分类训练")
-public final class CartTrainBatchOp extends BaseRandomForestTrainBatchOp <CartTrainBatchOp>
+@NameEn("CART Decision Tree Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.Cart")
+public class CartTrainBatchOp extends BaseRandomForestTrainBatchOp <CartTrainBatchOp>
 	implements CartTrainParams <CartTrainBatchOp>,
 	WithModelInfoBatchOp <TreeModelInfo.DecisionTreeModelInfo, CartTrainBatchOp, CartModelInfoBatchOp> {
 

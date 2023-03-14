@@ -5,6 +5,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.util.function.TriFunction;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.mapper.ModelMapper;
@@ -22,6 +23,7 @@ import com.alibaba.alink.params.regression.AftRegPredictParams;
 @ParamSelectColumnSpec(name = "vectorCol",
 	allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("生存回归预测")
+@NameEn("AFT Survival Regression Prediction")
 public class AftSurvivalRegPredictStreamOp extends ModelMapStreamOp <AftSurvivalRegPredictStreamOp>
 	implements AftRegPredictParams <AftSurvivalRegPredictStreamOp> {
 

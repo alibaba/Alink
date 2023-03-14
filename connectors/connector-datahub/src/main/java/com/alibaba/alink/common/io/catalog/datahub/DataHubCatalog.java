@@ -308,7 +308,7 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 
 		String comment = table.getComment();
 
-		String sharedCountStr = table.getOptions().get("shareCount");
+		String sharedCountStr = table.getProperties().get("shareCount");
 
 		if (sharedCountStr == null) {
 			sharedCountStr = "1";
@@ -316,7 +316,7 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 
 		int sharedCount = Integer.parseInt(sharedCountStr);
 
-		String lifeCycleStr = table.getOptions().get("lifeCycle");
+		String lifeCycleStr = table.getProperties().get("lifeCycle");
 
 		if (lifeCycleStr == null) {
 			lifeCycleStr = "3";

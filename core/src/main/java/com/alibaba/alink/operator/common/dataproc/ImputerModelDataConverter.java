@@ -62,13 +62,13 @@ public class ImputerModelDataConverter
 			case MIN:
 				values = new double[selectedColNames.length];
 				for (int i = 0; i < selectedColNames.length; i++) {
-					values[i] = summary.min(selectedColNames[i]);
+					values[i] = summary.minDouble(selectedColNames[i]);
 				}
 				break;
 			case MAX:
 				values = new double[selectedColNames.length];
 				for (int i = 0; i < selectedColNames.length; i++) {
-					values[i] = summary.max(selectedColNames[i]);
+					values[i] = summary.maxDouble(selectedColNames[i]);
 				}
 				break;
 			case MEAN:

@@ -15,6 +15,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -42,6 +43,7 @@ import java.util.Set;
 	@PortSpec(PortType.DATA)
 })
 @NameCn("推荐负采样")
+@NameEn("Negative Item Sampling")
 public final class NegativeItemSamplingBatchOp
 	extends BatchOperator <NegativeItemSamplingBatchOp>
 	implements NegativeItemSamplingParams <NegativeItemSamplingBatchOp> {

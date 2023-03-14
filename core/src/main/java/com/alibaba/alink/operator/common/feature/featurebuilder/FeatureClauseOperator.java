@@ -3,7 +3,7 @@ package com.alibaba.alink.operator.common.feature.featurebuilder;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.sql.builtin.agg.AvgUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.BaseUdaf;
 import com.alibaba.alink.common.sql.builtin.agg.CountUdaf;
@@ -150,15 +150,15 @@ public enum FeatureClauseOperator {
 
 	MTABLE_AGG(AlinkTypes.M_TABLE, new MTableAgg(false));
 
-	private final TypeInformation<?> resType;
-	private final BaseUdaf calc;
+	private final TypeInformation <?> resType;
+	BaseUdaf calc;
 
-	FeatureClauseOperator(TypeInformation<?> resType, BaseUdaf calc) {
+	FeatureClauseOperator(TypeInformation <?> resType, BaseUdaf calc) {
 		this.resType = resType;
 		this.calc = calc;
 	}
 
-	public TypeInformation<?> getResType() {
+	public TypeInformation <?> getResType() {
 		return resType;
 	}
 
@@ -166,4 +166,4 @@ public enum FeatureClauseOperator {
 		return JsonConverter.fromJson(JsonConverter.toJson(calc), calc.getClass());
 	}
 
-	}
+}

@@ -3,7 +3,7 @@ package com.alibaba.alink.pipeline;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.io.filesystem.FilePath;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.utils.JsonConverter;

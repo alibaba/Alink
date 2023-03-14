@@ -40,7 +40,7 @@ public class CsvSinkCollectorCreator implements SinkCollectorCreator {
 						flattenCsvFromRow.map(formatCsvFunc.map(record))
 					);
 				} catch (Exception e) {
-					throw new AkUnclassifiedErrorException("Error. ",e);
+					throw new AkUnclassifiedErrorException("CsvSinkCollectorCreator collect error. ",e);
 				}
 			}
 
@@ -49,7 +49,7 @@ public class CsvSinkCollectorCreator implements SinkCollectorCreator {
 				try {
 					textOutputFormat.close();
 				} catch (IOException e) {
-					throw new AkUnclassifiedErrorException("Error. ",e);
+					throw new AkUnclassifiedErrorException("CsvSinkCollectorCreator close error. ",e);
 				}
 			}
 		};

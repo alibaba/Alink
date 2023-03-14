@@ -4,16 +4,29 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.MatVecOp;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
+import com.alibaba.alink.operator.common.linear.AftRegObjFunc;
+import com.alibaba.alink.operator.common.linear.LinearModelType;
+import com.alibaba.alink.operator.common.linear.SoftmaxObjFunc;
+import com.alibaba.alink.operator.common.linear.UnaryLossObjFunc;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.LogLossFunc;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.PerceptronLossFunc;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.SmoothHingeLossFunc;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.SquareLossFunc;
+import com.alibaba.alink.operator.common.linear.unarylossfunc.SvrLossFunc;
+import com.alibaba.alink.params.regression.LinearSvrTrainParams;
 import com.alibaba.alink.params.shared.linear.HasL1;
 import com.alibaba.alink.params.shared.linear.HasL2;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Abstract object function for optimization. This class provides the function api to calculate gradient, loss, hessian
@@ -56,8 +69,8 @@ public abstract class OptimObjFunc implements Serializable {
 	 * @param coefVector  coefficient of current time.
 	 * @return the loss value
 	 */
-	protected abstract double calcLoss(Tuple3 <Double, Double, Vector> labelVector,
-									   DenseVector coefVector);
+	public abstract double calcLoss(Tuple3 <Double, Double, Vector> labelVector,
+									DenseVector coefVector);
 
 	/**
 	 * Update gradient.
@@ -66,9 +79,9 @@ public abstract class OptimObjFunc implements Serializable {
 	 * @param coefVector  coefficient of current time.
 	 * @param updateGrad  gradient need to update.
 	 */
-	protected abstract void updateGradient(Tuple3 <Double, Double, Vector> labelVector,
-										   DenseVector coefVector,
-										   DenseVector updateGrad);
+	public abstract void updateGradient(Tuple3 <Double, Double, Vector> labelVector,
+										DenseVector coefVector,
+										DenseVector updateGrad);
 
 	/**
 	 * Update hessian matrix by one sample.
@@ -77,7 +90,7 @@ public abstract class OptimObjFunc implements Serializable {
 	 * @param coefVector    coefficient of current time.
 	 * @param updateHessian hessian matrix need to update.
 	 */
-	protected abstract void updateHessian(Tuple3 <Double, Double, Vector> labelVector,
+	public abstract void updateHessian(Tuple3 <Double, Double, Vector> labelVector,
 										  DenseVector coefVector,
 										  DenseMatrix updateHessian);
 
@@ -105,6 +118,16 @@ public abstract class OptimObjFunc implements Serializable {
 			fVal += loss * labelVector.f0;
 			weightSum += labelVector.f0;
 		}
+		return finalizeObjValue(coefVector, fVal, weightSum);
+	}
+
+	/**
+	 * Calculate object value.
+	 *
+	 * @param coefVector coefficient of current time.
+	 * @return Tuple2: objectValue, weightSum.
+	 */
+	public Tuple2 <Double, Double> finalizeObjValue(DenseVector coefVector, double fVal, double weightSum) {
 		if (0.0 != weightSum) {
 			fVal /= weightSum;
 		}
@@ -128,9 +151,7 @@ public abstract class OptimObjFunc implements Serializable {
 	public double calcGradient(Iterable <Tuple3 <Double, Double, Vector>> labelVectors,
 							   DenseVector coefVector, DenseVector grad) {
 		double weightSum = 0.0;
-		for (int i = 0; i < grad.size(); i++) {
-			grad.set(i, 0.0);
-		}
+		Arrays.fill(grad.getData(), 0.0);
 		for (Tuple3 <Double, Double, Vector> labelVector : labelVectors) {
 			if (labelVector.f2 instanceof SparseVector) {
 				((SparseVector) (labelVector.f2)).setSize(coefVector.size());
@@ -138,6 +159,13 @@ public abstract class OptimObjFunc implements Serializable {
 			weightSum += labelVector.f0;
 			updateGradient(labelVector, coefVector, grad);
 		}
+
+		finalizeGradient(coefVector, grad, weightSum);
+
+		return weightSum;
+	}
+
+	public void finalizeGradient(DenseVector coefVector, DenseVector grad, double weightSum) {
 		if (weightSum > 0.0) {
 			grad.scaleEqual(1.0 / weightSum);
 		}
@@ -150,7 +178,7 @@ public abstract class OptimObjFunc implements Serializable {
 				grad.add(i, Math.signum(coefArray[i]) * this.l1);
 			}
 		}
-		return weightSum;
+
 	}
 
 	/**
@@ -167,14 +195,9 @@ public abstract class OptimObjFunc implements Serializable {
 														   DenseMatrix hessian,
 														   DenseVector grad) {
 		if (this.hasSecondDerivative()) {
-			int size = grad.size();
+			Arrays.fill(grad.getData(), 0.0);
+			Arrays.fill(hessian.getData(), 0.0);
 
-			for (int i = 0; i < size; ++i) {
-				grad.set(i, 0.0);
-				for (int j = 0; j < size; ++j) {
-					hessian.set(i, j, 0.0);
-				}
-			}
 			double weightSum = 0.0;
 			double loss = 0.0;
 			for (Tuple3 <Double, Double, Vector> labledVector : labelVectors) {
@@ -183,24 +206,31 @@ public abstract class OptimObjFunc implements Serializable {
 				updateGradient(labledVector, coefVector, grad);
 				loss += calcLoss(labledVector, coefVector);
 			}
-			if (0.0 != this.l1) {
-				double tmpVal = this.l1 * weightSum;
-				double[] coefArray = coefVector.getData();
-				for (int i = 0; i < coefVector.size(); i++) {
-					grad.add(i, Math.signum(coefArray[i]) * tmpVal);
-				}
-			}
-			if (0.0 != this.l2) {
-				double tmpVal = this.l2 * 2 * weightSum;
-				grad.plusScaleEqual(coefVector, tmpVal);
-				for (int i = 0; i < hessian.numRows(); ++i) {
-					hessian.add(i, i, tmpVal);
-				}
-			}
+
+			finalizeHessianGradientLoss(coefVector, hessian, grad, weightSum);
+
 			return Tuple2.of(weightSum, loss);
 		} else {
 			throw new AkUnsupportedOperationException(
 				"loss function can't support second derivative, newton precondition can not work.");
+		}
+	}
+
+	public void finalizeHessianGradientLoss(DenseVector coefVector, DenseMatrix hessian, DenseVector grad,
+											double weightSum) {
+		if (0.0 != this.l1) {
+			double tmpVal = this.l1 * weightSum;
+			double[] coefArray = coefVector.getData();
+			for (int i = 0; i < coefVector.size(); i++) {
+				grad.add(i, Math.signum(coefArray[i]) * tmpVal);
+			}
+		}
+		if (0.0 != this.l2) {
+			double tmpVal = this.l2 * 2 * weightSum;
+			grad.plusScaleEqual(coefVector, tmpVal);
+			for (int i = 0; i < hessian.numRows(); ++i) {
+				hessian.add(i, i, tmpVal);
+			}
 		}
 	}
 
@@ -217,7 +247,6 @@ public abstract class OptimObjFunc implements Serializable {
 	public double[] calcSearchValues(Iterable <Tuple3 <Double, Double, Vector>> labelVectors, DenseVector coefVector,
 									 DenseVector dirVec, double beta, int numStep) {
 		double[] losses = new double[numStep + 1];
-
 		DenseVector[] stepVec = new DenseVector[numStep + 1];
 		stepVec[0] = coefVector.clone();
 		DenseVector vecDelta = dirVec.scale(beta);
@@ -243,7 +272,7 @@ public abstract class OptimObjFunc implements Serializable {
 	 * @return double[] losses.
 	 */
 	public double[] constraintCalcSearchValues(
-		Iterable <Tuple3 <Double, Double, Vector>> labelVectors,
+		List <Tuple3 <Double, Double, Vector>> labelVectors,
 		DenseVector coefVector, DenseVector dirVec, double beta, int numStep) {
 		double[] losses = new double[numStep + 1];
 		double[] coefArray = coefVector.getData();
@@ -266,4 +295,44 @@ public abstract class OptimObjFunc implements Serializable {
 		}
 		return losses;
 	}
+
+	/**
+	 * Get obj function.
+	 *
+	 * @param modelType Model type.
+	 * @param params    Parameters for train.
+	 * @return Obj function.
+	 */
+	public static OptimObjFunc getObjFunction(LinearModelType modelType, Params params) {
+		OptimObjFunc objFunc;
+		// For different model type, we must set corresponding loss object function.
+		switch (modelType) {
+			case LinearReg:
+				objFunc = new UnaryLossObjFunc(new SquareLossFunc(), params);
+				break;
+			case SVR:
+				double svrTau = params.get(LinearSvrTrainParams.TAU);
+				objFunc = new UnaryLossObjFunc(new SvrLossFunc(svrTau), params);
+				break;
+			case LR:
+				objFunc = new UnaryLossObjFunc(new LogLossFunc(), params);
+				break;
+			case SVM:
+				objFunc = new UnaryLossObjFunc(new SmoothHingeLossFunc(), params);
+				break;
+			case Perceptron:
+				objFunc = new UnaryLossObjFunc(new PerceptronLossFunc(), params);
+				break;
+			case AFT:
+				objFunc = new AftRegObjFunc(params);
+				break;
+			case Softmax:
+				objFunc = new SoftmaxObjFunc(params);
+				break;
+			default:
+				throw new AkUnimplementedOperationException("Linear model type is Not implemented yet!");
+		}
+		return objFunc;
+	}
+
 }

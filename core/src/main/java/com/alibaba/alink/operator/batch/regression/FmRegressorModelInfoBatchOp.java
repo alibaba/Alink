@@ -3,8 +3,7 @@ package com.alibaba.alink.operator.batch.regression;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
-import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 import com.alibaba.alink.operator.common.fm.FmRegressorModelInfo;
 
 import java.util.List;
@@ -34,8 +33,4 @@ public class FmRegressorModelInfoBatchOp
 		return new FmRegressorModelInfo(rows);
 	}
 
-	@Override
-	protected BatchOperator <?> processModel() {
-		return this;
-	}
 }

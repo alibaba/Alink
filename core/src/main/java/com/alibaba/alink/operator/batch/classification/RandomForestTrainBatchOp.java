@@ -3,10 +3,12 @@ package com.alibaba.alink.operator.batch.classification;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.common.annotation.NameEn;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.common.tree.BaseRandomForestTrainBatchOp;
 import com.alibaba.alink.operator.common.tree.TreeModelInfo;
 import com.alibaba.alink.params.classification.RandomForestTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Fit a random forest classification model.
@@ -14,7 +16,9 @@ import com.alibaba.alink.params.classification.RandomForestTrainParams;
  * @see BaseRandomForestTrainBatchOp
  */
 @NameCn("随机森林训练")
-public final class RandomForestTrainBatchOp extends BaseRandomForestTrainBatchOp <RandomForestTrainBatchOp> implements
+@NameEn("Random Forest Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.RandomForestClassifier")
+public class RandomForestTrainBatchOp extends BaseRandomForestTrainBatchOp <RandomForestTrainBatchOp> implements
 	RandomForestTrainParams <RandomForestTrainBatchOp>,
 	WithModelInfoBatchOp <TreeModelInfo.RandomForestModelInfo, RandomForestTrainBatchOp, RandomForestModelInfoBatchOp> {
 

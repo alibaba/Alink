@@ -4,10 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 public interface HasUsernameDefaultAsNull<T> extends WithParams <T> {
-	/**
-	 * @cn 用户名
-	 */
+	@NameCn("用户名")
+	@DescCn("用户名")
 	ParamInfo <String> USERNAME = ParamInfoFactory
 		.createParamInfo("username", String.class)
 		.setDescription("username")

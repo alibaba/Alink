@@ -4,12 +4,17 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 import java.io.Serializable;
 
+
 public interface HasTimeFrequency<T> extends WithParams <T> {
 
+	@NameCn("时间单位")
+	@DescCn("时间单位")
 	ParamInfo <TimeFrequency> TIME_FREQUENCY = ParamInfoFactory
 		.createParamInfo("timeFrequency", TimeFrequency.class)
 		.setDescription("Frequnecy of time series.")

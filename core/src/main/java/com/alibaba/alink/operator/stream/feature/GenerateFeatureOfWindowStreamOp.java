@@ -10,6 +10,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.params.feature.GenerateFeatureOfWindowParams;
 import com.alibaba.alink.common.fe.GenerateFeatureUtil;
@@ -18,7 +19,7 @@ import com.alibaba.alink.common.fe.define.InterfaceHopWindowStatFeatures;
 import com.alibaba.alink.common.fe.define.InterfaceSessionWindowStatFeatures;
 import com.alibaba.alink.common.fe.define.InterfaceSlotWindowStatFeatures;
 import com.alibaba.alink.common.fe.define.InterfaceTumbleWindowStatFeatures;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 
@@ -28,6 +29,7 @@ import java.sql.Timestamp;
  * Generate Feature Window.
  */
 @NameCn("Window特征生成")
+@NameEn("Window-feature generator")
 public class GenerateFeatureOfWindowStreamOp extends StreamOperator <GenerateFeatureOfWindowStreamOp>
 	implements GenerateFeatureOfWindowParams <GenerateFeatureOfWindowStreamOp> {
 

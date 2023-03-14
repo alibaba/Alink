@@ -7,6 +7,7 @@ import com.alibaba.alink.operator.common.similarity.Solver;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
 import com.alibaba.alink.params.similarity.VectorApproxNearestNeighborTrainParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class VectorApproxNearestNeighborTrainLocalOpTest {
+public class VectorApproxNearestNeighborTrainLocalOpTest extends AlinkTestBase {
 
 	@Test
 	public void testEuclidean() {

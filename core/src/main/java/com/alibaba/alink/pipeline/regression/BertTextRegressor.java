@@ -23,8 +23,4 @@ public class BertTextRegressor extends Trainer <BertTextRegressor, BertRegressio
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new BertTextRegressorTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

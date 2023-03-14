@@ -11,11 +11,12 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.DataSetWrapperBatchOp;
@@ -40,6 +41,7 @@ import java.util.List;
 @ParamSelectColumnSpec(name = "groupCol")
 @ParamSelectColumnSpec(name = "objectCol")
 @NameCn("推荐结果采样处理")
+@NameEn("Leave K Object Out")
 public class LeaveKObjectOutBatchOp extends BatchOperator <LeaveKObjectOutBatchOp>
 	implements LeaveKObjectOutParams <LeaveKObjectOutBatchOp> {
 	private static final long serialVersionUID = 8447591038487459735L;

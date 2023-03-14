@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -16,6 +17,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 @InputPorts(values = {@PortSpec(PortType.DATA), @PortSpec(PortType.DATA)})
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @NameCn("SQL操作：Intersect")
+@NameEn("SQL Intersect Operation")
 public final class IntersectBatchOp extends BatchOperator <IntersectBatchOp> {
 
 	private static final long serialVersionUID = -2981473236917210647L;

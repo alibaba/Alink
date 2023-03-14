@@ -11,6 +11,7 @@ import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,14 +19,14 @@ public class LogisticRegTest extends AlinkTestBase {
 
 	BatchOperator <?> getData() {
 		Row[] array = new Row[] {
-			Row.of("$31$0:1.0 1:1.0 2:1.0 30:1.0", "1.0  1.0  1.0  1.0", 1.0, 1.0, 1.0, 1.0, 1),
-			Row.of("$31$0:1.0 1:1.0 2:0.0 30:1.0", "1.0  1.0  0.0  1.0", 1.0, 1.0, 0.0, 1.0, 1),
-			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1.0, 0.0, 1.0, 1.0, 1),
-			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", 1.0, 0.0, 1.0, 1.0, 1),
-			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0),
-			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0),
-			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0),
-			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", 0.0, 1.0, 1.0, 0.0, 0)
+			Row.of("$31$0:1.0 1:1.0 2:1.0 30:1.0", "1.0  1.0  1.0  1.0", new BigDecimal("1.0"), 1.0, 1.0, 1.0, 1),
+			Row.of("$31$0:1.0 1:1.0 2:0.0 30:1.0", "1.0  1.0  0.0  1.0", new BigDecimal("1.0"), 1.0, 0.0, 1.0, 1),
+			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", new BigDecimal("1.0"), 0.0, 1.0, 1.0, 1),
+			Row.of("$31$0:1.0 1:0.0 2:1.0 30:1.0", "1.0  0.0  1.0  1.0", new BigDecimal("1.0"), 0.0, 1.0, 1.0, 1),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", new BigDecimal("0.0"), 1.0, 1.0, 0.0, 0),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", new BigDecimal("0.0"), 1.0, 1.0, 0.0, 0),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", new BigDecimal("0.0"), 1.0, 1.0, 0.0, 0),
+			Row.of("$31$0:0.0 1:1.0 2:1.0 30:0.0", "0.0  1.0  1.0  0.0", new BigDecimal("0.0"), 1.0, 1.0, 0.0, 0)
 		};
 
 		return new MemSourceBatchOp(
@@ -54,9 +55,9 @@ public class LogisticRegTest extends AlinkTestBase {
 			.setPredictionCol("svlrpred").enableLazyPrintModelInfo().enableLazyPrintTrainInfo();
 
 		Pipeline plLr = new Pipeline().add(lr).add(vectorLr).add(sparseVectorLr);
-		BatchOperator<?> trainData = getData();
+		BatchOperator <?> trainData = getData();
 		PipelineModel model = plLr.fit(trainData);
-		BatchOperator<?> result = model.transform(trainData).select(
+		BatchOperator <?> result = model.transform(trainData).select(
 			new String[] {"labels", "lrpred", "vlrpred", "svlrpred"});
 
 		List <Row> data = result.collect();

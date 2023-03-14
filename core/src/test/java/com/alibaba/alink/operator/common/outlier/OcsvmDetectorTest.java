@@ -14,13 +14,14 @@ import com.alibaba.alink.params.outlier.HaskernelType.KernelType;
 import com.alibaba.alink.params.outlier.OcsvmDetectorParams;
 import com.alibaba.alink.params.outlier.OutlierDetectorParams;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Map;
 import java.util.Random;
 
-public class OcsvmDetectorTest {
+public class OcsvmDetectorTest extends AlinkTestBase {
 
 	private static final double EPS = 1e-12;
 

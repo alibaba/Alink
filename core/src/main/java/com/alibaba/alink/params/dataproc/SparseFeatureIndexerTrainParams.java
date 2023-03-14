@@ -12,5 +12,7 @@ public interface SparseFeatureIndexerTrainParams<T> extends
 	HasKvValDelimiterDefaultAsColon <T>,
 	HasTopNDefaultAsMinus1 <T>,
 	HasMinFrequencyDefaultAsMinus1 <T>,
-	HasValueDefaultAsTrue <T> {
+	HasMinPercent <T>,
+	HasValueDefaultAsTrue <T>,
+	HasCandidateTags <T> {
 }

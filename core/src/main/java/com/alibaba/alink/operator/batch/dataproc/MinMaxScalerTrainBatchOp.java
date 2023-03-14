@@ -11,20 +11,22 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelDataConverter;
 import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelInfo;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.params.dataproc.MinMaxScalerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * MinMaxScaler transforms a dataSet of rows, rescaling each feature
@@ -35,6 +37,8 @@ import com.alibaba.alink.params.dataproc.MinMaxScalerTrainParams;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @NameCn("归一化训练")
+@NameEn("Min Max Scaler Train")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.MinMaxScaler")
 public class MinMaxScalerTrainBatchOp extends BatchOperator <MinMaxScalerTrainBatchOp>
 	implements MinMaxScalerTrainParams <MinMaxScalerTrainBatchOp>,
 	WithModelInfoBatchOp <MinMaxScalerModelInfo, MinMaxScalerTrainBatchOp, MinMaxScalerModelInfoBatchOp> {

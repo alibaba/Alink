@@ -2,11 +2,15 @@ package com.alibaba.alink.common.utils;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
+import com.alibaba.alink.params.shared.colname.HasLabelCol;
+import com.alibaba.alink.params.shared.colname.HasWeightCol;
+import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -134,6 +138,22 @@ public class TableUtilTest extends AlinkTestBase {
 	}
 
 	@Test
+	public void getOptionalFeatureColsTest() {
+		TableSchema tableSchema = new TableSchema(new String[] {"f0", "f1", "f2", "f3"},
+			new TypeInformation[] {Types.INT, Types.LONG, Types.STRING, Types.BOOLEAN});
+
+		Assert.assertArrayEquals(
+			TableUtil.getOptionalFeatureCols(
+				tableSchema,
+				new Params()
+					.set(HasLabelCol.LABEL_COL, "f0")
+					.set(HasWeightColDefaultAsNull.WEIGHT_COL, "f3")
+			),
+			new String[] {"f1", "f2"}
+		);
+	}
+
+	@Test
 	public void findColIndexWithAssertAndHintTest() {
 		thrown.expect(AkColumnNotFoundException.class);
 		thrown.expectMessage("Can not find column: features, do you mean: feature ?");
@@ -141,4 +161,5 @@ public class TableUtilTest extends AlinkTestBase {
 		String[] colNames = new String[] {"id", "text", "vector", "feature"};
 		TableUtil.findColIndexWithAssertAndHint(colNames, "features");
 	}
+
 }

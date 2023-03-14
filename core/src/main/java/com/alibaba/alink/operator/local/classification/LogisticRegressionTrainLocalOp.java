@@ -8,6 +8,7 @@ import com.alibaba.alink.operator.common.linear.LinearClassifierModelInfo;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * Logistic regression train local operator. we use log loss func by setting LinearModelType = LR and model name =
@@ -15,6 +16,7 @@ import com.alibaba.alink.params.classification.LinearBinaryClassTrainParams;
  */
 @NameCn("逻辑回归训练")
 @NameEn("Logistic Regression Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.LogisticRegression")
 public final class LogisticRegressionTrainLocalOp extends BaseLinearModelTrainLocalOp <LogisticRegressionTrainLocalOp>
 	implements LinearBinaryClassTrainParams <LogisticRegressionTrainLocalOp>,
 	WithModelInfoLocalOp <LinearClassifierModelInfo, LogisticRegressionTrainLocalOp, LogisticRegressionModelInfoLocalOp> {

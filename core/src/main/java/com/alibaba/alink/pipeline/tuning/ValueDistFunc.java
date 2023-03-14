@@ -15,14 +15,19 @@ class ValueDistFunc extends ValueDist <Double> {
 
 	private static final long serialVersionUID = -3106023232687585706L;
 	private AbstractRealDistribution dist;
+	private double mean, sd;
 
 	public ValueDistFunc(DistributionFuncName funcName, double[] params) {
 		switch (funcName) {
 			case StdNormal:
 				dist = new NormalDistribution(0, 1);
+				mean = 0;
+				sd = 1;
 				break;
 			case Normal:
 				dist = new NormalDistribution(params[0], params[1]);
+				mean = params[0];
+				sd = params[1];
 				break;
 			case Gamma:
 				dist = new GammaDistribution(params[0], params[1]);
@@ -38,6 +43,8 @@ class ValueDistFunc extends ValueDist <Double> {
 				break;
 			case Uniform:
 				dist = new UniformRealDistribution(params[0], params[1]);
+				mean = (params[0] + params[1]) / 2;
+				sd = params[1] - params[0];
 				break;
 			case Exponential:
 				dist = new ExponentialDistribution(params[0]);
@@ -54,4 +61,9 @@ class ValueDistFunc extends ValueDist <Double> {
 	public Double get(double p) {
 		return this.dist.inverseCumulativeProbability(p);
 	}
+
+	public double getMean() {return mean;}
+
+	public double getSd() {return sd;}
+
 }

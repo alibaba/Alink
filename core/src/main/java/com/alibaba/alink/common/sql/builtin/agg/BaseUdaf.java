@@ -2,7 +2,7 @@ package com.alibaba.alink.common.sql.builtin.agg;
 
 import org.apache.flink.table.functions.AggregateFunction;
 
-public abstract class BaseUdaf<T, ACC> extends AggregateFunction<T, ACC> {
+public abstract class BaseUdaf<T, ACC> extends AggregateFunction <T, ACC> {
 
 	public void accumulate(ACC acc, Object... values) {}
 
@@ -10,19 +10,23 @@ public abstract class BaseUdaf<T, ACC> extends AggregateFunction<T, ACC> {
 
 	public void resetAccumulator(ACC acc) {}
 
-	public void merge(ACC acc, Iterable<ACC> it) {}
+	public void merge(ACC acc, Iterable <ACC> it) {}
 
 	ACC acc;
 
 	public void accumulateBatch(Object... values) {
-		if (acc == null) {
-			acc = createAccumulator();
-		}
+		createAccumulatorAndSet();
 		accumulate(acc, values);
 	}
 
 	public T getValueBatch() {
 		return getValue(acc);
+	}
+
+	private void createAccumulatorAndSet() {
+		if (acc == null) {
+			acc = createAccumulator();
+		}
 	}
 
 }

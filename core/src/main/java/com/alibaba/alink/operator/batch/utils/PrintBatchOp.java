@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 @IoOpAnnotation(name = "print", ioType = IOType.SinkBatch)
 @NameCn("批式数据打印")
+@NameEn("Print Operation")
 public class PrintBatchOp extends BaseSinkBatchOp <PrintBatchOp> {
 
 	private static final long serialVersionUID = -8361687806231696283L;

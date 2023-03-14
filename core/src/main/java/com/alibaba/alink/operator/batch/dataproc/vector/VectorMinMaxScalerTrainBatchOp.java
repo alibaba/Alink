@@ -9,18 +9,20 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelDataConverter;
 import com.alibaba.alink.operator.common.dataproc.vector.VectorMinMaxScalerModelInfo;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * MinMaxScaler transforms a dataSet of rows, rescaling each feature
@@ -31,6 +33,8 @@ import com.alibaba.alink.params.dataproc.vector.VectorMinMaxScalerTrainParams;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量归一化训练")
+@NameEn("Vector MinAbs Scaler Train")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.vector.VectorMinMaxScaler")
 public final class VectorMinMaxScalerTrainBatchOp extends BatchOperator <VectorMinMaxScalerTrainBatchOp>
 	implements VectorMinMaxScalerTrainParams <VectorMinMaxScalerTrainBatchOp>,
 	WithModelInfoBatchOp <VectorMinMaxScalerModelInfo, VectorMinMaxScalerTrainBatchOp,

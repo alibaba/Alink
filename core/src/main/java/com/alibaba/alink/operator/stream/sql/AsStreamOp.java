@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.sql;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.sql.AsParams;
 
@@ -10,6 +11,7 @@ import com.alibaba.alink.params.sql.AsParams;
  * Rename the fields of a stream operator.
  */
 @NameCn("SQL操作：As")
+@NameEn("SQL：As")
 public final class AsStreamOp extends BaseSqlApiStreamOp <AsStreamOp>
 	implements AsParams <AsStreamOp> {
 

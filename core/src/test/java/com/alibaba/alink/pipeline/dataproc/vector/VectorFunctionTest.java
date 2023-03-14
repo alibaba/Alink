@@ -6,13 +6,14 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.params.shared.HasFuncName.FuncName;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class VectorFunctionTest {
+public class VectorFunctionTest extends AlinkTestBase {
 	@Test
 	public void testVectorFunctionSparse() {
 		List <Row> df = new ArrayList <>();

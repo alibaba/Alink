@@ -9,6 +9,7 @@ import org.apache.flink.api.common.functions.RichMapPartitionFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
@@ -34,7 +35,7 @@ import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -181,7 +182,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         DataSet<Row> modelRows = transformModel(model, labelValues, featSize, params, dim, isRegProc, labelType);
 
         this.setOutput(modelRows, new FmModelDataConverter(labelType).getModelSchema());
-        this.setSideOutputTables(getSideTablesOfCoefficient(modelRows, labelType));
+        this.setSideOutputTables(getSideTablesOfCoefficient(modelRows, model.project(1), labelType));
         return (T) this;
     }
 
@@ -399,7 +400,7 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
 
     }
 
-    private Table[] getSideTablesOfCoefficient(DataSet<Row> modelRow, final TypeInformation<?> labelType) {
+    private Table[] getSideTablesOfCoefficient(DataSet<Row> modelRow, DataSet<Tuple1 <double[]>> cinfo, final TypeInformation<?> labelType) {
         DataSet<FmModelData> model = modelRow.mapPartition(new MapPartitionFunction<Row, FmModelData>() {
             private static final long serialVersionUID = 2063366042018382802L;
 
@@ -422,7 +423,8 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                             public void mapPartition(Iterable<FmModelData> values, Collector<Row> out) {
 
                                 FmModelData model = values.iterator().next();
-                                double[] cInfo = model.convergenceInfo;
+                                double[] cInfo = ((Tuple1 <double[]>)getRuntimeContext()
+                                    .getBroadcastVariable("cinfo").get(0)).f0;
                                 Params meta = new Params();
                                 meta.set(ModelParamName.VECTOR_SIZE, model.vectorSize);
                                 meta.set(ModelParamName.LABEL_VALUES, model.labelValues);
@@ -433,7 +435,8 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
                                 out.collect(Row.of(1, JsonConverter.toJson(cInfo)));
 
                             }
-                        }).setParallelism(1).withBroadcastSet(model, "model");
+                        }).setParallelism(1)
+            .withBroadcastSet(cinfo, "cinfo");
 
         Table summaryTable = DataSetConversionUtil.toTable(getMLEnvironmentId(), summary, new TableSchema(
                 new String[]{"title", "info"}, new TypeInformation[]{Types.INT, Types.STRING}));
@@ -527,7 +530,13 @@ public abstract class BaseFmTrainBatchOp<T extends BaseFmTrainBatchOp<T>> extend
         }
 
         private double sigmoid(double y) {
-            return 1.0 / (1.0 + Math.exp(-y));
+            if (y < -37) {
+                return 0.0;
+            } else if (y > 34) {
+                return 1.0;
+            } else {
+                return 1.0 / (1.0 + Math.exp(-y));
+            }
         }
     }
 

@@ -3,7 +3,7 @@ package com.alibaba.alink.operator.batch.classification;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 import com.alibaba.alink.operator.common.classification.NaiveBayesModelData;
 import com.alibaba.alink.operator.common.classification.NaiveBayesModelDataConverter;
 
@@ -23,7 +23,7 @@ public class NaiveBayesModelInfoBatchOp
 	}
 
 	@Override
-	protected NaiveBayesModelInfo createModelInfo(List <Row> rows) {
+	public NaiveBayesModelInfo createModelInfo(List <Row> rows) {
 		NaiveBayesModelData modelData = new NaiveBayesModelDataConverter().load(rows);
 		NaiveBayesModelInfo modelInfo = new NaiveBayesModelInfo(modelData.featureNames,
 			modelData.isCate,

@@ -5,13 +5,14 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.lazy.WithTrainInfo;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.fm.FmRegressorModelInfo;
 import com.alibaba.alink.operator.common.fm.FmRegressorModelTrainInfo;
 import com.alibaba.alink.operator.common.fm.FmTrainBatchOp;
 import com.alibaba.alink.params.recommendation.FmTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ import java.util.List;
  */
 @NameCn("FM回归训练")
 @NameEn("FM Regression Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.regression.FmRegressor")
 public class FmRegressorTrainBatchOp extends FmTrainBatchOp <FmRegressorTrainBatchOp>
 	implements FmTrainParams <FmRegressorTrainBatchOp>,
 	WithModelInfoBatchOp <FmRegressorModelInfo, FmRegressorTrainBatchOp, FmRegressorModelInfoBatchOp>,

@@ -9,6 +9,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -27,6 +28,7 @@ import java.util.Random;
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @SuppressWarnings("uncheck")
 @NameCn("随机采样")
+@NameEn("Sample")
 public class SampleStreamOp extends StreamOperator <SampleStreamOp> implements SampleParams <SampleStreamOp> {
 
 	private static final long serialVersionUID = 2165833879105000066L;

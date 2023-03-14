@@ -9,8 +9,7 @@ import org.apache.flink.core.fs.FileSystemKind;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.ml.api.misc.param.Params;
 
-import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
-import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.io.annotations.FSAnnotation;
 import org.slf4j.Logger;
@@ -153,22 +152,22 @@ public class HttpFileReadOnlyFileSystem extends BaseFileSystem <HttpFileReadOnly
 
 		@Override
 		public boolean delete(Path f, boolean recursive) throws IOException {
-			throw new AkUnsupportedOperationException("Not support exception. ");
+			throw new AkUnsupportedOperationException("Http not support delete operation. ");
 		}
 
 		@Override
 		public boolean mkdirs(Path f) throws IOException {
-			throw new AkUnsupportedOperationException("Not support exception. ");
+			throw new AkUnsupportedOperationException("Http not support mkdirs operation. ");
 		}
 
 		@Override
 		public FSDataOutputStream create(Path f, WriteMode overwriteMode) throws IOException {
-			throw new AkUnsupportedOperationException("Not support exception. ");
+			throw new AkUnsupportedOperationException("Http not support create file operation. ");
 		}
 
 		@Override
 		public boolean rename(Path src, Path dst) throws IOException {
-			throw new AkUnsupportedOperationException("Not support exception. ");
+			throw new AkUnsupportedOperationException("Http not support rename operation. ");
 		}
 
 		@Override
@@ -202,19 +201,20 @@ public class HttpFileReadOnlyFileSystem extends BaseFileSystem <HttpFileReadOnly
 			LOG.info("contentLength of {}, acceptRanges of {} to download {}", contentLength, acceptRanges, path);
 
 			if (contentLength < 0) {
-				throw new AkUnsupportedOperationException("The content length can't be determined.");
+				throw new AkIllegalDataException("The content length can't be determined because content length < 0.");
 			}
 
 			// If the http server does not accept ranges, then we quit the program.
 			// This is because 'accept ranges' is required to achieve robustness (through re-connection),
 			// and efficiency (through concurrent read).
 			if (!splittable) {
-				throw new AkUnsupportedOperationException("The http server does not support range reading.");
+				throw new AkIllegalDataException("Http-Header doesn't have header 'Accept-Ranges' or the value of "
+					+ "'Accept-Ranges' value not equal 'bytes', The http server does not support range reading.");
 			}
 
 			return contentLength;
 		} catch (Exception e) {
-			throw new AkUnclassifiedErrorException("Fail to connect to http server", e);
+			throw new AkIllegalDataException(String.format("Fail to connect to http address %s", path.getPath()), e);
 		} finally {
 			if (headerConnection != null) {
 				headerConnection.disconnect();
@@ -281,7 +281,7 @@ public class HttpFileReadOnlyFileSystem extends BaseFileSystem <HttpFileReadOnly
 
 		private void createInternal(long start, long end) throws IOException {
 			if (start >= end) {
-				throw new AkIllegalArgumentException("start position of http file is is lager than end position");
+				throw new AkIllegalDataException("start position of http file is lager than end position");
 			}
 			connection = (HttpURLConnection) path.toUri().toURL().openConnection();
 

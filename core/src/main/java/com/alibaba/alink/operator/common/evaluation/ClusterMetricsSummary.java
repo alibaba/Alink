@@ -134,18 +134,34 @@ public class ClusterMetricsSummary implements BaseMetricsSummary <ClusterMetrics
 			}
 		}
 
-		double DBIndex = StatUtils.sum(DBIndexArray) / k;
+		double DBIndex = k > 1 ? StatUtils.sum(DBIndexArray) / k : Double.POSITIVE_INFINITY;
 		params.set(ClusterMetrics.SSB, ssb);
 		params.set(ClusterMetrics.SSW, ssw);
 		params.set(ClusterMetrics.CP, compactness / k);
 		params.set(ClusterMetrics.K, k);
 		params.set(ClusterMetrics.COUNT, total);
-		params.set(ClusterMetrics.SP, 2 * seperation / (k * k - k));
+		params.set(ClusterMetrics.SP, k > 1 ? 2 * seperation / (k * k - k) : 0.);
 		params.set(ClusterMetrics.DB, DBIndex);
-		params.set(ClusterMetrics.VRC, ssb * (total - k) / ssw / (k - 1));
+		params.set(ClusterMetrics.VRC, k > 1 ? ssb * (total - k) / ssw / (k - 1) : 0);
 		params.set(ClusterMetrics.CLUSTER_ARRAY, clusters);
 		params.set(ClusterMetrics.COUNT_ARRAY, countArray);
 
+		return new ClusterMetrics(params);
+	}
+
+	public static ClusterMetrics createForEmptyDataset() {
+		Params params = new Params();
+		params.set(ClusterMetrics.SSB, 0.);
+		params.set(ClusterMetrics.SSW, Double.POSITIVE_INFINITY);
+		params.set(ClusterMetrics.CP, Double.POSITIVE_INFINITY);
+		params.set(ClusterMetrics.K, 0);
+		params.set(ClusterMetrics.COUNT, 0);
+		params.set(ClusterMetrics.SP, 0.);
+		params.set(ClusterMetrics.DB, Double.POSITIVE_INFINITY);
+		params.set(ClusterMetrics.VRC, 0.);
+		params.set(ClusterMetrics.CLUSTER_ARRAY, new String[0]);
+		params.set(ClusterMetrics.COUNT_ARRAY, new double[0]);
+		params.set(ClusterMetrics.SILHOUETTE_COEFFICIENT, -1.);
 		return new ClusterMetrics(params);
 	}
 }

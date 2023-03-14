@@ -5,8 +5,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.regression.AftSurvivalRegTrainBatchOp;
 import com.alibaba.alink.params.regression.AftRegPredictParams;
 import com.alibaba.alink.params.regression.AftRegTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -31,11 +29,6 @@ public class AftSurvivalRegression extends Trainer <AftSurvivalRegression, AftSu
 
 	public AftSurvivalRegression(Params params) {
 		super(params);
-	}
-
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new AftSurvivalRegTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 
 }

@@ -51,14 +51,35 @@ class TableSummary(BaseSummary):
     def standardDeviation(self, colName):
         return self.standardDeviation(colName)
 
+    def standardError(self, colName):
+        return self.standardError(colName)
+
+    def minDouble(self, colName):
+        return self.minDouble(colName)
+
+    def maxDouble(self, colName):
+        return self.maxDouble(colName)
+
     def normL2(self, colName):
         return self.normL2(colName)
 
-    def centralMoment2(self):
-        return self.centralMoment2()
+    def centralMoment2(self, colName):
+        return self.centralMoment2(colName)
 
-    def centralMoment3(self):
-        return self.centralMoment3()
+    def centralMoment3(self, colName):
+        return self.centralMoment3(colName)
+
+    def centralMoment4(self, colName):
+        return self.centralMoment4(colName)
+
+    def skewness(self, colName):
+        return self.skewness(colName)
+
+    def kurtosis(self, colName):
+        return self.kurtosis(colName)
+
+    def cv(self, colName):
+        return self.cv(colName)
 
     def numValidValue(self, colName):
         return self.numValidValue(colName)

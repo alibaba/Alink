@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.regression.GlmTrainBatchOp;
 import com.alibaba.alink.params.regression.GlmPredictParams;
 import com.alibaba.alink.params.regression.GlmTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -28,11 +26,6 @@ public class GeneralizedLinearRegression
 
 	public GeneralizedLinearRegression(Params params) {
 		super(params);
-	}
-
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new GlmTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 
 }

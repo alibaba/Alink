@@ -11,11 +11,12 @@ import org.apache.flink.util.OutputTag;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.params.dataproc.SplitParams;
 
 import java.util.Random;
@@ -26,8 +27,9 @@ import java.util.Random;
 @InputPorts(values = @PortSpec(PortType.DATA))
 @OutputPorts(values = {@PortSpec(PortType.DATA), @PortSpec(PortType.DATA)})
 @NameCn("数据拆分")
-public final class SplitStreamOp extends StreamOperator<SplitStreamOp>
-	implements SplitParams<SplitStreamOp> {
+@NameEn("Split")
+public final class SplitStreamOp extends StreamOperator <SplitStreamOp>
+	implements SplitParams <SplitStreamOp> {
 
 	private static final long serialVersionUID = 9032637631974546738L;
 

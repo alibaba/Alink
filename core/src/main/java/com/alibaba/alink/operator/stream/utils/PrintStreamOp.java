@@ -14,13 +14,13 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 
@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 @InputPorts(values = {@PortSpec(PortType.ANY)})
 @OutputPorts()
 @NameCn("流式数据打印")
+@NameEn("Print")
 public class PrintStreamOp extends StreamOperator <PrintStreamOp> {
 	@NameCn("刷新间隔")
 	@DescCn("输出的刷新间隔")

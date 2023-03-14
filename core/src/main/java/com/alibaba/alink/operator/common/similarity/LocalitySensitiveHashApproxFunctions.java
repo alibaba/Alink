@@ -13,7 +13,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.similarity.lsh.BaseLSH;
 import com.alibaba.alink.operator.common.similarity.lsh.BucketRandomProjectionLSH;
 import com.alibaba.alink.operator.common.similarity.lsh.MinHashLSH;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.shared.HasMLEnvironmentId;
 import com.alibaba.alink.params.similarity.VectorApproxNearestNeighborTrainParams;

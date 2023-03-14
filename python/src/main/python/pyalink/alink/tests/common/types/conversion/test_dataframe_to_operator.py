@@ -60,11 +60,11 @@ class TestDataFrame(unittest.TestCase):
         df2 = op.collectToDataframe()
         print(df2)
         print(df2.dtypes)
-        self.assertEqual(df2['f_string'].dtype, pd.StringDtype())
-        self.assertEqual(df2['f_long'].dtype, pd.Int64Dtype())
-        self.assertEqual(df2['f_int'].dtype, pd.Int32Dtype())
+        self.assertEqual(df2['f_string'].dtype, np.object)
+        self.assertEqual(type(df2['f_long'].dtype), pd.Int64Dtype)
+        self.assertEqual(type(df2['f_int'].dtype), pd.Int32Dtype)
         self.assertEqual(df2['f_double'].dtype, np.float64)
-        self.assertEqual(df2['f_boolean'].dtype, pd.BooleanDtype())
+        self.assertEqual(df2['f_boolean'].dtype, np.object)
 
     def test_memory(self):
         from pyalink.alink.config import g_config
@@ -89,11 +89,11 @@ class TestDataFrame(unittest.TestCase):
         df2 = op.collectToDataframe()
         print(df2)
         print(df2.dtypes)
-        self.assertEqual(df2['f_string'].dtype, pd.StringDtype())
-        self.assertEqual(df2['f_long'].dtype, pd.Int64Dtype())
-        self.assertEqual(df2['f_int'].dtype, pd.Int32Dtype())
+        self.assertEqual(df2['f_string'].dtype, np.object)
+        self.assertEqual(type(df2['f_long'].dtype), pd.Int64Dtype)
+        self.assertEqual(type(df2['f_int'].dtype), pd.Int32Dtype)
         self.assertEqual(df2['f_double'].dtype, np.float64)
-        self.assertEqual(df2['f_boolean'].dtype, pd.BooleanDtype())
+        self.assertEqual(df2['f_boolean'].dtype, np.bool)
 
     def test_string_not_converted_to_double(self):
         data = np.array([

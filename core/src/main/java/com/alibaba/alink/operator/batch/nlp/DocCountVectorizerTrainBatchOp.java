@@ -15,6 +15,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -30,6 +31,7 @@ import com.alibaba.alink.operator.common.nlp.DocWordSplitCount;
 import com.alibaba.alink.operator.common.nlp.NLPConstant;
 import com.alibaba.alink.params.nlp.DocCountVectorizerTrainParams;
 import com.alibaba.alink.params.nlp.DocHashCountVectorizerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +46,8 @@ import static com.alibaba.alink.operator.common.nlp.WordCountUtil.localSort;
 @OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("文本特征生成训练")
+@NameEn("Doc Count Vectorizer Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.nlp.DocCountVectorizer")
 public final class DocCountVectorizerTrainBatchOp extends BatchOperator <DocCountVectorizerTrainBatchOp>
 	implements DocCountVectorizerTrainParams <DocCountVectorizerTrainBatchOp> {
 	private static final String WORD_COL_NAME = "word";

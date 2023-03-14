@@ -18,6 +18,7 @@ import com.alibaba.alink.operator.stream.sink.CollectSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
 import com.alibaba.alink.params.outlier.DbscanDetectorParams;
 import com.alibaba.alink.params.outlier.OutlierDetectorParams;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
-public class DbscanOutlierTest {
+public class DbscanOutlierTest extends AlinkTestBase {
 	String testCsv2D = "https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/contamination.csv";
 	String schemaStr2D = "id int, f0 double, f1 double, label string";
 	List <Row> testDf = Arrays.asList(
@@ -94,8 +95,8 @@ public class DbscanOutlierTest {
 			);
 		CollectSinkStreamOp sink = new CollectSinkStreamOp().linkFrom(outlier);
 		StreamOperator.execute();
-		List<Row> result = sink.getAndRemoveValues();
-		Assert.assertEquals(result.size(),testDf.size());
+		List <Row> result = sink.getAndRemoveValues();
+		Assert.assertEquals(result.size(), testDf.size());
 	}
 
 	@Test

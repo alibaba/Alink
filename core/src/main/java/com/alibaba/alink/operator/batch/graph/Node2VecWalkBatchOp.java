@@ -20,6 +20,7 @@ import org.apache.flink.util.NumberSequenceIterator;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -80,6 +81,7 @@ import java.util.Random;
 @ParamSelectColumnSpec(name = "targetCol", portIndices = 0, allowedTypeCollections = {TypeCollections.INT_LONG_TYPES, TypeCollections.STRING_TYPES})
 @ParamSelectColumnSpec(name = "weightCol", portIndices = 0, allowedTypeCollections = {TypeCollections.NUMERIC_TYPES})
 @NameCn("Node2Vec游走")
+@NameEn("Node2Vec Walk")
 public final class Node2VecWalkBatchOp extends BatchOperator <Node2VecWalkBatchOp>
 	implements Node2VecWalkParams <Node2VecWalkBatchOp> {
 

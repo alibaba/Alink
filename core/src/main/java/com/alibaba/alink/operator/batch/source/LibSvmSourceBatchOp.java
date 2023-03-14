@@ -8,11 +8,12 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.linalg.Vector;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.local.source.LibSvmSourceLocalOp;
 import com.alibaba.alink.params.io.LibSvmSourceParams;
@@ -22,6 +23,7 @@ import com.alibaba.alink.params.io.LibSvmSourceParams;
  */
 @IoOpAnnotation(name = "libsvm", ioType = IOType.SourceBatch)
 @NameCn("LibSvm文件读入")
+@NameEn("LibSvm Source")
 public final class LibSvmSourceBatchOp extends BaseSourceBatchOp <LibSvmSourceBatchOp>
 	implements LibSvmSourceParams <LibSvmSourceBatchOp> {
 

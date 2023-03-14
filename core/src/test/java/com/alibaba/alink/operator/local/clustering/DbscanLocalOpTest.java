@@ -7,12 +7,14 @@ import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
 import com.alibaba.alink.params.shared.clustering.HasFastMetric.Metric;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
 
-public class DbscanLocalOpTest {
+//public class DbscanLocalOpTest extends AlinkTestBase {
+public class DbscanLocalOpTest{
 	@Test
 	public void test1() {
 		int sampleNum = 1000;

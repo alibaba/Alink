@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.tensorflow;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.classification.tensorflow.TFTableModelClassificationModelMapper;
@@ -16,6 +17,7 @@ import com.alibaba.alink.params.tensorflow.savedmodel.TFTableModelPredictParams;
  */
 @ParamSelectColumnSpec(name = "selectedCols")
 @NameCn("TF表模型预测")
+@NameEn("TF Table Model Prediction")
 public final class TFTableModelPredictStreamOp extends ModelMapStreamOp <TFTableModelPredictStreamOp>
 	implements TFTableModelPredictParams <TFTableModelPredictStreamOp> {
 

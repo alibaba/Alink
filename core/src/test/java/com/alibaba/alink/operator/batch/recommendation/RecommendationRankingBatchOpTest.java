@@ -13,13 +13,14 @@ import com.alibaba.alink.pipeline.dataproc.JsonValue;
 import com.alibaba.alink.pipeline.dataproc.vector.VectorAssembler;
 import com.alibaba.alink.pipeline.feature.MultiHotEncoder;
 import com.alibaba.alink.pipeline.feature.OneHotEncoder;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class RecommendationRankingBatchOpTest {
+public class RecommendationRankingBatchOpTest extends AlinkTestBase {
 	@Test
 	public void test() throws Exception {
 

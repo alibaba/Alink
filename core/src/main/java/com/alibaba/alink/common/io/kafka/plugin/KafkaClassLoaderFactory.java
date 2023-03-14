@@ -9,6 +9,7 @@ import com.alibaba.alink.common.io.plugin.PluginDescriptor;
 import com.alibaba.alink.common.io.plugin.PluginDistributeCache;
 import com.alibaba.alink.common.io.plugin.RegisterKey;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
+import com.alibaba.alink.operator.stream.sink.KafkaSourceSinkFactory;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;

@@ -13,14 +13,15 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.DataSetUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
@@ -44,6 +45,7 @@ import static com.alibaba.alink.operator.common.evaluation.EvaluationUtil.getTim
 @ParamSelectColumnSpec(name = "labelCol")
 @ParamSelectColumnSpec(name = "predictionCol")
 @NameCn("时间序列评估")
+@NameEn("Eval Time Series")
 public final class EvalTimeSeriesBatchOp extends BatchOperator <EvalTimeSeriesBatchOp>
 	implements EvalTimeSeriesParams <EvalTimeSeriesBatchOp>,
 	EvaluationMetricsCollector <TimeSeriesMetrics, EvalTimeSeriesBatchOp> {

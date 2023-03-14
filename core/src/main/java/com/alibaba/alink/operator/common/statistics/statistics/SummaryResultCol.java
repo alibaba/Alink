@@ -5,7 +5,7 @@ import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.common.viz.plot.Histogram;
 import com.alibaba.alink.common.viz.plot.StackedBar;
-import com.alibaba.alink.operator.common.statistics.StatisticUtil;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -166,56 +166,24 @@ public class SummaryResultCol implements Serializable, Cloneable {
 			return src1;
 		}
 
-		Object minValue = null;
-		Object maxValue = null;
-		if (src1.count == 0) {
-			minValue = src2.min;
-			maxValue = src2.max;
-		} else if (src2.count == 0) {
-			minValue = src1.min;
-			maxValue = src1.max;
+		Object minValue;
+		if (null == src1.min || null == src2.min) {
+			minValue = (null == src1.min) ? src2.min : src1.min;
+		} else if (src1.min instanceof Comparable) {
+			minValue = ((Comparable) src1.min).compareTo((Comparable) src2.min) < 0 ? src1.min : src2.min;
 		} else {
-			if (src1.dataType == Double.class) {
-				minValue = (Double) (src1.min) < (Double) (src2.min) ? src1.min : src2.min;
-				maxValue = (Double) (src1.max) > (Double) (src2.max) ? src1.max : src2.max;
-			} else if (src1.dataType == Float.class) {
-				minValue = (Float) (src1.min) < (Float) (src2.min) ? src1.min : src2.min;
-				maxValue = (Float) (src1.max) > (Float) (src2.max) ? src1.max : src2.max;
-			} else if (src1.dataType == Long.class) {
-				minValue = (Long) (src1.min) < (Long) (src2.min) ? src1.min : src2.min;
-				maxValue = (Long) (src1.max) > (Long) (src2.max) ? src1.max : src2.max;
-			} else if (src1.dataType == Short.class) {
-				minValue = (Short) (src1.min) < (Short) (src2.min) ? src1.min : src2.min;
-				maxValue = (Short) (src1.max) > (Short) (src2.max) ? src1.max : src2.max;
-			} else if (src1.dataType == Byte.class) {
-				minValue = (Byte) (src1.min) < (Byte) (src2.min) ? src1.min : src2.min;
-				maxValue = (Byte) (src1.max) > (Byte) (src2.max) ? src1.max : src2.max;
-			} else if (src1.dataType == Integer.class) {
-				minValue = (Integer) (src1.min) < (Integer) (src2.min) ? src1.min : src2.min;
-				maxValue = (Integer) (src1.max) > (Integer) (src2.max) ? src1.max : src2.max;
-			} else if (src1.dataType == String.class) {
-
-			} else if (src1.dataType == Boolean.class) {
-				if ((Boolean) src1.min == false || (Boolean) src2.min == false) {
-					minValue = false;
-				} else {
-					minValue = (Boolean) src1.min;
-				}
-
-				if ((Boolean) src1.max == true || (Boolean) src2.max == true) {
-					maxValue = true;
-				} else {
-					maxValue = (Boolean) src1.max;
-				}
-			} else if (src1.dataType == java.sql.Timestamp.class) {
-				minValue = (Long) src1.min < (Long) src2.min ? src1.min : src2.min;
-				maxValue = (Long) src1.max > (Long) src2.max ? src1.max : src2.max;
-			} else {
-				throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
-					src1.dataType.getSimpleName()));
-			}
-
+			minValue = null;
 		}
+
+		Object maxValue;
+		if (null == src1.max || null == src2.max) {
+			maxValue = (null == src1.max) ? src2.max : src1.max;
+		} else if (src1.min instanceof Comparable) {
+			maxValue = ((Comparable) src1.max).compareTo((Comparable) src2.max) > 0 ? src1.max : src2.max;
+		} else {
+			maxValue = null;
+		}
+
 		SummaryResultCol src = new SummaryResultCol();
 		src.init(src1.dataType,
 			src1.countTotal + src2.countTotal,
@@ -239,21 +207,21 @@ public class SummaryResultCol implements Serializable, Cloneable {
 			int k = Math.min(src1.topItems.length, src2.topItems.length);
 			src.topItems = new Object[k];
 			for (int i = 0, j = 0; i + j < k; ) {
-				boolean b;
-				if (Double.class == src.dataType) {
-					b = (Double) (src1.topItems[i]) >= (Double) (src2.topItems[j]);
-				} else if (Integer.class == src.dataType) {
-					b = (Integer) (src1.topItems[i]) >= (Integer) (src2.topItems[j]);
-				} else if (Long.class == src.dataType || java.sql.Timestamp.class == src.dataType) {
-					b = (Long) (src1.topItems[i]) >= (Long) (src2.topItems[j]);
-				} else if (Float.class == src.dataType) {
-					b = (Float) (src1.topItems[i]) >= (Float) (src2.topItems[j]);
-				} else if (Boolean.class == src.dataType) {
-					b = convertBoolean((Boolean) (src1.topItems[i])) >= convertBoolean((Boolean) (src2.topItems[j]));
-				} else {
-					throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
-						src.dataType.getSimpleName()));
-				}
+				boolean b = ((Comparable) (src1.topItems[i])).compareTo(src2.topItems[j]) >= 0;
+				//if (Double.class == src.dataType) {
+				//	b = (Double) (src1.topItems[i]) >= (Double) (src2.topItems[j]);
+				//} else if (Integer.class == src.dataType) {
+				//	b = (Integer) (src1.topItems[i]) >= (Integer) (src2.topItems[j]);
+				//} else if (Long.class == src.dataType || java.sql.Timestamp.class == src.dataType) {
+				//	b = (Long) (src1.topItems[i]) >= (Long) (src2.topItems[j]);
+				//} else if (Float.class == src.dataType) {
+				//	b = (Float) (src1.topItems[i]) >= (Float) (src2.topItems[j]);
+				//} else if (Boolean.class == src.dataType) {
+				//	b = convertBoolean((Boolean) (src1.topItems[i])) >= convertBoolean((Boolean) (src2.topItems[j]));
+				//} else {
+				//	throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
+				//		src.dataType.getSimpleName()));
+				//}
 				if (b) {
 					src.topItems[i + j] = src1.topItems[i];
 					i++;
@@ -270,21 +238,21 @@ public class SummaryResultCol implements Serializable, Cloneable {
 			int k = Math.min(src1.bottomItems.length, src2.bottomItems.length);
 			src.bottomItems = new Object[k];
 			for (int i = 0, j = 0; i + j < k; ) {
-				boolean b;
-				if (Double.class == src.dataType) {
-					b = (Double) (src1.bottomItems[i]) <= (Double) (src2.bottomItems[j]);
-				} else if (Integer.class == src.dataType) {
-					b = (Integer) (src1.bottomItems[i]) <= (Integer) (src2.bottomItems[j]);
-				} else if (Long.class == src.dataType || java.sql.Timestamp.class == src.dataType) {
-					b = (Long) (src1.bottomItems[i]) <= (Long) (src2.bottomItems[j]);
-				} else if (Float.class == src.dataType) {
-					b = (Float) (src1.bottomItems[i]) <= (Float) (src2.bottomItems[j]);
-				} else if (Boolean.class == src.dataType) {
-					b = convertBoolean((Boolean) (src1.topItems[i])) <= convertBoolean((Boolean) (src2.topItems[j]));
-				} else {
-					throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
-						src1.dataType.getSimpleName()));
-				}
+				boolean b = ((Comparable) src1.bottomItems[i]).compareTo(src2.bottomItems[j]) <= 0;
+				//if (Double.class == src.dataType) {
+				//	b = (Double) (src1.bottomItems[i]) <= (Double) (src2.bottomItems[j]);
+				//} else if (Integer.class == src.dataType) {
+				//	b = (Integer) (src1.bottomItems[i]) <= (Integer) (src2.bottomItems[j]);
+				//} else if (Long.class == src.dataType || java.sql.Timestamp.class == src.dataType) {
+				//	b = (Long) (src1.bottomItems[i]) <= (Long) (src2.bottomItems[j]);
+				//} else if (Float.class == src.dataType) {
+				//	b = (Float) (src1.bottomItems[i]) <= (Float) (src2.bottomItems[j]);
+				//} else if (Boolean.class == src.dataType) {
+				//	b = convertBoolean((Boolean) (src1.topItems[i])) <= convertBoolean((Boolean) (src2.topItems[j]));
+				//} else {
+				//	throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
+				//		src1.dataType.getSimpleName()));
+				//}
 				if (b) {
 					src.bottomItems[i + j] = src1.bottomItems[i];
 					i++;
@@ -375,10 +343,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	public double minDouble() {
 		//        return FileJsonUtil.getDoubleValue(min, this.colType);
 		if (count == 0) {
-			return 0;
-		}
-		if (min == null) {
-			System.out.println();
+			return Double.NaN;
 		}
 		return StatisticUtil.getDoubleValue(min);
 	}
@@ -390,7 +355,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	public double maxDouble() {
 		//        return FileJsonUtil.getDoubleValue(max, this.colType);
 		if (count == 0) {
-			return 0;
+			return Double.NaN;
 		}
 		return StatisticUtil.getDoubleValue(max);
 	}
@@ -400,7 +365,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 极差所对应的双精度浮点值
 	 */
 	public double rangeDouble() {
-		if (dataType == String.class || dataType == Date.class) {
+		if (dataType == Date.class) {
 			return 0;
 		}
 		return maxDouble() - minDouble();
@@ -411,10 +376,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 最小值
 	 */
 	public Object min() {
-		if (dataType == String.class) {
-			return 0;
-		}
-		return this.min;
+		return (0 == count) ? null : this.min;
 	}
 
 	/**
@@ -422,10 +384,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 最大值
 	 */
 	public Object max() {
-		if (dataType == String.class) {
-			return 0;
-		}
-		return this.max;
+		return (0 == count) ? null : this.max;
 	}
 
 	/**
@@ -435,7 +394,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * @return
 	 */
 	public Object range() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class) {
+		if (dataType == java.sql.Timestamp.class) {
 			return 0;
 		}
 		if (0 == this.count) {
@@ -451,6 +410,8 @@ public class SummaryResultCol implements Serializable, Cloneable {
 			return (Float) (max) - (Float) (min);
 		} else if (Boolean.class == this.dataType) {
 			return maxDouble() - minDouble();
+		} else if (String.class == this.dataType) {
+			return (Integer) (max) - (Integer) (min);
 		} else {
 			throw new AkUnsupportedOperationException(String.format("type [%s] not support.",
 				this.dataType.getSimpleName()));
@@ -462,7 +423,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 均值
 	 */
 	public double mean() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class) {
+		if (dataType == java.sql.Timestamp.class) {
 			return 0;
 		}
 		if (count == 0) {
@@ -477,7 +438,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 方差
 	 */
 	public double variance() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class) {
+		if (dataType == java.sql.Timestamp.class) {
 			return 0.0;
 		}
 		if (count == 0) {
@@ -495,7 +456,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 标准差
 	 */
 	public double standardDeviation() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class) {
+		if (dataType == java.sql.Timestamp.class) {
 			return 0.0;
 		}
 		return Math.sqrt(variance());
@@ -506,7 +467,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 变异系数 Coefficient of Variation
 	 */
 	public double cv() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		return standardDeviation() / mean();
@@ -517,7 +478,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 标准误
 	 */
 	public double standardError() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		return standardDeviation() / Math.sqrt(count);
@@ -528,7 +489,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 偏度Skewness
 	 */
 	public double skewness() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		if (count == 0) {
@@ -549,7 +510,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 峰度Kurtosis
 	 */
 	public double kurtosis() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		if (count == 0) {
@@ -570,7 +531,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 2阶原点矩
 	 */
 	public double moment2() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		if (count == 0) {
@@ -590,7 +551,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 3阶原点矩
 	 */
 	public double moment3() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		if (count == 0) {
@@ -605,7 +566,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 4阶原点矩
 	 */
 	public double moment4() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		if (count == 0) {
@@ -619,7 +580,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 2阶中心矩
 	 */
 	public double centralMoment2() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		if (1 == count || 0 == count || max.equals(min)) {
@@ -634,7 +595,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 3阶中心矩
 	 */
 	public double centralMoment3() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		if (1 == count || 0 == count || max.equals(min)) {
@@ -652,7 +613,7 @@ public class SummaryResultCol implements Serializable, Cloneable {
 	 * 4阶中心矩
 	 */
 	public double centralMoment4() {
-		if (dataType == String.class || dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
+		if (dataType == java.sql.Timestamp.class || dataType == Boolean.class) {
 			return 0.0;
 		}
 		if (1 == count || 0 == count || max.equals(min)) {
@@ -871,9 +832,10 @@ public class SummaryResultCol implements Serializable, Cloneable {
 		return gson.toJson(histos);
 	}
 
-	void init(Class dataType, long countTotal, long count, long countMissValue, long countNanValue,
-			  long countPositiveInfinity, long countNegativInfinity, long countZero,
-			  double sum, double absSum, double sum2, double sum3, double sum4, Object minValue, Object maxValue) {
+	public void init(Class dataType, long countTotal, long count, long countMissValue, long countNanValue,
+					 long countPositiveInfinity, long countNegativInfinity, long countZero,
+					 double sum, double absSum, double sum2, double sum3, double sum4, Object minValue,
+					 Object maxValue) {
 		this.dataType = dataType;
 		if (countTotal != count + countMissValue + countNanValue + countPositiveInfinity + countNegativInfinity) {
 			throw new AkIllegalStateException("");

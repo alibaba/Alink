@@ -4,6 +4,7 @@ import org.apache.flink.table.api.Table;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -17,6 +18,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 @InputPorts()
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @NameCn("Table数据读入")
+@NameEn("Table Source")
 public final class TableSourceBatchOp extends BatchOperator <TableSourceBatchOp> {
 
 	private static final long serialVersionUID = -5220231513565199001L;

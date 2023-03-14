@@ -5,7 +5,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.dl.coding.ExampleCodingConfigV2;
 import com.alibaba.alink.common.dl.coding.ExampleCodingV2;
 import com.alibaba.alink.common.dl.data.DataTypesV2;

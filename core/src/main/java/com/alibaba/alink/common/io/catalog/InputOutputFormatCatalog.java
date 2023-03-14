@@ -14,9 +14,9 @@ import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 
 public abstract class InputOutputFormatCatalog extends BaseCatalog {
 	public InputOutputFormatCatalog(Params params) {

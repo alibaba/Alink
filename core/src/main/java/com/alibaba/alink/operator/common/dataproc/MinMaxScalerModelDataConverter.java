@@ -67,8 +67,8 @@ public class MinMaxScalerModelDataConverter extends RichModelDataConverter <
 		double[] eMins = new double[colNames.length];
 
 		for (int i = 0; i < colNames.length; i++) {
-			eMaxs[i] = summary.max(colNames[i]);
-			eMins[i] = summary.min(colNames[i]);
+			eMaxs[i] = summary.maxDouble(colNames[i]);
+			eMins[i] = summary.minDouble(colNames[i]);
 		}
 
 		List <String> data = new ArrayList <>();

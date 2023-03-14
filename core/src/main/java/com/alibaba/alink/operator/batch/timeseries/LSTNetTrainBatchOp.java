@@ -8,9 +8,11 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamCond;
 import com.alibaba.alink.common.annotation.ParamCond.CondType;
@@ -58,6 +60,7 @@ import java.util.Map;
 	)
 )
 @NameCn("LSTNet训练")
+@NameEn("LSTNet Training")
 public class LSTNetTrainBatchOp extends BatchOperator <LSTNetTrainBatchOp>
 	implements LSTNetTrainParams <LSTNetTrainBatchOp> {
 
@@ -102,6 +105,7 @@ public class LSTNetTrainBatchOp extends BatchOperator <LSTNetTrainBatchOp>
 		return this;
 	}
 
+	@Internal
 	private static class LSTNetPreProcessBatchOp extends BatchOperator <LSTNetPreProcessBatchOp>
 		implements LSTNetPreProcessParams <LSTNetPreProcessBatchOp> {
 

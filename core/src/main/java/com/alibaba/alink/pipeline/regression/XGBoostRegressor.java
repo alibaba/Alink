@@ -24,8 +24,4 @@ public class XGBoostRegressor extends Trainer <XGBoostRegressor, XGBoostRegressi
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new XGBoostRegTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

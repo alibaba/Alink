@@ -10,6 +10,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -31,6 +32,7 @@ import com.alibaba.alink.params.nlp.TfIdfParams;
 @ParamSelectColumnSpec(name = "countCol", allowedTypeCollections = TypeCollections.LONG_TYPES)
 @ParamSelectColumnSpec(name = "docIdCol")
 @NameCn("TF-IDF")
+@NameEn("Tfidf")
 public final class TfidfBatchOp extends BatchOperator <TfidfBatchOp>
 	implements TfIdfParams <TfidfBatchOp> {
 

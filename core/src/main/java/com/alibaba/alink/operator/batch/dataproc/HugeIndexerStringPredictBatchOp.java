@@ -19,6 +19,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -47,7 +48,8 @@ import java.util.Comparator;
 @ParamSelectColumnSpec(name = "selectedCols",
 	allowedTypeCollections = TypeCollections.LONG_TYPES)
 @ReservedColsWithFirstInputSpec
-@NameCn("并行ID化预测")
+@NameCn("超大ID化预测")
+@NameEn("Huge Indexer String Prediction")
 public final class HugeIndexerStringPredictBatchOp
 	extends BatchOperator <HugeIndexerStringPredictBatchOp>
 	implements HugeMultiStringIndexerPredictParams<HugeIndexerStringPredictBatchOp> {

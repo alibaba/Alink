@@ -9,6 +9,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MTableUtil;
 import com.alibaba.alink.common.MTableUtil.GroupFunction;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
 import com.alibaba.alink.common.io.filesystem.BaseFileSystem;
 import com.alibaba.alink.common.io.filesystem.FilePath;
@@ -110,10 +111,9 @@ public class LocalUtils {
 							)
 						);
 					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					throw new RuntimeException(ex.toString());
-				}
+				} catch (IOException e) {
+					throw new AkIllegalDataException("Fail to create partition directories or write files.",e);
+				} 
 			}
 		});
 

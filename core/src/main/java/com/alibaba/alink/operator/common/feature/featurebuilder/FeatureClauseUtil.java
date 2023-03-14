@@ -5,7 +5,7 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
-import com.alibaba.alink.common.sql.builtin.BuildInAggRegister;
+import com.alibaba.alink.common.sql.builtin.BuiltInAggRegister;
 import com.alibaba.alink.common.sql.builtin.UdafName;
 import com.alibaba.alink.common.sql.builtin.agg.MTableAgg;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -23,10 +23,15 @@ public class FeatureClauseUtil {
 	private static final String ERROR_MESSAGE = "expressions must op(incol) as outcol, eg, sum(f1) as outf1.";
 
 	public static FeatureClause[] extractFeatureClauses(String exprStr) {
+		return extractFeatureClauses(exprStr, null, null);
+	}
+
+	public static FeatureClause[] extractFeatureClauses(String exprStr, TableSchema tableSchema, String timeCol) {
 		if (exprStr == null || exprStr.isEmpty()) {
 			throw new AkIllegalOperatorParameterException("expressions must be set");
 		}
 		String[] clauses = splitClause(exprStr);
+
 		FeatureClause[] featureClauses = new FeatureClause[clauses.length];
 		for (int i = 0; i < clauses.length; i++) {
 			String[] opAndResCol = trimArray(clauses[i].split(" (?i)as "));
@@ -39,8 +44,16 @@ public class FeatureClauseUtil {
 			if (opAndInput.length != 2) {
 				throw new AkIllegalOperatorParameterException(ERROR_MESSAGE);
 			}
+
+			String funcName = opAndInput[0].trim().toUpperCase();
 			featureClause.op = FeatureClauseOperator
 				.valueOf(opAndInput[0].trim().toUpperCase());
+			if (funcName.equals("MTABLE_AGG")) {
+				featureClause.op.calc = new MTableAgg(false,
+					getMTableSchema(clauses[i], tableSchema), timeCol);
+
+				//featureClause.op.calc.createAccumulatorAndSet();
+			}
 			String[] inputContent = opAndInput[1].split("\\)");
 			if (inputContent.length != 0) {
 				if (inputContent.length != 1) {
@@ -54,8 +67,8 @@ public class FeatureClauseUtil {
 					for (int j = 1; j < inputColAndParams.length; j++) {
 						String temp = inputColAndParams[j].trim();
 						int tempSize = temp.length();
-						if (temp.charAt(0) == "\"" .charAt(0) && temp.charAt(tempSize - 1) == "\"" .charAt(0) ||
-							temp.charAt(0) == "\'" .charAt(0) && temp.charAt(tempSize - 1) == "\'" .charAt(0)) {
+						if (temp.charAt(0) == "\"".charAt(0) && temp.charAt(tempSize - 1) == "\"".charAt(0) ||
+							temp.charAt(0) == "\'".charAt(0) && temp.charAt(tempSize - 1) == "\'".charAt(0)) {
 							featureClause.inputParams[j - 1] = inputColAndParams[j].trim().substring(1, tempSize - 1);
 						} else {
 							featureClause.inputParams[j - 1] = inputColAndParams[j].trim();
@@ -105,9 +118,8 @@ public class FeatureClauseUtil {
 
 	static {
 		aggHideTimeCol.add(UdafName.LAST_DISTINCT.name);
-		aggHideTimeCol.add(UdafName.LAST_DISTINCT.name + BuildInAggRegister.CONSIDER_NULL_EXTEND);
-		aggHideTimeCol.add(UdafName.LAST_VALUE.name);
-		aggHideTimeCol.add(UdafName.LAST_VALUE.name + BuildInAggRegister.CONSIDER_NULL_EXTEND);
+		aggHideTimeCol.add(UdafName.LAST_DISTINCT.name + BuiltInAggRegister.CONSIDER_NULL_EXTEND);
+		aggHideTimeCol.add(UdafName.LAST_VALUE_CONSIDER_NULL.name);
 		aggHideTimeCol.add(UdafName.SUM_LAST.name);
 
 		groupWindowTimeCol.add("TUMBLE_START");
@@ -290,6 +302,7 @@ public class FeatureClauseUtil {
 		} else if (operatorFunc[clauseIndex].startsWith("MTABLE_AGG")) {
 			operators[clauseIndex] = registMTableAgg(operator, operatorFunc[clauseIndex], env, tableSchema, timeCol);
 		} else if (operatorFunc[clauseIndex].equals("LAST_VALUE")) {
+			//last value name is last_value_impl, so need transform name.
 			String[] components = operator.split("\\(");
 			String[] components2 = components[1].split("\\)");
 			operators[clauseIndex] = UdafName.LAST_VALUE.name + "(" +
@@ -303,7 +316,7 @@ public class FeatureClauseUtil {
 										 MLEnvironment mlEnv, TableSchema tableSchema, String timeCol) {
 		String aggName = "mtable_agg_" + UUID.randomUUID().toString().replace("-", "");
 
-		if ("MTABLE_AGG" .equals(operatorFunc)) {
+		if ("MTABLE_AGG".equals(operatorFunc)) {
 			mlEnv.getStreamTableEnvironment().registerFunction(aggName,
 				new MTableAgg(false, getMTableSchema(clause, tableSchema), timeCol));
 		} else {

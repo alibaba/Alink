@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.nlp.Word2VecTrainBatchOp;
 import com.alibaba.alink.params.nlp.Word2VecPredictParams;
 import com.alibaba.alink.params.nlp.Word2VecTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -34,8 +32,4 @@ public class Word2Vec extends Trainer <Word2Vec, Word2VecModel>
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new Word2VecTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

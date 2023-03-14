@@ -28,6 +28,7 @@ import org.apache.flink.util.Collector;
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DataBridge;
@@ -43,7 +44,7 @@ import com.alibaba.alink.operator.common.linear.LabelTypeEnum.StringTypeEnum;
 import com.alibaba.alink.operator.common.linear.LinearModelData;
 import com.alibaba.alink.operator.common.linear.LinearModelDataConverter;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
+import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
 import com.alibaba.alink.params.onlinelearning.FtrlTrainParams;
@@ -58,6 +59,7 @@ import java.util.Map;
  * Stream train operation of ftrl Algorithm.
  */
 @NameCn("Ftrl在线训练")
+@NameEn("Follow the regularized leader model training")
 public class FtrlTrainStreamOp extends StreamOperator <FtrlTrainStreamOp>
 	implements FtrlTrainParams <FtrlTrainStreamOp> {
 

@@ -3,7 +3,7 @@ package com.alibaba.alink.operator.batch.recommendation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.lazy.ExtractModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 import com.alibaba.alink.operator.common.recommendation.UserCfModelInfo;
 
 import java.util.List;

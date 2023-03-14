@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.regression;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansModelMapper;
 import com.alibaba.alink.operator.common.regression.GlmModelMapper;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.regression.GlmPredictParams;
  * Generalized Linear Model stream predict. https://en.wikipedia.org/wiki/Generalized_linear_model.
  */
 @NameCn("广义线性回归预测")
+@NameEn("General Linear Model Prediction")
 public class GlmPredictStreamOp extends ModelMapStreamOp <GlmPredictStreamOp>
 	implements GlmPredictParams <GlmPredictStreamOp> {
 

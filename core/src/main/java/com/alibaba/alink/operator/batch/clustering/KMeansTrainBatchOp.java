@@ -10,6 +10,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -20,7 +21,7 @@ import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -34,10 +35,11 @@ import com.alibaba.alink.operator.common.clustering.kmeans.KMeansUpdateCentroids
 import com.alibaba.alink.operator.common.distance.FastDistance;
 import com.alibaba.alink.operator.common.distance.FastDistanceMatrixData;
 import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.clustering.KMeansTrainParams;
 import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  * k-mean clustering is a method of vector quantization, originally from signal processing, that is popular for cluster
@@ -52,6 +54,8 @@ import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistance
 })
 @ParamSelectColumnSpec(name = "vectorCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
 @NameCn("K均值聚类训练")
+@NameEn("KMeans Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.clustering.KMeans")
 public final class KMeansTrainBatchOp extends BatchOperator <KMeansTrainBatchOp>
 	implements KMeansTrainParams <KMeansTrainBatchOp>,
 	WithModelInfoBatchOp <KMeansModelInfoBatchOp.KMeansModelInfo, KMeansTrainBatchOp, KMeansModelInfoBatchOp> {

@@ -23,11 +23,11 @@ import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.io.directreader.DirectReader;
 import com.alibaba.alink.common.mapper.ModelMapper;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.stream.model.ModelStreamUtils;
-import com.alibaba.alink.operator.common.stream.model.PredictProcess;
+import com.alibaba.alink.operator.stream.utils.PredictProcess;
 import com.alibaba.alink.operator.stream.StreamOperator;
+import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 
 /**
  */
@@ -73,7 +73,7 @@ public class BaseOnlinePredictStreamOp<T extends BaseOnlinePredictStreamOp <T>> 
 					"online algo: initial model is null. Please set a valid initial model.");
 			}
 
-			DataStream <Row> modelstr = ModelStreamUtils.broadcastStream(inputs[0].getDataStream());
+			DataStream <Row> modelstr = ModelMapStreamOp.broadcastStream(inputs[0].getDataStream());
 
 			TypeInformation<?>[] types = new TypeInformation[3];
 			String[] names = new String[3];

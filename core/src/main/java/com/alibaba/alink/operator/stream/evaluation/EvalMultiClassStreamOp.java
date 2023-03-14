@@ -3,8 +3,8 @@ package com.alibaba.alink.operator.stream.evaluation;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
-import com.alibaba.alink.operator.common.evaluation.BaseEvalClassStreamOp;
 import com.alibaba.alink.params.evaluation.EvalMultiClassStreamParams;
 
 /**
@@ -16,6 +16,7 @@ import com.alibaba.alink.params.evaluation.EvalMultiClassStreamParams;
 @ParamSelectColumnSpec(name = "labelCol")
 @ParamSelectColumnSpec(name = "predictionCol")
 @NameCn("多分类评估")
+@NameEn("Evaluation for multiple classes")
 public class EvalMultiClassStreamOp extends BaseEvalClassStreamOp <EvalMultiClassStreamOp> implements
 	EvalMultiClassStreamParams <EvalMultiClassStreamOp> {
 

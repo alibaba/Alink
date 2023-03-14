@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.dataproc.vector;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.dataproc.vector.PolynomialExpansionMapper;
@@ -16,6 +17,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorPolynomialExpandParams;
  */
 @ParamSelectColumnSpec(name = "selectedCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
 @NameCn("向量多项式展开")
+@NameEn("Vector polynomial expand")
 public final class VectorPolynomialExpandStreamOp extends MapStreamOp <VectorPolynomialExpandStreamOp>
 	implements VectorPolynomialExpandParams <VectorPolynomialExpandStreamOp> {
 

@@ -24,6 +24,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -32,7 +33,7 @@ import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.BLAS;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.MatVecOp;
@@ -46,9 +47,10 @@ import com.alibaba.alink.operator.common.clustering.BisectingKMeansModelDataConv
 import com.alibaba.alink.operator.common.dataproc.FirstReducer;
 import com.alibaba.alink.operator.common.distance.ContinuousDistance;
 import com.alibaba.alink.operator.common.distance.EuclideanDistance;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.params.clustering.BisectingKMeansTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +80,8 @@ import java.util.Set;
 @ParamSelectColumnSpec(name = "vectorCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
 
 @NameCn("二分K均值聚类训练")
+@NameEn("Bisecting KMeans Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.clustering.BisectingKMeans")
 public final class BisectingKMeansTrainBatchOp extends BatchOperator <BisectingKMeansTrainBatchOp>
 	implements BisectingKMeansTrainParams <BisectingKMeansTrainBatchOp>,
 	WithModelInfoBatchOp <BisectingKMeansModelInfoBatchOp.BisectingKMeansModelInfo,

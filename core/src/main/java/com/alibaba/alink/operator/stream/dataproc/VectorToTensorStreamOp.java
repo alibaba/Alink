@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.dataproc;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.dataproc.VectorToTensorMapper;
@@ -14,6 +15,7 @@ import com.alibaba.alink.params.dataproc.VectorToTensorParams;
  */
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量转张量")
+@NameEn("Vector to tensor")
 public class VectorToTensorStreamOp extends MapStreamOp <VectorToTensorStreamOp>
 	implements VectorToTensorParams <VectorToTensorStreamOp> {
 

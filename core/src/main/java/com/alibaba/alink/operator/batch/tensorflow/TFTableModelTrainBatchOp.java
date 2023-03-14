@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.tensorflow;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.dl.BaseDLTableModelTrainBatchOp;
 import com.alibaba.alink.common.dl.DLEnvConfig.Version;
 import com.alibaba.alink.params.tensorflow.TFTableModelTrainParams;
@@ -16,6 +17,7 @@ import java.util.Collections;
  * timestamps) is zipped and returned back to Alink side as a two-column Alink Model.
  */
 @NameCn("TF表模型训练")
+@NameEn("TF TableModel Training")
 public class TFTableModelTrainBatchOp
 	extends BaseDLTableModelTrainBatchOp <TFTableModelTrainBatchOp> implements
 	TFTableModelTrainParams <TFTableModelTrainBatchOp> {

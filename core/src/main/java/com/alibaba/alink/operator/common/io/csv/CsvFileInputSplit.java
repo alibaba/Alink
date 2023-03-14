@@ -26,6 +26,7 @@ import org.apache.flink.core.io.InputSplit;
 public class CsvFileInputSplit implements InputSplit {
 
 	private static final long serialVersionUID = -6929924752443032143L;
+
 	/**
 	 * Starting position of this split.
 	 */
@@ -63,13 +64,37 @@ public class CsvFileInputSplit implements InputSplit {
 		this.end = Long.min(start + length + BUFFER_SIZE, contentLength);
 	}
 
+	public CsvFileInputSplit(int numSplits, int splitNo, long start, long length, long end) {
+		this.numSplits = numSplits;
+		this.splitNo = splitNo;
+		this.length = length;
+		this.start = start;
+		this.end = end;
+	}
+
 	@Override
 	public String toString() {
 		return "split: " + splitNo + "/" + numSplits + ", " + start + " " + length + " " + end;
+	}
+
+	public static CsvFileInputSplit fromString(String splitStr) {
+		int slashPos = splitStr.indexOf("/");
+		int spacePosFirst = splitStr.indexOf(" ", 7);
+		int spacePosSecond = splitStr.indexOf(" ", spacePosFirst + 1);
+		int spacePosThird = splitStr.indexOf(" ", spacePosSecond + 1);
+
+		int splitNo = Integer.valueOf(splitStr.substring(7, slashPos));
+		int numSplits = Integer.valueOf(splitStr.substring(slashPos + 1, spacePosFirst-1));
+		long start = Long.valueOf(splitStr.substring(spacePosFirst + 1, spacePosSecond));
+		long len = Long.valueOf(splitStr.substring(spacePosSecond + 1, spacePosThird));
+		long end = Long.valueOf(splitStr.substring(spacePosThird + 1));
+
+		return new CsvFileInputSplit(numSplits, splitNo, start, len, end);
 	}
 
 	@Override
 	public int getSplitNumber() {
 		return this.splitNo;
 	}
+
 }
