@@ -17,7 +17,10 @@ public enum UdafName {
 	LAG("lag"),
 	LAST_DISTINCT("last_distinct"),
 	LAST_TIME("last_time"),
+
+	//last_value is conflict in blink, so last_value_impl. and transform.
 	LAST_VALUE("last_value_impl"),
+
 	LAST_VALUE_CONSIDER_NULL("last_value_including_null"),
 	LISTAGG("listagg"),
 	MODE("mode"),

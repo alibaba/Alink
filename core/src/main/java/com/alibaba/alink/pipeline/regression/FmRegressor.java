@@ -5,8 +5,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.regression.FmRegressorTrainBatchOp;
 import com.alibaba.alink.params.recommendation.FmPredictParams;
 import com.alibaba.alink.params.recommendation.FmTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -27,11 +25,6 @@ public class FmRegressor extends Trainer <FmRegressor, FmRegressionModel>
 
 	public FmRegressor(Params params) {
 		super(params);
-	}
-
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new FmRegressorTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 
 }

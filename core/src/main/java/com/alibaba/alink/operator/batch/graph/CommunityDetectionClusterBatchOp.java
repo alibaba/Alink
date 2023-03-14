@@ -19,6 +19,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -27,9 +28,8 @@ import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.graph.CommunityDetection.ClusterLabelMerger;
-import com.alibaba.alink.operator.batch.graph.CommunityDetection.ClusterMessageGroupFunction;
-import com.alibaba.alink.operator.common.graph.GraphUtils;
+import com.alibaba.alink.operator.batch.graph.CommunityDetectionClassifyBatchOp.CommunityDetection.ClusterLabelMerger;
+import com.alibaba.alink.operator.batch.graph.CommunityDetectionClassifyBatchOp.CommunityDetection.ClusterMessageGroupFunction;
 import com.alibaba.alink.params.graph.CommunityDetectionClusterParams;
 @InputPorts(values = {
 	@PortSpec(value = PortType.DATA, opType = OpType.BATCH, desc = PortDesc.GRPAH_EDGES),
@@ -42,6 +42,7 @@ import com.alibaba.alink.params.graph.CommunityDetectionClusterParams;
 @ParamSelectColumnSpec(name = "edgeTargetCol", portIndices = 0)
 @ParamSelectColumnSpec(name = "edgeWeightCol", portIndices = 0)
 @NameCn("标签传播聚类")
+@NameEn("Common Detection Cluster")
 public class CommunityDetectionClusterBatchOp extends BatchOperator <CommunityDetectionClusterBatchOp>
 	implements CommunityDetectionClusterParams <CommunityDetectionClusterBatchOp> {
 

@@ -1,7 +1,8 @@
 package com.alibaba.alink.common.io.catalog.plugin;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.table.factories.Factory;
+import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
+import org.apache.flink.table.factories.TableFactory;
 
 import com.alibaba.alink.common.io.plugin.ClassLoaderContainer;
 import com.alibaba.alink.common.io.plugin.ClassLoaderFactory;
@@ -24,13 +25,13 @@ public class OdpsClassLoaderFactory extends ClassLoaderFactory implements Serial
 		return ClassLoaderContainer
 			.getInstance()
 			.create(
-				registerKey, distributeCache, Factory.class,
+				registerKey, distributeCache, TableFactory.class,
 				new OdpsCatalogServiceFilter(registerKey),
 				new OdpsCatalogVersionGetter()
 			);
 	}
 
-	private static class OdpsCatalogServiceFilter implements Predicate <Factory> {
+	private static class OdpsCatalogServiceFilter implements Predicate <TableFactory> {
 		private final RegisterKey registerKey;
 
 		public OdpsCatalogServiceFilter(RegisterKey registerKey) {
@@ -38,8 +39,8 @@ public class OdpsClassLoaderFactory extends ClassLoaderFactory implements Serial
 		}
 
 		@Override
-		public boolean test(Factory factory) {
-			String catalogType = factory.factoryIdentifier();
+		public boolean test(TableFactory factory) {
+			String catalogType = factory.requiredContext().get(CatalogDescriptorValidator.CATALOG_TYPE);
 
 			return catalogType != null
 				&& catalogType.equalsIgnoreCase(registerKey.getName());
@@ -47,10 +48,10 @@ public class OdpsClassLoaderFactory extends ClassLoaderFactory implements Serial
 	}
 
 	private static class OdpsCatalogVersionGetter implements
-		Function <Tuple2 <Factory, PluginDescriptor>, String> {
+		Function <Tuple2 <TableFactory, PluginDescriptor>, String> {
 
 		@Override
-		public String apply(Tuple2 <Factory, PluginDescriptor> factory) {
+		public String apply(Tuple2 <TableFactory, PluginDescriptor> factory) {
 			return factory.f1.getVersion();
 		}
 	}

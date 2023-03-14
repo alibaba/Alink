@@ -30,8 +30,4 @@ public class LogisticRegressionModelInfoLocalOp
 		return new LinearClassifierModelInfo(rows);
 	}
 
-	@Override
-	protected LocalOperator <?> processModel() {
-		return this;
-	}
 }

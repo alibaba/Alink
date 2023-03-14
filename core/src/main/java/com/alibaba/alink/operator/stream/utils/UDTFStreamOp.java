@@ -1,12 +1,13 @@
 package com.alibaba.alink.operator.stream.utils;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.table.functions.TableFunction;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.ObjectUtils;
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @ParamSelectColumnSpec(name = "selectedCols")
 @NameCn("UDTF")
+@NameEn("UDTF")
 public class UDTFStreamOp extends StreamOperator <UDTFStreamOp>
 	implements UDTFParams <UDTFStreamOp> {
 

@@ -4,8 +4,12 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
-public interface HasExtendedVectorColDefaultAsNull<T> extends WithParams <T> {
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 
+public interface HasExtendedVectorColDefaultAsNull<T> extends WithParams <T> {
+	@NameCn("扩展Vector列")
+	@DescCn("扩展Vector列")
 	ParamInfo <String> EXTENDED_VECTOR_COL = ParamInfoFactory
 		.createParamInfo("extendedVectorCol", String.class)
 		.setDescription("Names of the columns used for processing")

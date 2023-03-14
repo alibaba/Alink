@@ -3,11 +3,13 @@ package com.alibaba.alink.operator.batch.outlier;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.common.outlier.BaseOutlier4GroupedDataBatchOp;
 import com.alibaba.alink.operator.common.outlier.OcsvmDetector;
 import com.alibaba.alink.params.outlier.OcsvmDetectorParams;
 
 @NameCn("One-Class SVM分组异常检测")
+@NameEn("One-Class Outlier For Grouped Data")
 public class OcsvmOutlier4GroupedDataBatchOp extends BaseOutlier4GroupedDataBatchOp <OcsvmOutlier4GroupedDataBatchOp>
 	implements OcsvmDetectorParams <OcsvmOutlier4GroupedDataBatchOp> {
 

@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.dataproc.format;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.dataproc.format.FormatType;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.dataproc.format.VectorToCsvParams;
  */
 @ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量转CSV")
+@NameEn("Vector to csv")
 public class VectorToCsvStreamOp extends BaseFormatTransStreamOp <VectorToCsvStreamOp>
 	implements VectorToCsvParams <VectorToCsvStreamOp> {
 

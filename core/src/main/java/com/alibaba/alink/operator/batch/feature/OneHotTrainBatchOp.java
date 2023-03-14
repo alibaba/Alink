@@ -20,18 +20,21 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
+import com.alibaba.alink.common.annotation.ParamsIgnoredOnWebUI;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.SelectedColsWithFirstInputSpec;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.StringIndexerUtil;
 import com.alibaba.alink.operator.common.feature.OneHotModelDataConverter;
 import com.alibaba.alink.operator.common.feature.OneHotModelInfo;
+import com.alibaba.alink.operator.common.feature.OneHotModelMapper;
 import com.alibaba.alink.operator.common.feature.binning.BinDivideType;
 import com.alibaba.alink.operator.common.feature.binning.Bins;
 import com.alibaba.alink.operator.common.feature.binning.FeatureBinsCalculator;
@@ -40,6 +43,7 @@ import com.alibaba.alink.params.dataproc.HasSelectedColTypes;
 import com.alibaba.alink.params.feature.HasEnableElse;
 import com.alibaba.alink.params.feature.OneHotTrainParams;
 import com.alibaba.alink.params.shared.colname.HasSelectedCols;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +57,10 @@ import java.util.List;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @SelectedColsWithFirstInputSpec
 @NameCn("独热编码训练")
+@NameEn("OneHot Encoder Train")
+// Designer前端不支持返回int数组，且xflow中one-hot编码没有相应参数，因此先对Designer用户屏蔽该参数
+@ParamsIgnoredOnWebUI(names = {"discreteThresholdsArray"})
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.feature.OneHotEncoder")
 public final class OneHotTrainBatchOp extends BatchOperator <OneHotTrainBatchOp>
 	implements OneHotTrainParams <OneHotTrainBatchOp>,
 	WithModelInfoBatchOp <OneHotModelInfo, OneHotTrainBatchOp, OneHotModelInfoBatchOp> {
@@ -94,7 +102,7 @@ public final class OneHotTrainBatchOp extends BatchOperator <OneHotTrainBatchOp>
 			thresholdArray = Arrays.stream(getDiscreteThresholdsArray()).mapToInt(Integer::intValue).toArray();
 		}
 
-		boolean enableElse = isEnableElse(thresholdArray);
+		boolean enableElse = OneHotModelMapper.isEnableElse(thresholdArray);
 
 		DataSet <Row> inputRows = in.select(selectedColNames).getDataSet();
 		DataSet <Tuple3 <Integer, String, Long>> countTokens = StringIndexerUtil.countTokens(inputRows, true)
@@ -152,20 +160,14 @@ public final class OneHotTrainBatchOp extends BatchOperator <OneHotTrainBatchOp>
 		return new OneHotModelInfoBatchOp(this.getParams()).linkFrom(this);
 	}
 
+
 	/**
 	 * If the thresholdArray is set and greater than 0, enableElse is true.
 	 *
 	 * @param thresholdArray thresholds for each column.
 	 * @return enableElse.
 	 */
-	private static boolean isEnableElse(int[] thresholdArray) {
-		for (int threshold : thresholdArray) {
-			if (threshold > 0) {
-				return true;
-			}
-		}
-		return false;
-	}
+
 
 	/**
 	 * Transform OneHotModel to Binning Featureborder.

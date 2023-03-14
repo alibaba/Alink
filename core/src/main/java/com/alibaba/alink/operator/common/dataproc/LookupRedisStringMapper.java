@@ -4,7 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.io.redis.Redis;
 import com.alibaba.alink.common.io.redis.RedisClassLoaderFactory;
 import com.alibaba.alink.common.mapper.SISOMapper;

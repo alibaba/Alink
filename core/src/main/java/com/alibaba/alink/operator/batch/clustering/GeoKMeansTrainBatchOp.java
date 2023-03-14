@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -24,6 +25,7 @@ import com.alibaba.alink.operator.common.distance.FastDistanceVectorData;
 import com.alibaba.alink.operator.common.distance.HaversineDistance;
 import com.alibaba.alink.params.clustering.GeoKMeansTrainParams;
 import com.alibaba.alink.params.shared.clustering.HasKMeansWithHaversineDistanceType;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import static com.alibaba.alink.operator.batch.clustering.KMeansTrainBatchOp.iterateICQ;
 import static com.alibaba.alink.operator.common.clustering.kmeans.KMeansInitCentroids.initKmeansCentroids;
@@ -38,6 +40,8 @@ import static com.alibaba.alink.operator.common.clustering.kmeans.KMeansInitCent
 @ParamSelectColumnSpec(name = "latitudeCol", portIndices = 0, allowedTypeCollections = {TypeCollections.NUMERIC_TYPES})
 @ParamSelectColumnSpec(name = "longitudeCol", portIndices = 0, allowedTypeCollections = {TypeCollections.NUMERIC_TYPES})
 @NameCn("经纬度K均值聚类训练")
+@NameEn("Geo KMeans Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.clustering.GeoKMeans")
 public final class GeoKMeansTrainBatchOp extends BatchOperator <GeoKMeansTrainBatchOp>
 	implements GeoKMeansTrainParams <GeoKMeansTrainBatchOp> {
 	private static final long serialVersionUID = 1190784726768283432L;

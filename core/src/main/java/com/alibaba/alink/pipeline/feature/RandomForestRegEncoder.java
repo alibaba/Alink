@@ -3,8 +3,6 @@ package com.alibaba.alink.pipeline.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.RandomForestTrainBatchOp;
 import com.alibaba.alink.params.feature.RandomForestRegEncoderParams;
 import com.alibaba.alink.params.regression.RandomForestRegTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -25,8 +23,4 @@ public class RandomForestRegEncoder
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new RandomForestTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

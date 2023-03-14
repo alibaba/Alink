@@ -14,6 +14,7 @@ import org.apache.flink.util.Preconditions;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -22,8 +23,8 @@ import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.graph.memory.MemoryVertexCentricIteration;
 import com.alibaba.alink.operator.batch.graph.memory.MemoryComputeFunction;
+import com.alibaba.alink.operator.batch.graph.memory.MemoryVertexCentricIteration;
 import com.alibaba.alink.params.graph.PageRankParams;
 
 import java.util.Iterator;
@@ -39,6 +40,7 @@ import java.util.Iterator;
 @ParamSelectColumnSpec(name = "edgeTargetCol", portIndices = 0)
 @ParamSelectColumnSpec(name = "edgeWeightCol", portIndices = 0)
 @NameCn("PageRank算法")
+@NameEn("PageRank")
 public class PageRankBatchOp extends BatchOperator <PageRankBatchOp>
 	implements PageRankParams <PageRankBatchOp> {
 

@@ -32,7 +32,7 @@ public class CSSMLEEstimate extends ArmaEstimate {
 				this.css = ss;
 				this.intercept = 0;
 			} else {
-				this.variance = TsMethod.computeACVF(data, 0)[0];
+				this.variance = TsMethod.acvf(data, 0)[0];
 				this.css = this.variance * data.length;
 				this.intercept = this.mean;
 			}

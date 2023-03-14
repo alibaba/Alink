@@ -6,7 +6,7 @@ import org.apache.flink.shaded.guava18.com.google.common.hash.HashFunction;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.mapper.SISOModelMapper;
 

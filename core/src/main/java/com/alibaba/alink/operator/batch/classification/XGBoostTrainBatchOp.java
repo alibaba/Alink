@@ -6,9 +6,11 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.common.tree.BaseXGBoostTrainBatchOp;
 import com.alibaba.alink.params.xgboost.XGBoostTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 @NameCn("XGBoost二分类训练")
 @NameEn("XGBoost Binary Classification Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.XGBoostClassifier")
 public final class XGBoostTrainBatchOp extends BaseXGBoostTrainBatchOp <XGBoostTrainBatchOp>
 	implements XGBoostTrainParams <XGBoostTrainBatchOp> {
 

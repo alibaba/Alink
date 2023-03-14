@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.operator.common.feature.featurebuilder.BaseGroupTimeWindowStreamOp;
 import com.alibaba.alink.operator.common.feature.featurebuilder.BaseOverWindowStreamOp;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.math.NumberUtils;
  * Stream feature builder base on over window with user-defined recent several time of data.
  */
 @NameCn("特征构造：OverTimeWindow")
+@NameEn("Over time window generator")
 public class OverTimeWindowStreamOp
 	extends BaseOverWindowStreamOp <OverTimeWindowStreamOp>
 	implements OverTimeWindowParams <OverTimeWindowStreamOp> {

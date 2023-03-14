@@ -4,10 +4,14 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.common.evaluation.TuningRegressionMetric;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasTuningRegressionMetric<T> extends WithParams <T> {
+	@NameCn("Tuning回归指标")
+	@DescCn("Tuning回归指标")
 	ParamInfo <TuningRegressionMetric> TUNING_REGRESSION_METRIC = ParamInfoFactory
 		.createParamInfo("tuningRegressionMetric", TuningRegressionMetric.class)
 		.setDescription("metric of regression evaluation in tuning")

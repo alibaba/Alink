@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
@@ -19,6 +20,7 @@ import com.alibaba.alink.params.io.RedisRowSinkParams;
 @ParamSelectColumnSpec(name = "keyCols")
 @ParamSelectColumnSpec(name = "valueCols")
 @NameCn("导出到Redis")
+@NameEn("Redis Row Sink")
 public final class RedisRowSinkStreamOp extends BaseSinkStreamOp <RedisRowSinkStreamOp>
 	implements RedisRowSinkParams <RedisRowSinkStreamOp> {
 

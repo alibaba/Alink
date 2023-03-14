@@ -42,6 +42,7 @@ import com.alibaba.alink.operator.common.classification.ann.Topology;
 import com.alibaba.alink.params.classification.MultilayerPerceptronTrainParams;
 import com.alibaba.alink.params.shared.colname.HasFeatureCols;
 import com.alibaba.alink.params.shared.colname.HasVectorCol;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +72,7 @@ import java.util.Map;
 
 @NameCn("多层感知机分类训练")
 @NameEn("Multilayer Perceptron Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.MultilayerPerceptronClassifier")
 public final class MultilayerPerceptronTrainBatchOp
         extends BatchOperator<MultilayerPerceptronTrainBatchOp>
         implements MultilayerPerceptronTrainParams<MultilayerPerceptronTrainBatchOp> {

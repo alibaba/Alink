@@ -29,7 +29,7 @@ public class AnnObjFunc extends OptimObjFunc {
 	}
 
 	@Override
-	protected double calcLoss(Tuple3 <Double, Double, Vector> labledVector, DenseVector coefVector) {
+	public double calcLoss(Tuple3 <Double, Double, Vector> labledVector, DenseVector coefVector) {
 		if (topologyModel == null) {
 			topologyModel = topology.getModel(coefVector);
 		} else {
@@ -40,7 +40,7 @@ public class AnnObjFunc extends OptimObjFunc {
 	}
 
 	@Override
-	protected void updateGradient(Tuple3 <Double, Double, Vector> labledVector, DenseVector coefVector,
+	public void updateGradient(Tuple3 <Double, Double, Vector> labledVector, DenseVector coefVector,
 								  DenseVector updateGrad) {
 		if (topologyModel == null) {
 			topologyModel = topology.getModel(coefVector);
@@ -52,7 +52,7 @@ public class AnnObjFunc extends OptimObjFunc {
 	}
 
 	@Override
-	protected void updateHessian(Tuple3 <Double, Double, Vector> labledVector, DenseVector coefVector,
+	public void updateHessian(Tuple3 <Double, Double, Vector> labledVector, DenseVector coefVector,
 								 DenseMatrix updateHessian) {
 		throw new AkUnsupportedOperationException("not supported.");
 	}

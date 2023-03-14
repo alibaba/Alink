@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.LocalMLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
 import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
@@ -11,11 +12,13 @@ import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTransformInfo;
 import com.alibaba.alink.common.lazy.LazyObjectsManager;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
-import com.alibaba.alink.common.lazy.WithTrainInfo;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithTrainInfo;
+import com.alibaba.alink.common.lazy.WithTrainInfoLocalOp;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.lazy.LocalLazyObjectsManager;
+import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.params.ModelStreamScanParams;
 
@@ -88,12 +91,12 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends MapModel <M>>
 		lazyObjectsManager.genLazyTrainOp(this).addValue(trainOp);
 		if (this instanceof HasLazyPrintTrainInfo) {
 			if (get(LAZY_PRINT_TRAIN_INFO_ENABLED)) {
-				((WithTrainInfo <?, ?>) trainOp).lazyPrintTrainInfo(get(LAZY_PRINT_TRAIN_INFO_TITLE));
+				((WithTrainInfoLocalOp <?, ?>) trainOp).lazyPrintTrainInfo(get(LAZY_PRINT_TRAIN_INFO_TITLE));
 			}
 		}
 		if (this instanceof HasLazyPrintModelInfo) {
 			if (get(LAZY_PRINT_MODEL_INFO_ENABLED)) {
-				((WithModelInfoBatchOp <?, ?, ?>) trainOp).lazyPrintModelInfo(get(LAZY_PRINT_MODEL_INFO_TITLE));
+				((WithModelInfoLocalOp <?, ?, ?>) trainOp).lazyPrintModelInfo(get(LAZY_PRINT_MODEL_INFO_TITLE));
 			}
 		}
 		return trainOp;
@@ -130,7 +133,7 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends MapModel <M>>
 
 	@Override
 	public M fit(StreamOperator <?> input) {
-		throw new AkUnsupportedOperationException("Only support batch fit!");
+		throw new AkUnsupportedOperationException("Only support batch or local fit!");
 	}
 
 	private M createModel(BatchOperator <?> model) {
@@ -169,13 +172,37 @@ public abstract class Trainer<T extends Trainer <T, M>, M extends MapModel <M>>
 		}
 	}
 
-	protected abstract BatchOperator <?> train(BatchOperator <?> in);
+	final protected BatchOperator <?> train(BatchOperator <?> in) {
+		Class <? extends BatchOperator <?>> trainerClass
+			= EstimatorTrainerCatalog.lookupBatchTrainer(this.getClass().getName());
+
+		if (null == trainerClass) {
+			throw new AkUnsupportedOperationException("Not supported yet!");
+		} else {
+			try {
+				return trainerClass.getConstructor(Params.class).newInstance(this.getParams()).linkFrom(in);
+			} catch (Exception ex) {
+				throw new AkIllegalOperationException("Error in execution of " + trainerClass.getName(), ex);
+			}
+		}
+	}
 
 	protected StreamOperator <?> train(StreamOperator <?> in) {
 		throw new AkUnsupportedOperationException("Only support batch fit!");
 	}
 
-	protected LocalOperator <?> train(LocalOperator <?> in) {
-		throw new AkUnsupportedOperationException("Not supported yet!");
+	final protected LocalOperator <?> train(LocalOperator <?> in) {
+		Class <? extends LocalOperator <?>> trainerClass
+			= EstimatorTrainerCatalog.lookupLocalTrainer(this.getClass().getName());
+
+		if (null == trainerClass) {
+			throw new AkUnsupportedOperationException("Not supported yet!");
+		} else {
+			try {
+				return trainerClass.getConstructor(Params.class).newInstance(this.getParams()).linkFrom(in);
+			} catch (Exception ex) {
+				throw new AkIllegalOperationException("Error in execution of " + trainerClass.getName(), ex);
+			}
+		}
 	}
 }

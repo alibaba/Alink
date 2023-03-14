@@ -13,14 +13,14 @@ import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
-import com.alibaba.alink.common.lazy.WithTrainInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.common.lazy.WithTrainInfoLocalOp;
 import com.alibaba.alink.operator.common.linear.LinearModelTrainInfo;
 import com.alibaba.alink.operator.common.linear.LinearModelType;
 import com.alibaba.alink.operator.common.linear.SoftmaxModelInfo;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.classification.SoftmaxTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.List;
 
@@ -47,9 +47,10 @@ import java.util.List;
 
 @NameCn("Softmax训练")
 @NameEn("Softmax Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.Softmax")
 public final class SoftmaxTrainLocalOp extends BaseLinearModelTrainLocalOp <SoftmaxTrainLocalOp>
 	implements SoftmaxTrainParams <SoftmaxTrainLocalOp>,
-	//WithTrainInfo <LinearModelTrainInfo, SoftmaxTrainLocalOp>,
+	WithTrainInfoLocalOp <LinearModelTrainInfo, SoftmaxTrainLocalOp>,
 	WithModelInfoLocalOp <SoftmaxModelInfo, SoftmaxTrainLocalOp, SoftmaxModelInfoLocalOp> {
 
 	public SoftmaxTrainLocalOp() {
@@ -65,15 +66,15 @@ public final class SoftmaxTrainLocalOp extends BaseLinearModelTrainLocalOp <Soft
 		return new SoftmaxModelInfoLocalOp(this.getParams()).linkFrom(this);
 	}
 
-	//@Override
-	//public LinearModelTrainInfo createTrainInfo(List <Row> rows) {
-	//	return new LinearModelTrainInfo(rows);
-	//}
-	//
-	//@Override
-	//public LocalOperator <?> getSideOutputTrainInfo() {
-	//	return this.getSideOutput(0);
-	//}
+	@Override
+	public LinearModelTrainInfo createTrainInfo(List <Row> rows) {
+		return new LinearModelTrainInfo(rows);
+	}
+
+	@Override
+	public LocalOperator <?> getSideOutputTrainInfo() {
+		return this.getSideOutput(0);
+	}
 }
 
 

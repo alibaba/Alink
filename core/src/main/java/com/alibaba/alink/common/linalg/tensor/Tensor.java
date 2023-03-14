@@ -1,6 +1,6 @@
 package com.alibaba.alink.common.linalg.tensor;
 
-import com.alibaba.alink.common.DataTypeDisplayInterface;
+import com.alibaba.alink.common.viz.DataTypeDisplayInterface;
 import com.alibaba.alink.common.linalg.tensor.TensorUtil.CoordInc;
 import com.alibaba.alink.operator.common.utils.PrettyDisplayUtils;
 import org.apache.commons.lang3.ArrayUtils;

@@ -6,13 +6,14 @@ import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.params.shared.HasBiFuncName.BiFuncName;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class VectorBiFunctionTest {
+public class VectorBiFunctionTest extends AlinkTestBase {
 	@Test
 	public void testBiVectorFunctionSparse() {
 		List <Row> df = new ArrayList <>();
@@ -51,9 +52,9 @@ public class VectorBiFunctionTest {
 		Assert.assertEquals(result.get(0).getField(0), VectorUtil.parseSparse("$8$1:0.0 2:0.0 4:0.0"));
 		Assert.assertEquals(result.get(0).getField(1), VectorUtil.parseSparse("$8$1:6.0 2:8.0 4:14.0"));
 		Assert.assertEquals(result.get(0).getField(2), VectorUtil.parseSparse("$8$1:9.0 2:16.0 4:49.0"));
-		Assert.assertEquals((double)result.get(0).getField(3), 74.0, 0.001);
-		Assert.assertEquals((double)result.get(0).getField(4), 0.0, 0.001);
-		Assert.assertEquals((double)result.get(0).getField(5), 1.0, 0.001);
+		Assert.assertEquals((double) result.get(0).getField(3), 74.0, 0.001);
+		Assert.assertEquals((double) result.get(0).getField(4), 0.0, 0.001);
+		Assert.assertEquals((double) result.get(0).getField(5), 1.0, 0.001);
 		Assert.assertEquals(result.get(0).getField(6),
 			VectorUtil.parseSparse("$16$1:3.0 2:4.0 4:7.0 9:3.0 10:4.0 12:7.0"));
 	}
@@ -97,9 +98,9 @@ public class VectorBiFunctionTest {
 		Assert.assertEquals(result.get(0).getField(0), VectorUtil.parseDense("-1.0 -1.0 -1.0"));
 		Assert.assertEquals(result.get(0).getField(1), VectorUtil.parseDense("3 5 7"));
 		Assert.assertEquals(result.get(0).getField(2), VectorUtil.parseDense("2 6 12"));
-		Assert.assertEquals((double)result.get(0).getField(3), 20.0, 0.001);
-		Assert.assertEquals((double)result.get(0).getField(4), Math.sqrt(3.0), 0.001);
-		Assert.assertEquals((double)result.get(0).getField(5), 0.9925833339709303, 0.001);
+		Assert.assertEquals((double) result.get(0).getField(3), 20.0, 0.001);
+		Assert.assertEquals((double) result.get(0).getField(4), Math.sqrt(3.0), 0.001);
+		Assert.assertEquals((double) result.get(0).getField(5), 0.9925833339709303, 0.001);
 		Assert.assertEquals(result.get(0).getField(6), VectorUtil.parseDense("1 2 3 2 3 4"));
 	}
 
@@ -143,10 +144,11 @@ public class VectorBiFunctionTest {
 		Assert.assertEquals(result.get(0).getField(0), VectorUtil.parseDense("-1.0 -1.0 -1.0"));
 		Assert.assertEquals(result.get(0).getField(1), VectorUtil.parseDense("3 5 7"));
 		Assert.assertEquals(result.get(0).getField(2), VectorUtil.parseDense("2 6 12"));
-		Assert.assertEquals((double)result.get(0).getField(3), 20.0, 0.001);
-		Assert.assertEquals((double)result.get(0).getField(4), Math.sqrt(3.0), 0.001);
-		Assert.assertEquals((double)result.get(0).getField(5), 0.9925833339709303, 0.001);
-		Assert.assertEquals(result.get(0).getField(6), VectorUtil.parseSparse("$6$0:1.0 1:2.0 2:3.0 3:2.0 4:3.0 5:4.0")); 
+		Assert.assertEquals((double) result.get(0).getField(3), 20.0, 0.001);
+		Assert.assertEquals((double) result.get(0).getField(4), Math.sqrt(3.0), 0.001);
+		Assert.assertEquals((double) result.get(0).getField(5), 0.9925833339709303, 0.001);
+		Assert.assertEquals(result.get(0).getField(6),
+			VectorUtil.parseSparse("$6$0:1.0 1:2.0 2:3.0 3:2.0 4:3.0 5:4.0"));
 	}
 
 	@Test
@@ -188,9 +190,10 @@ public class VectorBiFunctionTest {
 		Assert.assertEquals(result.get(0).getField(0), VectorUtil.parseDense("-1.0 -1.0 -1.0"));
 		Assert.assertEquals(result.get(0).getField(1), VectorUtil.parseDense("3 5 7"));
 		Assert.assertEquals(result.get(0).getField(2), VectorUtil.parseDense("2 6 12"));
-		Assert.assertEquals((double)result.get(0).getField(3), 20.0, 0.001);
-		Assert.assertEquals((double)result.get(0).getField(4), Math.sqrt(3.0), 0.001);
-		Assert.assertEquals((double)result.get(0).getField(5), 0.9925833339709303, 0.001);
-		Assert.assertEquals(result.get(0).getField(6), VectorUtil.parseSparse("$6$0:1.0 1:2.0 2:3.0 3:2.0 4:3.0 5:4.0"));
+		Assert.assertEquals((double) result.get(0).getField(3), 20.0, 0.001);
+		Assert.assertEquals((double) result.get(0).getField(4), Math.sqrt(3.0), 0.001);
+		Assert.assertEquals((double) result.get(0).getField(5), 0.9925833339709303, 0.001);
+		Assert.assertEquals(result.get(0).getField(6),
+			VectorUtil.parseSparse("$6$0:1.0 1:2.0 2:3.0 3:2.0 4:3.0 5:4.0"));
 	}
 }

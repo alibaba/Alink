@@ -11,18 +11,18 @@ import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
-import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
-import com.alibaba.alink.common.exceptions.ExceptionWithErrorCode;
 import com.alibaba.alink.metadata.def.v0.DatasetFeatureStatisticsList;
 import com.alibaba.alink.operator.batch.utils.StatsVisualizer;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
-import com.alibaba.alink.operator.common.statistics.basicstat.SetPartitionBasicStat;
+import com.alibaba.alink.operator.common.statistics.statistics.WindowTable;
 import com.alibaba.alink.operator.common.statistics.statistics.FullStats;
 import com.alibaba.alink.operator.common.statistics.statistics.FullStatsConverter;
+import com.alibaba.alink.operator.common.statistics.statistics.SrtUtil;
 import com.alibaba.alink.operator.common.statistics.statistics.SummaryResultTable;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.params.statistics.HasStatLevel_L1;
 import com.alibaba.alink.params.statistics.HasStatLevel_L1.StatLevel;
+import com.alibaba.alink.params.statistics.HasTableNames;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +31,8 @@ import java.util.function.Consumer;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 @Internal
-public class InternalFullStatsLocalOp extends LocalOperator <InternalFullStatsLocalOp> {
+public class InternalFullStatsLocalOp extends LocalOperator <InternalFullStatsLocalOp>
+	implements HasTableNames <InternalFullStatsLocalOp> {
 
 	public InternalFullStatsLocalOp() {
 		this(new Params());
@@ -42,17 +43,15 @@ public class InternalFullStatsLocalOp extends LocalOperator <InternalFullStatsLo
 	}
 
 	SummaryResultTable srt(LocalOperator <?> in, HasStatLevel_L1.StatLevel statLevel) {
-		SetPartitionBasicStat setPartitionBasicStat = new SetPartitionBasicStat(in.getSchema(), statLevel);
-		List <SummaryResultTable> srt = new ArrayList <>();
-		ListCollector <SummaryResultTable> collector = new ListCollector <>(srt);
-		try {
-			setPartitionBasicStat.mapPartition(in.getOutputTable().getRows(), collector);
-		} catch (ExceptionWithErrorCode e) {
-			throw e;
-		} catch (Exception e) {
-			throw new AkUnclassifiedErrorException("Calculate SRT failed.", e);
+		TypeInformation <?>[] colTypeInfos = in.getColTypes();
+		Class[] colTypes = new Class[colTypeInfos.length];
+		for (int i = 0; i < colTypeInfos.length; i++) {
+			colTypes[i] = colTypeInfos[i].getTypeClass();
 		}
-		return srt.get(0);
+		WindowTable wt = new WindowTable(in.getColNames(), colTypes, in.getOutputTable().getRows());
+		SummaryResultTable srt = SrtUtil.batchSummary(wt, in.getColNames(),
+			10, 10, 1000, 10, statLevel);
+		return srt;
 	}
 
 	@Override
@@ -66,10 +65,17 @@ public class InternalFullStatsLocalOp extends LocalOperator <InternalFullStatsLo
 		for (int i = 0; i < n; i += 1) {
 			srts[i] = Tuple2.of(i, srt(inputs[i], StatLevel.L3));
 		}
-		
-		String[] tableNames = Arrays.stream(inputs)
-			.map(d -> d.getOutputTable().toString())
-			.toArray(String[]::new);
+
+		String[] tableNames = new String[n];
+		for (int i = 0; i < n; i++) {
+			tableNames[i] = "table" + String.valueOf(i + 1);
+		}
+		if (getParams().contains(HasTableNames.TABLE_NAMES)) {
+			String[] inputNames = getTableNames();
+			for (int i = 0; i < Math.min(n, inputNames.length); i++) {
+				tableNames[i] = inputNames[i];
+			}
+		}
 		// assume all datasets have same schemas
 		final TypeInformation <?>[] colTypes = inputs[0].getColTypes();
 		String[] colTypeStrs = FlinkTypeConverter.getTypeString(colTypes);
@@ -121,7 +127,8 @@ public class InternalFullStatsLocalOp extends LocalOperator <InternalFullStatsLo
 			@Override
 			public void accept(FullStats fullStats) {
 				StatsVisualizer visualizer = StatsVisualizer.getInstance();
-				DatasetFeatureStatisticsList datasetFeatureStatisticsList = fullStats.getDatasetFeatureStatisticsList();
+				DatasetFeatureStatisticsList datasetFeatureStatisticsList =
+					fullStats.getDatasetFeatureStatisticsList();
 				if (useExperimentalViz) {
 					visualizer.visualizeNew(datasetFeatureStatisticsList, newTableNames);
 				} else {

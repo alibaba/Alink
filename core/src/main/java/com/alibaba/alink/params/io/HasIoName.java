@@ -4,13 +4,16 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
+
 /**
  * IO name.
  */
 public interface HasIoName<T> extends WithParams <T> {
-	/**
-	 * @cn IO名称.
-	 */
+
+	@NameCn("IO 名称")
+	@DescCn("IO 名称")
 	ParamInfo <String> IO_NAME = ParamInfoFactory
 		.createParamInfo("ioName", String.class)
 		.setDescription("io name")

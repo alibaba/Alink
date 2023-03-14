@@ -25,16 +25,13 @@ import org.apache.flink.table.catalog.exceptions.TableNotPartitionedException;
 import org.apache.flink.table.catalog.exceptions.TablePartitionedException;
 import org.apache.flink.table.catalog.stats.CatalogColumnStatistics;
 import org.apache.flink.table.catalog.stats.CatalogTableStatistics;
-import org.apache.flink.table.expressions.Expression;
 import org.apache.flink.table.factories.CatalogFactory;
-import org.apache.flink.table.factories.CatalogFactory.Context;
-import org.apache.flink.table.factories.FactoryUtil.DefaultCatalogContext;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.io.annotations.CatalogAnnotation;
 import com.alibaba.alink.common.io.catalog.plugin.DataHubClassLoaderFactory;
-import com.alibaba.alink.common.io.plugin.wrapper.RichParallelSourceFunctionWithClassLoader;
-import com.alibaba.alink.common.io.plugin.wrapper.RichSinkFunctionWithClassLoader;
+import com.alibaba.alink.operator.stream.source.RichParallelSourceFunctionWithClassLoader;
+import com.alibaba.alink.operator.stream.sink.RichSinkFunctionWithClassLoader;
 import com.alibaba.alink.params.io.DataHubParams;
 
 import java.lang.reflect.InvocationTargetException;
@@ -128,10 +125,9 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 	}
 
 	@Override
-	public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
+	public void dropDatabase(String name, boolean ignoreIfNotExists)
 		throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
-
-		classLoaderFactory.doAsThrowRuntime(() -> loadCatalog().dropDatabase(name, ignoreIfNotExists, cascade));
+		classLoaderFactory.doAsThrowRuntime(() -> loadCatalog().dropDatabase(name, ignoreIfNotExists));
 	}
 
 	@Override
@@ -204,12 +200,6 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 		throws TableNotExistException, TableNotPartitionedException, CatalogException {
 
 		return classLoaderFactory.doAsThrowRuntime(() -> loadCatalog().listPartitions(tablePath, partitionSpec));
-	}
-
-	@Override
-	public List <CatalogPartitionSpec> listPartitionsByFilter(ObjectPath tablePath, List <Expression> filters)
-		throws TableNotExistException, TableNotPartitionedException, CatalogException {
-		return classLoaderFactory.doAsThrowRuntime(() -> loadCatalog().listPartitionsByFilter(tablePath, filters));
 	}
 
 	@Override
@@ -410,6 +400,18 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 
 		CatalogFactory factory = createCatalogFactory(classLoader);
 
+		List <String> supportedKeys = factory.supportedProperties();
+
+		if (!supportedKeys.contains(CATALOG_DATAHUB_ACCESS_ID)
+			|| !supportedKeys.contains(CATALOG_DATAHUB_ACCESS_KEY)
+			|| !supportedKeys.contains(CATALOG_DATAHUB_ENDPOINT)
+			|| !supportedKeys.contains(CATALOG_DATAHUB_PROJECT)) {
+
+			throw new IllegalStateException(
+				"Incorrect datahub dependency. Please check the configure of datahub environment."
+			);
+		}
+
 		Map <String, String> properties = new HashMap <>();
 
 		properties.put(CATALOG_DATAHUB_ACCESS_ID, params.get(DataHubParams.ACCESS_ID));
@@ -417,8 +419,8 @@ public class DataHubCatalog extends SourceSinkFunctionCatalog {
 		properties.put(CATALOG_DATAHUB_ENDPOINT, params.get(DataHubParams.END_POINT));
 		properties.put(CATALOG_DATAHUB_PROJECT, params.get(DataHubParams.PROJECT));
 
-		Context context = new DefaultCatalogContext(catalogName, properties, null, null);
+		properties.putAll(factory.requiredContext());
 
-		return (SourceSinkFunctionCatalog) factory.createCatalog(context);
+		return (SourceSinkFunctionCatalog) factory.createCatalog(catalogName, properties);
 	}
 }

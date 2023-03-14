@@ -44,7 +44,7 @@ public class StatsVisualizer {
 			AkPreconditions.checkArgument(
 				datasetFeatureStatisticsList.getDatasetsCount() == newTableNames.length,
 				new AkIllegalDataException("The number of new table names must be equal to the number of datasets."));
-			title = String.join(", ", newTableNames) + "'s Stats";
+			title = "Stats";
 		} else {
 			title = datasetFeatureStatisticsList.getDatasetsList()
 				.stream().map(DatasetFeatureStatistics::getName)

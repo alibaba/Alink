@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.clustering;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansModelMapper;
 import com.alibaba.alink.operator.common.tree.predictors.GbdtModelMapper;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.clustering.GeoKMeansPredictParams;
  * Find  the closest cluster center for every point.
  */
 @NameCn("经纬度K均值聚类预测")
+@NameEn("Geo KMeans Prediction")
 public final class GeoKMeansPredictStreamOp
 	extends ModelMapStreamOp <GeoKMeansPredictStreamOp>
 	implements GeoKMeansPredictParams <GeoKMeansPredictStreamOp> {

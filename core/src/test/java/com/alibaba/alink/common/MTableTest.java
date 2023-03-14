@@ -6,15 +6,18 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.tensor.DoubleTensor;
 import com.alibaba.alink.common.linalg.tensor.FloatTensor;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,7 +29,7 @@ import java.util.List;
 /**
  * Test cases for MTable.
  */
-public class MTableTest {
+public class MTableTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {
@@ -244,6 +247,7 @@ public class MTableTest {
 		}
 	}
 
+	@Internal
 	class MTableTestBatchOp extends BatchOperator <MTableTestBatchOp> {
 		@Override
 		public MTableTestBatchOp linkFrom(BatchOperator <?>... inputs) {

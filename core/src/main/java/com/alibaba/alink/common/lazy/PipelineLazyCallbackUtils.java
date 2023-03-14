@@ -3,8 +3,11 @@ package com.alibaba.alink.common.lazy;
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithTrainInfo;
 import com.alibaba.alink.pipeline.ModelBase;
 import com.alibaba.alink.pipeline.Trainer;
+import com.alibaba.alink.pipeline.TrainerLegacy;
 import com.alibaba.alink.pipeline.TransformerBase;
 import com.alibaba.alink.pipeline.tuning.BaseTuning;
 import com.alibaba.alink.pipeline.tuning.Report;
@@ -39,6 +42,36 @@ public class PipelineLazyCallbackUtils {
 	}
 
 	public static void callbackForTrainerLazyTransformResult(Trainer <?, ?> trainer,
+															 List <Consumer <BatchOperator <?>>> callbacks) {
+		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(trainer);
+		LazyEvaluation <ModelBase <?>> lazyModel = lazyObjectsManager.genLazyModel(trainer);
+		lazyModel.addCallback(model -> {
+			LazyEvaluation <BatchOperator <?>> lazyTransformResult = lazyObjectsManager.genLazyTransformResult(model);
+			lazyTransformResult.addCallbacks(callbacks);
+		});
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <S> void callbackForTrainerLazyTrainInfo(TrainerLegacy <?, ?> trainer,
+														   List <Consumer <S>> callbacks) {
+		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(trainer);
+		LazyEvaluation <BatchOperator <?>> lazyTrainOp = lazyObjectsManager.genLazyTrainOp(trainer);
+		lazyTrainOp.addCallback(d -> {
+			((WithTrainInfo <S, ?>) d).lazyCollectTrainInfo(callbacks);
+		});
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <S> void callbackForTrainerLazyModelInfo(TrainerLegacy <?, ?> trainer,
+														   List <Consumer <S>> callbacks) {
+		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(trainer);
+		LazyEvaluation <BatchOperator <?>> lazyTrainOp = lazyObjectsManager.genLazyTrainOp(trainer);
+		lazyTrainOp.addCallback(d -> {
+			((WithModelInfoBatchOp <S, ?, ?>) d).lazyCollectModelInfo(callbacks);
+		});
+	}
+
+	public static void callbackForTrainerLazyTransformResult(TrainerLegacy <?, ?> trainer,
 															 List <Consumer <BatchOperator <?>>> callbacks) {
 		LazyObjectsManager lazyObjectsManager = LazyObjectsManager.getLazyObjectsManager(trainer);
 		LazyEvaluation <ModelBase <?>> lazyModel = lazyObjectsManager.genLazyModel(trainer);

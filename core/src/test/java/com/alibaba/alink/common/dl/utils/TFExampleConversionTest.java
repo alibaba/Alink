@@ -4,7 +4,8 @@ import org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.tensorflow.proto.example.Example;
@@ -16,7 +17,7 @@ import java.util.HashSet;
 /**
  * Only check feature number and names here. Feature content test is in {@link TFFeatureConversionTest}
  */
-public class TFExampleConversionTest {
+public class TFExampleConversionTest extends AlinkTestBase {
 	@Test
 	public void testFromToExample() {
 		Object[][] values = new Object[][] {

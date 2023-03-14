@@ -10,19 +10,21 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.feature.MultiHotModelData;
 import com.alibaba.alink.operator.common.feature.MultiHotModelDataConverter;
 import com.alibaba.alink.operator.common.feature.MultiHotModelInfo;
 import com.alibaba.alink.params.feature.MultiHotTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +36,8 @@ import java.util.Map;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.STRING_TYPES)
 @NameCn("多热编码训练")
+@NameEn("Multi Hot Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.feature.MultiHotEncoder")
 public final class MultiHotTrainBatchOp extends BatchOperator <MultiHotTrainBatchOp>
 	implements MultiHotTrainParams <MultiHotTrainBatchOp>,
 	WithModelInfoBatchOp <MultiHotModelInfo, MultiHotTrainBatchOp, MultiHotModelInfoBatchOp> {

@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.dataproc;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
 import com.alibaba.alink.operator.common.dataproc.MinMaxScalerModelMapper;
 import com.alibaba.alink.params.dataproc.MinMaxScalerPredictParams;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.dataproc.MinMaxScalerPredictParams;
  * MinMaxScalerPredict will scale the dataSet with model which trained from MaxAbsTrain.
  */
 @NameCn("归一化批预测")
+@NameEn("Min Max Scaler Batch Predict")
 public final class MinMaxScalerPredictBatchOp extends ModelMapBatchOp <MinMaxScalerPredictBatchOp>
 	implements MinMaxScalerPredictParams <MinMaxScalerPredictBatchOp> {
 

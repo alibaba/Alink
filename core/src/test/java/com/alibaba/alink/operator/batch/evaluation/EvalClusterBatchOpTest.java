@@ -11,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class EvalClusterBatchOpTest extends AlinkTestBase {
 	private static Row[] rows = new Row[] {
@@ -70,5 +71,24 @@ public class EvalClusterBatchOpTest extends AlinkTestBase {
 
 		Assert.assertEquals(metrics.getCount().intValue(), 6);
 		Assert.assertArrayEquals(metrics.getClusterArray(), new String[] {"0", "1"});
+	}
+
+	@Test
+	public void testOnlyOneCluster() {
+		List <Row> rows = Arrays.asList(
+			Row.of(0L, "0,0,0"),
+			Row.of(0L, "0.1,0.1,0.1"),
+			Row.of(0L, "0.2,0.2,0.2")
+		);
+		MemSourceBatchOp source = new MemSourceBatchOp(rows, new String[] {"pred", "vec"});
+		ClusterMetrics metrics = new EvalClusterBatchOp(new Params())
+			.setPredictionCol("pred")
+			.setVectorCol("vec")
+			.linkFrom(source)
+			.collectMetrics();
+		Assert.assertEquals(0., metrics.getVrc(), 0.01);
+		Assert.assertEquals(0., metrics.getSp(), 0.01);
+		Assert.assertEquals(1., metrics.getSilhouetteCoefficient(), 0.01);
+		Assert.assertEquals(Double.POSITIVE_INFINITY, metrics.getDb(), 0.01);
 	}
 }

@@ -12,6 +12,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -38,6 +39,7 @@ import java.util.Random;
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @ParamSelectColumnSpec(name = "weightCol", allowedTypeCollections = {TypeCollections.NUMERIC_TYPES})
 @NameCn("加权采样")
+@NameEn("Weighted Sampling")
 public class WeightSampleBatchOp extends BatchOperator <WeightSampleBatchOp>
 	implements WeightSampleParams <WeightSampleBatchOp> {
 

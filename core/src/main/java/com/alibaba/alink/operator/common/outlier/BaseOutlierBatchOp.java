@@ -10,7 +10,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.Internal;
@@ -21,7 +21,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
 import com.alibaba.alink.common.mapper.FlatMapperAdapter;
 import com.alibaba.alink.common.mapper.Mapper;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;

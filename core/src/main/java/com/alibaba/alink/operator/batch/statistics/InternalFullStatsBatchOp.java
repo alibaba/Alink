@@ -16,11 +16,12 @@ import com.alibaba.alink.metadata.def.v0.DatasetFeatureStatisticsList;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.utils.StatsVisualizer;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
-import com.alibaba.alink.operator.common.statistics.StatisticUtil;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.statistics.FullStats;
 import com.alibaba.alink.operator.common.statistics.statistics.FullStatsConverter;
 import com.alibaba.alink.operator.common.statistics.statistics.SummaryResultTable;
 import com.alibaba.alink.params.statistics.HasStatLevel_L1.StatLevel;
+import com.alibaba.alink.params.statistics.HasTableNames;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +29,7 @@ import java.util.function.Consumer;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 @Internal
-public class InternalFullStatsBatchOp extends BatchOperator <InternalFullStatsBatchOp> {
+public class InternalFullStatsBatchOp extends BatchOperator <InternalFullStatsBatchOp> implements HasTableNames <InternalFullStatsBatchOp> {
 
 	public InternalFullStatsBatchOp() {
 		this(new Params());
@@ -46,7 +47,7 @@ public class InternalFullStatsBatchOp extends BatchOperator <InternalFullStatsBa
 		DataSet <Tuple2 <Integer, SummaryResultTable>> unionSrtDataSet = null;
 		for (int i = 0; i < n; i += 1) {
 			final int index = i;
-			DataSet <SummaryResultTable> srtDataSet = StatisticUtil.getSRT(inputs[i], StatLevel.L3);
+			DataSet <SummaryResultTable> srtDataSet = StatisticsHelper.getSRT(inputs[i], StatLevel.L3);
 			//noinspection Convert2Lambda
 			DataSet <Tuple2 <Integer, SummaryResultTable>> indexedSrtDataSet = srtDataSet
 				.map(new MapFunction <SummaryResultTable, Tuple2 <Integer, SummaryResultTable>>() {
@@ -59,9 +60,18 @@ public class InternalFullStatsBatchOp extends BatchOperator <InternalFullStatsBa
 				? indexedSrtDataSet
 				: unionSrtDataSet.union(indexedSrtDataSet);
 		}
-		String[] tableNames = Arrays.stream(inputs)
-			.map(d -> d.getOutputTable().toString())
-			.toArray(String[]::new);
+
+		String[] tableNames = new String[n];
+		for (int i = 0; i < n; i++) {
+			tableNames[i] = "table" + String.valueOf(i + 1);
+		}
+		if (getParams().contains(HasTableNames.TABLE_NAMES)) {
+			String[] inputNames = getTableNames();
+			for (int i = 0; i < Math.min(n, inputNames.length); i++) {
+				tableNames[i] = inputNames[i];
+			}
+		}
+
 		// assume all datasets have same schemas
 		final TypeInformation <?>[] colTypes = inputs[0].getColTypes();
 		//noinspection Convert2Lambda

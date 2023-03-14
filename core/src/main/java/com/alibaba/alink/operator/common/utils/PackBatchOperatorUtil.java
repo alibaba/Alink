@@ -9,7 +9,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.exceptions.AkIllegalModelException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;

@@ -8,11 +8,12 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.fe.GenerateFeatureUtil;
 import com.alibaba.alink.common.fe.define.day.BaseDaysStatFeatures;
@@ -23,14 +24,14 @@ import com.alibaba.alink.common.fe.define.day.NumericDaysStatistics;
 import com.alibaba.alink.common.fe.define.statistics.BaseCategoricalStatistics;
 import com.alibaba.alink.common.fe.define.statistics.BaseNumericStatistics;
 import com.alibaba.alink.common.fe.udaf.CatesCntUdaf;
-import com.alibaba.alink.common.fe.udaf.TotalCountUdaf;
 import com.alibaba.alink.common.fe.udaf.DistinctCountUdaf;
 import com.alibaba.alink.common.fe.udaf.KvCntUdaf;
 import com.alibaba.alink.common.fe.udaf.MaxUdaf;
 import com.alibaba.alink.common.fe.udaf.MeanUdaf;
 import com.alibaba.alink.common.fe.udaf.MinUdaf;
 import com.alibaba.alink.common.fe.udaf.SumUdaf;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.common.fe.udaf.TotalCountUdaf;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
@@ -52,6 +53,7 @@ import java.util.UUID;
  * Latest Feature Window.
  */
 @NameCn("Latest特征生成")
+@NameEn("Generate Feature of Latest N Days")
 public class GenerateFeatureOfLatestNDaysBatchOp extends BatchOperator <GenerateFeatureOfLatestNDaysBatchOp>
 	implements GenerateFeatureOfLatestDayParams <GenerateFeatureOfLatestNDaysBatchOp> {
 

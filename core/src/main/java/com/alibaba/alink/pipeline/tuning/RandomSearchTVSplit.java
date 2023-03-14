@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.params.tuning.HasTrainRatio;
 import com.alibaba.alink.pipeline.Pipeline;
 
@@ -22,6 +23,11 @@ public class RandomSearchTVSplit extends BaseRandomSearch <RandomSearchTVSplit, 
 
 	@Override
 	protected Tuple2 <Pipeline, Report> findBest(BatchOperator <?> in, PipelineCandidatesRandom candidates) {
+		return findBestTVSplit(in, getTrainRatio(), candidates);
+	}
+
+	@Override
+	protected Tuple2 <Pipeline, Report> findBest(LocalOperator <?> in, PipelineCandidatesRandom candidates) {
 		return findBestTVSplit(in, getTrainRatio(), candidates);
 	}
 }

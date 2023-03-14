@@ -13,16 +13,18 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.plugin.wrapper.RichInputFormatGenericWithClassLoader;
 import com.alibaba.alink.common.io.xls.XlsReaderClassLoader;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.params.io.XlsSourceParams;
 
-@IoOpAnnotation(name = "xls", ioType = IOType.SourceBatch)
+@IoOpAnnotation(name = "xls_source", ioType = IOType.SourceBatch)
 @NameCn("Xls和Xlsx表格读入")
+@NameEn("Xls and Xlsx File Source")
 public class XlsSourceBatchOp extends BaseSourceBatchOp <XlsSourceBatchOp>
 	implements XlsSourceParams <XlsSourceBatchOp> {
 	public XlsSourceBatchOp() {
@@ -41,7 +43,7 @@ public class XlsSourceBatchOp extends BaseSourceBatchOp <XlsSourceBatchOp>
 
 		Tuple2 <RichInputFormat <Row, FileInputSplit>, TableSchema> sourceFunction = XlsReaderClassLoader
 			.create(factory)
-			.create(getParams());
+			.createInputFormat(getParams());
 
 		RichInputFormat <Row, InputSplit> inputFormat
 			= new RichInputFormatGenericWithClassLoader <>(factory, sourceFunction.f0);
@@ -49,7 +51,9 @@ public class XlsSourceBatchOp extends BaseSourceBatchOp <XlsSourceBatchOp>
 		DataSet data = MLEnvironmentFactory
 			.get(getMLEnvironmentId())
 			.getExecutionEnvironment()
-			.createInput(inputFormat, new RowTypeInfo(sourceFunction.f1.getFieldTypes()));
+			.createInput(inputFormat, new RowTypeInfo(sourceFunction.f1.getFieldTypes()))
+			.name("xls-file-source")
+			.rebalance();;
 
 		return DataSetConversionUtil.toTable(getMLEnvironmentId(), data, sourceFunction.f1);
 	}

@@ -3,8 +3,6 @@ package com.alibaba.alink.pipeline.feature;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.classification.C45TrainBatchOp;
 import com.alibaba.alink.params.classification.C45TrainParams;
 import com.alibaba.alink.params.feature.C45EncoderParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -23,8 +21,4 @@ public class C45Encoder extends Trainer <C45Encoder, C45EncoderModel> implements
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new C45TrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

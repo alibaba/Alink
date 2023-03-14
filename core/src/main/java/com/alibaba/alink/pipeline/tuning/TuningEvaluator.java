@@ -4,7 +4,9 @@ import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.ml.api.misc.param.WithParams;
 
+import com.alibaba.alink.common.exceptions.AkUnimplementedOperationException;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.local.LocalOperator;
 
 public abstract class TuningEvaluator<T extends TuningEvaluator <T>>
 	implements WithParams <T> {
@@ -29,6 +31,8 @@ public abstract class TuningEvaluator<T extends TuningEvaluator <T>>
 	}
 
 	public abstract double evaluate(BatchOperator <?> in);
+
+	public abstract double evaluate(LocalOperator <?> in);
 
 	public abstract boolean isLargerBetter();
 

@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.operator.batch.utils.ModelMapBatchOp;
@@ -17,6 +18,7 @@ import com.alibaba.alink.params.dataproc.vector.VectorMaxAbsScalerPredictParams;
  */
 @InputPorts(values = {@PortSpec(value = PortType.MODEL, suggestions = VectorMaxAbsScalerTrainBatchOp.class), @PortSpec(PortType.DATA)})
 @NameCn("向量绝对值最大化预测")
+@NameEn("Vector MaxAbs Scaler Prediction")
 public final class VectorMaxAbsScalerPredictBatchOp extends ModelMapBatchOp <VectorMaxAbsScalerPredictBatchOp>
 	implements VectorMaxAbsScalerPredictParams <VectorMaxAbsScalerPredictBatchOp> {
 

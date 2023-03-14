@@ -19,13 +19,14 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortDesc;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortSpec.OpType;
 import com.alibaba.alink.common.annotation.PortType;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.dataproc.HugeIndexerStringPredictBatchOp;
 import com.alibaba.alink.operator.batch.dataproc.HugeStringIndexerPredictBatchOp;
@@ -43,6 +44,7 @@ import java.util.HashSet;
 @ParamSelectColumnSpec(name = "edgeSourceCol", portIndices = 0)
 @ParamSelectColumnSpec(name = "edgeTargetCol", portIndices = 0)
 @NameCn("共同邻居计算")
+@NameEn("Common Neighbors")
 public class CommonNeighborsBatchOp extends BatchOperator <CommonNeighborsBatchOp>
 	implements CommonNeighborsTrainParams <CommonNeighborsBatchOp> {
 	private static final long serialVersionUID = -9221019571132151284L;

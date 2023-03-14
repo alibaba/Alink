@@ -19,6 +19,7 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSum
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.dataproc.vector.VectorImputerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import static com.alibaba.alink.operator.local.dataproc.vector.VectorStandardScalerTrainLocalOp.calcVectorSRT;
 
@@ -36,6 +37,7 @@ import static com.alibaba.alink.operator.local.dataproc.vector.VectorStandardSca
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量缺失值填充训练")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.vector.VectorImputer")
 public class VectorImputerTrainLocalOp extends LocalOperator <VectorImputerTrainLocalOp>
 	implements VectorImputerTrainParams <VectorImputerTrainLocalOp>,
 	WithModelInfoLocalOp <ImputerModelInfo, VectorImputerTrainLocalOp, VectorImputerModelInfoLocalOp> {

@@ -78,17 +78,26 @@ public class CsvUtil {
 		private transient CsvFormatter formatter;
 		private final TypeInformation <?>[] colTypes;
 		private final String fieldDelim;
+		private final String rowDelim;
 		private final Character quoteChar;
 
 		public FormatCsvFunc(TypeInformation <?>[] colTypes, String fieldDelim, Character quoteChar) {
 			this.colTypes = colTypes;
 			this.fieldDelim = fieldDelim;
+			this.rowDelim = null;
+			this.quoteChar = quoteChar;
+		}
+
+		public FormatCsvFunc(TypeInformation <?>[] colTypes, String fieldDelim, String rowDelim, Character quoteChar) {
+			this.colTypes = colTypes;
+			this.fieldDelim = fieldDelim;
+			this.rowDelim = rowDelim;
 			this.quoteChar = quoteChar;
 		}
 
 		@Override
 		public void open(Configuration parameters) throws Exception {
-			this.formatter = new CsvFormatter(colTypes, fieldDelim, quoteChar);
+			this.formatter = new CsvFormatter(colTypes, fieldDelim, rowDelim, quoteChar);
 		}
 
 		@Override

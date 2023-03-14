@@ -3,8 +3,6 @@ package com.alibaba.alink.pipeline.similarity;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.similarity.VectorNearestNeighborTrainBatchOp;
 import com.alibaba.alink.params.similarity.NearestNeighborPredictParams;
 import com.alibaba.alink.params.similarity.VectorNearestNeighborTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -27,8 +25,4 @@ public class VectorNearestNeighbor extends Trainer <VectorNearestNeighbor, Vecto
 		super(params);
 	}
 
-	@Override
-	public BatchOperator <?> train(BatchOperator <?> in) {
-		return new VectorNearestNeighborTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

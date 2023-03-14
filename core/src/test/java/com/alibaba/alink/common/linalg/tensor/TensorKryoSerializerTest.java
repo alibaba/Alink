@@ -1,5 +1,6 @@
 package com.alibaba.alink.common.linalg.tensor;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -21,7 +22,7 @@ import java.util.Random;
 import java.util.function.Function;
 
 @RunWith(Parameterized.class)
-public class TensorKryoSerializerTest {
+public class TensorKryoSerializerTest extends AlinkTestBase {
 
 	private static final Kryo kryo;
 	private final Object arr;

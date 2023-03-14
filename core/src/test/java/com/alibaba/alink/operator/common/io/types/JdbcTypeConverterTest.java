@@ -16,7 +16,7 @@ public class JdbcTypeConverterTest extends AlinkTestBase {
 	public void testMutualConversion() {
 		int[] types = new int[] {Types.VARCHAR, Types.BOOLEAN,
 			Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.FLOAT,
-			Types.DOUBLE, Types.DATE, Types.TIME, Types.TIMESTAMP, Types.DECIMAL, Types.BINARY};
+			Types.DOUBLE, Types.DATE, Types.TIME, Types.TIMESTAMP, Types.DECIMAL, Types.VARBINARY};
 
 		for (int type : types) {
 			TypeInformation <?> flinkType = JdbcTypeConverter.getFlinkType(type);

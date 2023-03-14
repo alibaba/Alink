@@ -12,16 +12,17 @@ import com.alibaba.alink.pipeline.dataproc.JsonValue;
 import com.alibaba.alink.pipeline.dataproc.vector.VectorAssembler;
 import com.alibaba.alink.pipeline.feature.MultiHotEncoder;
 import com.alibaba.alink.pipeline.feature.OneHotEncoder;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class RecommendationRankingTest {
+public class RecommendationRankingTest extends AlinkTestBase {
 
-	 @Test
-	 public void test() throws Exception {
+	@Test
+	public void test() throws Exception {
 
 		Row[] predArray = new Row[] {
 			Row.of("u6", "0.0 1.0", 0.0, 1.0, 1, "{\"data\":{\"iid\":[18,19,88]},"
@@ -38,9 +39,9 @@ public class RecommendationRankingTest {
 			Row.of("u6", "0.0 1.0", 0.0, 1.0, 1, 88)
 		};
 		BatchOperator <?> trainData = new MemSourceBatchOp(Arrays.asList(trainArray),
-				new String[] {"uid", "uf", "f0", "f1", "labels", "iid"});
-		BatchOperator <?> predData =  new MemSourceBatchOp(Arrays.asList(predArray),
-				new String[] {"uid", "uf", "f0", "f1", "labels", "ilist"})
+			new String[] {"uid", "uf", "f0", "f1", "labels", "iid"});
+		BatchOperator <?> predData = new MemSourceBatchOp(Arrays.asList(predArray),
+			new String[] {"uid", "uf", "f0", "f1", "labels", "ilist"})
 			.link(new ToMTableBatchOp().setSelectedCol("ilist"));
 
 		String[] oneHotCols = new String[] {"uid", "f0", "f1", "iid"};
@@ -78,10 +79,10 @@ public class RecommendationRankingTest {
 			.setTopN(2)
 			.setRankingCol("score")
 			.setReservedCols("uid", "labels");
-		 BatchOperator<?> result = rank.transform(predData);
-		 List <Row> rows = result.collect();
-		 Assert.assertEquals(JsonConverter.toJson(rows.get(0).getField(2)),
-			 "{\"data\":{\"iid\":[18,88],\"score\":[0.9999999999999553,0"
-				 + ".9999999999999472]},\"schema\":\"iid INT,score DOUBLE\"}");
+		BatchOperator <?> result = rank.transform(predData);
+		List <Row> rows = result.collect();
+		Assert.assertEquals(JsonConverter.toJson(rows.get(0).getField(2)),
+			"{\"data\":{\"iid\":[18,88],\"score\":[0.9999999999999553,0"
+				+ ".9999999999999472]},\"schema\":\"iid INT,score DOUBLE\"}");
 	}
 }

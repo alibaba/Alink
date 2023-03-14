@@ -4,6 +4,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
@@ -15,6 +16,7 @@ import com.alibaba.alink.operator.stream.StreamOperator;
 @InputPorts(values = @PortSpec(value = PortType.DATA, isRepeated = true))
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @NameCn("SQL操作：UnionAll")
+@NameEn("SQL：UnionAll")
 public final class UnionAllStreamOp extends StreamOperator <UnionAllStreamOp> {
 
 	private static final long serialVersionUID = 2720154954692107159L;

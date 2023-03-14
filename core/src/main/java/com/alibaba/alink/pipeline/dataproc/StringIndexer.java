@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.StringIndexerTrainBatchOp;
 import com.alibaba.alink.params.dataproc.StringIndexerPredictParams;
 import com.alibaba.alink.params.dataproc.StringIndexerTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -40,8 +38,4 @@ public class StringIndexer extends Trainer <StringIndexer, StringIndexerModel> i
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new StringIndexerTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

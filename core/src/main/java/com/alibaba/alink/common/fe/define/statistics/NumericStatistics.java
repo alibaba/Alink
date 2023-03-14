@@ -3,7 +3,7 @@ package com.alibaba.alink.common.fe.define.statistics;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
 
 public enum NumericStatistics implements BaseNumericStatistics {
 

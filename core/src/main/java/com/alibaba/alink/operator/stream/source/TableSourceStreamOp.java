@@ -8,12 +8,13 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
-import com.alibaba.alink.common.utils.DataStreamConversionUtil;
+import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
 import com.alibaba.alink.operator.stream.StreamOperator;
 
 /**
@@ -22,6 +23,7 @@ import com.alibaba.alink.operator.stream.StreamOperator;
 @InputPorts()
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @NameCn("Table数据源")
+@NameEn("Table Source")
 public final class TableSourceStreamOp extends StreamOperator <TableSourceStreamOp> {
 
 	private static final long serialVersionUID = 6011949833466268149L;

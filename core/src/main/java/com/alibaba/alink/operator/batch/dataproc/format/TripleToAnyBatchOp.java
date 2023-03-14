@@ -13,6 +13,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.PortDesc;
@@ -40,6 +41,7 @@ import java.util.HashMap;
 @InputPorts(values = {@PortSpec(value = PortType.DATA, opType = OpType.BATCH)})
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @NameCn("")
+@Internal
 class TripleToAnyBatchOp<T extends TripleToAnyBatchOp <T>> extends BatchOperator <T>
 	implements FromTripleParams <T> {
 

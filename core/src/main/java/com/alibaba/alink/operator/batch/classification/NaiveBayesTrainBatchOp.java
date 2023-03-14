@@ -16,6 +16,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -23,7 +24,7 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.classification.NaiveBayesModelData;
@@ -31,6 +32,7 @@ import com.alibaba.alink.operator.common.classification.NaiveBayesModelDataConve
 import com.alibaba.alink.operator.common.tree.Preprocessing;
 import com.alibaba.alink.params.classification.NaiveBayesTrainParams;
 import com.alibaba.alink.params.shared.colname.HasCategoricalCols;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +52,8 @@ import java.util.List;
 @ParamSelectColumnSpec(name = "featureCols")
 @ParamSelectColumnSpec(name = "weightCol", allowedTypeCollections = TypeCollections.DOUBLE_TYPE)
 @NameCn("朴素贝叶斯训练")
+@NameEn("Naive Bayes Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.classification.NaiveBayes")
 public class NaiveBayesTrainBatchOp extends BatchOperator <NaiveBayesTrainBatchOp>
 	implements NaiveBayesTrainParams <NaiveBayesTrainBatchOp>,
 	WithModelInfoBatchOp <NaiveBayesModelInfo, NaiveBayesTrainBatchOp, NaiveBayesModelInfoBatchOp> {

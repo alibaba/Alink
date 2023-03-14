@@ -27,6 +27,7 @@ import com.alibaba.alink.params.dataproc.HasTargetType.TargetType;
 import com.alibaba.alink.params.dataproc.NumericalTypeCastParams;
 import com.alibaba.alink.params.outlier.IForestTrainParams;
 import com.alibaba.alink.params.outlier.WithMultiVarParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @NameCn("IForest模型异常检测训练")
 @NameEn("IForest model outlier")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.outlier.IForestModelOutlier")
 public class IForestModelOutlierTrainLocalOp
 	extends LocalOperator <IForestModelOutlierTrainLocalOp>
 	implements IForestTrainParams <IForestModelOutlierTrainLocalOp> {

@@ -9,15 +9,16 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.io.filesystem.AkUtils;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetUtil;
 import com.alibaba.alink.operator.common.io.partition.AkSourceCollectorCreator;
-import com.alibaba.alink.operator.common.io.partition.Utils;
 import com.alibaba.alink.params.io.AkSourceParams;
 
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.io.IOException;
  */
 @IoOpAnnotation(name = "ak", ioType = IOType.SourceBatch)
 @NameCn("AK文件读入")
+@NameEn("AK Source")
 public final class AkSourceBatchOp extends BaseSourceBatchOp <AkSourceBatchOp>
 	implements AkSourceParams <AkSourceBatchOp> {
 
@@ -67,7 +69,7 @@ public final class AkSourceBatchOp extends BaseSourceBatchOp <AkSourceBatchOp>
 		} else {
 			try {
 				Tuple2 <DataSet <Row>, TableSchema> schemaAndData =
-					Utils.readFromPartitionBatch(
+					DataSetUtil.readFromPartitionBatch(
 						getParams(), getMLEnvironmentId(),
 						new AkSourceCollectorCreator(meta)
 					);

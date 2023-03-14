@@ -3,12 +3,14 @@ package com.alibaba.alink.pipeline.tuning;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
+import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.pipeline.EstimatorBase;
 import com.alibaba.alink.pipeline.Pipeline;
 import com.alibaba.alink.pipeline.PipelineStageBase;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,14 +18,19 @@ import java.util.List;
 /**
  * PipelineCandidatesBase.
  */
-public abstract class PipelineCandidatesBase {
+public abstract class PipelineCandidatesBase implements Serializable {
 	protected final Pipeline pipeline;
+	protected final List<Params> pipelineAllStageParams;
 
 	public PipelineCandidatesBase(EstimatorBase estimator) {
 		if (estimator instanceof Pipeline) {
 			this.pipeline = (Pipeline) estimator;
 		} else {
 			this.pipeline = new Pipeline().add(estimator);
+		}
+		pipelineAllStageParams = new ArrayList <>(pipeline.size());
+		for(int i=0;i<pipeline.size();i++){
+			pipelineAllStageParams.add(pipeline.get(i).getParams());
 		}
 	}
 

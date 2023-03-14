@@ -5,8 +5,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.regression.LassoRegTrainBatchOp;
 import com.alibaba.alink.params.regression.LassoRegPredictParams;
 import com.alibaba.alink.params.regression.LassoRegTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -28,11 +26,6 @@ public class LassoRegression extends Trainer <LassoRegression, LassoRegressionMo
 
 	public LassoRegression(Params params) {
 		super(params);
-	}
-
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new LassoRegTrainBatchOp(this.getParams()).linkFrom(in);
 	}
 
 }

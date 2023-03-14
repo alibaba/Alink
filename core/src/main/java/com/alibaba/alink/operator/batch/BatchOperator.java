@@ -18,6 +18,7 @@ import org.apache.flink.util.AbstractID;
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.exceptions.AkFlinkExecutionErrorException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
@@ -27,7 +28,7 @@ import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.lazy.LazyEvaluation;
 import com.alibaba.alink.common.lazy.LazyObjectsManager;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.dataproc.FirstNBatchOp;
@@ -45,7 +46,7 @@ import com.alibaba.alink.operator.batch.statistics.SummarizerBatchOp;
 import com.alibaba.alink.operator.batch.utils.DiveVisualizer.DiveVisualizerConsumer;
 import com.alibaba.alink.operator.batch.utils.UDFBatchOp;
 import com.alibaba.alink.operator.batch.utils.UDTFBatchOp;
-import com.alibaba.alink.operator.common.sql.BatchSqlOperators;
+import com.alibaba.alink.operator.batch.sql.BatchSqlOperators;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -541,6 +542,7 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		return env;
 	}
 
+	@Internal
 	@IoOpAnnotation(name = "mem_batch_sink", ioType = IOType.SinkBatch)
 	private static class MemSinkBatchOp extends BaseSinkBatchOp <MemSinkBatchOp> {
 		private static final long serialVersionUID = -2595920715328848084L;

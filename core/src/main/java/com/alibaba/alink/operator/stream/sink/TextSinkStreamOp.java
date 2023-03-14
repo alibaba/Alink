@@ -5,6 +5,7 @@ import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -16,6 +17,7 @@ import com.alibaba.alink.params.io.TextSinkParams;
  */
 @IoOpAnnotation(name = "text", ioType = IOType.SinkStream)
 @NameCn("Text文件导出")
+@NameEn("Text Sink")
 public final class TextSinkStreamOp extends BaseSinkStreamOp <TextSinkStreamOp>
 	implements TextSinkParams <TextSinkStreamOp> {
 

@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.functions.sink.OutputFormatSinkFunction;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -18,6 +19,7 @@ import com.alibaba.alink.params.io.AkSinkParams;
  */
 @IoOpAnnotation(name = "alink_file", ioType = IOType.SinkStream)
 @NameCn("AK文件导出")
+@NameEn("AK Sink")
 public final class AkSinkStreamOp extends BaseSinkStreamOp <AkSinkStreamOp>
 	implements AkSinkParams <AkSinkStreamOp> {
 

@@ -36,7 +36,7 @@ import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
@@ -127,20 +127,19 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 
 		rewriteLabelType(in.getSchema(), getParams());
 
+		final String[] featureCols = TableUtil.getOptionalFeatureCols(in.getSchema(), getParams());
+
 		getParams().set(ModelParamName.FEATURE_TYPES,
 			FlinkTypeConverter.getTypeString(
-				TableUtil.findColTypesWithAssertAndHint(in.getSchema(),
-					getParams().get(RandomForestTrainParams.FEATURE_COLS))
+				TableUtil.findColTypesWithAssertAndHint(in.getSchema(), featureCols)
 			)
 		);
 
-		in = Preprocessing.select(in, TreeUtil.trainColNames(getParams()));
+		in = Preprocessing.select(in, TreeUtil.trainColNames(getParams(), featureCols));
 
 		set(
 			RandomForestTrainParams.CATEGORICAL_COLS,
-			TableUtil.getCategoricalCols(
-				in.getSchema(),
-				getParams().get(RandomForestTrainParams.FEATURE_COLS),
+			TableUtil.getCategoricalCols(in.getSchema(), featureCols,
 				getParams().contains(RandomForestTrainParams.CATEGORICAL_COLS) ?
 					getParams().get(RandomForestTrainParams.CATEGORICAL_COLS) : null
 			)
@@ -168,10 +167,10 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 
 		DataSet <Row> model;
 
-		if (getParams().get(RandomForestTrainParams.CREATE_TREE_MODE).toUpperCase().equals("PARALLEL")) {
+		if (getParams().get(RandomForestTrainParams.CREATE_TREE_MODE).equalsIgnoreCase("PARALLEL")) {
 			model = parallelTrain(in);
 		} else {
-			model = seriesTrain(in);
+			model = seriesTrain(in, featureCols);
 		}
 
 		Table importanceTable = DataSetConversionUtil.toTable(
@@ -292,7 +291,7 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 		}
 	}
 
-	private DataSet <Row> seriesTrain(BatchOperator <?> in) {
+	private DataSet <Row> seriesTrain(BatchOperator <?> in, final String[] featureCols) {
 		DataSet <Row> trainDataSet = in.getDataSet();
 
 		DataSet <Long> cnt = DataSetUtils
@@ -351,7 +350,7 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 
 		DataSet <Tuple2 <Integer, String>> pModel = sampled
 			.partitionCustom(new AvgPartition(), 0)
-			.mapPartition(new SeriesTrainFunction(getParams()))
+			.mapPartition(new SeriesTrainFunction(getParams(), featureCols))
 			.withBroadcastSet(stringIndexerModel.getDataSet(), "stringIndexerModel")
 			.withBroadcastSet(labelSize, "labelSize")
 			.withBroadcastSet(cnt, "totalCnt");
@@ -407,18 +406,24 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 		extends RichMapPartitionFunction <Tuple2 <Integer, Row>, Tuple2 <Integer, String>> {
 
 		private static final Logger LOG = LoggerFactory.getLogger(SeriesTrainFunction.class);
+
 		private static final long serialVersionUID = 8664682425332787016L;
 		private static final int NUM_THREADS_POOL = 4;
 		private Map <String, Integer> categoricalColsSize;
 		private final Params params;
+
+		private final String[] featureCols;
 
 		private transient int cnt;
 		private transient List <Tuple2 <Integer, Node>> trees;
 		private transient DenseData data;
 		private transient ExecutorService executorService;
 
-		public SeriesTrainFunction(Params params) {
+		public SeriesTrainFunction(Params params, String[] featureCols) {
+
 			this.params = params;
+
+			this.featureCols = featureCols;
 		}
 
 		@Override
@@ -554,11 +559,10 @@ public abstract class BaseRandomForestTrainBatchOp<T extends BaseRandomForestTra
 			if (this.data == null) {
 				data = new DenseData(
 					cnt,
-					TreeUtil.getFeatureMeta(localParams.get(RandomForestTrainParams.FEATURE_COLS),
-						categoricalColsSize),
+					TreeUtil.getFeatureMeta(featureCols, categoricalColsSize),
 					TreeUtil.getLabelMeta(
 						localParams.get(RandomForestTrainParams.LABEL_COL),
-						localParams.get(RandomForestTrainParams.FEATURE_COLS).length,
+						featureCols.length,
 						categoricalColsSize
 					)
 				);

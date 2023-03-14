@@ -17,6 +17,7 @@ import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSum
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.dataproc.vector.VectorMaxAbsScalerTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import static com.alibaba.alink.operator.local.dataproc.vector.VectorStandardScalerTrainLocalOp.calcVectorSRT;
 
@@ -29,6 +30,7 @@ import static com.alibaba.alink.operator.local.dataproc.vector.VectorStandardSca
 @OutputPorts(values = @PortSpec(value = PortType.MODEL))
 @ParamSelectColumnSpec(name = "selectedCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("向量绝对值最大化训练")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.dataproc.vector.VectorMaxAbsScaler")
 public final class VectorMaxAbsScalerTrainLocalOp extends LocalOperator <VectorMaxAbsScalerTrainLocalOp>
 	implements VectorMaxAbsScalerTrainParams <VectorMaxAbsScalerTrainLocalOp>,
 	WithModelInfoLocalOp <VectorMaxAbsScalarModelInfo, VectorMaxAbsScalerTrainLocalOp,

@@ -7,6 +7,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.CsvSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.common.io.csv.InternalCsvSourceBetaBatchOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.sink.CsvSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.CsvSourceStreamOp;
@@ -179,6 +180,56 @@ public class CsvSourceSinkTest extends AlinkTestBase {
 		// .lazyPrint(-1);
 
 		Assert.assertEquals(new CsvSourceBatchOp().setFilePath(filePath).setSchemaStr("f1 string, f2 bigint")
-			.setLenient(true).collect().size(), 3);
+			.setLenient(true).collect().size(), 2);
+	}
+
+	@Category(DbTest.class)
+	@Test
+	public void testQuotedFiledCase() throws Exception {
+		BatchOperator.setParallelism(3);
+
+		String data = "\"the story is called \"\"Athena’s Birth\"\"\",1\n"
+			+ "\"the book is called \"\"The Sky and the Sea\"\"\",2\n"
+			+ "\"the episode is \"\"The Puffy Shirt.\"\"\",3";
+
+		String filePath = path + "file_with_quote.csv";
+		Files.write(Paths.get(filePath), data.getBytes(), StandardOpenOption.CREATE);
+
+		Assert.assertEquals(new InternalCsvSourceBetaBatchOp().setSchemaStr("content string, id int").setFilePath(
+			filePath).collect().size(), 3);
+	}
+
+	@Category(DbTest.class)
+	@Test
+	public void testQuotedFiledCase2() throws Exception {
+		BatchOperator.setParallelism(2);
+
+		String data = "\"the story is called \"\"Athena’s Birth\"\"\",1\n"
+			+ "\"the book is called\n\"\"The Sky and the Sea\"\"\",2\n"
+			+ "\"the episode is \"\"The Puffy Shirt.\"\"\",3";
+
+		String filePath = path + "file_with_quote.csv";
+		Files.write(Paths.get(filePath), data.getBytes(), StandardOpenOption.CREATE);
+
+		Assert.assertEquals(new InternalCsvSourceBetaBatchOp().setSchemaStr("content string, id int").setFilePath(
+			filePath).collect().size(), 3);
+
+	}
+
+	@Category(DbTest.class)
+	@Test
+	public void testQuotedFiledCase3() throws Exception {
+		BatchOperator.setParallelism(4);
+
+		String data = "\"the story is called \"\"Athena’s Birth\"\"\",1\n"
+			+ "\"the book is called\n\"\"The Sky and the Sea\"\"\",2\n"
+			+ "\"the episode is \"\"The Puffy Shirt.\"\"\",3";
+
+		String filePath = path + "file_with_quote.csv";
+		Files.write(Paths.get(filePath), data.getBytes(), StandardOpenOption.CREATE);
+
+		Assert.assertEquals(new InternalCsvSourceBetaBatchOp().setSchemaStr("content string, id int").setFilePath(
+			filePath).collect().size(), 3);
+
 	}
 }

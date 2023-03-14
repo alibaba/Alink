@@ -138,6 +138,14 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 	}
 
 	private Tuple2 <TransformerBase <?>[], BatchOperator <?>> fit(BatchOperator <?> input, boolean withTransform) {
+		for (PipelineStageBase <?> stage : stages) {
+			if ((stage instanceof Trainer)
+				&& EstimatorTrainerCatalog.lookupBatchTrainer(stage.getClass().getName()) == null
+			) {
+				throw new AkIllegalOperationException(
+					"Pipeline can't fit BatchOperator, for the Estimator(" + stage.getClass().getName() + ") not support.");
+			}
+		}
 		TableSchema initSchema = input.getSchema();
 		int lastEstimatorIdx = getIndexOfLastEstimator();
 		TransformerBase <?>[] transformers = new TransformerBase <?>[stages.size()];
@@ -194,6 +202,14 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 	}
 
 	private Tuple2 <TransformerBase <?>[], LocalOperator <?>> fit(LocalOperator <?> input, boolean withTransform) {
+		for (PipelineStageBase <?> stage : stages) {
+			if ((stage instanceof Trainer)
+				&& EstimatorTrainerCatalog.lookupLocalTrainer(stage.getClass().getName()) == null
+			) {
+				throw new AkIllegalOperationException(
+					"Pipeline can't fit LocalOperator, for the Estimator(" + stage.getClass().getName() + ") not support.");
+			}
+		}
 		int lastEstimatorIdx = getIndexOfLastEstimator();
 		TransformerBase <?>[] transformers = new TransformerBase <?>[stages.size()];
 		for (int i = 0; i < stages.size(); i++) {
@@ -361,6 +377,15 @@ public final class Pipeline extends EstimatorBase <Pipeline, PipelineModel> {
 
 	public LocalOperator <?> saveLocal() {
 		return ModelExporterUtils.serializePipelineStagesLocal(stages, params);
+	}
+
+	public static Pipeline loadLocal(LocalOperator <?> localOp) {
+		return new Pipeline(
+			ModelExporterUtils.fillPipelineStages(
+				localOp,
+				ModelExporterUtils.collectMetaFromOp(localOp).f0,
+				localOp.getSchema()
+			).toArray(new PipelineStageBase[0]));
 	}
 
 	/**

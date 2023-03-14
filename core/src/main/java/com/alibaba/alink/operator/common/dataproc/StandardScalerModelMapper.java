@@ -26,7 +26,7 @@ public class StandardScalerModelMapper extends ModelMapper {
 		TypeInformation<?>[] selectedColTypes = ImputerModelDataConverter.extractSelectedColTypes(modelSchema);
 
 		String[] outputColNames = params.get(SrtPredictMapperParams.OUTPUT_COLS);
-		if (outputColNames == null) {
+		if (outputColNames == null || outputColNames.length == 0) {
 			outputColNames = selectedColNames;
 		}
 		return Tuple4.of(selectedColNames, outputColNames, selectedColTypes, null);

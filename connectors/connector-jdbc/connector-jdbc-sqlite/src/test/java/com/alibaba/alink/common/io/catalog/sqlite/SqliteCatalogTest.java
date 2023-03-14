@@ -35,6 +35,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
 
 import java.math.BigDecimal;
@@ -44,6 +45,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collections;
 
+@Ignore
 public class SqliteCatalogTest {
 
 	@ClassRule

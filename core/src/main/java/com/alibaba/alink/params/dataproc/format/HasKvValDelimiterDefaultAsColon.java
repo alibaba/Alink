@@ -8,7 +8,7 @@ import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
 
 public interface HasKvValDelimiterDefaultAsColon<T> extends WithParams <T> {
-	@NameCn("分隔符")
+	@NameCn("key和value之间分隔符")
 	@DescCn("当输入数据为稀疏格式时，key和value的分割符")
 	ParamInfo <String> KV_VAL_DELIMITER = ParamInfoFactory
 		.createParamInfo("kvValDelimiter", String.class)

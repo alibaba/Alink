@@ -1,9 +1,10 @@
 package com.alibaba.alink.operator.common.sql;
 
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SelectUtilsTest {
+public class SelectUtilsTest extends AlinkTestBase {
 	@Test
 	public void testSelectRegexUtil() {
 		String[] colNames = new String[] {"sepal", "petal", "sepal_width", "petal_length", "category"};

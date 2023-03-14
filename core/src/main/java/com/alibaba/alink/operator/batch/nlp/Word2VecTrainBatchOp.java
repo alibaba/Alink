@@ -26,6 +26,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -39,9 +40,9 @@ import com.alibaba.alink.common.comqueue.IterativeComQueue;
 import com.alibaba.alink.common.comqueue.communication.AllReduce;
 import com.alibaba.alink.common.io.directreader.DefaultDistributedInfo;
 import com.alibaba.alink.common.io.directreader.DistributedInfo;
-import com.alibaba.alink.common.lazy.WithTrainInfo;
+import com.alibaba.alink.operator.batch.utils.WithTrainInfo;
 import com.alibaba.alink.common.linalg.DenseVector;
-import com.alibaba.alink.common.utils.DataSetConversionUtil;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.ExpTableArray;
 import com.alibaba.alink.common.utils.RowUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -51,6 +52,7 @@ import com.alibaba.alink.operator.common.nlp.Word2VecTrainInfo;
 import com.alibaba.alink.operator.common.nlp.WordCountUtil;
 import com.alibaba.alink.params.nlp.Word2VecTrainParams;
 import com.alibaba.alink.params.shared.tree.HasSeed;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +85,8 @@ import java.util.stream.StreamSupport;
 	allowedTypeCollections = TypeCollections.STRING_TYPES
 )
 @NameCn("Word2Vec训练")
+@NameEn("Word2Vec Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.nlp.Word2Vec")
 public class Word2VecTrainBatchOp extends BatchOperator <Word2VecTrainBatchOp>
 	implements Word2VecTrainParams <Word2VecTrainBatchOp>,
 	WithTrainInfo <Word2VecTrainInfo, Word2VecTrainBatchOp> {

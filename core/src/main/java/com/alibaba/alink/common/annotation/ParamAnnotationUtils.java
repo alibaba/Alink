@@ -1,17 +1,24 @@
 package com.alibaba.alink.common.annotation;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.ml.api.misc.param.WithParams;
+
+import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.stream.Collectors;
 
 public class ParamAnnotationUtils {
+	final static String BASE_PARAMS_PKG_NAME = "com.alibaba.alink.params";
+	final static Class <?>[] PARAM_BASES = new Class[] {WithParams.class};
 
 	static List <Class <?>> getAllInterfaces(Class <?> clz) {
 		Set <Class <?>> visited = new HashSet <>();
@@ -118,4 +125,17 @@ public class ParamAnnotationUtils {
 		}
 		return s;
 	}
+
+	public static List <Class <?>> listParamInfos(Class <?>... bases) {
+		Reflections ref = new Reflections(BASE_PARAMS_PKG_NAME);
+		List <Class <?>> params = new ArrayList <>();
+		for (Class <?> base : bases) {
+			params.addAll(ref.getSubTypesOf(base));
+		}
+		return params.stream()
+			.filter(PublicOperatorUtils::isPublicUsable)
+			.sorted(Comparator.comparing(Class::toString))
+			.collect(Collectors.toList());
+	}
+
 }

@@ -11,6 +11,7 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
@@ -32,6 +33,7 @@ import java.util.Map;
 @OutputPorts(values = @PortSpec(PortType.DATA))
 @ParamSelectColumnSpec(name = "strataCol", portIndices = 0)
 @NameCn("固定条数分层随机采样")
+@NameEn("Stratified Sampling With Fixed Size")
 public final class StratifiedSampleWithSizeBatchOp extends BatchOperator <StratifiedSampleWithSizeBatchOp>
 	implements StrafiedSampleWithSizeParams <StratifiedSampleWithSizeBatchOp> {
 

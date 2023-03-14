@@ -3,6 +3,7 @@ package com.alibaba.alink.common.pyrunner.fn.conversion;
 import com.alibaba.alink.common.linalg.tensor.IntTensor;
 import com.alibaba.alink.common.linalg.tensor.Tensor;
 import com.alibaba.alink.common.linalg.tensor.TensorInternalUtils;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,7 +21,7 @@ import java.util.Random;
 import java.util.function.Function;
 
 @RunWith(Parameterized.class)
-public class TensorWrapperTest {
+public class TensorWrapperTest extends AlinkTestBase {
 
 	private final Object arr;
 	private final Tensor <?> tensor;

@@ -17,12 +17,12 @@ public class XlsReaderClassLoader extends ClassLoaderFactory {
 		super(new RegisterKey(XLS_NAME, version), PluginDistributeCache.createDistributeCache(XLS_NAME, version));
 	}
 
-	public static XlsReader create(XlsReaderClassLoader factory) {
+	public static XlsFile create(XlsReaderClassLoader factory) {
 		ClassLoader classLoader = factory.create();
-		
+
 		try (TemporaryClassLoaderContext context = TemporaryClassLoaderContext.of(classLoader)) {
-			Iterator <XlsReader> iter = ServiceLoader
-				.load(XlsReader.class, classLoader)
+			Iterator <XlsFile> iter = ServiceLoader
+				.load(XlsFile.class, classLoader)
 				.iterator();
 			if (iter.hasNext()) {
 				return iter.next();
@@ -37,8 +37,8 @@ public class XlsReaderClassLoader extends ClassLoaderFactory {
 		return ClassLoaderContainer.getInstance().create(
 			registerKey,
 			distributeCache,
-			XlsReader.class,
-			xlsReader -> true,
+			XlsFile.class,
+			xlsFile -> true,
 			descriptor -> registerKey.getVersion()
 		);
 	}

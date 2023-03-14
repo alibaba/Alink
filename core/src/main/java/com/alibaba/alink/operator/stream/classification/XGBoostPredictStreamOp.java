@@ -13,7 +13,7 @@ import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.xgboost.XGBoostPredictParams;
 
 @NameCn("XGBoost 分类预测")
-@NameEn("XGBoost Predict")
+@NameEn("XGBoost Prediction")
 @ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 public final class XGBoostPredictStreamOp extends ModelMapStreamOp <XGBoostPredictStreamOp>
 	implements XGBoostPredictParams <XGBoostPredictStreamOp> {

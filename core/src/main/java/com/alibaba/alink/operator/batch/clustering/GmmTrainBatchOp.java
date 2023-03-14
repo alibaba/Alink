@@ -27,7 +27,7 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
-import com.alibaba.alink.common.lazy.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
@@ -39,10 +39,11 @@ import com.alibaba.alink.operator.common.clustering.GmmModelData;
 import com.alibaba.alink.operator.common.clustering.GmmModelDataConverter;
 import com.alibaba.alink.operator.common.clustering.kmeans.KMeansInitCentroids;
 import com.alibaba.alink.operator.common.dataproc.FirstReducer;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.MultivariateGaussian;
 import com.alibaba.alink.params.clustering.GmmTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +70,7 @@ import java.util.List;
 @ParamSelectColumnSpec(name = "vectorCol", portIndices = 0, allowedTypeCollections = {TypeCollections.VECTOR_TYPES})
 @NameCn("高斯混合模型训练")
 @NameEn("GMM Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.clustering.GaussianMixture")
 public final class GmmTrainBatchOp extends BatchOperator <GmmTrainBatchOp>
 	implements GmmTrainParams <GmmTrainBatchOp>,
 	WithModelInfoBatchOp <GmmModelInfoBatchOp.GmmModelInfo, GmmTrainBatchOp, GmmModelInfoBatchOp> {

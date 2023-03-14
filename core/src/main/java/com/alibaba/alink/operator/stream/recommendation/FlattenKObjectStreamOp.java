@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.recommendation;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.common.recommendation.FlattenKObjectMapper;
@@ -14,7 +15,8 @@ import com.alibaba.alink.params.recommendation.FlattenKObjectParams;
  */
 @ParamSelectColumnSpec(name = "selectedCol",
     allowedTypeCollections = TypeCollections.STRING_TYPES)
-@NameCn("FlattenKObject")
+@NameCn("Flatten k-object")
+@NameEn("Flatten k-object")
 public class FlattenKObjectStreamOp
         extends FlatMapStreamOp<FlattenKObjectStreamOp>
         implements FlattenKObjectParams<FlattenKObjectStreamOp> {

@@ -134,7 +134,7 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	public LocalOperator <?> getSideOutput(int idx) {
 		if (null == this.getSideOutputTables()) {
 			throw new AkIllegalOperationException("There is no side output. "
-				+ "Please call 'link' method firstly, or this BatchOperator has no SideOutput.");
+				+ "Please call 'link' method firstly, or this LocalOperator has no SideOutput.");
 		} else if (idx < 0 || idx >= this.getSideOutputTables().length) {
 			throw new AkIllegalOperationException(
 				"The index of side output, #" + idx + " , is out of range. Total number of side outputs is "
@@ -586,7 +586,7 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 		return (T) this;
 	}
 
-	private LocalOperator <?> firstN(int n) {
+	public LocalOperator <?> firstN(int n) {
 		return link(new FirstNLocalOp().setSize(n));
 	}
 
@@ -624,7 +624,7 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	}
 
 	public final T lazyVizStatistics() {
-		return lazyVizStatistics(getOutputTable().toString());
+		return lazyVizStatistics(null);
 	}
 
 	public final T lazyVizStatistics(String tableName) {

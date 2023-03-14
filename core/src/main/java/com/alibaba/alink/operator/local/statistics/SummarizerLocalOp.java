@@ -1,10 +1,6 @@
 package com.alibaba.alink.operator.local.statistics;
 
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.java.DataSet;
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.types.Row;
-import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.InputPorts;
@@ -16,8 +12,6 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.RowCollector;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.common.statistics.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.SummaryDataConverter;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.operator.local.LocalOperator;

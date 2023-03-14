@@ -4,8 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.clustering.BisectingKMeansTrainBatchOp;
 import com.alibaba.alink.params.clustering.BisectingKMeansPredictParams;
 import com.alibaba.alink.params.clustering.BisectingKMeansTrainParams;
 import com.alibaba.alink.pipeline.Trainer;
@@ -37,8 +35,4 @@ public class BisectingKMeans extends Trainer <BisectingKMeans, BisectingKMeansMo
 		super(params);
 	}
 
-	@Override
-	protected BatchOperator <?> train(BatchOperator <?> in) {
-		return new BisectingKMeansTrainBatchOp(this.getParams()).linkFrom(in);
-	}
 }

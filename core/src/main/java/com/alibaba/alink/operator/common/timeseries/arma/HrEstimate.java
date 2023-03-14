@@ -159,7 +159,7 @@ public class HrEstimate extends ArmaEstimate {
 		int n = (int) Math.round(1.1 * Math.log(data.length));
 
 		//find best order for AR model, used to compute residual
-		double[][] coef = TsMethod.levinson(TsMethod.computeACVF(data1, n));
+		double[][] coef = TsMethod.levinson(TsMethod.acvf(data1, n));
 		double minAIC = Double.POSITIVE_INFINITY;
 		int optOrder = 0;
 		for (int m = 0; m < coef[0].length; m++) {

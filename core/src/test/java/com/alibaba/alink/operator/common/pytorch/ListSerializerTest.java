@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.common.pytorch;
 
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.linalg.tensor.IntTensor;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +16,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class ListSerializerTest {
+public class ListSerializerTest extends AlinkTestBase {
 	@Test
 	public void testSerde() {
 		List <?> inputs = new ArrayList <>(Arrays.asList(1, "a", new IntTensor(new int[] {1, 2})));

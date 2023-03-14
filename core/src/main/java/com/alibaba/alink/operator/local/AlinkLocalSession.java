@@ -21,7 +21,7 @@ public class AlinkLocalSession {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AlinkLocalSession.class);
 
-	private static int DEFAULT_NUM_THREADS = Runtime.getRuntime().availableProcessors() * 4 / 8;
+	private static int DEFAULT_NUM_THREADS = 1;		// Runtime.getRuntime().availableProcessors() * 4 / 8;
 
 	private static final int GLOBAL_POOL_SIZE = Runtime.getRuntime().availableProcessors();
 

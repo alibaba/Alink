@@ -3,7 +3,8 @@ package com.alibaba.alink.operator.common.statistics.statistics;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 
-import com.alibaba.alink.common.AlinkTypes;
+import com.alibaba.alink.common.type.AlinkTypes;
+import com.alibaba.alink.metadata.def.v0.BytesStatistics;
 import com.alibaba.alink.metadata.def.v0.CommonStatistics;
 import com.alibaba.alink.metadata.def.v0.DatasetFeatureStatistics;
 import com.alibaba.alink.metadata.def.v0.DatasetFeatureStatisticsList;
@@ -18,7 +19,11 @@ import com.alibaba.alink.metadata.def.v0.StringStatistics.FreqAndValue;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 /**
@@ -56,8 +61,9 @@ public class FullStats implements Serializable {
 			String[] colNames = srt.colNames;
 			for (int i = 0; i < colNames.length; i++) {
 				String colName = colNames[i];
-				if (AlinkTypes.DOUBLE == colTypes[i] || AlinkTypes.FLOAT == colTypes[i]
-					|| AlinkTypes.LONG == colTypes[i] || AlinkTypes.INT == colTypes[i]) {
+				if (Number.class.isAssignableFrom(colTypes[i].getTypeClass())) {
+					//if (AlinkTypes.DOUBLE == colTypes[i] || AlinkTypes.FLOAT == colTypes[i]
+					//	|| AlinkTypes.LONG == colTypes[i] || AlinkTypes.INT == colTypes[i]) {
 
 					SummaryResultCol src = srt.col(colName);
 
@@ -89,7 +95,8 @@ public class FullStats implements Serializable {
 					}
 
 					Type feaType =
-						(AlinkTypes.DOUBLE == colTypes[i] || AlinkTypes.FLOAT == colTypes[i]) ? Type.FLOAT : Type.INT;
+						(AlinkTypes.DOUBLE == colTypes[i] || AlinkTypes.FLOAT == colTypes[i]
+							|| AlinkTypes.BIG_DEC == colTypes[i]) ? Type.FLOAT : Type.INT;
 
 					builder.addFeatures(
 						FeatureNameStatistics.newBuilder()
@@ -129,18 +136,25 @@ public class FullStats implements Serializable {
 								.setNumMissing(src.countMissValue)
 								.setTotNumValues(src.countTotal)
 								.setNumNonMissing(src.count)
-						);
+						)
+						.setAvgLength((float) src.mean());
+
 					if (src.hasFreq()) {
 						TreeMap <Object, Long> freq = src.getFrequencyMap();
 						stringBuilder.setUnique(freq.size());
-						int k = 0;
-						for (Map.Entry <Object, Long> entry : freq.entrySet()) {
-							stringBuilder.addTopValues(k++,
-								FreqAndValue.newBuilder()
-									.setValue(entry.getKey().toString())
-									.setFrequency(entry.getValue())
-							);
-						}
+
+						ArrayList <Map.Entry <Object, Long>> list = new ArrayList <>(freq.entrySet());
+						Collections.sort(list, new Comparator <Entry <Object, Long>>() {
+							@Override
+							public int compare(Entry <Object, Long> o1, Entry <Object, Long> o2) {
+								return o2.getValue().compareTo(o1.getValue());
+							}
+						});
+						stringBuilder.addTopValues(0,
+							FreqAndValue.newBuilder()
+								.setValue(list.get(0).getKey().toString())
+								.setFrequency(list.get(0).getValue())
+						);
 
 						for (Map.Entry <Object, Long> entry : freq.entrySet()) {
 							stringBuilder.getRankHistogramBuilder().addBuckets(
@@ -154,6 +168,119 @@ public class FullStats implements Serializable {
 							.setName(colName)
 							.setType(Type.STRING)
 							.setStringStats(stringBuilder)
+					);
+				} else if (AlinkTypes.BOOLEAN == colTypes[i]) {
+					SummaryResultCol src = srt.col(colName);
+
+					Long countTrue = (long) src.sum();
+					Long countFalse = src.count - (long) src.sum();
+
+					Histogram.Builder histoBuilder = Histogram.newBuilder()
+						.setType(HistogramType.STANDARD);
+
+					histoBuilder.addBuckets(Histogram.Bucket.newBuilder()
+						.setLowValue(0.0)
+						.setHighValue(1.0)
+						.setSampleCount(countFalse)
+					);
+					histoBuilder.addBuckets(Histogram.Bucket.newBuilder()
+						.setLowValue(1.0)
+						.setHighValue(2.0)
+						.setSampleCount(countTrue)
+					);
+
+					Histogram.Builder percentileBuilder = Histogram.newBuilder()
+						.setType(HistogramType.QUANTILES);
+
+					int k = (int) (countFalse * 10 / src.count);
+					for (int j = 0; j < 10; j++) {
+						percentileBuilder.addBuckets(Histogram.Bucket.newBuilder()
+							.setLowValue((j <= k) ? 0.0 : 1.0)
+							.setHighValue((j < k) ? 0.0 : 1.0)
+							.setSampleCount(src.count / 10.0)
+						);
+					}
+
+					builder.addFeatures(
+						FeatureNameStatistics.newBuilder()
+							.setName(colName)
+							.setType(Type.INT)
+							.setNumStats(
+								NumericStatistics.newBuilder()
+									.setCommonStats(
+										CommonStatistics.newBuilder()
+											.setNumMissing(src.countMissValue)
+											.setTotNumValues(src.countTotal)
+											.setNumNonMissing(src.count)
+											.setAvgNumValues(1)
+											.setMinNumValues(1)
+											.setMaxNumValues(1)
+									)
+									.setNumZeros(src.countZero)
+									.setMax(src.maxDouble())
+									.setMin(src.minDouble())
+									.setMean(src.mean())
+									.setStdDev(src.standardDeviation())
+									.setMedian((countTrue >= countFalse) ? 1.0 : 0.0)
+									.addHistograms(histoBuilder)
+									.addHistograms(percentileBuilder)
+							)
+					);
+
+					StringStatistics.Builder stringBuilder = StringStatistics.newBuilder()
+						.setCommonStats(
+							CommonStatistics.newBuilder()
+								.setNumMissing(src.countMissValue)
+								.setTotNumValues(src.countTotal)
+								.setNumNonMissing(src.count)
+						)
+						.setUnique(((countTrue > 0) ? 1 : 0) + ((countFalse > 0) ? 1 : 0));
+
+					stringBuilder.addTopValues(0,
+						FreqAndValue.newBuilder()
+							.setValue((countTrue >= countFalse) ? "true" : "false")
+							.setFrequency((countTrue >= countFalse) ? countTrue : countFalse)
+					);
+
+					stringBuilder.getRankHistogramBuilder().addBuckets(
+						Bucket.newBuilder().setLabel("true").setSampleCount(countTrue)
+					);
+					stringBuilder.getRankHistogramBuilder().addBuckets(
+						Bucket.newBuilder().setLabel("false").setSampleCount(countFalse)
+					);
+
+					builder.addFeatures(
+						FeatureNameStatistics.newBuilder()
+							.setName(colName + "_categorical")
+							.setType(Type.STRING)
+							.setStringStats(stringBuilder)
+					);
+
+				} else if (AlinkTypes.VARBINARY == colTypes[i]) {
+					SummaryResultCol src = srt.col(colName);
+
+					BytesStatistics.Builder bytesBuilder = BytesStatistics.newBuilder()
+						.setCommonStats(
+							CommonStatistics.newBuilder()
+								.setNumMissing(src.countMissValue)
+								.setTotNumValues(src.countTotal)
+								.setNumNonMissing(src.count)
+						)
+						.setAvgNumBytes((float) src.mean())
+						.setMinNumBytes((float) src.minDouble())
+						.setMaxNumBytes((float) src.maxDouble())
+						.setMaxNumBytesInt((null == src.max) ? 0L : ((Number) src.max).longValue());
+
+					if (src.hasFreq()) {
+						TreeMap <Object, Long> freq = src.getFrequencyMap();
+						bytesBuilder.setUnique(freq.size());
+					}
+
+					builder.addFeatures(
+						FeatureNameStatistics.newBuilder()
+							.setName(colName)
+							.setType(Type.BYTES)
+							.setBytesStats(bytesBuilder)
 					);
 				}
 			}

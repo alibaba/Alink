@@ -5,6 +5,7 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
@@ -13,8 +14,8 @@ import com.alibaba.alink.common.io.filesystem.AkUtils.AkMeta;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
+import com.alibaba.alink.operator.batch.utils.DataSetUtil;
 import com.alibaba.alink.operator.common.io.partition.AkSinkCollectorCreator;
-import com.alibaba.alink.operator.common.io.partition.Utils;
 import com.alibaba.alink.params.io.AkSinkBatchParams;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.ArrayUtils;
  */
 @IoOpAnnotation(name = "ak", ioType = IOType.SinkBatch)
 @NameCn("AK文件导出")
+@NameEn("Ak Sink")
 public final class AkSinkBatchOp extends BaseSinkBatchOp <AkSinkBatchOp>
 	implements AkSinkBatchParams <AkSinkBatchOp> {
 
@@ -45,7 +47,7 @@ public final class AkSinkBatchOp extends BaseSinkBatchOp <AkSinkBatchOp>
 	public AkSinkBatchOp sinkFrom(BatchOperator <?> in) {
 		if (getPartitionCols() != null) {
 
-			Utils.partitionAndWriteFile(
+			DataSetUtil.partitionAndWriteFile(
 				in,
 				new AkSinkCollectorCreator(
 					new AkMeta(

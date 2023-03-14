@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.batch.tensorflow;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.operator.batch.utils.MapBatchOp;
 import com.alibaba.alink.operator.common.tensorflow.TFSavedModelPredictMapper;
@@ -13,6 +14,7 @@ import com.alibaba.alink.params.tensorflow.savedmodel.TFSavedModelPredictParams;
  */
 @ParamSelectColumnSpec(name = "selectedCols")
 @NameCn("TF SavedModel模型预测")
+@NameEn("TF SaveModel Prediction")
 public final class TFSavedModelPredictBatchOp extends MapBatchOp <TFSavedModelPredictBatchOp>
 	implements TFSavedModelPredictParams <TFSavedModelPredictBatchOp> {
 

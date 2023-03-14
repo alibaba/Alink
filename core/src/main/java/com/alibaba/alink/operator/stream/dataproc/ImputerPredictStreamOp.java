@@ -3,6 +3,7 @@ package com.alibaba.alink.operator.stream.dataproc;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.dataproc.ImputerModelMapper;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
@@ -19,6 +20,7 @@ import com.alibaba.alink.params.dataproc.ImputerPredictParams;
  * If value, will replace missing value with the value.
  */
 @NameCn("缺失值填充流预测")
+@NameEn("Imputer Prediction")
 public class ImputerPredictStreamOp extends ModelMapStreamOp <ImputerPredictStreamOp>
 	implements ImputerPredictParams <ImputerPredictStreamOp> {
 
