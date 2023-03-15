@@ -49,7 +49,7 @@
 
   - PyAlink 根据 Alink 所支持的 Flink 版本提供不同的 Python 包：
 其中，`pyalink` 包对应为 Alink 所支持的最新 Flink 版本，当前为 1.13，而 `pyalink-flink-***` 为旧版本的 Flink 版本，当前提供 `pyalink-flink-1.12`, `pyalink-flink-1.11`, `pyalink-flink-1.10` 和 `pyalink-flink-1.9`。
-  - Python 包的版本号与 Alink 的版本号一致，例如`1.6.0`。
+  - Python 包的版本号与 Alink 的版本号一致，例如`1.6.1`。
 
 ####安装步骤：
 1. 确保使用环境中有Python3，版本限于 3.6，3.7 和 3.8。
@@ -62,11 +62,11 @@
 1. `pyalink` 和 `pyalink-flink-***` 不能同时安装，也不能与旧版本同时安装。
 如果之前安装过 `pyalink` 或者 `pyalink-flink-***`，请使用`pip uninstall pyalink` 或者 `pip uninstall pyalink-flink-***` 卸载之前的版本。
 2. 出现`pip`安装缓慢或不成功的情况，可以参考[这篇文章](https://segmentfault.com/a/1190000006111096)修改pip源，或者直接使用下面的链接下载 whl 包，然后使用 `pip` 安装：
-   - Flink 1.13：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.0/pyalink-1.6.0-py3-none-any.whl) (MD5: ed775a565071b181bbc708dd775a665b)
-   - Flink 1.12：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.0/pyalink_flink_1.12-1.6.0-py3-none-any.whl) (MD5: 95a98d056cfdb68245cfe4ee982112d1)
-   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.0/pyalink_flink_1.11-1.6.0-py3-none-any.whl) (MD5: 8d88d16b01bc58bc932d46c607123670)
-   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.0/pyalink_flink_1.10-1.6.0-py3-none-any.whl) (MD5: 7b8477fe7cfb38e9e06b8b5e7c3eca4d)
-   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.0/pyalink_flink_1.9-1.6.0-py3-none-any.whl) (MD5: 404f0c6f7ea061ca8ad5de5278f0fa8b)
+   - Flink 1.13：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink-1.6.1-py3-none-any.whl) (MD5: a10d57a19c53d206d324273f377a1b13)
+   - Flink 1.12：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink_flink_1.12-1.6.1-py3-none-any.whl) (MD5: 82b2395740fbd960895d16350266ab4d)
+   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink_flink_1.11-1.6.1-py3-none-any.whl) (MD5: 5bf901c084b51ebfa13a62489fafc2f2)
+   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink_flink_1.10-1.6.1-py3-none-any.whl) (MD5: e18c620a3a3423407973b8c3d23a02e0)
+   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink_flink_1.9-1.6.1-py3-none-any.whl) (MD5: 2feaed5f159bb8970400eb3f6eafc7e5)
 3. 如果有多个版本的 Python，可能需要使用特定版本的 `pip`，比如 `pip3`；如果使用 Anaconda，则需要在 Anaconda 命令行中进行安装。
 
 ### 开始使用：
@@ -140,7 +140,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.13_2.11</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -164,7 +164,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.12_2.11</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -188,7 +188,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.11_2.11</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -212,7 +212,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.10_2.11</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -232,7 +232,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.9_2.11</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
