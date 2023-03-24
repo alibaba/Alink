@@ -175,7 +175,7 @@ import com.alibaba.alink.operator.stream.evaluation.EvalBinaryClassStreamOp;
 import com.alibaba.alink.operator.stream.evaluation.EvalMultiClassStreamOp;
 import com.alibaba.alink.operator.stream.evaluation.EvalRegressionStreamOp;
 import com.alibaba.alink.operator.stream.onlinelearning.OnlineLearningStreamOp;
-import com.alibaba.alink.operator.stream.onlinelearning.PipelinePredictStreamOp;
+import com.alibaba.alink.operator.stream.PipelinePredictStreamOp;
 import com.alibaba.alink.operator.stream.sink.ModelStreamFileSinkStreamOp;
 import com.alibaba.alink.operator.stream.source.RandomTableSourceStreamOp;
 import com.alibaba.alink.params.onlinelearning.OnlineLearningTrainParams.OptimMethod;

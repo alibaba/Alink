@@ -11,7 +11,7 @@ Python 类名：RecommendationRankingStreamOp
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| mTableCol | MTable 列名 | 召回列表列 | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| mTableCol | MTable 列名 | 召回列表列 | String | ✓ | 所选列类型为 [M_TABLE, STRING] |  |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
 | rankingCol | 用来排序的得分列 | 用来排序的得分列 | String |  |  | null |

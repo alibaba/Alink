@@ -1,13 +1,13 @@
-# Redis表查找 (LookupRedis)
-Java 类名：com.alibaba.alink.pipeline.dataproc.LookupRedis
+# Redis 表查找Row类型 (LookupRedisRowBatchOp)
+Java 类名：com.alibaba.alink.operator.batch.dataproc.LookupRedisRowBatchOp
 
-Python 类名：LookupRedis
+Python 类名：LookupRedisRowBatchOp
 
 
 ## 功能介绍
 支持数据查找功能，支持多个key的查找，并将查找后的结果中的value列添加到待查询数据后面。
-
-功能类似于 LookUp ，不同的是被查找的数据存储在 Redis 中。
+功能类似于 LookUpBatchOp ，不同的是被查找的数据存储在 Redis 中，
+需要和RedisRowSinkBatchOp组件配合使用，该组件用来保存数据。
 
 ## 参数说明
 
@@ -37,12 +37,10 @@ df = pd.DataFrame([
 
 inOp = BatchOperator.fromDataframe(df, schemaStr='id string, col0 bigint, col1 double, col2 string')
 
-redisIP = "*"
-redisPort = 26379
+redisIP = "*:*"
 
-RedisSinkBatchOp()\
-	.setRedisIP(redisIP)\
-	.setRedisPort(redisPort)\
+RedisRowSinkBatchOp()\
+	.setRedisIPs([redisIP])\
 	.setKeyCols(["id"])\
 	.setPluginVersion("2.9.0")\
 	.setValueCols(["col0", "col1", "col2"])\
@@ -53,49 +51,42 @@ BatchOperator.execute()
 df2 = pd.DataFrame([
     ["id001"]
 ])
-needToLookup = StreamOperator.fromDataframe(df2, schemaStr="id string")
+needToLookup = BatchOperator.fromDataframe(df2, schemaStr="id string")
 
-LookupRedis()\
-	.setRedisIP(redisIP)\
-	.setRedisPort(redisPort)\
+LookupRedisRowBatchOp()\
+	.setRedisIPs([redisIP])\
 	.setPluginVersion("2.9.0")\
 	.setSelectedCols(["id"])\
 	.setOutputSchemaStr("col0 bigint, col1 double, col2 string")\
-	.transform(needToLookup)\
-	.print()
+	.linkFrom(needToLookup)\
+	.lazyPrint(10)
 
-StreamOperator.execute()
+BatchOperator.execute()
 ```
 ### Java 代码
 ```java
-import org.apache.flink.types.Row;
-
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.sink.RedisSinkBatchOp;
+import com.alibaba.alink.operator.batch.dataproc.LookupRedisRowBatchOp;
+import com.alibaba.alink.operator.batch.sink.RedisRowSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.source.MemSourceStreamOp;
-import com.alibaba.alink.pipeline.dataproc.LookupRedis;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Test;
 
 import java.util.Collections;
 
-public class LookupRedisTest extends AlinkTestBase {
+public class LookupRedisRowBatchOpTest extends AlinkTestBase {
 	@Test
 	public void map() throws Exception {
-		String redisIP = "*";
-		int redisPort = 26379;
+		String redisIP = "*:*";
 
 		MemSourceBatchOp memSourceBatchOp = new MemSourceBatchOp(
 			Collections.singletonList(Row.of("id001", 123L, 45.6, "str")),
 			"id string, col0 bigint, col1 double, col2 string"
 		);
 
-		new RedisSinkBatchOp()
-			.setRedisIP(redisIP)
-			.setRedisPort(redisPort)
+		new RedisRowSinkBatchOp()
+			.setRedisIPs(redisIP)
 			.setKeyCols("id")
 			.setPluginVersion("2.9.0")
 			.setValueCols("col0", "col1", "col2")
@@ -103,21 +94,20 @@ public class LookupRedisTest extends AlinkTestBase {
 
 		BatchOperator.execute();
 
-		MemSourceStreamOp needToLookup = new MemSourceStreamOp(
+		MemSourceBatchOp needToLookup = new MemSourceBatchOp(
 			Collections.singletonList(Row.of("id001")),
 			"id string"
 		);
 
-		new LookupRedis()
-			.setRedisIP(redisIP)
-			.setRedisPort(redisPort)
+		new LookupRedisRowBatchOp()
+			.setRedisIPs(redisIP)
 			.setPluginVersion("2.9.0")
 			.setSelectedCols("id")
 			.setOutputSchemaStr("col0 bigint, col1 double, col2 string")
-			.transform(needToLookup)
-			.print();
+			.linkFrom(needToLookup)
+			.lazyPrint(1);
 
-		StreamOperator.execute();
+		BatchOperator.execute();
 	}
 
 }
@@ -125,5 +115,5 @@ public class LookupRedisTest extends AlinkTestBase {
 
 ### 运行结果
 | id    | col0 |    col1 | col2 |
-|-------+------+---------+------|
+|-------|------|---------|------|
 | id001 |  123 | 45.6000 | str  |

@@ -17,10 +17,10 @@ Python 类名：Id3TrainBatchOp
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| featureCols | 特征列名 | 特征列名，必选 | String[] | ✓ | 所选列类型为 [BOOLEAN, DATE, DOUBLE, FLOAT, INTEGER, LONG, SHORT, STRING, TIME, TIMESTAMP] |  |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  | 所选列类型为 [BOOLEAN, DATE, DOUBLE, FLOAT, INTEGER, LONG, SHORT, STRING, TIME, TIMESTAMP] |  |
 | createTreeMode | 创建树的模式。 | series表示每个单机创建单颗树，parallel表示并行创建单颗树。 | String |  |  | "series" |
+| featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BOOLEAN, DATE, DOUBLE, FLOAT, INTEGER, LONG, SHORT, STRING, TIME, TIMESTAMP] | null |
 | maxBins | 连续特征进行分箱的最大个数 | 连续特征进行分箱的最大个数。 | Integer |  |  | 128 |
 | maxDepth | 树的深度限制 | 树的深度限制 | Integer |  |  | 2147483647 |
 | maxLeaves | 叶节点的最多个数 | 叶节点的最多个数 | Integer |  |  | 2147483647 |

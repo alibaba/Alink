@@ -1,4 +1,4 @@
-# HugeStringIndexer预测 (HugeMultiStringIndexerPredictBatchOp)
+# HugeMultiStringIndexer预测 (HugeMultiStringIndexerPredictBatchOp)
 Java 类名：com.alibaba.alink.operator.batch.dataproc.HugeMultiStringIndexerPredictBatchOp
 
 Python 类名：HugeMultiStringIndexerPredictBatchOp

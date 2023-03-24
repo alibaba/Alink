@@ -42,7 +42,7 @@ holt-winters支持2种季节类型： additive 和 multiplicative
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
-| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE, STRING] |  |
 | alpha | alpha | alpha | Double |  | [0.0, 1.0] | 0.3 |
 | beta | beta | beta | Double |  | [0.0, 1.0] | 0.1 |
 | doSeasonal | 时间是否具有季节性 | 时间是否具有季节性 | Boolean |  |  | false |

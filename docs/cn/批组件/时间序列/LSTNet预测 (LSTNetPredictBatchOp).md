@@ -16,7 +16,7 @@ Python 类名：LSTNetPredictBatchOp
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
-| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE, STRING] |  |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | predictNum | 预测条数 | 预测条数 | Integer |  |  | 1 |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |

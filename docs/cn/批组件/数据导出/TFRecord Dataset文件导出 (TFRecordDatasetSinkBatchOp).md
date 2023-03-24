@@ -1,4 +1,4 @@
-# TFRecordDataset文件导出 (TFRecordDatasetSinkBatchOp)
+# TFRecord Dataset文件导出 (TFRecordDatasetSinkBatchOp)
 Java 类名：com.alibaba.alink.operator.batch.sink.TFRecordDatasetSinkBatchOp
 
 Python 类名：TFRecordDatasetSinkBatchOp

@@ -20,7 +20,7 @@ Python 类名：CommunityDetectionClusterBatchOp
 | --- | --- | --- | --- | --- | --- | --- |
 | edgeSourceCol | 边表中起点所在列 | 边表中起点所在列 | String | ✓ |  |  |
 | edgeTargetCol | 边表中终点所在列 | 边表中终点所在列 | String | ✓ |  |  |
-| vertexCol | Not available! | Not available! | String | ✓ |  |  |
+| vertexCol | 输入点表中点所在列 | 输入点表中点所在列 | String | ✓ |  |  |
 | asUndirectedGraph | 是否为无向图 | 是否为无向图 | Boolean |  |  | true |
 | delta | delta | delta参数 | Double |  | (0.0, +inf) | 0.2 |
 | edgeWeightCol | 边权重列 | 表示边权重的列 | String |  |  | null |

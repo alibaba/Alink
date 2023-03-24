@@ -29,6 +29,7 @@ Lasso回归模型应用领域和线性回归类似，经常被用来做一些数
 | lambda | 惩罚因子：lambda | 惩罚因子，必选 | Double | ✓ |  |  |
 | epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | [0.0, +inf) | 1.0E-6 |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
+| learningRate | 学习率 | 优化算法的学习率，默认0.1。 | Double |  |  | 0.1 |
 | maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
 | optimMethod | 优化方法 | 优化问题求解时选择的优化方法 | String |  | "LBFGS", "GD", "Newton", "SGD", "OWLQN" | null |
 | standardization | 是否正则化 | 是否对训练数据做正则化，默认true | Boolean |  |  | true |

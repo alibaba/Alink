@@ -10,7 +10,7 @@ Python 类名：OneHotEncoder
 | --- | --- | --- | --- | --- | --- | --- |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
 | discreteThresholds | 离散个数阈值 | 离散个数阈值，低于该阈值的离散样本将不会单独成一个组别。 | Integer |  |  | -2147483648 |
-| discreteThresholdsArray | 离散个数阈值 | 离散个数阈值，每一列对应数组中一个元素。 | Integer[] |  |  | null |
+| discreteThresholdsArray | 离散个数阈值数组 | 离散个数阈值，每一列对应数组中一个元素。 | Integer[] |  |  | null |
 | dropLast | 是否删除最后一个元素 | 删除最后一个元素是为了保证线性无关性。默认true | Boolean |  |  | true |
 | encode | 编码方法 | 编码方法 | String |  | "VECTOR", "ASSEMBLED_VECTOR", "INDEX" | "ASSEMBLED_VECTOR" |
 | handleInvalid | 未知token处理策略 | 未知token处理策略。"keep"表示用最大id加1代替, "skip"表示补null， "error"表示抛异常 | String |  | "KEEP", "ERROR", "SKIP" | "KEEP" |

@@ -17,7 +17,7 @@ Python 类名：LookupValueInTimeSeriesStreamOp
 | --- | --- | --- | --- | --- | --- | --- |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
 | timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String | ✓ | 所选列类型为 [TIMESTAMP] |  |
-| timeSeriesCol | 时间序列列 | 时间序列列，是特殊的MTable类型，一列是时间，一列是值 | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| timeSeriesCol | 时间序列列 | 时间序列列，是特殊的MTable类型，一列是时间，一列是值 | String | ✓ | 所选列类型为 [M_TABLE, STRING] |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 

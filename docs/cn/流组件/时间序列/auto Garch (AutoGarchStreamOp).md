@@ -25,7 +25,7 @@ garch是只需要指定MaxOrder, 不需要指定p/d/q, 对每个分组分别计�
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
-| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE, STRING] |  |
 | icType | 评价指标 | 评价指标 | String |  | "AIC", "BIC", "HQIC" | "AIC" |
 | ifGARCH11 | 是否用garch11 | 是否用garch11 | Boolean |  |  | true |
 | maxOrder | 模型(p, q)上限 | 模型(p, q)上限 | Integer |  |  | 10 |

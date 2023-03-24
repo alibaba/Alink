@@ -1,4 +1,4 @@
-# parquet文件读入 (ParquetSourceBatchOp)
+# Parquet文件读入 (ParquetSourceBatchOp)
 Java 类名：com.alibaba.alink.operator.batch.source.ParquetSourceBatchOp
 
 Python 类名：ParquetSourceBatchOp

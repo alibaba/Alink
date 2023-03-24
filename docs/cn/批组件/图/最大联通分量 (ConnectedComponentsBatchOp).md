@@ -20,7 +20,7 @@ Python 类名：ConnectedComponentsBatchOp
 | edgeTargetCol | 边表中终点所在列 | 边表中终点所在列 | String | ✓ |  |  |
 | asUndirectedGraph | 是否为无向图 | 是否为无向图 | Boolean |  |  | true |
 | maxIter | 最大迭代次数 | 最大迭代次数 | Integer |  | [1, +inf) | 50 |
-| vertexCol | Not available! | Not available! | String |  |  | "vertex" |
+| vertexCol | 边的源顶点 | 边的源顶点 | String |  |  | "vertex" |
 
 
 ## 代码示例

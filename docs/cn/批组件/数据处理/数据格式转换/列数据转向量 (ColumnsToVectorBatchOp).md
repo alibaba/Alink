@@ -15,7 +15,7 @@ Python 类名：ColumnsToVectorBatchOp
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |  |
 | handleInvalid | 解析异常处理策略 | 解析异常处理策略，可选为ERROR（抛出异常）或者SKIP（输出NULL） | String |  | "ERROR", "SKIP" | "ERROR" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
-| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  |  | null |
+| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | vectorSize | 向量长度 | 向量长度 | Long |  |  | -1 |
 
 ## 代码示例

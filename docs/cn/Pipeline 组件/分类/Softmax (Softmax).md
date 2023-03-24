@@ -31,6 +31,7 @@ Softmax算法是Logistic回归算法的推广，Logistic回归主要是用来处
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  |  | null |
 | l1 | L1 正则化系数 | L1 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
 | l2 | L2 正则化系数 | L2 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
+| learningRate | 学习率 | 优化算法的学习率，默认0.1。 | Double |  |  | 0.1 |
 | maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | optimMethod | 优化方法 | 优化问题求解时选择的优化方法 | String |  | "LBFGS", "GD", "Newton", "SGD", "OWLQN" | null |

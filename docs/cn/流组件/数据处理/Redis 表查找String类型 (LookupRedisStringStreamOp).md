@@ -5,8 +5,9 @@ Python 类名：LookupRedisStringStreamOp
 
 
 ## 功能介绍
-支持数据查找功能，支持多个key的查找，并将查找后的结果中的value列添加到待查询数据后面。
-可以和RedisStringSinkBatchOp或RedisStringSinkStreamOp组件配合使用，也可以查找其他方式保存到Redis中的String类型数据。
+支持数据查找功能，查找每个key在Redis对应的value。
+
+功能类似于 LookupRedisRowStreamOp ，不同的是被查找的是一列字符串类型的数据，不需要设定outputSchemaStr参数。
 
 ## 参数说明
 

@@ -5,7 +5,7 @@ Python 类名：LookupRedisStringBatchOp
 
 
 ## 功能介绍
-支持数据查找功能，支持多个key的查找，并将查找后的结果中的value列添加到待查询数据后面。
+支持数据查找功能，查找每个key在Redis对应的value。
 功能类似于 LookUpBatchOp ，不同的是被查找的数据存储在 Redis 中，
 可以和RedisStringSinkBatchOp或RedisStringSinkStreamOp组件配合使用，也可以查找其他方式保存到Redis中的String类型数据。
 

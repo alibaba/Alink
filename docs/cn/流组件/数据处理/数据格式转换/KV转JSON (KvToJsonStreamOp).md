@@ -14,8 +14,8 @@ Python 类名：KvToJsonStreamOp
 | jsonCol | JSON列名 | JSON列的列名 | String | ✓ |  |  |
 | kvCol | KV列名 | KV列的列名 | String | ✓ | 所选列类型为 [STRING] |  |
 | handleInvalid | 解析异常处理策略 | 解析异常处理策略，可选为ERROR（抛出异常）或者SKIP（输出NULL） | String |  | "ERROR", "SKIP" | "ERROR" |
-| kvColDelimiter | 分隔符 | 当输入数据为稀疏格式时，key-value对之间的分隔符 | String |  |  | "," |
-| kvValDelimiter | 分隔符 | 当输入数据为稀疏格式时，key和value的分割符 | String |  |  | ":" |
+| kvColDelimiter | 不同key之间分隔符 | 当输入数据为稀疏格式时，key-value对之间的分隔符 | String |  |  | "," |
+| kvValDelimiter | key和value之间分隔符 | 当输入数据为稀疏格式时，key和value的分割符 | String |  |  | ":" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 
 ## 代码示例

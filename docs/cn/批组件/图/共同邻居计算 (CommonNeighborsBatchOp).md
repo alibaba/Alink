@@ -21,7 +21,7 @@ Adamic Adar距离，首先计算每个节点的权重为 1/log(当前节点的�
 | edgeSourceCol | 边表中起点所在列 | 边表中起点所在列 | String | ✓ |  |  |
 | edgeTargetCol | 边表中终点所在列 | 边表中终点所在列 | String | ✓ |  |  |
 | isBipartiteGraph | 是否二部图 | 是否二部图 | Boolean |  |  | false |
-| needTransformID | Not available! | Not available! | Boolean |  |  | true |
+| needTransformID | 是否需要转换到ID | 是否需要转换到ID | Boolean |  |  | true |
 
 ## 代码示例
 ### Python 代码

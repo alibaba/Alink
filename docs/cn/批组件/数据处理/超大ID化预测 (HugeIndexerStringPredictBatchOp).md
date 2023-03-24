@@ -1,4 +1,4 @@
-# 并行ID化预测 (HugeIndexerStringPredictBatchOp)
+# 超大ID化预测 (HugeIndexerStringPredictBatchOp)
 Java 类名：com.alibaba.alink.operator.batch.dataproc.HugeIndexerStringPredictBatchOp
 
 Python 类名：HugeIndexerStringPredictBatchOp

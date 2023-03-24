@@ -23,7 +23,7 @@ Arima 详细介绍请见链接 https://en.wikipedia.org/wiki/Autoregressive_inte
 | --- | --- | --- | --- | --- | --- | --- |
 | order | 模型(p, d, q) | 模型(p, d, q) | Integer[] | ✓ | lengthOfArray = 3 |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
-| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE, STRING] |  |
 | estMethod | 估计方法 | 估计方法 | String |  | "Mom", "Hr", "Css", "CssMle" | "CssMle" |
 | predictNum | 预测条数 | 预测条数 | Integer |  |  | 1 |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |

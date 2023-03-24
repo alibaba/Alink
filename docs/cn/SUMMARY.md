@@ -8,7 +8,7 @@
 * [LibSvm文件读入 (LibSvmSourceBatchOp)](batch/source/LibSvmSourceBatchOp.md)
 * [内存数据读入 (MemSourceBatchOp)](batch/source/MemSourceBatchOp.md)
 * [数值队列数据源 (NumSeqSourceBatchOp)](batch/source/NumSeqSourceBatchOp.md)
-* [parquet文件读入 (ParquetSourceBatchOp)](batch/source/ParquetSourceBatchOp.md)
+* [Parquet文件读入 (ParquetSourceBatchOp)](batch/source/ParquetSourceBatchOp.md)
 * [随机生成结构数据源 (RandomTableSourceBatchOp)](batch/source/RandomTableSourceBatchOp.md)
 * [随机生成向量数据源 (RandomVectorSourceBatchOp)](batch/source/RandomVectorSourceBatchOp.md)
 * [TFRecordDataset文件读入 (TFRecordDatasetSourceBatchOp)](batch/source/TFRecordDatasetSourceBatchOp.md)
@@ -22,32 +22,32 @@
 * [模型流导出 (AppendModelStreamFileSinkBatchOp)](batch/sink/AppendModelStreamFileSinkBatchOp.md)
 * [Catalog数据表导出 (CatalogSinkBatchOp)](batch/sink/CatalogSinkBatchOp.md)
 * [CSV文件导出 (CsvSinkBatchOp)](batch/sink/CsvSinkBatchOp.md)
-* [导出到HBase (HBaseSinkBatchOp)](batch/sink/HBaseSinkBatchOp.md)
+* [HBase导出 (HBaseSinkBatchOp)](batch/sink/HBaseSinkBatchOp.md)
 * [LibSvm文件导出 (LibSvmSinkBatchOp)](batch/sink/LibSvmSinkBatchOp.md)
 * [导出到Redis (RedisRowSinkBatchOp)](batch/sink/RedisRowSinkBatchOp.md)
 * [kv均为String的数据导出到Redis (RedisStringSinkBatchOp)](batch/sink/RedisStringSinkBatchOp.md)
-* [TFRecordDataset文件导出 (TFRecordDatasetSinkBatchOp)](batch/sink/TFRecordDatasetSinkBatchOp.md)
+* [TFRecord Dataset文件导出 (TFRecordDatasetSinkBatchOp)](batch/sink/TFRecordDatasetSinkBatchOp.md)
 * [Text文件导出 (TextSinkBatchOp)](batch/sink/TextSinkBatchOp.md)
 * [TSV文件导出 (TsvSinkBatchOp)](batch/sink/TsvSinkBatchOp.md)
+* [Xlsx表格写出 (XlsSinkBatchOp)](batch/sink/XlsSinkBatchOp.md)
 
 ### 数据处理
 * [Agg表查找 (AggLookupBatchOp)](batch/dataproc/AggLookupBatchOp.md)
 * [添加id列 (AppendIdBatchOp)](batch/dataproc/AppendIdBatchOp.md)
 * [前N个数 (FirstNBatchOp)](batch/dataproc/FirstNBatchOp.md)
 * [MTable展开 (FlattenMTableBatchOp)](batch/dataproc/FlattenMTableBatchOp.md)
-* [并行ID化预测 (HugeIndexerStringPredictBatchOp)](batch/dataproc/HugeIndexerStringPredictBatchOp.md)
+* [超大ID化预测 (HugeIndexerStringPredictBatchOp)](batch/dataproc/HugeIndexerStringPredictBatchOp.md)
 * [HugeLookup (HugeLookupBatchOp)](batch/dataproc/HugeLookupBatchOp.md)
 * [多列并行反ID化预测 (HugeMultiIndexerStringPredictBatchOp)](batch/dataproc/HugeMultiIndexerStringPredictBatchOp.md)
-* [HugeStringIndexer预测 (HugeMultiStringIndexerPredictBatchOp)](batch/dataproc/HugeMultiStringIndexerPredictBatchOp.md)
+* [HugeMultiStringIndexer预测 (HugeMultiStringIndexerPredictBatchOp)](batch/dataproc/HugeMultiStringIndexerPredictBatchOp.md)
 * [并行ID化预测 (HugeStringIndexerPredictBatchOp)](batch/dataproc/HugeStringIndexerPredictBatchOp.md)
 * [缺失值填充批预测 (ImputerPredictBatchOp)](batch/dataproc/ImputerPredictBatchOp.md)
 * [缺失值填充训练 (ImputerTrainBatchOp)](batch/dataproc/ImputerTrainBatchOp.md)
 * [IndexToString预测 (IndexToStringPredictBatchOp)](batch/dataproc/IndexToStringPredictBatchOp.md)
 * [JSON值抽取 (JsonValueBatchOp)](batch/dataproc/JsonValueBatchOp.md)
 * [表查找 (LookupBatchOp)](batch/dataproc/LookupBatchOp.md)
-* [添加HBase数据 (LookupHBaseBatchOp)](batch/dataproc/LookupHBaseBatchOp.md)
-* [表查找 (LookupRecentDaysBatchOp)](batch/dataproc/LookupRecentDaysBatchOp.md)
-* [Redis 表查找 (LookupRedisRowBatchOp)](batch/dataproc/LookupRedisRowBatchOp.md)
+* [查询HBase数据表 (LookupHBaseBatchOp)](batch/dataproc/LookupHBaseBatchOp.md)
+* [Redis 表查找Row类型 (LookupRedisRowBatchOp)](batch/dataproc/LookupRedisRowBatchOp.md)
 * [Redis 表查找String类型 (LookupRedisStringBatchOp)](batch/dataproc/LookupRedisStringBatchOp.md)
 * [绝对值最大化批预测 (MaxAbsScalerPredictBatchOp)](batch/dataproc/MaxAbsScalerPredictBatchOp.md)
 * [绝对值最大化训练 (MaxAbsScalerTrainBatchOp)](batch/dataproc/MaxAbsScalerTrainBatchOp.md)
@@ -150,19 +150,37 @@
 * [SQL操作：Where (WhereBatchOp)](batch/sql/WhereBatchOp.md)
 
 ### 特征工程
+* [AutoCross训练 (AutoCrossAlgoTrainBatchOp)](batch/feature/AutoCrossAlgoTrainBatchOp.md)
+* [AutoCross预测 (AutoCrossPredictBatchOp)](batch/feature/AutoCrossPredictBatchOp.md)
+* [AutoCross训练 (AutoCrossTrainBatchOp)](batch/feature/AutoCrossTrainBatchOp.md)
 * [二值化 (BinarizerBatchOp)](batch/feature/BinarizerBatchOp.md)
+* [分箱预测 (BinningPredictBatchOp)](batch/feature/BinningPredictBatchOp.md)
+* [分箱训练 (BinningTrainBatchOp)](batch/feature/BinningTrainBatchOp.md)
 * [分桶 (BucketizerBatchOp)](batch/feature/BucketizerBatchOp.md)
+* [C45决策树分类编码器训练 (C45EncoderTrainBatchOp)](batch/feature/C45EncoderTrainBatchOp.md)
+* [CART决策树分类编码器训练 (CartEncoderTrainBatchOp)](batch/feature/CartEncoderTrainBatchOp.md)
+* [CART决策树回归编码器训练 (CartRegEncoderTrainBatchOp)](batch/feature/CartRegEncoderTrainBatchOp.md)
 * [卡方选择器 (ChiSqSelectorBatchOp)](batch/feature/ChiSqSelectorBatchOp.md)
+* [cross候选特征选择预测 (CrossCandidateSelectorPredictBatchOp)](batch/feature/CrossCandidateSelectorPredictBatchOp.md)
+* [cross候选特征选择训练 (CrossCandidateSelectorTrainBatchOp)](batch/feature/CrossCandidateSelectorTrainBatchOp.md)
 * [Cross特征预测 (CrossFeaturePredictBatchOp)](batch/feature/CrossFeaturePredictBatchOp.md)
 * [Cross特征训练 (CrossFeatureTrainBatchOp)](batch/feature/CrossFeatureTrainBatchOp.md)
-* [离散余弦变换 (DCTBatchOp)](batch/feature/DCTBatchOp.md)
+* [Discrete Cosine Transform (DCTBatchOp)](batch/feature/DCTBatchOp.md)
+* [决策树编码器训练 (DecisionTreeEncoderTrainBatchOp)](batch/feature/DecisionTreeEncoderTrainBatchOp.md)
+* [决策树回归编码器训练 (DecisionTreeRegEncoderTrainBatchOp)](batch/feature/DecisionTreeRegEncoderTrainBatchOp.md)
 * [等宽离散化预测 (EqualWidthDiscretizerPredictBatchOp)](batch/feature/EqualWidthDiscretizerPredictBatchOp.md)
 * [等宽离散化训练 (EqualWidthDiscretizerTrainBatchOp)](batch/feature/EqualWidthDiscretizerTrainBatchOp.md)
+* [互斥特征捆绑模型预测 (ExclusiveFeatureBundlePredictBatchOp)](batch/feature/ExclusiveFeatureBundlePredictBatchOp.md)
 * [特征哈希 (FeatureHasherBatchOp)](batch/feature/FeatureHasherBatchOp.md)
+* [GBDT分类编码预测 (GbdtEncoderPredictBatchOp)](batch/feature/GbdtEncoderPredictBatchOp.md)
+* [GBDT分类编码训练 (GbdtEncoderTrainBatchOp)](batch/feature/GbdtEncoderTrainBatchOp.md)
+* [GBDT回归编码器训练 (GbdtRegEncoderTrainBatchOp)](batch/feature/GbdtRegEncoderTrainBatchOp.md)
 * [Latest特征生成 (GenerateFeatureOfLatestBatchOp)](batch/feature/GenerateFeatureOfLatestBatchOp.md)
 * [Latest特征生成 (GenerateFeatureOfLatestNDaysBatchOp)](batch/feature/GenerateFeatureOfLatestNDaysBatchOp.md)
 * [窗口特征生成 (GenerateFeatureOfWindowBatchOp)](batch/feature/GenerateFeatureOfWindowBatchOp.md)
 * [Hash Cross特征 (HashCrossFeatureBatchOp)](batch/feature/HashCrossFeatureBatchOp.md)
+* [ID3决策树分类编码器训练 (Id3EncoderTrainBatchOp)](batch/feature/Id3EncoderTrainBatchOp.md)
+* [查找近日特征 (LookupRecentDaysBatchOp)](batch/feature/LookupRecentDaysBatchOp.md)
 * [多热编码预测 (MultiHotPredictBatchOp)](batch/feature/MultiHotPredictBatchOp.md)
 * [多热编码训练 (MultiHotTrainBatchOp)](batch/feature/MultiHotTrainBatchOp.md)
 * [独热编码预测 (OneHotPredictBatchOp)](batch/feature/OneHotPredictBatchOp.md)
@@ -172,6 +190,10 @@
 * [主成分分析训练 (PcaTrainBatchOp)](batch/feature/PcaTrainBatchOp.md)
 * [分位数离散化预测 (QuantileDiscretizerPredictBatchOp)](batch/feature/QuantileDiscretizerPredictBatchOp.md)
 * [分位数离散化训练 (QuantileDiscretizerTrainBatchOp)](batch/feature/QuantileDiscretizerTrainBatchOp.md)
+* [随机森林编码器训练 (RandomForestEncoderTrainBatchOp)](batch/feature/RandomForestEncoderTrainBatchOp.md)
+* [随机森林回归编码器训练 (RandomForestRegEncoderTrainBatchOp)](batch/feature/RandomForestRegEncoderTrainBatchOp.md)
+* [TargetEncoder (TargetEncoderPredictBatchOp)](batch/feature/TargetEncoderPredictBatchOp.md)
+* [TargetEncoder (TargetEncoderTrainBatchOp)](batch/feature/TargetEncoderTrainBatchOp.md)
 * [决策树模型编码 (TreeModelEncoderBatchOp)](batch/feature/TreeModelEncoderBatchOp.md)
 * [向量卡方选择器 (VectorChiSqSelectorBatchOp)](batch/feature/VectorChiSqSelectorBatchOp.md)
 
@@ -196,6 +218,11 @@
 ### 统计分析
 * [卡方检验 (ChiSquareTestBatchOp)](batch/statistics/ChiSquareTestBatchOp.md)
 * [相关系数 (CorrelationBatchOp)](batch/statistics/CorrelationBatchOp.md)
+* [Multi-Dimensional Scaling (MdsBatchOp)](batch/statistics/MdsBatchOp.md)
+* [多重共线性 (MultiCollinearityBatchOp)](batch/statistics/MultiCollinearityBatchOp.md)
+* [分位数 (QuantileBatchOp)](batch/statistics/QuantileBatchOp.md)
+* [排行榜 (RankingListBatchOp)](batch/statistics/RankingListBatchOp.md)
+* [Som (SomBatchOp)](batch/statistics/SomBatchOp.md)
 * [全表统计 (SummarizerBatchOp)](batch/statistics/SummarizerBatchOp.md)
 * [向量卡方检验 (VectorChiSquareTestBatchOp)](batch/statistics/VectorChiSquareTestBatchOp.md)
 * [向量相关系数 (VectorCorrelationBatchOp)](batch/statistics/VectorCorrelationBatchOp.md)
@@ -264,7 +291,11 @@
 * [Lasso回归预测 (LassoRegPredictBatchOp)](batch/regression/LassoRegPredictBatchOp.md)
 * [Lasso回归训练 (LassoRegTrainBatchOp)](batch/regression/LassoRegTrainBatchOp.md)
 * [线性回归预测 (LinearRegPredictBatchOp)](batch/regression/LinearRegPredictBatchOp.md)
+* [线性回归Stepwise预测 (LinearRegStepwisePredictBatchOp)](batch/regression/LinearRegStepwisePredictBatchOp.md)
+* [线性回归Stepwise训练 (LinearRegStepwiseTrainBatchOp)](batch/regression/LinearRegStepwiseTrainBatchOp.md)
 * [线性回归训练 (LinearRegTrainBatchOp)](batch/regression/LinearRegTrainBatchOp.md)
+* [线性SVR预测 (LinearSvrPredictBatchOp)](batch/regression/LinearSvrPredictBatchOp.md)
+* [线性SVR训练 (LinearSvrTrainBatchOp)](batch/regression/LinearSvrTrainBatchOp.md)
 * [随机森林回归预测 (RandomForestRegPredictBatchOp)](batch/regression/RandomForestRegPredictBatchOp.md)
 * [随机森林回归训练 (RandomForestRegTrainBatchOp)](batch/regression/RandomForestRegTrainBatchOp.md)
 * [岭回归预测 (RidgeRegPredictBatchOp)](batch/regression/RidgeRegPredictBatchOp.md)
@@ -273,19 +304,33 @@
 * [XGBoost 回归训练 (XGBoostRegTrainBatchOp)](batch/regression/XGBoostRegTrainBatchOp.md)
 
 ### 聚类
+* [Agnes (AgnesBatchOp)](batch/clustering/AgnesBatchOp.md)
 * [二分K均值聚类预测 (BisectingKMeansPredictBatchOp)](batch/clustering/BisectingKMeansPredictBatchOp.md)
 * [二分K均值聚类训练 (BisectingKMeansTrainBatchOp)](batch/clustering/BisectingKMeansTrainBatchOp.md)
+* [DBSCAN (DbscanBatchOp)](batch/clustering/DbscanBatchOp.md)
+* [DBSCAN预测 (DbscanPredictBatchOp)](batch/clustering/DbscanPredictBatchOp.md)
 * [经纬度K均值聚类预测 (GeoKMeansPredictBatchOp)](batch/clustering/GeoKMeansPredictBatchOp.md)
 * [经纬度K均值聚类训练 (GeoKMeansTrainBatchOp)](batch/clustering/GeoKMeansTrainBatchOp.md)
 * [高斯混合模型预测 (GmmPredictBatchOp)](batch/clustering/GmmPredictBatchOp.md)
 * [高斯混合模型训练 (GmmTrainBatchOp)](batch/clustering/GmmTrainBatchOp.md)
+* [分组Dbscan (GroupDbscanBatchOp)](batch/clustering/GroupDbscanBatchOp.md)
+* [分组Dbscan模型 (GroupDbscanModelBatchOp)](batch/clustering/GroupDbscanModelBatchOp.md)
+* [分组EM (GroupEmBatchOp)](batch/clustering/GroupEmBatchOp.md)
+* [分组经纬度Dbscan (GroupGeoDbscanBatchOp)](batch/clustering/GroupGeoDbscanBatchOp.md)
+* [分组经纬度Dbscan模型 (GroupGeoDbscanModelBatchOp)](batch/clustering/GroupGeoDbscanModelBatchOp.md)
+* [分组Kmeans (GroupKMeansBatchOp)](batch/clustering/GroupKMeansBatchOp.md)
 * [K均值聚类预测 (KMeansPredictBatchOp)](batch/clustering/KMeansPredictBatchOp.md)
 * [K均值聚类训练 (KMeansTrainBatchOp)](batch/clustering/KMeansTrainBatchOp.md)
+* [Kmodes预测 (KModesPredictBatchOp)](batch/clustering/KModesPredictBatchOp.md)
+* [Kmodes训练 (KModesTrainBatchOp)](batch/clustering/KModesTrainBatchOp.md)
 * [LDA预测 (LdaPredictBatchOp)](batch/clustering/LdaPredictBatchOp.md)
 * [LDA训练 (LdaTrainBatchOp)](batch/clustering/LdaTrainBatchOp.md)
 
 ### 关联规则
+* [关联规则预测 (ApplyAssociationRuleBatchOp)](batch/associationrule/ApplyAssociationRuleBatchOp.md)
+* [序列规则预测 (ApplySequenceRuleBatchOp)](batch/associationrule/ApplySequenceRuleBatchOp.md)
 * [FpGrowth (FpGrowthBatchOp)](batch/associationrule/FpGrowthBatchOp.md)
+* [分组FPGrowth训练 (GroupedFpGrowthBatchOp)](batch/associationrule/GroupedFpGrowthBatchOp.md)
 * [PrefixSpan (PrefixSpanBatchOp)](batch/associationrule/PrefixSpanBatchOp.md)
 
 ### 推荐
@@ -319,6 +364,21 @@
 * [UserCf训练 (UserCfTrainBatchOp)](batch/recommendation/UserCfTrainBatchOp.md)
 * [UserCf：UsersPerItem推荐 (UserCfUsersPerItemRecommBatchOp)](batch/recommendation/UserCfUsersPerItemRecommBatchOp.md)
 
+### 金融
+* [Stepwise二分类筛选预测 (BinarySelectorPredictBatchOp)](batch/finance/BinarySelectorPredictBatchOp.md)
+* [Stepwise二分类筛选训练 (BinarySelectorTrainBatchOp)](batch/finance/BinarySelectorTrainBatchOp.md)
+* [评分卡分箱训练 (BinningTrainForScorecardBatchOp)](batch/finance/BinningTrainForScorecardBatchOp.md)
+* [带约束的Stepwise二分类筛选预测 (ConstrainedBinarySelectorPredictBatchOp)](batch/finance/ConstrainedBinarySelectorPredictBatchOp.md)
+* [带约束的Stepwise二分类筛选训练 (ConstrainedBinarySelectorTrainBatchOp)](batch/finance/ConstrainedBinarySelectorTrainBatchOp.md)
+* [带约束的线性回归训练 (ConstrainedLinearRegTrainBatchOp)](batch/finance/ConstrainedLinearRegTrainBatchOp.md)
+* [带约束的逻辑回归训练 (ConstrainedLogisticRegressionTrainBatchOp)](batch/finance/ConstrainedLogisticRegressionTrainBatchOp.md)
+* [带约束的Stepwise回归筛选预测 (ConstrainedRegSelectorPredictBatchOp)](batch/finance/ConstrainedRegSelectorPredictBatchOp.md)
+* [带约束的Stepwise回归筛选训练 (ConstrainedRegSelectorTrainBatchOp)](batch/finance/ConstrainedRegSelectorTrainBatchOp.md)
+* [Stepwise回归筛选预测 (RegressionSelectorPredictBatchOp)](batch/finance/RegressionSelectorPredictBatchOp.md)
+* [Stepwise回归筛选预测 (RegressionSelectorTrainBatchOp)](batch/finance/RegressionSelectorTrainBatchOp.md)
+* [评分卡预测 (ScorecardPredictBatchOp)](batch/finance/ScorecardPredictBatchOp.md)
+* [评分卡训练 (ScorecardTrainBatchOp)](batch/finance/ScorecardTrainBatchOp.md)
+
 ### 图
 * [共同邻居计算 (CommonNeighborsBatchOp)](batch/graph/CommonNeighborsBatchOp.md)
 * [标签传播分类 (CommunityDetectionClassifyBatchOp)](batch/graph/CommunityDetectionClassifyBatchOp.md)
@@ -340,6 +400,7 @@
 * [树深度 (TreeDepthBatchOp)](batch/graph/TreeDepthBatchOp.md)
 * [计数三角形 (TriangleListBatchOp)](batch/graph/TriangleListBatchOp.md)
 * [点聚类系数 (VertexClusterCoefficientBatchOp)](batch/graph/VertexClusterCoefficientBatchOp.md)
+* [点邻居搜索 (VertexNeighborSearchBatchOp)](batch/graph/VertexNeighborSearchBatchOp.md)
 
 ### 评估
 * [二分类评估 (EvalBinaryClassBatchOp)](batch/evaluation/EvalBinaryClassBatchOp.md)
@@ -381,8 +442,11 @@
 * [局部核密度估计异常检测 (KdeOutlierBatchOp)](batch/outlier/KdeOutlierBatchOp.md)
 * [局部异常因子异常检测 (LofOutlierBatchOp)](batch/outlier/LofOutlierBatchOp.md)
 * [Mad异常检测 (MadOutlierBatchOp)](batch/outlier/MadOutlierBatchOp.md)
+* [One Class SVM异常检测模型预测 (OcsvmModelOutlierPredictBatchOp)](batch/outlier/OcsvmModelOutlierPredictBatchOp.md)
+* [One Class SVM异常检测模型训练 (OcsvmModelOutlierTrainBatchOp)](batch/outlier/OcsvmModelOutlierTrainBatchOp.md)
 * [One-Class SVM分组异常检测 (OcsvmOutlier4GroupedDataBatchOp)](batch/outlier/OcsvmOutlier4GroupedDataBatchOp.md)
 * [One-Class SVM异常检测 (OcsvmOutlierBatchOp)](batch/outlier/OcsvmOutlierBatchOp.md)
+* [SHEsd异常检测 (SHEsdOutlierBatchOp)](batch/outlier/SHEsdOutlierBatchOp.md)
 * [SOS 异常检测 (SosOutlierBatchOp)](batch/outlier/SosOutlierBatchOp.md)
 
 ### 相似度
@@ -405,6 +469,7 @@
 * [批式数据打印 (PrintBatchOp)](batch/utils/PrintBatchOp.md)
 * [UDF (UDFBatchOp)](batch/utils/UDFBatchOp.md)
 * [UDTF (UDTFBatchOp)](batch/utils/UDTFBatchOp.md)
+* [Pipeline 预测 (PipelinePredictBatchOp)](batch/PipelinePredictBatchOp.md)
 
 ### 音频
 * [MFCC特征提取 (ExtractMfccFeatureBatchOp)](batch/audio/ExtractMfccFeatureBatchOp.md)
@@ -444,11 +509,6 @@
 * [Prophet训练 (ProphetTrainBatchOp)](batch/timeseries/ProphetTrainBatchOp.md)
 * [Shift (ShiftBatchOp)](batch/timeseries/ShiftBatchOp.md)
 
-## common
-
-### 异常检测
-* [IForest序列异常检测 (IForestOutlier4GroupedData)](common/outlier/IForestOutlier4GroupedData.md)
-
 ## Pipeline 组件
 
 ### 数据处理
@@ -459,9 +519,9 @@
 * [Json值抽取 (JsonValue)](pipeline/dataproc/JsonValue.md)
 * [表查找 (Lookup)](pipeline/dataproc/Lookup.md)
 * [查找HBase数据 (LookupHBase)](pipeline/dataproc/LookupHBase.md)
-* [表查找 (LookupRecentDays)](pipeline/dataproc/LookupRecentDays.md)
-* [Redis表查找 (LookupRedis)](pipeline/dataproc/LookupRedis.md)
-* [Redis 表查找String类型 (LookupStringRedis)](pipeline/dataproc/LookupStringRedis.md)
+* [查找近日特征 (LookupRecentDaysModel)](pipeline/dataproc/LookupRecentDaysModel.md)
+* [Redis表查找 (LookupRedisRow)](pipeline/dataproc/LookupRedisRow.md)
+* [Redis 表查找String类型 (LookupRedisString)](pipeline/dataproc/LookupRedisString.md)
 * [绝对值最大化 (MaxAbsScaler)](pipeline/dataproc/MaxAbsScaler.md)
 * [绝对值最大化模型 (MaxAbsScalerModel)](pipeline/dataproc/MaxAbsScalerModel.md)
 * [归一化 (MinMaxScaler)](pipeline/dataproc/MinMaxScaler.md)
@@ -526,7 +586,11 @@
 * [SQL操作：Select (Select)](pipeline/sql/Select.md)
 
 ### 特征工程
+* [Auto Cross (AutoCross)](pipeline/feature/AutoCross.md)
+* [Auto Cross模型 (AutoCrossModel)](pipeline/feature/AutoCrossModel.md)
 * [二值化 (Binarizer)](pipeline/feature/Binarizer.md)
+* [分箱 (Binning)](pipeline/feature/Binning.md)
+* [分箱模型 (BinningModel)](pipeline/feature/BinningModel.md)
 * [分桶 (Bucketizer)](pipeline/feature/Bucketizer.md)
 * [C45编码 (C45Encoder)](pipeline/feature/C45Encoder.md)
 * [C45编码模型 (C45EncoderModel)](pipeline/feature/C45EncoderModel.md)
@@ -534,6 +598,10 @@
 * [Cart编码模型 (CartEncoderModel)](pipeline/feature/CartEncoderModel.md)
 * [Cart回归编码 (CartRegEncoder)](pipeline/feature/CartRegEncoder.md)
 * [Cart回归编码模型 (CartRegEncoderModel)](pipeline/feature/CartRegEncoderModel.md)
+* [Cross候选特征筛选模型 (CrossCandidateSelector)](pipeline/feature/CrossCandidateSelector.md)
+* [Cross候选特征筛选模型 (CrossCandidateSelectorModel)](pipeline/feature/CrossCandidateSelectorModel.md)
+* [Cross特征预测 (CrossFeature)](pipeline/feature/CrossFeature.md)
+* [Cross特征预测 (CrossFeatureModel)](pipeline/feature/CrossFeatureModel.md)
 * [离散余弦变换 (DCT)](pipeline/feature/DCT.md)
 * [决策树编码 (DecisionTreeEncoder)](pipeline/feature/DecisionTreeEncoder.md)
 * [决策树编码模型 (DecisionTreeEncoderModel)](pipeline/feature/DecisionTreeEncoderModel.md)
@@ -541,11 +609,14 @@
 * [决策树回归编码模型 (DecisionTreeRegEncoderModel)](pipeline/feature/DecisionTreeRegEncoderModel.md)
 * [等宽离散化 (EqualWidthDiscretizer)](pipeline/feature/EqualWidthDiscretizer.md)
 * [等宽离散化模型 (EqualWidthDiscretizerModel)](pipeline/feature/EqualWidthDiscretizerModel.md)
+* [互斥特征捆绑 (ExclusiveFeatureBundle)](pipeline/feature/ExclusiveFeatureBundle.md)
+* [互斥特征捆绑模型 (ExclusiveFeatureBundleModel)](pipeline/feature/ExclusiveFeatureBundleModel.md)
 * [特征哈希 (FeatureHasher)](pipeline/feature/FeatureHasher.md)
 * [GBDT编码 (GbdtEncoder)](pipeline/feature/GbdtEncoder.md)
 * [GBDT编码模型 (GbdtEncoderModel)](pipeline/feature/GbdtEncoderModel.md)
 * [Gbdt回归编码 (GbdtRegEncoder)](pipeline/feature/GbdtRegEncoder.md)
 * [Gbdt回归编码模型 (GbdtRegEncoderModel)](pipeline/feature/GbdtRegEncoderModel.md)
+* [Hash Cross特征 (HashCrossFeature)](pipeline/feature/HashCrossFeature.md)
 * [Id3编码 (Id3Encoder)](pipeline/feature/Id3Encoder.md)
 * [Id3编码模型 (Id3EncoderModel)](pipeline/feature/Id3EncoderModel.md)
 * [多热编码 (MultiHotEncoder)](pipeline/feature/MultiHotEncoder.md)
@@ -560,6 +631,9 @@
 * [随机森林编码模型 (RandomForestEncoderModel)](pipeline/feature/RandomForestEncoderModel.md)
 * [随机森林回归编码 (RandomForestRegEncoder)](pipeline/feature/RandomForestRegEncoder.md)
 * [随机森林回归编码模型 (RandomForestRegEncoderModel)](pipeline/feature/RandomForestRegEncoderModel.md)
+* [评分卡模型 (ScorecardModel)](pipeline/feature/ScorecardModel.md)
+* [Target Encoder (TargetEncoder)](pipeline/feature/TargetEncoder.md)
+* [Target Encoder Model (TargetEncoderModel)](pipeline/feature/TargetEncoderModel.md)
 
 ### 文本
 * [Bert文本嵌入 (BertTextEmbedding)](pipeline/nlp/BertTextEmbedding.md)
@@ -636,8 +710,12 @@
 * [KerasSequential回归 (KerasSequentialRegressor)](pipeline/regression/KerasSequentialRegressor.md)
 * [Lasso回归 (LassoRegression)](pipeline/regression/LassoRegression.md)
 * [Lasso回归模型 (LassoRegressionModel)](pipeline/regression/LassoRegressionModel.md)
+* [线性回归Stepwise (LinearRegStepwise)](pipeline/regression/LinearRegStepwise.md)
+* [线性回归Stepwise模型 (LinearRegStepwiseModel)](pipeline/regression/LinearRegStepwiseModel.md)
 * [线性回归 (LinearRegression)](pipeline/regression/LinearRegression.md)
 * [线性回归模型 (LinearRegressionModel)](pipeline/regression/LinearRegressionModel.md)
+* [线性SVR (LinearSvr)](pipeline/regression/LinearSvr.md)
+* [线性SVR模型 (LinearSvrModel)](pipeline/regression/LinearSvrModel.md)
 * [随机森林回归模型 (RandomForestRegressionModel)](pipeline/regression/RandomForestRegressionModel.md)
 * [随机森林回归 (RandomForestRegressor)](pipeline/regression/RandomForestRegressor.md)
 * [岭回归 (RidgeRegression)](pipeline/regression/RidgeRegression.md)
@@ -648,12 +726,16 @@
 ### 聚类
 * [二分K均值聚类 (BisectingKMeans)](pipeline/clustering/BisectingKMeans.md)
 * [二分K均值聚类模型 (BisectingKMeansModel)](pipeline/clustering/BisectingKMeansModel.md)
+* [Dbscan训练 (Dbscan)](pipeline/clustering/Dbscan.md)
+* [Dbscan模型 (DbscanModel)](pipeline/clustering/DbscanModel.md)
 * [高斯混合模型 (GaussianMixture)](pipeline/clustering/GaussianMixture.md)
 * [高斯混合模型 (GaussianMixtureModel)](pipeline/clustering/GaussianMixtureModel.md)
 * [经纬度K均值聚类 (GeoKMeans)](pipeline/clustering/GeoKMeans.md)
 * [经纬度K均值聚类模型 (GeoKMeansModel)](pipeline/clustering/GeoKMeansModel.md)
 * [K均值聚类 (KMeans)](pipeline/clustering/KMeans.md)
 * [K均值聚类模型 (KMeansModel)](pipeline/clustering/KMeansModel.md)
+* [Kmodes训练 (KModes)](pipeline/clustering/KModes.md)
+* [Kmodes模型 (KModesModel)](pipeline/clustering/KModesModel.md)
 * [LDA (Lda)](pipeline/clustering/Lda.md)
 * [LDA模型 (LdaModel)](pipeline/clustering/LdaModel.md)
 
@@ -677,7 +759,14 @@
 * [UserCf：相似users推荐 (UserCfSimilarUsersRecommender)](pipeline/recommendation/UserCfSimilarUsersRecommender.md)
 * [UserCf：UsersPerItem推荐 (UserCfUsersPerItemRecommender)](pipeline/recommendation/UserCfUsersPerItemRecommender.md)
 
+### 金融
+* [ (ScoreModel)](pipeline/finance/ScoreModel.md)
+
 ### 模型选择和调参
+* [Bayes搜索CV (BayesSearchCV)](pipeline/tuning/BayesSearchCV.md)
+* [Bayes搜索CV模型 (BayesSearchCVModel)](pipeline/tuning/BayesSearchCVModel.md)
+* [Bayes搜索TV (BayesSearchTVSplit)](pipeline/tuning/BayesSearchTVSplit.md)
+* [Bayes搜索TV模型 (BayesSearchTVSplitModel)](pipeline/tuning/BayesSearchTVSplitModel.md)
 * [网格搜索CV (GridSearchCV)](pipeline/tuning/GridSearchCV.md)
 * [网格搜索CV模型 (GridSearchCVModel)](pipeline/tuning/GridSearchCVModel.md)
 * [网格搜索TV (GridSearchTVSplit)](pipeline/tuning/GridSearchTVSplit.md)
@@ -690,6 +779,9 @@
 ### 异常检测
 * [IForest异常检测 (IForestModelOutlier)](pipeline/outlier/IForestModelOutlier.md)
 * [IForest异常检测模型 (IForestModelOutlierModel)](pipeline/outlier/IForestModelOutlierModel.md)
+* [IForest序列异常检测 (IForestOutlier4GroupedData)](pipeline/outlier/IForestOutlier4GroupedData.md)
+* [One-Class SVM异常检测 (OcsvmModelOutlier)](pipeline/outlier/OcsvmModelOutlier.md)
+* [One-Class SVM异常检测模型 (OcsvmModelOutlierModel)](pipeline/outlier/OcsvmModelOutlierModel.md)
 
 ### 相似度
 * [字符串近似最近邻 (StringApproxNearestNeighbor)](pipeline/similarity/StringApproxNearestNeighbor.md)
@@ -745,6 +837,7 @@
 * [Table数据源 (TableSourceStreamOp)](stream/source/TableSourceStreamOp.md)
 * [Text文件数据源 (TextSourceStreamOp)](stream/source/TextSourceStreamOp.md)
 * [TSV文件数据源 (TsvSourceStreamOp)](stream/source/TsvSourceStreamOp.md)
+* [Xls和Xlsx表格读入 (XlsSourceStreamOp)](stream/source/XlsSourceStreamOp.md)
 
 ### 数据导出
 * [AK文件导出 (AkSinkStreamOp)](stream/sink/AkSinkStreamOp.md)
@@ -760,6 +853,7 @@
 * [TFRecordDataset文件导出 (TFRecordDatasetSinkStreamOp)](stream/sink/TFRecordDatasetSinkStreamOp.md)
 * [Text文件导出 (TextSinkStreamOp)](stream/sink/TextSinkStreamOp.md)
 * [TSV文件导出 (TsvSinkStreamOp)](stream/sink/TsvSinkStreamOp.md)
+* [Xlsx表格写出 (XlsSinkStreamOp)](stream/sink/XlsSinkStreamOp.md)
 
 ### 数据处理
 * [Agg表查找 (AggLookupStreamOp)](stream/dataproc/AggLookupStreamOp.md)
@@ -860,6 +954,7 @@
 * [主成分分析预测 (PcaPredictStreamOp)](stream/feature/PcaPredictStreamOp.md)
 * [分位数离散化预测 (QuantileDiscretizerPredictStreamOp)](stream/feature/QuantileDiscretizerPredictStreamOp.md)
 * [特征构造：会话窗口 (SessionTimeWindowStreamOp)](stream/feature/SessionTimeWindowStreamOp.md)
+* [TargetEncoder (TargetEncoderPredictStreamOp)](stream/feature/TargetEncoderPredictStreamOp.md)
 * [流式树模型编码 (TreeModelEncoderStreamOp)](stream/feature/TreeModelEncoderStreamOp.md)
 * [特征构造：滚动窗口 (TumbleTimeWindowStreamOp)](stream/feature/TumbleTimeWindowStreamOp.md)
 
@@ -909,16 +1004,21 @@
 * [KerasSequential回归预测 (KerasSequentialRegressorPredictStreamOp)](stream/regression/KerasSequentialRegressorPredictStreamOp.md)
 * [Lasso回归预测 (LassoRegPredictStreamOp)](stream/regression/LassoRegPredictStreamOp.md)
 * [线性回归预测 (LinearRegPredictStreamOp)](stream/regression/LinearRegPredictStreamOp.md)
+* [线性回归Stepwise流预测 (LinearRegStepwisePredictStreamOp)](stream/regression/LinearRegStepwisePredictStreamOp.md)
+* [线性SVR流预测 (LinearSvrPredictStreamOp)](stream/regression/LinearSvrPredictStreamOp.md)
 * [随机森林回归预测 (RandomForestRegPredictStreamOp)](stream/regression/RandomForestRegPredictStreamOp.md)
 * [岭回归预测 (RidgeRegPredictStreamOp)](stream/regression/RidgeRegPredictStreamOp.md)
 * [XGBoost 回归预测 (XGBoostRegPredictStreamOp)](stream/regression/XGBoostRegPredictStreamOp.md)
 
 ### 聚类
 * [二分K均值聚类预测 (BisectingKMeansPredictStreamOp)](stream/clustering/BisectingKMeansPredictStreamOp.md)
+* [DBSCAN预测 (DbscanPredictStreamOp)](stream/clustering/DbscanPredictStreamOp.md)
 * [经纬度K均值聚类预测 (GeoKMeansPredictStreamOp)](stream/clustering/GeoKMeansPredictStreamOp.md)
 * [高斯混合模型预测 (GmmPredictStreamOp)](stream/clustering/GmmPredictStreamOp.md)
 * [K均值聚类预测 (KMeansPredictStreamOp)](stream/clustering/KMeansPredictStreamOp.md)
+* [Kmodes预测 (KModesPredictStreamOp)](stream/clustering/KModesPredictStreamOp.md)
 * [LDA预测 (LdaPredictStreamOp)](stream/clustering/LdaPredictStreamOp.md)
+* [一趟聚类 (OnePassClusterStreamOp)](stream/clustering/OnePassClusterStreamOp.md)
 * [流式K均值聚类 (StreamingKMeansStreamOp)](stream/clustering/StreamingKMeansStreamOp.md)
 
 ### 推荐
@@ -927,10 +1027,9 @@
 * [ALS：相似items推荐 (AlsSimilarItemsRecommStreamOp)](stream/recommendation/AlsSimilarItemsRecommStreamOp.md)
 * [ALS：相似users推荐 (AlsSimilarUsersRecommStreamOp)](stream/recommendation/AlsSimilarUsersRecommStreamOp.md)
 * [ALS：UsersPerItem推荐 (AlsUsersPerItemRecommStreamOp)](stream/recommendation/AlsUsersPerItemRecommStreamOp.md)
-* [FlattenKObject (FlattenKObjectStreamOp)](stream/recommendation/FlattenKObjectStreamOp.md)
+* [Flatten k-object (FlattenKObjectStreamOp)](stream/recommendation/FlattenKObjectStreamOp.md)
 * [FM：ItemsPerUser推荐 (FmItemsPerUserRecommStreamOp)](stream/recommendation/FmItemsPerUserRecommStreamOp.md)
 * [FM：UsersPerItem推荐 (FmUsersPerItemRecommStreamOp)](stream/recommendation/FmUsersPerItemRecommStreamOp.md)
-* [热点推荐 (HotProductStreamOp)](stream/recommendation/HotProductStreamOp.md)
 * [ItemCf：ItemsPerUser推荐 (ItemCfItemsPerUserRecommStreamOp)](stream/recommendation/ItemCfItemsPerUserRecommStreamOp.md)
 * [ItemCf：打分推荐 (ItemCfRateRecommStreamOp)](stream/recommendation/ItemCfRateRecommStreamOp.md)
 * [ItemCf：相似items推荐 (ItemCfSimilarItemsRecommStreamOp)](stream/recommendation/ItemCfSimilarItemsRecommStreamOp.md)
@@ -967,7 +1066,9 @@
 * [IForest异常检测 (IForestOutlierStreamOp)](stream/outlier/IForestOutlierStreamOp.md)
 * [KSigma序列异常检测 (KSigmaOutlier4GroupedDataStreamOp)](stream/outlier/KSigmaOutlier4GroupedDataStreamOp.md)
 * [KSigma异常检测 (KSigmaOutlierStreamOp)](stream/outlier/KSigmaOutlierStreamOp.md)
+* [局部核密度估计异常检测 (KdeOutlierStreamOp)](stream/outlier/KdeOutlierStreamOp.md)
 * [局部异常因子异常检测 (LofOutlierStreamOp)](stream/outlier/LofOutlierStreamOp.md)
+* [One-Class SVM流式异常检测 (OcsvmModelOutlierPredictStreamOp)](stream/outlier/OcsvmModelOutlierPredictStreamOp.md)
 * [One-Class SVM流式分组异常检测 (OcsvmOutlier4GroupedDataStreamOp)](stream/outlier/OcsvmOutlier4GroupedDataStreamOp.md)
 * [One-Class SVM流式异常检测 (OcsvmOutlierStreamOp)](stream/outlier/OcsvmOutlierStreamOp.md)
 * [SOS 异常检测 (SosOutlierStreamOp)](stream/outlier/SosOutlierStreamOp.md)
@@ -978,7 +1079,6 @@
 * [Ftrl在线训练 (FtrlTrainStreamOp)](stream/onlinelearning/FtrlTrainStreamOp.md)
 * [在线FM训练 (OnlineFmTrainStreamOp)](stream/onlinelearning/OnlineFmTrainStreamOp.md)
 * [在线学习 (OnlineLearningStreamOp)](stream/onlinelearning/OnlineLearningStreamOp.md)
-* [Pipeline在线预测 (PipelinePredictStreamOp)](stream/onlinelearning/PipelinePredictStreamOp.md)
 
 ### 相似度
 * [字符串两两相似度计算 (StringSimilarityPairwiseStreamOp)](stream/similarity/StringSimilarityPairwiseStreamOp.md)
@@ -988,6 +1088,7 @@
 * [流式数据打印 (PrintStreamOp)](stream/utils/PrintStreamOp.md)
 * [UDF (UDFStreamOp)](stream/utils/UDFStreamOp.md)
 * [UDTF (UDTFStreamOp)](stream/utils/UDTFStreamOp.md)
+* [Pipeline在线预测 (PipelinePredictStreamOp)](stream/PipelinePredictStreamOp.md)
 
 ### 音频
 * [MFCC特征提取 (ExtractMfccFeatureStreamOp)](stream/audio/ExtractMfccFeatureStreamOp.md)

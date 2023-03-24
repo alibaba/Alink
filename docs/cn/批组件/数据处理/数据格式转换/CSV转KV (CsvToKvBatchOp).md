@@ -17,8 +17,8 @@ Python 类名：CsvToKvBatchOp
 | schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
 | csvFieldDelimiter | 字段分隔符 | 字段分隔符 | String |  |  | "," |
 | handleInvalid | 解析异常处理策略 | 解析异常处理策略，可选为ERROR（抛出异常）或者SKIP（输出NULL） | String |  | "ERROR", "SKIP" | "ERROR" |
-| kvColDelimiter | 分隔符 | 当输入数据为稀疏格式时，key-value对之间的分隔符 | String |  |  | "," |
-| kvValDelimiter | 分隔符 | 当输入数据为稀疏格式时，key和value的分割符 | String |  |  | ":" |
+| kvColDelimiter | 不同key之间分隔符 | 当输入数据为稀疏格式时，key-value对之间的分隔符 | String |  |  | "," |
+| kvValDelimiter | key和value之间分隔符 | 当输入数据为稀疏格式时，key和value的分割符 | String |  |  | ":" |
 | quoteChar | 引号字符 | 引号字符 | Character |  |  | "\"" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 

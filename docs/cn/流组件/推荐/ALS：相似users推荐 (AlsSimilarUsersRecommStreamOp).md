@@ -13,7 +13,7 @@ Python 类名：AlsSimilarUsersRecommStreamOp
 | --- | --- | --- | --- | --- | --- | --- |
 | recommCol | 推荐结果列名 | 推荐结果列名 | String | ✓ |  |  |
 | userCol | User列列名 | User列列名 | String | ✓ |  |  |
-| initRecommCol | 初始推荐列列名 | 初始推荐列列名 | String |  | 所选列类型为 [M_TABLE] | null |
+| initRecommCol | 初始推荐列列名 | 初始推荐列列名 | String |  | 所选列类型为 [M_TABLE, STRING] | null |
 | k | 推荐TOP数量 | 推荐TOP数量 | Integer |  |  | 10 |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |

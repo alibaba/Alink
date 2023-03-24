@@ -32,7 +32,7 @@ Prophet适用于具有明显的内在规律的数据, 例如：
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
-| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE] |  |
+| valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE, STRING] |  |
 | cap | cap | cap | Double |  |  | null |
 | changePointPriorScale | changepoint_prior_scale | changepoint_prior_scale | Double |  |  | 0.05 |
 | changePointRange | change_point_range | change_point_range | Double |  |  | 0.8 |
