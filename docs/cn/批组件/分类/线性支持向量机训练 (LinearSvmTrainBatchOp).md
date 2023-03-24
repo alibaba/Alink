@@ -28,6 +28,7 @@ SVM在各领域的模式识别问题中有应用，包括人像识别、文本�
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | l1 | L1 正则化系数 | L1 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
 | l2 | L2 正则化系数 | L2 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
+| learningRate | 学习率 | 优化算法的学习率，默认0.1。 | Double |  |  | 0.1 |
 | maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
 | optimMethod | 优化方法 | 优化问题求解时选择的优化方法 | String |  | "LBFGS", "GD", "Newton", "SGD", "OWLQN" | null |
 | standardization | 是否正则化 | 是否对训练数据做正则化，默认true | Boolean |  |  | true |

@@ -1,7 +1,7 @@
-# DBSCAN异常检测 (DbscanOutlierBatchOp)
-Java 类名：com.alibaba.alink.operator.batch.outlier.DbscanOutlierBatchOp
+# 有模型的DBSCAN序列异常检测 (DbscanModelOutlierPredictStreamOp)
+Java 类名：com.alibaba.alink.operator.stream.outlier.DbscanModelOutlierPredictStreamOp
 
-Python 类名：DbscanOutlierBatchOp
+Python 类名：DbscanModelOutlierPredictStreamOp
 
 
 ## 功能介绍
@@ -15,6 +15,7 @@ Noise，是一个比较有代表性的基于密度的聚类算法。与划分和
 使用DBSCAN算法进行异常检测需要设置簇最小规模(minPoints)，聚类结果中规模小于或等于minPoints的簇中的样本预测为异常，在预测结果中，outlier值为true，label值为-1，
 score值越大表示样本构成的簇越稀疏；对于规模大于minPoints的簇，label非负，表示簇的编号。如果没有设置聚类半径(Epsilon)，算法将自动选择合适的值。
 
+与批式算法使用全部样本计算不同，流式算法使用从开始时刻到当前时刻的历史数据计算当前样本是否是一个异常，数据源需要有时间列。
 ### 距离度量方式
 
 | 参数名称      | 参数描述                                                                          | 说明  |
@@ -31,87 +32,14 @@ score值越大表示样本构成的簇越稀疏；对于规模大于minPoints的
 | distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN", "COSINE", "INNERPRODUCT", "CITYBLOCK", "JACCARD", "PEARSON" | "EUCLIDEAN" |
 | epsilon | 样本邻域半径 | 样本邻域半径 | Double |  | [0.0, +inf) |  |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
-| groupCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |
-| maxOutlierNumPerGroup | 每组最大异常点数目 | 每组最大异常点数目 | Integer |  |  |  |
-| maxOutlierRatio | 最大异常点比例 | 算法检测异常点的最大比例 | Double |  |  |  |
-| maxSampleNumPerGroup | 每组最大样本数目 | 每组最大样本数目 | Integer |  |  |  |
 | minPoints | 邻域样本数 | 邻域样本数 | Integer |  | [0, +inf) | 3 |
+| modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | outlierThreshold | 异常评分阈值 | 只有评分大于该阈值才会被认为是异常点 | Double |  |  |  |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | tensorCol | tensor列 | tensor列 | String |  | 所选列类型为 [BOOL_TENSOR, BYTE_TENSOR, DOUBLE_TENSOR, FLOAT_TENSOR, INT_TENSOR, LONG_TENSOR, STRING, STRING_TENSOR, TENSOR, UBYTE_TENSOR] | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
-
-## 代码示例
-
-### Python 代码
-```python
-import pandas as pd
-df = pd.DataFrame([
-               [1,0],
-               [1,0],
-               [1,0],
-               [1,0],
-               [1,0],
-               [6.0]
-        ])
-source = BatchOperator.fromDataframe(df, schemaStr='f0 double')
-
-DbscanOutlierBatchOp()\
-			.setFeatureCols(["f0"])\
-			.setPredictionCol("outlier")\
-			.setPredictionDetailCol("details")\
-			.setMinPoints(4)\
-			.linkFrom(source)\
-			.print()
-    
-```
-
-### JAVA 代码
-
-```java
-package com.alibaba.alink.operator.batch.outlier;
-
-import org.apache.flink.types.Row;
-
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
-
-public class DbscanOutlierBatchOpTest {
-
-	@Test
-	public void test() throws Exception {
-		List <Row> data = Arrays.asList(
-			Row.of(1.0),
-			Row.of(1.0),
-			Row.of(1.0),
-			Row.of(1.0),
-			Row.of(1.0),
-			Row.of(6.0)
-		);
-		String schemaStr = "f0 double";
-		BatchOperator source = new MemSourceBatchOp(data, schemaStr);
-		new DbscanOutlierBatchOp()
-			.setFeatureCols(new String[] {"f0"})
-			.setPredictionCol("outlier")
-			.setPredictionDetailCol("details")
-			.setMinPoints(4)
-			.linkFrom(source)
-			.print();
-	}
-}
-```
-### 运行结果
-
-f0 |outlier|details
----|-------|-------
-1.0000|false|{"outlier_score":"0.0","cluster_size":"5","label":"0","is_outlier":"false"}
-1.0000|false|{"outlier_score":"0.0","cluster_size":"5","label":"0","is_outlier":"false"}
-1.0000|false|{"outlier_score":"0.0","cluster_size":"5","label":"0","is_outlier":"false"}
-1.0000|false|{"outlier_score":"0.0","cluster_size":"5","label":"0","is_outlier":"false"}
-1.0000|false|{"outlier_score":"0.0","cluster_size":"5","label":"0","is_outlier":"false"}
-6.0000|true|{"outlier_score":"1.8541019662496845","cluster_size":"1","label":"-1","is_outlier":"true"}
+| modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
+| modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |
+| modelStreamStartTime | 模型流的起始时间 | 模型流的起始时间。默认从当前时刻开始读。使用yyyy-mm-dd hh:mm:ss.fffffffff格式，详见Timestamp.valueOf(String s) | String |  |  | null |
