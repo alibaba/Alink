@@ -27,7 +27,7 @@ Python 类名：RandomForestRegTrainBatchOp
 | minSampleRatioPerChild | 子节点占父节点的最小样本比例 | 子节点占父节点的最小样本比例 | Double |  |  | 0.0 |
 | minSamplesPerLeaf | 叶节点的最小样本个数 | 叶节点的最小样本个数 | Integer |  |  | 2 |
 | numSubsetFeatures | 每棵树的特征采样数目 | 每棵树的特征采样数目 | Integer |  |  | 2147483647 |
-| numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | [1, +inf) | 10 |
+| numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | x >= 1 | 10 |
 | seed | 采样种子 | 采样种子 | Long |  |  | 0 |
 | subsamplingRatio | 每棵树的样本采样比例或采样行数 | 每棵树的样本采样比例或采样行数，行数上限100w行 | Double |  |  | 100000.0 |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |

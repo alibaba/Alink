@@ -16,15 +16,15 @@ Python 类名：LineBatchOp
 | --- | --- | --- | --- | --- | --- | --- |
 | sourceCol | 起始点列名 | 用来指定起始点列 | String | ✓ | 所选列类型为 [INTEGER, LONG, STRING] |  |
 | targetCol | 中止点点列名 | 用来指定中止点列 | String | ✓ | 所选列类型为 [INTEGER, LONG, STRING] |  |
-| batchSize | batch大小 | batch大小, 按行计算 | Integer |  | [1, +inf) |  |
+| batchSize | batch大小 | batch大小, 按行计算 | Integer |  | x >= 1 |  |
 | isToUndigraph | 是否转无向图 | 选为true时，会将当前图转成无向图，然后再游走 | Boolean |  |  | false |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
-| minRhoRate | 最小学习率的比例 | 最小学习率的比例 | Double |  | [0.0, 1.0] | 0.001 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | x >= 1 | 100 |
+| minRhoRate | 最小学习率的比例 | 最小学习率的比例 | Double |  | 0.0 <= x <= 1.0 | 0.001 |
 | negative | 负采样大小 | 负采样大小 | Integer |  |  | 5 |
 | order | 阶数 | 选择一阶优化或是二阶优化 | String |  | "FirstOrder", "SecondOrder" | "FirstOrder" |
-| rho | 学习率 | 学习率 | Double |  | [0.0, +inf) | 0.025 |
-| sampleRatioPerPartition | 采样率 | 每轮迭代在每个partition上采样样本的比率 | Double |  | [0.0, +inf) | 1.0 |
-| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | [1, +inf) | 100 |
+| rho | 学习率 | 学习率 | Double |  | x >= 0.0 | 0.025 |
+| sampleRatioPerPartition | 采样率 | 每轮迭代在每个partition上采样样本的比率 | Double |  | x >= 0.0 | 1.0 |
+| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | x >= 1 | 100 |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 

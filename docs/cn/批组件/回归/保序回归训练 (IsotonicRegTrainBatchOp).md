@@ -18,7 +18,7 @@ Python 类名：IsotonicRegTrainBatchOp
 | --- | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
 | featureCol | 特征列名 | 特征列的名称 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
-| featureIndex | 训练特征所在维度 | 训练特征在输入向量的维度索引 | Integer |  | [0, +inf) | 0 |
+| featureIndex | 训练特征所在维度 | 训练特征在输入向量的维度索引 | Integer |  | x >= 0 | 0 |
 | isotonic | 输出序列是否 | 输出序列是否递增 | Boolean |  |  | true |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |

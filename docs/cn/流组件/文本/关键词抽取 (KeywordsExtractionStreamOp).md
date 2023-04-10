@@ -40,10 +40,10 @@ TextRank：[https://web.eecs.umich.edu/~mihalcea/papers/mihalcea.emnlp04.pdf](ht
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [STRING] |  |
 | dampingFactor | 阻尼系数 | 阻尼系数 | Double |  |  | 0.85 |
 | epsilon | 收敛阈值 | 收敛阈值 | Double |  |  | 1.0E-6 |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | x >= 1 | 100 |
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
-| topN | 前N的数据 | 挑选最近的N个数据 | Integer |  | [1, +inf) | 10 |
-| windowSize | 窗口大小 | 窗口大小 | Integer |  | [1, +inf) | 2 |
+| topN | 前N的数据 | 挑选最近的N个数据 | Integer |  | x >= 1 | 10 |
+| windowSize | 窗口大小 | 窗口大小 | Integer |  | x >= 1 | 2 |
 
 ## 代码示例
 

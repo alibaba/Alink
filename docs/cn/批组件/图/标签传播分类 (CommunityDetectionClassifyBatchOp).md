@@ -25,7 +25,7 @@ Python 类名：CommunityDetectionClassifyBatchOp
 | delta | delta | delta参数 | Double |  |  | 0.2 |
 | edgeWeightCol | 边权重列 | 表示边权重的列 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | k | K值 | 每轮迭代中，设置1/k的node不更新它们的值。这样的设定可能使得社区发现的效果更好。 | Integer |  |  | 40 |
-| maxIter | 最大迭代次数 | 最大迭代次数 | Integer |  | [1, +inf) | 50 |
+| maxIter | 最大迭代次数 | 最大迭代次数 | Integer |  | x >= 1 | 50 |
 | vertexWeightCol | 点的权重所在列 | 点的权重所在列，如果不输入就自动补为1。 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 
 

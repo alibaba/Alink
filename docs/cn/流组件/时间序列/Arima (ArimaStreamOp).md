@@ -29,7 +29,7 @@ Arima 详细介绍请见链接 https://en.wikipedia.org/wiki/Autoregressive_inte
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | seasonalOrder | 季节模型(p, d, q) | 季节模型(p, d, q) | int[] |  |  | null |
-| seasonalPeriod | 季节周期 | 季节周期 | Integer |  | [1, +inf) | 1 |
+| seasonalPeriod | 季节周期 | 季节周期 | Integer |  | x >= 1 | 1 |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 ## 代码示例

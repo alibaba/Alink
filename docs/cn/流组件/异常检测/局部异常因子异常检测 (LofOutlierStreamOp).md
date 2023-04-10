@@ -47,7 +47,7 @@ LOF 的计算过程包含以下几个步骤：
 | distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN", "COSINE", "INNERPRODUCT", "CITYBLOCK", "JACCARD", "PEARSON" | "EUCLIDEAN" |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | groupCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |
-| numNeighbors | 相邻点个数 | 构造近邻图使用的相邻点个数 | Integer |  | [1, +inf) | 5 |
+| numNeighbors | 相邻点个数 | 构造近邻图使用的相邻点个数 | Integer |  | x >= 1 | 5 |
 | outlierThreshold | 异常评分阈值 | 只有评分大于该阈值才会被认为是异常点 | Double |  |  |  |
 | precedingRows | 数据窗口大小 | 数据窗口大小 | Integer |  |  | null |
 | precedingTime | 时间窗口大小 | 时间窗口大小 | String |  |  | null |

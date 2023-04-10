@@ -23,7 +23,7 @@ Python 类名：VectorApproxNearestNeighbor
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | seed | 采样种子 | 采样种子 | Long |  |  | 0 |
 | solver | 近似方法 | 近似方法，包括KDTREE和LSH | String |  | "KDTREE", "LSH", "LOCAL_LSH" | "KDTREE" |
-| topN | TopN的值 | TopN的值 | Integer |  | [1, +inf) | null |
+| topN | TopN的值 | TopN的值 | Integer |  | x >= 1 | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 | modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
 | modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |

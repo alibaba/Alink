@@ -20,7 +20,7 @@ node2vec是一种用于网络中的特征学习有效的可扩展算法，该算
 | walkLength | 游走的长度 | 随机游走完向量的长度 | Integer | ✓ |  |  |
 | walkNum | 路径数目 | 每一个起始点游走出多少条路径 | Integer | ✓ |  |  |
 | alpha | 学习率 | 学习率 | Double |  |  | 0.025 |
-| batchSize | batch大小 | batch大小, 按行计算 | Integer |  | [1, +inf) |  |
+| batchSize | batch大小 | batch大小, 按行计算 | Integer |  | x >= 1 |  |
 | isToUndigraph | 是否转无向图 | 选为true时，会将当前图转成无向图，然后再游走 | Boolean |  |  | false |
 | minCount | 最小词频 | 最小词频 | Integer |  |  | 5 |
 | negative | 负采样大小 | 负采样大小 | Integer |  |  | 5 |
@@ -28,7 +28,7 @@ node2vec是一种用于网络中的特征学习有效的可扩展算法，该算
 | p | p | p越小越趋向于访问到已经访问的节点，反之则趋向于访问没有访问过的节点 | Double |  |  | 1.0 |
 | q | q | q>1时行为类似于bfs趋向于访问和访问过的节点相连的节点，q<1时行为类似于dfs | Double |  |  | 1.0 |
 | randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  |  | "true" |
-| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | [1, +inf) | 100 |
+| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | x >= 1 | 100 |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | window | 窗口大小 | 窗口大小 | Integer |  |  | 5 |
 | wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  |  | " " |

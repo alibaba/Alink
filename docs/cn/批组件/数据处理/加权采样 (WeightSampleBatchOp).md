@@ -10,7 +10,7 @@ Python 类名：WeightSampleBatchOp
 ## 参数说明
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| ratio | 采样比例 | 采样率，范围为[0, 1] | Double | ✓ | [0.0, 1.0] |  |
+| ratio | 采样比例 | 采样率，范围为[0, 1] | Double | ✓ | 0.0 <= x <= 1.0 |  |
 | weightCol | 权重列名 | 权重列对应的列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
 | withReplacement | 是否放回 | 是否有放回的采样，默认不放回 | Boolean |  |  | false |
 

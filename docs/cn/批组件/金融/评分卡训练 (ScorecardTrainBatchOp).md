@@ -111,12 +111,12 @@ json约束以字符串的形式存储在表中，表为单行单列（字符串�
 | constOptimMethod | 优化方法 | 求解优化问题时选择的优化方法 | String |  | "SQP", "Barrier", "LBFGS", "Newton" | "SQP" |
 | defaultWoe | 默认Woe，在woe为Nan或NULL时替换 | 默认Woe，在woe为Nan或NULL时替换 | Double |  |  | NaN |
 | encode | 编码方法 | 编码方法 | String |  | "WOE", "ASSEMBLED_VECTOR", "NULL" | "ASSEMBLED_VECTOR" |
-| epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | [0.0, +inf) | 1.0E-6 |
+| epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | x >= 0.0 | 1.0E-6 |
 | forceSelectedCols | 强制选择的列 | 强制选择的列 | String[] |  |  |  |
-| l1 | L1 正则化系数 | L1 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
-| l2 | L2 正则化系数 | L2 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
+| l1 | L1 正则化系数 | L1 正则化系数，默认为0。 | Double |  | x >= 0.0 | 0.0 |
+| l2 | L2 正则化系数 | L2 正则化系数，默认为0。 | Double |  | x >= 0.0 | 0.0 |
 | linearModelType | 优化方法 | 优化方法 | String |  | "LR", "LinearReg" | "LR" |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | x >= 1 | 100 |
 | odds | 分数基准点处的odds值 | 分数基准点处的odds值 | Double |  |  | null |
 | pdo | 分数增长pdo，odds加倍 | 分数增长pdo，odds加倍 | Double |  |  | null |
 | positiveLabelValueString | 正样本 | 正样本对应的字符串格式。 | String |  |  | "1" |

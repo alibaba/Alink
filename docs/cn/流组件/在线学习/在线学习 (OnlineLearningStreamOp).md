@@ -83,11 +83,11 @@ FmClassifier 是在线学习模型，此处还可以是SVM，LogisticRegression�
 | --- | --- | --- | --- | --- | --- | --- |
 | alpha | 希腊字母：阿尔法 | 经常用来表示算法特殊的参数 | Double |  |  | 0.1 |
 | beta | 希腊字母：贝塔 | 经常用来表示算法特殊的参数 | Double |  |  | 1.0 |
-| beta1 | beta1 | beta1: parameter for adam optimizer. | Double |  | [0.0, 1.0] | 0.9 |
-| beta2 | beta2 | beta2: parameter for adam optimizer. | Double |  | [0.0, 1.0] | 0.999 |
-| gamma | gamma | gamma: parameter for RMSProp or momentum optimizer. | Double |  | [0.0, 1.0] | 0.9 |
-| l1 | L1 正则化系数 | L1 正则化系数，默认为0.1。 | Double |  | [0.0, +inf) | 0.1 |
-| l2 | 正则化系数 | L2 正则化系数，默认为0.1。 | Double |  | [0.0, +inf) | 0.1 |
+| beta1 | beta1 | beta1: parameter for adam optimizer. | Double |  | 0.0 <= x <= 1.0 | 0.9 |
+| beta2 | beta2 | beta2: parameter for adam optimizer. | Double |  | 0.0 <= x <= 1.0 | 0.999 |
+| gamma | gamma | gamma: parameter for RMSProp or momentum optimizer. | Double |  | 0.0 <= x <= 1.0 | 0.9 |
+| l1 | L1 正则化系数 | L1 正则化系数，默认为0.1。 | Double |  | x >= 0.0 | 0.1 |
+| l2 | 正则化系数 | L2 正则化系数，默认为0.1。 | Double |  | x >= 0.0 | 0.1 |
 | learningRate | 学习率 | 优化算法的学习率，默认0.1。 | Double |  |  | null |
 | optimMethod | 优化方法 | 在线学习问题求解时选择的优化方法 | String |  | "FTRL", "ADAM", "RMSprop", "ADAGRAD", "SGD", "MOMENTUM" | "FTRL" |
 | timeInterval | 时间间隔 | 数据流流动过程中时间的间隔 | Integer |  |  | 1800 |

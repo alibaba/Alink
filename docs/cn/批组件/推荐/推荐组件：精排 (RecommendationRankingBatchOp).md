@@ -16,7 +16,7 @@ Python 类名：RecommendationRankingBatchOp
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
 | rankingCol | 用来排序的得分列 | 用来排序的得分列 | String |  |  | null |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
-| topN | 前N的数据 | 挑选最近的N个数据 | Integer |  | [1, +inf) | 10 |
+| topN | 前N的数据 | 挑选最近的N个数据 | Integer |  | x >= 1 | 10 |
 
 
 ## 代码示例

@@ -43,12 +43,12 @@ holt-winters支持2种季节类型： additive 和 multiplicative
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE, STRING] |  |
-| alpha | alpha | alpha | Double |  | [0.0, 1.0] | 0.3 |
-| beta | beta | beta | Double |  | [0.0, 1.0] | 0.1 |
+| alpha | alpha | alpha | Double |  | 0.0 <= x <= 1.0 | 0.3 |
+| beta | beta | beta | Double |  | 0.0 <= x <= 1.0 | 0.1 |
 | doSeasonal | 时间是否具有季节性 | 时间是否具有季节性 | Boolean |  |  | false |
 | doTrend | 时间是否具有趋势性 | 时间是否具有趋势性 | Boolean |  |  | false |
-| frequency | 时序频率 | 时序频率 | Integer |  | [1, +inf) | 10 |
-| gamma | gamma | gamma | Double |  | [0.0, 1.0] | 0.1 |
+| frequency | 时序频率 | 时序频率 | Integer |  | x >= 1 | 10 |
+| gamma | gamma | gamma | Double |  | 0.0 <= x <= 1.0 | 0.1 |
 | levelStart | level初始值 | level初始值 | Double |  |  |  |
 | predictNum | 预测条数 | 预测条数 | Integer |  |  | 1 |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |

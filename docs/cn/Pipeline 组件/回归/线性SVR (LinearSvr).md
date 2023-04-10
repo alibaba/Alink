@@ -16,10 +16,10 @@ Python 类名：LinearSvr
 | C | 算法参数 | 支撑向量回归参数 | Double | ✓ |  |  |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
-| epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | [0.0, +inf) | 1.0E-6 |
+| epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | x >= 0.0 | 1.0E-6 |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  |  | null |
 | learningRate | 学习率 | 优化算法的学习率，默认0.1。 | Double |  |  | 0.1 |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | x >= 1 | 100 |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | optimMethod | 优化方法 | 优化问题求解时选择的优化方法 | String |  | "LBFGS", "GD", "Newton", "SGD", "OWLQN" | null |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |

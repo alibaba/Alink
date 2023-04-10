@@ -18,7 +18,7 @@ k-Core算法是一种用来在图中找出符合指定核心度的紧密关联�
 | edgeSourceCol | 边表中起点所在列 | 边表中起点所在列 | String | ✓ | 所选列类型为 [INTEGER, LONG, STRING] |  |
 | edgeTargetCol | 边表中终点所在列 | 边表中终点所在列 | String | ✓ | 所选列类型为 [INTEGER, LONG, STRING] |  |
 | asUndirectedGraph | 是否为无向图 | 是否为无向图 | Boolean |  |  | true |
-| k | k的数目 | 反复去除图中度小于等于k的点 | Integer |  | [1, +inf) | 3 |
+| k | k的数目 | 反复去除图中度小于等于k的点 | Integer |  | x >= 1 | 3 |
 
 
 ## 代码示例

@@ -42,7 +42,7 @@ classification: [https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-t
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] |  |
 | modelType | 模型类型 | 取值为 Multinomial 或 Bernoulli | String |  | "Multinomial", "Bernoulli" | "Multinomial" |
-| smoothing | 算法参数 | 光滑因子，默认为1.0 | Double |  | [0.0, +inf) | 1.0 |
+| smoothing | 算法参数 | 光滑因子，默认为1.0 | Double |  | x >= 0.0 | 1.0 |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 
 ## 代码示例

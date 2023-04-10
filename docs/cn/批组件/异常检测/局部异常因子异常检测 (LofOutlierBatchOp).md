@@ -50,7 +50,7 @@ LOF 的计算过程包含以下几个步骤：
 | maxOutlierNumPerGroup | 每组最大异常点数目 | 每组最大异常点数目 | Integer |  |  |  |
 | maxOutlierRatio | 最大异常点比例 | 算法检测异常点的最大比例 | Double |  |  |  |
 | maxSampleNumPerGroup | 每组最大样本数目 | 每组最大样本数目 | Integer |  |  |  |
-| numNeighbors | 相邻点个数 | 构造近邻图使用的相邻点个数 | Integer |  | [1, +inf) | 5 |
+| numNeighbors | 相邻点个数 | 构造近邻图使用的相邻点个数 | Integer |  | x >= 1 | 5 |
 | outlierThreshold | 异常评分阈值 | 只有评分大于该阈值才会被认为是异常点 | Double |  |  |  |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
 | tensorCol | tensor列 | tensor列 | String |  | 所选列类型为 [BOOL_TENSOR, BYTE_TENSOR, DOUBLE_TENSOR, FLOAT_TENSOR, INT_TENSOR, LONG_TENSOR, STRING, STRING_TENSOR, TENSOR, UBYTE_TENSOR] | null |

@@ -27,7 +27,7 @@ Python 类名：RandomForestEncoder
 | minSamplesPerLeaf | 叶节点的最小样本个数 | 叶节点的最小样本个数 | Integer |  |  | 2 |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | numSubsetFeatures | 每棵树的特征采样数目 | 每棵树的特征采样数目 | Integer |  |  | 2147483647 |
-| numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | [1, +inf) | 10 |
+| numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | x >= 1 | 10 |
 | numTreesOfGini | 模型中Cart树的棵数 | 模型中Cart树的棵数 | Integer |  |  | null |
 | numTreesOfInfoGain | 模型中Id3树的棵数 | 模型中Id3树的棵数 | Integer |  |  | null |
 | numTreesOfInfoGainRatio | 模型中C4.5树的棵数 | 模型中C4.5树的棵数 | Integer |  |  | null |

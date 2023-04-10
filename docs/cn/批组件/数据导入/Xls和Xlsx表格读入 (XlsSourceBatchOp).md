@@ -16,6 +16,7 @@ long、double、float、date、time、datetime、timestamp，来源可以是本�
 | schemaStr | Schema | Schema。格式为"colname coltype[, colname2, coltype2[, ...]]"，例如"f0 string, f1 bigint, f2 double" | String | ✓ |  |  |
 | ignoreFirstLine | 是否忽略第一行数据 | 是否忽略第一行数据 | Boolean |  |  | false |
 | lenient | 是否容错 | 若为true，当解析失败时丢弃该数据；若为false，解析失败是抛异常 | Boolean |  |  | false |
+| sheetIndex | 表格的Sheet编号 | 表格的Sheet编号 | Integer |  |  | 0 |
 
 
 ## 代码示例

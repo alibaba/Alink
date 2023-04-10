@@ -19,7 +19,7 @@ KDE（Kernel Density Estimation核密度估计）是一种通过数据样本集�
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| bandwidth | KDE带宽 | 核密度函数带宽参数 | Double | ✓ | [0.0, +inf) |  |
+| bandwidth | KDE带宽 | 核密度函数带宽参数 | Double | ✓ | x >= 0.0 |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN", "COSINE", "INNERPRODUCT", "CITYBLOCK", "JACCARD", "PEARSON" | "EUCLIDEAN" |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |

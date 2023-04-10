@@ -19,7 +19,7 @@ Python 类名：VectorNearestNeighborPredictBatchOp
 | outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
 | radius | radius值 | radius值 | Double |  |  | null |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
-| topN | TopN的值 | TopN的值 | Integer |  | [1, +inf) | null |
+| topN | TopN的值 | TopN的值 | Integer |  | x >= 1 | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 

@@ -17,13 +17,13 @@ Word2Vec的工具包相关链接：[https://code.google.com/p/word2vec/](https:/
 | --- | --- | --- | --- | --- | --- | --- |
 | selectedCol | 计算列对应的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [STRING] |  |
 | alpha | 学习率 | 学习率 | Double |  |  | 0.025 |
-| batchSize | batch大小 | batch大小, 按行计算 | Integer |  | [1, +inf) |  |
+| batchSize | batch大小 | batch大小, 按行计算 | Integer |  | x >= 1 |  |
 | minCount | 最小词频 | 最小词频 | Integer |  |  | 5 |
 | negative | 负采样大小 | 负采样大小 | Integer |  |  | 5 |
 | numCheckpoint | checkPoint 数目 | checkPoint 数目 | Integer |  |  | 1 |
 | numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  |  | 1 |
 | randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  |  | "true" |
-| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | [1, +inf) | 100 |
+| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | x >= 1 | 100 |
 | window | 窗口大小 | 窗口大小 | Integer |  |  | 5 |
 | wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  |  | " " |
 

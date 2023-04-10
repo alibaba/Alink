@@ -12,9 +12,9 @@ Python 类名：CrossCandidateSelectorModel
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
-| appendOriginalData | Not available! | Not available! | Boolean |  |  | true |
+| appendOriginalData | 是否输出原数据 | 是否输出原数据 | Boolean |  |  | true |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
-| outputFormat | Not available! | Not available! | String |  | "Dense", "Sparse", "Word" | "Sparse" |
+| outputFormat | 输出格式 | 输出格式 | String |  | "Dense", "Sparse", "Word" | "Sparse" |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |

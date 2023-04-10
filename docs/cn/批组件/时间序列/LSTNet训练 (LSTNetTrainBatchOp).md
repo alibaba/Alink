@@ -18,7 +18,7 @@ Python 类名：LSTNetTrainBatchOp
 | checkpointFilePath | 保存 checkpoint 的路径 | 用于保存中间结果的路径，将作为 TensorFlow 中 `Estimator` 的 `model_dir` 传入，需要为所有 worker 都能访问到的目录 | String | ✓ |  |  |
 | timeCol | 时间戳列(TimeStamp) | 时间戳列(TimeStamp) | String | ✓ | 所选列类型为 [TIMESTAMP] |  |
 | batchSize | 数据批大小 | 数据批大小 | Integer |  |  | 128 |
-| horizon | horizon大小 | horizon大小 | Integer |  | [1, +inf) | 12 |
+| horizon | horizon大小 | horizon大小 | Integer |  | x >= 1 | 12 |
 | intraOpParallelism | Op 间并发度 | Op 间并发度 | Integer |  |  | 4 |
 | learningRate | 学习率 | 学习率 | Double |  |  | 0.001 |
 | numEpochs | epoch数 | epoch数 | Integer |  |  | 10 |

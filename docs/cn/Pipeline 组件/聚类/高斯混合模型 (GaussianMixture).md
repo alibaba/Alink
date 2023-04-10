@@ -15,7 +15,7 @@ Python 类名：GaussianMixture
 | vectorCol | 向量列名 | 向量列对应的列名 | String | ✓ |  |  |
 | epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  |  | 1.0E-4 |
 | k | 聚类中心点数量 | 聚类中心点数量 | Integer |  |  | 2 |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | x >= 1 | 100 |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |

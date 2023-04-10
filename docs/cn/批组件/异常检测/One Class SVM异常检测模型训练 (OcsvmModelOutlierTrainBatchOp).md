@@ -12,7 +12,7 @@ Python 类名：OcsvmModelOutlierTrainBatchOp
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | coef0 | Kernel函数的相关参数coef0 | Kernel函数的相关参数，只有在POLY和SIGMOID时起作用。 | Double |  |  | 0.0 |
-| degree | 多项式阶数 | 多项式的阶数，默认2 | Integer |  | [1, +inf) | 2 |
+| degree | 多项式阶数 | 多项式的阶数，默认2 | Integer |  | x >= 1 | 2 |
 | eps | 收敛阈值 | 迭代算法的收敛阈值 | Double |  |  | 0.001 |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | gamma | Kernel函数的相关参数gamma | Kernel函数的相关参数，只在 RBF, POLY 和 SIGMOID 时起作用. 如果不设置默认取 1/d，d为特征维度. | Double |  |  | -1.0 |

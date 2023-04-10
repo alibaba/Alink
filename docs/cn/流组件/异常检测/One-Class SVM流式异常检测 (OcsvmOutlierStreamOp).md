@@ -13,8 +13,8 @@ Python 类名：OcsvmOutlierStreamOp
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | coef0 | Kernel函数的相关参数coef0 |  Kernel函数的相关参数，只有在POLY和SIGMOID时起作用。 | Double |  |  | 0.0 |
-| degree | 多项式阶数 | 多项式的阶数，默认2 | Integer |  | [1, +inf) | 2 |
-| epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | [0.0, +inf) | 1.0E-6 |
+| degree | 多项式阶数 | 多项式的阶数，默认2 | Integer |  | x >= 1 | 2 |
+| epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | x >= 0.0 | 1.0E-6 |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | gamma | Kernel函数的相关参数gamma | Kernel函数的相关参数，只在 RBF, POLY 和 SIGMOID 时起作用. 如果不设置默认取 1/d，d为特征维度. | Double |  |  | -1.0 |
 | groupCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |

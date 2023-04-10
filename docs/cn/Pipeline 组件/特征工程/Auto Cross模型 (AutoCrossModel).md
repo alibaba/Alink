@@ -13,7 +13,7 @@ Python 类名：AutoCrossModel
 | --- | --- | --- | --- | --- | --- | --- |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
-| outputFormat | Not available! | Not available! | String |  | "Dense", "Sparse", "Word" | "Sparse" |
+| outputFormat | 输出格式 | 输出格式 | String |  | "Dense", "Sparse", "Word" | "Sparse" |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |

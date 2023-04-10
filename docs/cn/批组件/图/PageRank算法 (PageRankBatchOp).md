@@ -18,5 +18,5 @@ Python 类名：PageRankBatchOp
 | dampingFactor | 阻尼系数 | 阻尼系数 | Double |  |  | 0.85 |
 | edgeWeightCol | 边权重列 | 表示边权重的列 | String |  |  | null |
 | epsilon | 收敛阈值 | 当两轮迭代的中心点距离小于epsilon时，算法收敛。 | Double |  |  | 1.0E-4 |
-| maxIter | 最大迭代次数 | 最大迭代次数 | Integer |  | [1, +inf) | 50 |
+| maxIter | 最大迭代次数 | 最大迭代次数 | Integer |  | x >= 1 | 50 |
 

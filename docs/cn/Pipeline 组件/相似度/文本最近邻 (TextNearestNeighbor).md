@@ -29,8 +29,8 @@ Cosine（Cosine）支持相似度计算，应选择metric的参数为COSINE。
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
 | radius | radius值 | radius值 | Double |  |  | null |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
-| topN | TopN的值 | TopN的值 | Integer |  | [1, +inf) | null |
-| windowSize | 窗口大小 | 窗口大小 | Integer |  | [1, +inf) | 2 |
+| topN | TopN的值 | TopN的值 | Integer |  | x >= 1 | null |
+| windowSize | 窗口大小 | 窗口大小 | Integer |  | x >= 1 | 2 |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 | modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
 | modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |

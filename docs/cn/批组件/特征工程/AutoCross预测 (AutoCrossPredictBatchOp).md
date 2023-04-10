@@ -13,6 +13,6 @@ Python 类名：AutoCrossPredictBatchOp
 | --- | --- | --- | --- | --- | --- | --- |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
-| outputFormat | Not available! | Not available! | String |  | "Dense", "Sparse", "Word" | "Sparse" |
+| outputFormat | 输出格式 | 输出格式 | String |  | "Dense", "Sparse", "Word" | "Sparse" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 

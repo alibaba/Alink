@@ -12,7 +12,7 @@ Python 类名：QuantileBatchOp
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| quantileNum | 分位个数 | 分位个数 | Integer | ✓ | [0, +inf) |  |
+| quantileNum | 分位个数 | 分位个数 | Integer | ✓ | x >= 0 |  |
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
 | roundMode | 取整的模式 | 取整的模式。当q是组的个数，k 是第k个组，total是总的样本大小时，第k组的边界索引应为(1.0 / q) * (total - 1) * k。这个值应该为整数，所以需要取整，取整时用到这个参数。 | String |  | "CEIL", "FLOOR", "ROUND" | "ROUND" |
 

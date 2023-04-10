@@ -16,8 +16,8 @@ Python 类名：RegressionSelectorTrainBatchOp
 | alphaEntry | 筛选阈值 | 筛选阈值 | Double |  |  | 0.05 |
 | alphaStay | 移除阈值 | 移除阈值 | Double |  |  | 0.05 |
 | forceSelectedCols | 强制选择的列 | 强制选择的列 | int[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] |  |
-| l1 | L1 正则化系数 | L1 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
-| l2 | L2 正则化系数 | L2 正则化系数，默认为0。 | Double |  | [0.0, +inf) | 0.0 |
+| l1 | L1 正则化系数 | L1 正则化系数，默认为0。 | Double |  | x >= 0.0 | 0.0 |
+| l2 | L2 正则化系数 | L2 正则化系数，默认为0。 | Double |  | x >= 0.0 | 0.0 |
 | method | 方法 | 方法 | String |  | "FTest", "MarginalContribution" | "FTest" |
 | optimMethod | 优化方法 | 优化方法 | String |  | "LBFGS", "NETWON" | "LBFGS" |
 | selectedCol | 计算列对应的列名 | 计算列对应的列名, 默认值是null | String |  |  | null |

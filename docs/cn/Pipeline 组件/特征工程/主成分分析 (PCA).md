@@ -12,7 +12,7 @@ Python 类名：PCA
 
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
-| k | 降维后的维度 | 降维后的维度 | Integer | ✓ | [1, +inf) |  |
+| k | 降维后的维度 | 降维后的维度 | Integer | ✓ | x >= 1 |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | calculationType | 计算类型 | 计算类型，包含"CORR", "COV"两种。 | String |  | "CORR", "COV" | "CORR" |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |

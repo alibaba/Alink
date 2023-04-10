@@ -11,7 +11,19 @@ Python 类名：LookupRedisString
 
 ## 参数说明
 
-<!-- PARAMETER TABLE -->
+| 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| pluginVersion | 插件版本号 | 插件版本号 | String | ✓ |  |  |
+| selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ |  |  |
+| clusterMode | 集群模式 | 是集群模式还是单机模式 | Boolean |  |  | false |
+| databaseIndex | 数据库索引号 | 数据库索引号 | Long |  |  |  |
+| outputCol | 输出结果列 | 输出结果列列名，可选，默认null | String |  |  | null |
+| pipelineSize | 流水线大小 | Redis 发送命令流水线的大小 | Integer |  |  | 1 |
+| redisIPs | Redis IP | Redis 集群的 IP/端口 | String[] |  |  |  |
+| redisPassword | Redis 密码 | Redis 服务器密码 | String |  |  |  |
+| reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| timeout | 超时 | 关闭连接的超时时间 | Integer |  |  |  |
+| numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 
 ## 代码示例

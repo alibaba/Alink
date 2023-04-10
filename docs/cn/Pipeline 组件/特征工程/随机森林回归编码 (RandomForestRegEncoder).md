@@ -26,7 +26,7 @@ Python 类名：RandomForestRegEncoder
 | minSamplesPerLeaf | 叶节点的最小样本个数 | 叶节点的最小样本个数 | Integer |  |  | 2 |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | numSubsetFeatures | 每棵树的特征采样数目 | 每棵树的特征采样数目 | Integer |  |  | 2147483647 |
-| numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | [1, +inf) | 10 |
+| numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | x >= 1 | 10 |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | seed | 采样种子 | 采样种子 | Long |  |  | 0 |

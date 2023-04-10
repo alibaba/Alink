@@ -14,7 +14,7 @@ Python 类名：LeaveKObjectOutBatchOp
 | groupCol | 分组列 | 分组单列名，必选 | String | ✓ |  |  |
 | objectCol | Object列列名 | Object列列名 | String | ✓ |  |  |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
-| fraction | 拆分到测试集最大数据比例 | 拆分到测试集最大数据比例 | Double |  | [0.0, 1.0] | 1.0 |
+| fraction | 拆分到测试集最大数据比例 | 拆分到测试集最大数据比例 | Double |  | 0.0 <= x <= 1.0 | 1.0 |
 | k | 推荐TOP数量 | 推荐TOP数量 | Integer |  |  | 10 |
 
 ## 代码示例

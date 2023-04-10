@@ -18,7 +18,7 @@ Histogram-based Outlier Score 使用直方图统计结果，描述异常值，�
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | groupCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |
-| k | K | 直方图 bin 的数量 | Integer |  | [1, +inf) | 10 |
+| k | K | 直方图 bin 的数量 | Integer |  | x >= 1 | 10 |
 | outlierThreshold | 异常评分阈值 | 只有评分大于该阈值才会被认为是异常点 | Double |  |  |  |
 | precedingRows | 数据窗口大小 | 数据窗口大小 | Integer |  |  | null |
 | precedingTime | 时间窗口大小 | 时间窗口大小 | String |  |  | null |

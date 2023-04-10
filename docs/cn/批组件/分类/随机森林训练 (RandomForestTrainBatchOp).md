@@ -29,7 +29,7 @@ Python 类名：RandomForestTrainBatchOp
 | minSampleRatioPerChild | 子节点占父节点的最小样本比例 | 子节点占父节点的最小样本比例 | Double |  |  | 0.0 |
 | minSamplesPerLeaf | 叶节点的最小样本个数 | 叶节点的最小样本个数 | Integer |  |  | 2 |
 | numSubsetFeatures | 每棵树的特征采样数目 | 每棵树的特征采样数目 | Integer |  |  | 2147483647 |
-| numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | [1, +inf) | 10 |
+| numTrees | 模型中树的棵数 | 模型中树的棵数 | Integer |  | x >= 1 | 10 |
 | numTreesOfGini | 模型中Cart树的棵数 | 模型中Cart树的棵数 | Integer |  |  | null |
 | numTreesOfInfoGain | 模型中Id3树的棵数 | 模型中Id3树的棵数 | Integer |  |  | null |
 | numTreesOfInfoGainRatio | 模型中C4.5树的棵数 | 模型中C4.5树的棵数 | Integer |  |  | null |

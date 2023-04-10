@@ -25,7 +25,7 @@ Cosine（Cosine）支持相似度计算，应选择metric的参数为COSINE。
 | selectedCol | 选中的列名 | 计算列对应的列名 | String | ✓ | 所选列类型为 [STRING] |  |
 | lambda | 匹配字符权重 | 匹配字符权重，SSK中使用 | Double |  |  | 0.5 |
 | metric | 距离类型 | 用于计算的距离类型 | String |  | "LEVENSHTEIN_SIM", "LEVENSHTEIN", "LCS_SIM", "LCS", "SSK", "COSINE" | "LEVENSHTEIN_SIM" |
-| windowSize | 窗口大小 | 窗口大小 | Integer |  | [1, +inf) | 2 |
+| windowSize | 窗口大小 | 窗口大小 | Integer |  | x >= 1 | 2 |
 
 
 

@@ -32,7 +32,7 @@ AutoArima是只需要指定MaxOrder, 不需要指定p/d/q, 对每个分组分别
 | predictNum | 预测条数 | 预测条数 | Integer |  |  | 1 |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
-| seasonalPeriod | 季节周期 | 季节周期 | Integer |  | [1, +inf) | 1 |
+| seasonalPeriod | 季节周期 | 季节周期 | Integer |  | x >= 1 | 1 |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 ## 代码示例

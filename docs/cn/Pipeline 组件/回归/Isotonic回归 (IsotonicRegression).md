@@ -20,7 +20,7 @@ Python 类名：IsotonicRegression
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | featureCol | 特征列名 | 特征列的名称 | String |  |  | null |
-| featureIndex | 训练特征所在维度 | 训练特征在输入向量的维度索引 | Integer |  | [0, +inf) | 0 |
+| featureIndex | 训练特征所在维度 | 训练特征在输入向量的维度索引 | Integer |  | x >= 0 | 0 |
 | isotonic | 输出序列是否 | 输出序列是否递增 | Boolean |  |  | true |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |

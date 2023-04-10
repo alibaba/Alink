@@ -22,7 +22,7 @@ Word2Vec的工具包相关链接：[https://code.google.com/p/word2vec/](https:/
 | predMethod | 向量组合方法 | 预测文档向量时，需要用到的方法。支持三种方法：平均（avg），最小（min）和最大（max），默认值为平均 | String |  | "AVG", "SUM", "MIN", "MAX" | "AVG" |
 | randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  |  | "true" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
-| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | [1, +inf) | 100 |
+| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | x >= 1 | 100 |
 | window | 窗口大小 | 窗口大小 | Integer |  |  | 5 |
 | wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  |  | " " |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |

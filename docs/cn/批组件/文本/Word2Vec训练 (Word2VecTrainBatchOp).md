@@ -19,7 +19,7 @@ Word2Vec的工具包相关链接：[https://code.google.com/p/word2vec/](https:/
 | minCount | 最小词频 | 最小词频 | Integer |  |  | 5 |
 | numIter | 迭代次数 | 迭代次数，默认为1。 | Integer |  |  | 1 |
 | randomWindow | 是否使用随机窗口 | 是否使用随机窗口，默认使用 | String |  |  | "true" |
-| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | [1, +inf) | 100 |
+| vectorSize | embedding的向量长度 | embedding的向量长度 | Integer |  | x >= 1 | 100 |
 | window | 窗口大小 | 窗口大小 | Integer |  |  | 5 |
 | wordDelimiter | 单词分隔符 | 单词之间的分隔符 | String |  |  | " " |
 

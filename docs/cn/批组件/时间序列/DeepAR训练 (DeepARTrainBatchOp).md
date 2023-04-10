@@ -26,7 +26,7 @@ Python 类名：DeepARTrainBatchOp
 | pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  |  | "" |
 | removeCheckpointBeforeTraining | 是否在训练前移除 checkpoint 相关文件 | 是否在训练前移除 checkpoint 相关文件用于重新训练，只会删除必要的文件 | Boolean |  |  | null |
 | selectedCol | 计算列对应的列名 | 计算列对应的列名, 默认值是null | String |  |  | null |
-| stride | horizon大小 | horizon大小 | Integer |  | [1, +inf) | 12 |
+| stride | horizon大小 | horizon大小 | Integer |  | x >= 1 | 12 |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
 | window | 窗口大小 | 窗口大小 | Integer |  |  | 5 |
 

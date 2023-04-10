@@ -17,7 +17,7 @@ Python 类名：TreeDepthBatchOp
 | edgeTargetCol | 边表中终点所在列 | 边表中终点所在列 | String | ✓ |  |  |
 | asUndirectedGraph | 是否为无向图 | 是否为无向图 | Boolean |  |  | true |
 | edgeWeightCol | 边权重列 | 表示边权重的列 | String |  |  | null |
-| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | [1, +inf) | 100 |
+| maxIter | 最大迭代步数 | 最大迭代步数，默认为 100 | Integer |  | x >= 1 | 100 |
 
 
 

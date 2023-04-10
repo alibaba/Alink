@@ -19,7 +19,7 @@ Python 类名：MultiSourceShortestPathBatchOp
 | sourcePointCol | 源点的列 | 源点的列 | String | ✓ |  |  |
 | asUndirectedGraph | 是否为无向图 | 是否为无向图 | Boolean |  |  | true |
 | edgeWeightCol | 边权重列 | 表示边权重的列 | String |  |  | null |
-| maxIter | 最大迭代次数 | 最大迭代次数 | Integer |  | [1, +inf) | 50 |
+| maxIter | 最大迭代次数 | 最大迭代次数 | Integer |  | x >= 1 | 50 |
 
 ## 代码示例
 ### Python 代码

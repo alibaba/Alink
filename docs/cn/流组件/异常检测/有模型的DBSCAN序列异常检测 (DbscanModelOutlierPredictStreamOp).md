@@ -30,9 +30,9 @@ score值越大表示样本构成的簇越稀疏；对于规模大于minPoints的
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN", "COSINE", "INNERPRODUCT", "CITYBLOCK", "JACCARD", "PEARSON" | "EUCLIDEAN" |
-| epsilon | 样本邻域半径 | 样本邻域半径 | Double |  | [0.0, +inf) |  |
+| epsilon | 样本邻域半径 | 样本邻域半径 | Double |  | x >= 0.0 |  |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
-| minPoints | 邻域样本数 | 邻域样本数 | Integer |  | [0, +inf) | 3 |
+| minPoints | 邻域样本数 | 邻域样本数 | Integer |  | x >= 0 | 3 |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
 | outlierThreshold | 异常评分阈值 | 只有评分大于该阈值才会被认为是异常点 | Double |  |  |  |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |

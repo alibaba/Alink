@@ -34,7 +34,7 @@ Jaccard 支持相似度计算，应选择metric的参数为JACCARD_SIM。
 | numHashTables | 哈希表个数 | 哈希表的数目 | Integer |  |  | 10 |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
 | seed | 采样种子 | 采样种子 | Long |  |  | 0 |
-| windowSize | 窗口大小 | 窗口大小 | Integer |  | [1, +inf) | 2 |
+| windowSize | 窗口大小 | 窗口大小 | Integer |  | x >= 1 | 2 |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 
 

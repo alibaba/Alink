@@ -45,7 +45,7 @@ classification: [https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-t
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
-| smoothing | 算法参数 | 光滑因子，默认为1.0 | Double |  | [0.0, +inf) | 1.0 |
+| smoothing | 算法参数 | 光滑因子，默认为1.0 | Double |  | x >= 0.0 | 1.0 |
 | weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 | modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
