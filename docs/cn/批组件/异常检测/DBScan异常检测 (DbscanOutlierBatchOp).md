@@ -29,13 +29,13 @@ score值越大表示样本构成的簇越稀疏；对于规模大于minPoints的
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | distanceType | 距离度量方式 | 聚类使用的距离类型 | String |  | "EUCLIDEAN", "COSINE", "INNERPRODUCT", "CITYBLOCK", "JACCARD", "PEARSON" | "EUCLIDEAN" |
-| epsilon | 样本邻域半径 | 样本邻域半径 | Double |  | [0.0, +inf) |  |
+| epsilon | 样本邻域半径 | 样本邻域半径 | Double |  | x >= 0.0 |  |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | groupCols | 分组列名数组 | 分组列名，多列，可选，默认不选 | String[] |  |  | null |
 | maxOutlierNumPerGroup | 每组最大异常点数目 | 每组最大异常点数目 | Integer |  |  |  |
 | maxOutlierRatio | 最大异常点比例 | 算法检测异常点的最大比例 | Double |  |  |  |
 | maxSampleNumPerGroup | 每组最大样本数目 | 每组最大样本数目 | Integer |  |  |  |
-| minPoints | 邻域样本数 | 邻域样本数 | Integer |  | [0, +inf) | 3 |
+| minPoints | 邻域样本数 | 邻域样本数 | Integer |  | x >= 0 | 3 |
 | outlierThreshold | 异常评分阈值 | 只有评分大于该阈值才会被认为是异常点 | Double |  |  |  |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
 | tensorCol | tensor列 | tensor列 | String |  | 所选列类型为 [BOOL_TENSOR, BYTE_TENSOR, DOUBLE_TENSOR, FLOAT_TENSOR, INT_TENSOR, LONG_TENSOR, STRING, STRING_TENSOR, TENSOR, UBYTE_TENSOR] | null |
