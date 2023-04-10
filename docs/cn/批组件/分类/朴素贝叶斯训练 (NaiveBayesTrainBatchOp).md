@@ -40,7 +40,7 @@ FLAIRS.
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  | 所选列类型为 [BIGINTEGER, BOOLEAN, INTEGER, LONG, STRING] |  |
 | smoothing | 算法参数 | 光滑因子，默认为0.0 | Double |  | [0.0, +inf) | 0.0 |
-| weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [DOUBLE] | null |
+| weightCol | 权重列名 | 权重列对应的列名 | String |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 
 ## 代码示例
 ### Python 代码

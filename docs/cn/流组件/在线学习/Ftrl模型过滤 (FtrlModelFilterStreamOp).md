@@ -14,7 +14,6 @@ Python 类名：FtrlModelFilterStreamOp
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | accuracyThreshold | 模型过滤的Accuracy阈值 | 模型过滤的Accuracy阈值 | Double |  |  | 0.5 |
 | aucThreshold | 模型过滤的Auc阈值 | 模型过滤的Auc阈值 | Double |  |  | 0.5 |
-| logLossThreshold | 模型过滤的LogLoss阈值 | 模型过滤的LogLoss阈值 | Double |  |  | 1.7976931348623157E308 |
 | numEvalSamples | 评估样本数据条数 | 用多少样本数据对模型进行评估 | Integer |  |  | 200000 |
 | positiveLabelValueString | 正样本 | 正样本对应的字符串格式。 | String |  |  | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
