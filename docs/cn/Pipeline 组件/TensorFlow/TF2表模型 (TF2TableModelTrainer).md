@@ -9,12 +9,12 @@ Python 类名：TF2TableModelTrainer
 该组件支持用户传入 TensorFlow2 脚本，进行模型训练。
 
 用户需要提供自己编写的 TensorFlow2 脚本文件。
-脚本的编写需要依赖 akdl 库，可以参考 ```alink_dl_predictors/predictor-tf/src/test/resources/tf_dnn_train.py```。
+脚本的编写需要依赖 akdl 库，可以参考 alink_dl_predictors/predictor-tf/src/test/resources/tf_dnn_train.py。
 
-脚本中必须要将模型保存为 SavedModel 格式，并导出到指定的目录下 (```TrainTaskConfig#saved_model_dir```)。
+脚本中必须要将模型保存为 SavedModel 格式，并导出到指定的目录下 (TrainTaskConfig#saved_model_dir)。
 
-调用这个组件的 fit 方法可以得到一个 ```TFTableModelPredictor``` 进行预测。
-需要注意的是：参与预测的列名一般与参与训练的列名不同（预测没有 label 列），需要通过参数 ```inferSelectedCols``` 来指定参与预测的列名。
+调用这个组件的 fit 方法可以得到一个 TFTableModelPredictor 进行预测。
+需要注意的是：参与预测的列名一般与参与训练的列名不同（预测没有 label 列），需要通过参数 inferSelectedCols 来指定参与预测的列名。
 
 ## 参数说明
 
@@ -45,11 +45,11 @@ Python 类名：TF2TableModelTrainer
 ### 脚本路径说明
 
 脚本路径可以是以下形式：
-- 本地文件：```file://``` 加绝对路径，例如 ```file:///tmp/dnn.py```；
-- Java 包中的资源文件：```res://``` 加路径，例如 ```res:///dnn.py```；
-- http/https 文件：```http://``` 或 ```https://``` 路径；
-- OSS 文件：```oss://``` 加路径和 Endpoint 和 access key 等信息，例如```oss://bucket/xxx/xxx/xxx.py?host=xxx&access_key_id=xxx&access_key_secret=xxx```；
-- HDFS 文件：```hdfs://``` 加路径；
+- 本地文件：file:// 加绝对路径，例如 file:///tmp/dnn.py；
+- Java 包中的资源文件：res:// 加路径，例如 res:///dnn.py；
+- http/https 文件：http:// 或 https:// 路径；
+- OSS 文件：oss:// 加路径和 Endpoint 和 access key 等信息，例如oss://bucket/xxx/xxx/xxx.py?host=xxx&access_key_id=xxx&access_key_secret=xxx；
+- HDFS 文件：hdfs:// 加路径；
 
 ## 代码示例
 

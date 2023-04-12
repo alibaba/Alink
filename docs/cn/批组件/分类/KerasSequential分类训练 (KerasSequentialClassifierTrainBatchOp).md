@@ -21,10 +21,10 @@ Python 类名：KerasSequentialClassifierTrainBatchOp
 "Conv1D(128, 5, padding='same', activation='relu')",
 "Flatten()"
 ```
-```tf.keras.layers``` 内的网络层已经提前 import，可以直接使用。
+tf.keras.layers 内的网络层已经提前 import，可以直接使用。
 使用的 TensorFlow 版本是 2.3.1。
 
-该组件可以接 ```KerasSequentialClassifierPredictBatchOp``` 或 ```KerasSequentialClassifierPredictStreamOp``` 进行推理。
+该组件可以接 KerasSequentialClassifierPredictBatchOp 或 KerasSequentialClassifierPredictStreamOp 进行推理。
 
 
 ## 参数说明

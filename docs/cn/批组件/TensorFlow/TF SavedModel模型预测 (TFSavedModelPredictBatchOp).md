@@ -28,11 +28,11 @@ Python 类名：TFSavedModelPredictBatchOp
 ### 模型路径说明
 
 模型路径可以是以下形式：
-- 本地文件：```file://``` 加绝对路径，例如 ```file:///tmp/dnn.py```；
-- Java 包中的资源文件：```res://``` 加路径，例如 ```res:///dnn.py```；
-- http/https 文件：```http://``` 或 ```https://``` 路径；
-- OSS 文件：```oss://``` 加路径和 Endpoint 和 access key 等信息，例如```oss://bucket/xxx/xxx/xxx.py?host=xxx&access_key_id=xxx&access_key_secret=xxx```；
-- HDFS 文件：```hdfs://``` 加路径；
+- 本地文件：file:// 加绝对路径，例如 file:///tmp/dnn.py；
+- Java 包中的资源文件：res:// 加路径，例如 res:///dnn.py；
+- http/https 文件：http:// 或 https:// 路径；
+- OSS 文件：oss:// 加路径和 Endpoint 和 access key 等信息，例如oss://bucket/xxx/xxx/xxx.py?host=xxx&access_key_id=xxx&access_key_secret=xxx；
+- HDFS 文件：hdfs:// 加路径；
 
 ## 代码示例
 

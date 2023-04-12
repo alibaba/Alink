@@ -14,7 +14,6 @@ Python 类名：AutoCross
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | outputCol | 输出结果列列名 | 输出结果列列名，必选 | String | ✓ |  |  |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
-| binningMethod | 连续特征分箱方法 | 连续特征分箱方法 | String |  | "QUANTILE", "BUCKET" | "QUANTILE" |
 | categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  |  |  |
 | discreteThresholds | 离散个数阈值 | 离散个数阈值，低于该阈值的离散样本将不会单独成一个组别。 | Integer |  |  | -2147483648 |
 | discreteThresholdsArray | 离散个数阈值数组 | 离散个数阈值，每一列对应数组中一个元素。 | Integer[] |  |  | null |
@@ -23,8 +22,6 @@ Python 类名：AutoCross
 | kCross | k折 | k折 | Integer |  | x >= 1 | 1 |
 | maxSearchStep | 特征组合搜索步数 | 特征组合搜索步数 | Integer |  |  | 2 |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
-| numBuckets | quantile个数 | quantile个数，对所有列有效。 | Integer |  |  | 2 |
-| numBucketsArray | quantile个数 | quantile个数，每一列对应数组中一个元素。 | Integer[] |  |  | null |
 | outputFormat | 输出格式 | 输出格式 | String |  | "Dense", "Sparse", "Word" | "Sparse" |
 | overwriteSink | 是否覆写已有数据 | 是否覆写已有数据 | Boolean |  |  | false |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |

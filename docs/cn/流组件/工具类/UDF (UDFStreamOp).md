@@ -20,7 +20,7 @@ PyAlink 所定义的 UDF/UDTF 即可以用于 PyAlink 提供的 UDF/UDTF 组件�
 
 以下是定义 UDF/UDTF 的代码示例：
 
-```
+```python
 # 4种 UDF 定义
 
 # ScalarFunction
@@ -86,13 +86,13 @@ udtfs = [
 ## UDF/UDTF 组件使用
 
 在流和批两种场景中，分别提供了 UDF/UDTF 对应的 Operator：
-- ```UDFBatchOp```
-- ```UDFStreamOp```
-- ```UDTFBatchOp```
-- ```UDTFStreamOp```
+- UDFBatchOp
+- UDFStreamOp
+- UDTFBatchOp
+- UDTFStreamOp
 
 它们的参数包括：
-- ```setFunc```：设置 UDF 或 UDTF，由前文的 `udf` 或 `udtf` 函数产生；
+- setFunc：设置 UDF 或 UDTF，由前文的 `udf` 或 `udtf` 函数产生；
 - setSelectedCols：选择参与计算的列；
 - setOutputCol/setOutputCols：设置结果列名，其中 UDF 允许1列，UDTF 允许多列；
 - setReservedCols：设置保留列。
@@ -127,7 +127,7 @@ for index, f in enumerate(udtfs):
     StreamOperator.execute()
 ```
 
-除了使用组件形式以外，Operator 下还提供了```udf``` 和 ```udtf``` 方法，参数与上文中的 Operator 一致：
+除了使用组件形式以外，Operator 下还提供了udf 和 udtf 方法，参数与上文中的 Operator 一致：
 ```
 udf(self, func, selectedCols, outputCol, resultType, reservedCols=None)
 udtf(self, func, selectedCols, outputCols, resultTypes, reservedCols=None)

@@ -13,7 +13,6 @@ Python 类名：AutoCrossTrainBatchOp
 | --- | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | selectedCols | 选择的列名 | 计算列对应的列名列表 | String[] | ✓ |  |  |
-| binningMethod | 连续特征分箱方法 | 连续特征分箱方法 | String |  | "QUANTILE", "BUCKET" | "QUANTILE" |
 | categoricalCols | 离散特征列名 | 离散特征列名 | String[] |  |  |  |
 | discreteThresholds | 离散个数阈值 | 离散个数阈值，低于该阈值的离散样本将不会单独成一个组别。 | Integer |  |  | -2147483648 |
 | discreteThresholdsArray | 离散个数阈值数组 | 离散个数阈值，每一列对应数组中一个元素。 | Integer[] |  |  | null |
@@ -21,6 +20,4 @@ Python 类名：AutoCrossTrainBatchOp
 | fraction | 采样比例 | 采样比例 | Double |  | 0.0 <= x <= 1.0 | 0.8 |
 | kCross | k折 | k折 | Integer |  | x >= 1 | 1 |
 | maxSearchStep | 特征组合搜索步数 | 特征组合搜索步数 | Integer |  |  | 2 |
-| numBuckets | quantile个数 | quantile个数，对所有列有效。 | Integer |  |  | 2 |
-| numBucketsArray | quantile个数 | quantile个数，每一列对应数组中一个元素。 | Integer[] |  |  | null |
 

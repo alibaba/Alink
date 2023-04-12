@@ -10,20 +10,20 @@ Python 类名：TFRecordDatasetSourceBatchOp
 
 ### 使用说明
 
-需要指定文件路径 ```filePath```，可以是单个文件，也可以是包含多个 TFRecordDataset 的目录。
+需要指定文件路径 filePath，可以是单个文件，也可以是包含多个 TFRecordDataset 的目录。
 
-为了将读取的 ```TFRecord``` 转换为 Alink 中的格式，需要指定数据的 ```schemaStr```。
-由于 ```TFRecord``` 中 ```Feature``` 允许的数据类型仅有 ```float, int64, bytes```，因此 ```schemaStr``` 填写的类型有一定的限制：
+为了将读取的 TFRecord 转换为 Alink 中的格式，需要指定数据的 schemaStr。
+由于 TFRecord 中 Feature 允许的数据类型仅有 float, int64, bytes，因此 schemaStr 填写的类型有一定的限制：
 
-- ```FLOAT_TENSOR```/```DOUBLE_TENSOR```：要求```float```特征；
-- ```LONG_TENSOR```/```INT_TENSOR```：要求```int64```特征；
-- ```STRING_TENSOR```：要求```bytes```特征；
-- ```BYTE_TENSOR```：要求```bytes```特征；
-- ```DENSE_VECTOR```：要求```float```特征；
-- ```LONG```/```INT```：要求```int64```特征，并且只使用第一个元素；
-- ```FLOAT```/```DOUBLE```：要求```float```特征，并且只使用第一个元素；
-- ```STRING```：要求```bytes```特征，并且只使用第一个元素；
-- ```VARBINARY```：要求```bytes```特征。
+- FLOAT_TENSOR/DOUBLE_TENSOR：要求float特征；
+- LONG_TENSOR/INT_TENSOR：要求int64特征；
+- STRING_TENSOR：要求bytes特征；
+- BYTE_TENSOR：要求bytes特征；
+- DENSE_VECTOR：要求float特征；
+- LONG/INT：要求int64特征，并且只使用第一个元素；
+- FLOAT/DOUBLE：要求float特征，并且只使用第一个元素；
+- STRING：要求bytes特征，并且只使用第一个元素；
+- VARBINARY：要求bytes特征。
 
 ## 参数说明
 

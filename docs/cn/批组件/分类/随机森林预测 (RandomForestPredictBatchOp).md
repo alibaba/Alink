@@ -155,7 +155,7 @@ CsvSourceBatchOp trainData = new CsvSourceBatchOp()
 	.setIgnoreFirstLine(true)
 	.setSchemaStr(schemaStr)
 	.lazyPrintStatistics("Adult train");
-````
+```
 
 上述代码中可以使用
 
@@ -368,7 +368,7 @@ Table of feature importance Top 14:
 	}
 })
 ```
-![rf_model_img](https://img.alicdn.com/imgextra/i1/O1CN01AH5mt41scxAdk1WVV_!!6000000005788-2-tps-20177-2990.png "rf_model_img")
+<img src="https://img.alicdn.com/imgextra/i1/O1CN01AH5mt41scxAdk1WVV_!!6000000005788-2-tps-20177-2990.png" style="zoom:10%">
 
 ##### 评估结果
 

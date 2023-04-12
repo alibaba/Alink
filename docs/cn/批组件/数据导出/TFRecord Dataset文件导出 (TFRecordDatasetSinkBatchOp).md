@@ -10,22 +10,22 @@ Python 类名：TFRecordDatasetSinkBatchOp
 
 ### 使用说明
 
-需要指定文件路径 ```filePath```，默认为单并行度写出单个文件。
-如果希望并行的写出文件，那么需要设置参数```numFiles```，得到的是一个包含多个 TFRecordDataset 文件的目录。
+需要指定文件路径 filePath，默认为单并行度写出单个文件。
+如果希望并行的写出文件，那么需要设置参数numFiles，得到的是一个包含多个 TFRecordDataset 文件的目录。
 
-```TFRecord``` 中， ```Feature``` 允许的数据类型仅有 ```float, int64, bytes```。
-其中数据类型为 ```bytes```时，存储的数据实际上为 ```ByteString``` 的列表；为 ```float, int64``` 时存储的数据为 ```float``` 或 ```int64``` 的列表。
+TFRecord 中， Feature 允许的数据类型仅有 float, int64, bytes。
+其中数据类型为 bytes时，存储的数据实际上为 ByteString 的列表；为 float, int64 时存储的数据为 float 或 int64 的列表。
 数据写出时会根据在 Alink 中的类型进行转换， 其他类型请先使用类型转换组件进行转换：
 
-- ```DOUBLE, FLOAT, BIG_DEC```：转为```float```特征；
-- ```LONG, INT, BIG_INT, SHORT```：转为```int64```特征；
-- ```STRING```：转为```bytes```特征，按 UTF8 编码对应 1 个```ByteString```；
-- ```DENSE_VECTOR```：转为```float```特征；
-- ```FLOAT_TENSOR, DOUBLE_TENSOR```：转为```float```特征，数据被展平为1维；
-- ```INT_TENSOR, LONG_TENSOR```：转为```int64```特征，数据被展平为1维；
-- ```BYTE_TENSOR```：转为```bytes```特征，rank = 1 时对应 1 个```ByteString```，rank = 2时对应```ByteString```的列表，其他 rank 不支持；
-- ```STRING_TENSOR```：转为```bytes```特征，按 UTF8 编码对应```ByteString```的列表；
-- ```VARBINARY```：转为```bytes```特征，对应 1 个```ByteString```。
+- DOUBLE, FLOAT, BIG_DEC：转为float特征；
+- LONG, INT, BIG_INT, SHORT：转为int64特征；
+- STRING：转为bytes特征，按 UTF8 编码对应 1 个ByteString；
+- DENSE_VECTOR：转为float特征；
+- FLOAT_TENSOR, DOUBLE_TENSOR：转为float特征，数据被展平为1维；
+- INT_TENSOR, LONG_TENSOR：转为int64特征，数据被展平为1维；
+- BYTE_TENSOR：转为bytes特征，rank = 1 时对应 1 个ByteString，rank = 2时对应ByteString的列表，其他 rank 不支持；
+- STRING_TENSOR：转为bytes特征，按 UTF8 编码对应ByteString的列表；
+- VARBINARY：转为bytes特征，对应 1 个ByteString。
 
 ## 参数说明
 

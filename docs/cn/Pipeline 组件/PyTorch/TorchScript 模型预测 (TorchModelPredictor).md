@@ -10,21 +10,21 @@ Python 类名：TorchModelPredictor
 
 ### 使用方式
 
-模型路径```modelPath```需要是一个通过 ```torch.jit``` 导出的模型文件路径。
+模型路径modelPath需要是一个通过 torch.jit 导出的模型文件路径。
 
-参与模型预测的数据通过参数 ```selectedCols``` 设置，需要注意以下几点：
+参与模型预测的数据通过参数 selectedCols 设置，需要注意以下几点：
 
-- TorchScript 模型调用 ```forward``` 方法时是通过位置来传入参数的，所以 ```selectedCols``` 中各列的顺序是有意义的。
-- 所选择的列的类型需要是 Alink ```Tensor``` 类型或者 4 种基本数据类型（```Long, Double, Boolean, String``` 及其兼容类型），不接受其他类型。
+- TorchScript 模型调用 forward 方法时是通过位置来传入参数的，所以 selectedCols 中各列的顺序是有意义的。
+- 所选择的列的类型需要是 Alink Tensor 类型或者 4 种基本数据类型（Long, Double, Boolean, String 及其兼容类型），不接受其他类型。
 
-模型输出信息通过参数 ```outputSchemaStr``` 指定，包括输出列名以及名称，需要注意以下几点：
+模型输出信息通过参数 outputSchemaStr 指定，包括输出列名以及名称，需要注意以下几点：
 
 - 输出列的数量需要与模型输出结果匹配。
-- 输出类型可以是 Alink ```Tensor``` 类型或者 Alink 支持的类型，如果从模型预测输出的结果转换到指定类型失败那么将报错；暂不支持列表或字典类型。
+- 输出类型可以是 Alink Tensor 类型或者 Alink 支持的类型，如果从模型预测输出的结果转换到指定类型失败那么将报错；暂不支持列表或字典类型。
 
 组件使用的是 PyTorch 1.8.1 CPU 版本，如果需要使用 GPU 功能，可以自行替换插件文件。
 
-在 Windows 下运行时，如果遇到 ```UnsatisfiedLinkError```，请下载 [Visual C++ 2015 Redistributable Packages](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) 并重启，然后重新运行。
+在 Windows 下运行时，如果遇到 UnsatisfiedLinkError，请下载 [Visual C++ 2015 Redistributable Packages](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) 并重启，然后重新运行。
 
 ## 参数说明
 
@@ -40,12 +40,12 @@ Python 类名：TorchModelPredictor
 
 模型路径可以是以下形式：
 
-- 本地文件：```file://``` 加绝对路径，例如 ```file:///tmp/dnn.py```；
-- Java 包中的资源文件：```res://``` 加路径，例如 ```res:///dnn.py```；
-- http/https 文件：```http://``` 或 ```https://``` 路径；
-- OSS 文件：```oss://``` 加路径和 Endpoint 和 access key
-  等信息，例如```oss://bucket/xxx/xxx/xxx.py?host=xxx&access_key_id=xxx&access_key_secret=xxx```；
-- HDFS 文件：```hdfs://``` 加路径；
+- 本地文件：file:// 加绝对路径，例如 file:///tmp/dnn.py；
+- Java 包中的资源文件：res:// 加路径，例如 res:///dnn.py；
+- http/https 文件：http:// 或 https:// 路径；
+- OSS 文件：oss:// 加路径和 Endpoint 和 access key
+  等信息，例如oss://bucket/xxx/xxx/xxx.py?host=xxx&access_key_id=xxx&access_key_secret=xxx；
+- HDFS 文件：hdfs:// 加路径；
 
 ## 代码示例
 
