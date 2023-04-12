@@ -1,4 +1,4 @@
-# TargetEncoder (TargetEncoderPredictBatchOp)
+# 目标编码预测 (TargetEncoderPredictBatchOp)
 Java 类名：com.alibaba.alink.operator.batch.feature.TargetEncoderPredictBatchOp
 
 Python 类名：TargetEncoderPredictBatchOp

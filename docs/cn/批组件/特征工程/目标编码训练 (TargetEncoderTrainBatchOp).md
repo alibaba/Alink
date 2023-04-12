@@ -1,4 +1,4 @@
-# TargetEncoder (TargetEncoderTrainBatchOp)
+# 目标编码训练 (TargetEncoderTrainBatchOp)
 Java 类名：com.alibaba.alink.operator.batch.feature.TargetEncoderTrainBatchOp
 
 Python 类名：TargetEncoderTrainBatchOp

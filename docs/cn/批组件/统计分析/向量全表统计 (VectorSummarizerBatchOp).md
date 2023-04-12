@@ -33,6 +33,7 @@ test.lazyPrintVectorSummary();
     print(summary.normL2('f_double'))
     print(summary.numValidValue('f_double'))
     print(summary.numMissingValue('f_double'))
+```
 
 ## 参数说明
 

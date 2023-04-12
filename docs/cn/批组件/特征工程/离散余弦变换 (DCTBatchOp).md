@@ -1,4 +1,4 @@
-# Discrete Cosine Transform (DCTBatchOp)
+# 离散余弦变换 (DCTBatchOp)
 Java 类名：com.alibaba.alink.operator.batch.feature.DCTBatchOp
 
 Python 类名：DCTBatchOp

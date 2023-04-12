@@ -21,29 +21,31 @@ Python 类名：SummarizerBatchOp
     ```
   
 * 获取相应的统计值
-  ```python
-      summary = summarizer.linkFrom(source).collectSummary()
-      print(summary.sum('f_double'))
-      print(summary.mean('f_double'))
-      print(summary.variance('f_double'))
-      print(summary.standardDeviation('f_double'))
-      print(summary.min('f_double'))
-      print(summary.max('f_double'))
-      print(summary.normL1('f_double'))
-      print(summary.normL2('f_double'))
-      print(summary.numValidValue('f_double'))
-      print(summary.numMissingValue('f_double'))
-  ```
+
+    ```python
+        summary = summarizer.linkFrom(source).collectSummary()
+        print(summary.sum('f_double'))
+        print(summary.mean('f_double'))
+        print(summary.variance('f_double'))
+        print(summary.standardDeviation('f_double'))
+        print(summary.min('f_double'))
+        print(summary.max('f_double'))
+        print(summary.normL1('f_double'))
+        print(summary.normL2('f_double'))
+        print(summary.numValidValue('f_double'))
+        print(summary.numMissingValue('f_double'))
+    ```
 * 对Op的输出表做统计
+
     ```python
       source.lazyPrintStatistics()
       BatchOperator.execute()
-   ```
+    ```
   
 * 获取Op输出表的TableSummary
     ```python
       summary = source..collectStatistics()
-   ```
+    ```
 
 
 

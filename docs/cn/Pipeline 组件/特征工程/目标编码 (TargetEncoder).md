@@ -1,4 +1,4 @@
-# Target Encoder (TargetEncoder)
+# 目标编码 (TargetEncoder)
 Java 类名：com.alibaba.alink.pipeline.feature.TargetEncoder
 
 Python 类名：TargetEncoder
