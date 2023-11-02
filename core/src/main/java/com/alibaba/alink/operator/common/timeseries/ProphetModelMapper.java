@@ -102,6 +102,37 @@ public class ProphetModelMapper extends TimeSeriesModelMapper {
 		conf.put("uncertainty_samples", String.valueOf(this.meta.get(ProphetParams.UNCERTAINTY_SAMPLES)));
 		conf.put("init_model", null);
 
+		if (params.contains(ProphetParams.HOLIDAYS)) {
+			conf.put("holidays", params.get(ProphetParams.HOLIDAYS));
+		}
+
+		if (params.contains(ProphetParams.CAP)) {
+			conf.put("cap", String.valueOf(params.get(ProphetParams.CAP)));
+		}
+
+		if (params.contains(ProphetParams.FLOOR)) {
+			conf.put("floor", String.valueOf(params.get(ProphetParams.FLOOR)));
+		}
+
+		if(params.contains(ProphetParams.CHANGE_POINTS)) {
+			conf.put("changepoints", params.get(ProphetParams.CHANGE_POINTS));
+		}
+
+		conf.put("growth", String.valueOf(params.get(ProphetParams.GROWTH)).toLowerCase());
+		conf.put("holidays_prior_scale", String.valueOf(params.get(ProphetParams.HOLIDAYS_PRIOR_SCALE)));
+		conf.put("n_change_point", String.valueOf(params.get(ProphetParams.N_CHANGE_POINT)));
+		conf.put("change_point_range", String.valueOf(params.get(ProphetParams.CHANGE_POINT_RANGE)));
+		conf.put("changepoint_prior_scale", String.valueOf(params.get(ProphetParams.CHANGE_POINT_PRIOR_SCALE)));
+		conf.put("interval_width", String.valueOf(params.get(ProphetParams.INTERVAL_WIDTH)));
+		conf.put("seasonality_mode", String.valueOf(params.get(ProphetParams.SEASONALITY_MODE)).toLowerCase());
+		conf.put("seasonality_prior_scale", String.valueOf(params.get(ProphetParams.SEASONALITY_PRIOR_SCALE)));
+		conf.put("mcmc_samples", String.valueOf(params.get(ProphetParams.MCMC_SAMPLES)));
+		conf.put("yearly_seasonality", params.get(ProphetParams.YEARLY_SEASONALITY));
+		conf.put("weekly_seasonality", params.get(ProphetParams.WEEKLY_SEASONALITY));
+		conf.put("daily_seasonality", params.get(ProphetParams.DAILY_SEASONALITY));
+		conf.put("include_history", String.valueOf(params.get(ProphetParams.INCLUDE_HISTORY)).toLowerCase());
+
+
 		List <Row> inputs = new ArrayList <>();
 		SimpleDateFormat dataFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		for (int i = 0; i < historyTimes.length; i++) {

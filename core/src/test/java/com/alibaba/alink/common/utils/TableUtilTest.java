@@ -9,7 +9,6 @@ import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.params.shared.colname.HasLabelCol;
-import com.alibaba.alink.params.shared.colname.HasWeightCol;
 import com.alibaba.alink.params.shared.colname.HasWeightColDefaultAsNull;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
@@ -162,4 +161,8 @@ public class TableUtilTest extends AlinkTestBase {
 		TableUtil.findColIndexWithAssertAndHint(colNames, "features");
 	}
 
+	@Test
+	public void testStringTypeToString() {
+		Assert.assertEquals("f0 INT,f1 BIGINT,f2 STRING", TableUtil.schema2SchemaStr(tableSchema));
+	}
 }

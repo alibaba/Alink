@@ -122,24 +122,6 @@ public class SingleSourceShortestPathBatchOp extends BatchOperator <SingleSource
 		}
 	}
 
-	//    private static final class InitialMap extends RichMapFunction<Vertex<Long, Double>, Vertex<Long, Double>> {
-	//		private static final long serialVersionUID = -3271495453255874019L;
-	//		private Long srcVertexId;
-	//        @Override
-	//        public void open(Configuration config) throws Exception{
-	//            srcVertexId = (Long) getRuntimeContext().getBroadcastVariable("source").get(0);
-	//        }
-	//        @Override
-	//        public Vertex<Long, Double> map(Vertex<Long, Double> value) throws Exception {
-	//            if (value.f0.equals(srcVertexId)){
-	//                return value;
-	//            } else {
-	//                value.f1 = Double.MAX_VALUE;
-	//                return value;
-	//            }
-	//        }
-	//    }
-
 	// --------------------------------------------------------------------------------------------
 	//  Single Source Shortest Path UDFs
 	// --------------------------------------------------------------------------------------------

@@ -4,7 +4,7 @@ import org.apache.flink.ml.api.core.Transformer;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 
 import com.alibaba.alink.common.LocalMLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
@@ -126,8 +126,6 @@ public abstract class TransformerBase<T extends TransformerBase <T>>
 	 * @param input the input local data from LocalOperator
 	 * @return the transformed local result data
 	 */
-	public LocalOperator <?> transform(LocalOperator <?> input) {
-		throw new AkIllegalOperatorParameterException("Not implemented!");
-	}
+	public abstract LocalOperator <?> transform(LocalOperator <?> input);
 
 }

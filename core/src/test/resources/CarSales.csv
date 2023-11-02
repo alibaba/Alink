@@ -1,0 +1,276 @@
+Year,Brand,Category,Model,Sales
+2007/1/1,BMW,Compact,BMW 3-Series,142490
+2008/1/1,BMW,Compact,BMW 3-Series,112464
+2009/1/1,BMW,Compact,BMW 3-Series,90960
+2010/1/1,BMW,Compact,BMW 3-Series,100910
+2011/1/1,BMW,Compact,BMW 3-Series,94371
+2007/1/1,BMW,Compact,BMW 3-Series,54142
+2007/1/1,BMW,Fullsize,BMW 7-Series,14773
+2008/1/1,BMW,Fullsize,BMW 7-Series,12276
+2009/1/1,BMW,Fullsize,BMW 7-Series,9254
+2010/1/1,BMW,Fullsize,BMW 7-Series,12253
+2011/1/1,BMW,Fullsize,BMW 7-Series,11299
+2008/1/1,BMW,Midsize,BMW 5-Series,45915
+2009/1/1,BMW,Midsize,BMW 5-Series,40109
+2010/1/1,BMW,Midsize,BMW 5-Series,39488
+2011/1/1,BMW,Midsize,BMW 5-Series,51491
+2007/1/1,BMW,Sporty,BMW 6-Series,9033
+2008/1/1,BMW,Sporty,BMW 6-Series,6533
+2009/1/1,BMW,Sporty,BMW 6-Series,3549
+2010/1/1,BMW,Sporty,BMW 6-Series,2418
+2011/1/1,BMW,Sporty,BMW 6-Series,3903
+2007/1/1,BMW,Sporty,BMW Z4,10097
+2008/1/1,BMW,Sporty,BMW Z4,5879
+2009/1/1,BMW,Sporty,BMW Z4,3523
+2010/1/1,BMW,Sporty,BMW Z4,3804
+2011/1/1,BMW,Sporty,BMW Z4,3479
+2007/1/1,BMW,Subcompact,BMW 1-Series,11018
+2008/1/1,BMW,Subcompact,BMW 1-Series,12018
+2009/1/1,BMW,Subcompact,BMW 1-Series,11182
+2010/1/1,BMW,Subcompact,BMW 1-Series,13132
+2011/1/1,BMW,Subcompact,BMW 1-Series,8832
+2007/1/1,BMW,SUV,BMW X3,28058
+2008/1/1,BMW,SUV,BMW X3,17622
+2009/1/1,BMW,SUV,BMW X3,6067
+2010/1/1,BMW,SUV,BMW X3,6075
+2011/1/1,BMW,SUV,BMW X3,27793
+2007/1/1,BMW,SUV,BMW X5,35202
+2008/1/1,BMW,SUV,BMW X5,31858
+2009/1/1,BMW,SUV,BMW X5,27071
+2010/1/1,BMW,SUV,BMW X5,35776
+2011/1/1,BMW,SUV,BMW X5,40547
+2007/1/1,BMW,SUV,BMW X6,2548
+2008/1/1,BMW,SUV,BMW X6,4548
+2009/1/1,BMW,SUV,BMW X6,4787
+2010/1/1,BMW,SUV,BMW X6,6257
+2011/1/1,BMW,SUV,BMW X6,6192
+2007/1/1,Ford,Compact,Focus,173213
+2008/1/1,Ford,Compact,Focus,195823
+2009/1/1,Ford,Compact,Focus,160433
+2010/1/1,Ford,Compact,Focus,172421
+2011/1/1,Ford,Compact,Focus,175717
+2007/1/1,Ford,Fullsize,Crown Victoria,60901
+2008/1/1,Ford,Fullsize,Crown Victoria,48557
+2009/1/1,Ford,Fullsize,Crown Victoria,33255
+2010/1/1,Ford,Fullsize,Crown Victoria,33722
+2011/1/1,Ford,Fullsize,Crown Victoria,46725
+2007/1/1,Ford,Fullsize,Taurus,68178
+2008/1/1,Ford,Fullsize,Taurus,52667
+2009/1/1,Ford,Fullsize,Taurus,45617
+2010/1/1,Ford,Fullsize,Taurus,68859
+2011/1/1,Ford,Fullsize,Taurus,63526
+2007/1/1,Ford,Midsize,Fusion,149552
+2008/1/1,Ford,Midsize,Fusion,147569
+2009/1/1,Ford,Midsize,Fusion,180671
+2010/1/1,Ford,Midsize,Fusion,219219
+2011/1/1,Ford,Midsize,Fusion,248067
+2007/1/1,Ford,Pickup,Ranger,72711
+2008/1/1,Ford,Pickup,Ranger,65872
+2009/1/1,Ford,Pickup,Ranger,55600
+2010/1/1,Ford,Pickup,Ranger,55364
+2011/1/1,Ford,Pickup,Ranger,70832
+2007/1/1,Ford,Sporty,Mustang,134626
+2008/1/1,Ford,Sporty,Mustang,91251
+2009/1/1,Ford,Sporty,Mustang,66623
+2010/1/1,Ford,Sporty,Mustang,73716
+2011/1/1,Ford,Sporty,Mustang,70438
+2007/1/1,Ford,Subcompact,Fiesta,21273
+2008/1/1,Ford,Subcompact,Fiesta,22273
+2009/1/1,Ford,Subcompact,Fiesta,22473
+2010/1/1,Ford,Subcompact,Fiesta,23273
+2011/1/1,Ford,Subcompact,Fiesta,68574
+2007/1/1,Ford,SUV,Edge,130125
+2008/1/1,Ford,SUV,Edge,110798
+2009/1/1,Ford,SUV,Edge,88548
+2010/1/1,Ford,SUV,Edge,118637
+2011/1/1,Ford,SUV,Edge,121702
+2007/1/1,Ford,SUV,Escape,165596
+2008/1/1,Ford,SUV,Escape,156544
+2009/1/1,Ford,SUV,Escape,173044
+2010/1/1,Ford,SUV,Escape,191026
+2011/1/1,Ford,SUV,Escape,254293
+2007/1/1,Ford,SUV,Expedition,90287
+2008/1/1,Ford,SUV,Expedition,55123
+2009/1/1,Ford,SUV,Expedition,31655
+2010/1/1,Ford,SUV,Expedition,37336
+2011/1/1,Ford,SUV,Expedition,40499
+2007/1/1,Ford,SUV,Explorer,137817
+2008/1/1,Ford,SUV,Explorer,78439
+2009/1/1,Ford,SUV,Explorer,52190
+2010/1/1,Ford,SUV,Explorer,60687
+2011/1/1,Ford,SUV,Explorer,135704
+2007/1/1,GMC,Pickup,Canyon,20888
+2008/1/1,GMC,Pickup,Canyon,14974
+2009/1/1,GMC,Pickup,Canyon,10107
+2010/1/1,GMC,Pickup,Canyon,7992
+2011/1/1,GMC,Pickup,Canyon,9590
+2007/1/1,GMC,Pickup,Sierra,208243
+2008/1/1,GMC,Pickup,Sierra,168544
+2009/1/1,GMC,Pickup,Sierra,111842
+2010/1/1,GMC,Pickup,Sierra,129794
+2011/1/1,GMC,Pickup,Sierra,149170
+2007/1/1,GMC,SUV,Acadia,72765
+2008/1/1,GMC,SUV,Acadia,66440
+2009/1/1,GMC,SUV,Acadia,53820
+2010/1/1,GMC,SUV,Acadia,68295
+2011/1/1,GMC,SUV,Acadia,79288
+2007/1/1,GMC,SUV,Terrain,14033
+2008/1/1,GMC,SUV,Terrain,14033
+2009/1/1,GMC,SUV,Terrain,14033
+2010/1/1,GMC,SUV,Terrain,60519
+2011/1/1,GMC,SUV,Terrain,83179
+2007/1/1,GMC,SUV,Yukon,63428
+2008/1/1,GMC,SUV,Yukon,39064
+2009/1/1,GMC,SUV,Yukon,29411
+2010/1/1,GMC,SUV,Yukon,28781
+2011/1/1,GMC,SUV,Yukon,34250
+2007/1/1,GMC,SUV,Yukon XL,45303
+2008/1/1,GMC,SUV,Yukon XL,26404
+2009/1/1,GMC,SUV,Yukon XL,16819
+2010/1/1,GMC,SUV,Yukon XL,23797
+2011/1/1,GMC,SUV,Yukon XL,25223
+2007/1/1,Honda,Midsize,Accord,392231
+2008/1/1,Honda,Midsize,Accord,372789
+2009/1/1,Honda,Midsize,Accord,287492
+2010/1/1,Honda,Midsize,Accord,282530
+2011/1/1,Honda,Midsize,Accord,235625
+2007/1/1,Honda,Subcompact,Civic,331095
+2008/1/1,Honda,Subcompact,Civic,339289
+2009/1/1,Honda,Subcompact,Civic,259722
+2010/1/1,Honda,Subcompact,Civic,260218
+2011/1/1,Honda,Subcompact,Civic,221235
+2007/1/1,Honda,Subcompact,Fit,56432
+2008/1/1,Honda,Subcompact,Fit,79794
+2009/1/1,Honda,Subcompact,Fit,67315
+2010/1/1,Honda,Subcompact,Fit,54354
+2011/1/1,Honda,Subcompact,Fit,59235
+2007/1/1,Honda,SUV,CR-V,219160
+2008/1/1,Honda,SUV,CR-V,197279
+2009/1/1,Honda,SUV,CR-V,191214
+2010/1/1,Honda,SUV,CR-V,203714
+2011/1/1,Honda,SUV,CR-V,218373
+2007/1/1,Honda,SUV,Element,35218
+2008/1/1,Honda,SUV,Element,26447
+2009/1/1,Honda,SUV,Element,14884
+2010/1/1,Honda,SUV,Element,14247
+2011/1/1,Honda,SUV,Element,11534
+2007/1/1,Hyundai,Compact,Elantra,85724
+2008/1/1,Hyundai,Compact,Elantra,94720
+2009/1/1,Hyundai,Compact,Elantra,103269
+2010/1/1,Hyundai,Compact,Elantra,132246
+2011/1/1,Hyundai,Compact,Elantra,186361
+2007/1/1,Hyundai,Midsize,Sonata,145568
+2008/1/1,Hyundai,Midsize,Sonata,117357
+2009/1/1,Hyundai,Midsize,Sonata,120028
+2010/1/1,Hyundai,Midsize,Sonata,196623
+2011/1/1,Hyundai,Midsize,Sonata,225961
+2007/1/1,Hyundai,Subcompact,Accent,36055
+2008/1/1,Hyundai,Subcompact,Accent,50431
+2009/1/1,Hyundai,Subcompact,Accent,68086
+2010/1/1,Hyundai,Subcompact,Accent,51975
+2011/1/1,Hyundai,Subcompact,Accent,55601
+2007/1/1,Hyundai,SUV,Santa Fe,92421
+2008/1/1,Hyundai,SUV,Santa Fe,70994
+2009/1/1,Hyundai,SUV,Santa Fe,80343
+2010/1/1,Hyundai,SUV,Santa Fe,76680
+2011/1/1,Hyundai,SUV,Santa Fe,74391
+2007/1/1,Hyundai,SUV,Tucson,41476
+2008/1/1,Hyundai,SUV,Tucson,19027
+2009/1/1,Hyundai,SUV,Tucson,15411
+2010/1/1,Hyundai,SUV,Tucson,39594
+2011/1/1,Hyundai,SUV,Tucson,47232
+2007/1/1,Mazda,Compact,Mazda 3,120291
+2008/1/1,Mazda,Compact,Mazda 3,109957
+2009/1/1,Mazda,Compact,Mazda 3,96466
+2010/1/1,Mazda,Compact,Mazda 3,106353
+2011/1/1,Mazda,Compact,Mazda 3,102417
+2007/1/1,Mazda,Midsize,Mazda 6,57575
+2008/1/1,Mazda,Midsize,Mazda 6,52590
+2009/1/1,Mazda,Midsize,Mazda 6,34866
+2010/1/1,Mazda,Midsize,Mazda 6,35662
+2011/1/1,Mazda,Midsize,Mazda 6,35711
+2007/1/1,Mazda,MPV,Mazda 5,13717
+2008/1/1,Mazda,MPV,Mazda 5,22021
+2009/1/1,Mazda,MPV,Mazda 5,18488
+2010/1/1,Mazda,MPV,Mazda 5,15683
+2011/1/1,Mazda,MPV,Mazda 5,19155
+2007/1/1,Mazda,Subcompact,Mazda 2,2021
+2008/1/1,Mazda,Subcompact,Mazda 2,2221
+2009/1/1,Mazda,Subcompact,Mazda 2,2321
+2010/1/1,Mazda,Subcompact,Mazda 2,3021
+2011/1/1,Mazda,Subcompact,Mazda 2,13952
+2007/1/1,Mazda,SUV,Mazda CX-7,41653
+2008/1/1,Mazda,SUV,Mazda CX-7,26811
+2009/1/1,Mazda,SUV,Mazda CX-7,20583
+2010/1/1,Mazda,SUV,Mazda CX-7,28788
+2011/1/1,Mazda,SUV,Mazda CX-7,35641
+2007/1/1,Toyota,Midsize,Camry,473108
+2008/1/1,Toyota,Midsize,Camry,436617
+2009/1/1,Toyota,Midsize,Camry,356824
+2010/1/1,Toyota,Midsize,Camry,327804
+2011/1/1,Toyota,Midsize,Camry,308510
+2007/1/1,Toyota,Subcompact,Corolla,371390
+2008/1/1,Toyota,Subcompact,Corolla,351007
+2009/1/1,Toyota,Subcompact,Corolla,296874
+2010/1/1,Toyota,Subcompact,Corolla,266082
+2011/1/1,Toyota,Subcompact,Corolla,240259
+2007/1/1,Toyota,Subcompact,Yaris,84799
+2008/1/1,Toyota,Subcompact,Yaris,102328
+2009/1/1,Toyota,Subcompact,Yaris,63743
+2010/1/1,Toyota,Subcompact,Yaris,40076
+2011/1/1,Toyota,Subcompact,Yaris,32704
+2007/1/1,Toyota,SUV,4Runner,87718
+2008/1/1,Toyota,SUV,4Runner,47878
+2009/1/1,Toyota,SUV,4Runner,19675
+2010/1/1,Toyota,SUV,4Runner,46531
+2011/1/1,Toyota,SUV,4Runner,44316
+2007/1/1,Toyota,SUV,Highlander,127878
+2008/1/1,Toyota,SUV,Highlander,104661
+2009/1/1,Toyota,SUV,Highlander,83118
+2010/1/1,Toyota,SUV,Highlander,92121
+2011/1/1,Toyota,SUV,Highlander,101252
+2007/1/1,Toyota,SUV,Land Cruiser,3251
+2008/1/1,Toyota,SUV,Land Cruiser,3801
+2009/1/1,Toyota,SUV,Land Cruiser,2261
+2010/1/1,Toyota,SUV,Land Cruiser,1807
+2011/1/1,Toyota,SUV,Land Cruiser,1662
+2007/1/1,Toyota,SUV,RAV4,172752
+2008/1/1,Toyota,SUV,RAV4,137020
+2009/1/1,Toyota,SUV,RAV4,149088
+2010/1/1,Toyota,SUV,RAV4,170877
+2011/1/1,Toyota,SUV,RAV4,132237
+2007/1/1,Volkswagen,Compact,Golf,16399
+2008/1/1,Volkswagen,Compact,Golf,15338
+2009/1/1,Volkswagen,Compact,Golf,15752
+2010/1/1,Volkswagen,Compact,Golf,28286
+2011/1/1,Volkswagen,Compact,Golf,34706
+2007/1/1,Volkswagen,Midsize,CC,2105
+2008/1/1,Volkswagen,Midsize,CC,2105
+2009/1/1,Volkswagen,Midsize,CC,23872
+2010/1/1,Volkswagen,Midsize,CC,27987
+2011/1/1,Volkswagen,Midsize,CC,29502
+2007/1/1,Volkswagen,Midsize,Passat,37183
+2008/1/1,Volkswagen,Midsize,Passat,30034
+2009/1/1,Volkswagen,Midsize,Passat,11138
+2010/1/1,Volkswagen,Midsize,Passat,12497
+2011/1/1,Volkswagen,Midsize,Passat,22835
+2007/1/1,Volkswagen,Sporty,Eos,12744
+2008/1/1,Volkswagen,Sporty,Eos,12837
+2009/1/1,Volkswagen,Sporty,Eos,7204
+2010/1/1,Volkswagen,Sporty,Eos,6690
+2011/1/1,Volkswagen,Sporty,Eos,7533
+2007/1/1,Volkswagen,Subcompact,Beetle,31021
+2008/1/1,Volkswagen,Subcompact,Beetle,26477
+2009/1/1,Volkswagen,Subcompact,Beetle,14085
+2010/1/1,Volkswagen,Subcompact,Beetle,16537
+2011/1/1,Volkswagen,Subcompact,Beetle,6468
+2007/1/1,Volkswagen,SUV,Tiguan,8864
+2008/1/1,Volkswagen,SUV,Tiguan,8864
+2009/1/1,Volkswagen,SUV,Tiguan,13903
+2010/1/1,Volkswagen,SUV,Tiguan,20946
+2011/1/1,Volkswagen,SUV,Tiguan,25990
+2007/1/1,Volkswagen,SUV,Touareg,8812
+2008/1/1,Volkswagen,SUV,Touareg,6755
+2009/1/1,Volkswagen,SUV,Touareg,4392
+2010/1/1,Volkswagen,SUV,Touareg,4713
+2011/1/1,Volkswagen,SUV,Touareg,7535

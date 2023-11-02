@@ -49,7 +49,7 @@ public class MTableWrapperTest extends AlinkTestBase {
 		} catch (IOException e) {
 			throw new AkUnclassifiedErrorException("Failed to write MTable to StringWriter.", e);
 		}
-		String expectedSchemaStr = "i INT,l BIGINT,f FLOAT,d DOUBLE,s VARCHAR,b BOOLEAN";
+		String expectedSchemaStr = "i INT,l BIGINT,f FLOAT,d DOUBLE,s STRING,b BOOLEAN";
 		Assert.assertEquals(csvContent, content);
 		Assert.assertEquals(expectedSchemaStr, mTable.getSchemaStr());
 	}

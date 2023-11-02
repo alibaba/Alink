@@ -268,11 +268,14 @@ public class SpearmanCorrelation {
 			Integer oldCol = null;
 			Number newValue;
 
+			int nCnt = 1;
+
 			for (Row row : allRows) {
 				Tuple3 <Integer, Long, Long> outTuple = new Tuple3 <>();
 				TripleComparable triple = (TripleComparable) row.getField(0);
 				outTuple.f0 = (Integer) triple.first;
 				outTuple.f1 = (Long) triple.second;
+
 
 				if (oldCol == null) {
 					oldCol = outTuple.f0;
@@ -283,11 +286,15 @@ public class SpearmanCorrelation {
 						rank = 1;
 						oldValue = triple.third;
 						oldCol = outTuple.f0;
+						nCnt = 1;
 					} else {
 						newValue = triple.third;
-						if (1 != objCompare.compare(oldValue, newValue)) {
+						if (0 != objCompare.compare(oldValue, newValue)) {
 							oldValue = newValue;
-							rank++;
+							rank += nCnt;
+							nCnt = 1;
+						} else {
+							nCnt ++;
 						}
 					}
 				}

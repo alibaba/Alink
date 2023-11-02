@@ -11,7 +11,6 @@ class TestJsonToVectorStreamOp(unittest.TestCase):
         
         data = StreamOperator.fromDataframe(df, schemaStr="row string, json string, vec string, kv string, csv string, f0 double, f1 double")
             
-        
         op = JsonToVectorStreamOp()\
             .setJsonCol("json")\
             .setReservedCols(["row"])\

@@ -1,5 +1,7 @@
 package com.alibaba.alink.common;
 
+import org.apache.flink.runtime.util.EnvironmentInformation;
+
 import com.alibaba.alink.common.io.plugin.PluginConfig;
 import com.alibaba.alink.common.io.plugin.PluginDownloader;
 
@@ -90,7 +92,7 @@ public final class AlinkGlobalConfiguration {
 	}
 
 	public static String getFlinkVersion() {
-		return "flink-1.13";
+		return "flink-1.9";
 	}
 
 	public static PluginDownloader getPluginDownloader() {

@@ -7,6 +7,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.function.TriFunction;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.mapper.ModelMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
@@ -17,6 +18,7 @@ import com.alibaba.alink.params.outlier.HasOutputMTableCol;
 import com.alibaba.alink.params.outlier.HasWithSeriesInfo;
 
 @NameCn("异常检测基类")
+@Internal
 public class BaseModelOutlierWithSeriesPredictBatchOp<T extends BaseModelOutlierWithSeriesPredictBatchOp <T>>
 	extends ModelMapBatchOp <T> implements ModelOutlierWithSeriesDetectorParams <T> {
 

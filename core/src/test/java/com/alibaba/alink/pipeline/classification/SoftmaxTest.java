@@ -80,14 +80,14 @@ public class SoftmaxTest extends AlinkTestBase {
 
 	@Test
 	public void pipelineTest() throws Exception {
-		BatchOperator<?> vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
-		StreamOperator<?> svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
+		BatchOperator <?> vecdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
+		StreamOperator <?> svecdata = new MemSourceStreamOp(Arrays.asList(vecrows), veccolNames);
 		Pipeline pl = new Pipeline().add(softmax).add(vsoftmax).add(svsoftmax).add(vssoftmax);
 
 		PipelineModel model = pl.fit(vecdata);
 
-		BatchOperator<?> result = model.transform(vecdata).select(
-			new String[] {"label", "predLr", "vpredLr", "svpredLr"});
+		BatchOperator <?> result = model.transform(vecdata)
+			.select(new String[] {"label", "predLr", "vpredLr", "svpredLr"});
 
 		List <Row> data = result.lazyPrint(100).collect();
 		for (Row row : data) {
@@ -96,11 +96,10 @@ public class SoftmaxTest extends AlinkTestBase {
 			}
 		}
 
-		// below is stream test code
-
 		// below is stream test code.
-		CollectSinkStreamOp sop = model.transform(svecdata).select(
-			new String[] {"label", "predLr", "vpredLr", "svpredLr"}).link(new CollectSinkStreamOp());
+		CollectSinkStreamOp sop = model.transform(svecdata)
+			.select(new String[] {"label", "predLr", "vpredLr", "svpredLr"})
+			.link(new CollectSinkStreamOp());
 		StreamOperator.execute();
 
 		List <Row> rows = sop.getAndRemoveValues();
@@ -112,20 +111,4 @@ public class SoftmaxTest extends AlinkTestBase {
 		}
 	}
 
-	@Test
-	public void pipelineTest1() {
-		BatchOperator<?> vecmdata = new MemSourceBatchOp(Arrays.asList(vecrows), veccolNames);
-
-		Pipeline pl = new Pipeline().add(softmax).add(vsoftmax).add(svsoftmax).add(vssoftmax);
-
-		PipelineModel modelm = pl.fit(vecmdata);
-
-		List <Row> data = modelm.transform(vecmdata)
-			.select(new String[] {"label", "predLr", "vpredLr", "svpredLr"}).collect();
-		for (Row row : data) {
-			for (int i = 1; i < 3; ++i) {
-				Assert.assertEquals(row.getField(0), row.getField(i));
-			}
-		}
-	}
 }

@@ -54,10 +54,18 @@ public class CsvInputFormatBeta extends GenericCsvInputFormatBeta <CsvFileInputS
 		CsvFileInputSplit[] splits;
 		splits = new CsvFileInputSplit[minNumSplits];
 		long contentLength = reader.getFileLength();
-		for (int i = 0; i < splits.length; i++) {
-			splits[i] = new CsvFileInputSplit(minNumSplits, i, contentLength);
+		if(contentLength>=0) {
+			for (int i = 0; i < splits.length; i++) {
+				splits[i] = new CsvFileInputSplit(minNumSplits, i, contentLength);
+			}
+			return splits;
+		}else{
+			splits[0] = new CsvFileInputSplit(1, 0, -1);
+			for (int i = 1; i < splits.length; i++) {
+				splits[i] = new CsvFileInputSplit(minNumSplits, i, 0);
+			}
+			return splits;
 		}
-		return splits;
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.tree.xgboost;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.types.Row;
 
@@ -22,7 +23,7 @@ public interface XGBoost extends Serializable {
 	Booster train(
 		Iterator <Row> rowIterator,
 		Function <Row, Row> preprocess,
-		Function <Row, Tuple2 <Vector, float[]>> extractor,
+		Function <Row, Tuple3 <Vector, float[], Float>> extractor,
 		Params params) throws XGboostException;
 
 	void shutdown() throws XGboostException;

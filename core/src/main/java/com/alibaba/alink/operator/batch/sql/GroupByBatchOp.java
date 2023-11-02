@@ -29,7 +29,7 @@ public final class GroupByBatchOp extends BaseSqlApiBatchOp <GroupByBatchOp>
 
 	private static final long serialVersionUID = 8865503254860094092L;
 
-	private static final String MATBLE_PATTERN = "mtable_agg\\(";
+	private static final String MTABLE_PATTERN = "mtable_agg\\(";
 	private static final int MTABLE_CLAUSE_COUNT = 10;
 	private String[] mTableAggNames;
 
@@ -68,7 +68,7 @@ public final class GroupByBatchOp extends BaseSqlApiBatchOp <GroupByBatchOp>
 	}
 
 	static boolean isHasMTableClause(String clause) {
-		Pattern p = Pattern.compile(MATBLE_PATTERN, Pattern.CASE_INSENSITIVE);
+		Pattern p = Pattern.compile(MTABLE_PATTERN, Pattern.CASE_INSENSITIVE);
 		Matcher match = p.matcher(clause);
 		return match.find();
 	}
@@ -77,7 +77,7 @@ public final class GroupByBatchOp extends BaseSqlApiBatchOp <GroupByBatchOp>
 							   String clause,
 							   TableSchema tableSchema,
 							   String[] mTableAggNames) {
-		Pattern p = Pattern.compile(MATBLE_PATTERN, Pattern.CASE_INSENSITIVE);
+		Pattern p = Pattern.compile(MTABLE_PATTERN, Pattern.CASE_INSENSITIVE);
 		String strCur = clause;
 
 		Matcher match = p.matcher(clause);

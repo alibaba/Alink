@@ -40,7 +40,7 @@ public class AutoGarchBatchOpTest extends AlinkTestBase {
 				.setIcType("AIC")
 				.setPredictNum(10)
 				.setMaxOrder(4)
-				.setIfGARCH11(false)
+				.setIfGARCH11(true)
 				.setMinusMean(false)
 				.setPredictionCol("pred")
 		).print();

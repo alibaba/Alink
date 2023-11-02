@@ -12,7 +12,7 @@ public interface XlsSourceParams<T> extends WithParams <T>,
 	@NameCn("表格的Sheet编号")
 	@DescCn("表格的Sheet编号")
 	ParamInfo <Integer> SHEET_INDEX = ParamInfoFactory
-		.createParamInfo("sheetId", Integer.class)
+		.createParamInfo("sheetIndex", Integer.class)
 		.setDescription("read selected sheet from workbook.")
 		.setAlias(new String[] {"sheetId"})
 		.setHasDefaultValue(0)

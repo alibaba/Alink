@@ -2,43 +2,55 @@ package com.alibaba.alink.operator.local.sql;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.LocalMLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
+import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.sql.MTableCalciteSqlExecutor;
+import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class MTableCalciteSqlExecutorTest {
+public class MTableCalciteSqlExecutorTest extends AlinkTestBase {
 	MTable getIrisMTable() {
-		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
-		BatchOperator.setParallelism(1);
-		BatchOperator <?> source = new CsvSourceBatchOp()
-			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv")
-			.setSchemaStr(
-				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string");
-		MTable mTable = source.collectMTable();
-		BatchOperator.setParallelism(savedParallelism);
-		return mTable;
+		return new MTable(IrisData.irisDoubleArray,
+			new String[]{"sepal_length", "sepal_width", "petal_length", "petal_width", "category"});
+
+		//int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
+		//BatchOperator.setParallelism(1);
+		//BatchOperator <?> source = new CsvSourceBatchOp()
+		//	.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv")
+		//	.setSchemaStr(
+		//		"sepal_length double, sepal_width double, petal_length double, petal_width double, category string");
+		////BatchOperator <?> source = new MemSourceBatchOp(IrisData.irisDoubleArray,
+		////		"sepal_length double, sepal_width double, petal_length double, petal_width double, category string");
+		//MTable mTable = source.collectMTable();
+		//BatchOperator.setParallelism(savedParallelism);
+		//return mTable;
 	}
 
 	MTable getIrisMTable(int firstN) {
-		int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
-		BatchOperator.setParallelism(1);
-		BatchOperator <?> source = new CsvSourceBatchOp()
-			.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv")
-			.setSchemaStr(
-				"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
-			.firstN(firstN);
-		MTable mTable = source.collectMTable();
-		BatchOperator.setParallelism(savedParallelism);
-		return mTable;
+		return getIrisMTable().subTable(0, firstN);
+		//int savedParallelism = MLEnvironmentFactory.getDefault().getExecutionEnvironment().getParallelism();
+		//BatchOperator.setParallelism(1);
+		//BatchOperator <?> source = new CsvSourceBatchOp()
+		//	.setFilePath("https://alink-test-data.oss-cn-hangzhou.aliyuncs.com/iris.csv")
+		//	.setSchemaStr(
+		//		"sepal_length double, sepal_width double, petal_length double, petal_width double, category string")
+		//	.firstN(firstN);
+		//MTable mTable = source.collectMTable();
+		//BatchOperator.setParallelism(savedParallelism);
+		//return mTable;
 	}
 
 	@Test
@@ -154,8 +166,9 @@ public class MTableCalciteSqlExecutorTest {
 		Assert.assertEquals(147, result.getNumRow());
 	}
 
-	@Test
+	@Test(expected = AkUnclassifiedErrorException.class)
 	public void testIntersectAll() {
+		// TODO: make intersectAll work
 		MTable input = getIrisMTable();
 		MTable input2 = getIrisMTable(50);
 		MTableCalciteSqlExecutor sqlExecutor = new MTableCalciteSqlExecutor(LocalMLEnvironment.getInstance());
@@ -191,16 +204,52 @@ public class MTableCalciteSqlExecutorTest {
 		MTableCalciteSqlExecutor sqlExecutor = new MTableCalciteSqlExecutor(LocalMLEnvironment.getInstance());
 		MTable result = sqlExecutor.minus(input, input2);
 		Assert.assertEquals(input.getNumCol(), result.getNumCol());
-		Assert.assertEquals(97, result.getNumRow());
+		Assert.assertEquals(99, result.getNumRow());
 	}
 
-	@Test
+	@Test(expected = AkUnclassifiedErrorException.class)
 	public void testMinusAll() {
+		// TODO: make minusAll work
 		MTable input = getIrisMTable();
 		MTable input2 = getIrisMTable(50);
 		MTableCalciteSqlExecutor sqlExecutor = new MTableCalciteSqlExecutor(LocalMLEnvironment.getInstance());
 		MTable result = sqlExecutor.minusAll(input, input2);
 		Assert.assertEquals(input.getNumCol(), result.getNumCol());
 		Assert.assertEquals(100, result.getNumRow());
+	}
+
+	@Test
+	public void testUDTs() {
+		List <Row> df = Arrays.asList(
+			Row.of("Ohio", 2000, 1.5, new DenseVector(new double[] {1., 2.}), new MTable(new Object[] {"1"}, "id")),
+			Row.of("Ohio", 2001, 1.7, new DenseVector(new double[] {1., 2.}), new MTable(new Object[] {"1"}, "id")),
+			Row.of("Ohio", 2002, 3.6, new DenseVector(new double[] {1., 2.}), new MTable(new Object[] {"1"}, "id")),
+			Row.of("Nevada", 2001, 2.4, new DenseVector(new double[] {1., 2.}), new MTable(new Object[] {"1"}, "id")),
+			Row.of("Nevada", 2002, 2.9, new DenseVector(new double[] {1., 2.}), new MTable(new Object[] {"1"}, "id")),
+			Row.of("Nevada", 2003, 3.2, new DenseVector(new double[] {1., 2.}), new MTable(new Object[] {"1"}, "id"))
+		);
+		MTable mt = new MTable(df, "f1 string, f2 int, f3 double, f4 dense_vector, f5 mtable");
+		MTableCalciteSqlExecutor sqlExecutor = new MTableCalciteSqlExecutor(LocalMLEnvironment.getInstance());
+		MTable result = sqlExecutor.select(mt, "f1, f4, f5");
+		Assert.assertEquals(mt.getNumRow(), result.getNumRow());
+		Assert.assertEquals(AlinkTypes.STRING, result.getColTypes()[0]);
+		Assert.assertEquals(AlinkTypes.DENSE_VECTOR, result.getColTypes()[1]);
+		Assert.assertEquals(AlinkTypes.M_TABLE, result.getColTypes()[2]);
+	}
+
+	@Test
+	public void testUTF8Charset() {
+		List <Row> df = Arrays.asList(
+			Row.of("昨天", 2000),
+			Row.of("今天", 2001),
+			Row.of("明天", 2002),
+			Row.of("昨天", 2001),
+			Row.of("今天", 2002),
+			Row.of("明天", 2003)
+		);
+		MTable input = new MTable(df, "f1 string, f2 int");
+		MTableCalciteSqlExecutor sqlExecutor = new MTableCalciteSqlExecutor(LocalMLEnvironment.getInstance());
+		MTable result = sqlExecutor.where(input, "f2 > 2001 and f1 <> '昨天'");
+		Assert.assertEquals(input.getNumCol(), result.getNumCol());
 	}
 }

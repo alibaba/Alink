@@ -25,6 +25,7 @@ import org.apache.flink.table.api.Table;
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -54,6 +55,11 @@ public class TransformerBaseTest extends PipelineStageTestBase {
 		public StreamOperator transform(StreamOperator input) {
 			streamTransformed = true;
 			return input;
+		}
+
+		@Override
+		public LocalOperator <?> transform(LocalOperator input) {
+			return null;
 		}
 	}
 

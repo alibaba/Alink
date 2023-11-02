@@ -8,6 +8,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.function.TriFunction;
 
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.io.directreader.DataBridge;
 import com.alibaba.alink.common.mapper.ModelMapper;
@@ -22,6 +23,7 @@ import com.alibaba.alink.params.outlier.HasWithSeriesInfo;
 import com.alibaba.alink.params.shared.HasModelFilePath;
 
 @NameCn("异常检测基类")
+@Internal
 public class BaseModelOutlierWithSeriesPredictStreamOp<T extends BaseModelOutlierWithSeriesPredictStreamOp <T>>
 	extends ModelMapStreamOp <T> implements ModelOutlierWithSeriesDetectorParams <T>, HasModelFilePath<T> {
 
@@ -46,7 +48,8 @@ public class BaseModelOutlierWithSeriesPredictStreamOp<T extends BaseModelOutlie
 
 				Tuple2 <DataBridge, TableSchema> dataBridge = createDataBridge(
 					getParams().get(ModelFileSinkParams.MODEL_FILE_PATH),
-					model
+					batchModel,
+					localModel
 				);
 
 				//Step 2 : detect the outlier for each MTable
@@ -70,7 +73,8 @@ public class BaseModelOutlierWithSeriesPredictStreamOp<T extends BaseModelOutlie
 
 				Tuple2 <DataBridge, TableSchema> dataBridge = createDataBridge(
 					getParams().get(ModelFileSinkParams.MODEL_FILE_PATH),
-					model
+					batchModel,
+					localModel
 				);
 
 				final ModelMapper mapper = this.mapperBuilder.apply(dataBridge.f1, input_data.getSchema(),

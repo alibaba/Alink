@@ -78,7 +78,7 @@ public class Lbfgs extends Optimizer {
 		 */
 		DataSet <Row> model = new IterativeComQueue()
 			.initWithPartitionedData(OptimVariable.trainData, trainData)
-			.initWithBroadcastData(OptimVariable.model, coefVec)
+			.initWithBroadcastData(OptimVariable.model, coefficientVec)
 			.initWithBroadcastData(OptimVariable.objFunc, objFuncSet)
 			.add(new PreallocateCoefficient(OptimVariable.currentCoef))
 			.add(new PreallocateCoefficient(OptimVariable.minCoef))

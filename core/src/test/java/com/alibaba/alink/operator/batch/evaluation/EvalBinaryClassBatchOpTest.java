@@ -57,8 +57,7 @@ public class EvalBinaryClassBatchOpTest extends AlinkTestBase {
 		Assert.assertEquals(0.371, metrics.getKs(), 0.01);
 		Assert.assertEquals(0.657, metrics.getAuc(), 0.01);
 		Assert.assertEquals(0.666, metrics.getAccuracy(), 0.01);
-		Assert.assertEquals(0.314,
-			metrics.getMacroKappa(), 0.01);
+		Assert.assertEquals(0.314, metrics.getMacroKappa(), 0.01);
 		Assert.assertEquals(0.666, metrics.getMicroPrecision(), 0.01);
 		Assert.assertEquals(0.666, metrics.getWeightedRecall(), 0.01);
 		metrics.saveRocCurveAsImage(folder.getRoot().toPath() + "rocCurve.png", true);

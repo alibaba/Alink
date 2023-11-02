@@ -6,7 +6,7 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
-import com.alibaba.alink.params.PipelineModelBatchPredictParams;
+import com.alibaba.alink.params.PipelinePredictParams;
 import com.alibaba.alink.pipeline.PipelineModel;
 
 /**
@@ -16,7 +16,7 @@ import com.alibaba.alink.pipeline.PipelineModel;
 @NameCn("Pipeline 预测")
 @NameEn("Pipeline prediction")
 public final class PipelinePredictBatchOp extends BatchOperator <PipelinePredictBatchOp>
-	implements PipelineModelBatchPredictParams <PipelinePredictBatchOp> {
+	implements PipelinePredictParams <PipelinePredictBatchOp> {
 
 	public PipelinePredictBatchOp() {
 		super(new Params());

@@ -42,6 +42,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 约束拟牛顿法通过使用拟牛顿更新过程累积关于 KKT 方程的二阶信息来保证超线性收敛。
+ * 这些方法通常称为序列二次规划 (SQP) 方法，因为每个主迭代都求解一个 QP 子问题（也称为迭代二次规划、递归二次规划或约束变量度量法）。
+ */
 public class Sqp extends Optimizer {
 	private static final int MAX_FEATURE_NUM = 3000;
 
@@ -60,18 +64,21 @@ public class Sqp extends Optimizer {
 
 	/**
 	 * Solve the following quadratic programing problem:
+	 * 每一步都是解决二次规划问题
+	 * 参考https://www.mathworks.com/help/optim/ug/constrained-nonlinear-optimization-algorithms_zh_CN.html
 	 * <p>
-	 * min 0.5 * p^TGp + g_k^Tp
+	 * min 0.5 * p^THp + g_k^Tp 泰勒展开二次逼近，g是f在当前点的梯度 H是hession矩阵
 	 * s.t. A_i \dot p = b - A_i \dot x_k, where i belongs to equality constraints
 	 * A_i \dot p >= b - A_i \dot x_k, where i belongs to inequality constraints
 	 */
 	@Override
 	public DataSet <Tuple2 <DenseVector, double[]>> optimize() {
 		int maxIter = params.get(HasMaxIterDefaultAs100.MAX_ITER);
-		this.coefVec = this.coefDim.map(new InitialCoef()).withBroadcastSet(this.objFuncSet, "objFunc");
+		//init model weights.
+		this.coefficientVec = this.coefDim.map(new InitialCoef()).withBroadcastSet(this.objFuncSet, "objFunc");
 		DataSet <Row> model = new IterativeComQueue()
 			.initWithPartitionedData(OptimVariable.trainData, trainData)
-			.initWithBroadcastData(OptimVariable.model, coefVec)
+			.initWithBroadcastData(OptimVariable.model, coefficientVec)
 			.initWithBroadcastData(OptimVariable.objFunc, objFuncSet)
 			.initWithBroadcastData(ConstraintVariable.weightDim, coefDim)
 			.add(new InitializeParams())
@@ -138,6 +145,9 @@ public class Sqp extends Optimizer {
 		//optimize the phase function, which is 0*x1+0*x2+...z1+z2+...,first place equal, then place inequal.
 		double[] objData = new double[dim + constraintLength];
 		Arrays.fill(objData, dim, dim + constraintLength, 1);
+		// objData is linear function coefficients. eg. objData = [c1, c2, c3] constantTerm = b,
+		// then optimize function is c1 * x1 + c2 * x2 + c3 * x3 + b.
+		// so, here optimize function is z1 + z2 + ...， where z_i is ith constraint.
 		LinearObjectiveFunction objFunc = new LinearObjectiveFunction(objData, 0);
 		List <LinearConstraint> cons = new ArrayList <>();
 		for (int i = 0; i < equalNum; i++) {
@@ -191,6 +201,7 @@ public class Sqp extends Optimizer {
 		}
 	}
 
+	// solve qp problem use active-set method.
 	public static class CalcDir extends ComputeFunction {
 
 		private static final long serialVersionUID = 7694040433763461801L;
@@ -207,6 +218,7 @@ public class Sqp extends Optimizer {
 			ConstraintObjFunc objFunc = (ConstraintObjFunc) ((List <OptimObjFunc>) context.getObj(
 				OptimVariable.objFunc)).get(0);
 			Double loss = context.getObj(ConstraintVariable.loss);
+			//<grad, <weightSum, loss>
 			Tuple2 <DenseVector, double[]> grad = context.getObj(OptimVariable.grad);
 			DenseVector gradient = grad.f0;
 			DenseMatrix hessian = context.getObj(OptimVariable.hessian);
@@ -214,16 +226,18 @@ public class Sqp extends Optimizer {
 			final int retryTime = context.getObj(ConstraintVariable.newtonRetryTime);
 			final double minL2Weight = context.getObj(ConstraintVariable.minL2Weight);
 			DenseVector weight = context.getObj(ConstraintVariable.weight);
+			// dir init value [0,0, 0]
+			// update in equalityItem and inequalityItem by weight
 			DenseVector dir = SqpPai.getStartDir(objFunc, weight,
 				context.getObj(SqpVariable.icmBias),
 				context.getObj(SqpVariable.ecmBias));
 			boolean[] activeSet = SqpPai.getActiveSet(objFunc.inequalityConstraint, objFunc.inequalityItem, dir, dim);
-			//            dir = QpProblem.subProblem(hessian, gradient, new DenseMatrix(),new DenseVector())[0];
+
+			//<new dir, grad, hession>: activeSet may fail, so little modify grad and hession.
 			Tuple3 <DenseVector, DenseVector, DenseMatrix> dirItems =
 				SqpPai.calcDir(retryTime, dim, objFunc, dir, weight, hessian, gradient, l2, minL2Weight, hasIntercept,
 					activeSet);
-			//                    LocalSqp.calcDir(retryTime, dim, objFunc, weight, hessian, gradient, loss, l2,
-			// minL2Weight, hasIntercept);
+
 			dir = dirItems.f0;
 			grad.f0 = dirItems.f1;
 			hessian = dirItems.f2;
@@ -318,6 +332,7 @@ public class Sqp extends Optimizer {
 		@Override
 		public void calc(ComContext context) {
 			Iterable <Tuple3 <Double, Double, Vector>> labledVectors = context.getObj(OptimVariable.trainData);
+			//<grad, <weightSum, loss>>
 			Tuple2 <DenseVector, double[]> grad = context.getObj(OptimVariable.grad);
 			DenseVector weight = context.getObj(ConstraintVariable.weight);
 			DenseMatrix hessian = context.getObj(OptimVariable.hessian);
@@ -327,7 +342,7 @@ public class Sqp extends Optimizer {
 			if (objFunc == null) {
 				objFunc = ((List <OptimObjFunc>) context.getObj(OptimVariable.objFunc)).get(0);
 			}
-			//here does not add loss calculation。
+			//here does not add loss calculation。 return <weightSum, loss>
 			Tuple2 <Double, Double> loss = objFunc.calcHessianGradientLoss(labledVectors, weight, hessian, grad.f0);
 
 			/**
@@ -355,6 +370,7 @@ public class Sqp extends Optimizer {
 
 		@Override
 		public void calc(ComContext context) {
+			//<grad, <weightSum, loss>
 			Tuple2 <DenseVector, double[]> grad = context.getObj(OptimVariable.grad);
 			DenseMatrix hessian = context.getObj(OptimVariable.hessian);
 			int size = grad.f0.size();

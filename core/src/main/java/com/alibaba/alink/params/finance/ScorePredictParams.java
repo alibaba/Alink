@@ -12,6 +12,7 @@ public interface ScorePredictParams<T> extends
 	HasCalculateScorePerFeature <T>,
 	HasReservedColsDefaultAsNull <T> {
 
+
 	ParamInfo <String[]> PREDICTION_SCORE_PER_FEATURE_COLS = ParamInfoFactory
 		.createParamInfo("predictionScorePerFeatureCols", String[].class)
 		.setDescription("prediction score per feature cols")

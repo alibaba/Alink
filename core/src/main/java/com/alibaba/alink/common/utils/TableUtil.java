@@ -6,14 +6,14 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.type.AlinkTypes;
-import com.alibaba.alink.common.viz.DataTypeDisplayInterface;
 import com.alibaba.alink.common.exceptions.AkColumnNotFoundException;
 import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.linalg.SparseVector;
+import com.alibaba.alink.common.type.AlinkTypes;
+import com.alibaba.alink.common.viz.DataTypeDisplayInterface;
 import com.alibaba.alink.operator.common.io.types.FlinkTypeConverter;
 import com.alibaba.alink.operator.common.similarity.similarity.LevenshteinSimilarity;
 import com.alibaba.alink.params.shared.colname.HasFeatureColsDefaultAsNull;
@@ -30,6 +30,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -48,6 +53,7 @@ public class TableUtil {
 	public static final String HEX = "0123456789abcdef";
 
 	static {
+		STRING_TYPE_MAP.put("STRING", Types.STRING);
 		STRING_TYPE_MAP.put("VARBINARY", AlinkTypes.VARBINARY);
 		STRING_TYPE_MAP.put("VECTOR", AlinkTypes.VECTOR);
 		STRING_TYPE_MAP.put("DENSE_VECTOR", AlinkTypes.DENSE_VECTOR);
@@ -402,6 +408,7 @@ public class TableUtil {
 
 	/**
 	 * Determine whether it is date type.
+	 *
 	 * @param dataType the dataType to determine.
 	 * @return whether it is date type.
 	 */
@@ -413,12 +420,14 @@ public class TableUtil {
 
 	/**
 	 * Determine whether it is boolean type.
+	 *
 	 * @param dataType the dataType to determine.
 	 * @return whether it is boolean type.
 	 */
 	public static boolean isSupportedBoolType(TypeInformation <?> dataType) {
 		return Types.BOOLEAN.equals(dataType);
 	}
+
 	/**
 	 * Determine whether it is a string type.
 	 *
@@ -769,6 +778,9 @@ public class TableUtil {
 					sbd.append(HEX.charAt(b & 0x0f));
 				}
 				sbd.append((byteSize > DISPLAY_SIZE ? "..." : ""));
+			} else if (obj instanceof Timestamp) {
+				//sbd.append(((Timestamp) obj).toLocalDateTime().atZone(ZoneId.systemDefault()));
+				sbd.append(Timestamp.valueOf(LocalDateTime.ofInstant(((Timestamp) obj).toInstant(), ZoneOffset.UTC)));
 			} else {
 				sbd.append(obj);
 			}
@@ -810,7 +822,6 @@ public class TableUtil {
 	public static String columnsToSqlClause(String[] colNames) {
 		return Joiner.on("`,`").appendTo(new StringBuilder("`"), colNames).append("`").toString();
 	}
-
 
 	//public static Table[] splitTable(Table table) {
 	//	TableSchema schema = table.getSchema();

@@ -30,6 +30,10 @@ public class LinearRegStepwisePredictStreamOp extends ModelMapStreamOp <LinearRe
 		super(LinearModelMapper::new, params);
 	}
 
+	public LinearRegStepwisePredictStreamOp(BatchOperator model) {
+		super(model, LinearModelMapper::new, new Params());
+	}
+
 	public LinearRegStepwisePredictStreamOp(BatchOperator model, Params params) {
 		super(model, LinearModelMapper::new, params);
 	}

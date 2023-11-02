@@ -33,12 +33,13 @@ import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.Vector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.model.ModelParamName;
-import com.alibaba.alink.common.viz.AlinkViz;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.common.viz.AlinkViz;
 import com.alibaba.alink.common.viz.VizDataWriterForModelInfo;
 import com.alibaba.alink.common.viz.VizDataWriterInterface;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.finance.ScorecardTrainBatchOp;
+import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.evaluation.EvaluationUtil;
 import com.alibaba.alink.operator.common.linear.unarylossfunc.LogLossFunc;
 import com.alibaba.alink.operator.common.linear.unarylossfunc.SquareLossFunc;
@@ -48,9 +49,9 @@ import com.alibaba.alink.operator.common.optim.Newton;
 import com.alibaba.alink.operator.common.optim.activeSet.ConstraintObjFunc;
 import com.alibaba.alink.operator.common.optim.activeSet.Sqp;
 import com.alibaba.alink.operator.common.optim.barrierIcq.LogBarrier;
+import com.alibaba.alink.operator.common.optim.divergence.Alm;
 import com.alibaba.alink.operator.common.optim.local.ConstrainedLocalOptimizer;
 import com.alibaba.alink.operator.common.optim.objfunc.OptimObjFunc;
-import com.alibaba.alink.operator.batch.statistics.utils.StatisticsHelper;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.SparseVectorSummary;
 import com.alibaba.alink.operator.common.tree.Preprocessing;
@@ -73,12 +74,11 @@ import java.util.Map;
 /**
  * Base class of linear model training. Linear binary classification and linear regression algorithms should inherit
  * this class. Then it only need to write the code of loss function and regular item.
- *
- * constraint can be set by params or second input op.
- * if has constraint, standardization is false.
- *
+ * <p>
+ * constraint can be set by params or second input op. if has constraint, standardization is false.
+ * <p>
  * if in scorecard or lr, positive value is required.
- *
+ * <p>
  * default optim is sqp whether has constraint or not.
  *
  * @param <T> parameter of this class. Maybe the linearRegression or Lr parameter.
@@ -100,8 +100,8 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 	extends BatchOperator <T>
 	implements AlinkViz <T> {
 	private static final long serialVersionUID = 1180583968098354917L;
-	private String modelName;
-	private LinearModelType linearModelType;
+	private final String modelName;
+	private final LinearModelType linearModelType;
 	//for viz, when feature num > NUM_FEATURE_THRESHOLD, not viz
 	private static final int NUM_FEATURE_THRESHOLD = 10000;
 	private static final String META = "meta";
@@ -122,9 +122,8 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 	}
 
 	/**
-	 * @param inputs first is data, second is constraint.
-	 *               first is required and second is optioned.
-	 *               constraint can from second input or params.
+	 * @param inputs first is data, second is constraint. first is required and second is optioned. constraint can from
+	 *               second input or params.
 	 */
 	@Override
 	public T linkFrom(BatchOperator <?>... inputs) {
@@ -196,8 +195,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 				private static final long serialVersionUID = 7127767376687624403L;
 
 				@Override
-				public DenseVector[] map(Tuple3 <DenseVector[], Object[], Integer[]> value)
-					throws Exception {
+				public DenseVector[] map(Tuple3 <DenseVector[], Object[], Integer[]> value) {
 					return value.f0;
 				}
 			});
@@ -208,8 +206,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 				private static final long serialVersionUID = 2773811388068064638L;
 
 				@Override
-				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value)
-					throws Exception {
+				public Integer map(Tuple3 <DenseVector[], Object[], Integer[]> value) {
 					return value.f2[0];
 				}
 			});
@@ -226,19 +223,19 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 
 		//stat non zero of all features.
 		DataSet <DenseVector> countZero = StatisticsHelper.summary(trainData.map(
-			new MapFunction <Tuple3 <Double, Double, Vector>, Vector>() {
-				private static final long serialVersionUID = 6207307350053531656L;
+				new MapFunction <Tuple3 <Double, Double, Vector>, Vector>() {
+					private static final long serialVersionUID = 6207307350053531656L;
 
-				@Override
-				public Vector map(Tuple3 <Double, Double, Vector> value) throws Exception {
-					return value.f2;
-				}
-			}).withForwardedFields())
+					@Override
+					public Vector map(Tuple3 <Double, Double, Vector> value) {
+						return value.f2;
+					}
+				}).withForwardedFields())
 			.map(new MapFunction <BaseVectorSummary, DenseVector>() {
 				private static final long serialVersionUID = 2322849507320367330L;
 
 				@Override
-				public DenseVector map(BaseVectorSummary value) throws Exception {
+				public DenseVector map(BaseVectorSummary value) {
 					if (value instanceof SparseVectorSummary) {
 						return (DenseVector) ((SparseVectorSummary) value).numNonZero();
 					}
@@ -324,20 +321,20 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 		int vecIdx = vectorColName != null ? TableUtil.findColIndexWithAssertAndHint(in.getColNames(), vectorColName)
 			: -1;
 		return in.getDataSet().map(
-			new Transform(isRegProc, weightIdx, vecIdx, featureIndices, labelIdx, posLabel, labelType))
+				new Transform(isRegProc, weightIdx, vecIdx, featureIndices, labelIdx, posLabel, labelType))
 			.withBroadcastSet(labelValues, LABEL_VALUES);
 	}
 
 	private static class Transform extends RichMapFunction <Row, Tuple3 <Double, Double, Vector>> {
 		private static final long serialVersionUID = 3541655329500762922L;
-		private String positiveLableValueString;
+		private final String positiveLableValueString;
 
-		private boolean isRegProc;
-		private int weightIdx;
-		private int vecIdx;
-		private int labelIdx;
-		private int[] featureIndices;
-		private TypeInformation type;
+		private final boolean isRegProc;
+		private final int weightIdx;
+		private final int vecIdx;
+		private final int labelIdx;
+		private final int[] featureIndices;
+		private final TypeInformation type;
 
 		public Transform(boolean isRegProc, int weightIdx, int vecIdx, int[] featureIndices,
 						 int labelIdx, String posLabel, TypeInformation type) {
@@ -423,14 +420,13 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 	}
 
 	/**
-	 *
-	 * @param constraints
-	 * @param params
-	 * @param vectorSize
-	 * @param modelType
-	 * @param session
-	 * @param method
-	 * @param countZero
+	 * @param constraints Constrains for linear model.
+	 * @param params      Parameters.
+	 * @param vectorSize  Vector size.
+	 * @param modelType   Model type.
+	 * @param session     Session.
+	 * @param method      Method.
+	 * @param countZero   Count Zero.
 	 * @return OptimObjFunc, coefficientDim>
 	 */
 	private static Tuple2 <DataSet <OptimObjFunc>, DataSet <Integer>> getOptParam(DataSet <Row> constraints,
@@ -454,6 +450,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 		if (vectorColName != null && vectorColName.length() != 0) {
 			coefficientDim = vectorSize;
 		} else {
+			assert featureColNames != null;
 			coefficientDim = session.getExecutionEnvironment().fromElements(featureColNames.length
 				+ (hasInterceptItem ? 1 : 0));
 		}
@@ -471,9 +468,9 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 
 	/**
 	 * optimize linear problem
-	 * @param optParam <OptimObjFunc, coefficientDim>
-	 * @param trainData <weight, label, features>
 	 *
+	 * @param optParam  <OptimObjFunc, coefficientDim>
+	 * @param trainData <weight, label, features>
 	 * @return coefficient of linear problem. <coefVector, lossCurve>
 	 */
 	public static DataSet <Tuple2 <DenseVector, double[]>> optimize(Params params,
@@ -495,6 +492,8 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 					return new Lbfgs(objFunc, trainData, coefficientDim, params).optimize();
 				case NEWTON:
 					return new Newton(objFunc, trainData, coefficientDim, params).optimize();
+				case ALM:
+					return new Alm(objFunc, trainData, coefficientDim, params).optimize();
 				default:
 					throw new RuntimeException("do not support the " + method + " method!");
 			}
@@ -507,7 +506,8 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 		SQP,
 		BARRIER,
 		LBFGS,
-		NEWTON
+		NEWTON,
+		ALM,
 	}
 
 	private static class GetConstraint extends RichMapFunction <OptimObjFunc,
@@ -515,11 +515,11 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 		private static final long serialVersionUID = -7810872210451727729L;
 		private int coefDim;
 		private FeatureConstraint constraint;
-		private String[] featureColNames;
-		private boolean hasInterceptItem;
-		private ConstrainedOptMethod method;
+		private final String[] featureColNames;
+		private final boolean hasInterceptItem;
+		private final ConstrainedOptMethod method;
 		private DenseVector countZero = null;
-		private Map <String, Boolean> hasElse;
+		private final Map <String, Boolean> hasElse;
 
 		GetConstraint(String[] featureColNames, boolean hasInterceptItem, String method,
 					  Map <String, Boolean> withElse) {
@@ -543,6 +543,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 		public OptimObjFunc map(OptimObjFunc value) throws Exception {
 			ConstraintObjFunc objFunc = (ConstraintObjFunc) value;
 			if (!(ConstrainedOptMethod.LBFGS.equals(method) || ConstrainedOptMethod.NEWTON.equals(method))) {
+				//将约束变成inequalityConstraint， inequalityItem， equalityConstraint， equalityItem四个矩阵放在objFunc里
 				ConstrainedLocalOptimizer.extractConstraintsForFeatureAndBin(constraint, objFunc, featureColNames,
 					coefDim, hasInterceptItem, countZero, hasElse);
 				//checkout feasible constraint or not.
@@ -583,7 +584,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 	 *
 	 * @param modelType model type.
 	 * @param params    parameters for train.
-	 * @return
+	 * @return Optimization object function.
 	 */
 	public static OptimObjFunc getObjFunction(LinearModelType modelType, Params params) {
 		OptimObjFunc objFunc;
@@ -591,6 +592,8 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 		if (modelType == LinearModelType.LinearReg) {
 			objFunc = new ConstraintObjFunc(new SquareLossFunc(), params);
 		} else if (modelType == LinearModelType.LR) {
+			objFunc = new ConstraintObjFunc(new LogLossFunc(), params);
+		} else if (modelType == LinearModelType.Divergence) {
 			objFunc = new ConstraintObjFunc(new LogLossFunc(), params);
 		} else {
 			throw new RuntimeException("Not implemented yet!");
@@ -633,13 +636,13 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 	 */
 	public static class CreateMeta implements MapPartitionFunction <Object, Params> {
 		private static final long serialVersionUID = -7148219424266582224L;
-		private String modelName;
-		private LinearModelType modelType;
-		private boolean hasInterceptItem;
-		private String vectorColName;
-		private String labelName;
-		private boolean calcLabel;
-		private String positiveLabel;
+		private final String modelName;
+		private final LinearModelType modelType;
+		private final boolean hasInterceptItem;
+		private final String vectorColName;
+		private final String labelName;
+		private final boolean calcLabel;
+		private final String positiveLabel;
 
 		public CreateMeta(String modelName, LinearModelType modelType,
 						  Params params, boolean calcLabel, String positiveLabel) {
@@ -676,7 +679,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 	private static class DimTrans extends AbstractRichFunction
 		implements MapFunction <Integer, Integer> {
 		private static final long serialVersionUID = 1997987979691400583L;
-		private boolean hasInterceptItem;
+		private final boolean hasInterceptItem;
 		private Integer featureDim = null;
 
 		public DimTrans(boolean hasInterceptItem) {
@@ -704,7 +707,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 				private static final long serialVersionUID = 6207307350053531656L;
 
 				@Override
-				public Vector map(Tuple3 <Double, Double, Vector> value) throws Exception {
+				public Vector map(Tuple3 <Double, Double, Vector> value) {
 					return value.f2;
 				}
 			}).withForwardedFields());
@@ -713,7 +716,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 			private static final long serialVersionUID = 2322849507320367330L;
 
 			@Override
-			public DenseVector map(BaseVectorSummary value) throws Exception {
+			public DenseVector map(BaseVectorSummary value) {
 				if (value instanceof SparseVectorSummary) {
 					return (DenseVector) ((SparseVectorSummary) value).numNonZero();
 				}
@@ -725,7 +728,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 				private static final long serialVersionUID = -8051245706564042978L;
 
 				@Override
-				public Integer map(BaseVectorSummary value) throws Exception {
+				public Integer map(BaseVectorSummary value) {
 					return value.vectorSize();
 				}
 			});
@@ -760,8 +763,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 
 					@Override
 					public void mapPartition(Iterable <Tuple3 <Double, Double, Vector>> values, Collector <Integer>
-						out)
-						throws Exception {
+						out) {
 						int ret = -1;
 						for (Tuple3 <Double, Double, Vector> val : values) {
 							if (val.f2 instanceof DenseVector) {
@@ -826,15 +828,14 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 				private DenseVector[] meanVar;
 
 				@Override
-				public void open(Configuration parameters) throws Exception {
+				public void open(Configuration parameters) {
 					this.meanVar = (DenseVector[]) getRuntimeContext()
 						.getBroadcastVariable(MEAN_VAR).get(0);
 					modifyMeanVar(standardization, meanVar);
 				}
 
 				@Override
-				public Tuple3 <Double, Double, Vector> map(Tuple3 <Double, Double, Vector> value)
-					throws Exception {
+				public Tuple3 <Double, Double, Vector> map(Tuple3 <Double, Double, Vector> value) {
 
 					Vector aVector = value.f2;
 					if (aVector instanceof DenseVector) {
@@ -910,7 +911,7 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 		String labelName = params.get(LinearTrainParams.LABEL_COL);
 		// Prepare label values
 		DataSet <Object> labelValues;
-		TypeInformation <?> labelType = null;
+		TypeInformation <?> labelType;
 		if (isRegProc) {
 			labelType = Types.DOUBLE;
 			labelValues = MLEnvironmentFactory.get(in.getMLEnvironmentId())
@@ -922,14 +923,14 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 					private static final long serialVersionUID = -419245917074561046L;
 
 					@Override
-					public Object map(Row value) throws Exception {
+					public Object map(Row value) {
 						return value.getField(0);
 					}
 				})).flatMap(new FlatMapFunction <Object[], Object>() {
 				private static final long serialVersionUID = -5089566319196319692L;
 
 				@Override
-				public void flatMap(Object[] value, Collector <Object> out) throws Exception {
+				public void flatMap(Object[] value, Collector <Object> out) {
 					for (Object obj : value) {
 						out.collect(obj);
 					}
@@ -958,8 +959,8 @@ public abstract class BaseConstrainedLinearModelTrainBatchOp<T extends BaseConst
 
 	private static class BuildLabels implements
 		FlatMapFunction <Tuple3 <DenseVector[], Object[], Integer[]>, Object[]> {
-		private boolean isRegProc;
-		private String positiveLabel;
+		private final boolean isRegProc;
+		private final String positiveLabel;
 
 		BuildLabels(boolean isRegProc, String positiveLabel) {
 			this.isRegProc = isRegProc;

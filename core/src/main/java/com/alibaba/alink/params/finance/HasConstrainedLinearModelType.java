@@ -9,8 +9,8 @@ import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 
 public interface HasConstrainedLinearModelType<T> extends WithParams <T> {
-	@NameCn("优化方法")
-	@DescCn("优化方法")
+	@NameCn("线性模型")
+	@DescCn("线性模型")
 	ParamInfo <LinearModelType> LINEAR_MODEL_TYPE = ParamInfoFactory
 		.createParamInfo("linearModelType", LinearModelType.class)
 		.setDescription("optimMethod: lr, linearReg")
@@ -32,7 +32,8 @@ public interface HasConstrainedLinearModelType<T> extends WithParams <T> {
 
 	enum LinearModelType {
 		LR,
-		LinearReg
+		LinearReg,
+		Divergence
 	}
 
 }

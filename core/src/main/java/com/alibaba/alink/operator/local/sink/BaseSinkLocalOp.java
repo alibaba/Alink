@@ -59,11 +59,11 @@ public abstract class BaseSinkLocalOp<T extends BaseSinkLocalOp <T>> extends Loc
 	}
 
 	public static <T> void output(final List <T> input, final OutputFormat <T> outputFormat, Params params) {
-		int numThreads = LocalOperator.getDefaultNumThreads();
+		int numThreads = LocalOperator.getParallelism();
 
-		if (params.contains(HasNumThreads.NUM_THREADS)) {
-			numThreads = params.get(HasNumThreads.NUM_THREADS);
-		}
+		//if (params.contains(HasNumThreads.NUM_THREADS)) {
+		//	numThreads = params.get(HasNumThreads.NUM_THREADS);
+		//}
 
 		output(input, outputFormat, numThreads);
 	}

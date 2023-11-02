@@ -55,7 +55,8 @@ public class DbscanLocalOpTest{
 			.setSelectedCol("vec")
 			.setPredictionCol("label")
 			.setNumThreads(4)
-			.linkFrom(model, source);
+			.linkFrom(model, source)
+			.print();
 
 		MTable DbscanLocalOutTable = result.select("label").getOutputTable();
 		MTable DbscanPredictOutTable = predict.select("label").getOutputTable();

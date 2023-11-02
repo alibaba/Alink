@@ -68,8 +68,8 @@ public class VectorCorrelationBatchOpTest extends AlinkTestBase {
 		CorrelationResult corrMat = corr.collectCorrelation();
 
 		Assert.assertArrayEquals(corrMat.getCorrelationMatrix().getArrayCopy1D(true),
-			new double[] {1.0, 1.0,
-				1.0, 1.0},
+			new double[] {1.0, 0.8660254037844378,
+				0.8660254037844378, 1.0},
 			10e-4
 		);
 	}

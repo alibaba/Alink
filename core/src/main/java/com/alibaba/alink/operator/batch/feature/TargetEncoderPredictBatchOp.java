@@ -10,8 +10,8 @@ import com.alibaba.alink.operator.common.feature.TargetEncoderModelMapper;
 import com.alibaba.alink.params.feature.TargetEncoderPredictParams;
 
 @ParamSelectColumnSpec(name = "selectedCols")
-@NameCn("TargetEncoder")
-@NameEn("TargetEncoder")
+@NameCn("目标编码预测")
+@NameEn("Target Encoder Prediction")
 public class TargetEncoderPredictBatchOp extends ModelMapBatchOp <TargetEncoderPredictBatchOp>
 	implements TargetEncoderPredictParams <TargetEncoderPredictBatchOp> {
 

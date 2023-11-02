@@ -51,7 +51,7 @@ class PyProphetCalc:
             list_of_tuples = list(zip(ds_array, y_array))
             df = pd.DataFrame(list_of_tuples, columns=['ds', 'y'])
             with suppress_stdout_stderr():
-                m = Prophet(daily_seasonality=True, weekly_seasonality=True, yearly_seasonality=True)
+                m = Prophet()
                 m.fit(df)
             print("impl train end", flush=True)
             self._collector.collectRow(model_to_json(m))
