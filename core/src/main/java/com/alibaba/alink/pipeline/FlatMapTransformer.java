@@ -7,6 +7,8 @@ import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.mapper.FlatMapper;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.utils.FlatMapBatchOp;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.utils.FlatMapLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.utils.FlatMapStreamOp;
 
@@ -38,6 +40,11 @@ public abstract class FlatMapTransformer<T extends FlatMapTransformer <T>>
 	@Override
 	public StreamOperator <?> transform(StreamOperator <?> input) {
 		return new FlatMapStreamOp <>(this.flatMapperBuilder, this.params).linkFrom(input);
+	}
+
+	@Override
+	public LocalOperator <?> transform(LocalOperator <?> input) {
+		return postProcessTransformResult(new FlatMapLocalOp <>(this.flatMapperBuilder, this.params).linkFrom(input));
 	}
 
 }

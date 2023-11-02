@@ -8,6 +8,7 @@ import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.TypeCollections;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.linear.LinearModelMapper;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.classification.LogisticRegressionPredictParams;
 
@@ -36,6 +37,14 @@ public final class LogisticRegressionPredictStreamOp extends ModelMapStreamOp <L
 	}
 
 	public LogisticRegressionPredictStreamOp(BatchOperator model, Params params) {
+		super(model, LinearModelMapper::new, params);
+	}
+
+	public LogisticRegressionPredictStreamOp(LocalOperator model) {
+		this(model, new Params());
+	}
+
+	public LogisticRegressionPredictStreamOp(LocalOperator model, Params params) {
 		super(model, LinearModelMapper::new, params);
 	}
 }

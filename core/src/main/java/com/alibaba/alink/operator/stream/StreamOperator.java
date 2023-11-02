@@ -221,7 +221,7 @@ public abstract class StreamOperator<T extends StreamOperator <T>> extends AlgoO
 		StreamExecutionEnvironment env = MLEnvironmentFactory.getDefault().getStreamExecutionEnvironment();
 
 		// start a checkpoint every 30 min
-		env.enableCheckpointing(1800 * 1000L);
+		env.enableCheckpointing(1800 * 1000L );
 
 		// advanced options:
 

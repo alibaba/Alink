@@ -5,7 +5,7 @@ import pandas as pd
 class TestIndexToStringPredictBatchOp(unittest.TestCase):
     def test_indextostringpredictbatchop(self):
 
-        df = pd.DataFrame([
+        df_data = pd.DataFrame([
             ["football"],
             ["football"],
             ["football"],
@@ -14,16 +14,19 @@ class TestIndexToStringPredictBatchOp(unittest.TestCase):
             ["tennis"],
         ])
         
+        train_data = BatchOperator.fromDataframe(df_data, schemaStr='f0 string')
         
-        data = BatchOperator.fromDataframe(df, schemaStr='f0 string')
+        stringIndexer = StringIndexer()\
+            .setModelName("string_indexer_model")\
+            .setSelectedCol("f0")\
+            .setOutputCol("f0_indexed")\
+            .setStringOrderType("frequency_asc").fit(train_data)
         
-        stringIndexer = StringIndexer() \
-            .setModelName("string_indexer_model") \
-            .setSelectedCol("f0") \
-            .setOutputCol("f0_indexed") \
-            .setStringOrderType("frequency_asc")
+        indexed = stringIndexer.transform(train_data)
         
-        indexed = stringIndexer.fit(data).transform(data)
+        indexToStrings = IndexToStringPredictBatchOp()\
+            .setSelectedCol("f0_indexed")\
+            .setOutputCol("f0_indxed_unindexed")
         
-        indexed.print()
+        indexToStrings.linkFrom(stringIndexer.getModelData(), indexed).print()
         pass

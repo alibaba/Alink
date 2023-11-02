@@ -26,7 +26,7 @@ class TestHoltWintersStreamOp(unittest.TestCase):
         
         source.link(
         			OverCountWindowStreamOp()
-        				.setPartitionCols(["id"])
+        				.setGroupCols(["id"])
         				.setTimeCol("ts")
         				.setPrecedingRows(5)
         				.setClause("mtable_agg_preceding(ts, val) as data")

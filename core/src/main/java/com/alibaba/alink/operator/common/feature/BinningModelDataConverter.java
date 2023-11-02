@@ -20,7 +20,7 @@ public class BinningModelDataConverter implements
 	ModelDataConverter <Iterable <FeatureBinsCalculator>, List <FeatureBinsCalculator>> {
 	private static final String[] MODEL_COL_NAMES = new String[] {"FeatureBordersJson"};
 
-	private static final TypeInformation[] MODEL_COL_TYPES = new TypeInformation[] {Types.STRING};
+	private static final TypeInformation <?>[] MODEL_COL_TYPES = new TypeInformation[] {Types.STRING};
 
 	private static final TableSchema MODEL_SCHEMA = new TableSchema(MODEL_COL_NAMES, MODEL_COL_TYPES);
 

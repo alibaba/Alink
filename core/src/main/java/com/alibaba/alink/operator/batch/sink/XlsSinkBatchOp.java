@@ -9,6 +9,7 @@ import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.io.annotations.AnnotationUtils;
 import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
+import com.alibaba.alink.common.io.plugin.wrapper.RichOutputFormatWithClassLoader;
 import com.alibaba.alink.common.io.xls.XlsReaderClassLoader;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.params.io.XlsSinkParams;
@@ -30,14 +31,17 @@ public class XlsSinkBatchOp extends BaseSinkBatchOp <XlsSinkBatchOp> implements 
 
 	@Override
 	protected XlsSinkBatchOp sinkFrom(BatchOperator <?> in) {
-		FileOutputFormat outputFormat = XlsReaderClassLoader
+		FileOutputFormat xlsxOutputFormat = XlsReaderClassLoader
 			.create(factory).createOutputFormat(getParams(), in.getSchema());
 
 		if (getOverwriteSink()) {
-			outputFormat.setWriteMode(WriteMode.OVERWRITE);
+			xlsxOutputFormat.setWriteMode(WriteMode.OVERWRITE);
 		} else {
-			outputFormat.setWriteMode(WriteMode.NO_OVERWRITE);
+			xlsxOutputFormat.setWriteMode(WriteMode.NO_OVERWRITE);
 		}
+
+		RichOutputFormatWithClassLoader outputFormat =
+			new RichOutputFormatWithClassLoader(factory, xlsxOutputFormat);
 
 		in.getDataSet().output(outputFormat)
 			.name("xls-file-sink")

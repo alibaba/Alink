@@ -16,6 +16,7 @@ class TestJsonValueStreamOp(unittest.TestCase):
              .setJsonPath(["$.a", "$.b.b1[0]","$.b.b2"])\
              .setSelectedCol("str")\
              .setOutputCols(["f0","f1","f2"])\
+             .setOutputColTypes(["string", "int", "long"])\
              .linkFrom(streamData)\
              .print()
              

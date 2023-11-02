@@ -152,7 +152,7 @@ class PyProphetCalc2:
                     else:
                         holidays_pd = pd.concat((holidays_pd, holiday_pd))
 
-            #data
+            # data
             ds_array = []
             y_array = []
             for row in argv1:
@@ -193,13 +193,33 @@ class PyProphetCalc2:
                     init_model = model_from_json(init_model_str)
 
                     # fit and pred
-                    m.fit(df, init=stan_init(init_model))
+                    try:
+                        m.fit(df, init=self.stan_init(init_model))
+                    except Exception as e :
+                        print("init model fit fail. {}".format(e), flush=True)
+                        m = Prophet(growth = growth,
+                                    uncertainty_samples = uncertainty_samples,
+                                    holidays = holidays_pd,
+                                    n_changepoints = n_changepoints,
+                                    changepoint_range = changepoint_range,
+                                    seasonality_mode = seasonality_mode,
+                                    seasonality_prior_scale = seasonality_prior_scale,
+                                    holidays_prior_scale = holidays_prior_scale,
+                                    changepoint_prior_scale = changepoint_prior_scale,
+                                    interval_width = interval_width,
+                                    changepoints =  changepoints,
+                                    yearly_seasonality = yearly_seasonality,
+                                    weekly_seasonality = weekly_seasonality,
+                                    daily_seasonality = daily_seasonality,
+                                    mcmc_samples = mcmc_samples)
+                        m.fit(df)
 
             future = m.make_future_dataframe(periods=predict_num, freq=freq, include_history=False)
             if capVal is not None:
                 future['cap'] = capVal
             if floorVal is not None:
                 future['floor'] = floorVal
+
             pout = m.predict(future)
 
             if include_history:
@@ -213,8 +233,7 @@ class PyProphetCalc2:
             else:
                 self._collector.collectRow(model_to_json(m), pout.to_json(), json.dumps(pout.yhat.values.tolist()))
         except BaseException as ex:
-            print({}.format(ex), flush=True)
-            raise ex
+            print("{}".format(ex), flush=True)
         finally:
             print("Leaving Python calc", flush=True)
 

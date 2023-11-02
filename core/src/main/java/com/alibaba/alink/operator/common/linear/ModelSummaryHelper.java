@@ -344,10 +344,18 @@ public class ModelSummaryHelper {
 
 	public static Boolean isLinearRegression(String linearModelType) {
 		linearModelType = linearModelType.trim().toUpperCase();
-		if (!linearModelType.equals("LINEARREG") && !linearModelType.equals("LR")) {
+		if (!linearModelType.equals("LINEARREG") && !linearModelType.equals("LR") && !linearModelType.equals("DIVERGENCE") ) {
 			throw new RuntimeException("model type not support. " + linearModelType);
 		}
 		return "LINEARREG".equals(linearModelType);
+	}
+
+	public static Boolean isLogisticRegression(String linearModelType) {
+		linearModelType = linearModelType.trim().toUpperCase();
+		if (!linearModelType.equals("LINEARREG") && !linearModelType.equals("LR") && !linearModelType.equals("DIVERGENCE") ) {
+			throw new RuntimeException("model type not support. " + linearModelType);
+		}
+		return "LR".equals(linearModelType);
 	}
 
 	public static DataSet <Object> getLabelInfo(BatchOperator in,

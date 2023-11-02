@@ -37,16 +37,37 @@ public class KSigmaDetector extends OutlierDetector {
 	@Override
 	protected Tuple3 <Boolean, Double, Map <String, String>>[] detect(MTable series, boolean detectLast)
 		throws Exception {
-		TableSummary summary = series.summary();
-		final double mean = summary.mean(selectedCol);
-		final double standardDeviation = summary.standardDeviation(selectedCol);
-		double[] zScores = OutlierUtil.getNumericArray(series, selectedCol);
-		for (int i = 0; i < zScores.length; i++) {
-			zScores[i] = (zScores[i] - mean) / standardDeviation;
+		int n = series.getNumRow();
+		double[] values = OutlierUtil.getNumericArray(series, selectedCol);
+		double[] zScores;
+		if (detectLast) {
+			TableSummary summary = series.subSummary(new String[] {selectedCol}, 0, series.getNumRow() - 1);
+			final double mean = summary.mean(selectedCol);
+			final double standardDeviation = summary.standardDeviation(selectedCol);
+			zScores = new double[1];
+			double val = values[n - 1];
+			if (standardDeviation != 0.0) {
+				zScores[0] = (val - mean) / standardDeviation;
+			} else {
+				zScores[0] = (val != mean) && n != 1 && n != 2 ? this.K + 1 : 0;
+			}
+		} else {
+			zScores = values;
+			TableSummary summary = series.summary(selectedCol);
+			final double mean = summary.mean(selectedCol);
+			final double standardDeviation = summary.standardDeviation(selectedCol);
+
+			for (int i = 0; i < zScores.length; i++) {
+				if (standardDeviation != 0.0) {
+					zScores[i] = (zScores[i] - mean) / standardDeviation;
+				} else {
+					zScores[i] = 0;
+				}
+			}
 		}
 
 		Tuple3 <Boolean, Double, Map <String, String>>[] results = new Tuple3[zScores.length];
-		for (int i = 0; i < zScores.length; i++) {
+		for (int i = 0; i < results.length; i++) {
 			double outlier_score;
 			switch (direction) {
 				case BOTH:

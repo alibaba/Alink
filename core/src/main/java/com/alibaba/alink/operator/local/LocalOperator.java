@@ -16,10 +16,6 @@ import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.lazy.LazyEvaluation;
 import com.alibaba.alink.common.utils.TableUtil;
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.dataproc.SampleBatchOp;
-import com.alibaba.alink.operator.batch.dataproc.SampleWithSizeBatchOp;
-import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
 import com.alibaba.alink.operator.batch.utils.DiveVisualizer.DiveVisualizerConsumer;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.operator.local.dataproc.FirstNLocalOp;
@@ -30,6 +26,7 @@ import com.alibaba.alink.operator.local.source.BaseSourceLocalOp;
 import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
 import com.alibaba.alink.operator.local.source.TableSourceLocalOp;
 import com.alibaba.alink.operator.local.sql.GroupByLocalOp;
+import com.alibaba.alink.operator.local.sql.SelectLocalOp;
 import com.alibaba.alink.operator.local.statistics.InternalFullStatsLocalOp;
 import com.alibaba.alink.operator.local.statistics.SummarizerLocalOp;
 import org.apache.commons.lang3.tuple.Pair;
@@ -40,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.function.Consumer;
 
 public abstract class LocalOperator<T extends LocalOperator <T>>
@@ -411,13 +407,10 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 		return orderBy(fieldName, limit, true);
 	}
 
-	/**
-	 * Apply the "group by" operation.
-	 *
-	 * @param groupByPredicate The predicate specifying the fields from which records are grouped.
-	 * @param selectClause     The clause specifying the fields to select and the aggregation operations.
-	 * @return The resulted <code>BatchOperator</code> of the "groupBy" operation.
-	 */
+	public LocalOperator <?> groupBy(String[] groupCols, String selectClause) {
+		return groupBy(String.join(",", groupCols), selectClause);
+	}
+
 	public LocalOperator <?> groupBy(String groupByPredicate, String selectClause) {
 		return new GroupByLocalOp(groupByPredicate, selectClause).linkFrom(this);
 	}
@@ -497,6 +490,14 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	 */
 	public static LocalOperator <?> sqlQuery(String query) {
 		return LocalMLEnvironment.getInstance().getSqlExecutor().query(query);
+	}
+
+	public static String[] listTableNames() {
+		return LocalMLEnvironment.getInstance().getSqlExecutor().listTableNames();
+	}
+
+	public static String[] listFunctionNames() {
+		return LocalMLEnvironment.getInstance().getSqlExecutor().listFunctionNames();
 	}
 
 	public static void execute() {
@@ -701,11 +702,11 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 		}
 	}
 
-	public static void setDefaultNumThreads(int numThreads) {
-		AlinkLocalSession.setDefaultNumThreads(numThreads);
+	public static void setParallelism(int parallelism) {
+		AlinkLocalSession.setParallelism(parallelism);
 	}
 
-	public static int getDefaultNumThreads() {
-		return AlinkLocalSession.getDefaultNumThreads();
+	public static int getParallelism() {
+		return AlinkLocalSession.getParallelism();
 	}
 }

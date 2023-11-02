@@ -2,6 +2,7 @@ package com.alibaba.alink.operator.batch.statistics;
 
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.BaseVectorSummary;
 import com.alibaba.alink.testutil.AlinkTestBase;
@@ -44,6 +45,23 @@ public class VectorSummarizerBatchOpTest extends AlinkTestBase {
 		Assert.assertEquals(srt.standardDeviation(0), 2.5166114784235836, 10e-4);
 		Assert.assertEquals(srt.normL1(0), 6.0, 10e-4);
 		Assert.assertEquals(srt.normL2(0), 4.242640687119285, 10e-4);
+	}
+
+	@Test
+	public void test2() throws Exception {
+		Row[] testArray =
+			new Row[] {
+				Row.of("1.0 2.0"),
+				Row.of("-1.0 -3.0"),
+				Row.of("4.0 2.0"),
+			};
+
+		String selectedColName = "vec";
+		String[] colNames = new String[] {selectedColName};
+
+		MemSourceBatchOp source = new MemSourceBatchOp(Arrays.asList(testArray), colNames);
+		source.lazyPrintStatistics();
+		BatchOperator.execute();
 	}
 
 }

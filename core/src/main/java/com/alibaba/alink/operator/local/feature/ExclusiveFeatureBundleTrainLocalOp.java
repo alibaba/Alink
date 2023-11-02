@@ -5,6 +5,7 @@ import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.linalg.SparseVector;
 import com.alibaba.alink.common.linalg.VectorUtil;
 import com.alibaba.alink.common.utils.RowCollector;
@@ -22,6 +23,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 @NameCn("互斥特征捆绑模型训练")
+@NameEn("Exclusive Feature Bundle")
 @EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.feature.ExclusiveFeatureBundle")
 public class ExclusiveFeatureBundleTrainLocalOp extends LocalOperator <ExclusiveFeatureBundleTrainLocalOp>
 	implements ExclusiveFeatureBundlePredictParams <ExclusiveFeatureBundleTrainLocalOp> {

@@ -11,8 +11,8 @@ import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.common.statistics.statistics.BaseMeasureIterator;
 import com.alibaba.alink.operator.common.statistics.statistics.BooleanMeasureIterator;
 import com.alibaba.alink.operator.common.statistics.statistics.DateMeasureIterator;
-import com.alibaba.alink.operator.common.statistics.statistics.StatisticsIteratorFactory;
 import com.alibaba.alink.operator.common.statistics.statistics.NumberMeasureIterator;
+import com.alibaba.alink.operator.common.statistics.statistics.StatisticsIteratorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +43,11 @@ public class TableSummarizer extends BaseSummarizer {
 	 * col number.
 	 */
 	private int n;
+
+	/**
+	 * select col indices.
+	 */
+	private int[] colIndices;
 
 	/**
 	 * num of numerical cols, boolean cols and date cols.
@@ -92,11 +97,28 @@ public class TableSummarizer extends BaseSummarizer {
 	 * these are for correlation and covariance.
 	 */
 	public TableSummarizer(TableSchema tableSchema, boolean calculateOuterProduct) {
-		this.colNames = tableSchema.getFieldNames();
-		this.colTypes = tableSchema.getFieldTypes();
+		this(tableSchema, calculateOuterProduct, null);
+	}
+
+	public TableSummarizer(TableSchema tableSchema, boolean calculateOuterProduct, String[] selectedColNames) {
+		if (null == selectedColNames) {
+			this.colNames = tableSchema.getFieldNames();
+			this.n = this.colNames.length;
+			this.colIndices = new int[this.n];
+			for (int i = 0; i < this.n; i++) {
+				this.colIndices[i] = i;
+			}
+		} else {
+			this.colNames = selectedColNames;
+			this.n = this.colNames.length;
+			this.colIndices = TableUtil.findColIndicesWithAssertAndHint(tableSchema, selectedColNames);
+		}
+		this.colTypes = new TypeInformation <?>[this.n];
+		for (int i = 0; i < this.n; i++) {
+			this.colTypes[i] = tableSchema.getFieldType(this.colIndices[i]).get();
+		}
 		this.calculateOuterProduct = calculateOuterProduct;
-		this.n = this.colNames.length;
-		this.numericalColIndices = calcCovColIndices(new TableSchema(this.colNames, this.colTypes));
+		this.numericalColIndices = calcCovColIndices(this.colIndices, this.colTypes);
 		this.numberN = this.numericalColIndices.length;
 	}
 
@@ -104,10 +126,6 @@ public class TableSummarizer extends BaseSummarizer {
 	 * given row, incremental calculate statistics.
 	 */
 	public BaseSummarizer visit(Row row) {
-		if (this.n != row.getArity()) {
-			throw new AkIllegalStateException("row size is not equal with table col num.");
-		}
-
 		if (count == 0) {
 			init();
 		}
@@ -115,7 +133,7 @@ public class TableSummarizer extends BaseSummarizer {
 		count++;
 
 		for (int i = 0; i < this.n; i++) {
-			this.statIterators[i].visit(row.getField(i));
+			this.statIterators[i].visit(row.getField(this.colIndices[i]));
 		}
 
 		if (calculateOuterProduct) {
@@ -175,7 +193,16 @@ public class TableSummarizer extends BaseSummarizer {
 	public TableSummary toSummary() {
 		TableSummary summary = new TableSummary();
 
-		summary.numericalColIndices = numericalColIndices;
+		//summary.numericalColIndices = numericalColIndices;
+		summary.numericalColIndices = new int[this.numberN];
+		for (int i = 0; i < this.numberN; i++) {
+			for (int k = 0; k < this.n; k++) {
+				if (this.numericalColIndices[i] == this.colIndices[k]) {
+					summary.numericalColIndices[i] = k;
+					break;
+				}
+			}
+		}
 		summary.colNames = colNames;
 		summary.count = count;
 		summary.sum = new DenseVector(this.numberN);
@@ -195,15 +222,17 @@ public class TableSummarizer extends BaseSummarizer {
 			}
 
 			for (int i = 0; i < this.numberN; i++) {
-				BaseMeasureIterator <?, ?> iterator = this.statIterators[this.numericalColIndices[i]];
+				BaseMeasureIterator <?, ?> iterator = this.statIterators[summary.numericalColIndices[i]];
 				if (iterator instanceof NumberMeasureIterator) {
 					NumberMeasureIterator <?> numberIterator = (NumberMeasureIterator <?>) iterator;
 					summary.sum.set(i, numberIterator.sum);
 					summary.sum2.set(i, numberIterator.sum2);
 					summary.sum3.set(i, numberIterator.sum3);
 					summary.sum4.set(i, numberIterator.sum4);
-					summary.minDouble.set(i, numberIterator.min.doubleValue());
-					summary.maxDouble.set(i, numberIterator.max.doubleValue());
+					summary.minDouble.set(i,
+						null == numberIterator.min ? Double.NaN : numberIterator.min.doubleValue());
+					summary.maxDouble.set(i,
+						null == numberIterator.max ? Double.NaN : numberIterator.max.doubleValue());
 					summary.normL1.set(i, numberIterator.normL1);
 					summary.min[i] = numberIterator.min;
 					summary.max[i] = numberIterator.max;
@@ -224,8 +253,8 @@ public class TableSummarizer extends BaseSummarizer {
 					summary.sum2.set(i, Double.NaN);
 					summary.sum3.set(i, Double.NaN);
 					summary.sum4.set(i, Double.NaN);
-					summary.minDouble.set(i, dateIterator.min.getTime());
-					summary.maxDouble.set(i, dateIterator.max.getTime());
+					summary.minDouble.set(i, null == dateIterator.min ? Double.NaN : dateIterator.min.getTime());
+					summary.maxDouble.set(i, null == dateIterator.max ? Double.NaN : dateIterator.max.getTime());
 					summary.min[i] = dateIterator.min;
 					summary.max[i] = dateIterator.max;
 				}
@@ -324,9 +353,21 @@ public class TableSummarizer extends BaseSummarizer {
 	 */
 	TableSummarizer copy() {
 		TableSummarizer srt = new TableSummarizer();
-		srt.colNames = colNames.clone();
-		srt.count = count;
+		srt.colNames = this.colNames.clone();
+		srt.count = this.count;
+		srt.n = this.n;
+		srt.numberN = this.numberN;
+
+		if (this.numericalColIndices != null) {
+			srt.numericalColIndices = this.numericalColIndices.clone();
+		}
+
+		if (this.colTypes != null) {
+			srt.colTypes = this.colTypes.clone();
+		}
+
 		if (count != 0) {
+			srt.colIndices = this.colIndices.clone();
 			srt.statIterators = new BaseMeasureIterator[this.n];
 			for (int i = 0; i < this.n; i++) {
 				srt.statIterators[i] = this.statIterators[i].clone();
@@ -334,7 +375,6 @@ public class TableSummarizer extends BaseSummarizer {
 		}
 
 		if (this.outerProduct != null) {
-			srt.numericalColIndices = this.numericalColIndices.clone();
 			srt.outerProduct = this.outerProduct.clone();
 			srt.xSum = this.xSum.clone();
 			srt.xSquareSum = this.xSquareSum.clone();
@@ -365,14 +405,14 @@ public class TableSummarizer extends BaseSummarizer {
 	/**
 	 * col indices which col type is number or boolean or date.
 	 */
-	private int[] calcCovColIndices(TableSchema tableSchema) {
+	private static int[] calcCovColIndices(int[] colIndexes, TypeInformation <?>[] colTypes) {
 		List <Integer> indicesList = new ArrayList <>();
-		for (int i = 0; i < tableSchema.getFieldNames().length; i++) {
-			TypeInformation <?> type = tableSchema.getFieldType(i).get();
+		for (int i = 0; i < colIndexes.length; i++) {
+			TypeInformation <?> type = colTypes[i];
 			if (TableUtil.isSupportedNumericType(type)
 				|| TableUtil.isSupportedBoolType(type)
-			 	|| TableUtil.isSupportedDateType(type)) {
-				indicesList.add(i);
+				|| TableUtil.isSupportedDateType(type)) {
+				indicesList.add(colIndexes[i]);
 			}
 		}
 		return indicesList.stream().mapToInt(Integer::valueOf).toArray();

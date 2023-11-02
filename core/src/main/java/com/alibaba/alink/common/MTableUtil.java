@@ -14,7 +14,6 @@ import com.alibaba.alink.operator.local.AlinkLocalSession;
 import com.alibaba.alink.operator.local.AlinkLocalSession.TaskRunner;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.params.shared.HasNumThreads;
-
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
@@ -135,26 +134,26 @@ public class MTableUtil implements Serializable {
 	}
 
 	public static List <Row> flatMapWithMultiThreads(MTable mt, Params params, FlatMapFunction flatMapFunction) {
-		int numThreads = LocalOperator.getDefaultNumThreads();
-		if (params.contains(HasNumThreads.NUM_THREADS)) {
-			numThreads = params.get(HasNumThreads.NUM_THREADS);
-		}
+		int numThreads = LocalOperator.getParallelism();
+		//if (params.contains(HasNumThreads.NUM_THREADS)) {
+		//	numThreads *= params.get(HasNumThreads.NUM_THREADS);
+		//}
 		return flatMapWithMultiThreads(mt, numThreads, flatMapFunction);
 	}
 
-	public static List <Row> flatMapWithMultiThreads(MTable mt, int numThreads, FlatMapFunction flatMapFunction) {
+	static List <Row> flatMapWithMultiThreads(MTable mt, int numThreads, FlatMapFunction flatMapFunction) {
 		return flatMapWithMultiThreads(mt.getRows(), numThreads, flatMapFunction);
 	}
 
-	public static List <Row> flatMapWithMultiThreads(List<Row> mt, Params params, FlatMapFunction flatMapFunction) {
-		int numThreads = LocalOperator.getDefaultNumThreads();
-		if (params.contains(HasNumThreads.NUM_THREADS)) {
-			numThreads = params.get(HasNumThreads.NUM_THREADS);
-		}
+	public static List <Row> flatMapWithMultiThreads(List <Row> mt, Params params, FlatMapFunction flatMapFunction) {
+		int numThreads = LocalOperator.getParallelism();
+		//if (params.contains(HasNumThreads.NUM_THREADS)) {
+		//	numThreads *= params.get(HasNumThreads.NUM_THREADS);
+		//}
 		return flatMapWithMultiThreads(mt, numThreads, flatMapFunction);
 	}
 
-	public static List <Row> flatMapWithMultiThreads(List<Row> mt, int numThreads, FlatMapFunction flatMapFunction) {
+	static List <Row> flatMapWithMultiThreads(List <Row> mt, int numThreads, FlatMapFunction flatMapFunction) {
 		final TaskRunner taskRunner = new TaskRunner();
 
 		final List <Row>[] buffer = new List[numThreads];
@@ -205,15 +204,17 @@ public class MTableUtil implements Serializable {
 		}
 	}
 
-	public static <I, O> List <O> flatMapWithMultiThreads(List<I> mt, Params params, GenericFlatMapFunction<I, O> flatMapFunction) {
-		int numThreads = LocalOperator.getDefaultNumThreads();
-		if (params.contains(HasNumThreads.NUM_THREADS)) {
-			numThreads = params.get(HasNumThreads.NUM_THREADS);
-		}
+	public static <I, O> List <O> flatMapWithMultiThreads(List <I> mt, Params params,
+														  GenericFlatMapFunction <I, O> flatMapFunction) {
+		int numThreads = LocalOperator.getParallelism();
+		//if (params.contains(HasNumThreads.NUM_THREADS)) {
+		//	numThreads = params.get(HasNumThreads.NUM_THREADS);
+		//}
 		return flatMapWithMultiThreads(mt, numThreads, flatMapFunction);
 	}
-	public static <I, O>  List <O> flatMapWithMultiThreads(
-		List<I> mt, int numThreads, GenericFlatMapFunction<I, O> flatMapFunction) {
+
+	public static <I, O> List <O> flatMapWithMultiThreads(
+		List <I> mt, int numThreads, GenericFlatMapFunction <I, O> flatMapFunction) {
 
 		final TaskRunner taskRunner = new TaskRunner();
 
@@ -232,9 +233,9 @@ public class MTableUtil implements Serializable {
 
 			taskRunner.submit(() -> {
 
-					GenericFlatMapFunction<I, O> localFlatMapFunction = SerializationUtils.deserialize(serialized);
+					GenericFlatMapFunction <I, O> localFlatMapFunction = SerializationUtils.deserialize(serialized);
 
-					final List<O> output = new ArrayList <>();
+					final List <O> output = new ArrayList <>();
 
 					for (int j = start; j < start + cnt; j++) {
 						try {

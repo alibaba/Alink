@@ -18,5 +18,5 @@ class TestSummarizerBatchOp(unittest.TestCase):
         
         summary = summarizer.linkFrom(source).collectSummary()
         
-        print(summary.sum('f_double'))
+        print(summary)
         pass

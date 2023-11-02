@@ -16,7 +16,7 @@ import java.util.Random;
 public class VectorNearestNeighborTrainLocalOpTest extends TestCase {
 
 	public void test() throws Exception {
-		LocalOperator.setDefaultNumThreads(4);
+		LocalOperator.setParallelism(4);
 		int dim = 256;
 		//int nDict = 120000;
 		//int nQuery = 5000;

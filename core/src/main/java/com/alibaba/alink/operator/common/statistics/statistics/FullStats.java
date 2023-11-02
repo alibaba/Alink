@@ -67,31 +67,31 @@ public class FullStats implements Serializable {
 
 					SummaryResultCol src = srt.col(colName);
 
+					Histogram.Builder histoBuilder = Histogram.newBuilder().setType(HistogramType.STANDARD);
+					Histogram.Builder percentileBuilder = Histogram.newBuilder().setType(HistogramType.QUANTILES);
+
 					//get histogram
 					IntervalCalculator ic = src.getIntervalCalculator();
-					long[] counts = ic.getCount();
+					if (null != ic) {
+						long[] counts = ic.getCount();
 
-					Histogram.Builder histoBuilder = Histogram.newBuilder()
-						.setType(HistogramType.STANDARD);
+						for (int j = 0; j < counts.length; j++) {
+							histoBuilder.addBuckets(Histogram.Bucket.newBuilder()
+								.setLowValue(ic.getTag(j).doubleValue())
+								.setHighValue(ic.getTag(j + 1).doubleValue())
+								.setSampleCount(counts[j])
+							);
+						}
 
-					for (int j = 0; j < counts.length; j++) {
-						histoBuilder.addBuckets(Histogram.Bucket.newBuilder()
-							.setLowValue(ic.getTag(j).doubleValue())
-							.setHighValue(ic.getTag(j + 1).doubleValue())
-							.setSampleCount(counts[j])
-						);
-					}
-
-					Histogram.Builder percentileBuilder = Histogram.newBuilder()
-						.setType(HistogramType.QUANTILES);
-
-					for (int j = 0; j < 10; j++) {
-						percentileBuilder.addBuckets(Histogram.Bucket.newBuilder()
-							.setLowValue(((Number) src.getApproximatePercentile().getPercentile(10 * j)).doubleValue())
-							.setHighValue(((Number) src.getApproximatePercentile().getPercentile(
-								10 * (j + 1))).doubleValue())
-							.setSampleCount(src.count / 10.0)
-						);
+						for (int j = 0; j < 10; j++) {
+							percentileBuilder.addBuckets(Histogram.Bucket.newBuilder()
+								.setLowValue(((Number) src.getApproximatePercentile().getPercentile(
+									10 * j)).doubleValue())
+								.setHighValue(((Number) src.getApproximatePercentile().getPercentile(
+									10 * (j + 1))).doubleValue())
+								.setSampleCount(src.count / 10.0)
+							);
+						}
 					}
 
 					Type feaType =
@@ -118,7 +118,7 @@ public class FullStats implements Serializable {
 									.setMin(src.minDouble())
 									.setMean(src.mean())
 									.setStdDev(src.standardDeviation())
-									.setMedian(
+									.setMedian((0 == src.count) ? Double.NaN :
 										src.hasFreq()
 											? ((Number) src.getPercentile().median).doubleValue()
 											: src.getApproximatePercentile().getPercentile(50)
@@ -139,7 +139,7 @@ public class FullStats implements Serializable {
 						)
 						.setAvgLength((float) src.mean());
 
-					if (src.hasFreq()) {
+					if (src.count > 0 && src.hasFreq()) {
 						TreeMap <Object, Long> freq = src.getFrequencyMap();
 						stringBuilder.setUnique(freq.size());
 
@@ -271,7 +271,7 @@ public class FullStats implements Serializable {
 						.setMaxNumBytes((float) src.maxDouble())
 						.setMaxNumBytesInt((null == src.max) ? 0L : ((Number) src.max).longValue());
 
-					if (src.hasFreq()) {
+					if (src.count > 0 && src.hasFreq()) {
 						TreeMap <Object, Long> freq = src.getFrequencyMap();
 						bytesBuilder.setUnique(freq.size());
 					}

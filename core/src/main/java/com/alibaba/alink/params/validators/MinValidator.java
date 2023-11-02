@@ -35,10 +35,11 @@ public class MinValidator<T extends Comparable <T>> extends Validator <T> {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("value in ");
-		sb.append(leftInclusive ? "[" : "(");
-		sb.append(minVal);
-		sb.append(", +inf)");
+		//sb.append("value in \"");
+		//sb.append(leftInclusive ? "[" : "(");
+		//sb.append(minVal);
+		//sb.append(", +inf)\"");
+		sb.append("x").append(leftInclusive ? " >= " : " > ").append(minVal);
 		return sb.toString();
 	}
 }

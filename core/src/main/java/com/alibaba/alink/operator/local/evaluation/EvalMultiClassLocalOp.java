@@ -53,6 +53,7 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 	EvaluationMetricsCollector <MultiClassMetrics, EvalMultiClassLocalOp> {
 
 	private MultiClassMetrics metrics;
+	private static final String DATA_OUTPUT = "Data";
 
 	public EvalMultiClassLocalOp() {
 		this(null);
@@ -100,7 +101,7 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 		}
 
 		setOutputTable(new MTable(new Row[] {metrics.serialize()}, new TableSchema(
-			new String[] {"multiclass_eval_result"}, new TypeInformation[] {Types.STRING})));
+			new String[] {DATA_OUTPUT}, new TypeInformation[] {Types.STRING})));
 		return this;
 	}
 

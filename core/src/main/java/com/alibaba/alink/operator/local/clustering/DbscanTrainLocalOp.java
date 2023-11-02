@@ -15,12 +15,14 @@ import com.alibaba.alink.params.clustering.DbscanTrainParams;
 import com.alibaba.alink.params.feature.HasNumHashTables;
 import com.alibaba.alink.params.feature.HasNumProjectionsPerTable;
 import com.alibaba.alink.params.feature.HasProjectionWidth;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.clustering.Dbscan")
 public class DbscanTrainLocalOp extends LocalOperator <DbscanTrainLocalOp>
 	implements DbscanTrainParams <DbscanTrainLocalOp> {
 	private static final int MAX_CONSIDERED_NEIGHBOR_NUM = 128;

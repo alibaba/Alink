@@ -146,6 +146,9 @@ public class SummaryDataConverter extends SimpleModelDataConverter <TableSummary
 	 * timestamp will convert to long, decimal will convert to double. so save class type when tojson.
 	 */
 	static String objectVectorToString(Object[] vec) {
+		if (null != vec && vec.length == 0) {
+			return "";
+		}
 		JsonObject[] ojs = new JsonObject[vec.length];
 		for (int i = 0; i < vec.length; i++) {
 			Object src = vec[i];
@@ -169,6 +172,9 @@ public class SummaryDataConverter extends SimpleModelDataConverter <TableSummary
 	 * deserialize object vector.
 	 */
 	static Object[] stringToObjectVector(String vecJson) {
+		if (null != vecJson && vecJson.isEmpty()) {
+			return new Object[0];
+		}
 		JsonElement[] jsonElements = gson.fromJson(vecJson, JsonElement[].class);
 		Object[] values = new Object[jsonElements.length];
 		for (int i = 0; i < jsonElements.length; i++) {

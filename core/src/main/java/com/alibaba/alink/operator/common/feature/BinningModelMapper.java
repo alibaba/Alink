@@ -62,7 +62,7 @@ public class BinningModelMapper extends ComboModelMapper {
 		public String[] assemblerSelectedCols;
 
 		public String[] resultCols;
-		public TypeInformation[] resultColTypes;
+		public TypeInformation <?>[] resultColTypes;
 		public String[] reservedCols;
 
 		public Params params;
@@ -83,7 +83,7 @@ public class BinningModelMapper extends ComboModelMapper {
 						resultCols = selectedCols;
 					}
 					Preconditions.checkArgument(resultCols.length == selectedCols.length,
-						"OutputCols length must be equal to SelectedCols length!");
+						"OutputCols length must be equal to SelectedCols length!" );
 					resultColTypes = new TypeInformation[selectedCols.length];
 					Arrays.fill(resultColTypes, AlinkTypes.DOUBLE);
 					break;
@@ -93,7 +93,7 @@ public class BinningModelMapper extends ComboModelMapper {
 						resultCols = selectedCols;
 					}
 					Preconditions.checkArgument(resultCols.length == selectedCols.length,
-						"OutputCols length must be equal to SelectedCols length!");
+						"OutputCols length must be equal to SelectedCols length!" );
 					params.set(HasEncodeWithoutWoe.ENCODE, HasEncodeWithoutWoe.Encode.INDEX);
 					resultColTypes = new TypeInformation[selectedCols.length];
 					Arrays.fill(resultColTypes, AlinkTypes.LONG);
@@ -104,7 +104,7 @@ public class BinningModelMapper extends ComboModelMapper {
 						resultCols = selectedCols;
 					}
 					Preconditions.checkArgument(resultCols.length == selectedCols.length,
-						"OutputCols length must be equal to SelectedCols length!");
+						"OutputCols length must be equal to SelectedCols length!" );
 					params.set(HasEncodeWithoutWoe.ENCODE, HasEncodeWithoutWoe.Encode.VECTOR);
 					resultColTypes = new TypeInformation[selectedCols.length];
 					Arrays.fill(resultColTypes, AlinkTypes.SPARSE_VECTOR);
@@ -113,7 +113,7 @@ public class BinningModelMapper extends ComboModelMapper {
 				case ASSEMBLED_VECTOR: {
 					params.set(HasEncodeWithoutWoe.ENCODE, HasEncodeWithoutWoe.Encode.VECTOR);
 					Preconditions.checkArgument(null != resultCols && resultCols.length == 1,
-						"When encode is ASSEMBLED_VECTOR, outputCols must be given and the length must be 1!");
+						"When encode is ASSEMBLED_VECTOR, outputCols must be given and the length must be 1!" );
 					params.set(HasOutputCol.OUTPUT_COL, resultCols[0]);
 					resultCols = new String[selectedCols.length];
 					for (int i = 0; i < selectedCols.length; i++) {
@@ -124,7 +124,7 @@ public class BinningModelMapper extends ComboModelMapper {
 					break;
 				}
 				default: {
-					throw new RuntimeException("Not support " + encode.name() + " yet!");
+					throw new RuntimeException("Not support " + encode.name() + " yet!" );
 				}
 			}
 			List <Integer> numericIndices = new ArrayList <>();
@@ -184,7 +184,7 @@ public class BinningModelMapper extends ComboModelMapper {
 		//discrete
 		if (numeric.size() > 0) {
 			Preconditions.checkState(featureBorders.f0.size() > 0,
-				"There is numeric col that is not included in model, please check selectedCols!");
+				"There is numeric col that is not included in model, please check selectedCols!" );
 			QuantileDiscretizerModelMapper quantileDiscretizerModelMapper = getQuantileModelMapper(featureBorders.f0,
 				dataSchema, paramsBuilder);
 			dataSchema = quantileDiscretizerModelMapper.getOutputSchema();
@@ -194,7 +194,7 @@ public class BinningModelMapper extends ComboModelMapper {
 		//numeric
 		if (discrete.size() > 0) {
 			Preconditions.checkState(featureBorders.f1.size() > 0,
-				"There is discrete col that is not included in model, please check selectedCols!");
+				"There is discrete col that is not included in model, please check selectedCols!" );
 			OneHotModelMapper oneHotModelMapper = getOneHotModelMapper(
 				featureBorders.f1,
 				dataSchema,
@@ -481,18 +481,18 @@ public class BinningModelMapper extends ComboModelMapper {
 		for (FeatureBinsCalculator featureBinsCalculator : values) {
 			if (positiveTotal == null) {
 				positiveTotal = featureBinsCalculator.getPositiveTotal();
-				Preconditions.checkNotNull(positiveTotal, "The label col of Binning is not set!");
+				Preconditions.checkNotNull(positiveTotal, "The label col of Binning is not set!" );
 				negativeTotal = featureBinsCalculator.getTotal() - positiveTotal;
 			}
 			String binFeatureName = featureBinsCalculator.getFeatureName();
 			int featureIdx = TableUtil.findColIndex(featureNames, binFeatureName);
 			if (featureIdx == -1) {
 				featureIdx = TableUtil.findColIndex(featureNames,
-					binFeatureName + "_ONE_HOT");
+					binFeatureName + "_ONE_HOT" );
 			}
 			if (featureIdx == -1) {
 				featureIdx = TableUtil.findColIndex(featureNames,
-					binFeatureName + "_QUANTILE");
+					binFeatureName + "_QUANTILE" );
 			}
 			if (null != featureBinsCalculator.bin.nullBin) {
 				list.add(getWoeModelTuple(featureBinsCalculator.bin.nullBin, featureIdx));
@@ -520,6 +520,6 @@ public class BinningModelMapper extends ComboModelMapper {
 
 	static ParamInfo <String[]> BINNING_INPUT_COLS = ParamInfoFactory
 		.createParamInfo("origin_data_cols", String[].class)
-		.setDescription("origin data cols")
+		.setDescription("origin data cols" )
 		.build();
 }

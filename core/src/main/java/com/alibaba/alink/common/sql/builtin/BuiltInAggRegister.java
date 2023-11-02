@@ -34,6 +34,8 @@ import com.alibaba.alink.common.sql.builtin.time.FromUnixTime;
 import com.alibaba.alink.common.sql.builtin.time.Now;
 import com.alibaba.alink.common.sql.builtin.time.ToTimeStamp;
 import com.alibaba.alink.common.sql.builtin.time.UnixTimeStamp;
+import com.alibaba.alink.common.sql.builtin.time.UnixTimeStampMicro;
+import com.alibaba.alink.operator.common.sql.LocalOpCalciteSqlExecutor;
 
 public class BuiltInAggRegister {
 	public static final String EXTEND = "_preceding";
@@ -45,6 +47,15 @@ public class BuiltInAggRegister {
 		env.registerFunction("unix_timestamp", new UnixTimeStamp());
 		env.registerFunction("from_unixtime", new FromUnixTime());
 		env.registerFunction("date_format_ltz", new DataFormat());
+	}
+
+	public static void registerUdf(LocalOpCalciteSqlExecutor executor) {
+		executor.addFunction("now", new Now());
+		executor.addFunction("to_timestamp", new ToTimeStamp());
+		executor.addFunction("unix_timestamp", new UnixTimeStamp());
+		executor.addFunction("from_unixtime", new FromUnixTime());
+		executor.addFunction("date_format_ltz", new DataFormat());
+		executor.addFunction("unix_timestamp_macro", new UnixTimeStampMicro());
 	}
 
 	public static void registerUdtf(BatchTableEnvironment env) {

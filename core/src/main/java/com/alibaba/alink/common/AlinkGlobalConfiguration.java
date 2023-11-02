@@ -90,7 +90,7 @@ public final class AlinkGlobalConfiguration {
 	}
 
 	public static String getFlinkVersion() {
-		return "flink-1.13";
+		return "flink-1.11";
 	}
 
 	public static PluginDownloader getPluginDownloader() {

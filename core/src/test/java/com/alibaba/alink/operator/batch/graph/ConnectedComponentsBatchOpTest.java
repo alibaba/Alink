@@ -53,6 +53,63 @@ public class ConnectedComponentsBatchOpTest extends AlinkTestBase {
 	}
 
 	@Test
+	public void testUnStableWithVertex() throws Exception {
+		Row[] edgeRows = new Row[] {
+			Row.of(1, 2),
+			Row.of(2, 3),
+			Row.of(3, 4),
+			Row.of(4, 5),
+			Row.of(6, 7),
+			Row.of(7, 8),
+			Row.of(8, 9),
+			Row.of(9, 6),
+			Row.of(10, 11),
+			Row.of(10, 12),
+			Row.of(12, 13),
+		};
+
+		Row[] vetexRows = new Row[]{
+			Row.of(1),
+			Row.of(2),
+			Row.of(3),
+			Row.of(4),
+			Row.of(5),
+			Row.of(6),
+			Row.of(7),
+			Row.of(8),
+			Row.of(9),
+			Row.of(10),
+			Row.of(11),
+			Row.of(12),
+			Row.of(13)
+		};
+		BatchOperator edgeData = new MemSourceBatchOp(edgeRows, new String[] {"source", "target"});
+		BatchOperator vertexData = new MemSourceBatchOp(vetexRows, new String[] {"vertex"});
+
+		BatchOperator res = new ConnectedComponentsBatchOp()
+			.setEdgeSourceCol("source")
+			.setEdgeTargetCol("target")
+			.setVertexCol("vertex")
+			.linkFrom(edgeData, vertexData);
+
+		List<Row> listRes = res.collect();
+		HashMap <Object, Object> result = new HashMap <>();
+		for (Row r : listRes) {
+			result.put(r.getField(0), r.getField(1));
+		}
+		Assert.assertEquals(result.get(1), result.get(2));
+		Assert.assertEquals(result.get(1), result.get(3));
+		Assert.assertEquals(result.get(1), result.get(4));
+		Assert.assertEquals(result.get(1), result.get(5));
+		Assert.assertEquals(result.get(6), result.get(7));
+		Assert.assertEquals(result.get(6), result.get(8));
+		Assert.assertEquals(result.get(6), result.get(9));
+		Assert.assertEquals(result.get(10), result.get(11));
+		Assert.assertEquals(result.get(10), result.get(12));
+		Assert.assertEquals(result.get(10), result.get(13));
+	}
+
+	@Test
 	public void testStable() throws Exception {
 		Row[] edgeRows = new Row[] {
 			Row.of(1, 2),
@@ -73,6 +130,66 @@ public class ConnectedComponentsBatchOpTest extends AlinkTestBase {
 			.setEdgeSourceCol("source")
 			.setEdgeTargetCol("target")
 			.linkFrom(edgeData);
+
+		res.lazyPrint(-1);
+		List<Row> listRes = res.collect();
+		HashMap <Object, Object> result = new HashMap <>();
+		for (Row r : listRes) {
+			result.put(r.getField(0), r.getField(1));
+		}
+		Assert.assertEquals(result.get(1), result.get(2));
+		Assert.assertEquals(result.get(1), result.get(3));
+		Assert.assertEquals(result.get(1), result.get(4));
+		Assert.assertEquals(result.get(1), result.get(5));
+		Assert.assertEquals(result.get(6), result.get(7));
+		Assert.assertEquals(result.get(6), result.get(8));
+		Assert.assertEquals(result.get(6), result.get(9));
+		Assert.assertEquals(result.get(10), result.get(11));
+		Assert.assertEquals(result.get(10), result.get(12));
+		Assert.assertEquals(result.get(10), result.get(13));
+		Assert.assertEquals(result.get(1), 0L);
+		Assert.assertEquals(result.get(10), 1L);
+		Assert.assertEquals(result.get(6), 9L);
+	}
+
+	@Test
+	public void testStableWithVertex() throws Exception {
+		Row[] edgeRows = new Row[] {
+			Row.of(1, 2),
+			Row.of(2, 3),
+			Row.of(3, 4),
+			Row.of(4, 5),
+			Row.of(6, 7),
+			Row.of(7, 8),
+			Row.of(8, 9),
+			Row.of(9, 6),
+			Row.of(10, 11),
+			Row.of(10, 12),
+			Row.of(12, 13),
+		};
+		Row[] vetexRows = new Row[]{
+			Row.of(1),
+			Row.of(2),
+			Row.of(3),
+			Row.of(4),
+			Row.of(5),
+			Row.of(6),
+			Row.of(7),
+			Row.of(8),
+			Row.of(9),
+			Row.of(10),
+			Row.of(11),
+			Row.of(12),
+			Row.of(13)
+		};
+		BatchOperator edgeData = new MemSourceBatchOp(edgeRows, new String[] {"source", "target"});
+		BatchOperator vertexData = new MemSourceBatchOp(vetexRows, new String[] {"vertex"});
+
+		BatchOperator res = new ConnectedComponentsBatchOp()
+			.setEdgeSourceCol("source")
+			.setEdgeTargetCol("target")
+			.setVertexCol("vertex")
+			.linkFrom(edgeData, vertexData);
 
 		res.lazyPrint(-1);
 		List<Row> listRes = res.collect();

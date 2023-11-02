@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.tree.predictors;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
@@ -138,7 +139,7 @@ public class XGBoostModelMapper extends RichModelMapper {
 					((SparseVector) vector).setSize(vectorSize);
 				}
 
-				return Tuple2.of(vector, INITIAL_VALUE_OF_LABEL);
+				return Tuple3.of(vector, INITIAL_VALUE_OF_LABEL, 1.0f);
 			}
 		);
 

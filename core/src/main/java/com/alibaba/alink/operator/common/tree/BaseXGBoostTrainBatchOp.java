@@ -11,6 +11,7 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -382,9 +383,10 @@ public abstract class BaseXGBoostTrainBatchOp<T extends BaseXGBoostTrainBatchOp 
 					((SparseVector) vector).setSize(vectorSize);
 				}
 
-				return Tuple2.of(
+				return Tuple3.of(
 					vector,
-					new float[] {((Number) AkPreconditions.checkNotNull(row.getField(labelColIndex))).floatValue()}
+					new float[] {((Number) AkPreconditions.checkNotNull(row.getField(labelColIndex))).floatValue()},
+					1.0f
 				);
 			},
 			params);

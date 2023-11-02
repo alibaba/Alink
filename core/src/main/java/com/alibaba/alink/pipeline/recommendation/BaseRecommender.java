@@ -13,6 +13,8 @@ import com.alibaba.alink.operator.common.recommendation.FourFunction;
 import com.alibaba.alink.operator.common.recommendation.RecommKernel;
 import com.alibaba.alink.operator.common.recommendation.RecommMapper;
 import com.alibaba.alink.operator.common.recommendation.RecommType;
+import com.alibaba.alink.operator.local.LocalOperator;
+import com.alibaba.alink.operator.local.recommendation.BaseRecommLocalOp;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.recommendation.BaseRecommStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
@@ -50,6 +52,12 @@ public abstract class BaseRecommender<T extends BaseRecommender <T>>
 			= AkPreconditions.checkNotNull(recommKernelBuilder,
 			new AkIllegalOperatorParameterException("recommKernelBuilder can not be null"));
 		this.recommType = recommType;
+	}
+
+	@Override
+	public LocalOperator <?> transform(LocalOperator <?> input) {
+		return postProcessTransformResult(new BaseRecommLocalOp(this.recommKernelBuilder, this.recommType, this.params)
+			.linkFrom(this.getModelDataLocal(), input));
 	}
 
 	@Override

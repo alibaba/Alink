@@ -20,7 +20,7 @@ public abstract class Optimizer {
 	protected final DataSet <Tuple3 <Double, Double, Vector>> trainData;
 	protected final Params params;
 	protected DataSet <Integer> coefDim;
-	protected DataSet <DenseVector> coefVec = null;
+	protected DataSet <DenseVector> coefficientVec = null;
 
 	/**
 	 * construct function.
@@ -49,8 +49,8 @@ public abstract class Optimizer {
 	 * check coefficient with data size.
 	 */
 	public void checkInitCoef() {
-		if (null != coefDim && this.coefVec == null) {
-			this.coefVec = this.coefDim.map(new MapFunction <Integer, DenseVector>() {
+		if (null != coefDim && this.coefficientVec == null) {
+			this.coefficientVec = this.coefDim.map(new MapFunction <Integer, DenseVector>() {
 				private static final long serialVersionUID = -884105350593462660L;
 
 				@Override
@@ -69,6 +69,6 @@ public abstract class Optimizer {
 	}
 
 	public void initCoefWith(DataSet <DenseVector> initCoef) {
-		this.coefVec = initCoef;
+		this.coefficientVec = initCoef;
 	}
 }

@@ -35,6 +35,7 @@ import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.source.AkSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.modelstream.ModelStreamUtils;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.stream.StreamOperator;
 import com.alibaba.alink.operator.stream.source.ModelStreamFileSourceStreamOp;
 import com.alibaba.alink.params.ModelStreamScanParams;
@@ -61,7 +62,8 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 	implements ModelStreamScanParams <T>, HasModelFilePath <T> {
 
 	private static final long serialVersionUID = -6591412871091394859L;
-	protected final BatchOperator <?> model;
+	protected final BatchOperator <?> batchModel;
+	protected final LocalOperator <?> localModel;
 
 	/**
 	 * (modelScheme, dataSchema, params) -> ModelMapper
@@ -71,7 +73,8 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 	public ModelMapStreamOp(TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder, Params params) {
 		super(params);
 
-		this.model = null;
+		this.batchModel = null;
+		this.localModel = null;
 		this.mapperBuilder = mapperBuilder;
 	}
 
@@ -80,7 +83,18 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 							Params params) {
 		super(params);
 
-		this.model = model;
+		this.batchModel = model;
+		this.localModel = null;
+		this.mapperBuilder = mapperBuilder;
+	}
+
+	public ModelMapStreamOp(LocalOperator <?> model,
+							TriFunction <TableSchema, TableSchema, Params, ModelMapper> mapperBuilder,
+							Params params) {
+		super(params);
+
+		this.batchModel = null;
+		this.localModel = model;
 		this.mapperBuilder = mapperBuilder;
 	}
 
@@ -122,7 +136,8 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 
 			Tuple2 <DataBridge, TableSchema> dataBridge = createDataBridge(
 				getParams().get(ModelFileSinkParams.MODEL_FILE_PATH),
-				model
+				batchModel,
+				localModel
 			);
 
 			final ModelMapper mapper = mapperBuilder.apply(dataBridge.f1, inputData.getSchema(),
@@ -136,7 +151,7 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 
 			return (T) this;
 		} catch (Exception ex) {
-			throw new AkUnclassifiedErrorException(ex.getMessage(),ex);
+			throw new AkUnclassifiedErrorException(ex.getMessage(), ex);
 		}
 	}
 
@@ -152,7 +167,7 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 			try {
 				return AkUtils.readFromPath(filePath, filter).f1;
 			} catch (Exception e) {
-				throw new AkUnclassifiedErrorException("Error. ",e);
+				throw new AkUnclassifiedErrorException("Error. ", e);
 			}
 		}
 	}
@@ -213,26 +228,32 @@ public class ModelMapStreamOp<T extends ModelMapStreamOp <T>> extends StreamOper
 		}
 	}
 
-	public static Tuple2 <DataBridge, TableSchema> createDataBridge(String modelFilePath, BatchOperator <?> model)
+	public static Tuple2 <DataBridge, TableSchema> createDataBridge(String modelFilePath,
+																	BatchOperator <?> batchModel,
+																	LocalOperator <?> localModel)
 		throws IOException {
 
-		if (modelFilePath == null && model == null) {
+		if (modelFilePath == null && batchModel == null && localModel == null) {
 			throw new IllegalArgumentException("One of model or modelFilePath should be set.");
 		}
 
-		if (model != null && !(model instanceof AkSourceBatchOp || model instanceof MemSourceBatchOp)) {
-			return Tuple2.of(DirectReader.collect(model), model.getSchema());
+		if (batchModel != null && !(batchModel instanceof AkSourceBatchOp || batchModel instanceof MemSourceBatchOp)) {
+			return Tuple2.of(DirectReader.collect(batchModel), batchModel.getSchema());
 		}
 
 		FilePath modelFile;
 
-		if (model != null) {
-			if (model instanceof MemSourceBatchOp) {
-				final MTable mt = ((MemSourceBatchOp) model).getMt();
+		if (null != localModel) {
+			List <Row> rows = localModel.collect();
+			TableSchema schema = localModel.getSchema();
+			return Tuple2.of(new MTableDataBridge(new MTable(rows, schema)), schema);
+		} else if (batchModel != null) {
+			if (batchModel instanceof MemSourceBatchOp) {
+				final MTable mt = ((MemSourceBatchOp) batchModel).getMt();
 
 				return Tuple2.of(new MTableDataBridge(mt), mt.getSchema());
 			} else {
-				modelFile = FilePath.deserialize(model.getParams().get(AkSourceParams.FILE_PATH));
+				modelFile = FilePath.deserialize(batchModel.getParams().get(AkSourceParams.FILE_PATH));
 			}
 		} else {
 			modelFile = FilePath.deserialize(modelFilePath);
