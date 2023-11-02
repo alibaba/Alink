@@ -1,15 +1,15 @@
 package com.alibaba.alink.python.executables;
 
-import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
-import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
-import com.alibaba.alink.operator.batch.utils.WithTrainInfo;
 import com.alibaba.alink.operator.common.evaluation.EvaluationMetricsCollector;
 
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 
+import com.alibaba.alink.operator.batch.utils.ExtractModelInfoBatchOp;
 import com.alibaba.alink.common.lazy.HasLazyPrintModelInfo;
 import com.alibaba.alink.common.lazy.HasLazyPrintTrainInfo;
+import com.alibaba.alink.operator.batch.utils.WithModelInfoBatchOp;
+import com.alibaba.alink.operator.batch.utils.WithTrainInfo;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.batch.sink.BaseSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;

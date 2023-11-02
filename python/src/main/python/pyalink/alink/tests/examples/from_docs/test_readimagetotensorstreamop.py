@@ -12,7 +12,7 @@ class TestReadImageToTensorStreamOp(unittest.TestCase):
         stream_data = StreamOperator.fromDataframe(df_data, schemaStr = 'path string')
         
         ReadImageToTensorStreamOp()\
-            .setRootFilePath("https://pytorch.org/vision/stable/_images/")\
+            .setRootFilePath("http://alink-test-datatset.oss-cn-hangzhou-zmf.aliyuncs.com/images/")\
         	.setRelativeFilePathCol("path")\
         	.setOutputCol("tensor")\
             .linkFrom(stream_data)\

@@ -22,7 +22,7 @@ public interface HasPythonVersion<T> extends WithParams<T> {
         .build();
 
 
-    default T sePythonVersion(String version) {
+    default T setPythonVersion(String version) {
         return set(PYTHON_VERSION, version);
     }
 

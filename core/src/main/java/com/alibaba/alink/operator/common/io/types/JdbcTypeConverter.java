@@ -63,6 +63,7 @@ public class JdbcTypeConverter {
 		m3.put(Types.TIMESTAMP, SqlTimeTypeInfo.TIMESTAMP);
 		m3.put(Types.DECIMAL, BasicTypeInfo.BIG_DEC_TYPE_INFO);
 		m3.put(Types.VARBINARY, PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO);
+		m3.put(Types.REAL, BasicTypeInfo.FLOAT_TYPE_INFO);
 		MAP_INDEX_TO_FLINK_TYPE = Collections.unmodifiableMap(m3);
 	}
 

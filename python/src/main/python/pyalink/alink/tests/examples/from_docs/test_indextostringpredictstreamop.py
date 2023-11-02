@@ -23,10 +23,9 @@ class TestIndexToStringPredictStreamOp(unittest.TestCase):
             .setOutputCol("f0_indexed") \
             .setStringOrderType("frequency_asc").fit(train_data)
         
-        batch_model = stringIndexer.transform(train_data)
         indexed = stringIndexer.transform(data)
         
-        indexToStrings = IndexToStringPredictStreamOp(batch_model) \
+        indexToStrings = IndexToStringPredictStreamOp(stringIndexer.getModelData()) \
             .setSelectedCol("f0_indexed") \
             .setOutputCol("f0_indxed_unindexed")
         

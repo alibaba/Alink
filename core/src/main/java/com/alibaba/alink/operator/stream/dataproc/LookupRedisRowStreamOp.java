@@ -5,9 +5,9 @@ import org.apache.flink.ml.api.misc.param.Params;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.common.annotation.SelectedColsWithFirstInputSpec;
-import com.alibaba.alink.operator.common.dataproc.LookupRedisMapper;
+import com.alibaba.alink.operator.common.dataproc.LookupRedisRowMapper;
 import com.alibaba.alink.operator.stream.utils.MapStreamOp;
-import com.alibaba.alink.params.dataproc.LookupRedisParams;
+import com.alibaba.alink.params.dataproc.LookupRedisRowParams;
 
 /**
  * stream op for lookup from redis.
@@ -16,14 +16,14 @@ import com.alibaba.alink.params.dataproc.LookupRedisParams;
 @NameCn("Redis表查找")
 @NameEn("Lookup Redis In Row Type")
 public class LookupRedisRowStreamOp extends MapStreamOp <LookupRedisRowStreamOp>
-	implements LookupRedisParams <LookupRedisRowStreamOp> {
+	implements LookupRedisRowParams<LookupRedisRowStreamOp> {
 
 	public LookupRedisRowStreamOp() {
 		this(new Params());
 	}
 
 	public LookupRedisRowStreamOp(Params params) {
-		super(LookupRedisMapper::new, params);
+		super(LookupRedisRowMapper::new, params);
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.tree;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -31,29 +32,44 @@ public class XGBoostUtil {
 
 	public static Function <Row, LabeledPoint> asLabeledPointConverterFunction(
 		Function <Row, Row> preprocess,
-		Function <Row, Tuple2 <Vector, float[]>> extractor) {
+		Function <Row, Tuple3 <Vector, float[], Float>> extractor) {
 
 		return row -> {
-			Tuple2 <Vector, float[]> extracted = extractor.apply(preprocess.apply(row));
-			return asLabeledPoint(extracted.f0, extracted.f1[0]);
+			Tuple3 <Vector, float[], Float> extracted = extractor.apply(preprocess.apply(row));
+			return asLabeledPoint(extracted.f0, extracted.f1[0], extracted.f2);
 		};
 	}
 
-	public static LabeledPoint asLabeledPoint(Vector features, float labelValue) {
+	public static LabeledPoint asLabeledPoint(Vector features, float labelValue, float weightValue) {
 		if (features == null) {
 			throw new IllegalStateException("The value of labeled point should not be null.");
 		} else if (features instanceof SparseVector) {
+
 			int[] indices = ((SparseVector) features).getIndices();
 			double[] values = ((SparseVector) features).getValues();
+
 			int size = features.size() >= 0 ? features.size()
 				: (indices == null || indices.length == 0 ? 0 : indices[indices.length - 1] + 1);
-			return new LabeledPoint(labelValue, size, indices, asFloatArray(values));
+
+			return new LabeledPoint(
+				labelValue,
+				size,
+				indices,
+				asFloatArray(values),
+				weightValue,
+				-1,
+				Float.NaN
+			);
 		} else {
+
 			return new LabeledPoint(
 				labelValue,
 				features.size(),
 				null,
-				asFloatArray(((DenseVector) features).getData())
+				asFloatArray(((DenseVector) features).getData()),
+				weightValue,
+				-1,
+				Float.NaN
 			);
 		}
 	}

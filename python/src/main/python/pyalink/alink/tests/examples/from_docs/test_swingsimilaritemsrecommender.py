@@ -25,6 +25,7 @@ class TestSwingSimilarItemsRecommender(unittest.TestCase):
         model = SwingTrainBatchOp()\
             .setUserCol("user")\
             .setItemCol("item")\
+            .setMinUserItems(2)\
             .linkFrom(data)
         
         predictor = SwingSimilarItemsRecommender()\

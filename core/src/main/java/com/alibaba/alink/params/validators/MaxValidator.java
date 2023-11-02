@@ -35,9 +35,10 @@ public class MaxValidator<T extends Comparable <T>> extends Validator <T> {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("value in (-inf, ");
-		sb.append(maxVal);
-		sb.append(rightInclusive ? "]" : ")");
+		//sb.append("value in (-inf, ");
+		//sb.append(maxVal);
+		//sb.append(rightInclusive ? "]" : ")");
+		sb.append("x").append(rightInclusive ? " <= " : " < ").append(maxVal);
 		return sb.toString();
 	}
 }

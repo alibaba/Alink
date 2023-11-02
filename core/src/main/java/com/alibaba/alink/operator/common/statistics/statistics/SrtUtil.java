@@ -314,6 +314,7 @@ public class SrtUtil {
 					try {
 						r = Interval.findInterval(srt.src[j].minDouble(), srt.src[j].maxDouble(), histogramBins);
 					} catch (Exception ex) {
+						ex.printStackTrace();
 						throw new AkIllegalStateException(ex.getMessage());
 					}
 				} else {

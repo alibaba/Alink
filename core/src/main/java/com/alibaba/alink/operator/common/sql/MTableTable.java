@@ -1,5 +1,6 @@
 package com.alibaba.alink.operator.common.sql;
 
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable;
@@ -14,6 +15,7 @@ import org.apache.calcite.schema.ScannableTable;
 import org.apache.calcite.schema.impl.AbstractTable;
 import org.apache.calcite.util.Pair;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 
 class MTableTable extends AbstractTable implements ScannableTable {
@@ -58,7 +60,11 @@ class MTableTable extends AbstractTable implements ScannableTable {
 			Row row = mTable.getRow(current);
 			Object[] objects = new Object[row.getArity()];
 			for (int i = 0; i < row.getArity(); i += 1) {
-				objects[i] = row.getField(i);
+				if (mTable.getColTypes()[i] == Types.SQL_TIMESTAMP) {
+					objects[i] = ((Timestamp) row.getField(i)).getTime();
+				} else {
+					objects[i] = row.getField(i);
+				}
 			}
 			return objects;
 		}

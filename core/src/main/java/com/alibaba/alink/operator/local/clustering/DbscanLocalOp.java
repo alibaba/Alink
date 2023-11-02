@@ -31,6 +31,7 @@ import com.alibaba.alink.params.shared.clustering.HasFastMetric;
 import com.alibaba.alink.params.shared.colname.HasSelectedCol;
 import com.alibaba.alink.params.similarity.HasMaxNumCandidates;
 import com.alibaba.alink.params.similarity.VectorApproxNearestNeighborTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -263,7 +264,7 @@ public class DbscanLocalOp extends LocalOperator <DbscanLocalOp>
 				.setNumProjectionsPerTable(docParams.get(HasNumProjectionsPerTable.NUM_PROJECTIONS_PER_TABLE))
 				.setProjectionWidth(docParams.get(HasProjectionWidth.PROJECTION_WIDTH))
 				.setMaxNumCandidates(docParams.get(HasMaxNumCandidates.MAX_NUM_CANDIDATES))
-				.setNumThreads(queryParams.get(HasNumThreads.NUM_THREADS))
+				//.setNumThreads(queryParams.get(HasNumThreads.NUM_THREADS))
 				.linkFrom(doc);
 			if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
 				System.out.println(

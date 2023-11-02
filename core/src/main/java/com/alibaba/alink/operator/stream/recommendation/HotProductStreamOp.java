@@ -8,6 +8,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MTable;
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.stream.utils.DataStreamConversionUtil;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
  */
 @NameCn("热点推荐")
 @NameEn("Hot product")
-public class HotProductStreamOp extends StreamOperator <HotProductStreamOp>
+class HotProductStreamOp extends StreamOperator <HotProductStreamOp>
 	implements HotProductParams <HotProductStreamOp> {
 
 	public HotProductStreamOp() {

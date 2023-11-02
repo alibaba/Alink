@@ -80,33 +80,37 @@ public class Garch {
 						continue;
 					}
 
-					GarchModel g = fit(data, i, j, minusMean);
+					try {
+						GarchModel g = fit(data, i, j, minusMean);
 
-					double gIC = TsMethod.icCompute(g.loglike, i + j + 1, data.length - Math.max(i, j), ic,
-						Boolean.TRUE);
+						double gIC = TsMethod.icCompute(g.loglike, i + j + 1, data.length - Math.max(i, j), ic,
+							Boolean.TRUE);
 
-					double sumAlpha = 0;
-					double sumBeta = 0;
-					for (int q = 0; q < g.aOrder; q++) {
-						sumAlpha += g.alpha[q];
-					}
-					for (int q = 0; q < g.bOrder; q++) {
-						sumBeta += g.beta[q];
-					}
-					if (sumAlpha + sumBeta >= 1) {
-						if (g.warn == null) {
-							g.warn = new ArrayList <>();
+						double sumAlpha = 0;
+						double sumBeta = 0;
+						for (int q = 0; q < g.aOrder; q++) {
+							sumAlpha += g.alpha[q];
 						}
-						g.warn.add("5");
-					}
+						for (int q = 0; q < g.bOrder; q++) {
+							sumBeta += g.beta[q];
+						}
+						if (sumAlpha + sumBeta >= 1) {
+							if (g.warn == null) {
+								g.warn = new ArrayList <>();
+							}
+							g.warn.add("5");
+						}
 
-					if (g.warn != null) {
+						if (g.warn != null) {
+							continue;
+						}
+
+						if (gIC < bestIC) {
+							bestIC = gIC;
+							bestGARCH = g;
+						}
+					} catch (Exception ex) {
 						continue;
-					}
-
-					if (gIC < bestIC) {
-						bestIC = gIC;
-						bestGARCH = g;
 					}
 				}
 			}

@@ -51,13 +51,30 @@ public class RangeValidator<T extends Comparable <T>> extends Validator <T> {
 
 	@Override
 	public String toString() {
+		//if (leftInclusive && (!rightInclusive)) {
+		//	StringBuilder sb = new StringBuilder();
+		//	sb.append("value in \"[");
+		//	sb.append(minVal);
+		//	sb.append(", ");
+		//	sb.append(maxVal);
+		//	sb.append(")\"");
+		//	return sb.toString();
+		//} else {
+		//	StringBuilder sb = new StringBuilder();
+		//	sb.append("value in ");
+		//	sb.append(leftInclusive ? "[" : "(");
+		//	sb.append(minVal);
+		//	sb.append(", ");
+		//	sb.append(maxVal);
+		//	sb.append(rightInclusive ? "]" : ")");
+		//	return sb.toString();
+		//}
 		StringBuilder sb = new StringBuilder();
-		sb.append("value in ");
-		sb.append(leftInclusive ? "[" : "(");
 		sb.append(minVal);
-		sb.append(", ");
+		sb.append(leftInclusive ? " <= " : " < ");
+		sb.append("x");
+		sb.append(rightInclusive ? " <= " : " < ");
 		sb.append(maxVal);
-		sb.append(rightInclusive ? "]" : ")");
 		return sb.toString();
 	}
 }

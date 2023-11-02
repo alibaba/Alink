@@ -15,7 +15,7 @@ public class MTableParallelUtil {
 			return params.get(HasNumThreads.NUM_THREADS);
 		}
 
-		return LocalOperator.getDefaultNumThreads();
+		return LocalOperator.getParallelism();
 	}
 
 	public interface TraverseRunnable {

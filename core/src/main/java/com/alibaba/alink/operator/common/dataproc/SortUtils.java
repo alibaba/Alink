@@ -367,7 +367,7 @@ public class SortUtils {
 		private final ComparableComparator objectComparator = new ComparableComparator();
 		private final int index;
 
-		public RowComparator(int index) {
+		public  RowComparator(int index) {
 			this.index = index;
 		}
 

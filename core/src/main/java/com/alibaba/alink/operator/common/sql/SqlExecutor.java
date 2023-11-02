@@ -13,6 +13,10 @@ import org.apache.commons.lang3.RandomStringUtils;
  */
 interface SqlExecutor<T> {
 
+	String[] listTableNames();
+
+	String[] listFunctionNames();
+
 	/**
 	 * Add a table.
 	 *
@@ -31,7 +35,6 @@ interface SqlExecutor<T> {
 	void addFunction(String name, ScalarFunction function);
 
 	void addFunction(String name, TableFunction <Row> function);
-
 	/**
 	 * Execute SQL query and return the result.
 	 *

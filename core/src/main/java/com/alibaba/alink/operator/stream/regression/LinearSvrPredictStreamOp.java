@@ -29,6 +29,10 @@ public class LinearSvrPredictStreamOp extends ModelMapStreamOp <LinearSvrPredict
 		super(LinearModelMapper::new, params);
 	}
 
+	public LinearSvrPredictStreamOp(BatchOperator model) {
+		super(model, LinearModelMapper::new, new Params());
+	}
+	
 	public LinearSvrPredictStreamOp(BatchOperator model, Params params) {
 		super(model, LinearModelMapper::new, params);
 	}

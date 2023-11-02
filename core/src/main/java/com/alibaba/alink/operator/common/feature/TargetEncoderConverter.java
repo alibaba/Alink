@@ -8,7 +8,6 @@ import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.model.ModelDataConverter;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class TargetEncoderConverter
@@ -40,10 +39,10 @@ public class TargetEncoderConverter
 		sbd.append(selectedCols[0]);
 		int size = selectedCols.length;
 		for (int i = 1; i < size; i++) {
-			sbd.append(SEPARATOR+selectedCols[i]);
+			sbd.append(SEPARATOR + selectedCols[i]);
 		}
 		String[] resCol = new String[] {"colName", sbd.toString()};
-		TypeInformation[] resType = new TypeInformation[] {Types.STRING, Types.STRING};
+		TypeInformation <?>[] resType = new TypeInformation[] {Types.STRING, Types.STRING};
 		return new TableSchema(resCol, resType);
 	}
 }

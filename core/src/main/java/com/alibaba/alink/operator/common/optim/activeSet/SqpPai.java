@@ -31,6 +31,7 @@ public class SqpPai {
 		return activeSet;
 	}
 
+	//<alpha, active>
 	//todo check dir and weight, which is qp_dir and dir.
 	private static Tuple2 <Double, Integer> searchActiveSet(DenseMatrix inequalityConstraint,
 															DenseVector inequalityItem,
@@ -93,6 +94,7 @@ public class SqpPai {
 		return h;
 	}
 
+	//get max activeSet
 	private static Tuple2 <boolean[], Boolean> checkLambda(DenseMatrix equalityConstraint,
 														   DenseMatrix inequalityConstraint, int dim,
 														   boolean[] activeSet, DenseVector qpDir) {
@@ -119,6 +121,8 @@ public class SqpPai {
 	}
 
 	//todo 注意一下，pai上有dim，也就是只乘前面的数据
+	// input: <hessian, dir, grad, dim>
+	//loss = 1/2 * hessian * dir *  dir + dir * grad
 	private static double calculateQpLoss(DenseMatrix h, DenseVector p, DenseVector g, int dim) {
 		double loss;
 		DenseVector tmp = new DenseVector(dim);
@@ -127,6 +131,7 @@ public class SqpPai {
 		return loss * 0.5 + dot(p, g, dim);
 	}
 
+	//return <qpGrad, normL2(qpGrad)
 	private static Tuple2 <DenseVector, Double> solveQuadProblem(DenseMatrix equalityConstraint,
 																 DenseVector equalityItem,
 																 DenseVector qpDir,
@@ -136,22 +141,30 @@ public class SqpPai {
 																 DenseMatrix hessian,
 																 DenseVector grad, DenseVector weight) {
 		int dim = weight.size();
+		//dim + count(equality) + count(activeSet=true,也就是lambda<0)
 		int kktSize = calcKktSize(dim, equalityItem, activeSet);
 		DenseVector gpGrad = new DenseVector(kktSize);
+		// gpGrad = hessian * dir
 		matDotVec(hessian, dir, gpGrad, dim);
+		// gpGrad = gpGrad + grad = grad + hessian * dir
 		vecAddVec(grad, gpGrad, dim);
+		// h 是对称矩阵，按照activeSet筛选的规则矩阵(投影), 前面是hessian，后面是规则矩阵
 		DenseMatrix h = new DenseMatrix(
 			enableActiveSet(hessian, dim, activeSet,
 				equalityConstraint, equalityItem, inequalityConstraint, inequalityItem));
 		double norm = 1 / gpGrad.normL1();
+		// h = h / |gpGrad|
 		h.scaleEqual(norm);
+		// gpGrad = gpGrad / |gpGrad|
 		gpGrad.scaleEqual(norm);
+		//gpDir = H^-1 * gbGrad = H^-1 * (grad + hessian * dir) / |gpGrad|
 		try {
 			DenseMatrix ginvH = h.inverse();
 			qpDir = ginvH.multiplies(gpGrad);
 		} catch (Exception e) {
 			return Tuple2.of(qpDir, -1.);
 		}
+		//sum是 normL2(qpDir)/dim
 		double sum = 0;
 		for (int i = 0; i < dim; i++) {
 			sum += Math.pow(qpDir.get(i), 2);
@@ -160,51 +173,9 @@ public class SqpPai {
 		return Tuple2.of(qpDir, sum);
 	}
 
-	//    private static Tuple2<DenseVector, Double> solveQuadProblem2(DenseMatrix equalityConstraint, DenseVector
-	// equalityItem,
-	//                                                                 DenseVector qpDir,
-	//                                                                 DenseMatrix inequalityConstraint, DenseVector
-	// inequalityItem,
-	//                                                                 DenseVector dir, boolean[] activeSet,
-	// DenseMatrix hessian,
-	//                                                                 DenseVector grad, DenseVector weight) {
-	//        int dim = weight.size();
-	//        int equalSize = equalityItem.size();
-	//        int addInequalCount = equalSize;
-	//        for (boolean b : activeSet) {
-	//            if (b) {
-	//                equalSize++;
-	//            }
-	//        }
-	//        int kktSize = calcKktSize(dim, equalityItem, activeSet);
-	//        DenseVector gpGrad = new DenseVector(kktSize);
-	//        matDotVec(hessian, dir, gpGrad, dim);
-	//        vecAddVec(grad, gpGrad, dim);
-	//
-	//        double[][] matrixData = new double[equalSize][dim];
-	//        double[] vectorData = new double[equalSize];
-	//        SqpUtil.fillMatrix(matrixData, 0, 0, equalityConstraint.getArrayCopy2D());
-	//        System.arraycopy(equalityItem.getData(), 0, vectorData, 0, addInequalCount);
-	//        for (int i = 0; i < activeSet.length; i++) {
-	//            if (activeSet[i]) {
-	//                for (int j = 0; j < addInequalCount; j++) {
-	//                    matrixData[addInequalCount][j] = inequalityConstraint.get(i, j);
-	//                }
-	//                vectorData[addInequalCount] = inequalityItem.get(i);
-	//                addInequalCount++;
-	//            }
-	//        }
-	//        try {
-	//            DenseVector dirRes = QpProblem.subProblem(hessian, gpGrad,
-	//                new DenseMatrix(matrixData), new DenseVector(vectorData))[0];
-	//            double sum = dirRes.normL2() / dim;
-	//            return Tuple2.of(dirRes, sum);
-	//        } catch (Exception e) {
-	//            return Tuple2.of(qpDir, -1.);
-	//        }
-	//    }
-
 	//the main run func.
+	// dir = dir + alpha * gpDir
+	// activeSet will modify.
 	private static boolean solveActiveSetProblem(DenseMatrix equalityConstraint, DenseVector equalityItem,
 												 DenseMatrix inequalityConstraint, DenseVector inequalityItem,
 												 int dim, DenseVector dir, boolean[] activeSet, DenseMatrix hessian,
@@ -215,9 +186,11 @@ public class SqpPai {
 		}
 		double loss = 0;
 		double lastLoss = 0;
+		//dim + equalCount + count(activeSet=true)
 		int kktSize = calcKktSize(dim, equalityItem, activeSet);
 		DenseVector qpDir = new DenseVector(kktSize);
 		for (int i = 0; i < iterTime; i++) {
+			//<qpGrad, sum>
 			Tuple2 <DenseVector, Double> items = solveQuadProblem(equalityConstraint, equalityItem, qpDir,
 				inequalityConstraint, inequalityItem,
 				dir, activeSet, hessian, grad, weight);
@@ -263,8 +236,8 @@ public class SqpPai {
 		return true;
 	}
 
+	// res = matrix * vector
 	private static void matDotVec(DenseMatrix matrix, DenseVector vector, DenseVector res, int dim) {
-
 		for (int i = 0; i < dim; i++) {
 			res.set(i, 0);
 			double[] row = matrix.getRow(i);
@@ -274,6 +247,7 @@ public class SqpPai {
 		}
 	}
 
+	// dv2 = dv2 + dv1
 	public static void vecAddVec(DenseVector dv1, DenseVector dv2, int dim) {
 		for (int i = 0; i < dim; i++) {
 			dv2.add(i, dv1.get(i));
@@ -302,6 +276,7 @@ public class SqpPai {
 		return dim + equalityItem.size() + countInequalNum(activeSet);
 	}
 
+	//<new dir, grad, hession>
 	public static Tuple3 <DenseVector, DenseVector, DenseMatrix>
 	calcDir(double retryTime, int dim, ConstraintObjFunc sqpObjFunc, DenseVector dir,
 			DenseVector weight, DenseMatrix hessian, DenseVector grad,
@@ -349,22 +324,22 @@ public class SqpPai {
 		DenseVector equalityItem = sqpObjFunc.equalityItem;
 		DenseVector inequalityItem = sqpObjFunc.inequalityItem;
 
-		for (int row = 0; row < inequalityItem.size(); row++) {
+		for (int i = 0; i < inequalityItem.size(); i++) {
 			double sum = 0;
-			double[] inequalRow = inequalityConstraint.getRow(row);
-			for (int col = 0; col < dim; col++) {
-				sum += weight.get(col) * inequalRow[col];
+			double[] inequalRow = inequalityConstraint.getRow(i);
+			for (int j = 0; j < dim; j++) {
+				sum += weight.get(j) * inequalRow[j];
 			}
-			inequalityItem.set(row, icmBias.get(row) - sum);
+			inequalityItem.set(i, icmBias.get(i) - sum);
 		}
 
-		for (int row = 0; row < equalityItem.size(); row++) {
+		for (int i = 0; i < equalityItem.size(); i++) {
 			double sum = 0;
-			double[] equalRow = equalityConstraint.getRow(row);
-			for (int col = 0; col < dim; col++) {
-				sum += weight.get(col) * equalRow[col];
+			double[] equalRow = equalityConstraint.getRow(i);
+			for (int j = 0; j < dim; j++) {
+				sum += weight.get(j) * equalRow[j];
 			}
-			equalityItem.set(row, ecmBias.get(row) - sum);
+			equalityItem.set(i, ecmBias.get(i) - sum);
 		}
 
 		return new DenseVector(dim);

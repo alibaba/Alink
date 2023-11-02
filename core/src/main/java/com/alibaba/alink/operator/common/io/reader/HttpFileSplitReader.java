@@ -30,15 +30,19 @@ public class HttpFileSplitReader implements FileSplitReader, AutoCloseable {
 
 	public void open(InputSplit split, long start, long end) throws IOException {
 		assert start >= 0;
-		URL url = new URL(path);
-		this.connection = (HttpURLConnection) url.openConnection();
-		this.connection.setDoInput(true);
-		this.connection.setConnectTimeout(5000);
-		this.connection.setReadTimeout(60000);
-		this.connection.setRequestMethod("GET");
-		this.connection.setRequestProperty("Range", String.format("bytes=%d-%d", start, end));
-		this.connection.connect();
-		this.stream = this.connection.getInputStream();
+		if(-1!=end) {
+			URL url = new URL(path);
+			this.connection = (HttpURLConnection) url.openConnection();
+			this.connection.setDoInput(true);
+			this.connection.setConnectTimeout(5000);
+			this.connection.setReadTimeout(60000);
+			if (end >= start) {
+				this.connection.setRequestMethod("GET");
+				this.connection.setRequestProperty("Range", String.format("bytes=%d-%d", start, end));
+			}
+			this.connection.connect();
+			this.stream = this.connection.getInputStream();
+		}
 		this.split = (CsvFileInputSplit) split;
 	}
 
@@ -67,7 +71,11 @@ public class HttpFileSplitReader implements FileSplitReader, AutoCloseable {
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		return this.stream.read(b, off, len);
+		if(null!=this.stream) {
+			return this.stream.read(b, off, len);
+		}else{
+			return 0;
+		}
 	}
 
 	@Override
@@ -84,16 +92,17 @@ public class HttpFileSplitReader implements FileSplitReader, AutoCloseable {
 			String acceptRanges = headerConnection.getHeaderField("Accept-Ranges");
 			boolean splitable = acceptRanges != null && acceptRanges.equalsIgnoreCase("bytes");
 
-			if (contentLength < 0) {
-				throw new AkIllegalDataException("The content length can't be determined because content length < 0.");
-			}
+			//if (contentLength < 0) {
+			//	throw new AkIllegalDataException("The content length can't be determined because content length < 0.");
+			//}
 
 			// If the http server does not accept ranges, then we quit the program.
 			// This is because 'accept ranges' is required to achieve robustness (through re-connection),
 			// and efficiency (through concurrent read).
 			if (!splitable) {
-				throw new AkIllegalDataException("Http-Header doesn't have header 'Accept-Ranges' or the value of "
-					+ "'Accept-Ranges' value not equal 'bytes', The http server does not support range reading.");
+				//throw new AkIllegalDataException("Http-Header doesn't have header 'Accept-Ranges' or the value of "
+				//	+ "'Accept-Ranges' value not equal 'bytes', The http server does not support range reading.");
+				return -1;
 			}
 
 			return contentLength;

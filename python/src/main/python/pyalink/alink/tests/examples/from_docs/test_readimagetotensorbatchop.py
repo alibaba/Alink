@@ -12,7 +12,7 @@ class TestReadImageToTensorBatchOp(unittest.TestCase):
         batch_data = BatchOperator.fromDataframe(df_data, schemaStr = 'path string')
         
         ReadImageToTensorBatchOp()\
-            .setRootFilePath("https://pytorch.org/vision/stable/_images/")\
+            .setRootFilePath("http://alink-test-datatset.oss-cn-hangzhou-zmf.aliyuncs.com/images/")\
         	.setRelativeFilePathCol("path")\
         	.setOutputCol("tensor")\
             .linkFrom(batch_data)\

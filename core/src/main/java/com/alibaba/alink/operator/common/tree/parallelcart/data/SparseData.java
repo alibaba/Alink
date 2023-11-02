@@ -1032,6 +1032,11 @@ public final class SparseData implements Data {
 			}
 
 			final int featureSize = DataUtil.getFeatureCategoricalSize(featureMetas[i], useMissing);
+
+			if (featureSize <= 0) {
+				continue;
+			}
+
 			final int sparseZeroIndex = featureMetas[i].getSparseZeroIndex();
 			final int featureOffset = validFeatureOffset[i] * nodeSize * STEP;
 			final int nextFeatureOffset = featureOffset + featureSize * nodeSize * STEP;
@@ -1060,6 +1065,10 @@ public final class SparseData implements Data {
 						}
 					}
 
+					if (sparseZeroIndex < 0) {
+						return;
+					}
+
 					double[] others = new double[nodeSize * STEP];
 					Arrays.fill(others, 0.0);
 
@@ -1085,6 +1094,7 @@ public final class SparseData implements Data {
 				});
 			} else {
 				futures[i] = executorService.submit(() -> {
+
 					RowIndexRange range = new RowIndexRange(aligned, validInstanceCount);
 					Arrays.fill(featureSplitHistogram, featureOffset, nextFeatureOffset, 0.0);
 					for (int j = col[colIndex]; j < col[colIndex + 1]; ++j) {
@@ -1101,6 +1111,10 @@ public final class SparseData implements Data {
 						featureSplitHistogram[counterIndex + 1] += hessions[localRowIndex];
 						featureSplitHistogram[counterIndex + 2] += weights[localRowIndex];
 						featureSplitHistogram[counterIndex + 3] += 1.0;
+					}
+
+					if (sparseZeroIndex < 0) {
+						return;
 					}
 
 					double[] others = new double[nodeSize * STEP];

@@ -126,8 +126,6 @@ public abstract class TransformerBase<T extends TransformerBase <T>>
 	 * @param input the input local data from LocalOperator
 	 * @return the transformed local result data
 	 */
-	public LocalOperator <?> transform(LocalOperator <?> input) {
-		throw new AkIllegalOperatorParameterException("Not implemented!");
-	}
+	public abstract LocalOperator <?> transform(LocalOperator <?> input);
 
 }
