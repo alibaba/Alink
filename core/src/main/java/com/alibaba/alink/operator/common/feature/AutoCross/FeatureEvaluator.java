@@ -101,7 +101,7 @@ public class FeatureEvaluator {
 			.collect(Collectors.toList());
 
 		Params optParams = new Params()
-			.set(HasNumThreads.NUM_THREADS, 1)
+			//.set(HasNumThreads.NUM_THREADS, 1)
 			.set(LinearTrainParams.WITH_INTERCEPT, profile.hasIntercept)
 			.set(LinearTrainParams.STANDARDIZATION, false);
 

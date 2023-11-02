@@ -45,7 +45,7 @@ import java.util.List;
  */
 @InputPorts(values = {@PortSpec(PortType.DATA)})
 @OutputPorts(values = {@PortSpec(value = PortType.MODEL)})
-@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
+@ParamSelectColumnSpec(name = "selectedCols", allowedTypeCollections = TypeCollections.NUMERIC_TYPES)
 @ParamSelectColumnSpec(name = "vectorCol", allowedTypeCollections = TypeCollections.VECTOR_TYPES)
 @NameCn("主成分分析训练")
 @NameEn("Pca Training")

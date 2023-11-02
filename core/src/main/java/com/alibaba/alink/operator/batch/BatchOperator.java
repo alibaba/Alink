@@ -28,7 +28,6 @@ import com.alibaba.alink.common.io.annotations.IOType;
 import com.alibaba.alink.common.io.annotations.IoOpAnnotation;
 import com.alibaba.alink.common.lazy.LazyEvaluation;
 import com.alibaba.alink.common.lazy.LazyObjectsManager;
-import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.AlgoOperator;
 import com.alibaba.alink.operator.batch.dataproc.FirstNBatchOp;
@@ -39,20 +38,22 @@ import com.alibaba.alink.operator.batch.dataproc.ShuffleBatchOp;
 import com.alibaba.alink.operator.batch.sink.BaseSinkBatchOp;
 import com.alibaba.alink.operator.batch.source.BaseSourceBatchOp;
 import com.alibaba.alink.operator.batch.source.TableSourceBatchOp;
+import com.alibaba.alink.operator.batch.sql.BatchSqlOperators;
 import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
 import com.alibaba.alink.operator.batch.sql.SelectBatchOp;
 import com.alibaba.alink.operator.batch.statistics.InternalFullStatsBatchOp;
 import com.alibaba.alink.operator.batch.statistics.SummarizerBatchOp;
+import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.operator.batch.utils.DiveVisualizer.DiveVisualizerConsumer;
 import com.alibaba.alink.operator.batch.utils.UDFBatchOp;
 import com.alibaba.alink.operator.batch.utils.UDTFBatchOp;
-import com.alibaba.alink.operator.batch.sql.BatchSqlOperators;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -699,7 +700,11 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 			List <BatchOperator <?>> opsToCollect = new ArrayList <>(lazyRowOps.keySet());
 			List <List <Row>> listRows;
 			try {
-				listRows = collect(jobName, opsToCollect.toArray(new BatchOperator[0]));
+				if (!opsToCollect.isEmpty()) {
+					listRows = collect(jobName, opsToCollect.toArray(new BatchOperator[0]));
+				} else {
+					listRows = collectNone(jobName, mlEnv);
+				}
 			} catch (Exception e) {
 				throw new AkFlinkExecutionErrorException("Failed to collect ops data.", e);
 			}
@@ -751,6 +756,16 @@ public abstract class BatchOperator<T extends BatchOperator <T>> extends AlgoOpe
 		}
 
 		return ret;
+	}
+
+	private static List <List <Row>> collectNone(String jobName, MLEnvironment mlEnv) throws Exception {
+		ExecutionEnvironment env = mlEnv.getExecutionEnvironment();
+		if (null == jobName) {
+			env.execute();
+		} else {
+			env.execute(jobName);
+		}
+		return Collections.emptyList();
 	}
 
 	private SummarizerBatchOp getStatisticsOp() {

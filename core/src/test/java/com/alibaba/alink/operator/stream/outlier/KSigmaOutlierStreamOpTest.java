@@ -53,4 +53,36 @@ public class KSigmaOutlierStreamOpTest extends AlinkTestBase {
 
 	}
 
+	@Test
+	public void test2() throws Exception {
+		List <Row> mTableData = Arrays.asList(
+			Row.of(1, new Timestamp(1000), 0.0),
+			Row.of(1, new Timestamp(2000), 0.0),
+			Row.of(1, new Timestamp(3000), 0.0),
+			Row.of(1, new Timestamp(4000), 0.0),
+			Row.of(1, new Timestamp(5000), 0.0),
+			Row.of(1, new Timestamp(6000), 0.0),
+			Row.of(1, new Timestamp(7000), 0.0),
+			Row.of(1, new Timestamp(8000), 0.0),
+			Row.of(1, new Timestamp(9000), 0.0),
+			Row.of(1, new Timestamp(10000), 10000.0)
+		);
+
+		MemSourceStreamOp dataOp = new MemSourceStreamOp(mTableData, new String[] {"id", "ts", "val"});
+
+		KSigmaOutlierStreamOp outlierOp = new KSigmaOutlierStreamOp()
+			.setGroupCols("id")
+			.setTimeCol("ts")
+			.setPrecedingRows(10)
+			.setFeatureCol("val")
+			.setPredictionCol("pred")
+			.setPredictionDetailCol("pred_detail");
+
+		dataOp.link(outlierOp).print();
+
+		StreamOperator.execute();
+
+	}
+
+
 }

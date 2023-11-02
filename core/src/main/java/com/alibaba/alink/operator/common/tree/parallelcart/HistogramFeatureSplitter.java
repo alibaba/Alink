@@ -80,7 +80,7 @@ public abstract class HistogramFeatureSplitter extends FeatureSplitter {
 		if (useMissing) {
 			LabelAccessor missingAccessor = labelAccessorOf(missing);
 			missingAccessor.add(featureMeta.getMissingIndex());
-			total.subtract(missing);
+			// total.subtract(missing);
 		}
 
 		counted = true;

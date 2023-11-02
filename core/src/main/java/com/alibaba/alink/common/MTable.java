@@ -134,14 +134,18 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 			throw new AkIllegalArgumentException("Values can not be empty.");
 		}
 
-		Row first = rows.iterator().next();
-
-		int arity = first.getArity();
+		int arity = rows.get(0).getArity();
 
 		TypeInformation <?>[] types = new TypeInformation[arity];
 
-		for (int i = 0; i < arity; ++i) {
-			types[i] = TypeExtractor.getForObject(first.getField(i));
+		for (int col = 0; col < arity; ++col) {
+			types[col] = AlinkTypes.STRING;
+			for (int i = 0; i < rows.size(); i++) {
+				if (null != rows.get(i).getField(col)) {
+					types[col] = TypeExtractor.getForObject(rows.get(i).getField(col));
+					break;
+				}
+			}
 		}
 
 		return TableUtil.schema2SchemaStr(new TableSchema(colNames, types));
@@ -203,21 +207,36 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 	 * summary for MTable.
 	 */
 	public TableSummary summary(String... selectedColNames) {
-		return subSummary(selectedColNames, 0, this.getNumRow());
+		if (null == selectedColNames || 0 == selectedColNames.length) {
+			return subSummary(null, 0, this.getNumRow());
+		} else {
+			return subSummary(selectedColNames, 0, this.getNumRow());
+		}
 	}
 
 	//summary for data from fromId line to endId line, include fromId and exclude endId.
 	public TableSummary subSummary(String[] selectedColNames, int fromId, int endId) {
-		if (null == selectedColNames || 0 == selectedColNames.length) {
-			selectedColNames = this.getColNames();
-		}
-		TableSchema schema = new TableSchema(selectedColNames, TableUtil.findColTypes(getSchema(), selectedColNames));
-		int[] selectColIndices = TableUtil.findColIndices(getSchema(), selectedColNames);
-		TableSummarizer srt = new TableSummarizer(schema, false);
+		TableSummarizer srt = new TableSummarizer(getSchema(), false, selectedColNames);
 		for (int i = Math.max(fromId, 0); i < Math.min(endId, this.getNumRow()); i++) {
-			srt.visit(Row.project(this.rows.get(i), selectColIndices));
+			srt.visit(this.rows.get(i));
 		}
 		return srt.toSummary();
+		//if (null == selectedColNames || 0 == selectedColNames.length) {
+		//	TableSummarizer srt = new TableSummarizer(getSchema(), false);
+		//	for (int i = Math.max(fromId, 0); i < Math.min(endId, this.getNumRow()); i++) {
+		//		srt.visit(this.rows.get(i));
+		//	}
+		//	return srt.toSummary();
+		//} else {
+		//	TableSchema schema = new TableSchema(selectedColNames,
+		//		TableUtil.findColTypes(getSchema(), selectedColNames));
+		//	int[] selectColIndices = TableUtil.findColIndices(getSchema(), selectedColNames);
+		//	TableSummarizer srt = new TableSummarizer(schema, false);
+		//	for (int i = Math.max(fromId, 0); i < Math.min(endId, this.getNumRow()); i++) {
+		//		srt.visit(Row.project(this.rows.get(i), selectColIndices));
+		//	}
+		//	return srt.toSummary();
+		//}
 	}
 
 	/**

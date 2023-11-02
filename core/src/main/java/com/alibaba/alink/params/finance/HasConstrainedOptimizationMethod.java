@@ -34,6 +34,7 @@ public interface HasConstrainedOptimizationMethod<T> extends WithParams <T> {
 		SQP,
 		Barrier,
 		LBFGS,
-		Newton
+		Newton,
+		ALM
 	}
 }

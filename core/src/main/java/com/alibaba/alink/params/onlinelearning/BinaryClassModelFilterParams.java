@@ -40,15 +40,16 @@ public interface BinaryClassModelFilterParams<T> extends WithParams <T>,
 
 	@NameCn("模型过滤的LogLoss阈值")
 	@DescCn("模型过滤的LogLoss阈值")
-	ParamInfo <Double> LOG_LOSS = ParamInfoFactory
-		.createParamInfo("logLoss", Double.class)
+	ParamInfo <Double> LOG_LOSS_THRESHOLD = ParamInfoFactory
+		.createParamInfo("logLossThreshold", Double.class)
+		.setAlias(new String[]{"logLoss"})
 		.setDescription("logLoss threshold")
 		.setHasDefaultValue(Double.MAX_VALUE)
 		.build();
 
-	default Double getLogLossThreshold() {return get(LOG_LOSS);}
+	default Double getLogLossThreshold() {return get(LOG_LOSS_THRESHOLD);}
 
-	default T setLogLossThreshold(Double value) {return set(LOG_LOSS, value);}
+	default T setLogLossThreshold(Double value) {return set(LOG_LOSS_THRESHOLD, value);}
 
 	@NameCn("评估样本数据条数")
 	@DescCn("用多少样本数据对模型进行评估")

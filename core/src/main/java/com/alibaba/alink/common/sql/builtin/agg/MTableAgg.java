@@ -7,6 +7,7 @@ import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.utils.TableUtil;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -68,7 +69,7 @@ public class MTableAgg extends BaseUdaf <MTable, List <Row>> {
 
 	@Override
 	public List <Row> createAccumulator() {
-		return new ArrayList <Row>();
+		return new LinkedList <Row>();
 	}
 
 	@Override

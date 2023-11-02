@@ -11,12 +11,14 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.operators.DeltaIteration;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
+import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MLEnvironmentFactory;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.NameCn;
@@ -25,6 +27,7 @@ import com.alibaba.alink.common.annotation.OutputPorts;
 import com.alibaba.alink.common.annotation.ParamSelectColumnSpec;
 import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
+import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.operator.batch.utils.DataSetConversionUtil;
 import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.common.utils.TableUtil;
@@ -42,8 +45,8 @@ import java.util.HashMap;
 @ParamSelectColumnSpec(name = "selectedCols")
 @ParamSelectColumnSpec(name = "labelCol")
 @EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.feature.TargetEncoder")
-@NameCn("TargetEncoder")
-@NameEn("TargetEncoder")
+@NameCn("目标编码训练")
+@NameEn("Target Encoder Trainer")
 public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrainBatchOp>
 	implements TargetEncoderTrainParams <TargetEncoderTrainBatchOp> {
 
@@ -58,7 +61,7 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 	@Override
 	public TargetEncoderTrainBatchOp linkFrom(BatchOperator <?>... inputs) {
 
-		BatchOperator in = checkAndGetFirst(inputs);
+		BatchOperator <?> in = checkAndGetFirst(inputs);
 		String label = getLabelCol();
 
 		String[] selectedCols = getSelectedCols();
@@ -93,14 +96,46 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 			.getExecutionEnvironment()
 			.fromElements(Tuple2.of(0, new Row(0)));
 
+		// selectSize is iterator number.
 		DeltaIteration <Tuple2 <Integer, Row>, Tuple2 <Integer, Row>> loop =
 			res.iterateDelta(inputData, selectedSize, 0);
+
+		// put select col value into groupIndex ceil, select col value is the iterator index.
 		DataSet <Tuple2 <Integer, Row>> iterData = loop.getWorkset()
 			.mapPartition(new BuildGroupByCol(groupIndex, selectedColIndices));
+
+		// calc positive sum by group val.
 		DataSet <Tuple2 <Object, Double>> means = iterData
 			.groupBy(new RowKeySelector(groupIndex))
-			.combineGroup(new CalcMean(groupIndex, labelIndex, positiveLabel));
+			.combineGroup(new CalcMean(groupIndex, labelIndex, positiveLabel))
+			.groupBy(
+				new KeySelector <Tuple4 <Object, Double, Integer, Double>, String>() {
+					@Override
+					public String getKey(Tuple4 <Object, Double, Integer, Double> tuple4) {
+						return String.valueOf(tuple4.f0);
+					}
+				}
+			)
+			.reduceGroup(
+				new GroupReduceFunction <Tuple4 <Object, Double, Integer, Double>, Tuple2 <Object, Double>>() {
+					@Override
+					public void reduce(Iterable <Tuple4 <Object, Double, Integer, Double>> iterable,
+									   Collector <Tuple2 <Object, Double>> collector) throws Exception {
+						double sum = 0;
+						int count = 0;
+						Object groupVal = null;
+						for (Tuple4 <Object, Double, Integer, Double> it : iterable) {
+							sum += it.f1;
+							count += it.f2;
+							groupVal = it.f0;
+						}
+						collector.collect(Tuple2.of(groupVal, sum / count));
+					}
+				});
+
+		// < colIndex, Map<GroupVal, mean > .
 		DataSet <Row> rowMeans = means
+			// return <col, Map<groupVal, mean> > .
 			.reduceGroup(new ReduceColumnInfo(selectedCols))
 			.map(new MapFunction <Tuple2 <String, HashMap <String, Double>>, Row>() {
 				@Override
@@ -112,6 +147,7 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 				}
 			}).returns(TypeInformation.of(Row.class));
 
+		// put < col, Map<groupVal, mean> > into session obj.
 		res = res
 			.mapPartition(new BuildIterRes())
 			.withBroadcastSet(rowMeans, "rowMeans");
@@ -119,16 +155,18 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 		res = loop.closeWith(res, iterData);
 
 		DataSet <Row> modelData = res
+			// get < colIndex, Map<GroupVal, mean > from session obj.
 			.mapPartition(new BuildModelData(selectedSize))
 			.reduceGroup(new ReduceModelData());
 
 		Table resTable = DataSetConversionUtil.toTable(getMLEnvironmentId(), modelData,
 			new TargetEncoderConverter(selectedCols).getModelSchema());
+
 		this.setOutputTable(resTable);
 		return this;
 	}
 
-	public static class RowKeySelector implements KeySelector <Tuple2 <Integer, Row>, Comparable> {
+	public static class RowKeySelector implements KeySelector <Tuple2 <Integer, Row>, String> {
 
 		int index;
 
@@ -137,8 +175,8 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 		}
 
 		@Override
-		public Comparable getKey(Tuple2 <Integer, Row> value) {
-			return (Comparable) (value.f1.getField(index));
+		public String getKey(Tuple2 <Integer, Row> value) {
+			return String.valueOf(value.f1.getField(index));
 		}
 	}
 
@@ -164,7 +202,8 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 		}
 	}
 
-	public static class CalcMean implements GroupCombineFunction <Tuple2 <Integer, Row>, Tuple2 <Object, Double>> {
+	public static class CalcMean
+		implements GroupCombineFunction <Tuple2 <Integer, Row>, Tuple4 <Object, Double, Integer, Double>> {
 		int groupIndex;
 		int labelIndex;
 		String positiveLabel;
@@ -176,7 +215,8 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 		}
 
 		@Override
-		public void combine(Iterable <Tuple2 <Integer, Row>> values, Collector <Tuple2 <Object, Double>> out)
+		public void combine(Iterable <Tuple2 <Integer, Row>> values,
+							Collector <Tuple4 <Object, Double, Integer, Double>> out)
 			throws Exception {
 			int count = 0;
 			double sum = 0;
@@ -184,14 +224,21 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 			for (Tuple2 <Integer, Row> value : values) {
 				groupValue = value.f1.getField(groupIndex);
 				++count;
-				if (positiveLabel == null) {
-					sum += (double) value.f1.getField(labelIndex);
-				} else if (value.f1.getField(labelIndex).toString().equals(positiveLabel)) {
-					++sum;
+				Object val = value.f1.getField(labelIndex);
+				if (val != null) {
+					if (positiveLabel == null) {
+						sum += ((Number) val).doubleValue();
+					} else if (String.valueOf(val).equals(positiveLabel)) {
+						++sum;
+					}
 				}
 			}
-			double mean = sum / count;
-			out.collect(Tuple2.of(groupValue, mean));
+
+			if (AlinkGlobalConfiguration.isPrintProcessInfo()) {
+				System.out.println("groupValue:" + groupValue + " sum: " + sum + " count: " + count);
+			}
+
+			out.collect(Tuple4.of(groupValue, sum, count, 0.0));
 		}
 	}
 
@@ -217,7 +264,11 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 								 Collector <Tuple2 <Integer, Row>> out) throws Exception {
 			int selectedIndex = selectedColIndices[superStepNumber];
 			for (Tuple2 <Integer, Row> value : values) {
-				value.f1.setField(lastIndex, value.f1.getField(selectedIndex));
+				Object groupValue = value.f1.getField(selectedIndex);
+				if (groupValue == null) {
+					throw new AkIllegalDataException("select col must not have null value.");
+				}
+				value.f1.setField(lastIndex, groupValue);
 				out.collect(value);
 			}
 		}
@@ -236,7 +287,11 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 						   Collector <Tuple2 <String, HashMap <String, Double>>> out) throws Exception {
 			HashMap <String, Double> res = new HashMap <>();
 			for (Tuple2 <Object, Double> value : values) {
-				res.put(value.f0.toString(), value.f1);
+				if (value.f0 != null) {
+					res.put(value.f0.toString(), value.f1);
+				} else {
+					res.put(null, value.f1);
+				}
 			}
 			int iterStepNum = getIterationRuntimeContext().getSuperstepNumber() - 1;
 			out.collect(Tuple2.of(selectedCols[iterStepNum], res));
@@ -253,7 +308,8 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 		}
 
 		@Override
-		public void mapPartition(Iterable <Tuple2 <Integer, Row>> values, Collector <Tuple2 <Integer, Row>> out) throws Exception {
+		public void mapPartition(Iterable <Tuple2 <Integer, Row>> values, Collector <Tuple2 <Integer, Row>> out)
+			throws Exception {
 			int superStepNum = getIterationRuntimeContext().getSuperstepNumber() - 1;
 			int taskId = getRuntimeContext().getIndexOfThisSubtask();
 			int parallelism = getRuntimeContext().getMaxNumberOfParallelSubtasks();
@@ -264,7 +320,7 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 	}
 
 	private static class BuildModelData
-		extends RichMapPartitionFunction <Tuple2 <Integer, Row>, Tuple2<Integer, Row>> {
+		extends RichMapPartitionFunction <Tuple2 <Integer, Row>, Tuple2 <Integer, Row>> {
 		int iterNum;
 
 		BuildModelData(int iterNum) {
@@ -273,12 +329,15 @@ public class TargetEncoderTrainBatchOp extends BatchOperator <TargetEncoderTrain
 
 		@Override
 		public void mapPartition(Iterable <Tuple2 <Integer, Row>> values,
-								 Collector <Tuple2<Integer, Row>> out) throws Exception {
+								 Collector <Tuple2 <Integer, Row>> out) throws Exception {
+			// wait previous operator to run
+			values.iterator().hasNext();
+
 			int taskId = getRuntimeContext().getIndexOfThisSubtask();
 			int index = taskId;
 			int parallelism = getRuntimeContext().getMaxNumberOfParallelSubtasks();
 			while (index < iterNum) {
-				out.collect(Tuple2.of(0, (Row) SessionSharedData.get(""+index, taskId)));
+				out.collect(Tuple2.of(0, (Row) SessionSharedData.get("" + index, taskId)));
 				index += parallelism;
 			}
 		}

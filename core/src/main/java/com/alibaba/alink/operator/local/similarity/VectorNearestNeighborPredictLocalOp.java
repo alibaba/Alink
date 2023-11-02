@@ -89,7 +89,8 @@ public class VectorNearestNeighborPredictLocalOp extends LocalOperator <VectorNe
 			dataConverter.setIdType(model.getColTypes()[model.getColNames().length - 1]);
 			VectorModelData modelData = dataConverter.load(model.getOutputTable().getRows());
 
-			if (!(modelData.fastDistance instanceof EuclideanDistance) && !(modelData.fastDistance instanceof CosineDistance)) {
+			if (!(modelData.fastDistance instanceof EuclideanDistance)
+				&& !(modelData.fastDistance instanceof CosineDistance)) {
 				this.setOutputTable(
 					new SubVectorNearestNeighborPredictLocalOp(getParams()).linkFrom(inputs).getOutputTable()
 				);
@@ -144,10 +145,10 @@ public class VectorNearestNeighborPredictLocalOp extends LocalOperator <VectorNe
 
 			final TaskRunner taskRunner = new TaskRunner();
 
-			int numThreads = LocalOperator.getDefaultNumThreads();
+			int numThreads = LocalOperator.getParallelism();
 
 			if (getParams().contains(HasNumThreads.NUM_THREADS)) {
-				numThreads = getParams().get(HasNumThreads.NUM_THREADS);
+				numThreads *= getParams().get(HasNumThreads.NUM_THREADS);
 			}
 
 			for (int t = 0; t < numThreads; ++t) {
@@ -165,7 +166,7 @@ public class VectorNearestNeighborPredictLocalOp extends LocalOperator <VectorNe
 							double[] sqQuery = new double[nSubQuery];
 							for (int i = 0; i < nSubQuery; i++) {
 								DenseVector denseVector =
-									VectorUtil.getDenseVector(mtQuery.getRow(i+startQuery).getField(indexVecCol));
+									VectorUtil.getDenseVector(mtQuery.getRow(i + startQuery).getField(indexVecCol));
 								if (cosine) {
 									sqQuery[i] = denseVector.normL2();
 									denseVector.scaleEqual(1.0 / sqQuery[i]);
@@ -279,7 +280,8 @@ public class VectorNearestNeighborPredictLocalOp extends LocalOperator <VectorNe
 									//}
 								}
 							}
-							if (AlinkGlobalConfiguration.isPrintProcessInfo() && (startQuery - localStartQuery) % (MAX_NUM_SUB_QUERY*2) == 0) {
+							if (AlinkGlobalConfiguration.isPrintProcessInfo()
+								&& (startQuery - localStartQuery) % (MAX_NUM_SUB_QUERY * 2) == 0) {
 								System.out.printf("one thread predict %d vec\n", startQuery - localStartQuery);
 							}
 						}

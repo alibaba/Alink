@@ -22,9 +22,8 @@ import static com.alibaba.alink.common.annotation.PublicOperatorUtils.listAlgoOp
 public class ParamAnnotationUtilsTest extends AlinkTestBase {
 
 	public void testParamCoverage(List <Class <?>> operators) {
-		Set <Class <?>> notCovered = new HashSet <>();
-		// On Windows, it is forbidden to have colons in filenames.
-		List <Class <?>> hasColon = new ArrayList <>();
+		Set <Class <?>> notHasCn = new HashSet <>();
+		Set <Class <?>> notHasDesc = new HashSet <>();
 
 		for (Class <?> operator : operators) {
 			//NameCn nameCn = operator.getAnnotation(NameCn.class);
@@ -34,27 +33,36 @@ public class ParamAnnotationUtilsTest extends AlinkTestBase {
 					continue;
 				}
 				NameCn nameCn = f.getAnnotation(NameCn.class);
+				if (!f.getDeclaringClass().getName().startsWith("com.alibaba.alink.params")) {
+					continue;
+				}
 				if (null == nameCn || StringUtils.isNullOrWhitespaceOnly(nameCn.value())) {
-					notCovered.add(operator);
-				} else if (nameCn.value().contains(":")) {
-					hasColon.add(operator);
+					notHasCn.add(operator);
+					System.out.println(operator.getSimpleName() + ": " + f.getName());
+				}
+
+				DescCn descCn = f.getAnnotation(DescCn.class);
+				if (null == descCn || StringUtils.isNullOrWhitespaceOnly(descCn.value())) {
+					notHasDesc.add(operator);
+					System.out.println(operator.getSimpleName() + ": " + f.getName());
 				}
 			}
 		}
 
-		if (!notCovered.isEmpty()) {
+		if (!notHasCn.isEmpty()) {
 			throw new RuntimeException(
 				String.format("%d operators not annotated by @NameCn: %s",
-					notCovered.size(),
-					notCovered.stream().map(Class::getSimpleName).collect(Collectors.joining(", "))
+					notHasCn.size(),
+					notHasCn.stream().map(Class::getSimpleName).collect(Collectors.joining(", \n"))
 				)
 			);
 		}
-		if (!hasColon.isEmpty()) {
+
+		if (!notHasDesc.isEmpty()) {
 			throw new RuntimeException(
-				String.format("%d operators has colon in @NameCn: %s",
-					hasColon.size(),
-					hasColon.stream().map(Class::getSimpleName).collect(Collectors.joining(", "))
+				String.format("%d operators not annotated by @DescCn: %s",
+					notHasDesc.size(),
+					notHasDesc.stream().map(Class::getSimpleName).collect(Collectors.joining(", \n"))
 				)
 			);
 		}
@@ -131,7 +139,7 @@ public class ParamAnnotationUtilsTest extends AlinkTestBase {
 	}
 
 	@Test
-	public void testParamsCoverage() {
-		testParamCoverage(ParamAnnotationUtils.listParamInfos());
+	public void testOpParamsCoverage() {
+		testParamCoverage(PublicOperatorUtils.listAlgoOperators());
 	}
 }

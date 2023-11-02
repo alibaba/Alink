@@ -1,13 +1,18 @@
 package com.alibaba.alink.operator.common.tree.parallelcart;
 
+import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
+import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
@@ -55,6 +60,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Gradient Boosting(often abbreviated to GBDT or GBM) is a popular supervised learning model.
@@ -323,6 +330,59 @@ public abstract class BaseGbdtTrainBatchOp<T extends BaseGbdtTrainBatchOp <T>> e
 			featureMetas = DataUtil.createFeatureMetas(
 				quantileModel.getDataSet(), stringIndexerModel.getDataSet(), getParams()
 			);
+
+			if (Preprocessing.isSparse(getParams())) {
+				final boolean zeroAsMissing = getParams().get(Preprocessing.ZERO_AS_MISSING);
+				featureMetas = DataUtil
+					.maxIndexOfVector(trainDataSet, getParams(), trainColNames)
+					.reduceGroup(new RichGroupReduceFunction <Tuple1<Integer>, FeatureMeta>() {
+						private Map<Integer, FeatureMeta> featureMetaMap;
+
+						@Override
+						public void open(Configuration parameters) throws Exception {
+							featureMetaMap = getRuntimeContext().getBroadcastVariableWithInitializer("featureMeta",
+								new BroadcastVariableInitializer <FeatureMeta, Map <Integer, FeatureMeta>>() {
+									@Override
+									public Map <Integer, FeatureMeta> initializeBroadcastVariable(
+										Iterable <FeatureMeta> data) {
+										Map<Integer, FeatureMeta> featureMetaMap = new TreeMap <>();
+
+										for (FeatureMeta featureMeta : data) {
+											featureMetaMap.put(featureMeta.getIndex(), featureMeta);
+										}
+
+										return featureMetaMap;
+									}
+								});
+						}
+
+						@Override
+						public void reduce(Iterable <Tuple1 <Integer>> values, Collector <FeatureMeta> out)
+							throws Exception {
+							int m = 0;
+
+							for (Tuple1<Integer> val : values) {
+								m = val.f0;
+							}
+
+							for (int i = 0; i < m; ++i) {
+								if (featureMetaMap.containsKey(i)) {
+									out.collect(featureMetaMap.get(i));
+								} else {
+									out.collect(new FeatureMeta(
+										String.valueOf(i),
+										i,
+										FeatureMeta.FeatureType.CONTINUOUS,
+										0,
+										zeroAsMissing ? -1 : 0,
+										zeroAsMissing ? 1 : 0
+									));
+								}
+							}
+						}
+					})
+					.withBroadcastSet(featureMetas, "featureMeta");
+			}
 		}
 
 		{

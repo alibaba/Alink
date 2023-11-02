@@ -143,7 +143,7 @@ public class BinaryClassModelFilterStreamOp<T extends BinaryClassModelFilterStre
 			this.positiveValue = params.get(BinaryClassModelFilterParams.POS_LABEL_VAL_STR);
 			this.aucThreshold = params.get(BinaryClassModelFilterParams.AUC_THRESHOLD);
 			this.accuracyThreshold = params.get(BinaryClassModelFilterParams.ACCURACY_THRESHOLD);
-			this.logLossThreshold = params.get(BinaryClassModelFilterParams.LOG_LOSS);
+			this.logLossThreshold = params.get(BinaryClassModelFilterParams.LOG_LOSS_THRESHOLD);
 			this.timestampColIndex = timestampColIndex;
 			this.countColIndex = countColIndex;
 		}

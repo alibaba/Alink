@@ -135,7 +135,7 @@ public final class EvalClusterLocalOp extends LocalOperator <EvalClusterLocalOp>
 
 			BaseVectorSummarizer summarizer = new DenseVectorSummarizer(false);
 			for (Tuple2 <Vector, String> row : rows) {
-				summarizer.visit(row.getField(0));
+				summarizer = summarizer.visit(row.getField(0));
 			}
 			BaseVectorSummary vectorSummary = summarizer.toSummary();
 			int vectorSize = vectorSummary.vectorSize();

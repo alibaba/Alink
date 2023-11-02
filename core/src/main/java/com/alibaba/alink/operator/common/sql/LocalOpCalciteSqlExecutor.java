@@ -21,6 +21,16 @@ public class LocalOpCalciteSqlExecutor implements SqlExecutor <LocalOperator <?>
 	}
 
 	@Override
+	public String[] listTableNames() {
+		return mTableCalciteSqlExecutor.listTableNames();
+	}
+
+	@Override
+	public String[] listFunctionNames() {
+		return mTableCalciteSqlExecutor.listFunctionNames();
+	}
+
+	@Override
 	public void addTable(String name, LocalOperator <?> localOperator) {
 		mTableCalciteSqlExecutor.addTable(name, localOperator.getOutputTable());
 	}

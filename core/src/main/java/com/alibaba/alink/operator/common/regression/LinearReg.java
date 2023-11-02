@@ -23,9 +23,9 @@ public class LinearReg {
 	 * @return 线性回归模型
 	 * @throws Exception
 	 */
-	public static LinearRegressionModel train(SummaryResultTable srt, String nameY, String[] nameX) throws Exception {
+	public static LinearRegressionModel train(SummaryResultTable srt, String nameY, String[] nameX) {
 		if (srt == null) {
-			throw new Exception("srt must not null!");
+			throw new RuntimeException("srt must not null!");
 		}
 		String[] colNames = srt.colNames;
 		Class[] types = new Class[colNames.length];
@@ -35,16 +35,16 @@ public class LinearReg {
 		int indexY = TableUtil.findColIndexWithAssertAndHint(colNames, nameY);
 		Class typeY = types[indexY];
 		if (typeY != Double.class && typeY != Long.class && typeY != Integer.class) {
-			throw new Exception("col type must be double or bigint!");
+			throw new RuntimeException("col type must be double or bigint!");
 		}
 		if (nameX.length == 0) {
-			throw new Exception("nameX must input!");
+			throw new RuntimeException("nameX must input!");
 		}
 		for (int i = 0; i < nameX.length; i++) {
 			int indexX = TableUtil.findColIndexWithAssertAndHint(colNames, nameX[i]);
 			Class typeX = types[indexX];
 			if (typeX != Double.class && typeX != Long.class && typeX != Integer.class) {
-				throw new Exception("col type must be double or bigint!");
+				throw new RuntimeException("col type must be double or bigint!");
 			}
 		}
 		int nx = nameX.length;
@@ -143,28 +143,28 @@ public class LinearReg {
 	}
 
 	private static LinearRegressionModel train(SummaryResultTable srt, int indexY, int[] indexX, String nameY,
-											   String[] nameX) throws Exception {
+											   String[] nameX)  {
 		//check if has missing value or nan value
 		if (srt.col(indexY).countMissValue > 0 || srt.col(indexY).countNanValue > 0) {
-			throw new Exception("col " + nameY + " has null value or nan value!");
+			throw new RuntimeException("col " + nameY + " has null value or nan value!");
 		}
 		for (int i = 0; i < indexX.length; i++) {
 			if (srt.col(indexX[i]).countMissValue > 0 || srt.col(indexX[i]).countNanValue > 0) {
-				throw new Exception("col " + nameX[i] + " has null value or nan value!");
+				throw new RuntimeException("col " + nameX[i] + " has null value or nan value!");
 			}
 		}
 
 		if (srt.col(0).countTotal == 0) {
-			throw new Exception("table is empty!");
+			throw new RuntimeException("table is empty!");
 		}
 		if (srt.col(0).countTotal < nameX.length) {
-			throw new Exception("record size Less than features size!");
+			throw new RuntimeException("record size Less than features size!");
 		}
 
 		int nx = indexX.length;
 		long N = srt.col(indexY).count;
 		if (N == 0) {
-			throw new Exception("Y valid value num is zero!");
+			throw new RuntimeException("Y valid value num is zero!");
 		}
 
 		ArrayList <String> nameXList = new ArrayList <String>();

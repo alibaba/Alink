@@ -37,15 +37,6 @@ public class AutoGarchMapper extends TimeSeriesSingleMapper {
 		boolean ifGoodFit = true;
 		GarchModel model = Garch.autoFit(historyVals, upperbound, minusMean, ic, ifGARCH11);
 
-		//if (ag.garch.warn != null) {
-		//	for (int i = 0; i < ag.garch.warn.size(); i++) {
-		//		if (ag.garch.warn.get(i).equals("4")) {
-		//			ifGoodFit = false;
-		//			break;
-		//		}
-		//	}
-		//}
-
 		GarchInfo garchInfo = new GarchInfo();
 		double[] forecast = null;
 

@@ -16,6 +16,8 @@ public enum LinearModelType {
 	// Perceptron
 	AFT,
 	// Survival regression
-	Softmax
+	Softmax,
 	//Softmax classification
+	Divergence
+	//Divergence
 }

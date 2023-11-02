@@ -17,13 +17,10 @@ import com.alibaba.alink.params.validators.RangeValidator;
  */
 public interface AutoCrossTrainParams<T> extends
 	HasSelectedCols <T>,
-	HasCategoricalCols<T>,
+	HasCategoricalCols <T>,
 	HasLabelCol <T>,
 	HasDiscreteThresholds <T>,
-	HasDiscreteThresholdsArray <T>,
-	HasNumBuckets <T>,
-	HasNumBucketsArray <T>,
-	HasBinningMethod <T> {
+	HasDiscreteThresholdsArray <T> {
 
 	@NameCn("特征组合搜索步数")
 	@DescCn("特征组合搜索步数")
@@ -41,6 +38,8 @@ public interface AutoCrossTrainParams<T> extends
 		return set(MAX_SEARCH_STEP, value);
 	}
 
+	@NameCn("采样比例")
+	@DescCn("采样比例")
 	ParamInfo <Double> FRACTION = ParamInfoFactory
 		.createParamInfo("fraction", Double.class)
 		.setDescription("Fraction of train data.")
@@ -56,6 +55,8 @@ public interface AutoCrossTrainParams<T> extends
 		return set(FRACTION, colName);
 	}
 
+	@NameCn("固定的模型参数")
+	@DescCn("固定的模型参数")
 	ParamInfo <Boolean> FIX_COEFS = ParamInfoFactory
 		.createParamInfo("fixCoefs", Boolean.class)
 		.setDescription("fixCoefs")
@@ -70,9 +71,11 @@ public interface AutoCrossTrainParams<T> extends
 		return set(FIX_COEFS, value);
 	}
 
+	@NameCn("k折")
+	@DescCn("k折")
 	ParamInfo <Integer> K_CROSS = ParamInfoFactory
 		.createParamInfo("kCross", Integer.class)
-		.setDescription("discreteThreshold")
+		.setDescription("k cross")
 		.setHasDefaultValue(1)
 		.setValidator(new MinValidator <>(1))
 		.build();

@@ -77,6 +77,7 @@ public class FeatureConstraint implements Serializable {
 	}
 
 	//here the bin constraint must not be null.
+	//<featureIndex(featureName, featureStartBinIndex), inequalSize, equalSize, dim(all bin size)>
 	public Tuple4 <HashMap <String, Integer>, Integer, Integer, Integer> getParamsWithBinAndFeature() {
 		int size = featureConstraint.size();
 		int inequalSize = 0;
@@ -145,6 +146,7 @@ public class FeatureConstraint implements Serializable {
 	//this is for bins in one feature.
 	//this is only for bin!! it add the default constraint.
 	public Tuple4 <double[][], double[], double[][], double[]> getConstraintsForFeatureWithBin() {
+		//<featureIndex(featureName, consStartIndex), inequalSize, equalSize, dim>
 		Tuple4 <HashMap <String, Integer>, Integer, Integer, Integer> binFeatureParams = getParamsWithBinAndFeature();
 		HashMap <String, Integer> featureIndex = binFeatureParams.f0;
 		int inequalSize = binFeatureParams.f1;

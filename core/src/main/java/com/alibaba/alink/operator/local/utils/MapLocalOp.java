@@ -4,7 +4,6 @@ import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
 
-import com.alibaba.alink.common.AlinkGlobalConfiguration;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.annotation.InputPorts;
 import com.alibaba.alink.common.annotation.Internal;
@@ -68,11 +67,11 @@ public class MapLocalOp<T extends MapLocalOp <T>> extends LocalOperator <T> {
 		}
 	}
 
-	protected static List <Row> execMapper(final LocalOperator <?> in, final Mapper mapper, final Params params) {
-		int numThreads = LocalOperator.getDefaultNumThreads();
+	public static List <Row> execMapper(final LocalOperator <?> in, final Mapper mapper, final Params params) {
+		int numThreads = LocalOperator.getParallelism();
 
 		if (params.contains(HasNumThreads.NUM_THREADS)) {
-			numThreads = params.get(HasNumThreads.NUM_THREADS);
+			numThreads *= params.get(HasNumThreads.NUM_THREADS);
 		}
 
 		final TaskRunner taskRunner = new TaskRunner();

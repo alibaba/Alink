@@ -3,6 +3,8 @@ package com.alibaba.alink.params.feature;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 
+import com.alibaba.alink.common.annotation.DescCn;
+import com.alibaba.alink.common.annotation.NameCn;
 import com.alibaba.alink.params.ParamUtil;
 import com.alibaba.alink.params.shared.colname.HasOutputCol;
 import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
@@ -14,6 +16,8 @@ public interface AutoCrossPredictParams<T> extends
 	HasOutputCol <T>,
 	HasReservedColsDefaultAsNull <T> {
 
+	@NameCn("输出格式")
+	@DescCn("输出格式")
 	ParamInfo<OutputFormat> OUTPUT_FORMAT = ParamInfoFactory
 		.createParamInfo("outputFormat", OutputFormat.class)
 		.setDescription("Output format")

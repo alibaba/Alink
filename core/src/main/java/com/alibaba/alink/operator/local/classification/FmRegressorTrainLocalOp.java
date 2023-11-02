@@ -8,12 +8,14 @@ import com.alibaba.alink.operator.common.fm.BaseFmTrainBatchOp.Task;
 import com.alibaba.alink.operator.common.fm.FmRegressorModelInfo;
 import com.alibaba.alink.operator.local.lazy.WithModelInfoLocalOp;
 import com.alibaba.alink.params.recommendation.FmTrainParams;
+import com.alibaba.alink.pipeline.EstimatorTrainerAnnotation;
 
 /**
  *
  */
 @NameCn("Local Fm 回归训练")
 @NameEn("Local Fm regression Training")
+@EstimatorTrainerAnnotation(estimatorName = "com.alibaba.alink.pipeline.regression.FmRegressor")
 public final class FmRegressorTrainLocalOp extends FmTrainLocalOp <FmRegressorTrainLocalOp>
 	implements FmTrainParams <FmRegressorTrainLocalOp>,
 WithModelInfoLocalOp <FmRegressorModelInfo, FmRegressorTrainLocalOp, FmRegressorModelInfoLocalOp> {

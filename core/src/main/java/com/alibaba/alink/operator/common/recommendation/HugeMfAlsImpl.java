@@ -785,7 +785,6 @@ public class HugeMfAlsImpl {
 						if (stepNo == 1) {
 							profile = (DataProfile) getRuntimeContext().getBroadcastVariable("profile").get(0);
 							LOG.info("Data profile {}", JsonConverter.toJson(profile));
-
 							subStepNo = -1;
 							userOrItem = 0;
 							alsStepNo = 0;

@@ -199,4 +199,29 @@ public class SummarizerBatchOpTest extends AlinkTestBase {
 		Assert.assertEquals(20, summary.getColNames().length);
 	}
 
+	@Test
+	public void testNULL() {
+		Row[] testArray =
+			new Row[] {
+				Row.of(null, null, null, null, null),
+				Row.of(null, null, null, null, null),
+				Row.of(null, null, null, null, null),
+				Row.of(null, null, null, null, null),
+			};
+
+		MemSourceBatchOp source = new MemSourceBatchOp(Arrays.asList(testArray),
+			"f_string string, f_long long, f_int int, f_double double, f_boolean boolean");
+
+		SummarizerBatchOp summarizer = new SummarizerBatchOp()
+			.setSelectedCols("f_double", "f_int");
+
+		summarizer.linkFrom(source);
+
+		TableSummary srt = summarizer.collectSummary();
+
+		System.out.println(srt.toString());
+
+	}
+
+
 }

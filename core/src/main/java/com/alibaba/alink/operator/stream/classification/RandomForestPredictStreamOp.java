@@ -7,6 +7,7 @@ import com.alibaba.alink.common.annotation.NameEn;
 import com.alibaba.alink.operator.batch.BatchOperator;
 import com.alibaba.alink.operator.common.feature.QuantileDiscretizerModelMapper;
 import com.alibaba.alink.operator.common.tree.predictors.RandomForestModelMapper;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.stream.utils.ModelMapStreamOp;
 import com.alibaba.alink.params.classification.RandomForestPredictParams;
 
@@ -49,6 +50,14 @@ public final class RandomForestPredictStreamOp extends ModelMapStreamOp <RandomF
 	}
 
 	public RandomForestPredictStreamOp(BatchOperator model, Params params) {
+		super(model, RandomForestModelMapper::new, params);
+	}
+
+	public RandomForestPredictStreamOp(LocalOperator model) {
+		this(model, null);
+	}
+
+	public RandomForestPredictStreamOp(LocalOperator model, Params params) {
 		super(model, RandomForestModelMapper::new, params);
 	}
 }

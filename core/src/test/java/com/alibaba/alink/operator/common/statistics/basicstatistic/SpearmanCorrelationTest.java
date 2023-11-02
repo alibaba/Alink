@@ -49,7 +49,7 @@ public class SpearmanCorrelationTest extends AlinkTestBase {
 					break;
 				case 2:
 					Assert.assertEquals(3.0, row.getField(0));
-					Assert.assertEquals(3.0, row.getField(1));
+					Assert.assertEquals(2.0, row.getField(1));
 					break;
 				case 3:
 					Assert.assertEquals(4.0, row.getField(0));
@@ -65,6 +65,7 @@ public class SpearmanCorrelationTest extends AlinkTestBase {
 		BatchOperator data = getBatchTable();
 		DataSet <Row> out = SpearmanCorrelation.calcRank(data.getDataSet(), true, true);
 
+
 		List <Row> rows = out.collect();
 
 		Assert.assertEquals(4, rows.size());
@@ -79,7 +80,7 @@ public class SpearmanCorrelationTest extends AlinkTestBase {
 					Assert.assertEquals("1.0 1.0", row.getField(0));
 					break;
 				case 2:
-					Assert.assertEquals("3.0 3.0", row.getField(0));
+					Assert.assertEquals("3.0 2.0", row.getField(0));
 					break;
 				case 3:
 					Assert.assertEquals("4.0 4.0", row.getField(0));

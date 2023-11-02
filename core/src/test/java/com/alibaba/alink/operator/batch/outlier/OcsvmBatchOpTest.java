@@ -1,11 +1,81 @@
 package com.alibaba.alink.operator.batch.outlier;
 
+import org.apache.flink.types.Row;
+
 import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.dataproc.vector.VectorAssemblerBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
+import com.alibaba.alink.operator.batch.source.RandomTableSourceBatchOp;
+import com.alibaba.alink.params.outlier.HaskernelType.KernelType;
+import com.alibaba.alink.pipeline.outlier.OcsvmModelOutlier;
 import com.alibaba.alink.testutil.AlinkTestBase;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 public class OcsvmBatchOpTest extends AlinkTestBase {
+
+	BatchOperator<?> data;
+
+	@Before
+	public void prepareData() {
+		List <Row> rows = new ArrayList <>();
+		Random rand = new Random();
+
+		for (int i = 0; i < 300; ++i) {
+			if (i % 100 == 0) {
+				rows.add(Row.of(1. + rand.nextDouble() * 10.0, 1. + rand.nextDouble() * 10.0));
+			} else {
+				rows.add(Row.of(rand.nextDouble(), rand.nextDouble()));
+			}
+		}
+		data = new MemSourceBatchOp(rows, new String[] {"x", "y"});
+	}
+
+	@Test
+	public void testTrainAndPredict() throws Exception {
+		BatchOperator <?> model = new OcsvmModelOutlierTrainBatchOp()
+			.setFeatureCols("x", "y")
+			.setGamma(0.5)
+			.setNu(0.01)
+			.setKernelType(KernelType.RBF).linkFrom(data);
+
+		new OcsvmModelOutlierPredictBatchOp().setPredictionCol("pred")
+			.linkFrom(model, data).select("*").where("pred=true").lazyPrint(10);
+		BatchOperator.execute();
+	}
+
+	@Test
+	public void testPipelineTable() throws Exception {
+		BatchOperator <?> data = new RandomTableSourceBatchOp()
+			.setNumCols(5)
+			.setNumRows(1000L)
+			.setIdCol("id")
+			.setOutputCols("f0", "f1", "f2", "f3", "f4");
+
+		OcsvmModelOutlier ocsvmModelOutlier = new OcsvmModelOutlier()
+			.setFeatureCols(new String[] {"f0", "f1", "f2", "f3", "f4"})
+			.setGamma(0.5)
+			.setNu(0.01)
+			.setKernelType(KernelType.RBF)
+			.setPredictionDetailCol("detail")
+			.setPredictionCol("pred");
+		ocsvmModelOutlier.fit(data).transform(data).lazyPrint(10);
+
+		BatchOperator datav = data.link(new VectorAssemblerBatchOp().setSelectedCols("f0", "f1", "f2", "f3", "f4").setOutputCol("vec"));
+		new OcsvmModelOutlier()
+			.setVectorCol("vec")
+			.setGamma(0.5)
+			.setNu(0.01)
+			.setKernelType(KernelType.RBF)
+			.setPredictionDetailCol("detail")
+			.setPredictionCol("pred").fit(datav).transform(datav).lazyPrint(10);
+		BatchOperator.execute();
+	}
+
 	@Test
 	public void testOutlier() throws Exception {
 

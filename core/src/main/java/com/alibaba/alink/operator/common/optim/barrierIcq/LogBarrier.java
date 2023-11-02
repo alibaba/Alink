@@ -52,11 +52,11 @@ public class LogBarrier extends Optimizer {
 	public DataSet <Tuple2 <DenseVector, double[]>> optimize() {
 		//use glpk
 		//in barrier, maxIter is the local parameter in one loop.
-		this.coefVec = this.coefDim.map(new Sqp.InitialCoef()).withBroadcastSet(this.objFuncSet, "objFunc");
+		this.coefficientVec = this.coefDim.map(new Sqp.InitialCoef()).withBroadcastSet(this.objFuncSet, "objFunc");
 		int maxIter = params.get(HasMaxIterDefaultAs100.MAX_ITER);
 		DataSet <Row> model = new IterativeComQueue()
 			.initWithPartitionedData(OptimVariable.trainData, trainData)
-			.initWithBroadcastData(OptimVariable.model, coefVec)
+			.initWithBroadcastData(OptimVariable.model, coefficientVec)
 			.initWithBroadcastData(OptimVariable.objFunc, objFuncSet)
 			.initWithBroadcastData(ConstraintVariable.weightDim, coefDim)
 			.add(new InitializeParams())
@@ -146,17 +146,12 @@ public class LogBarrier extends Optimizer {
 					double norm = 1 / g.normL1();
 					h.scaleEqual(norm);
 					g.scaleEqual(norm);
-					//                    DenseVector dir = QpProblem.subProblem(hessian, gradient, objFunc
-					// .equalityConstraint, objFunc.equalityItem)[0];
 					DenseVector dir = new DenseVector(hessianDim);
-					//                    System.out.println(h);
-					//                    System.out.println(g);
 					SqpPai.vecAddVec(h.inverse().multiplies(g), dir, hessianDim);
 					context.putObj(ConstraintVariable.dir, dir);
-					//                    System.out.println("dir_ori: "+dir);
 					break;
 				} catch (Exception e) {
-					double l2Weight = l2 + minL2Weight;
+					double l2Weight = l2 + 2;
 					for (int i = begin; i < hessianDim; i++) {
 						loss += 0.5 * l2Weight * Math.pow(weight.get(i), 2);
 						gradient.add(i, l2Weight * weight.get(i));

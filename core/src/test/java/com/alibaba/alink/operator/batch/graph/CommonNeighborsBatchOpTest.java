@@ -116,6 +116,54 @@ public class CommonNeighborsBatchOpTest extends AlinkTestBase {
 	}
 
 	@Test
+	public void testGraphWithLongInput() throws Exception {
+		Row[] rows = new Row[]{
+			Row.of(0L, 11L),
+			Row.of(0L, 12L),
+			Row.of(0L, 16L),
+			Row.of(1L, 11L),
+			Row.of(1L, 12L),
+			Row.of(2L, 12L),
+			Row.of(2L, 13L)
+		};
+
+		List< Tuple5 <String, String, Long, Double, Double>> expectedResultList = new ArrayList <>();
+		expectedResultList.add(new Tuple5("1", "2", 1L, 0.3333, 0.9102));
+		expectedResultList.add(new Tuple5("1", "0", 2L, 0.6667, 2.3529));
+		expectedResultList.add(new Tuple5("2", "0", 1L, 0.25, 0.9102));
+		expectedResultList.add(new Tuple5("2", "1", 1L, 0.3333, 0.9102));
+		expectedResultList.add(new Tuple5("0", "1", 2L, 0.6667, 2.3529));
+		expectedResultList.add(new Tuple5("0", "2", 1L, 0.2500, 0.9102));
+		expectedResultList.add(new Tuple5("16", "11", 1L, 0.5000, 0.9102));
+		expectedResultList.add(new Tuple5("16", "12", 1L, 0.3333, 0.9102));
+		expectedResultList.add(new Tuple5("12", "16", 1L, 0.3333, 0.9102));
+		expectedResultList.add(new Tuple5("11", "16", 1L, 0.5000, 0.9102));
+		expectedResultList.add(new Tuple5("13", "12", 1L, 0.3333, 1.4427));
+		expectedResultList.add(new Tuple5("11", "12", 2L, 0.6667, 2.3529));
+		expectedResultList.add(new Tuple5("12", "13", 1L, 0.3333, 1.4427));
+		expectedResultList.add(new Tuple5("12", "11", 2L, 0.6667, 2.3529));
+
+		String[] colNames = new String[]{"user", "item"};
+		BatchOperator inputdata = new MemSourceBatchOp(
+			Arrays.asList(rows), colNames);
+		AlinkGlobalConfiguration.setPrintProcessInfo(true);
+
+		CommonNeighborsBatchOp cn = new CommonNeighborsBatchOp()
+			.setEdgeSourceCol("user")
+			.setEdgeTargetCol("item")
+			.setIsBipartiteGraph(false)
+			.setNeedTransformID(false)
+			.linkFrom(inputdata);
+		cn.lazyPrint(-1);
+		List < Tuple5 <String, String, Long, Double, Double>> result = rowToTuple(cn.collect());
+		compareResultCollections(
+			result,
+			expectedResultList,
+			new TupleComparator<Tuple5 <String, String, Long, Double, Double>>()
+		);
+	}
+
+	@Test
 	public void testNoIDTransform() throws Exception {
 		Row[] rows = new Row[]{
 			Row.of(0L, 10L),

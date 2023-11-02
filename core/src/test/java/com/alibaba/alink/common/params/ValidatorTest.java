@@ -40,7 +40,7 @@ public class ValidatorTest extends AlinkTestBase {
 			Params params = new Params()
 				.set(HasNum.NUM, 4.0);
 		} catch (Exception ex) {
-			Assert.assertEquals("4.0 of num is not validate. value in [-1.0, 3.0]", ex.getMessage());
+			Assert.assertEquals("4.0 of num is not validate. -1.0 <= x <= 3.0", ex.getMessage());
 		}
 	}
 
@@ -51,7 +51,7 @@ public class ValidatorTest extends AlinkTestBase {
 				.set("num", 4.0);
 			double result = params.get(HasNum.NUM);
 		} catch (Exception ex) {
-			Assert.assertEquals("4.0 of num is not validate. value in [-1.0, 3.0]", ex.getMessage());
+			Assert.assertEquals("4.0 of num is not validate. -1.0 <= x <= 3.0", ex.getMessage());
 		}
 	}
 
@@ -107,7 +107,7 @@ public class ValidatorTest extends AlinkTestBase {
 			params.set("num", 2.0);
 			params.get(HasNumMin.NUM);
 		} catch (Exception ex) {
-			Assert.assertEquals("2.0 of num is not validate. value in [3.0, +inf)", ex.getMessage());
+			Assert.assertEquals("2.0 of num is not validate. x >= 3.0", ex.getMessage());
 		}
 
 	}
@@ -139,7 +139,7 @@ public class ValidatorTest extends AlinkTestBase {
 			params.set("num", 4.0);
 			params.get(HasNumMax.NUM);
 		} catch (Exception ex) {
-			Assert.assertEquals("4.0 of num is not validate. value in (-inf, 3.0]", ex.getMessage());
+			Assert.assertEquals("4.0 of num is not validate. x <= 3.0", ex.getMessage());
 		}
 	}
 
@@ -171,14 +171,14 @@ public class ValidatorTest extends AlinkTestBase {
 			params.set("num", 2.0);
 			params.get(HasNumRange.NUM);
 		} catch (Exception ex) {
-			Assert.assertEquals("2.0 of num is not validate. value in [3.0, 5.0]", ex.getMessage());
+			Assert.assertEquals("2.0 of num is not validate. 3.0 <= x <= 5.0", ex.getMessage());
 		}
 
 		try {
 			params.set("num", 6.0);
 			params.get(HasNumRange.NUM);
 		} catch (Exception ex) {
-			Assert.assertEquals("6.0 of num is not validate. value in [3.0, 5.0]", ex.getMessage());
+			Assert.assertEquals("6.0 of num is not validate. 3.0 <= x <= 5.0", ex.getMessage());
 		}
 
 		RangeValidator validator = new RangeValidator <>(3.0, 5.0).setLeftInclusive(false);

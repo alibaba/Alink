@@ -70,10 +70,10 @@ public class FlatMapLocalOp<T extends FlatMapLocalOp <T>> extends LocalOperator 
 
 	protected static List <Row> execFlatMapper(final LocalOperator <?> in, final FlatMapper mapper,
 											   final Params params) {
-		int numThreads = LocalOperator.getDefaultNumThreads();
+		int numThreads = LocalOperator.getParallelism();
 
 		if (params.contains(HasNumThreads.NUM_THREADS)) {
-			numThreads = params.get(HasNumThreads.NUM_THREADS);
+			numThreads *= params.get(HasNumThreads.NUM_THREADS);
 		}
 
 		final TaskRunner taskRunner = new TaskRunner();

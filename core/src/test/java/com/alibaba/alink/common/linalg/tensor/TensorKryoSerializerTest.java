@@ -63,17 +63,6 @@ public class TensorKryoSerializerTest extends AlinkTestBase {
 			"AQBjb20uYWxpYmFiYS5hbGluay5jb21tb24ubGluYWxnLnRlbnNvci5JbnRUZW5zb/IBAAMDAgMEYGC0ILs4UdnUesuTPb5wOZv2yS2jOvAdT7dw6YwDJfQdPrr4mG2nEsgrzU1VS/C1QCPCm2JN6e+cL5Me/FgPmvsIGxLhB7HoBfK09fDx0AwtD2JjRnCSHFBYZ/8g9qgzXg==",
 			(Function <NdArray <?>, Object>) d -> StdArrays.array3dCopyOf((IntNdArray) d)});
 
-		IntTensor t = kryo.newInstance(IntTensor.class);
-		items.add(new Object[] {null, t,
-			"AQBjb20uYWxpYmFiYS5hbGluay5jb21tb24ubGluYWxnLnRlbnNvci5JbnRUZW5zb/IBAw==",
-			(Function <NdArray <?>, Object>) d -> null});
-
-		IntTensor t2 = kryo.newInstance(IntTensor.class);
-		t2.type = DataType.INT;
-		items.add(new Object[] {null, t2,
-			"AQBjb20uYWxpYmFiYS5hbGluay5jb21tb24ubGluYWxnLnRlbnNvci5JbnRUZW5zb/IBAgM=",
-			(Function <NdArray <?>, Object>) d -> null});
-
 		return items;
 	}
 
@@ -100,5 +89,120 @@ public class TensorKryoSerializerTest extends AlinkTestBase {
 			Assert.assertNull(tensor.data);
 			Assert.assertNull(resultTensor.data);
 		}
+	}
+
+	@Test
+	public void testDefaultSer() {
+		Kryo kryo = new Kryo();
+		kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
+		int times = 100;
+		long total = 0;
+		int bufferSize = 1024;
+		for (int i = 0; i < times; i += 1) {
+			long startTime = System.nanoTime();
+			Output output = new Output(bufferSize, Integer.MAX_VALUE);
+			kryo.writeClassAndObject(output, tensor);
+			byte[] bytes = output.toBytes();
+			long endTime = System.nanoTime();
+			total += endTime - startTime;
+		}
+		System.out.println(1. * total / times / 1e9);
+		// Kryo default deserializer does not work, because Tensor has no no-arg contructors.
+	}
+
+	@Test
+	public void testTensorSer() {
+		Kryo kryo = new Kryo();
+		kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
+		kryo.addDefaultSerializer(Tensor.class, TensorKryoSerializer.class);
+		int times = 100;
+		long total = 0;
+		int bufferSize = 1024;
+		for (int i = 0; i < times; i += 1) {
+			long startTime = System.nanoTime();
+			Output output = new Output(bufferSize, Integer.MAX_VALUE);
+			kryo.writeClassAndObject(output, tensor);
+			byte[] bytes = output.toBytes();
+			//System.out.println(bytes.length);
+			long endTime = System.nanoTime();
+			total += endTime - startTime;
+		}
+		System.out.println(1. * total / times / 1e9);
+	}
+
+	@Test
+	public void testJsonSer() {
+		int times = 100;
+		long total = 0;
+		for (int i = 0; i < times; i += 1) {
+			long startTime = System.nanoTime();
+			String s = TensorUtil.toString(tensor);
+			long endTime = System.nanoTime();
+			total += endTime - startTime;
+		}
+		System.out.println(1. * total / times / 1e9);
+	}
+
+	@Test
+	public void testDefaultDe() {
+		Kryo kryo = new Kryo();
+		kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
+		int bufferSize = 1024;
+		Output output = new Output(bufferSize, Integer.MAX_VALUE);
+		kryo.writeClassAndObject(output, tensor);
+		byte[] bytes = output.toBytes();
+
+		int times = 100;
+		long total = 0;
+		for (int i = 0; i < times; i += 1) {
+			long startTime = System.nanoTime();
+			Input input = new Input(bytes);
+			Tensor <?> resultTensor = (Tensor <?>) kryo.readClassAndObject(input);
+			long endTime = System.nanoTime();
+			total += endTime - startTime;
+			Assert.assertEquals(tensor.getType(), resultTensor.getType());
+			Assert.assertArrayEquals(tensor.shape(), resultTensor.shape());
+		}
+		System.out.println(1. * total / times / 1e9);
+	}
+
+	@Test
+	public void testTensorDe() {
+		Kryo kryo = new Kryo();
+		kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
+		kryo.addDefaultSerializer(Tensor.class, TensorKryoSerializer.class);
+		int bufferSize = 1024;
+		Output output = new Output(bufferSize, Integer.MAX_VALUE);
+		kryo.writeClassAndObject(output, tensor);
+		byte[] bytes = output.toBytes();
+
+		int times = 100;
+		long total = 0;
+		for (int i = 0; i < times; i += 1) {
+			long startTime = System.nanoTime();
+			Input input = new Input(bytes);
+			Tensor <?> resultTensor = (Tensor <?>) kryo.readClassAndObject(input);
+			long endTime = System.nanoTime();
+			total += endTime - startTime;
+			Assert.assertEquals(tensor.getType(), resultTensor.getType());
+			Assert.assertArrayEquals(tensor.shape(), resultTensor.shape());
+		}
+		System.out.println(1. * total / times / 1e9);
+	}
+
+	@Test
+	public void testJsonDe() {
+		String s = TensorUtil.toString(tensor);
+		int times = 100;
+		long total = 0;
+		for (int i = 0; i < times; i += 1) {
+			long startTime = System.nanoTime();
+			Tensor <?> resultTensor = TensorUtil.parseTensor(s);
+			long endTime = System.nanoTime();
+			total += endTime - startTime;
+			Assert.assertEquals(tensor.getType(), resultTensor.getType());
+			Assert.assertArrayEquals(tensor.shape(), resultTensor.shape());
+		}
+		System.out.println(1. * total / times / 1e9);
 	}
 }

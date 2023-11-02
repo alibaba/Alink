@@ -70,7 +70,7 @@ public abstract class BaseCrossTrainBatchOp<T extends BaseCrossTrainBatchOp <T>>
 
 	@Override
 	public T linkFrom(BatchOperator <?>... inputs) {
-		BatchOperator in = checkAndGetFirst(inputs);
+		BatchOperator<?> in = checkAndGetFirst(inputs);
 
 		String[] reversedCols = getParams().get(HasReservedColsDefaultAsNull.RESERVED_COLS);
 		if (reversedCols == null) {
@@ -112,32 +112,6 @@ public abstract class BaseCrossTrainBatchOp<T extends BaseCrossTrainBatchOp <T>>
 		OneHotEncoderModel oneHotEncoderModel = new OneHotEncoderModel(oneHotParams)
 			.setMLEnvironmentId(mlEnvId);
 		oneHotEncoderModel.setModelData(oneHotModel);
-
-		//todo first do not train numerical model.
-		//if (numericalCols.size() != 0) {
-		//	Params numericalParams = new Params()
-		//		.set(AutoCrossTrainParams.SELECTED_COLS, numericalCols.toArray(new String[0]));
-		//	if (getParams().contains(AutoCrossTrainParams.NUM_BUCKETS_ARRAY)) {
-		//		numericalParams.set(AutoCrossTrainParams.NUM_BUCKETS_ARRAY, getNumBucketsArray());
-		//	} else if (getParams().contains(AutoCrossTrainParams.NUM_BUCKETS)) {
-		//		numericalParams.set(AutoCrossTrainParams.NUM_BUCKETS, getNumBuckets());
-		//	}
-		//
-		//	BatchOperator quantile;
-		//	if (getBinningMethod().equals(BinningMethod.QUANTILE)) {
-		//		quantile = new QuantileDiscretizerTrainBatchOp(numericalParams)
-		//			.linkFrom(in);
-		//	} else {
-		//		quantile = new EqualWidthDiscretizerTrainBatchOp(numericalParams)
-		//			.linkFrom(in);
-		//	}
-		//	QuantileDiscretizerModel numericalModel = BinningTrainBatchOp
-		//		.setQuantileDiscretizerModelData(
-		//			quantile,
-		//			numericalCols.toArray(new String[0]),
-		//			getParams().get(ML_ENVIRONMENT_ID));
-		//	listModel.add(numericalModel);
-		//}
 
 		TransformerBase <?>[] finalModel = new TransformerBase[2];
 		finalModel[0] = oneHotEncoderModel;
