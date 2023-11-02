@@ -1,6 +1,6 @@
 package com.alibaba.alink.operator.batch.sql;
 
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
 
 import com.alibaba.alink.common.MLEnvironment;
 import com.alibaba.alink.common.MLEnvironmentFactory;

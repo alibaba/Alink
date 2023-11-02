@@ -14,6 +14,7 @@ import com.alibaba.alink.operator.batch.regression.GbdtRegPredictBatchOp;
 import com.alibaba.alink.operator.batch.regression.GbdtRegTrainBatchOp;
 import com.alibaba.alink.operator.batch.source.MemSourceBatchOp;
 import com.alibaba.alink.operator.common.tree.parallelcart.BaseGbdtTrainBatchOp;
+import com.alibaba.alink.operator.common.tree.parallelcart.criteria.GBMTreeSplitCriteria;
 import com.alibaba.alink.params.classification.GbdtTrainParams;
 import com.alibaba.alink.testutil.AlinkTestBase;
 import org.junit.Assert;
@@ -167,16 +168,16 @@ public class GbdtBatchOpTest extends AlinkTestBase {
 	public void linkFromSparseVector() throws Exception {
 		Row[] testArray =
 			new Row[] {
-				Row.of("0:1,1:2", 0),
-				Row.of("0:1,1:2", 0),
-				Row.of("1:3", 1),
-				Row.of("1:2", 0),
-				Row.of("0:1,1:3", 1),
-				Row.of("0:4,1:3", 1),
-				Row.of("0:4,1:4", 1),
-				Row.of("0:5,1:3", 0),
-				Row.of("0:5,1:4", 0),
-				Row.of("0:5,1:2", 1)
+				Row.of("$100$1:2,99:1", 0),
+				Row.of("$100$1:2", 0),
+				Row.of("$100$1:3", 1),
+				Row.of("$100$1:2,3:1", 0),
+				Row.of("$100$1:3", 1),
+				Row.of("$100$1:3", 1),
+				Row.of("$100$1:4", 1),
+				Row.of("$100$1:3", 0),
+				Row.of("$100$1:4", 0),
+				Row.of("$100$1:2", 1)
 			};
 
 		String[] colNames = new String[] {"vector", "label"};
@@ -199,6 +200,8 @@ public class GbdtBatchOpTest extends AlinkTestBase {
 			.setPredictionDetailCol("detail");
 
 		Assert.assertEquals(testArray.length, predictBatchOp.linkFrom(model, memSourceBatchOp).collect().size());
+
+		predictBatchOp.linkFrom(model, memSourceBatchOp).print();
 	}
 
 	@Test
@@ -522,7 +525,7 @@ public class GbdtBatchOpTest extends AlinkTestBase {
 		GbdtTrainBatchOp gbdtTrainBatchOp = new GbdtTrainBatchOp()
 			.setFeatureCols(colNames[0], colNames[1])
 			.setLabelCol(colNames[2])
-			.setMaxLeaves(3)
+			.setMaxLeaves(5)
 			.setMinSamplesPerLeaf(1)
 			.setLearningRate(0.1)
 			.setFeatureSubsamplingRatio(0.5)
@@ -539,15 +542,15 @@ public class GbdtBatchOpTest extends AlinkTestBase {
 		Row[] testArray =
 			new Row[] {
 				Row.of("0:1,1:2", 0),
-				Row.of("0:1,1:2", 0),
+				Row.of("0:1", 0),
 				Row.of("1:3", 1),
-				Row.of("1:2", 0),
+				Row.of("99:1", 0),
 				Row.of("0:1,1:3", 1),
-				Row.of("0:4,1:3", 1),
-				Row.of("0:4,1:4", 1),
+				Row.of("0:4,99:3", 1),
+				Row.of("0:6,99:3", 1),
 				Row.of("0:5,1:3", 0),
 				Row.of("0:5,1:4", 0),
-				Row.of("0:5,1:2", 1)
+				Row.of("0:5,99:2", 1)
 			};
 
 		String[] colNames = new String[] {"vector", "label"};

@@ -1,6 +1,6 @@
 package com.alibaba.alink.operator.batch.finance;
 
-import org.apache.flink.api.common.functions.FlatMapFunction;
+import  org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.MapPartitionFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
@@ -243,13 +243,16 @@ public class ScorecardTrainBatchOp extends BatchOperator <ScorecardTrainBatchOp>
 				} else {
 					model = new ConstrainedLinearRegTrainBatchOp(linearTrainParams).linkFrom(data, null);
 				}
-			} else {
+			} else if (ModelSummaryHelper.isLogisticRegression(getLinearModelType().toString())) {
 				if (useConstraint) {
 					model = new ConstrainedLogisticRegressionTrainBatchOp(linearTrainParams).linkFrom(data,
 						constraint);
 				} else {
 					model = new ConstrainedLogisticRegressionTrainBatchOp(linearTrainParams).linkFrom(data, null);
 				}
+			} else {
+				model = new ConstrainedDivergenceTrainBatchOp(linearTrainParams).linkFrom(data,
+					constraint);
 			}
 		} else {
 			Params stepwiseParams = new Params()

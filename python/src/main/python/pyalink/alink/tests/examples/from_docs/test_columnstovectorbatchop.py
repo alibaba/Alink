@@ -15,7 +15,6 @@ class TestColumnsToVectorBatchOp(unittest.TestCase):
             .setSelectedCols(["f0", "f1"])\
             .setReservedCols(["row"])\
             .setVectorCol("vec")\
-            .setVectorSize(5)\
             .linkFrom(data)
         
         op.print()

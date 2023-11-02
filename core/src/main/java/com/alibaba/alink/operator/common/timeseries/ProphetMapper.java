@@ -153,12 +153,12 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 		LOG.info("Entering warmStartProphet");
 
 		List <Row> outputs;
-		if (initModel != null) {
-			LOG.info("initModel != null");
+		if (initModel == null) {
+			LOG.info("initModel == null");
 			outputs = runner.get().calc(conf, inputs, null);
 			LOG.info("after call calc");
 		} else {
-			LOG.info("initModel == null");
+			LOG.info("initModel != null");
 			List <Row> modelRows = new ArrayList <>();
 			modelRows.add(Row.of(initModel));
 			outputs = runner.get().calc(conf, inputs, modelRows);
@@ -193,7 +193,7 @@ public class ProphetMapper extends TimeSeriesSingleMapper {
 				if (b.get(ak) instanceof BigDecimal) {
 					rows[rowIdx].setField(i, ((BigDecimal) b.get(ak)).doubleValue());
 				} else {
-					long val = (Long) b.get(ak);
+					long val = ((Number) b.get(ak)).longValue();
 					if (detailColNames[i].equals("ds")) {
 						detailColTypes[i] = AlinkTypes.SQL_TIMESTAMP;
 						val -= 28800000;

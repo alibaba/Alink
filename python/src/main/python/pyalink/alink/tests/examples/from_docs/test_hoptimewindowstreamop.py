@@ -20,7 +20,12 @@ class TestHopTimeWindowStreamOp(unittest.TestCase):
         
         streamSource = StreamOperator.fromDataframe(sourceFrame,schemaStr="user int, device long, ip long, timeCol long")
         
-        op = HopTimeWindowStreamOp().setTimeCol("timeCol").setHopTime(40).setWindowTime(120).setPartitionCols(["user"]).setClause("count_preceding(ip) as countip")
+        op = HopTimeWindowStreamOp()\
+                .setTimeCol("timeCol")\
+                .setHopTime(40)\
+                .setWindowTime(120)\
+                .setGroupCols(["user"])\
+                .setClause("count_preceding(ip) as countip")
         
         streamSource.select('user, device, ip, to_timestamp(timeCol) as timeCol').link(op).print()
         

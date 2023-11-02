@@ -20,13 +20,13 @@ class TestTumbleTimeWindowStreamOp(unittest.TestCase):
         
         streamSource = StreamOperator.fromDataframe(sourceFrame,schemaStr="user int, device long, ip long, timeCol long")
         
-        op = SessionTimeWindowStreamOp().setTimeCol("timeCol").setSessionGapTime(60).setLatency(180).setPartitionCols(["user"]).setClause("count_preceding(ip) as countip")
+        op = TumbleTimeWindowStreamOp()\
+                .setTimeCol("timeCol")\
+                .setWindowTime(60)\
+                .setGroupCols(["user"])\
+                .setClause("count_preceding(ip) as countip")
         
         streamSource.select('user, device, ip, to_timestamp(timeCol) as timeCol').link(op).print()
-        
-        op2 = TumbleTimeWindowStreamOp().setTimeCol("timeCol").setWindowTime(60).setPartitionCols(["user"]).setClause("count_preceding(ip) as countip")
-                                                    
-        streamSource.select('user, device, ip, to_timestamp(timeCol) as timeCol').link(op2).print()
         
         StreamOperator.execute()
         

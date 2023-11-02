@@ -7,10 +7,9 @@ import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.Table;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.MTable.MTableKryoSerializerV2;
@@ -201,15 +200,7 @@ public class MLEnvironment {
 	 */
 	public StreamTableEnvironment getStreamTableEnvironment() {
 		if (null == streamTableEnv) {
-			streamTableEnv = StreamTableEnvironment
-				.create(
-					getStreamExecutionEnvironment(),
-					EnvironmentSettings
-						.newInstance()
-						.useOldPlanner()
-						.build()
-				);
-
+			streamTableEnv = StreamTableEnvironment.create(getStreamExecutionEnvironment());
 			BuiltInAggRegister.registerUdf(streamTableEnv);
 			BuiltInAggRegister.registerUdtf(streamTableEnv);
 			BuiltInAggRegister.registerUdaf(streamTableEnv);

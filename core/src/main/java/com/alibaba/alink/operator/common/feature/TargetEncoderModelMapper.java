@@ -21,7 +21,6 @@ public class TargetEncoderModelMapper extends ModelMapper {
 	private TargetEncoderModelData modelData;
 	int resSize;
 
-
 	public TargetEncoderModelMapper(TableSchema modelSchema, TableSchema dataSchema, Params params) {
 		super(modelSchema, dataSchema, params);
 	}
@@ -48,7 +47,7 @@ public class TargetEncoderModelMapper extends ModelMapper {
 		if (resCols.length != resSize) {
 			throw new RuntimeException("Output column size must be equal to input column size.");
 		}
-		TypeInformation[] resTypes = new TypeInformation[resSize];
+		TypeInformation <?>[] resTypes = new TypeInformation[resSize];
 		Arrays.fill(resTypes, Types.DOUBLE);
 		return Tuple4.of(selectedCols, resCols, resTypes, params.get(TargetEncoderPredictParams.RESERVED_COLS));
 	}

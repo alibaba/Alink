@@ -20,6 +20,7 @@ import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;
+import com.alibaba.alink.common.annotation.Internal;
 import com.alibaba.alink.common.type.AlinkTypes;
 import com.alibaba.alink.common.linalg.DenseMatrix;
 import com.alibaba.alink.common.linalg.DenseVector;
@@ -58,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Internal
 public class BaseStepWiseSelectorBatchOp extends BatchOperator <BaseStepWiseSelectorBatchOp>
 	implements BaseStepwiseSelectorParams <BaseStepWiseSelectorBatchOp>, AlinkViz <BaseStepWiseSelectorBatchOp> {
 	private static final long serialVersionUID = -1353820179732001005L;
@@ -297,7 +299,7 @@ public class BaseStepWiseSelectorBatchOp extends BatchOperator <BaseStepWiseSele
 			//standard input
 			in = BatchOperator.fromTable(DataSetConversionUtil.toTable(getMLEnvironmentId(),
 				in.getDataSet()
-					.map(new VectorAssembler(selectedColsIdx, labelIdx))
+					.map(new VectorAssemblerFunc(selectedColsIdx, labelIdx))
 					.withBroadcastSet(vectorSizes, "vectorSizes"),
 				new String[] {INNER_VECTOR_COL, INNER_LABLE_COL},
 				resultTypes));
@@ -893,13 +895,13 @@ public class BaseStepWiseSelectorBatchOp extends BatchOperator <BaseStepWiseSele
 		}
 	}
 
-	public static class VectorAssembler extends RichMapFunction <Row, Row> {
+	public static class VectorAssemblerFunc extends RichMapFunction <Row, Row> {
 		private static final long serialVersionUID = 2474917145545199423L;
 		private int[] vectorSizes;
 		private int[] selectedColIndices;
 		private int labelColIdx;
 
-		public VectorAssembler(int[] selectedColIndices, int labelColIdx) {
+		public VectorAssemblerFunc(int[] selectedColIndices, int labelColIdx) {
 			this.selectedColIndices = selectedColIndices;
 			this.labelColIdx = labelColIdx;
 

@@ -34,7 +34,7 @@ class TestAutoGarchBatchOp(unittest.TestCase):
         				.setIcType("AIC")
         				.setPredictNum(10)
         				.setMaxOrder(4)
-        				.setIfGARCH11(False)
+        				.setIfGARCH11(True)
         				.setMinusMean(False)
         				.setPredictionCol("pred")
         		).print()

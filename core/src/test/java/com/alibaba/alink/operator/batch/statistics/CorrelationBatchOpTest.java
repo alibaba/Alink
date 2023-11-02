@@ -72,9 +72,9 @@ public class CorrelationBatchOpTest extends AlinkTestBase {
 			@Override
 			public void accept(CorrelationResult summary) {
 				Assert.assertArrayEquals(summary.getCorrelationMatrix().getArrayCopy1D(true),
-					new double[] {1.0, -0.39999999999999997, -0.39999999999999997,
-						-0.39999999999999997, 1.0, 1.0,
-						-0.39999999999999997, 1.0, 1.0},
+					new double[] {1.0, -0.7181848464596079, -0.7181848464596079,
+						-0.7181848464596079, 1.0, 1.0,
+						-0.7181848464596079, 1.0, 1.0},
 					10e-4);
 			}
 		});

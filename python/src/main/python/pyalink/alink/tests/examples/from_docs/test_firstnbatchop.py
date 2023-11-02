@@ -13,8 +13,6 @@ class TestFirstNBatchOp(unittest.TestCase):
                ["9.1,9.1,9.1"],
                ["9.2,9.2,9.2"]
         ])
-            
-        
         
         # batch source 
         inOp = BatchOperator.fromDataframe(df, schemaStr='Y string')

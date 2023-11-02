@@ -246,7 +246,7 @@ public abstract class BaseLinearModelTrainBatchOp<T extends BaseLinearModelTrain
 								"Initial linear model is not compatible with parameter setting."
 									+ "linearModelType setting error.");
 						}
-						if (!(model.vectorSize == featSize)) {
+						if (!(model.vectorSize + (model.hasInterceptItem ? 1 : 0)== featSize)) {
 							throw new AkIllegalDataException("Initial linear model is not compatible with training "
 								+ "data. "
 								+ " vector size not equal, vector size in init model is : " + model.vectorSize +

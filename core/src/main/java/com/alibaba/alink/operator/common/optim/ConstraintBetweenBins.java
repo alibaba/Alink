@@ -163,8 +163,10 @@ public class ConstraintBetweenBins implements Serializable {
 	public Tuple4 <double[][], double[], double[][], double[]> getConstraints(int dim) {
 		int inequalSize = lessThan.size() + largerThan.size() + lessThanBin.size() + largerThanBin.size();
 		int equalSize = equal.size() + scale.size();
+		//func
 		double[][] equalityConstraint = new double[equalSize][dim];
 		double[][] inequalityConstraint = new double[inequalSize][dim];
+		//value
 		double[] equalityItem = new double[equalSize];
 		double[] inequalityItem = new double[inequalSize];
 		//in sqp, it needs to write in the form of ≥.

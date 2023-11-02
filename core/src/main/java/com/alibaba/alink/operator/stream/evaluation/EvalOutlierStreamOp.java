@@ -8,7 +8,6 @@ import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
@@ -22,6 +21,7 @@ import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.utils.TableUtil;
+import com.alibaba.alink.operator.stream.utils.TimeUtil;
 import com.alibaba.alink.operator.common.evaluation.BaseMetrics;
 import com.alibaba.alink.operator.common.evaluation.BaseMetricsSummary;
 import com.alibaba.alink.operator.common.evaluation.ClassificationEvaluationUtil;
@@ -29,7 +29,6 @@ import com.alibaba.alink.operator.common.evaluation.ConfusionMatrix;
 import com.alibaba.alink.operator.common.evaluation.EvalOutlierUtils.ReplaceLabelMapFunction;
 import com.alibaba.alink.operator.common.evaluation.OutlierMetricsSummary;
 import com.alibaba.alink.operator.stream.StreamOperator;
-import com.alibaba.alink.operator.stream.utils.TimeUtil;
 import com.alibaba.alink.params.evaluation.EvalOutlierStreamParams;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.StringUtils;
@@ -179,8 +178,9 @@ public class EvalOutlierStreamOp extends StreamOperator <EvalOutlierStreamOp>
 		data = data.map(new ReplaceLabelMapFunction(outlierValueSet, 1, 0));
 
 		DataStream <OutlierMetricsSummary> windowsStatistics = data
-			.windowAll(TumblingProcessingTimeWindows.of(TimeUtil.convertTime(timeInterval)))
-			.apply(new CalcOutlierMetricsSummaryWindowFunction(outlierValues));
+			.timeWindowAll(TimeUtil.convertTime(timeInterval))
+			.apply(new CalcOutlierMetricsSummaryWindowFunction(outlierValues))
+			.setParallelism(1);
 
 		DataStream <OutlierMetricsSummary> allStatistics = windowsStatistics
 			.map(new AccSummaryMapFunction <>())

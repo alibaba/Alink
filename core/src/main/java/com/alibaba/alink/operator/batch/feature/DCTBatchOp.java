@@ -21,7 +21,7 @@ import com.alibaba.alink.params.feature.DCTParams;
 @InputPorts(values = {@PortSpec(PortType.DATA)})
 @OutputPorts(values = {@PortSpec(value = PortType.DATA, desc = PortDesc.OUTPUT_RESULT)})
 @ParamSelectColumnSpec(name = "selectedCol")
-@NameCn("Discrete Cosine Transform")
+@NameCn("离散余弦变换")
 @NameEn("Cross Feature Training")
 public class DCTBatchOp extends MapBatchOp <DCTBatchOp>
 	implements DCTParams <DCTBatchOp> {

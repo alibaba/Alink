@@ -20,7 +20,7 @@ class TestOverCountWindowStreamOp(unittest.TestCase):
         
         source = StreamOperator.fromDataframe(sourceFrame,schemaStr="user int, device long, ip long, timeCol long")
         
-        op = OverCountWindowStreamOp().setTimeCol("timeCol").setPrecedingRows(10).setPartitionCols(["user"]).setClause("count_preceding(ip) as countip")
+        op = OverCountWindowStreamOp().setTimeCol("timeCol").setPrecedingRows(10).setGroupCols(["user"]).setClause("count_preceding(ip) as countip")
         
         source.select('user, device, ip, to_timestamp(timeCol) as timeCol').link(op).print()
         

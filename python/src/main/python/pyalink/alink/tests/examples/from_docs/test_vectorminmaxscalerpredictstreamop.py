@@ -21,8 +21,6 @@ class TestVectorMinMaxScalerPredictStreamOp(unittest.TestCase):
                    .setSelectedCol("vec")
         model = trainOp.linkFrom(data) 
         
-        
-        
         streamPredictOp = VectorMinMaxScalerPredictStreamOp(model)
         streamPredictOp.linkFrom(dataStream).print()
         

@@ -3,8 +3,6 @@ package com.alibaba.alink.operator.common.optim;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.tuple.Tuple4;
-import org.apache.flink.ml.api.misc.param.ParamInfo;
-import org.apache.flink.ml.api.misc.param.ParamInfoFactory;
 import org.apache.flink.ml.api.misc.param.Params;
 
 import com.alibaba.alink.common.AlinkGlobalConfiguration;
@@ -78,10 +76,10 @@ public class LocalOptimizer {
 	}
 
 	public static int getNumThreads(List <Tuple3 <Double, Double, Vector>> labledVectors, Params params) {
-		int numThreads = LocalOperator.getDefaultNumThreads();
-		if (params.contains(HasNumThreads.NUM_THREADS)) {
-			numThreads = params.get(HasNumThreads.NUM_THREADS);
-		}
+		int numThreads = LocalOperator.getParallelism();
+		//if (params.contains(HasNumThreads.NUM_THREADS)) {
+		//	numThreads = params.get(HasNumThreads.NUM_THREADS);
+		//}
 		return Math.min(numThreads, labledVectors.size());
 	}
 

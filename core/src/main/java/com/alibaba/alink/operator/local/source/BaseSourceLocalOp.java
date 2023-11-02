@@ -15,8 +15,6 @@ import com.alibaba.alink.common.annotation.PortSpec;
 import com.alibaba.alink.common.annotation.PortType;
 import com.alibaba.alink.common.exceptions.AkIllegalDataException;
 import com.alibaba.alink.common.exceptions.AkUnsupportedOperationException;
-import com.alibaba.alink.common.utils.JsonConverter;
-import com.alibaba.alink.operator.common.io.csv.GenericCsvInputFormat;
 import com.alibaba.alink.operator.local.AlinkLocalSession;
 import com.alibaba.alink.operator.local.AlinkLocalSession.IOTaskRunner;
 import com.alibaba.alink.operator.local.LocalOperator;
@@ -78,11 +76,11 @@ public abstract class BaseSourceLocalOp<T extends BaseSourceLocalOp <T>> extends
 			throw new IllegalArgumentException("Produced type information must not be null.");
 		}
 
-		int numThreads = LocalOperator.getDefaultNumThreads();
+		int numThreads = LocalOperator.getParallelism();
 
-		if (params.contains(HasNumThreads.NUM_THREADS)) {
-			numThreads = params.get(HasNumThreads.NUM_THREADS);
-		}
+		//if (params.contains(HasNumThreads.NUM_THREADS)) {
+		//	numThreads = params.get(HasNumThreads.NUM_THREADS);
+		//}
 
 		final int numFields = producedType.getTotalFields();
 

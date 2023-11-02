@@ -25,11 +25,10 @@ public class Dbscan extends EstimatorBase <Dbscan, DbscanModel> implements
 	}
 
 	/**
-	 * Computes a FpGrowhModel that contains frequent itemsets.
+	 * Computes a DbscanModel.
 	 *
-	 * @param input input datasets, each element contains a string where items are concatenated
-	 *              by comma.
-	 * @return a FpGrowthModel
+	 * @param input input datasets.
+	 * @return a DbscanModel
 	 */
 	@Override
 	public DbscanModel fit(BatchOperator <?> input) {

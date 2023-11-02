@@ -70,10 +70,10 @@ public class LocalLSHModelDataConverter extends NearestNeighborDataConverter <Lo
 		Solver solver = params.get(VectorApproxNearestNeighborTrainParams.SOLVER);
 		AkPreconditions.checkArgument(solver.equals(Solver.LOCAL_LSH), "Not supported solver: " + solver.name());
 
-		int numThreads = LocalOperator.getDefaultNumThreads();
-		if (params.contains(HasNumThreads.NUM_THREADS)) {
-			numThreads = params.get(HasNumThreads.NUM_THREADS);
-		}
+		int numThreads = LocalOperator.getParallelism();
+		//if (params.contains(HasNumThreads.NUM_THREADS)) {
+		//	numThreads = params.get(HasNumThreads.NUM_THREADS);
+		//}
 		final TaskRunner taskRunner = new TaskRunner();
 		final int numRows = mt.getNumRow();
 

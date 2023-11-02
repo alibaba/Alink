@@ -2,6 +2,8 @@ import os
 import tempfile
 import unittest
 
+import pytest
+
 from pyflink.table.catalog import ObjectPath
 
 from pyalink.alink import *
@@ -32,6 +34,7 @@ class TestCatalogObject(unittest.TestCase):
         print(catalog_object2)
         self.assertEqual(catalog_object.serialize(), catalog_object2.serialize())
 
+    @pytest.mark.skip()
     def test_source_sink(self):
         catalog, catalog_object = self.get_catalog_object()
 

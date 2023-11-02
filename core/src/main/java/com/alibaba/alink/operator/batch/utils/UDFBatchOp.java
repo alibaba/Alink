@@ -1,7 +1,7 @@
 package com.alibaba.alink.operator.batch.utils;
 
 import org.apache.flink.ml.api.misc.param.Params;
-import org.apache.flink.table.api.bridge.java.BatchTableEnvironment;
+import org.apache.flink.table.api.java.BatchTableEnvironment;
 import org.apache.flink.table.functions.ScalarFunction;
 
 import com.alibaba.alink.common.MLEnvironmentFactory;

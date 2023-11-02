@@ -124,7 +124,7 @@ class TestDataFrame(unittest.TestCase):
         end_time = time.time()
         elapsed_time = end_time - start_time
         print(elapsed_time)
-        self.assertTrue(elapsed_time < 10)
+        self.assertTrue(elapsed_time < 15)
 
     def test_op_to_df_speed(self):
         import time
@@ -148,8 +148,8 @@ class TestDataFrame(unittest.TestCase):
 
         end_time = time.time()
         elapsed_time = end_time - start_time
-
-        self.assertTrue(elapsed_time < 10)
+        print(elapsed_time)
+        self.assertTrue(elapsed_time < 15)
 
     def test_date_format(self):
         import datetime

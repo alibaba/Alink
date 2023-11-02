@@ -126,16 +126,4 @@ public class ParamAnnotationUtils {
 		return s;
 	}
 
-	public static List <Class <?>> listParamInfos(Class <?>... bases) {
-		Reflections ref = new Reflections(BASE_PARAMS_PKG_NAME);
-		List <Class <?>> params = new ArrayList <>();
-		for (Class <?> base : bases) {
-			params.addAll(ref.getSubTypesOf(base));
-		}
-		return params.stream()
-			.filter(PublicOperatorUtils::isPublicUsable)
-			.sorted(Comparator.comparing(Class::toString))
-			.collect(Collectors.toList());
-	}
-
 }

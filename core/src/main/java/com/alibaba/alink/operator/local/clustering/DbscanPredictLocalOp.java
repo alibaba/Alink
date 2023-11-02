@@ -75,7 +75,7 @@ public class DbscanPredictLocalOp extends LocalOperator <DbscanPredictLocalOp> i
 		Row[] resultRows = new Row[numData];
 
 		final TaskRunner taskRunner = new TaskRunner();
-		int numThreads = LocalOperator.getDefaultNumThreads();
+		int numThreads = LocalOperator.getParallelism();
 		if (getParams().contains(HasNumThreads.NUM_THREADS)) {
 			numThreads = getParams().get(HasNumThreads.NUM_THREADS);
 		}

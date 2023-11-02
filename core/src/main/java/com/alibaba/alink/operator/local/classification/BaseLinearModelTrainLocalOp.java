@@ -212,41 +212,43 @@ public abstract class BaseLinearModelTrainLocalOp<T extends BaseLinearModelTrain
 			throw new AkIllegalArgumentException("Initial linear model is not compatible with parameter setting."
 				+ "linearModelType setting error.");
 		}
-		if (!(model.vectorSize == featSize)) {
+		if (!(model.vectorSize + (model.hasInterceptItem ? 1 : 0) == featSize)) {
 			throw new AkIllegalDataException("Initial linear model is not compatible with training data. "
 				+ " vector size not equal, vector size in init model is : " + model.vectorSize +
 				" and vector size of train data is : " + featSize);
 		}
-		int n = meanVar[0].size();
-		if (!LinearModelType.Softmax.equals(localLinearModelType)) {
+		if (null != meanVar[0]) {
+			int n = meanVar[0].size();
+			if (!LinearModelType.Softmax.equals(localLinearModelType)) {
 
-			if (model.hasInterceptItem) {
-				double sum = 0.0;
-				for (int i = 1; i < n; ++i) {
-					sum += model.coefVector.get(i) * meanVar[0].get(i);
-					model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(i));
-				}
-				model.coefVector.set(0, model.coefVector.get(0) + sum);
-			} else {
-				for (int i = 0; i < n; ++i) {
-					model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(i));
-				}
-			}
-		} else {
-			if (model.hasInterceptItem) {
-				for (int i = 0; i < 10 - 1; ++i) {
+				if (model.hasInterceptItem) {
 					double sum = 0.0;
-					for (int j = 1; j < n; ++j) {
-						int idx = i * n + j;
-						sum += model.coefVector.get(idx) * meanVar[0].get(j);
-						model.coefVector.set(idx, model.coefVector.get(idx) * meanVar[1].get(j));
+					for (int i = 1; i < n; ++i) {
+						sum += model.coefVector.get(i) * meanVar[0].get(i);
+						model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(i));
 					}
-					model.coefVector.set(i * n, model.coefVector.get(i * n) + sum);
+					model.coefVector.set(0, model.coefVector.get(0) + sum);
+				} else {
+					for (int i = 0; i < n; ++i) {
+						model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(i));
+					}
 				}
 			} else {
-				for (int i = 0; i < model.coefVector.size(); ++i) {
-					int idx = i % meanVar[1].size();
-					model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(idx));
+				if (model.hasInterceptItem) {
+					for (int i = 0; i < 10 - 1; ++i) {
+						double sum = 0.0;
+						for (int j = 1; j < n; ++j) {
+							int idx = i * n + j;
+							sum += model.coefVector.get(idx) * meanVar[0].get(j);
+							model.coefVector.set(idx, model.coefVector.get(idx) * meanVar[1].get(j));
+						}
+						model.coefVector.set(i * n, model.coefVector.get(i * n) + sum);
+					}
+				} else {
+					for (int i = 0; i < model.coefVector.size(); ++i) {
+						int idx = i % meanVar[1].size();
+						model.coefVector.set(i, model.coefVector.get(i) * meanVar[1].get(idx));
+					}
 				}
 			}
 		}
@@ -810,28 +812,27 @@ public abstract class BaseLinearModelTrainLocalOp<T extends BaseLinearModelTrain
 			- (meta.get(ModelParamName.HAS_INTERCEPT_ITEM) ? 1 : 0)
 			- (LinearModelType.AFT.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE)) ? 1 : 0));
 
-		if (!(LinearModelType.AFT.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE)))) {
-
-			if (LinearModelType.Softmax.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE))) {
-				if (hasIntercept) {
-					int vecSize = meanVar[0].size();
-					for (int i = 0; i < k1; ++i) {
-						double sum = 0.0;
-						for (int j = 1; j < vecSize; ++j) {
-							int idx = i * vecSize + j;
-							sum += coefVector.f0.get(idx) * meanVar[0].get(j) / meanVar[1].get(j);
-							coefVector.f0.set(idx, coefVector.f0.get(idx) / meanVar[1].get(j));
+		if (standardization) {
+			if (!(LinearModelType.AFT.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE)))) {
+				if (LinearModelType.Softmax.equals(meta.get(ModelParamName.LINEAR_MODEL_TYPE))) {
+					if (hasIntercept) {
+						int vecSize = meanVar[0].size();
+						for (int i = 0; i < k1; ++i) {
+							double sum = 0.0;
+							for (int j = 1; j < vecSize; ++j) {
+								int idx = i * vecSize + j;
+								sum += coefVector.f0.get(idx) * meanVar[0].get(j) / meanVar[1].get(j);
+								coefVector.f0.set(idx, coefVector.f0.get(idx) / meanVar[1].get(j));
+							}
+							coefVector.f0.set(i * vecSize, coefVector.f0.get(i * vecSize) - sum);
 						}
-						coefVector.f0.set(i * vecSize, coefVector.f0.get(i * vecSize) - sum);
+					} else {
+						for (int i = 0; i < coefVector.f0.size(); ++i) {
+							int idx = i % meanVar[1].size();
+							coefVector.f0.set(i, coefVector.f0.get(i) / meanVar[1].get(idx));
+						}
 					}
 				} else {
-					for (int i = 0; i < coefVector.f0.size(); ++i) {
-						int idx = i % meanVar[1].size();
-						coefVector.f0.set(i, coefVector.f0.get(i) / meanVar[1].get(idx));
-					}
-				}
-			} else {
-				if (standardization) {
 					int n = meanVar[0].size();
 					if (hasIntercept) {
 						double sum = 0.0;
@@ -847,7 +848,6 @@ public abstract class BaseLinearModelTrainLocalOp<T extends BaseLinearModelTrain
 					}
 				}
 			}
-
 		}
 
 		LinearModelData modelData = new LinearModelData(labelType, meta, featureNames, coefVector.f0);

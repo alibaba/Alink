@@ -230,7 +230,7 @@ def post_convert(df: pd.DataFrame, colnames, coltypes):
 
     # Different from `j_value_to_py_value`, values in df may be `str`, but needs to be converted to other types.
     converters = {
-        'ANY<com.alibaba.alink.common.MTable>'.upper(): lambda s: MTable.fromJson(s)
+        'ANY<com.alibaba.alink.common.MTable>'.upper(): lambda s: MTable.fromJson(s) if isinstance(s, str) else s
     }
     for tensor_cls in get_all_subclasses(Tensor):
         # noinspection PyProtectedMember

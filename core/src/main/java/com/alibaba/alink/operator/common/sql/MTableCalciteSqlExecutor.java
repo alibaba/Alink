@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.common.sql;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableFunction;
@@ -11,6 +12,14 @@ import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.common.exceptions.AkUnclassifiedErrorException;
 import com.alibaba.alink.common.io.plugin.TemporaryClassLoaderContext;
+import com.alibaba.alink.common.sql.builtin.time.DataFormat;
+import com.alibaba.alink.common.sql.builtin.time.FromUnixTime;
+import com.alibaba.alink.common.sql.builtin.time.Now;
+import com.alibaba.alink.common.sql.builtin.time.ToTimeStamp;
+import com.alibaba.alink.common.sql.builtin.time.ToTimeStampFromFormat;
+import com.alibaba.alink.common.sql.builtin.time.ToTimeStampMicro;
+import com.alibaba.alink.common.sql.builtin.time.UnixTimeStamp;
+import com.alibaba.alink.common.sql.builtin.time.UnixTimeStampMicro;
 import com.alibaba.alink.operator.batch.sql.BatchSqlOperators;
 import com.alibaba.alink.operator.common.io.types.JdbcTypeConverter;
 import com.alibaba.alink.operator.local.sql.CalciteFunctionCompiler;
@@ -37,15 +46,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import static com.alibaba.alink.operator.common.sql.CalciteSelectMapper.registerFlinkBuiltInFunctions;
 
 /**
  * Execute SQL on MTables with local Calcite engine, which is similar to {@link BatchSqlOperators}.
@@ -85,8 +92,31 @@ public class MTableCalciteSqlExecutor implements SqlExecutor <MTable> {
 			throw new AkIllegalStateException("Failed to unwrap CalciteConnection instance.", e);
 		}
 		rootSchema = calciteConnection.getRootSchema();
-		registerFlinkBuiltInFunctions(rootSchema);
+		CalciteSelectMapper.registerFlinkBuiltInFunctions(rootSchema);
+		registerUdf();
+
 		calciteSchema = rootSchema.unwrap(CalciteSchema.class);
+	}
+
+	private void registerUdf() {
+		addFunction("now", new Now());
+		addFunction("to_timestamp", new ToTimeStamp());
+		addFunction("unix_timestamp", new UnixTimeStamp());
+		addFunction("from_unixtime", new FromUnixTime());
+		addFunction("date_format_ltz", new DataFormat());
+		addFunction("unix_timestamp_macro", new UnixTimeStampMicro());
+		addFunction("to_timestamp_micro", new ToTimeStampMicro());
+		addFunction("to_timestamp_from_format", new ToTimeStampFromFormat());
+	}
+
+	@Override
+	public String[] listTableNames() {
+		return calciteSchema.getTableNames().toArray(new String[0]);
+	}
+
+	@Override
+	public String[] listFunctionNames() {
+		return calciteSchema.getFunctionNames().toArray(new String[0]);
 	}
 
 	@Override
@@ -130,7 +160,7 @@ public class MTableCalciteSqlExecutor implements SqlExecutor <MTable> {
 	}
 
 	/**
-	 * When user-defined types are in the results, {@link ResultSetMetaData#getColumnType} returns {@link Types#OTHER},
+	 * When user-defined types are in the results, {@link ResultSetMetaData#getColumnType} returns {@link Types},
 	 * which makes Alink unable to get the right {@link TypeInformation} for these fields.
 	 * <p>
 	 * To obtain right {@link TypeInformation} for these fields, we have to use reflections to access private field of
@@ -179,22 +209,61 @@ public class MTableCalciteSqlExecutor implements SqlExecutor <MTable> {
 		try (TemporaryClassLoaderContext ignored =
 				 TemporaryClassLoaderContext.of(calciteFunctionCompiler.getClassLoader())) {
 			Statement statement = connection.createStatement();
+
+			// todo: select col1 where unix_timestamp_macro(col1)=12 will exception.
 			ResultSet resultSet = statement.executeQuery(sql);
 			ResultSetMetaData metaData = resultSet.getMetaData();
+
 			TableSchema schema = extractSchemaByReflection(metaData);
 			int numCols = metaData.getColumnCount();
+
+			// something wrong when timestamp type input and output in calcite. need convert to long in execute
+			// query, and convert to timestamp when output.
+			boolean isHasTimeStamp = false;
+			StringBuilder sbd = new StringBuilder();
+			for (int i = 0; i < numCols; i++) {
+				sbd.append(",");
+				String colName = schema.getFieldName(i).get();
+				if (Types.SQL_TIMESTAMP == schema.getFieldType(i).get()) {
+					sbd.append(String.format("unix_timestamp_macro(%s) as %s", colName, colName));
+					isHasTimeStamp = true;
+				} else {
+					sbd.append(colName);
+				}
+			}
+
+			if (isHasTimeStamp) {
+				String newQuery = "select " + sbd.substring(1) + " from "
+					+ "\n("
+					+ sql
+					+ "\n)";
+				resultSet = statement.executeQuery(newQuery);
+			}
+
 			List <Row> data = new ArrayList <>();
+
 			while (resultSet.next()) {
 				Row row = new Row(numCols);
 				for (int i = 0; i < numCols; i += 1) {
-					row.setField(i, resultSet.getObject(i + 1));
+					if (Types.SQL_TIMESTAMP == schema.getFieldType(i).get()) {
+						Object tmp = resultSet.getObject(i + 1);
+						if (tmp instanceof Long) {
+							row.setField(i, new Timestamp((long)tmp));
+						} else {
+							row.setField(i, tmp);
+						}
+					} else {
+						row.setField(i, resultSet.getObject(i + 1));
+					}
 				}
 				data.add(row);
 			}
+
 			return new MTable(data, schema);
 		} catch (SQLException e) {
 			throw new AkUnclassifiedErrorException("Failed to execute query: " + sql, e);
 		}
+
 	}
 
 	@Override
