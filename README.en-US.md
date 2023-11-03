@@ -50,11 +50,11 @@ Welcome everyone to join the Alink open source user group to communicate.
 If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstall pyalink` or `pip uninstall pyalink-flink-***` to remove them.
 
 2. If `pip install` is slow of failed, refer to [this article](https://segmentfault.com/a/1190000006111096) to change the pip source, or use the following download links:
-    - Flink 1.13：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink-1.6.2-py3-none-any.whl) (MD5: 9ba69d9bdb6c9f6c8c2f26e15e6e6aac)
-    - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.12-1.6.2-py3-none-any.whl) (MD5: 1988317fe06175a4887158ac031e4c03)
-    - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.11-1.6.2-py3-none-any.whl) (MD5: 9bb0a79e5ccac7c76778a8a822c1fde4)
-    - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.10-1.6.2-py3-none-any.whl) (MD5: dc9a94d7a1b2dfd2ceb8bba18059d81f)
-    - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.9-1.6.2-py3-none-any.whl) (MD5: 72fb60f0ad93a668be842ab3a23bf1be)
+    - Flink 1.13：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink-1.6.2.post0-py3-none-any.whl) (MD5: d4b7b1fe6474b11ca7f45d0fb0daf5bc)
+    - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink_flink_1.12-1.6.2.post0-py3-none-any.whl) (MD5: 527b9ac24383ccc8593cd61b06cc610d)
+    - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink_flink_1.11-1.6.2.post0-py3-none-any.whl) (MD5: 7e59ba00b3739386996cf55d8f522ed2)
+    - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink_flink_1.10-1.6.2.post0-py3-none-any.whl) (MD5: 6d5d9048c9a44f27285467c5117e8deb)
+    - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink_flink_1.9-1.6.2.post0-py3-none-any.whl) (MD5: e89ac35a6a1c63c0426f3d9ca1025880)
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 

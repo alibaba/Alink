@@ -62,11 +62,11 @@
 1. `pyalink` 和 `pyalink-flink-***` 不能同时安装，也不能与旧版本同时安装。
 如果之前安装过 `pyalink` 或者 `pyalink-flink-***`，请使用`pip uninstall pyalink` 或者 `pip uninstall pyalink-flink-***` 卸载之前的版本。
 2. 出现`pip`安装缓慢或不成功的情况，可以参考[这篇文章](https://segmentfault.com/a/1190000006111096)修改pip源，或者直接使用下面的链接下载 whl 包，然后使用 `pip` 安装：
-   - Flink 1.13：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink-1.6.2-py3-none-any.whl) (MD5: 9ba69d9bdb6c9f6c8c2f26e15e6e6aac)
-   - Flink 1.12：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.12-1.6.2-py3-none-any.whl) (MD5: 1988317fe06175a4887158ac031e4c03)
-   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.11-1.6.2-py3-none-any.whl) (MD5: 9bb0a79e5ccac7c76778a8a822c1fde4)
-   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.10-1.6.2-py3-none-any.whl) (MD5: dc9a94d7a1b2dfd2ceb8bba18059d81f)
-   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.9-1.6.2-py3-none-any.whl) (MD5: 72fb60f0ad93a668be842ab3a23bf1be)
+   - Flink 1.13：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink-1.6.2.post0-py3-none-any.whl) (MD5: d4b7b1fe6474b11ca7f45d0fb0daf5bc)
+   - Flink 1.12：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink_flink_1.12-1.6.2.post0-py3-none-any.whl) (MD5: 527b9ac24383ccc8593cd61b06cc610d)
+   - Flink 1.11：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink_flink_1.11-1.6.2.post0-py3-none-any.whl) (MD5: 7e59ba00b3739386996cf55d8f522ed2)
+   - Flink 1.10：[链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink_flink_1.10-1.6.2.post0-py3-none-any.whl) (MD5: 6d5d9048c9a44f27285467c5117e8deb)
+   - Flink 1.9: [链接](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2.post0/pyalink_flink_1.9-1.6.2.post0-py3-none-any.whl) (MD5: e89ac35a6a1c63c0426f3d9ca1025880)
 3. 如果有多个版本的 Python，可能需要使用特定版本的 `pip`，比如 `pip3`；如果使用 Anaconda，则需要在 Anaconda 命令行中进行安装。
 
 ### 开始使用：
