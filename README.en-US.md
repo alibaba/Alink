@@ -34,7 +34,7 @@ Welcome everyone to join the Alink open source user group to communicate.
   - PyAlink provides different Python packages for Flink versions that Alink supports: 
   package `pyalink` always maintains Alink Python API against the latest Flink version, which is 1.13, 
   while `pyalink-flink-***` support old-version Flink, which are `pyalink-flink-1.12`, `pyalink-flink-1.11`, `pyalink-flink-1.10` and `pyalink-flink-1.9` for now. 
-  - The version of python packages always follows Alink Java version, like `1.6.1`.
+  - The version of python packages always follows Alink Java version, like `1.6.2`.
   
 #### Installation steps:
 
@@ -50,11 +50,11 @@ Welcome everyone to join the Alink open source user group to communicate.
 If `pyalink` or `pyalink-flink-***` was/were installed, please use `pip uninstall pyalink` or `pip uninstall pyalink-flink-***` to remove them.
 
 2. If `pip install` is slow of failed, refer to [this article](https://segmentfault.com/a/1190000006111096) to change the pip source, or use the following download links:
-    - Flink 1.13：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink-1.6.1-py3-none-any.whl) (MD5: a10d57a19c53d206d324273f377a1b13)
-    - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink_flink_1.12-1.6.1-py3-none-any.whl) (MD5: 82b2395740fbd960895d16350266ab4d)
-    - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink_flink_1.11-1.6.1-py3-none-any.whl) (MD5: 5bf901c084b51ebfa13a62489fafc2f2)
-    - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink_flink_1.10-1.6.1-py3-none-any.whl) (MD5: e18c620a3a3423407973b8c3d23a02e0)
-    - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.1/pyalink_flink_1.9-1.6.1-py3-none-any.whl) (MD5: 2feaed5f159bb8970400eb3f6eafc7e5)
+    - Flink 1.13：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink-1.6.2-py3-none-any.whl) (MD5: 9ba69d9bdb6c9f6c8c2f26e15e6e6aac)
+    - Flink 1.12：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.12-1.6.2-py3-none-any.whl) (MD5: 1988317fe06175a4887158ac031e4c03)
+    - Flink 1.11：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.11-1.6.2-py3-none-any.whl) (MD5: 9bb0a79e5ccac7c76778a8a822c1fde4)
+    - Flink 1.10：[Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.10-1.6.2-py3-none-any.whl) (MD5: dc9a94d7a1b2dfd2ceb8bba18059d81f)
+    - Flink 1.9: [Link](https://alink-release.oss-cn-beijing.aliyuncs.com/v1.6.2/pyalink_flink_1.9-1.6.2-py3-none-any.whl) (MD5: 72fb60f0ad93a668be842ab3a23bf1be)
 3. If multiple version of Python exist, you may need to use a special version of `pip`, like `pip3`;
 If Anaconda is used, the command should be run in Anaconda prompt. 
 
@@ -159,7 +159,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.13_2.11</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -183,7 +183,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.12_2.11</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -207,7 +207,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.11_2.11</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -231,7 +231,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.10_2.11</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
@@ -251,7 +251,7 @@ pipeline.fit(data).transform(data).print();
 <dependency>
     <groupId>com.alibaba.alink</groupId>
     <artifactId>alink_core_flink-1.9_2.11</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
 </dependency>
 <dependency>
     <groupId>org.apache.flink</groupId>
