@@ -86,16 +86,16 @@ downloader = AlinkGlobalConfiguration.getPluginDownloader()
 downloader.downloadPlugin('tf115_python_env_linux')
 
 data = pd.DataFrame([
-			[1,  datetime.datetime.fromtimestamp(1), 10.0],
-			[1,  datetime.datetime.fromtimestamp(2), 11.0],
-			[1,  datetime.datetime.fromtimestamp(3), 12.0],
-			[1,  datetime.datetime.fromtimestamp(4), 13.0],
-			[1,  datetime.datetime.fromtimestamp(5), 14.0],
-			[1,  datetime.datetime.fromtimestamp(6), 15.0],
-			[1,  datetime.datetime.fromtimestamp(7), 16.0],
-			[1,  datetime.datetime.fromtimestamp(8), 17.0],
-			[1,  datetime.datetime.fromtimestamp(9), 18.0],
-			[1,  datetime.datetime.fromtimestamp(10), 19.0]
+			[1,  datetime.datetime.fromtimestamp(1000), 10.0],
+			[1,  datetime.datetime.fromtimestamp(2000), 11.0],
+			[1,  datetime.datetime.fromtimestamp(3000), 12.0],
+			[1,  datetime.datetime.fromtimestamp(4000), 13.0],
+			[1,  datetime.datetime.fromtimestamp(5000), 14.0],
+			[1,  datetime.datetime.fromtimestamp(6000), 15.0],
+			[1,  datetime.datetime.fromtimestamp(7000), 16.0],
+			[1,  datetime.datetime.fromtimestamp(8000), 17.0],
+			[1,  datetime.datetime.fromtimestamp(9000), 18.0],
+			[1,  datetime.datetime.fromtimestamp(10000), 19.0]
 ])
 
 source = dataframeToOperator(data, schemaStr='id int, ts timestamp, val double', op_type='batch')
@@ -125,21 +125,21 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
-public class ArimaBatchOpTest extends AlinkTestBase {
+public class ProphetBatchOpTest extends AlinkTestBase {
 
 	@Test
 	public void test() throws Exception {
 		List <Row> mTableData = Arrays.asList(
-			Row.of(1, new Timestamp(1), 10.0),
-			Row.of(1, new Timestamp(2), 11.0),
-			Row.of(1, new Timestamp(3), 12.0),
-			Row.of(1, new Timestamp(4), 13.0),
-			Row.of(1, new Timestamp(5), 14.0),
-			Row.of(1, new Timestamp(6), 15.0),
-			Row.of(1, new Timestamp(7), 16.0),
-			Row.of(1, new Timestamp(8), 17.0),
-			Row.of(1, new Timestamp(9), 18.0),
-			Row.of(1, new Timestamp(10), 19.0)
+			Row.of(1, new Timestamp(1000), 10.0),
+			Row.of(1, new Timestamp(2000), 11.0),
+			Row.of(1, new Timestamp(3000), 12.0),
+			Row.of(1, new Timestamp(4000), 13.0),
+			Row.of(1, new Timestamp(5000), 14.0),
+			Row.of(1, new Timestamp(6000), 15.0),
+			Row.of(1, new Timestamp(7000), 16.0),
+			Row.of(1, new Timestamp(8000), 17.0),
+			Row.of(1, new Timestamp(9000), 18.0),
+			Row.of(1, new Timestamp(10000), 19.0)
 		);
 
 		MemSourceBatchOp source = new MemSourceBatchOp(mTableData, new String[] {"id", "ts", "val"});

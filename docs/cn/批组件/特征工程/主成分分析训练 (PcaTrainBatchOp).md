@@ -16,7 +16,7 @@ Python 类名：PcaTrainBatchOp
 | --- | --- | --- | --- | --- | --- | --- |
 | k | 降维后的维度 | 降维后的维度 | Integer | ✓ | x >= 1 |  |
 | calculationType | 计算类型 | 计算类型，包含"CORR", "COV"两种。 | String |  | "CORR", "COV" | "CORR" |
-| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
+| selectedCols | 选中的列名数组 | 计算列对应的列名列表 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
 | vectorCol | 向量列名 | 向量列对应的列名，默认值是null | String |  | 所选列类型为 [DENSE_VECTOR, SPARSE_VECTOR, STRING, VECTOR] | null |
 
 

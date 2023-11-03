@@ -56,7 +56,7 @@ outlierOp = dataOp.link(\
                     .setGroupByPredicate("group_id")\
                     .setSelectClause("mtable_agg(id, val) as data")\
 		).link(\
-            KSigmaOutlier4SeriesBatchOp()\
+            KSigmaOutlier4GroupedDataBatchOp()\
                 .setInputMTableCol("data")\
                 .setOutputMTableCol("pred")\
                 .setFeatureCol("val")\
@@ -107,7 +107,7 @@ public class KSigmaOutlier4SeriesBatchOpTest extends AlinkTestBase {
 			new GroupByBatchOp()
 				.setGroupByPredicate("group_id")
 				.setSelectClause("mtable_agg(id, val) as data")
-		).link(new KSigmaOutlier4SeriesBatchOp()
+		).link(new KSigmaOutlier4GroupedDataBatchOp()
 			.setInputMTableCol("data")
 			.setOutputMTableCol("pred")
 			.setFeatureCol("val")

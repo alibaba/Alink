@@ -53,7 +53,7 @@ df = pd.DataFrame([
     [1, 2, 1],
     [5, 3, 3]])
 
-batchData = BatchOperator.fromDataframe(df, schemaStr='f0 int, f1 int, label int', op_type='batch')
+batchData = BatchOperator.fromDataframe(df, schemaStr='f0 int, f1 int, label int')
 
 colnames = ["f0","f1"]
 

@@ -54,13 +54,13 @@ dataOp = dataframeToOperator(data, schemaStr='id int, ts timestamp, val double, 
 
 dataOp.link(\
 			OverCountWindowStreamOp()\
-				.setPartitionCols(["id"])\
+				.setGroupCols(["id"])\
 				.setTimeCol("ts")\
 				.setPrecedingRows(5)\
 				.setClause("MTABLE_AGG_PRECEDING(ts, val) as series_data")\
 				.setReservedCols(["id", "label"])\
 		).link(\
-			KSigmaOutlier4SeriesStreamOp()\
+			KSigmaOutlier4GroupedDataStreamOp()\
 				.setInputMTableCol("series_data")\
 				.setFeatureCol("val")\
 				.setOutputMTableCol("output_series")\
@@ -115,13 +115,13 @@ public class KSigmaOutlier4SeriesStreamOpTest extends AlinkTestBase {
 
 		dataOp.link(
 			new OverCountWindowStreamOp()
-				.setPartitionCols("id")
+				.setGroupCols("id")
 				.setTimeCol("ts")
 				.setPrecedingRows(5)
 				.setClause("MTABLE_AGG_PRECEDING(ts, val) as series_data")
 				.setReservedCols("id", "label")
 		).link(
-			new KSigmaOutlier4SeriesStreamOp()
+			new KSigmaOutlier4GroupedDataStreamOp()
 				.setInputMTableCol("series_data")
 				.setFeatureCol("val")
 				.setOutputMTableCol("output_series")

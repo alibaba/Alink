@@ -17,9 +17,9 @@ tv为训练验证，将数据按照比例切分为两份，对其中一份数据
 | 名称            | 中文名称   | 描述                                         | 类型            | 是否必须？ | 默认值 |
 | ---             | ---        | ---                                          | ---             | ---        | ---    |
 | trainRatio      | 训练集比例 | 训练集与验证集的划分比例，取值范围为(0, 1]。 | Double          |             | 0.8    |
-| ParamDist       | 参数分布   | 指定搜索的参数的分布                               | ParamDist       |     ✓       | ---    |
-| Estimator       | Estimator  | 用于调优的Estimator                          | Estimator       | ✓           | ---    |
-| TuningEvaluator | 评估指标   | 用于选择最优模型的评估指标                   | TuningEvaluator |       ✓     | ---    |
+| ParamDist       | 参数分布   | 指定搜索的参数的分布                               | ParamDist       |     ✓       |     |
+| Estimator       | Estimator  | 用于调优的Estimator                          | Estimator       | ✓           |     |
+| TuningEvaluator | 评估指标   | 用于选择最优模型的评估指标                   | TuningEvaluator |       ✓     |     |
 
 ## 代码示例
 ### Python 代码

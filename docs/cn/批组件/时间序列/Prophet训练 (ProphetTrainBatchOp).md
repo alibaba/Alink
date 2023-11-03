@@ -48,16 +48,16 @@ downloader = AlinkGlobalConfiguration.getPluginDownloader()
 downloader.downloadPlugin('tf115_python_env_linux')
 
 data = pd.DataFrame([
-			[1,  datetime.datetime.fromtimestamp(1), 10.0],
-			[1,  datetime.datetime.fromtimestamp(2), 11.0],
-			[1,  datetime.datetime.fromtimestamp(3), 12.0],
-			[1,  datetime.datetime.fromtimestamp(4), 13.0],
-			[1,  datetime.datetime.fromtimestamp(5), 14.0],
-			[1,  datetime.datetime.fromtimestamp(6), 15.0],
-			[1,  datetime.datetime.fromtimestamp(7), 16.0],
-			[1,  datetime.datetime.fromtimestamp(8), 17.0],
-			[1,  datetime.datetime.fromtimestamp(9), 18.0],
-			[1,  datetime.datetime.fromtimestamp(10), 19.0]
+			[1,  datetime.datetime.fromtimestamp(1000), 10.0],
+			[1,  datetime.datetime.fromtimestamp(2000), 11.0],
+			[1,  datetime.datetime.fromtimestamp(3000), 12.0],
+			[1,  datetime.datetime.fromtimestamp(4000), 13.0],
+			[1,  datetime.datetime.fromtimestamp(5000), 14.0],
+			[1,  datetime.datetime.fromtimestamp(6000), 15.0],
+			[1,  datetime.datetime.fromtimestamp(7000), 16.0],
+			[1,  datetime.datetime.fromtimestamp(8000), 17.0],
+			[1,  datetime.datetime.fromtimestamp(9000), 18.0],
+			[1,  datetime.datetime.fromtimestamp(10000), 19.0]
 ])
 
 source = dataframeToOperator(data, schemaStr='id int, ts timestamp, val double', op_type='batch')
@@ -103,67 +103,41 @@ public class ProphetBatchOpTest {
 	public void testModel() throws Exception {
 		Row[] rowsData =
 			new Row[] {
-				Row.of("1", new Timestamp(117, 11, 1, 0, 0, 0, 0), 9.59076113897809),
-				Row.of("1", new Timestamp(117, 11, 2, 0, 0, 0, 0), 8.51959031601596),
-				Row.of("2", new Timestamp(117, 11, 3, 0, 0, 0, 0), 9.59076113897809),
-				Row.of("1", new Timestamp(117, 11, 4, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("2", new Timestamp(117, 11, 5, 0, 0, 0, 0), 8.51959031601596),
-				Row.of("1", new Timestamp(117, 11, 6, 0, 0, 0, 0), 8.07246736935477),
-				Row.of("2", new Timestamp(117, 11, 7, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("2", new Timestamp(117, 11, 8, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("2", new Timestamp(117, 11, 9, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("2", new Timestamp(117, 11, 10, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("2", new Timestamp(117, 11, 11, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("2", new Timestamp(117, 11, 12, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("2", new Timestamp(117, 11, 13, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("2", new Timestamp(117, 11, 14, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("1", new Timestamp(117, 11, 15, 0, 0, 0, 0), 7.8935720735049),
-				Row.of("1", new Timestamp(117, 11, 16, 0, 0, 0, 0), 7.78364059622125),
-				Row.of("2", new Timestamp(117, 11, 17, 0, 0, 0, 0), 8.07246736935477),
-				Row.of("1", new Timestamp(117, 11, 18, 0, 0, 0, 0), 8.41405243249672),
-				Row.of("1", new Timestamp(117, 11, 19, 0, 0, 0, 0), 8.82922635473185),
-				Row.of("1", new Timestamp(117, 11, 20, 0, 0, 0, 0), 8.38251828808963),
-				Row.of("1", new Timestamp(117, 11, 21, 0, 0, 0, 0), 8.06965530688617),
-				Row.of("1", new Timestamp(117, 11, 22, 0, 0, 0, 0), 9.59076113897809),
-				Row.of("1", new Timestamp(117, 11, 23, 0, 0, 0, 0), 8.51959031601596),
-				Row.of("1", new Timestamp(117, 11, 24, 0, 0, 0, 0), 8.18367658262066),
-				Row.of("1", new Timestamp(117, 11, 25, 0, 0, 0, 0), 8.07246736935477),
-				Row.of("1", new Timestamp(117, 11, 26, 0, 0, 0, 0), 7.8935720735049),
-				Row.of("1", new Timestamp(117, 11, 27, 0, 0, 0, 0), 7.78364059622125),
-				Row.of("1", new Timestamp(117, 11, 28, 0, 0, 0, 0), 8.41405243249672),
-				Row.of("1", new Timestamp(117, 11, 29, 0, 0, 0, 0), 8.82922635473185),
-				Row.of("1", new Timestamp(117, 12, 1, 0, 0, 0, 0), 8.38251828808963),
-				Row.of("1", new Timestamp(117, 12, 2, 0, 0, 0, 0), 8.06965530688617),
-				Row.of("2", new Timestamp(117, 12, 3, 0, 0, 0, 0), 8.07246736935477),
-				Row.of("2", new Timestamp(117, 12, 4, 0, 0, 0, 0), 7.8935720735049),
-				Row.of("2", new Timestamp(117, 12, 5, 0, 0, 0, 0), 7.78364059622125),
-				Row.of("2", new Timestamp(117, 12, 6, 0, 0, 0, 0), 8.41405243249672),
-				Row.of("2", new Timestamp(117, 12, 7, 0, 0, 0, 0), 8.82922635473185),
-				Row.of("2", new Timestamp(117, 12, 8, 0, 0, 0, 0), 8.38251828808963),
-				Row.of("2", new Timestamp(117, 12, 9, 0, 0, 0, 0), 8.06965530688617)
+				Row.of(1, new Timestamp(1000), 10.0),
+				Row.of(1, new Timestamp(2000), 11.0),
+				Row.of(1, new Timestamp(3000), 12.0),
+				Row.of(1, new Timestamp(4000), 13.0),
+				Row.of(1, new Timestamp(5000), 14.0),
+				Row.of(1, new Timestamp(6000), 15.0),
+				Row.of(1, new Timestamp(7000), 16.0),
+				Row.of(1, new Timestamp(8000), 17.0),
+				Row.of(1, new Timestamp(9000), 18.0),
+				Row.of(1, new Timestamp(10000), 19.0)
 			};
 		String[] colNames = new String[] {"id", "ds1", "y1"};
 
 		//train batch model.
 		MemSourceBatchOp source = new MemSourceBatchOp(Arrays.asList(rowsData), colNames);
 
-		ProphetTrainBatchOp model = new ProphetTrainBatchOp()
+		ProphetTrainBatchOp trainOp = new ProphetTrainBatchOp()
 			.setTimeCol("ds1")
 			.setValueCol("y1");
 
-		source.link(model).print();
+		source.link(trainOp);
+
+		trainOp.lazyPrint();
 
 		//construct times series by id.
 		GroupByBatchOp groupData = new GroupByBatchOp()
 			.setGroupByPredicate("id")
-			.setSelectClause("mtable_agg(ts, val) as data");
+			.setSelectClause("mtable_agg(ds1, y1) as data");
 
-		ProphetPredictBatchOp prophetPredict = new ProphetPredictBatchOp()
-			.setValueCol("ts")
+		ProphetPredictBatchOp predictOp = new ProphetPredictBatchOp()
+			.setValueCol("data")
 			.setPredictNum(4)
 			.setPredictionCol("pred");
 
-		prophetPredict.linkFrom(model, source.link(groupData)).print();
+		predictOp.linkFrom(trainOp, source.link(groupData)).print();
 	}
 }
 ```

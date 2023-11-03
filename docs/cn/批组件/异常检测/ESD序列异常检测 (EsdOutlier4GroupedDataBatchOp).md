@@ -58,7 +58,7 @@ outlierOp = dataOp.link(\
                     .setGroupByPredicate("group_id")\
                     .setSelectClause("mtable_agg(id, val) as data")\
 		).link(\
-            Esd4SeriesBatchOp()\
+            EsdOutlier4GroupedDataBatchOp()\
                 .setInputMTableCol("data")\
                 .setOutputMTableCol("pred")\
                 .setFeatureCol("val")\
@@ -109,7 +109,7 @@ public class EsdOutlier4SeriesBatchOpTest extends TestCase {
 				.setGroupByPredicate("group_id")
 				.setSelectClause("mtable_agg(id, val) as data")
 		).link(
-			new EsdOutlier4SeriesBatchOp()
+			new EsdOutlier4GroupedDataBatchOp()
 				.setInputMTableCol("data")
 				.setOutputMTableCol("pred")
 				.setFeatureCol("val")

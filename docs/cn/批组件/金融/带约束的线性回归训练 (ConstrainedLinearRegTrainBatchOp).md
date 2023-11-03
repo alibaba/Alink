@@ -14,7 +14,7 @@ Python 类名：ConstrainedLinearRegTrainBatchOp
 | 名称 | 中文名称 | 描述 | 类型 | 是否必须？ | 取值范围 | 默认值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
-| constOptimMethod | 优化方法 | 求解优化问题时选择的优化方法 | String |  | "SQP", "Barrier", "LBFGS", "Newton" | "SQP" |
+| constOptimMethod | 优化方法 | 求解优化问题时选择的优化方法 | String |  | "SQP", "Barrier", "LBFGS", "Newton", "ALM" | "SQP" |
 | constraint | 约束 | 约束 | String |  |  | "" |
 | epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | x >= 0.0 | 1.0E-6 |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
@@ -66,21 +66,18 @@ df = pd.DataFrame([
 
 data = BatchOperator.fromDataframe(df, schemaStr="vec string, label double")
 
-bfc = ConstraintBetweenFeatures()
-bfc.addEqual(1, 3.)
-
-f = FeatureConstraint()
-f.addConstraintBetweenFeature(bfc)
-cons = f.toString()
+constraint = pd.DataFrame([
+        ['{"featureConstraint":[],"constraintBetweenFeatures":{"name":"constraintBetweenFeatures","UP":[],"LO":[],"=":[[1,1.814],[2,0.4]],"%":[],"<":[],">":[[1,2]]},"countZero":null,"elseNullSave":null}']
+])
+constraintData = BatchOperator.fromDataframe(constraint, schemaStr='data string')
 
 batchOp = ConstrainedLinearRegTrainBatchOp()\
     .setWithIntercept(True)\
     .setVectorCol("vec")\
     .setConstOptimMethod("barrier")\
-    .setConstraint(cons)\
     .setLabelCol("label")
 
-model = batchOp.linkFrom(data)
+model = batchOp.linkFrom(data, constraintData)
 
 predict = LinearRegPredictBatchOp()\
     .setPredictionCol("pred")

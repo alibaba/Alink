@@ -17,7 +17,7 @@ Python 类名：ConstrainedLogisticRegressionTrainBatchOp
 | --- | --- | --- | --- | --- | --- | --- |
 | labelCol | 标签列名 | 输入表中的标签列名 | String | ✓ |  |  |
 | positiveLabelValueString | 正样本 | 正样本对应的字符串格式。 | String | ✓ |  |  |
-| constOptimMethod | 优化方法 | 求解优化问题时选择的优化方法 | String |  | "SQP", "Barrier", "LBFGS", "Newton" | "SQP" |
+| constOptimMethod | 优化方法 | 求解优化问题时选择的优化方法 | String |  | "SQP", "Barrier", "LBFGS", "Newton", "ALM" | "SQP" |
 | constraint | 约束 | 约束 | String |  |  | "" |
 | epsilon | 收敛阈值 | 迭代方法的终止判断阈值，默认值为 1.0e-6 | Double |  | x >= 0.0 | 1.0E-6 |
 | featureCols | 特征列名数组 | 特征列名数组，默认全选 | String[] |  | 所选列类型为 [BIGDECIMAL, BIGINTEGER, BYTE, DOUBLE, FLOAT, INTEGER, LONG, SHORT] | null |
@@ -74,22 +74,20 @@ df = pd.DataFrame([
 
 data = BatchOperator.fromDataframe(df, schemaStr="f0 int, f1 int, f2 int, f3 int, label bigint")
 
-bfc = ConstraintBetweenFeatures()
-bfc.addEqual("f1", 0, 1.814)
-
-f = FeatureConstraint()
-f.addConstraintBetweenFeature(bfc)
+constraint = pd.DataFrame([
+        ['{"featureConstraint":[],"constraintBetweenFeatures":{"name":"constraintBetweenFeatures","UP":[],"LO":[],"=":[["f1",0,1.814],["f0",0,0.4]],"%":[],"<":[],">":[["f3",0,"f2",0]]},"countZero":null,"elseNullSave":null}']
+])
+constraintData = BatchOperator.fromDataframe(constraint, schemaStr='data string')
 
 features = ["f0","f1","f2","f3"]
 
 lr = ConstrainedLogisticRegressionTrainBatchOp()\
-    .setConstraint(f.toString())\
     .setLabelCol("label")\
     .setFeatureCols(features)\
     .setConstOptimMethod("sqp")\
     .setPositiveLabelValueString("2")
     
-model = lr.linkFrom(data)
+model = lr.linkFrom(data,constraintData)
 
 predict = LogisticRegressionPredictBatchOp()\
     .setPredictionCol("lrpred")\

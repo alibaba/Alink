@@ -33,11 +33,29 @@ Prophet适用于具有明显的内在规律的数据, 例如：
 | --- | --- | --- | --- | --- | --- | --- |
 | predictionCol | 预测结果列名 | 预测结果列名 | String | ✓ |  |  |
 | valueCol | value列，类型为MTable | value列，类型为MTable | String | ✓ | 所选列类型为 [M_TABLE, STRING] |  |
+| cap | cap | cap | Double |  |  | null |
+| changePointPriorScale | changepoint_prior_scale | changepoint_prior_scale | Double |  |  | 0.05 |
+| changePointRange | change_point_range | change_point_range | Double |  |  | 0.8 |
+| changePoints | changepoints | changepoints | String |  |  | null |
+| dailySeasonality | daily_seasonality | daily_seasonality | String |  |  | "auto" |
+| floor | floor | floor | Double |  |  | null |
+| growth | growth | growth | String |  | "LINEAR", "LOGISTIC", "FLAT" | "LINEAR" |
+| holidays | 节假日 | 节假日，格式是 playoff:2008-01-13,2009-01-03 superbowl: 2010-02-07,2014-02-02 | String |  |  | null |
+| holidaysPriorScale | holidays_prior_scale | holidays_prior_scale | Double |  |  | 10.0 |
+| includeHistory | include_history | include_history | Boolean |  |  | false |
+| intervalWidth | interval_width | interval_width | Double |  |  | 0.8 |
+| mcmcSamples | mcmc_samples | mcmc_samples | Integer |  |  | 0 |
 | modelFilePath | 模型的文件路径 | 模型的文件路径 | String |  |  | null |
+| nChangePoint | n_change_point | n_change_point | Integer |  |  | 25 |
 | predictNum | 预测条数 | 预测条数 | Integer |  |  | 1 |
 | predictionDetailCol | 预测详细信息列名 | 预测详细信息列名 | String |  |  |  |
-| pythonEnv | Python 环境路径 | Python 环境路径，一般情况下不需要填写。如果是压缩文件，需要解压后得到一个目录，且目录名与压缩文件主文件名一致，可以使用 http://, https://, oss://, hdfs:// 等路径；如果是目录，那么只能使用本地路径，即 file://。 | String |  |  | "" |
 | reservedCols | 算法保留列名 | 算法保留列 | String[] |  |  | null |
+| seasonalityMode | seasonality_mode | seasonality_mode | String |  | "MULTIPLICATIVE", "ADDITIVE" | "ADDITIVE" |
+| seasonalityPriorScale | seasonality_prior_scale | seasonality_prior_scale | Double |  |  | 10.0 |
+| stanInit | 初始值 | 初始值 | String |  |  | null |
+| uncertaintySamples | 用来计算指标的采样数目 | 用来计算指标的采样数目，设置成0，不计算指标。 | Integer |  |  | 1000 |
+| weeklySeasonality | weekly_seasonality | weekly_seasonality | String |  |  | "auto" |
+| yearlySeasonality | yearly_seasonality | yearly_seasonality | String |  |  | "auto" |
 | numThreads | 组件多线程线程个数 | 组件多线程线程个数 | Integer |  |  | 1 |
 | modelStreamFilePath | 模型流的文件路径 | 模型流的文件路径 | String |  |  | null |
 | modelStreamScanInterval | 扫描模型路径的时间间隔 | 描模型路径的时间间隔，单位秒 | Integer |  |  | 10 |
@@ -59,16 +77,16 @@ import numpy as np
 import pandas as pd
 
 data = pd.DataFrame([
-			[1,  datetime.datetime.fromtimestamp(1), 10.0],
-			[1,  datetime.datetime.fromtimestamp(2), 11.0],
-			[1,  datetime.datetime.fromtimestamp(3), 12.0],
-			[1,  datetime.datetime.fromtimestamp(4), 13.0],
-			[1,  datetime.datetime.fromtimestamp(5), 14.0],
-			[1,  datetime.datetime.fromtimestamp(6), 15.0],
-			[1,  datetime.datetime.fromtimestamp(7), 16.0],
-			[1,  datetime.datetime.fromtimestamp(8), 17.0],
-			[1,  datetime.datetime.fromtimestamp(9), 18.0],
-			[1,  datetime.datetime.fromtimestamp(10), 19.0]
+			[1,  datetime.datetime.fromtimestamp(1000), 10.0],
+			[1,  datetime.datetime.fromtimestamp(2000), 11.0],
+			[1,  datetime.datetime.fromtimestamp(3000), 12.0],
+			[1,  datetime.datetime.fromtimestamp(4000), 13.0],
+			[1,  datetime.datetime.fromtimestamp(5000), 14.0],
+			[1,  datetime.datetime.fromtimestamp(6000), 15.0],
+			[1,  datetime.datetime.fromtimestamp(7000), 16.0],
+			[1,  datetime.datetime.fromtimestamp(8000), 17.0],
+			[1,  datetime.datetime.fromtimestamp(9000), 18.0],
+			[1,  datetime.datetime.fromtimestamp(10000), 19.0]
 ])
 
 streamSource = dataframeToOperator(data, schemaStr='id int, ds1 timestamp, y1 double', op_type='stream')

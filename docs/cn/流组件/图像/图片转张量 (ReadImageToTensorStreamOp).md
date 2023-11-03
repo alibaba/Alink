@@ -32,7 +32,7 @@ df_data = pd.DataFrame([
 stream_data = StreamOperator.fromDataframe(df_data, schemaStr = 'path string')
 
 ReadImageToTensorStreamOp()\
-    .setRootFilePath("https://pytorch.org/vision/stable/_images/")\
+    .setRootFilePath("http://alink-test-datatset.oss-cn-hangzhou-zmf.aliyuncs.com/images/")\
 	.setRelativeFilePathCol("path")\
 	.setOutputCol("tensor")\
     .linkFrom(stream_data)\
@@ -64,7 +64,7 @@ public class ReadImageToTensorStreamOpTest {
 		MemSourceStreamOp memSourceStreamOp = new MemSourceStreamOp(data, "path string");
 
 		new ReadImageToTensorStreamOp()
-			.setRootFilePath("https://pytorch.org/vision/stable/_images/")
+			.setRootFilePath("http://alink-test-datatset.oss-cn-hangzhou-zmf.aliyuncs.com/images/")
 			.setRelativeFilePathCol("path")
 			.setOutputCol("tensor")
 			.linkFrom(memSourceStreamOp)

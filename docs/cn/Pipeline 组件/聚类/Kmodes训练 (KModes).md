@@ -34,14 +34,14 @@ import pandas as pd
 useLocalEnv(1)
 
 df = pd.DataFrame([
-    ["pc", "Hp.com", 1],
-    ["camera", "Hp.com", 1],
-    ["digital camera", "Hp.com", 1],
-    ["camera", "BestBuy.com", 1],
-    ["digital camera", "BestBuy.com", 1],
-    ["tv", "BestBuy.com", 1],
-    ["flower", "Teleflora.com", 1],
-    ["flower", "Orchids.com", 1]
+    ["pc", "Hp.com"],
+    ["camera", "Hp.com"],
+    ["digital camera", "Hp.com"],
+    ["camera", "BestBuy.com"],
+    ["digital camera", "BestBuy.com"],
+    ["tv", "BestBuy.com"],
+    ["flower", "Teleflora.com"],
+    ["flower", "Orchids.com"]
 ])
 
 inOp1 = BatchOperator.fromDataframe(df, schemaStr='f0 string, f1 string')

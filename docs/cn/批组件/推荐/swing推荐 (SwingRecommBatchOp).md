@@ -49,6 +49,7 @@ data = BatchOperator.fromDataframe(df_data, schemaStr='user string, item string,
 model = SwingTrainBatchOp()\
     .setUserCol("user")\
     .setItemCol("item")\
+    .setMinUserItems(2)\
     .linkFrom(data)
 
 predictor = SwingRecommBatchOp()\
@@ -91,6 +92,7 @@ public class SwingRecommBatchOpTest {
 		BatchOperator <?> model = new SwingTrainBatchOp()
 			.setUserCol("user")
 			.setItemCol("item")
+			.setMinUserItems(2)
 			.linkFrom(data);
 		BatchOperator <?> predictor = new SwingRecommBatchOp()
 			.setItemCol("item")

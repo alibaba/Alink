@@ -46,12 +46,12 @@ fpGrowth = FpGrowthBatchOp() \
 fpGrowth.linkFrom(data)
 
 fpGrowth.print()
-fpGrowth.getSideOutputAssociationRules().print()
+fpGrowth.getSideOutput(0).print()
 
 ApplyAssociationRuleBatchOp()\
     .setSelectedCol("items") \
     .setOutputCol("result") \
-    .linkFrom(fpGrowth.getSideOutputAssociationRules(), data).print()
+    .linkFrom(fpGrowth.getSideOutput(0), data).print()
 ```
 
 ### Java 代码

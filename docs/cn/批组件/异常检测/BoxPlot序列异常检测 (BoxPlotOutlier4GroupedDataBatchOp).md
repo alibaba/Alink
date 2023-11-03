@@ -59,7 +59,7 @@ outlierOp = dataOp.link(\
                     .setGroupByPredicate("group_id")\
                     .setSelectClause("mtable_agg(id, val) as data")\
 		).link(\
-            BoxPlotOutlier4SeriesBatchOp()\
+            BoxPlotOutlier4GroupedDataBatchOp()\
                 .setInputMTableCol("data")\
                 .setOutputMTableCol("pred")\
                 .setFeatureCol("val")\
@@ -110,7 +110,7 @@ public class BoxPlotOutlier4SeriesBatchOpTest extends TestCase {
 				.setGroupByPredicate("group_id")
 				.setSelectClause("mtable_agg(id, val) as data")
 		).link(
-			new BoxPlotOutlier4SeriesBatchOp()
+			new BoxPlotOutlier4GroupedDataBatchOp()
 				.setInputMTableCol("data")
 				.setOutputMTableCol("pred")
 				.setFeatureCol("val")

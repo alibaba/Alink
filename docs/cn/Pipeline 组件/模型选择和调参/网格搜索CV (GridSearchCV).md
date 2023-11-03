@@ -17,9 +17,9 @@ cv为交叉验证，将数据切分为k-folds，对每k-1份数据做训练，�
 | 名称            | 中文名称  | 描述                                    | 类型            | 是否必须？ | 默认值 |
 | ---             | ---       | ---                                     | ---             | ---        | ---    |
 | NumFolds        | 折数      | 交叉验证的参数，数据的折数（大于等于2） | Integer         |            | 10     |
-| ParamGrid       | 参数网格  | 指定参数的网格                          | ParamGrid       |  ✓          | ---    |
-| Estimator       | Estimator | 用于调优的Estimator                     | Estimator       |  ✓          | ---    |
-| TuningEvaluator | 评估指标  | 用于选择最优模型的评估指标              | TuningEvaluator |      ✓      | ---    |
+| ParamGrid       | 参数网格  | 指定参数的网格                          | ParamGrid       |  ✓          |     |
+| Estimator       | Estimator | 用于调优的Estimator                     | Estimator       |  ✓          |     |
+| TuningEvaluator | 评估指标  | 用于选择最优模型的评估指标              | TuningEvaluator |      ✓      |     |
 
 ## 代码示例
 ### Python 代码

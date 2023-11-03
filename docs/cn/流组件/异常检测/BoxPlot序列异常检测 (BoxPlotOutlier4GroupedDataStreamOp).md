@@ -55,13 +55,13 @@ dataOp = dataframeToOperator(data, schemaStr='id int, ts timestamp, val double, 
 
 dataOp.link(\
 			OverCountWindowStreamOp()\
-				.setPartitionCols(["id"])\
+				.setGroupCols(["id"])\
 				.setTimeCol("ts")\
 				.setPrecedingRows(5)\
 				.setClause("MTABLE_AGG_PRECEDING(ts, val) as series_data")\
 				.setReservedCols(["id", "label"])\
 		).link(\
-			BoxPlotOutlier4SeriesStreamOp()\
+			BoxPlotOutlier4GroupedDataStreamOp()\
 				.setInputMTableCol("series_data")\
 				.setFeatureCol("val")\
 				.setOutputMTableCol("output_series")\
@@ -116,13 +116,13 @@ public class BoxPlotOutlier4SeriesStreamOpTest extends TestCase {
 
 		dataOp.link(
 			new OverCountWindowStreamOp()
-				.setPartitionCols("id")
+				.setGroupCols("id")
 				.setTimeCol("ts")
 				.setPrecedingRows(5)
 				.setClause("MTABLE_AGG_PRECEDING(ts, val) as series_data")
 				.setReservedCols("id", "label")
 		).link(
-			new BoxPlotOutlier4SeriesStreamOp()
+			new BoxPlotOutlier4GroupedDataStreamOp()
 				.setInputMTableCol("series_data")
 				.setFeatureCol("val")
 				.setOutputMTableCol("output_series")

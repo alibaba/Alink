@@ -45,12 +45,12 @@ prefixSpan = PrefixSpanBatchOp() \
 prefixSpan.linkFrom(data)
 
 prefixSpan.print()
-prefixSpan.getSideOutputAssociationRules().print()
+prefixSpan.getSideOutput(0).print()
 
 ApplySequenceRuleBatchOp()\
     .setSelectedCol("sequence")\
     .setOutputCol("result")\
-    .linkFrom(prefixSpan.getSideOutputAssociationRules(), data)\
+    .linkFrom(prefixSpan.getSideOutput(0), data)\
     .print()
 ```
 

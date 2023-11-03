@@ -72,7 +72,7 @@ source.link(
 				.setIcType("AIC")
 				.setPredictNum(10)
 				.setMaxOrder(4)
-				.setIfGARCH11(False)
+				.setIfGARCH11(True)
 				.setMinusMean(False)
 				.setPredictionCol("pred")
 		).print()
@@ -123,7 +123,7 @@ public class AutoGarchBatchOpTest extends AlinkTestBase {
 				.setIcType("AIC")
 				.setPredictNum(10)
 				.setMaxOrder(4)
-				.setIfGARCH11(false)
+				.setIfGARCH11(true)
 				.setMinusMean(false)
 				.setPredictionCol("pred")
 		).print();
@@ -134,6 +134,11 @@ public class AutoGarchBatchOpTest extends AlinkTestBase {
 ```
 
 ### 运行结果
-id|data|pred
----|----|----
-1|{"data":{"ts":["1970-01-01 08:00:00.001","1970-01-01 08:00:00.002","1970-01-01 08:00:00.003","1970-01-01 08:00:00.004","1970-01-01 08:00:00.005","1970-01-01 08:00:00.006","1970-01-01 08:00:00.007","1970-01-01 08:00:00.008","1970-01-01 08:00:00.009","1970-01-01 08:00:00.01"],"val":[10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0]},"schema":"ts TIMESTAMP,val DOUBLE"}|null
+data|pred
+----|----
+MTable(10,2)(ts,val)           |MTable(10,2)(ts,val)           
+1970-01-01 00:00:00.001 10.0000|1970-01-01 00:00:00.011 16.6379
+1970-01-01 00:00:00.002 11.0000|1970-01-01 00:00:00.012 13.7129
+1970-01-01 00:00:00.003 12.0000|1970-01-01 00:00:00.013 11.6890
+1970-01-01 00:00:00.004 13.0000|1970-01-01 00:00:00.014 13.0115
+1970-01-01 00:00:00.005 14.0000|1970-01-01 00:00:00.015 20.8482
