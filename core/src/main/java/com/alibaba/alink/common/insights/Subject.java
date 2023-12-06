@@ -1,9 +1,10 @@
 package com.alibaba.alink.common.insights;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Subject {
+public class Subject implements Serializable {
 
 	public List <Subspace> subspaces;
 	public Breakdown breakdown;
@@ -14,7 +15,7 @@ public class Subject {
 		measures = new ArrayList <>();
 	}
 
-	public Subject addSubspace(Subspace subspace){
+	public Subject addSubspace(Subspace subspace) {
 		this.subspaces.add(subspace);
 		return this;
 	}
@@ -29,12 +30,12 @@ public class Subject {
 		return this;
 	}
 
-	public Subject setBreakdown(Breakdown breakdown){
+	public Subject setBreakdown(Breakdown breakdown) {
 		this.breakdown = breakdown;
 		return this;
 	}
 
-	public Subject addMeasure(Measure measure){
+	public Subject addMeasure(Measure measure) {
 		this.measures.add(measure);
 		return this;
 	}

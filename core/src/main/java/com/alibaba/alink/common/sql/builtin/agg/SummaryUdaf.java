@@ -1,20 +1,19 @@
 package com.alibaba.alink.common.sql.builtin.agg;
 
+public class SummaryUdaf extends BaseSummaryUdaf {
 
-public class CountUdaf extends BaseSummaryUdaf {
-
-	public CountUdaf() {
+	public SummaryUdaf() {
 		this(false);
 	}
 
-	public CountUdaf(boolean dropLast) {
-		super(dropLast, false);
+	public SummaryUdaf(boolean dropLast) {
+		super(dropLast);
 
 	}
 
 	@Override
-	public Long getValue(SummaryData accumulator) {
-		return accumulator.getCount();
+	public SummaryData getValue(SummaryData accumulator) {
+		return accumulator;
 	}
 
 	@Override

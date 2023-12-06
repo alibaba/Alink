@@ -3,11 +3,8 @@ package com.alibaba.alink.common.sql.builtin.time;
 import org.apache.flink.table.functions.ScalarFunction;
 
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 
 public class UnixTimeStampMicro extends ScalarFunction {
 

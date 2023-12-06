@@ -22,6 +22,7 @@ import com.alibaba.alink.common.sql.builtin.time.UnixTimeStamp;
 import com.alibaba.alink.common.sql.builtin.time.UnixTimeStampMicro;
 import com.alibaba.alink.operator.batch.sql.BatchSqlOperators;
 import com.alibaba.alink.operator.common.io.types.JdbcTypeConverter;
+import com.alibaba.alink.operator.common.sql.functions.LocalAggFunction;
 import com.alibaba.alink.operator.local.sql.CalciteFunctionCompiler;
 import org.apache.calcite.avatica.AvaticaResultSetMetaData;
 import org.apache.calcite.avatica.util.Casing;
@@ -35,6 +36,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactoryImpl.JavaType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.impl.AggregateFunctionImpl;
 import org.apache.calcite.schema.impl.ScalarFunctionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,6 +149,12 @@ public class MTableCalciteSqlExecutor implements SqlExecutor <MTable> {
 		}
 	}
 
+	@Override
+	public void addFunction(String name, LocalAggFunction function) {
+		rootSchema.add(name, AggregateFunctionImpl.create(function.getClass()));
+	}
+
+
 	private TableSchema extractSchema(ResultSetMetaData metaData) throws SQLException {
 		int numCols = metaData.getColumnCount();
 		String[] colNames = new String[numCols];
@@ -206,12 +214,13 @@ public class MTableCalciteSqlExecutor implements SqlExecutor <MTable> {
 
 	@Override
 	public MTable query(String sql) {
+		//System.out.println("origin query: " + sql);
 		try (TemporaryClassLoaderContext ignored =
 				 TemporaryClassLoaderContext.of(calciteFunctionCompiler.getClassLoader())) {
 			Statement statement = connection.createStatement();
 
-			// todo: select col1 where unix_timestamp_macro(col1)=12 will exception.
 			ResultSet resultSet = statement.executeQuery(sql);
+
 			ResultSetMetaData metaData = resultSet.getMetaData();
 
 			TableSchema schema = extractSchemaByReflection(metaData);
@@ -237,6 +246,7 @@ public class MTableCalciteSqlExecutor implements SqlExecutor <MTable> {
 					+ "\n("
 					+ sql
 					+ "\n)";
+				System.out.println("new query: " + newQuery);
 				resultSet = statement.executeQuery(newQuery);
 			}
 
@@ -248,7 +258,7 @@ public class MTableCalciteSqlExecutor implements SqlExecutor <MTable> {
 					if (Types.SQL_TIMESTAMP == schema.getFieldType(i).get()) {
 						Object tmp = resultSet.getObject(i + 1);
 						if (tmp instanceof Long) {
-							row.setField(i, new Timestamp((long)tmp));
+							row.setField(i, new Timestamp((long) tmp));
 						} else {
 							row.setField(i, tmp);
 						}

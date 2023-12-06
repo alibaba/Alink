@@ -4,6 +4,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.table.api.TableSchema;
 
 import com.alibaba.alink.common.MLEnvironment;
+import com.alibaba.alink.common.exceptions.AkIllegalArgumentException;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.sql.builtin.BuiltInAggRegister;
 import com.alibaba.alink.common.sql.builtin.UdafName;
@@ -35,24 +36,44 @@ public class FeatureClauseUtil {
 		FeatureClause[] featureClauses = new FeatureClause[clauses.length];
 		for (int i = 0; i < clauses.length; i++) {
 			String[] opAndResCol = trimArray(clauses[i].split(" (?i)as "));
-			if (opAndResCol.length != 2) {
-				throw new AkIllegalOperatorParameterException(ERROR_MESSAGE);
+			if (opAndResCol.length == 2) {
+				featureClauses[i] = getFeatureClauseWithoutAs(opAndResCol[0], tableSchema, timeCol);
+				featureClauses[i].outColName = opAndResCol[1];
+			} else {
+				featureClauses[i] = getFeatureClauseWithoutAs(clauses[i], tableSchema, timeCol);
+				if (featureClauses[i].op == null) {
+					featureClauses[i].outColName = featureClauses[i].inColName;
+				} else {
+					featureClauses[i].outColName = "_c" + i;
+				}
 			}
-			FeatureClause featureClause = new FeatureClause();
-			featureClause.outColName = opAndResCol[1].trim();
-			String[] opAndInput = opAndResCol[0].split("\\(");
-			if (opAndInput.length != 2) {
-				throw new AkIllegalOperatorParameterException(ERROR_MESSAGE);
+			if (null != featureClauses[i].inColName) {
+				featureClauses[i].inColName = featureClauses[i].inColName.trim().replace("`", "");
+			}
+			if ("*".equals(featureClauses[i].inColName)) {
+				if (featureClauses[i].op == FeatureClauseOperator.COUNT) {
+					featureClauses[i].inColName = tableSchema.getFieldName(0).get();
+				}
 			}
 
+			if (null != featureClauses[i].outColName) {
+				featureClauses[i].outColName = featureClauses[i].outColName.trim().replace("`", "");
+			}
+		}
+		return featureClauses;
+	}
+
+	private static FeatureClause getFeatureClauseWithoutAs(String clause, TableSchema tableSchema, String timeCol) {
+		FeatureClause featureClause = new FeatureClause();
+
+		String[] opAndInput = clause.split("\\(");
+		if (opAndInput.length == 2) {
 			String funcName = opAndInput[0].trim().toUpperCase();
 			featureClause.op = FeatureClauseOperator
 				.valueOf(opAndInput[0].trim().toUpperCase());
 			if (funcName.equals("MTABLE_AGG")) {
 				featureClause.op.calc = new MTableAgg(false,
-					getMTableSchema(clauses[i], tableSchema), timeCol);
-
-				//featureClause.op.calc.createAccumulatorAndSet();
+					getMTableSchema(clause, tableSchema), timeCol);
 			}
 			String[] inputContent = opAndInput[1].split("\\)");
 			if (inputContent.length != 0) {
@@ -69,7 +90,8 @@ public class FeatureClauseUtil {
 						int tempSize = temp.length();
 						if (temp.charAt(0) == "\"".charAt(0) && temp.charAt(tempSize - 1) == "\"".charAt(0) ||
 							temp.charAt(0) == "\'".charAt(0) && temp.charAt(tempSize - 1) == "\'".charAt(0)) {
-							featureClause.inputParams[j - 1] = inputColAndParams[j].trim().substring(1, tempSize - 1);
+							featureClause.inputParams[j - 1] = inputColAndParams[j].trim().substring(1,
+								tempSize - 1);
 						} else {
 							featureClause.inputParams[j - 1] = inputColAndParams[j].trim();
 						}
@@ -83,9 +105,10 @@ public class FeatureClauseUtil {
 					}
 				}
 			}
-			featureClauses[i] = featureClause;
+		} else {
+			featureClause.inColName = clause.trim();
 		}
-		return featureClauses;
+		return featureClause;
 	}
 
 	private static String[] splitClause(String exprStr) {
@@ -94,6 +117,9 @@ public class FeatureClauseUtil {
 		int i = 0;
 		while (i < clauses.length) {
 			if (clauses[i].contains("(") && clauses[i].contains(")")) {
+				strList.add(clauses[i]);
+				i = i + 1;
+			} else if (!clauses[i].contains("(") && !clauses[i].contains(")")) {
 				strList.add(clauses[i]);
 				i = i + 1;
 			} else {
@@ -342,16 +368,34 @@ public class FeatureClauseUtil {
 		int lens = splittedClauses.length;
 		int index = 0;
 		while (index < lens) {
-			if (splittedClauses[index].split(" (?i)as ").length == 2) {
-				res.add(splittedClauses[index]);
+			String str = splittedClauses[index];
+			if (str.split(" (?i)as ").length == 2) {
+				// col1 as col2, xxx(col1, col2) as xxx
+				res.add(str);
+			} else if (!str.contains("(") && !str.contains(")")) {
+				// col1
+				res.add(str);
+			} else if (containCount(str, '(') == containCount(str, ')')) {
+				// avg(col)
+				res.add(str);
 			} else {
 				if (index + 1 == lens) {
 					throw new AkIllegalOperatorParameterException("");
 				}
-				res.add(splittedClauses[index] + "," + splittedClauses[++index]);
+				res.add(str + "," + splittedClauses[++index]);
 			}
 			++index;
 		}
 		return res.toArray(new String[0]);
+	}
+
+	private static int containCount(String str, char a) {
+		int cnt = 0;
+		for (int i = 0; i < str.length(); i++) {
+			if (str.charAt(i) == a) {
+				cnt++;
+			}
+		}
+		return cnt;
 	}
 }

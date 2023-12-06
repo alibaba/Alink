@@ -23,4 +23,5 @@ public class ToTimeStampFromFormat extends ScalarFunction {
 		}
 		return new Timestamp(date.getTime());
 	}
+
 }

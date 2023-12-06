@@ -1,9 +1,11 @@
 package com.alibaba.alink.common.insights;
 
+import com.alibaba.alink.operator.batch.BatchOperator;
+import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.source.CsvSourceLocalOp;
 
-class Data {
+public class Data {
 
 	Data() {}
 
@@ -16,6 +18,16 @@ class Data {
 		String schema = "year string, brand string, category string, model string, sales double";
 
 		return new CsvSourceLocalOp()
+			.setFilePath(filePath)
+			.setSchemaStr(schema)
+			.setIgnoreFirstLine(true);
+	}
+
+	public static BatchOperator <?> getCarSalesBatchSource() {
+		String filePath = new Data().getPath("CarSales.csv");
+		String schema = "year string, brand string, category string, model string, sales double";
+
+		return new CsvSourceBatchOp()
 			.setFilePath(filePath)
 			.setSchemaStr(schema)
 			.setIgnoreFirstLine(true);

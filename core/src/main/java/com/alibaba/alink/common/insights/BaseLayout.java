@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.insights;
 
-public abstract class BaseLayout {
+import java.io.Serializable;
+
+public class BaseLayout implements Serializable {
 
 }

@@ -58,8 +58,8 @@ public final class TfidfLocalOp extends LocalOperator <TfidfLocalOp>
 			docIdColName + ",sum(" + countColName + ") as total_word_count");
 		//Count totoal word count of words
 		LocalOperator wordStat = in.groupBy(wordColName + "," + docIdColName,
-				wordColName + "," + docIdColName + ",COUNT(1 ) as tmp_count")
-			.groupBy(wordColName, wordColName + ",count(1) as doc_cnt");
+				wordColName + "," + docIdColName + ",COUNT(" + docIdColName + ") as tmp_count")
+			.groupBy(wordColName, wordColName + ",count(" + wordColName + ") as doc_cnt");
 
 		final String tmpColNames = docIdColName + "," + wordColName + "," + countColName + "," + "total_word_count";
 		final String tmpColNames1 = tmpColNames + ",doc_cnt";

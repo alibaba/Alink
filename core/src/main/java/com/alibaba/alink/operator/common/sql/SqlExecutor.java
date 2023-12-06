@@ -4,6 +4,7 @@ import org.apache.flink.table.functions.ScalarFunction;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.types.Row;
 
+import com.alibaba.alink.operator.common.sql.functions.LocalAggFunction;
 import org.apache.commons.lang3.RandomStringUtils;
 
 /**
@@ -35,6 +36,8 @@ interface SqlExecutor<T> {
 	void addFunction(String name, ScalarFunction function);
 
 	void addFunction(String name, TableFunction <Row> function);
+
+	void addFunction(String name, LocalAggFunction function);
 	/**
 	 * Execute SQL query and return the result.
 	 *
@@ -88,6 +91,14 @@ interface SqlExecutor<T> {
 		return result;
 	}
 
+	default T where(T t, String selectClause, String predicate) {
+		String name = generateTableName();
+		addTable(name, t);
+		T result = query(String.format("SELECT %s FROM %s WHERE %s", selectClause, name, predicate));
+		removeTable(name);
+		return result;
+	}
+
 	/**
 	 * Execute filter query.
 	 *
@@ -98,6 +109,10 @@ interface SqlExecutor<T> {
 		return where(t, predicate);
 	}
 
+
+	default T filter(T t, String selectClause, String predicate) {
+		return where(t, selectClause, predicate);
+	}
 	/**
 	 * Execute distinct query.
 	 *

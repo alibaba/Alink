@@ -106,12 +106,12 @@ public class NumberMeasureIterator<N extends Number & Comparable <N>> implements
 	public void merge(NumberMeasureIterator <N> iterator) {
 		if (null == this.min) {
 			this.min = iterator.min;
-		} else if (null != iterator.min && this.min.compareTo(iterator.min) < 0) {
+		} else if (null != iterator.min && this.min.compareTo(iterator.min) > 0) {
 			this.min = iterator.min;
 		}
 		if (null == this.max) {
 			this.max = iterator.max;
-		} else if (null != iterator.max && this.max.compareTo(iterator.max) > 0) {
+		} else if (null != iterator.max && this.max.compareTo(iterator.max) < 0) {
 			this.max = iterator.max;
 		}
 

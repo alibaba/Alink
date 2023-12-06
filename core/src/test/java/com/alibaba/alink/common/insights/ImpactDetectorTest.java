@@ -4,6 +4,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 
 import com.alibaba.alink.common.utils.Stopwatch;
+import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.source.CsvSourceLocalOp;
 import junit.framework.TestCase;
 import org.junit.Test;
@@ -15,14 +16,7 @@ public class ImpactDetectorTest extends TestCase {
 
 	@Test
 	public void testCarSales() {
-		String filePath = getClass().getClassLoader().getResource("CarSales.csv").getPath();
-		String schema = "year string, brand string, category string, model string, sales double";
-		String[] brands = new String[] {"BMW", "Ford"};
-
-		CsvSourceLocalOp data = new CsvSourceLocalOp()
-			.setFilePath(filePath)
-			.setSchemaStr(schema)
-			.setIgnoreFirstLine(true);
+		LocalOperator <?> data = Data.getCarSalesLocalSource();
 
 		Stopwatch sw = new Stopwatch();
 		sw.start();

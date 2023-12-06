@@ -4,11 +4,11 @@ package com.alibaba.alink.common.sql.builtin.agg;
 public class SumUdaf extends BaseSummaryUdaf {
 
     public SumUdaf() {
-        super();
+        this(false);
     }
 
     public SumUdaf(boolean dropLast) {
-        super(dropLast);
+        super(dropLast, false);
     }
 
     @Override

@@ -50,7 +50,7 @@ public class LocalOptimizer {
 														  DenseVector initCoef, Params params) {
 		LinearTrainParams.OptimMethod method = params.get(LinearTrainParams.OPTIM_METHOD);
 		if (null == method) {
-			if (trainData.get(0).f2.size() <= NEWTON_MAX_FEATURE_NUM) {
+			if (initCoef.size() <= NEWTON_MAX_FEATURE_NUM) {
 				method = OptimMethod.Newton;
 			} else if (params.get(HasL1.L_1) > 0) {
 				method = OptimMethod.OWLQN;

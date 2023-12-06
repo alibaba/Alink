@@ -265,11 +265,15 @@ public class MTable implements Serializable, DataTypeDisplayInterface {
 	}
 
 	public MTable sampleWithSizeReplacement(int numSamples, Random rnd) {
-		List <Row> chosenRows = IntStream.range(0, numSamples)
-			.map(d -> rnd.nextInt() % numSamples)
-			.mapToObj(rows::get)
-			.collect(Collectors.toList());
-		return new MTable(chosenRows, schemaStr);
+		if (rows.size() == 0) {
+			return new MTable(new ArrayList <Row>(), schemaStr);
+		} else {
+			List <Row> chosenRows = IntStream.range(0, numSamples)
+				.map(d -> rnd.nextInt(rows.size()))
+				.mapToObj(rows::get)
+				.collect(Collectors.toList());
+			return new MTable(chosenRows, schemaStr);
+		}
 	}
 
 	/**

@@ -54,17 +54,16 @@ public class MiningInsightTest extends TestCase {
 			.addSubspace(new Subspace("brand", "BMW"))
 			.setBreakdown(new Breakdown("year_"))
 			.addMeasure(new Measure("sales", MeasureAggr.SUM));
-
-		CorrelationInsight miningInsight = (CorrelationInsight) MiningInsightFactory.getMiningInsight(InsightType.Correlation, subject);
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Correlation;
+		insight.addAttachSubspace(new Subspace("brand", "BMW"))
+			.addAttachSubspace(new Subspace("category", "SUV"));
+		CorrelationInsight miningInsight = (CorrelationInsight) MiningInsightFactory.getMiningInsight(insight);
 		miningInsight.setNeedGroup(true).setNeedFilter(true);
-		Subject subject2 = new Subject()
-			.addSubspace(new Subspace("brand", "BMW"))
-			.addSubspace(new Subspace("category", "SUV"))
-			.setBreakdown(new Breakdown("year_"))
-			.addMeasure(new Measure("sales", MeasureAggr.SUM));
-		miningInsight.setSubject2(subject2);
 		miningInsight.processData(source, source);
 		System.out.println(miningInsight);
+		System.out.println(miningInsight.insight.layout.data);
 	}
 
 	@Test
@@ -77,11 +76,13 @@ public class MiningInsightTest extends TestCase {
 			.setBreakdown(new Breakdown("model"))
 			.addMeasure(new Measure("sales", MeasureAggr.AVG))
 			.addMeasure(new Measure("sales", MeasureAggr.MIN));
-
-		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(InsightType.CrossMeasureCorrelation, subject);
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.CrossMeasureCorrelation;
+		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(insight);
 		miningInsight.setNeedGroup(true).setNeedFilter(true);
 		miningInsight.processData(source);
-		System.out.println(miningInsight);
+		System.out.println(miningInsight.insight);
 	}
 
 	public static Row[] EMISSION = new Row[] {
@@ -141,6 +142,63 @@ public class MiningInsightTest extends TestCase {
 	public static String EMISSION_SCHEMA = "year_ string, state string, producer_type string, energy_source string, co double, so double, nox double";
 
 	@Test
+	public void testCrossMeaCor2() {
+		LocalOperator <?> source = new MemSourceLocalOp(EMISSION, EMISSION_SCHEMA);
+
+		Subject subject = new Subject()
+			.addSubspace(new Subspace("energy_source", "Petroleum"))
+			.setBreakdown(new Breakdown("year_"))
+			.addMeasure(new Measure("co", MeasureAggr.MAX))
+			.addMeasure(new Measure("so", MeasureAggr.MAX));
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.CrossMeasureCorrelation;
+
+		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(insight);
+		miningInsight.setNeedGroup(true).setNeedFilter(true);
+		miningInsight.processData(source);
+		System.out.println(insight);
+		System.out.println(insight.layout.data);
+	}
+
+	@Test
+	public void testCrossMeaCor3() {
+		LocalOperator<?> data = Data.getEmissionLocalSource();
+
+		Subject subject = new Subject()
+			.setBreakdown(new Breakdown("EnergySource"))
+			.addMeasure(new Measure("CO2_kt", MeasureAggr.AVG))
+			.addMeasure(new Measure("SO2_kt", MeasureAggr.SUM));
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.CrossMeasureCorrelation;
+
+		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(insight);
+		miningInsight.setNeedGroup(true).setNeedFilter(true);
+		miningInsight.processData(data);
+		System.out.println(insight);
+	}
+
+	@Test
+	public void testCluster2DWithFilter() {
+		LocalOperator <?> source = new MemSourceLocalOp(EMISSION, EMISSION_SCHEMA);
+
+		Subject subject = new Subject()
+			.addSubspace(new Subspace("energy_source", "Petroleum"))
+			.setBreakdown(new Breakdown("year_"))
+			.addMeasure(new Measure("co", MeasureAggr.AVG))
+			.addMeasure(new Measure("so", MeasureAggr.MAX));
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Clustering2D;
+		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(insight);
+		miningInsight.setNeedGroup(true);
+		miningInsight.setNeedFilter(true);
+		miningInsight.processData(source);
+		System.out.println(miningInsight);
+	}
+
+	@Test
 	public void testCluster2D() {
 		LocalOperator <?> source = new MemSourceLocalOp(EMISSION, EMISSION_SCHEMA);
 
@@ -149,9 +207,12 @@ public class MiningInsightTest extends TestCase {
 			.setBreakdown(new Breakdown("year_"))
 			.addMeasure(new Measure("co", MeasureAggr.AVG))
 			.addMeasure(new Measure("so", MeasureAggr.MAX));
-
-		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(InsightType.Clustering2D, subject);
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Clustering2D;
+		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(insight);
 		miningInsight.setNeedGroup(true);
+		//miningInsight.setNeedFilter(true);
 		miningInsight.processData(source);
 		System.out.println(miningInsight);
 	}
@@ -159,10 +220,11 @@ public class MiningInsightTest extends TestCase {
 	@Test
 	public void testCluster() {
 		ArrayList<Row> rows = new ArrayList <>();
-		for (int year = 2000; year < 2010; year++) {
+		Random generator = new Random(11);
+		for (int year = 1000; year < 1100; year++) {
 			rows.add(Row.of(Math.random(), Math.random(), String.valueOf(year)));
 		}
-		for (int year = 2010; year < 2020; year++) {
+		for (int year = 2000; year < 2100; year++) {
 			rows.add(Row.of(Math.random() + 10, Math.random() + 10, String.valueOf(year)));
 		}
 		LocalOperator <?> source = new MemSourceLocalOp(rows, "co double,so double,year_ string");
@@ -171,9 +233,11 @@ public class MiningInsightTest extends TestCase {
 			//.addSubspace(new Subspace("energy_source", "Petroleum"))
 			.setBreakdown(new Breakdown("year_"))
 			.addMeasure(new Measure("co", MeasureAggr.AVG))
-			.addMeasure(new Measure("so", MeasureAggr.MAX));
-
-		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(InsightType.Clustering2D, subject);
+			.addMeasure(new Measure("so", MeasureAggr.AVG));
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Clustering2D;
+		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(insight);
 		miningInsight.setNeedGroup(true);
 		miningInsight.processData(source);
 		System.out.println(miningInsight);
@@ -193,8 +257,10 @@ public class MiningInsightTest extends TestCase {
 			.setBreakdown(new Breakdown("year_"))
 			.addMeasure(new Measure("co", MeasureAggr.AVG))
 			.addMeasure(new Measure("so", MeasureAggr.MAX));
-
-		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(InsightType.Clustering2D, subject);
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Clustering2D;
+		CorrelationInsightBase miningInsight = MiningInsightFactory.getMiningInsight(insight);
 		miningInsight.setNeedGroup(true);
 		miningInsight.processData(source);
 		System.out.println(miningInsight);

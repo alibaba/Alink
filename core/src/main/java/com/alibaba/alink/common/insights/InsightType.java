@@ -1,6 +1,8 @@
 package com.alibaba.alink.common.insights;
 
-public enum InsightType {
+import java.io.Serializable;
+
+public enum InsightType implements Serializable {
 	Attribution,
 	OutstandingNo1,
 	OutstandingTop2,
@@ -13,4 +15,6 @@ public enum InsightType {
 	Clustering2D,
 	Correlation,
 	CrossMeasureCorrelation,
+	BasicStat,
+	Distribution
 }

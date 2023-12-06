@@ -6,6 +6,7 @@ import org.apache.flink.types.Row;
 
 import com.alibaba.alink.common.LocalMLEnvironment;
 import com.alibaba.alink.operator.batch.sql.BatchSqlOperators;
+import com.alibaba.alink.operator.common.sql.functions.LocalAggFunction;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.source.TableSourceLocalOp;
 
@@ -50,6 +51,10 @@ public class LocalOpCalciteSqlExecutor implements SqlExecutor <LocalOperator <?>
 		mTableCalciteSqlExecutor.addFunction(name, function);
 	}
 
+	@Override
+	public void addFunction(String name, LocalAggFunction function) {
+		mTableCalciteSqlExecutor.addFunction(name, function);
+	}
 	@Override
 	public LocalOperator <?> query(String sql) {
 		return new TableSourceLocalOp(mTableCalciteSqlExecutor.query(sql));

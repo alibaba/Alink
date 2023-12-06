@@ -1,6 +1,7 @@
 package com.alibaba.alink.operator.local;
 
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.ml.api.misc.param.ParamInfo;
 import org.apache.flink.ml.api.misc.param.Params;
 import org.apache.flink.ml.api.misc.param.WithParams;
@@ -17,6 +18,7 @@ import com.alibaba.alink.common.exceptions.AkPreconditions;
 import com.alibaba.alink.common.lazy.LazyEvaluation;
 import com.alibaba.alink.common.utils.TableUtil;
 import com.alibaba.alink.operator.batch.utils.DiveVisualizer.DiveVisualizerConsumer;
+import com.alibaba.alink.operator.common.sql.functions.LocalAggFunction;
 import com.alibaba.alink.operator.common.statistics.basicstatistic.TableSummary;
 import com.alibaba.alink.operator.local.dataproc.FirstNLocalOp;
 import com.alibaba.alink.operator.local.dataproc.SampleLocalOp;
@@ -25,10 +27,13 @@ import com.alibaba.alink.operator.local.lazy.LocalLazyObjectsManager;
 import com.alibaba.alink.operator.local.source.BaseSourceLocalOp;
 import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
 import com.alibaba.alink.operator.local.source.TableSourceLocalOp;
+import com.alibaba.alink.operator.local.sql.DistinctLocalOp;
+import com.alibaba.alink.operator.local.sql.FilterLocalOp;
 import com.alibaba.alink.operator.local.sql.GroupByLocalOp;
-import com.alibaba.alink.operator.local.sql.SelectLocalOp;
+import com.alibaba.alink.operator.local.sql.GroupByLocalOp2;
 import com.alibaba.alink.operator.local.statistics.InternalFullStatsLocalOp;
 import com.alibaba.alink.operator.local.statistics.SummarizerLocalOp;
+import com.alibaba.alink.params.shared.colname.HasSelectedCol;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Serializable;
@@ -335,7 +340,15 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	}
 
 	public LocalOperator <?> select(String fields) {
-		return LocalMLEnvironment.getInstance().getSqlExecutor().select(this, fields);
+		try {
+			return LocalMLEnvironment.getInstance().getSqlExecutor().select(this, fields);
+		} catch (Exception ex) {
+			String newSelectSql = fields;
+			if (fields.contains("*")) {
+				newSelectSql = newSelectSql.replace("*", String.join(",", getColNames()));
+			}
+			return LocalMLEnvironment.getInstance().getSqlExecutor().select(this, newSelectSql);
+		}
 	}
 
 	public LocalOperator <?> select(String[] fields) {
@@ -362,7 +375,7 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	}
 
 	public LocalOperator <?> filter(String predicate) {
-		return LocalMLEnvironment.getInstance().getSqlExecutor().filter(this, predicate);
+		return new FilterLocalOp(predicate).linkFrom(this);
 	}
 
 	/**
@@ -371,7 +384,7 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	 * @return The resulted <code>BatchOperator</code> of the "distinct" operation.
 	 */
 	public LocalOperator <?> distinct() {
-		return LocalMLEnvironment.getInstance().getSqlExecutor().distinct(this);
+		return new DistinctLocalOp().linkFrom(this);
 	}
 
 	public LocalOperator <?> orderBy(String fieldName, int limit, boolean isAscending) {
@@ -408,11 +421,55 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	}
 
 	public LocalOperator <?> groupBy(String[] groupCols, String selectClause) {
-		return groupBy(String.join(",", groupCols), selectClause);
+		try {
+			String[] newGroupCols = groupCols.clone();
+			for (int i = 0; i < newGroupCols.length; i++) {
+				if (!newGroupCols[i].contains("`")) {
+					newGroupCols[i] = "`" + newGroupCols[i] + "`";
+				}
+			}
+			return new GroupByLocalOp(String.join(",", newGroupCols), selectClause).
+				linkFrom(this);
+		} catch (Exception ex) {
+			String prefix = "__ak_ts__";
+			String[] newGroupCols = groupCols.clone();
+			String newSelectClause = selectClause;
+
+			//String[] newColNames = colNames;
+			for (int i = 0; i < groupCols.length; i++) {
+				String name = groupCols[i];
+				if (Types.SQL_TIMESTAMP == getSchema().getFieldType(name).get()) {
+					String nameTs = name + prefix;
+					newGroupCols[i] = nameTs;
+					newSelectClause = newSelectClause.replace(name, nameTs);
+				}
+			}
+
+			System.out.println("newGroupCols: " + String.join(",", newGroupCols));
+			System.out.println("newSelectClause: " + newSelectClause);
+
+			for (int i = 0; i < newGroupCols.length; i++) {
+				if (!newGroupCols[i].contains("`")) {
+					newGroupCols[i] = "`" + newGroupCols[i] + "`";
+				}
+			}
+
+			LocalOperator <?> outOp = new GroupByLocalOp(String.join(",", newGroupCols), newSelectClause).
+				linkFrom(this);
+
+			String[] outColNames = outOp.getColNames();
+			for (int i = 0; i < outColNames.length; i++) {
+				if (outColNames[i].endsWith(prefix)) {
+					outColNames[i] = outColNames[i].split(prefix)[0];
+				}
+			}
+			return new MemSourceLocalOp(outOp.getOutputTable().getRows(),
+				new TableSchema(outColNames, outOp.getColTypes()));
+		}
 	}
 
 	public LocalOperator <?> groupBy(String groupByPredicate, String selectClause) {
-		return new GroupByLocalOp(groupByPredicate, selectClause).linkFrom(this);
+		return new GroupByLocalOp2(groupByPredicate, selectClause).linkFrom(this);
 	}
 
 	protected static LocalOperator <?> checkAndGetFirst(LocalOperator <?>... inputs) {
@@ -459,7 +516,8 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	}
 
 	/**
-	 * Register the table of this operator the default {@link LocalMLEnvironment}. An operator can register multiple
+	 * Register the table of this operator the default {@link LocalMLEnvironment}. An operator can register
+	 * multiple
 	 * times with different names.
 	 *
 	 * @param name The name to register with.
@@ -479,6 +537,10 @@ public abstract class LocalOperator<T extends LocalOperator <T>>
 	}
 
 	public static void registerFunction(String name, TableFunction <Row> function) {
+		LocalMLEnvironment.getInstance().getSqlExecutor().addFunction(name, function);
+	}
+
+	public static void registerFunction(String name, LocalAggFunction function) {
 		LocalMLEnvironment.getInstance().getSqlExecutor().addFunction(name, function);
 	}
 

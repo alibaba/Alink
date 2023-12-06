@@ -1,8 +1,13 @@
 package com.alibaba.alink.common.insights;
 
-import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple4;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.types.Row;
 
+import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.operator.local.LocalOperator;
 
 import java.util.ArrayList;
@@ -16,34 +21,50 @@ import java.util.Queue;
 public class ScatterplotClusteringInsight extends CrossMeasureCorrelationInsight {
 
 	private static int MAX_CLUSTERS_NUM = 3;
-	private static double MAX_OUTLIER_PERCENT = 0.1;
-	private static double RADIUS_EXPAND_RATIO = 1.1;
-	private static int RETRY_NUM = 10;
+	private static double MAX_OUTLIER_PERCENT = 0.05;
+	private static double RADIUS_EXPAND_RATIO = 2;
+	private static int RETRY_NUM = 3;
 	private static int MIN_SAMPLE_NUM = 10;
+	private static int MAX_SAMPLE_NUM = 1000;
+	private static String CLUSTER_COLUMN_NAME = "cluster";
 
-	public ScatterplotClusteringInsight(Subject subject, InsightType type) {
-		super(subject, type);
+	public ScatterplotClusteringInsight(Insight insight) {
+		super(insight);
 	}
 
 	@Override
-	public double computeScore(LocalOperator <?>... source) {
-		String[] columns = new String[] {insight.subject.breakdown.colName, MEASURE_NAME_PREFIX + "0"};
-		HashMap <Object, Double> measuerValues0 = initData(source[0].select(columns));
-		HashMap<Object, Double> measuerValues1 = initData(source[1].select(columns));
+	public void fillLayout() {
+		this.insight.layout.xAxis = this.insight.subject.measures.get(0).aggr + "(" + this.insight.subject.measures.get(0).colName + ")";
+		this.insight.layout.yAxis = this.insight.subject.measures.get(1).aggr + "(" + this.insight.subject.measures.get(1).colName + ")";
+		this.insight.layout.title = insight.layout.xAxis + " and " + insight.layout.yAxis + " cluster";
+		StringBuilder builder = new StringBuilder();
+		if (null != insight.subject.subspaces && !insight.subject.subspaces.isEmpty()) {
+			builder.append(insight.getSubspaceStr(insight.subject.subspaces)).append(" 条件下，");
+		}
+		builder.append(this.insight.layout.xAxis).append(" 与 ").append(this.insight.layout.yAxis).append(" 有聚类特性");
+		this.insight.layout.description = builder.toString();
+	}
 
-		List <Tuple2 <Double, Double>> measureValues = new ArrayList <>();
+	@Override
+	public double computeScore(LocalOperator <?>... sources) {
+		//String[] columns = new String[] {insight.subject.breakdown.colName, MEASURE_NAME_PREFIX + "0"};
+		HashMap <Object, Number> measureValues0 = initData(sources[0]);
+		HashMap<Object, Number> measureValues1 = initData(sources[1]);
 
-		for (Entry <Object, Double> entry : measuerValues0.entrySet()) {
-			if (!measuerValues1.containsKey(entry.getKey())) {
+		List <Tuple3 <Double, Double, Object>> measureValues = new ArrayList <>();
+
+		for (Entry <Object, Number> entry : measureValues0.entrySet()) {
+			if (!measureValues1.containsKey(entry.getKey())) {
 				continue;
 			}
-			Double value0 = entry.getValue();
-			Double value1 = measuerValues1.get(entry.getKey());
-			measureValues.add(Tuple2.of(value0, value1));
+			Double value0 = entry.getValue().doubleValue();
+			Double value1 = measureValues1.get(entry.getKey()).doubleValue();
+			measureValues.add(Tuple3.of(value0, value1, entry.getKey()));
 		}
 
 		int count = measureValues.size();
-		if (count <= MIN_SAMPLE_NUM) {
+		// 小于或者大于一定条数，返回0分
+		if (count <= MIN_SAMPLE_NUM || count >= MAX_SAMPLE_NUM) {
 			return 0;
 		}
 		double totalDistance = 0.0;
@@ -60,30 +81,60 @@ public class ScatterplotClusteringInsight extends CrossMeasureCorrelationInsight
 		}
 		double avgDistance = totalDistance / (count * (count - 1) / 2);
 		int minPts = count / 10;
-		double radius = avgDistance / 5;
-		Tuple3<Integer, Integer, Double> result = dbscan(distanceMatrix, minPts, radius, count);
-		// 当聚类数量大于3个，或者离群点大于10%，减小minPts或者增加radius，继续计算
+		double radius = avgDistance;
+		Tuple4 <Integer, Integer, Double, int[]> result = dbscan(distanceMatrix, minPts, radius, count);
+		double distanceDiff = -1.0;
 		int currentTry = 0;
-		while (result.f0 > MAX_CLUSTERS_NUM || result.f1 > MAX_OUTLIER_PERCENT * count) {
-			radius = radius * RADIUS_EXPAND_RATIO;
-			result = dbscan(distanceMatrix, minPts, radius, count);
+		while (true) {
+			// 聚类结果为2或者3，离群点数量小于5%，符合一定规律，退出搜索过程
+			if (result.f0 > 1 && result.f0 <= MAX_CLUSTERS_NUM && result.f1 < MAX_OUTLIER_PERCENT * count) {
+				distanceDiff = result.f2;
+				break;
+			}
+			// 聚类结果大于3，分类太多，或者离群点太多，降低半径分类结果分类或离群点会更多，退出搜索过程
+			if (result.f0 > MAX_CLUSTERS_NUM || result.f1 >= MAX_OUTLIER_PERCENT * count) {
+				break;
+			}
 			currentTry++;
-			// 达到最大尝试次数
 			if (currentTry >= RETRY_NUM) {
 				break;
 			}
+			radius /= RADIUS_EXPAND_RATIO;
+			result = dbscan(distanceMatrix, minPts, radius, count);
 		}
-		// 太分散，没有离群点，没有有价值信息
-		if (result.f0 == 1 || result.f0 > 3 || result.f1 > MAX_OUTLIER_PERCENT * count) {
+		if (distanceDiff < 0) {
 			return 0;
 		}
 		// 类的间距越大，信息量越大，参考逻辑回归
 		double ex = Math.pow(Math.E, result.f2);
 		double score = ex / (1 + ex);
+
+		TableSchema outSchema = new TableSchema(new String[]{
+			sources[0].getSchema().getFieldName(0).get(),
+			MEASURE_NAME_PREFIX + "0",
+			MEASURE_NAME_PREFIX + "1",
+			CLUSTER_COLUMN_NAME
+		}, new TypeInformation[]{
+			sources[0].getSchema().getFieldType(0).get(),
+			sources[0].getSchema().getFieldType(1).get(),
+			sources[1].getSchema().getFieldType(1).get(),
+			Types.INT
+		});
+		List<Row> rows = new ArrayList <>();
+		for (int i = 0; i < measureValues.size(); i++) {
+			Row row = new Row(4);
+			Object key = measureValues.get(i).f2;
+			row.setField(0, measureValues.get(i).f2);
+			row.setField(1, measureValues0.get(key));
+			row.setField(2, measureValues1.get(key));
+			row.setField(3, result.f3[i]);
+		}
+		MTable mTable = new MTable(rows, outSchema);
+		this.insight.layout.data = mTable;
 		return score;
 	}
 
-	private Tuple3 <Integer, Integer, Double> dbscan(double[][] distanceMatrix, int minPts, double radius, int count) {
+	private Tuple4 <Integer, Integer, Double, int[]> dbscan(double[][] distanceMatrix, int minPts, double radius, int count) {
 		boolean[] isCorePoint = new boolean[count];
 		int[] clusterId = new int[count];
 		int[][] isCloseMatrix = new int[count][count];
@@ -179,6 +230,6 @@ public class ScatterplotClusteringInsight extends CrossMeasureCorrelationInsight
 		if (inDistance != 0) {
 			distanceRatio = (outDistance / inDistance - 1.0) * 0.5;
 		}
-		return Tuple3.of(clusterStartId, Integer.valueOf(outliers), distanceRatio);
+		return Tuple4.of(clusterStartId, Integer.valueOf(outliers), distanceRatio, clusterId);
 	}
 }

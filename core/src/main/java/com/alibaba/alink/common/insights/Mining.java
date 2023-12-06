@@ -7,7 +7,6 @@ import org.apache.flink.types.Row;
 import com.alibaba.alink.common.MTable;
 import com.alibaba.alink.common.exceptions.AkIllegalOperatorParameterException;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
-import com.alibaba.alink.common.linalg.DenseVector;
 import com.alibaba.alink.common.probabilistic.CDF;
 import com.alibaba.alink.operator.common.regression.LinearReg;
 import com.alibaba.alink.operator.common.regression.LinearRegressionModel;
@@ -19,13 +18,11 @@ import com.alibaba.alink.operator.common.timeseries.TsMethod;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.dataproc.AppendIdLocalOp;
 import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
-import com.alibaba.alink.params.statistics.HasStatLevel_L1;
 import com.alibaba.alink.params.statistics.HasStatLevel_L1.StatLevel;
-import com.alibaba.alink.pipeline.regression.LinearRegression;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
-import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,7 +40,7 @@ public class Mining {
 			for (int i = 1; i < subspaces.size(); i++) {
 				sbd.append(" AND ").append(createFilterClause(subspaces.get(i)));
 			}
-			System.out.println("filter sql: " + sbd.toString());
+			//System.out.println("filter sql: " + sbd.toString());
 			return source.filter(sbd.toString());
 		} else {
 			return source;
@@ -63,15 +60,11 @@ public class Mining {
 
 		LocalOperator <?> dataAggr = source.groupBy(subject.breakdown.colName, sbdAggr.toString());
 
-		dataAggr.lazyPrint("------ agg -------- ");
+		//dataAggr.lazyPrint("------ agg -------- ");
+		//System.out.println();
 
-		// set layout data.
-		Insight insight = calcInsight(subject, dataAggr, type);
-		LayoutData layoutData = new LayoutData();
-		layoutData.data = dataAggr.getOutputTable();
-		insight.layout = layoutData;
+		return calcInsight(subject, dataAggr, type);
 
-		return insight;
 	}
 
 	public static Insight calcInsight(Subject subject, LocalOperator <?> dataAggr, InsightType type) {
@@ -81,31 +74,31 @@ public class Mining {
 
 		switch (type) {
 			case OutstandingNo1:
-				insight.score = outstandingNo1(dataAggr, subject);
+				insight = outstandingNo1(dataAggr, subject);
 				break;
 			case OutstandingLast:
-				insight.score = outstandingNoLast(dataAggr, subject);
+				insight = outstandingNoLast(dataAggr, subject);
 				break;
 			case OutstandingTop2:
-				insight.score = outstandingTop2(dataAggr, subject);
+				insight = outstandingTop2(dataAggr, subject);
 				break;
 			case Evenness:
-				insight.score = even(dataAggr, subject);
+				insight = even(dataAggr, subject);
 				break;
 			case Attribution:
-				insight.score = attribution(dataAggr, subject);
+				insight = attribution(dataAggr, subject);
 				break;
 			case ChangePoint:
-				insight.score = changePoint(dataAggr, subject);
+				insight = changePoint(dataAggr, subject);
 				break;
 			case Outlier:
-				insight.score = outlier(dataAggr, subject);
+				insight = outlier(dataAggr, subject);
 				break;
 			case Trend:
-				insight.score = trend(dataAggr, subject);
+				insight = trend(dataAggr, subject);
 				break;
 			case Seasonality:
-				insight.score = seasonality(dataAggr, subject);
+				insight = seasonality(dataAggr, subject);
 				break;
 			default:
 				throw new AkIllegalOperatorParameterException("Insight type not support yet!" + type.name());
@@ -114,140 +107,556 @@ public class Mining {
 		return insight;
 	}
 
-	private static double outstandingNo1(LocalOperator <?> dataAggr, Subject subject) {
-		if (subject.measures.size() != 1) {
-			return 0;
-		}
+	private static Insight outstandingNo1(LocalOperator <?> dataAggr, Subject subject) {
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.OutstandingNo1;
+		insight.score = 0;
+
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
+		insight.layout = layoutData;
 
 		String measureCol = MEASURE_NAME_PREFIX + "0";
 
-		TableSummary summary = dataAggr.select(measureCol).collectStatistics();
+		TableSummary summary = dataAggr.collectStatistics();
 
 		// 一个值，没有必要； 两个值，直接比较；三个值，去掉最大值，只剩两个，那么残差必然是0，所以至少要有4个点
 		long rowNum = summary.count();
-		if (rowNum == 0 || rowNum == 1) {
-			return 0;
-		}
-
-		if (summary.min(measureCol) == summary.max(measureCol)) {
-			return 0;
-		}
-
-		List <Double> values = new ArrayList <>();
-		for (Row row : dataAggr.select(measureCol).getOutputTable().getRows()) {
-			values.add(((Number) row.getField(0)).doubleValue());
-		}
-
-		if (rowNum == 2) {
-			return 0;
-		}
-		if (rowNum == 3) {
-			return summary.maxDouble(measureCol) / summary.sum(measureCol);
-		}
-
 		double max = summary.maxDouble(measureCol);
-		if (max / summary.sum(measureCol) < 0.1) {
-			return 0;
-		}
-		return outstandingNo1PValue(values.toArray(new Double[0]), 0.7, max);
-	}
-
-	private static double outstandingNoLast(LocalOperator <?> dataAggr, Subject subject) {
-		if (subject.measures.size() != 1) {
-			return 0;
+		double sum = summary.sum(measureCol);
+		if (subject.measures.size() != 1 ||
+			rowNum <= 2 ||
+			summary.min(measureCol) == summary.max(measureCol) ||
+			max < 0 ||
+			max / sum < 0.1) {
+			return insight;
 		}
 
-		String measureCol = MEASURE_NAME_PREFIX + "0";
-
-		TableSummary summary = dataAggr.select(measureCol).collectStatistics();
-
-		// 一个值，没有必要； 两个值，直接比较；三个值，去掉最大值，只剩两个，那么残差必然是0，所以至少要有4个点
-		long rowNum = summary.count();
-		if (rowNum == 0 || rowNum == 1) {
-			return 0;
+		List <Double> values = loadData(dataAggr.collect(), 1);
+		// get maxValueKey
+		int iMaxIdx = 0;
+		double minObj = values.get(0);
+		for (int iMax = 1; iMax < values.size(); iMax++) {
+			if (values.get(iMax) > minObj) {
+				minObj = values.get(iMax);
+				iMaxIdx = iMax;
+			}
 		}
+		String maxValueKey = objToString(dataAggr.getOutputTable().getEntry(iMaxIdx, 0));
 
-		if (summary.maxDouble(measureCol) > 0) {
-			return 0;
-		}
-
-		if (summary.min(measureCol) == summary.max(measureCol)) {
-			return 0;
-		}
-
-		List <Double> values = new ArrayList <>();
-		for (Row row : dataAggr.select(measureCol).getOutputTable().getRows()) {
-			values.add(-((Number) row.getField(0)).doubleValue());
-		}
-
-		if (rowNum == 2) {
-			return Math.abs(summary.minDouble(measureCol)) / (Math.abs(values.get(0)) + Math.abs(values.get(1)));
-		}
-
+		double score = 0;
 		if (rowNum == 3) {
-			return Math.abs(summary.minDouble(measureCol)) /
-				(Math.abs(values.get(0)) + Math.abs(values.get(1)) + Math.abs(values.get(2)));
+			score = max / sum;
+		} else {
+			score = outstandingNo1PValue(values.toArray(new Double[0]), 0.7, max);
 		}
+		insight.score = score;
 
-		return outstandingNo1PValue(values.toArray(new Double[0]), 0.7, Math.abs(summary.minDouble(measureCol)));
+		Measure measure = insight.subject.measures.get(0);
+		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
+
+		layoutData.title = insight.getTitle();
+		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
+			String.format("%s里%s的值明显高于其余的值.", subject.breakdown.colName, maxValueKey);
+		layoutData.focus = String.format("%s", maxValueKey);
+		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
+		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
+
+		insight.layout = layoutData;
+
+		return insight;
 	}
 
-	private static double outstandingTop2(LocalOperator <?> dataAggr, Subject subject) {
-		if (subject.measures.size() != 1) {
-			return 0;
-		}
+	private static Insight outstandingNoLast(LocalOperator <?> dataAggr, Subject subject) {
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.OutstandingLast;
+		insight.score = 0;
 
 		String measureCol = MEASURE_NAME_PREFIX + "0";
 
-		TableSummary summary = dataAggr.select(measureCol).collectStatistics();
+		TableSummary summary = dataAggr.collectStatistics();
 
-		if (summary.min(measureCol) == summary.max(measureCol)) {
-			return 0;
+		long rowNum = summary.count();
+		double max = summary.maxDouble(measureCol);
+		double min = summary.minDouble(measureCol);
+
+		if (subject.measures.size() != 1 ||
+			rowNum <= 0 ||
+			max > 0 ||
+			summary.min(measureCol) == summary.max(measureCol)) {
+			return insight;
 		}
+
+		List <Double> values = loadData(dataAggr.collect(), 1);
+		values.replaceAll(aDouble -> -aDouble);
+
+		double score = 0;
+		if (rowNum == 2) {
+			score = Math.abs(min) / (Math.abs(values.get(0)) + Math.abs(values.get(1)));
+		} else if (rowNum == 3) {
+			score = Math.abs(min) /
+				(Math.abs(values.get(0)) + Math.abs(values.get(1)) + Math.abs(values.get(2)));
+		} else {
+			score = outstandingNo1PValue(values.toArray(new Double[0]), 0.7, Math.abs(min));
+		}
+
+		insight.score = score;
+
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
+		insight.layout = layoutData;
+
+		// get minValueKey
+		int iMinIdx = 0;
+		double minObj = values.get(0);
+		for (int iMin = 1; iMin < rowNum; iMin++) {
+			if (values.get(iMin) > minObj) {
+				minObj = values.get(iMin);
+				iMinIdx = iMin;
+			}
+		}
+		String minValueKey = objToString(dataAggr.getOutputTable().getEntry(iMinIdx, 0));
+
+		Measure measure = insight.subject.measures.get(0);
+		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
+
+		layoutData.title = insight.getTitle();
+		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
+			String.format("%s里最大负值%s明显低于其余的值.", subject.breakdown.colName, minValueKey);
+		layoutData.focus = String.format("%s", minValueKey);
+		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
+		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
+
+		insight.layout = layoutData;
+
+		return insight;
+	}
+
+	private static Insight outstandingTop2(LocalOperator <?> dataAggr, Subject subject) {
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.OutstandingTop2;
+		insight.score = 0;
+
+		String measureCol = MEASURE_NAME_PREFIX + "0";
+		TableSummary summary = dataAggr.collectStatistics();
 		long rowNum = summary.count();
 
-		// rowNum =2时，必然有一个值大于等于50%
-		if (rowNum <= 2) {
-			return 0;
+		if (subject.measures.size() != 1 ||
+			summary.min(measureCol) == summary.max(measureCol) ||
+			summary.minDouble(measureCol) < 0 ||
+			rowNum <= 2) {
+			return insight;
 		}
 
 		double max = Double.NEGATIVE_INFINITY;
 		double max2 = Double.NEGATIVE_INFINITY;
 		double sumT = 0;
 
-		List <Double> values = new ArrayList <>();
-		for (Row row : dataAggr.select(measureCol).getOutputTable().getRows()) {
-			values.add(((Number) row.getField(0)).doubleValue());
-		}
+		List <Double> values = loadData(dataAggr.collect(), 1);
 
 		Double[] vals = values.toArray(new Double[0]);
+		int firstMaxIdx = 0;
+		int secondMaxIdx = 0;
+		int idx = 0;
 		for (Double datum : vals) {
 			if (datum < max2) {
 			} else if (datum > max2 && datum < max) {
 				max2 = datum;
+				secondMaxIdx = idx;
 			} else {
 				max2 = max;
 				max = datum;
+				secondMaxIdx = firstMaxIdx;
+				firstMaxIdx = idx;
 			}
 			sumT += datum;
+			idx++;
 		}
 
-		if (max / sumT >= 0.5) {
-			return 0;
-		}
-		if ((max + max2) < 0.5) {
-			return 0;
+		String firstMaxValue = objToString(dataAggr.getOutputTable().getEntry(firstMaxIdx, 0));
+		String secondMaxValue = objToString(dataAggr.getOutputTable().getEntry(secondMaxIdx, 0));
+
+		if (max / sumT >= 0.5 ||
+			(max + max2) < 0.5 ||
+			(max + max2) / summary.sum(measureCol) < 0.1) {
+			return insight;
 		}
 
+		double score = 0;
 		if (rowNum <= 4) {
-			return (max + max2) / summary.sum(measureCol);
+			score = (max + max2) / summary.sum(measureCol);
+		} else {
+			score = outstandingTop2PValue(vals, 0.7);
 		}
 
-		if ((max + max2) / summary.sum(measureCol) < 0.1) {
-			return 0;
+		// construct description.
+		insight.score = score;
+
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
+
+		Measure measure = insight.subject.measures.get(0);
+		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
+
+		layoutData.title = insight.getTitle();
+		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
+			String.format("%s里%s和%s的值明显高于其余的值.", subject.breakdown.colName, firstMaxValue, secondMaxValue);
+		layoutData.focus = String.format("%s %s", firstMaxValue, secondMaxValue);
+		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
+		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
+
+		insight.layout = layoutData;
+
+		return insight;
+	}
+
+	private static Insight even(LocalOperator <?> dataAggr, Subject subject) {
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Evenness;
+		insight.score = 0;
+
+		String measureCol = MEASURE_NAME_PREFIX + "0";
+
+		TableSummary summary = dataAggr.collectStatistics();
+
+		if (subject.measures.size() != 1 ||
+			summary.count() < 5 ||
+			summary.count() > 20 ||
+			summary.min(measureCol) == summary.max(measureCol)) {
+			return insight;
 		}
 
-		return outstandingTop2PValue(vals, 0.7);
+		double mean = summary.mean(measureCol);
+
+		List <Double> values = loadData(dataAggr.collect(), 1);
+
+		// construct description.
+		insight.score = chiSquare(values, mean);
+
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
+
+		Measure measure = insight.subject.measures.get(0);
+		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
+
+		layoutData.title = insight.getTitle();
+		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
+			String.format("%s所有的值非常接近.", subject.breakdown.colName);
+		layoutData.focus = null;
+		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
+		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
+		layoutData.lineA = String.format("[%s, %s]", 0, mean);
+
+		insight.layout = layoutData;
+
+		return insight;
+	}
+
+	private static Insight attribution(LocalOperator <?> dataAggr, Subject subject) {
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Attribution;
+		insight.score = 0;
+
+		String measureCol = MEASURE_NAME_PREFIX + "0";
+
+		TableSummary summary = dataAggr.collectStatistics();
+		double max = summary.maxDouble(measureCol);
+		double sum = summary.sum(measureCol);
+
+		if (subject.measures.size() != 1 ||
+			summary.minDouble(measureCol) < 0 ||
+			max / sum < 0.5) {
+			return insight;
+		}
+
+		Insight outstandingNo1Insight = outstandingNo1(dataAggr, subject);
+		insight.score = Math.min(outstandingNo1Insight.score * 1.001, 1.0);
+
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
+
+		Measure measure = insight.subject.measures.get(0);
+		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
+
+		layoutData.title = insight.getTitle();
+		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
+			String.format("%s里%s占比超过一半.", subject.breakdown.colName, outstandingNo1Insight.layout.focus);
+
+		layoutData.focus = outstandingNo1Insight.layout.focus;
+		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
+		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
+
+		insight.layout = layoutData;
+
+		return insight;
+	}
+
+	/**
+	 * 变点的前k个值和后k个值，是两个不同的分布。使用独立性T检验判断，找出所有的change point。再计算最大的score。
+	 */
+	private static Insight changePoint(LocalOperator <?> dataAggr, Subject subject) {
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.ChangePoint;
+		insight.score = 0;
+
+		if (subject.measures.size() != 1) {
+			return insight;
+		}
+
+		MTable mt = dataAggr.getOutputTable();
+		mt.orderBy(subject.breakdown.colName);
+
+		List <Double> values = loadData(mt.getRows(), 1);
+
+		Double[] vals = values.toArray(new Double[0]);
+
+		Integer[] changePointIndices = findAllChangePointId(vals);
+
+		if (changePointIndices.length == 0) {
+			return insight;
+		}
+
+		String[] changePointTimeString = new String[changePointIndices.length];
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		StringBuilder sbd = new StringBuilder();
+		for (int i = 0; i < changePointTimeString.length; i++) {
+			if (mt.getEntry(changePointIndices[i], 0) != null) {
+				changePointTimeString[i] = sdf.format(mt.getEntry(changePointIndices[i], 0));
+				sbd.append(",").append(changePointTimeString[i]);
+			}
+		}
+
+		double scoreMax = 0;
+		int k = 20;
+		for (Integer changePointIndex : changePointIndices) {
+			int startIdx = Math.max(0, changePointIndex - k);
+			int endIdx = Math.min(vals.length, changePointIndex + k);
+			double score = changePointScore(vals, startIdx, endIdx, changePointIndex);
+			if (score > scoreMax) {
+				scoreMax = score;
+			}
+		}
+
+		insight.score = scoreMax;
+
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
+
+		Measure measure = insight.subject.measures.get(0);
+		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
+
+		layoutData.title = (subspace == null ? "" : subspace.strInDescription()) +
+			String.format("在%s下，时间序列%s(%s)的变点",
+				subject.breakdown.colName, measure.colName, measure.aggr.getCnName());
+		layoutData.description = String.format("时间序列有%s个变点，分别是: %s.",
+			changePointIndices.length, sbd.substring(1));
+
+		layoutData.focus = sbd.substring(1);
+		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
+		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
+
+		insight.layout = layoutData;
+
+		return insight;
+	}
+
+	/**
+	 * KSigma Outlier.
+	 */
+	private static Insight outlier(LocalOperator <?> dataAggr, Subject subject) {
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Outlier;
+		insight.score = 0;
+
+		if (subject.measures.size() != 1) {
+			return insight;
+		}
+
+		String measureCol = MEASURE_NAME_PREFIX + "0";
+
+		MTable mt = dataAggr.getOutputTable();
+		mt.orderBy(subject.breakdown.colName);
+
+		List <Double> valueList = loadData(mt.getRows(), 1);
+		double[] values = new double[valueList.size()];
+		int idx = 0;
+		for (Double value : valueList) {
+			values[idx] = value;
+			idx++;
+		}
+
+		double[] zScores = values.clone();
+
+		TableSummary summary = dataAggr.select(measureCol).collectStatistics();
+		final double mean = summary.mean(measureCol);
+		final double standardDeviation = summary.standardDeviation(measureCol);
+
+		List <String> outlierTimeString = new ArrayList <>();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		StringBuilder sbd = new StringBuilder();
+
+		for (int i = 0; i < zScores.length; i++) {
+			if (standardDeviation != 0.0) {
+				zScores[i] = Math.abs(zScores[i] - mean) / standardDeviation;
+			} else {
+				zScores[i] = 0.0;
+			}
+
+			if (zScores[i] > 3) {
+				if (mt.getEntry(i, 0) != null) {
+					outlierTimeString.add(sdf.format(mt.getEntry(i, 0)));
+					sbd.append(",").append(sdf.format(mt.getEntry(i, 0)));
+				}
+			}
+		}
+
+		double max = Double.NEGATIVE_INFINITY;
+		for (double score : zScores) {
+			max = Math.max(max, score);
+		}
+
+		// construct insight.
+		insight.score = 1 - 2 * CDF.stdNormal(-max);
+
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = mt;
+
+		Measure measure = insight.subject.measures.get(0);
+		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
+
+		layoutData.title = (subspace == null ? "" : subspace.strInDescription()) +
+			String.format("在%s下，时间序列%s(%s)的异常点",
+				subject.breakdown.colName, measure.colName, measure.aggr.getCnName());
+		layoutData.description = String.format("时间序列有%s个异常点，分别是: %s.",
+			outlierTimeString.size(), sbd.substring(1));
+		layoutData.focus = sbd.substring(1);
+		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
+		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
+
+		insight.layout = layoutData;
+
+		return insight;
+	}
+
+	/**
+	 * H0: 没有趋势; H1: 有升或者降趋势.
+	 * ref: Extrating Top-K Insights from Multi-dimensional Data.
+	 * https://zhuanlan.zhihu.com/p/112703276?utm_id=0
+	 */
+	private static Insight trend(LocalOperator <?> dataAggr, Subject subject) {
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Outlier;
+		insight.score = 0;
+
+		MTable mt = dataAggr.getOutputTable();
+		mt.orderBy(subject.breakdown.colName);
+
+		String measureCol = MEASURE_NAME_PREFIX + "0";
+
+		LocalOperator <?> data = new MemSourceLocalOp(mt)
+			.link(new AppendIdLocalOp().setIdCol("__alink_id__"))
+			.select("__alink_id__, " + measureCol);
+
+		String[] colNames = new String[] {"x", "y"};
+		Class[] colTypes = new Class[] {Double.class, Double.class};
+
+		WindowTable wt = new WindowTable(colNames, colTypes, data.collect());
+		SummaryResultTable srt = SrtUtil.batchSummary(wt, colNames,
+			1, 1, 1, 1, StatLevel.L3);
+
+		LinearRegressionModel lrModel = LinearReg.train(srt, colNames[0], new String[] {colNames[1]});
+		double r2 = lrModel.R2;
+		double slope = lrModel.beta[1];
+
+		double p = 1 - 1 / (1 + Math.exp(-(slope - 0.2) / 2));
+
+		// construct insight.
+		insight.score = r2 * (1 - p);
+
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = mt;
+
+		Measure measure = insight.subject.measures.get(0);
+		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
+
+		layoutData.title = (subspace == null ? "" : subspace.strInDescription()) +
+			String.format("在%s下，时间序列%s(%s)的趋势",
+				subject.breakdown.colName, measure.colName, measure.aggr.getCnName());
+		layoutData.description = String.format("时间序列有%s趋势.",
+			slope > 0 ? "上升" : "下降");
+		layoutData.focus = null;
+		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
+		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
+		layoutData.lineA = String.format("[%s, %s]", slope, lrModel.beta[0]);
+
+		insight.layout = layoutData;
+
+		return insight;
+
+	}
+
+	/**
+	 * pattern presents the repeated pattern in a time series.
+	 * 按照多个序列计算相关系数的方式: ACF
+	 * ref: https://www.microsoft.com/en-us/research/uploads/prod/2021/03/metainsight-extended.pdf
+	 * https://www.microsoft.com/en-us/research/uploads/prod/2016/12/Insight-Types-Specification.pdf
+	 * https://zhuanlan.zhihu.com/p/93186317?utm_source=qq
+	 */
+
+	private static Insight seasonality(LocalOperator <?> dataAggr, Subject subject) {
+		Insight insight = new Insight();
+		insight.subject = subject;
+		insight.type = InsightType.Outlier;
+		insight.score = 0;
+
+		if (subject.measures.size() != 1) {
+			return insight;
+		}
+
+		String measureCol = MEASURE_NAME_PREFIX + "0";
+
+		MTable mt = dataAggr.getOutputTable();
+		mt.orderBy(subject.breakdown.colName);
+
+		List <Double> valueList = loadData(mt.getRows(), 1);
+		double[] values = new double[valueList.size()];
+		int idx = 0;
+		for (Double value : valueList) {
+			values[idx] = value;
+			idx++;
+		}
+
+		ArrayList <double[]> acfAndConfidence = TsMethod.acf(values, Math.min(values.length / 2, 12));
+
+		//construct insight.
+		insight.score = Math.min(Math.abs(acfAndConfidence.get(0)[0]), 0.5);
+
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = mt;
+
+		Measure measure = insight.subject.measures.get(0);
+		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
+
+		layoutData.title = (subspace == null ? "" : subspace.strInDescription()) +
+			String.format("在%s下，时间序列%s(%s)的季节性",
+				subject.breakdown.colName, measure.colName, measure.aggr.getCnName());
+		layoutData.description = String.format("时间序列有季节性趋势.");
+		layoutData.focus = null;
+		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
+		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
+
+		insight.layout = layoutData;
+
+		return insight;
+
 	}
 
 	/**
@@ -326,174 +735,19 @@ public class Mining {
 			NormalDistribution distribution = new NormalDistribution(mu, sigma);
 			return distribution.cumulativeProbability(Math.abs(xMaxPred - max2));
 		} catch (Exception ex) {
+			if (mu == 0.0 && sigma == 0.0) {
+				return 0;
+			} else {
+				System.out.println("data: " + data.length);
+				for (int i = 0; i < data.length; i++) {
+					System.out.print(data[i]);
+					System.out.print(",");
+				}
+				System.out.println();
+			}
 			throw new AkIllegalOperatorParameterException(
 				"Input parameter out of range! mu: " + mu + " sigma: " + sigma);
 		}
-	}
-
-	private static double attribution(LocalOperator <?> dataAggr, Subject subject) {
-		if (subject.measures.size() != 1) {
-			return 0;
-		}
-
-		String measureCol = MEASURE_NAME_PREFIX + "0";
-
-		TableSummary summary = dataAggr.select(measureCol).collectStatistics();
-		double max = summary.maxDouble(measureCol);
-		double sum = summary.sum(measureCol);
-		if (max / sum > 0.5) {
-			return outstandingNo1(dataAggr, subject) * 1.001;
-		} else {
-			return 0;
-		}
-	}
-
-	/**
-	 * 变点的前k个值和后k个值，是两个不同的分布。使用独立性T检验判断，找出所有的change point。再计算最大的score。
-	 */
-	private static double changePoint(LocalOperator <?> dataAggr, Subject subject) {
-		if (subject.measures.size() != 1) {
-			return 0;
-		}
-
-		MTable mt = dataAggr.getOutputTable();
-		mt.orderBy(subject.breakdown.colName);
-
-		List <Double> values = new ArrayList <>();
-		for (Row row : mt.getRows()) {
-			values.add(((Number) row.getField(1)).doubleValue());
-		}
-
-		Double[] vals = values.toArray(new Double[0]);
-
-		Integer[] changePointIndices = findAllChangePointId(vals);
-
-		if (changePointIndices.length == 0) {
-			return 0;
-		}
-
-		double scoreMax = 0;
-		int k = 20;
-		for (int i = 0; i < changePointIndices.length; i++) {
-			//int startIdx = i == 0 ? 0 : changePointIndices[i - 1];
-			//int endIdx = i == changePointIndices.length - 1 ? vals.length : changePointIndices[i + 1];
-			int startIdx = Math.max(0, changePointIndices[i] - k);
-			int endIdx = Math.min(vals.length, changePointIndices[i] + k);
-			double score = changePointScore(vals, startIdx, endIdx, changePointIndices[i]);
-			if (score > scoreMax) {
-				scoreMax = score;
-			}
-		}
-
-		return scoreMax;
-	}
-
-	/**
-	 * KSigma Outlier.
-	 */
-	private static double outlier(LocalOperator <?> dataAggr, Subject subject) {
-		if (subject.measures.size() != 1) {
-			return 0;
-		}
-
-		String measureCol = MEASURE_NAME_PREFIX + "0";
-
-		MTable mt = dataAggr.getOutputTable();
-		mt.orderBy(subject.breakdown.colName);
-
-		double[] values = new double[mt.getNumRow()];
-		int idx = 0;
-		for (Row row : mt.getRows()) {
-			values[idx] = ((Number) row.getField(1)).doubleValue();
-			idx++;
-		}
-
-		double[] zScores = values.clone();
-
-		TableSummary summary = dataAggr.select(measureCol).collectStatistics();
-		final double mean = summary.mean(measureCol);
-		final double standardDeviation = summary.standardDeviation(measureCol);
-
-		for (int i = 0; i < zScores.length; i++) {
-			if (standardDeviation != 0.0) {
-				zScores[i] = (zScores[i] - mean) / standardDeviation;
-			} else {
-				zScores[i] = 0.0;
-			}
-		}
-
-		//System.out.println("zScore: " + new DenseVector(zScores));
-
-		double max = Double.NEGATIVE_INFINITY;
-		for (double score : zScores) {
-			max = Math.max(max, Math.abs(score));
-		}
-
-		return 1 - 2 * CDF.stdNormal(-max);
-	}
-
-	/**
-	 * H0: 没有趋势; H1: 有升或者降趋势.
-	 * ref: Extrating Top-K Insights from Multi-dimensional Data.
-	 * https://zhuanlan.zhihu.com/p/112703276?utm_id=0
-	 */
-	private static double trend(LocalOperator <?> dataAggr, Subject subject) {
-		MTable mt = dataAggr.getOutputTable();
-		mt.orderBy(subject.breakdown.colName);
-
-		String measureCol = MEASURE_NAME_PREFIX + "0";
-
-		LocalOperator <?> data = new MemSourceLocalOp(mt)
-			.link(new AppendIdLocalOp().setIdCol("__alink_id__"))
-			.select("__alink_id__, " + measureCol);
-
-		String[] colNames = new String[] {"x", "y"};
-		Class[] colTypes = new Class[] {Double.class, Double.class};
-
-		WindowTable wt = new WindowTable(colNames, colTypes, data.collect());
-		SummaryResultTable srt = SrtUtil.batchSummary(wt, colNames,
-			1, 1, 1, 1, StatLevel.L3);
-
-		LinearRegressionModel lrModel = LinearReg.train(srt, colNames[0], new String[] {colNames[1]});
-		double r2 = lrModel.R2;
-		double slope = lrModel.beta[1];
-
-		double p = 1 - 1 / (1 + Math.exp(-(slope - 0.2) / 2));
-
-		//System.out.println("r2: " + r2 + " slope: " + slope + " p: " + p);
-
-		return r2 * (1 - p);
-	}
-
-	/**
-	 * pattern presents the repeated pattern in a time series.
-	 * 按照多个序列计算相关系数的方式: ACF
-	 * ref: https://www.microsoft.com/en-us/research/uploads/prod/2021/03/metainsight-extended.pdf
-	 * https://www.microsoft.com/en-us/research/uploads/prod/2016/12/Insight-Types-Specification.pdf
-	 * https://zhuanlan.zhihu.com/p/93186317?utm_source=qq
-	 */
-
-	private static double seasonality(LocalOperator <?> dataAggr, Subject subject) {
-		if (subject.measures.size() != 1) {
-			return 0;
-		}
-
-		String measureCol = MEASURE_NAME_PREFIX + "0";
-
-		MTable mt = dataAggr.getOutputTable();
-		mt.orderBy(subject.breakdown.colName);
-
-		double[] values = new double[mt.getNumRow()];
-		int idx = 0;
-		for (Row row : mt.getRows()) {
-			values[idx] = ((Number) row.getField(1)).doubleValue();
-			idx++;
-		}
-
-		ArrayList <double[]> acfAndConfidence = TsMethod.acf(values, Math.min(values.length / 2, 12));
-
-		return 0;
-
 	}
 
 	/**
@@ -814,33 +1068,6 @@ public class Mining {
 		return res;
 	}
 
-	private static double even(LocalOperator <?> dataAggr, Subject subject) {
-		if (subject.measures.size() != 1) {
-			return 0;
-		}
-
-		String measureCol = MEASURE_NAME_PREFIX + "0";
-
-		TableSummary summary = dataAggr.collectStatistics();
-
-		if (summary.count() < 5 || summary.min(measureCol) == summary.max(measureCol)) {
-			return 0;
-		}
-
-		if (summary.count() > 20) {
-			return 0;
-		}
-
-		double mean = summary.mean(measureCol);
-
-		List <Double> values = new ArrayList <>();
-		for (Row row : dataAggr.select(measureCol).getOutputTable().getRows()) {
-			values.add(((Number) row.getField(0)).doubleValue());
-		}
-
-		return chiSquare(values, mean);
-	}
-
 	/**
 	 * use chiSquare test for uniform distribution.
 	 * ref: https://blog.csdn.net/weixin_39894778/article/details/111362337
@@ -858,11 +1085,25 @@ public class Mining {
 	private static String createFilterClause(Subspace subspace) {
 		if (subspace.value instanceof String) {
 			return "`" + subspace.colName + "`='" + subspace.value + "'";
-		} else if (subspace.value instanceof Timestamp) {
-			Timestamp ts = (Timestamp) subspace.value;
-			return String.format("unix_timestamp_macro(%s) = %s", subspace.colName, ts.getTime());
 		} else {
 			return "`" + subspace.colName + "`=" + subspace.value;
 		}
 	}
+
+	private static List <Double> loadData(List <Row> rows, int idx) {
+		List <Double> list = new ArrayList <>();
+		for (Row row : rows) {
+			if (null == row.getField(idx)) {
+				continue;
+			}
+			list.add(((Number) row.getField(idx)).doubleValue());
+		}
+		return list;
+	}
+
+	private static String objToString(Object obj) {
+		return obj == null ? "null" : obj.toString();
+
+	}
+
 }
