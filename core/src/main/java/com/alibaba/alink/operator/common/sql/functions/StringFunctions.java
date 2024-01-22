@@ -30,6 +30,9 @@ public class StringFunctions implements Serializable {
 	public static Method REGEXP_EXTRACT = Types.lookupMethod(StringFunctions.class, "regexpExtract", String.class,
 		String.class, int.class);
 
+	public static Method CONCAT = Types.lookupMethod(StringFunctions.class, "concat", String.class,
+		String.class);
+
 	public static Method MD5 = Types.lookupMethod(StringFunctions.class, "md5", String.class);
 	public static Method SHA1 = Types.lookupMethod(StringFunctions.class, "sha1", String.class);
 	public static Method SHA224 = Types.lookupMethod(StringFunctions.class, "sha224", String.class);
@@ -154,7 +157,8 @@ public class StringFunctions implements Serializable {
 			MessageDigest instance = MessageDigest.getInstance(algorithm);
 			return hash(str, instance);
 		} catch (NoSuchAlgorithmException e) {
-			throw new AkUnsupportedOperationException(String.format("Algorithm for %s is not available.", algorithm), e);
+			throw new AkUnsupportedOperationException(String.format("Algorithm for %s is not available.", algorithm),
+				e);
 		}
 	}
 
@@ -191,5 +195,12 @@ public class StringFunctions implements Serializable {
 		} else {
 			throw new AkUnsupportedOperationException("Unsupported algorithm for bitLen " + bitLen);
 		}
+	}
+
+	public static String concat(String str1, String str2) {
+		if (str1 == null || str2 == null) {
+			return null;
+		}
+		return str1 + str2;
 	}
 }

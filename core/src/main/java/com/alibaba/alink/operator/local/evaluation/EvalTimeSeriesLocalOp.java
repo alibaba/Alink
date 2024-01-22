@@ -37,8 +37,6 @@ public final class EvalTimeSeriesLocalOp extends LocalOperator <EvalTimeSeriesLo
 	implements EvalTimeSeriesParams <EvalTimeSeriesLocalOp>,
 	EvaluationMetricsCollector <TimeSeriesMetrics, EvalTimeSeriesLocalOp> {
 
-	private TimeSeriesMetrics metrics;
-
 	public EvalTimeSeriesLocalOp() {
 		super(null);
 	}
@@ -48,13 +46,13 @@ public final class EvalTimeSeriesLocalOp extends LocalOperator <EvalTimeSeriesLo
 	}
 
 	@Override
-	public EvalTimeSeriesLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator in = checkAndGetFirst(inputs);
 
 		TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getLabelCol());
 		TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getPredictionCol());
 
-		this.metrics = EvaluationUtil.getTimeSeriesStatistics(
+		TimeSeriesMetrics metrics = EvaluationUtil.getTimeSeriesStatistics(
 			in.getOutputTable().select(this.getLabelCol(), this.getPredictionCol()).getRows()
 		).toMetrics();
 
@@ -62,7 +60,6 @@ public final class EvalTimeSeriesLocalOp extends LocalOperator <EvalTimeSeriesLo
 			new Row[] {metrics.serialize()},
 			new TableSchema(new String[] {"timeseries_eval_result"}, new TypeInformation[] {Types.STRING})
 		));
-		return this;
 	}
 
 	@Override
@@ -72,7 +69,6 @@ public final class EvalTimeSeriesLocalOp extends LocalOperator <EvalTimeSeriesLo
 
 	@Override
 	public TimeSeriesMetrics collectMetrics() {
-		return metrics;
+		return EvaluationMetricsCollector.super.collectMetrics();
 	}
-
 }

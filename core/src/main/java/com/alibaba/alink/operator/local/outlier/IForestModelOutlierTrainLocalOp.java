@@ -59,7 +59,7 @@ public class IForestModelOutlierTrainLocalOp
 	}
 
 	@Override
-	public IForestModelOutlierTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		final Params params = getParams().clone();
@@ -179,6 +179,5 @@ public class IForestModelOutlierTrainLocalOp
 
 		setOutputTable(new MTable(serialized, iForestModelDataConverter.getModelSchema()));
 
-		return this;
 	}
 }

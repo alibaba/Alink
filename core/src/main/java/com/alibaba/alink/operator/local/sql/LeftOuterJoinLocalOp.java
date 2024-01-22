@@ -42,12 +42,11 @@ public final class LeftOuterJoinLocalOp extends BaseSqlApiLocalOp <LeftOuterJoin
 	}
 
 	@Override
-	public LeftOuterJoinLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		String joinPredicate = getJoinPredicate();
 		String selectClause = getSelectClause();
 		this.setOutputTable(LocalMLEnvironment.getInstance().getSqlExecutor()
 			.leftOuterJoin(inputs[0], inputs[1], joinPredicate, selectClause)
 			.getOutputTable());
-		return this;
 	}
 }

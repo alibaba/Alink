@@ -108,7 +108,7 @@ public abstract class BaseLinearModelTrainLocalOp<T extends BaseLinearModelTrain
 	}
 
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in;
 		LocalOperator <?> initModel = null;
 		if (inputs.length == 1) {
@@ -193,7 +193,6 @@ public abstract class BaseLinearModelTrainLocalOp<T extends BaseLinearModelTrain
 			throw new AkUnclassifiedErrorException("Error. ", ex);
 		}
 
-		return (T) this;
 	}
 
 	public static DenseVector initializeModelCoefs(List <Row> modelRows,

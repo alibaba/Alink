@@ -44,7 +44,7 @@ public final class TfidfLocalOp extends LocalOperator <TfidfLocalOp>
 	}
 
 	@Override
-	public TfidfLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		checkOpSize(1, inputs);
 
 		String wordColName = this.getWordCol();
@@ -99,6 +99,5 @@ public final class TfidfLocalOp extends LocalOperator <TfidfLocalOp>
 			new TypeInformation <?>[] {types[docIdIndex], Types.STRING, Types.LONG, Types.LONG, Types.LONG, Types.LONG,
 				Types.DOUBLE, Types.DOUBLE, Types.DOUBLE});
 		setOutputTable(new MTable(list, schema));
-		return this;
 	}
 }

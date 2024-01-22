@@ -57,7 +57,7 @@ public final class KeywordsExtractionLocalOp extends LocalOperator <KeywordsExtr
 	}
 
 	@Override
-	public KeywordsExtractionLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		final String docId = "doc_alink_id";
 		String selectedColName = this.getSelectedCol();
@@ -172,7 +172,6 @@ public final class KeywordsExtractionLocalOp extends LocalOperator <KeywordsExtr
 			.linkFrom(tmpTable, inWithId);
 
 		this.setOutputTable(join.getOutputTable());
-		return this;
 	}
 
 }

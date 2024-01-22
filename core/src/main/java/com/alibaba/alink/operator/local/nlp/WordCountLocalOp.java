@@ -43,7 +43,7 @@ public final class WordCountLocalOp extends LocalOperator <WordCountLocalOp>
 	}
 
 	@Override
-	public WordCountLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String docColName = this.getSelectedCol();
 		String wordDelimiter = this.getWordDelimiter();
@@ -68,6 +68,5 @@ public final class WordCountLocalOp extends LocalOperator <WordCountLocalOp>
 		}
 
 		this.setOutputTable(new MTable(list, WORD_COL_NAME + " string, " + COUNT_COL_NAME + " long"));
-		return this;
 	}
 }

@@ -71,8 +71,6 @@ public class EvalOutlierLocalOp extends LocalOperator <EvalOutlierLocalOp> imple
 
 	private static final Logger LOG = LoggerFactory.getLogger(EvalOutlierLocalOp.class);
 
-	private OutlierMetrics metrics;
-
 	public EvalOutlierLocalOp() {
 		this(null);
 	}
@@ -82,7 +80,7 @@ public class EvalOutlierLocalOp extends LocalOperator <EvalOutlierLocalOp> imple
 	}
 
 	@Override
-	public EvalOutlierLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String labelColName = get(EvalOutlierParams.LABEL_COL);
 		String[] outlierValues = get(EvalOutlierParams.OUTLIER_VALUE_STRINGS);
@@ -122,13 +120,12 @@ public class EvalOutlierLocalOp extends LocalOperator <EvalOutlierLocalOp> imple
 		long[][] predBasedCM = calcPredictionBasedConfusionMatrix(data, 0, 1, labels);
 
 		BinaryClassMetrics binaryClassMetrics = summary.toMetrics();
-		this.metrics = new OutlierMetrics(binaryClassMetrics.getParams());
+		OutlierMetrics metrics = new OutlierMetrics(binaryClassMetrics.getParams());
 		metrics.set(OutlierMetrics.OUTLIER_VALUE_ARRAY, outlierValues);
 		setMiddleThreParams(metrics.getParams(), new ConfusionMatrix(predBasedCM), realLabels.toArray(new String[0]));
 
 		setOutputTable(new MTable(new Row[] {metrics.serialize()}, new TableSchema(
 			new String[] {"outlier_eval_result"}, new TypeInformation[] {Types.STRING})));
-		return this;
 	}
 
 	@Override
@@ -138,7 +135,7 @@ public class EvalOutlierLocalOp extends LocalOperator <EvalOutlierLocalOp> imple
 
 	@Override
 	public OutlierMetrics collectMetrics() {
-		return metrics;
+		return EvaluationMetricsCollector.super.collectMetrics();
 	}
 
 	long[][] calcPredictionBasedConfusionMatrix(List <Row> data, int actualLabelIdx, int predDetailIdx,

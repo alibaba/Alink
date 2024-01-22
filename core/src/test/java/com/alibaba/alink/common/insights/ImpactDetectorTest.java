@@ -22,7 +22,7 @@ public class ImpactDetectorTest extends TestCase {
 		sw.start();
 
 		ImpactDetector impactDetector = new ImpactDetector(0.03);
-		impactDetector.detect(data);
+		impactDetector.detect(data, LocalOperator.getParallelism());
 		System.out.println(impactDetector.predict(new Subspace("brand", "BMW")));
 
 		List <Tuple2 <Subspace, Double>> list = impactDetector.listSingleSubspace();
@@ -36,7 +36,8 @@ public class ImpactDetectorTest extends TestCase {
 				+ t2.f1.value.toString() + "} : " + t2.f2);
 		}
 
-		BreakdownDetector breakdownDetector = new BreakdownDetector().detect(data, new ArrayList <>());
+		BreakdownDetector breakdownDetector = new BreakdownDetector().detect(data, new ArrayList <>(),
+			false, 100, LocalOperator.getParallelism());
 		for (Tuple2 <Breakdown, List <Measure>> t2 : breakdownDetector.list) {
 			System.out.print(t2.f0.colName + " : \t");
 			for (Measure measure : t2.f1) {

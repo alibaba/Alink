@@ -34,7 +34,7 @@ public class ExclusiveFeatureBundleTrainLocalOp extends LocalOperator <Exclusive
 	}
 
 	@Override
-	public ExclusiveFeatureBundleTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		final int indexSparseVector = TableUtil.findColIndexWithAssertAndHint(in.getSchema(), getSparseVectorCol());
@@ -56,7 +56,6 @@ public class ExclusiveFeatureBundleTrainLocalOp extends LocalOperator <Exclusive
 		converter.save(bundles, rowCollector);
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), converter.getModelSchema()));
-		return this;
 	}
 
 	public static FeatureBundles extract(SparseVector[] vectors) {

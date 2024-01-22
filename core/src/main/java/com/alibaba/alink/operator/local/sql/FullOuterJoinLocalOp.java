@@ -38,11 +38,10 @@ public final class FullOuterJoinLocalOp extends BaseSqlApiLocalOp <FullOuterJoin
 	}
 
 	@Override
-	public FullOuterJoinLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		String joinPredicate = getJoinPredicate();
 		String selectClause = getSelectClause();
 		this.setOutputTable(LocalMLEnvironment.getInstance().getSqlExecutor()
 			.fullOuterJoin(inputs[0], inputs[1], joinPredicate, selectClause).getOutputTable());
-		return this;
 	}
 }

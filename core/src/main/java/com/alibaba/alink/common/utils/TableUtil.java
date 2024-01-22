@@ -779,8 +779,9 @@ public class TableUtil {
 				}
 				sbd.append((byteSize > DISPLAY_SIZE ? "..." : ""));
 			} else if (obj instanceof Timestamp) {
+				sbd.append((Timestamp) obj);
 				//sbd.append(((Timestamp) obj).toLocalDateTime().atZone(ZoneId.systemDefault()));
-				sbd.append(Timestamp.valueOf(LocalDateTime.ofInstant(((Timestamp) obj).toInstant(), ZoneOffset.UTC)));
+				//sbd.append(Timestamp.valueOf(LocalDateTime.ofInstant(((Timestamp) obj).toInstant(), ZoneOffset.UTC)));
 			} else {
 				sbd.append(obj);
 			}

@@ -76,14 +76,14 @@ public final class EvalClusterLocalOp extends LocalOperator <EvalClusterLocalOp>
 	}
 
 	@Override
-	public EvalClusterLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		if (0 == in.getOutputTable().getRows().size()) {
 			ClusterMetrics metrics = ClusterMetricsSummary.createForEmptyDataset();
 			setOutputTable(new MTable(new Row[] {Row.of(metrics.getParams().toJson())},
 				new TableSchema(new String[] {EVAL_RESULT}, new TypeInformation[] {Types.STRING})));
-			return this;
+			return ;
 		}
 
 		String labelColName = this.getLabelCol();
@@ -179,6 +179,10 @@ public final class EvalClusterLocalOp extends LocalOperator <EvalClusterLocalOp>
 		out.merge(vectorMetrics);
 		setOutputTable(new MTable(new Row[] {Row.of(out.toJson())},
 			new TableSchema(new String[] {EVAL_RESULT}, new TypeInformation[] {Types.STRING})));
-		return this;
+	}
+
+	@Override
+	public ClusterMetrics collectMetrics() {
+		return EvaluationMetricsCollector.super.collectMetrics();
 	}
 }

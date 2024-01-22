@@ -45,7 +45,7 @@ public abstract class BaseNearestNeighborTrainLocalOp<T extends BaseNearestNeigh
 	}
 
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		String selectedCol = getParams().get(HasSelectedCol.SELECTED_COL);
@@ -59,8 +59,6 @@ public abstract class BaseNearestNeighborTrainLocalOp<T extends BaseNearestNeigh
 		List <Row> out = modelData.buildIndex(in.getOutputTable().select(idCol, selectedCol), getParams());
 
 		this.setOutputTable(new MTable(out, modelData.getModelSchema()));
-
-		return (T) this;
 	}
 
 }

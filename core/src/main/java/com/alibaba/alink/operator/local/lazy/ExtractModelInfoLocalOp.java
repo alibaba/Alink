@@ -27,7 +27,7 @@ public abstract class ExtractModelInfoLocalOp<S, T extends ExtractModelInfoLocal
 	 * @return this
 	 */
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> op = checkAndGetFirst(inputs);
 		if (op.isNullOutputTable() && !(op instanceof BaseSourceLocalOp)) {
 			LocalLazyObjectsManager lazyObjectsManager = LocalLazyObjectsManager.getLazyObjectsManager(op);
@@ -37,7 +37,6 @@ public abstract class ExtractModelInfoLocalOp<S, T extends ExtractModelInfoLocal
 			setOutputTable(op.getOutputTable());
 		}
 		//noinspection unchecked
-		return (T) this;
 	}
 
 	protected abstract S createModelInfo(List <Row> rows);

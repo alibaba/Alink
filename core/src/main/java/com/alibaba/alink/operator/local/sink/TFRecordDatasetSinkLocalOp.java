@@ -25,9 +25,9 @@ public final class TFRecordDatasetSinkLocalOp extends BaseSinkLocalOp <TFRecordD
 	}
 
 	@Override
-	public TFRecordDatasetSinkLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		// Not use parent implementation, as original values are required.
-		return sinkFrom(checkAndGetFirst(inputs));
+		sinkFrom(checkAndGetFirst(inputs));
 	}
 
 	@Override

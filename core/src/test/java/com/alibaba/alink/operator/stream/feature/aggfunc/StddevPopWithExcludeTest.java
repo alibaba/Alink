@@ -45,7 +45,7 @@ public class StddevPopWithExcludeTest extends AggFunctionTestBase <Object[], Obj
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		return Arrays.asList(0.0, 0.0, 0.5, 0.8165, 1.1180, 1.4142, 1.7078, 2.0);
+		return Arrays.asList(null, 0.0, 0.5, 0.8165, 1.1180, 1.4142, 1.7078, 2.0);
 	}
 
 	@Override

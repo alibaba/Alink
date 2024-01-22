@@ -30,14 +30,13 @@ public final class AkSinkLocalOp extends BaseSinkLocalOp <AkSinkLocalOp>
 	}
 
 	@Override
-	public AkSinkLocalOp linkFrom(LocalOperator <?>... inputs) {
-		return sinkFrom(checkAndGetFirst(inputs));
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
+		sinkFrom(checkAndGetFirst(inputs));
 	}
 
 	@Override
 	public AkSinkLocalOp sinkFrom(LocalOperator <?> in) {
 		if (getPartitionCols() != null) {
-
 			LocalUtils.partitionAndWriteFile(
 				in,
 				new AkSinkCollectorCreator(

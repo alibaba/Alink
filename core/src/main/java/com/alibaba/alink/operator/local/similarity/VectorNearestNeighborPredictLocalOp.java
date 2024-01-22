@@ -67,7 +67,7 @@ public class VectorNearestNeighborPredictLocalOp extends LocalOperator <VectorNe
 	}
 
 	@Override
-	public VectorNearestNeighborPredictLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 
 		checkMinOpSize(1, inputs);
 
@@ -94,7 +94,7 @@ public class VectorNearestNeighborPredictLocalOp extends LocalOperator <VectorNe
 				this.setOutputTable(
 					new SubVectorNearestNeighborPredictLocalOp(getParams()).linkFrom(inputs).getOutputTable()
 				);
-				return this;
+				return;
 			}
 			boolean cosine = modelData.fastDistance instanceof CosineDistance;
 
@@ -296,7 +296,6 @@ public class VectorNearestNeighborPredictLocalOp extends LocalOperator <VectorNe
 				resultRows,
 				TableUtil.schema2SchemaStr(input.getSchema()) + ", " + getOutputCol() + " string"
 			));
-			return this;
 		} catch (ExceptionWithErrorCode ex) {
 			throw ex;
 		} catch (Exception ex) {

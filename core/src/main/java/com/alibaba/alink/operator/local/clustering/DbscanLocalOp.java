@@ -59,7 +59,7 @@ public class DbscanLocalOp extends LocalOperator <DbscanLocalOp>
 	private int idIndex;
 
 	@Override
-	public DbscanLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		if (!getParams().contains(DbscanLocalParams.RADIUS)) {
 			throw new AkIllegalOperatorParameterException("In DbscanLocalOp,Not have parameter: radius.");
@@ -141,7 +141,6 @@ public class DbscanLocalOp extends LocalOperator <DbscanLocalOp>
 			outputColsHelper.getResultSchema()
 		));
 
-		return this;
 	}
 
 	public static List <Object> extractNeighborId(String res, TypeInformation idType) {

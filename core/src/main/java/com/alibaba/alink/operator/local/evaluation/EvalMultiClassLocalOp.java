@@ -52,7 +52,6 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 	implements EvalMultiClassParams <EvalMultiClassLocalOp>,
 	EvaluationMetricsCollector <MultiClassMetrics, EvalMultiClassLocalOp> {
 
-	private MultiClassMetrics metrics;
 	private static final String DATA_OUTPUT = "Data";
 
 	public EvalMultiClassLocalOp() {
@@ -64,7 +63,7 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 	}
 
 	@Override
-	public EvalMultiClassLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String labelColName = this.get(EvalMultiClassParams.LABEL_COL);
 		TypeInformation labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelColName);
@@ -74,6 +73,7 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 		ClassificationEvaluationUtil.Type type = ClassificationEvaluationUtil.judgeEvaluationType(this.getParams());
 		List <Row> data = null;
 		DataSet <BaseMetricsSummary> res;
+		MultiClassMetrics metrics;
 		switch (type) {
 			case PRED_RESULT: {
 				String predResultColName = this.get(EvalMultiClassParams.PREDICTION_COL);
@@ -82,7 +82,7 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 				data = in.select(new String[] {labelColName, predResultColName}).getOutputTable().getRows();
 				Tuple2 <Map <Object, Integer>, Object[]> labels = calcLabels(data, false, positiveValue, labelType, type);
 				MultiMetricsSummary summary =  EvaluationUtil.getMultiClassMetrics(data, labels);
-				this.metrics = summary.toMetrics();
+				metrics = summary.toMetrics();
 				break;
 			}
 			case PRED_DETAIL: {
@@ -92,7 +92,7 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 				data = in.select(new String[] {labelColName, predDetailColName}).getOutputTable().getRows();
 				Tuple2 <Map <Object, Integer>, Object[]> labels = calcLabels(data, false, positiveValue, labelType, type);
 				MultiMetricsSummary summary = (MultiMetricsSummary) getDetailStatistics(data, false, labels, labelType);
-				this.metrics = summary.toMetrics();
+				metrics = summary.toMetrics();
 				break;
 			}
 			default: {
@@ -102,7 +102,6 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 
 		setOutputTable(new MTable(new Row[] {metrics.serialize()}, new TableSchema(
 			new String[] {DATA_OUTPUT}, new TypeInformation[] {Types.STRING})));
-		return this;
 	}
 
 	private static Tuple2 <Map <Object, Integer>, Object[]> calcLabels(
@@ -141,7 +140,6 @@ public class EvalMultiClassLocalOp extends LocalOperator <EvalMultiClassLocalOp>
 
 	@Override
 	public MultiClassMetrics collectMetrics() {
-		return metrics;
+		return EvaluationMetricsCollector.super.collectMetrics();
 	}
-
 }

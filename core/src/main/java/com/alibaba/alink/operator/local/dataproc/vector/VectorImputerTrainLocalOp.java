@@ -51,7 +51,7 @@ public class VectorImputerTrainLocalOp extends LocalOperator <VectorImputerTrain
 	}
 
 	@Override
-	public VectorImputerTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String vectorColName = getSelectedCol();
 		Strategy strategy = getStrategy();
@@ -75,7 +75,6 @@ public class VectorImputerTrainLocalOp extends LocalOperator <VectorImputerTrain
 		}
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), converter.getModelSchema()));
-		return this;
 	}
 
 	@Override

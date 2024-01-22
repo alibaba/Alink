@@ -36,7 +36,7 @@ public class DbscanPredictLocalOp extends LocalOperator <DbscanPredictLocalOp> i
 	private static final int MAX_ACCURATE_DISTANCE_NUM = 1000000;
 
 	@Override
-	public DbscanPredictLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		checkMinOpSize(2, inputs);
 		if (!getParams().contains(DbscanLocalParams.PREDICTION_COL)) {
 			throw new AkIllegalOperatorParameterException("In DbscanLocalOp,Not have parameter: predictionCol.");
@@ -123,7 +123,6 @@ public class DbscanPredictLocalOp extends LocalOperator <DbscanPredictLocalOp> i
 			outputColsHelper.getResultSchema()
 		));
 
-		return this;
 	}
 
 	private LocalOperator deserializeModel(Params meta, List <Row> data) {

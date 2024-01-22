@@ -51,7 +51,7 @@ public final class VectorStandardScalerTrainLocalOp extends LocalOperator <Vecto
 	}
 
 	@Override
-	public VectorStandardScalerTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String vectorColName = getSelectedCol();
 
@@ -64,7 +64,6 @@ public final class VectorStandardScalerTrainLocalOp extends LocalOperator <Vecto
 		converter.save(new Tuple3 <>(getWithMean(), getWithStd(), srt), rowCollector);
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), converter.getModelSchema()));
-		return this;
 	}
 
 	@Override

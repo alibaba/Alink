@@ -46,7 +46,7 @@ public class SummarizerLocalOp extends LocalOperator <SummarizerLocalOp>
 	}
 
 	@Override
-	public SummarizerLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		checkOpSize(1, inputs);
 		LocalOperator <?> in = inputs[0];
 
@@ -61,7 +61,6 @@ public class SummarizerLocalOp extends LocalOperator <SummarizerLocalOp>
 		modelConverter.save(summary, rowCollector);
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), modelConverter.getModelSchema()));
-		return this;
 	}
 
 	public TableSummary collectSummary() {

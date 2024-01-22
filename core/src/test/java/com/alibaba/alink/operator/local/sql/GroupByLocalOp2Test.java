@@ -25,7 +25,10 @@ public class GroupByLocalOp2Test {
 		LocalOperator <?> batch_data = new TableSourceLocalOp(new MTable(df, "f1 string, f2 int, f3 double"));
 		LocalOperator <?> op = new GroupByLocalOp2()
 			.setGroupByPredicate("f1")
-			.setSelectClause("f1, count(*) as cnt, avg(f2) as f2, f1 as f1_bak, mtable_agg(f2, f3) as c3, avg(f2)");
+			//.setSelectClause("f1, count(*) as cnt, avg(f2) as f2, f1 as f1_bak, mtable_agg(f2, f3) as c3, avg(f2)"
+			//	+ ", max_batch(f2), min_batch(f3)")
+			.setSelectClause("f1, max_batch(f2), min_batch(f3)")
+			;
 		batch_data = batch_data.link(op);
 		batch_data.print();
 	}

@@ -25,7 +25,7 @@ public final class TableSourceLocalOp extends LocalOperator <TableSourceLocalOp>
 	}
 
 	@Override
-	public TableSourceLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		throw new AkUnsupportedOperationException("Table source operator should not have any upstream to link from.");
 	}
 

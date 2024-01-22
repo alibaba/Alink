@@ -52,7 +52,7 @@ public class BaseRecommLocalOp<T extends BaseRecommLocalOp <T>> extends LocalOpe
 	}
 
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		checkMinOpSize(1, inputs);
 
 		LocalOperator <?> model = inputs.length == 2 ? inputs[0] : null;
@@ -79,6 +79,5 @@ public class BaseRecommLocalOp<T extends BaseRecommLocalOp <T>> extends LocalOpe
 
 		this.setOutputTable(new MTable(output, mapper.getOutputSchema()));
 		mapper.close();
-		return (T) this;
 	}
 }

@@ -52,7 +52,6 @@ public class EvalBinaryClassLocalOp extends LocalOperator <EvalBinaryClassLocalO
 
 	private static final Logger LOG = LoggerFactory.getLogger(EvalBinaryClassLocalOp.class);
 
-	private BinaryClassMetrics metrics;
 
 	public EvalBinaryClassLocalOp() {
 		this(null);
@@ -71,7 +70,7 @@ public class EvalBinaryClassLocalOp extends LocalOperator <EvalBinaryClassLocalO
 	}
 
 	@Override
-	public EvalBinaryClassLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String labelColName = get(EvalMultiClassParams.LABEL_COL);
 		TypeInformation <?> labelType = TableUtil.findColTypeWithAssertAndHint(in.getSchema(), labelColName);
@@ -89,14 +88,13 @@ public class EvalBinaryClassLocalOp extends LocalOperator <EvalBinaryClassLocalO
 		List <Tuple3 <Double, Boolean, Double>> sampleStatistics
 			= ClassificationEvaluationUtil.calcSampleStatistics(data, labels, labelType);
 
-		this.metrics = ClassificationEvaluationUtil
+		BinaryClassMetrics metrics = ClassificationEvaluationUtil
 			.calLabelPredDetailLocal(labels, sampleStatistics, 0.5)
 			.toMetrics();
 
 		setOutputTable(new MTable(new Row[] {metrics.serialize()}, new TableSchema(
 			new String[] {"binaryclass_eval_result"}, new TypeInformation[] {Types.STRING})));
 
-		return this;
 	}
 
 	@Override
@@ -106,6 +104,6 @@ public class EvalBinaryClassLocalOp extends LocalOperator <EvalBinaryClassLocalO
 
 	@Override
 	public BinaryClassMetrics collectMetrics() {
-		return metrics;
+		return EvaluationMetricsCollector.super.collectMetrics();
 	}
 }

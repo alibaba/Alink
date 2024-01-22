@@ -6,15 +6,16 @@ import org.apache.flink.ml.api.misc.param.WithParams;
 
 import com.alibaba.alink.common.annotation.DescCn;
 import com.alibaba.alink.common.annotation.NameCn;
+import com.alibaba.alink.params.validators.MinValidator;
 
 public interface HasIsSingleThread<T> extends WithParams <T> {
 	
-	@NameCn("是否单线程")
-	@DescCn("是否单线程")
-	ParamInfo <Boolean> IS_SINGLE_THREAD = ParamInfoFactory
-		.createParamInfo("isSingleThread", Boolean.class)
-		.setDescription("is single thread.")
-		.setHasDefaultValue(false)
+	@NameCn("线程数")
+	@DescCn("线程数")
+	ParamInfo <Integer> THREAD_NUM = ParamInfoFactory
+		.createParamInfo("threadNum", Integer.class)
+		.setDescription("thread num.")
+		.setValidator(new MinValidator <>(0))
 		.build();
 
 }

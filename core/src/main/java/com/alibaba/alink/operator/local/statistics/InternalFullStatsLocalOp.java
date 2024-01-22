@@ -55,7 +55,7 @@ public class InternalFullStatsLocalOp extends LocalOperator <InternalFullStatsLo
 	}
 
 	@Override
-	public InternalFullStatsLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		AkPreconditions.checkArgument(inputs.length > 0,
 			new AkIllegalOperationException("Must provide at least 1 inputs."));
 		int n = inputs.length;
@@ -87,7 +87,6 @@ public class InternalFullStatsLocalOp extends LocalOperator <InternalFullStatsLo
 		new FullStatsConverter().save(fullStats, collector);
 
 		setOutputTable(new MTable(out, new FullStatsConverter().getModelSchema()));
-		return this;
 	}
 
 	public FullStats collectFullStats() {

@@ -44,7 +44,7 @@ public class VarSampWithExcludeTest extends AggFunctionTestBase <Object[], Objec
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		return Arrays.asList(0.0, 0.0, 0.5, 1.0, 1.6667, 2.5, 3.5, 4.6667);
+		return Arrays.asList(null, 0.0, 0.5, 1.0, 1.6667, 2.5, 3.5, 4.6667);
 	}
 
 	@Override

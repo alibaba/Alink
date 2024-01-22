@@ -37,8 +37,6 @@ public final class EvalRegressionLocalOp extends LocalOperator <EvalRegressionLo
 	implements EvalRegressionParams <EvalRegressionLocalOp>,
 	EvaluationMetricsCollector <RegressionMetrics, EvalRegressionLocalOp> {
 
-	private RegressionMetrics metrics;
-
 	public EvalRegressionLocalOp() {
 		super(null);
 	}
@@ -48,7 +46,7 @@ public final class EvalRegressionLocalOp extends LocalOperator <EvalRegressionLo
 	}
 
 	@Override
-	public EvalRegressionLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator in = checkAndGetFirst(inputs);
 
 		TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getLabelCol());
@@ -56,7 +54,7 @@ public final class EvalRegressionLocalOp extends LocalOperator <EvalRegressionLo
 
 		TableUtil.assertNumericalCols(in.getSchema(), this.getLabelCol(), this.getPredictionCol());
 
-		this.metrics = EvaluationUtil.getRegressionStatistics(
+		RegressionMetrics metrics = EvaluationUtil.getRegressionStatistics(
 			in.getOutputTable().select(this.getLabelCol(), this.getPredictionCol()).getRows()
 		).toMetrics();
 
@@ -64,7 +62,6 @@ public final class EvalRegressionLocalOp extends LocalOperator <EvalRegressionLo
 			new Row[] {metrics.serialize()},
 			new TableSchema(new String[] {"regression_eval_result"}, new TypeInformation[] {Types.STRING})
 		));
-		return this;
 	}
 
 	@Override
@@ -74,7 +71,6 @@ public final class EvalRegressionLocalOp extends LocalOperator <EvalRegressionLo
 
 	@Override
 	public RegressionMetrics collectMetrics() {
-		return metrics;
+		return EvaluationMetricsCollector.super.collectMetrics();
 	}
-
 }

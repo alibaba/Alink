@@ -22,7 +22,11 @@ import com.alibaba.alink.params.statistics.HasStatLevel_L1.StatLevel;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,7 +64,7 @@ public class Mining {
 
 		LocalOperator <?> dataAggr = source.groupBy(subject.breakdown.colName, sbdAggr.toString());
 
-		//dataAggr.lazyPrint("------ agg -------- ");
+		//dataAggr.lazyPrint(100, "------ agg -------- ");
 		//System.out.println();
 
 		return calcInsight(subject, dataAggr, type);
@@ -113,10 +117,6 @@ public class Mining {
 		insight.type = InsightType.OutstandingNo1;
 		insight.score = 0;
 
-		LayoutData layoutData = new LayoutData();
-		layoutData.data = dataAggr.getOutputTable();
-		insight.layout = layoutData;
-
 		String measureCol = MEASURE_NAME_PREFIX + "0";
 
 		TableSummary summary = dataAggr.collectStatistics();
@@ -156,6 +156,8 @@ public class Mining {
 		Measure measure = insight.subject.measures.get(0);
 		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
 
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
 		layoutData.title = insight.getTitle();
 		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
 			String.format("%s里%s的值明显高于其余的值.", subject.breakdown.colName, maxValueKey);
@@ -204,10 +206,6 @@ public class Mining {
 
 		insight.score = score;
 
-		LayoutData layoutData = new LayoutData();
-		layoutData.data = dataAggr.getOutputTable();
-		insight.layout = layoutData;
-
 		// get minValueKey
 		int iMinIdx = 0;
 		double minObj = values.get(0);
@@ -222,6 +220,8 @@ public class Mining {
 		Measure measure = insight.subject.measures.get(0);
 		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
 
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
 		layoutData.title = insight.getTitle();
 		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
 			String.format("%s里最大负值%s明显低于其余的值.", subject.breakdown.colName, minValueKey);
@@ -280,8 +280,8 @@ public class Mining {
 		String secondMaxValue = objToString(dataAggr.getOutputTable().getEntry(secondMaxIdx, 0));
 
 		if (max / sumT >= 0.5 ||
-			(max + max2) < 0.5 ||
-			(max + max2) / summary.sum(measureCol) < 0.1) {
+			//(max + max2) / summary.sum(measureCol) < 0.5 ||
+			(max + max2) / summary.sum(measureCol) < 0.2) {
 			return insight;
 		}
 
@@ -295,12 +295,11 @@ public class Mining {
 		// construct description.
 		insight.score = score;
 
-		LayoutData layoutData = new LayoutData();
-		layoutData.data = dataAggr.getOutputTable();
-
 		Measure measure = insight.subject.measures.get(0);
 		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
 
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
 		layoutData.title = insight.getTitle();
 		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
 			String.format("%s里%s和%s的值明显高于其余的值.", subject.breakdown.colName, firstMaxValue, secondMaxValue);
@@ -325,24 +324,26 @@ public class Mining {
 
 		if (subject.measures.size() != 1 ||
 			summary.count() < 5 ||
-			summary.count() > 20 ||
-			summary.min(measureCol) == summary.max(measureCol)) {
+			summary.count() > 20) {
 			return insight;
 		}
 
 		double mean = summary.mean(measureCol);
 
-		List <Double> values = loadData(dataAggr.collect(), 1);
+		if (summary.min(measureCol) == summary.max(measureCol)) {
+			insight.score = 0.8;
+		} else {
+			List <Double> values = loadData(dataAggr.collect(), 1);
 
-		// construct description.
-		insight.score = chiSquare(values, mean);
-
-		LayoutData layoutData = new LayoutData();
-		layoutData.data = dataAggr.getOutputTable();
+			// construct description.
+			insight.score = chiSquare(values, mean);
+		}
 
 		Measure measure = insight.subject.measures.get(0);
 		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
 
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
 		layoutData.title = insight.getTitle();
 		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
 			String.format("%s所有的值非常接近.", subject.breakdown.colName);
@@ -374,20 +375,32 @@ public class Mining {
 			return insight;
 		}
 
+		// get max value
+		List <Double> values = loadData(dataAggr.collect(), 1);
+
+		int iMaxIdx = 0;
+		double minObj = values.get(0);
+		for (int iMax = 1; iMax < values.size(); iMax++) {
+			if (values.get(iMax) > minObj) {
+				minObj = values.get(iMax);
+				iMaxIdx = iMax;
+			}
+		}
+		String maxValueKey = objToString(dataAggr.getOutputTable().getEntry(iMaxIdx, 0));
+
 		Insight outstandingNo1Insight = outstandingNo1(dataAggr, subject);
 		insight.score = Math.min(outstandingNo1Insight.score * 1.001, 1.0);
-
-		LayoutData layoutData = new LayoutData();
-		layoutData.data = dataAggr.getOutputTable();
 
 		Measure measure = insight.subject.measures.get(0);
 		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
 
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
 		layoutData.title = insight.getTitle();
 		layoutData.description = (subspace == null ? "" : subspace.strInDescription()) +
-			String.format("%s里%s占比超过一半.", subject.breakdown.colName, outstandingNo1Insight.layout.focus);
+			String.format("%s里%s占比超过一半.", subject.breakdown.colName, maxValueKey);
 
-		layoutData.focus = outstandingNo1Insight.layout.focus;
+		layoutData.focus = maxValueKey;
 		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
 		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
 
@@ -415,11 +428,22 @@ public class Mining {
 		List <Double> values = loadData(mt.getRows(), 1);
 
 		Double[] vals = values.toArray(new Double[0]);
-
-		Integer[] changePointIndices = findAllChangePointId(vals);
-
-		if (changePointIndices.length == 0) {
-			return insight;
+		Integer[] changePointIndices = null;
+		if (vals.length >= 20) {
+			changePointIndices = findAllChangePointId(vals);
+		} else {
+			List <Integer> changePointList = new ArrayList <>();
+			double[] signs = new double[vals.length];
+			signs[0] = 0;
+			for (int i = 1; i < vals.length; i++) {
+				signs[i] = vals[i] - vals[i - 1];
+			}
+			for (int i = 2; i < vals.length - 1; i++) {
+				if (signs[i] * signs[i - 1] < 0) {
+					changePointList.add(i - 1);
+				}
+			}
+			changePointIndices = changePointList.toArray(new Integer[0]);
 		}
 
 		String[] changePointTimeString = new String[changePointIndices.length];
@@ -428,6 +452,9 @@ public class Mining {
 		for (int i = 0; i < changePointTimeString.length; i++) {
 			if (mt.getEntry(changePointIndices[i], 0) != null) {
 				changePointTimeString[i] = sdf.format(mt.getEntry(changePointIndices[i], 0));
+				//changePointTimeString[i] = sdf.format(
+				//	Timestamp.valueOf(LocalDateTime.ofInstant(((Timestamp) mt.getEntry(changePointIndices[i],
+				//		0)).toInstant(), ZoneOffset.UTC)));
 				sbd.append(",").append(changePointTimeString[i]);
 			}
 		}
@@ -442,22 +469,24 @@ public class Mining {
 				scoreMax = score;
 			}
 		}
-
-		insight.score = scoreMax;
-
-		LayoutData layoutData = new LayoutData();
-		layoutData.data = dataAggr.getOutputTable();
+		insight.score = changePointIndices.length == 0 ? 0.01 : scoreMax;
 
 		Measure measure = insight.subject.measures.get(0);
 		Subspace subspace = subject.subspaces.isEmpty() ? null : subject.subspaces.get(0);
 
+		LayoutData layoutData = new LayoutData();
+		layoutData.data = dataAggr.getOutputTable();
 		layoutData.title = (subspace == null ? "" : subspace.strInDescription()) +
 			String.format("在%s下，时间序列%s(%s)的变点",
 				subject.breakdown.colName, measure.colName, measure.aggr.getCnName());
-		layoutData.description = String.format("时间序列有%s个变点，分别是: %s.",
-			changePointIndices.length, sbd.substring(1));
 
-		layoutData.focus = sbd.substring(1);
+		if (changePointIndices.length == 0) {
+			layoutData.description = "时间序列没有变点.";
+		} else {
+			layoutData.description = String.format("时间序列有%s个变点，分别是: %s.",
+				changePointIndices.length, sbd.substring(1));
+			layoutData.focus = sbd.substring(1);
+		}
 		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
 		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
 
@@ -494,7 +523,7 @@ public class Mining {
 
 		double[] zScores = values.clone();
 
-		TableSummary summary = dataAggr.select(measureCol).collectStatistics();
+		TableSummary summary = dataAggr.select(measureCol).getOutputTable().summary();
 		final double mean = summary.mean(measureCol);
 		final double standardDeviation = summary.standardDeviation(measureCol);
 
@@ -523,7 +552,7 @@ public class Mining {
 		}
 
 		// construct insight.
-		insight.score = 1 - 2 * CDF.stdNormal(-max);
+		insight.score = outlierTimeString.size() == 0 ? 0.01 : 1 - 2 * CDF.stdNormal(-max);
 
 		LayoutData layoutData = new LayoutData();
 		layoutData.data = mt;
@@ -534,9 +563,14 @@ public class Mining {
 		layoutData.title = (subspace == null ? "" : subspace.strInDescription()) +
 			String.format("在%s下，时间序列%s(%s)的异常点",
 				subject.breakdown.colName, measure.colName, measure.aggr.getCnName());
-		layoutData.description = String.format("时间序列有%s个异常点，分别是: %s.",
-			outlierTimeString.size(), sbd.substring(1));
-		layoutData.focus = sbd.substring(1);
+		if (outlierTimeString.size() == 0) {
+			layoutData.description = "时间序列没有异常点";
+		} else {
+			layoutData.description = String.format("时间序列有%s个异常点，分别是: %s.",
+				outlierTimeString.size(), sbd.substring(1));
+			layoutData.focus = sbd.substring(1);
+		}
+
 		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
 		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
 
@@ -548,12 +582,12 @@ public class Mining {
 	/**
 	 * H0: 没有趋势; H1: 有升或者降趋势.
 	 * ref: Extrating Top-K Insights from Multi-dimensional Data.
-	 * https://zhuanlan.zhihu.com/p/112703276?utm_id=0
+	 * <a href="https://zhuanlan.zhihu.com/p/112703276?utm_id=0">...</a>
 	 */
 	private static Insight trend(LocalOperator <?> dataAggr, Subject subject) {
 		Insight insight = new Insight();
 		insight.subject = subject;
-		insight.type = InsightType.Outlier;
+		insight.type = InsightType.Trend;
 		insight.score = 0;
 
 		MTable mt = dataAggr.getOutputTable();
@@ -568,7 +602,7 @@ public class Mining {
 		String[] colNames = new String[] {"x", "y"};
 		Class[] colTypes = new Class[] {Double.class, Double.class};
 
-		WindowTable wt = new WindowTable(colNames, colTypes, data.collect());
+		WindowTable wt = new WindowTable(colNames, colTypes, data.getOutputTable().getRows());
 		SummaryResultTable srt = SrtUtil.batchSummary(wt, colNames,
 			1, 1, 1, 1, StatLevel.L3);
 
@@ -606,22 +640,20 @@ public class Mining {
 	/**
 	 * pattern presents the repeated pattern in a time series.
 	 * 按照多个序列计算相关系数的方式: ACF
-	 * ref: https://www.microsoft.com/en-us/research/uploads/prod/2021/03/metainsight-extended.pdf
-	 * https://www.microsoft.com/en-us/research/uploads/prod/2016/12/Insight-Types-Specification.pdf
-	 * https://zhuanlan.zhihu.com/p/93186317?utm_source=qq
+	 * ref: <a href="https://www.microsoft.com/en-us/research/uploads/prod/2021/03/metainsight-extended.pdf">...</a>
+	 * <a href="https://www.microsoft.com/en-us/research/uploads/prod/2016/12/Insight-Types-Specification<a href=".pdf">...</a>
+	 * ">* https://zhuanlan.zhihu.com/p/9318</a>6317?utm_source=qq
 	 */
 
 	private static Insight seasonality(LocalOperator <?> dataAggr, Subject subject) {
 		Insight insight = new Insight();
 		insight.subject = subject;
-		insight.type = InsightType.Outlier;
+		insight.type = InsightType.Seasonality;
 		insight.score = 0;
 
 		if (subject.measures.size() != 1) {
 			return insight;
 		}
-
-		String measureCol = MEASURE_NAME_PREFIX + "0";
 
 		MTable mt = dataAggr.getOutputTable();
 		mt.orderBy(subject.breakdown.colName);
@@ -635,9 +667,22 @@ public class Mining {
 		}
 
 		ArrayList <double[]> acfAndConfidence = TsMethod.acf(values, Math.min(values.length / 2, 12));
+		double[] acf = acfAndConfidence.get(0);
+		double acfMax = Double.NEGATIVE_INFINITY;
+		int acfMaxIdx = -1;
+		for (int i = 1; i < acf.length; i++) {
+			if (acfMax < acf[i]) {
+				acfMax = acf[i];
+				acfMaxIdx = i;
+			}
+		}
+
+		if (acfMax <= 0 || acfMaxIdx < 2) {
+			return insight;
+		}
 
 		//construct insight.
-		insight.score = Math.min(Math.abs(acfAndConfidence.get(0)[0]), 0.5);
+		insight.score = acfMax;
 
 		LayoutData layoutData = new LayoutData();
 		layoutData.data = mt;
@@ -648,7 +693,11 @@ public class Mining {
 		layoutData.title = (subspace == null ? "" : subspace.strInDescription()) +
 			String.format("在%s下，时间序列%s(%s)的季节性",
 				subject.breakdown.colName, measure.colName, measure.aggr.getCnName());
-		layoutData.description = String.format("时间序列有季节性趋势.");
+
+		Timestamp t1 = (Timestamp) mt.getEntry(0, 0);
+		Timestamp t2 = (Timestamp) mt.getEntry(acfMaxIdx, 0);
+
+		layoutData.description = String.format("时间序列有季节性趋势, 周期是%s.", getPeriodStr(t1, t2));
 		layoutData.focus = null;
 		layoutData.xAxis = String.format("%s", subject.breakdown.colName);
 		layoutData.yAxis = String.format("%s(%s)", measure.aggr, measure.colName);
@@ -656,7 +705,51 @@ public class Mining {
 		insight.layout = layoutData;
 
 		return insight;
+	}
 
+	/**
+	 * t2 - t1
+	 */
+
+	public static String getPeriodStr(Timestamp t1, Timestamp t2) {
+		Period period = Period.between(t1.toLocalDateTime().toLocalDate(), t2.toLocalDateTime().toLocalDate());
+
+		int years = period.getYears();
+		int months = period.getMonths();
+		int days = period.getDays();
+
+		int SECONDS_PER_MINUTE = 60;
+		int MINUTES_PER_HOUR = 60;
+		int HOURS_PER_DAY = 24;
+		int SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR;
+		int SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
+		long timestampDiff = (t2.getTime() - t1.getTime()) / 1000 % SECONDS_PER_DAY;
+
+		long hours = timestampDiff / SECONDS_PER_HOUR;
+		int minutes = (int) ((timestampDiff % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
+		int seconds = (int) (timestampDiff % SECONDS_PER_MINUTE);
+
+		StringBuilder buf = new StringBuilder();
+		if (years != 0) {
+			buf.append(years).append("年");
+		}
+		if (months != 0) {
+			buf.append(months).append("月");
+		}
+		if (days != 0) {
+			buf.append(days).append("天");
+		}
+
+		if (hours != 0) {
+			buf.append(hours).append("小时");
+		}
+		if (minutes != 0) {
+			buf.append(minutes).append("分钟");
+		}
+		if (seconds != 0) {
+			buf.append(seconds).append("秒");
+		}
+		return buf.toString();
 	}
 
 	/**
@@ -679,13 +772,6 @@ public class Mining {
 			sumT += datum;
 		}
 
-		if (max / sumT >= 0.5) {
-			return 0;
-		}
-		if ((max + max2) < 0.5) {
-			return 0;
-		}
-
 		double[] dataReMax = new double[len - 2];
 		double sum = 0;
 		double sum2 = 0;
@@ -696,12 +782,13 @@ public class Mining {
 				idx++;
 				sum += datum;
 				sum2 += datum * datum;
-			} else {
-				//System.out.println("===");
 			}
 		}
 
 		if (idx == 0) {
+			return 0;
+		}
+		if (idx < len - 3) {
 			return 0;
 		}
 
@@ -817,12 +904,6 @@ public class Mining {
 			}
 
 		}
-
-		//System.out.print("changPoints: ");
-		//for (Integer id : changePointIndices) {
-		//	System.out.print(id + ", ");
-		//}
-		//System.out.println();
 
 		return changePointIndices.toArray(new Integer[0]);
 	}

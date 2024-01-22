@@ -48,7 +48,7 @@ public class CrossFeatureTrainLocalOp extends LocalOperator <CrossFeatureTrainLo
 	}
 
 	@Override
-	public CrossFeatureTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator in = checkAndGetFirst(inputs);
 		String[] selectedCols = getSelectedCols();
 
@@ -92,7 +92,6 @@ public class CrossFeatureTrainLocalOp extends LocalOperator <CrossFeatureTrainLo
 		this.setOutputTable(
 			new MTable(collector.getRows(), new MultiStringIndexerModelDataConverter().getModelSchema()));
 
-		return this;
 	}
 
 }

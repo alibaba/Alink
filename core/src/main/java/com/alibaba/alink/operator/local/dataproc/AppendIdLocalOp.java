@@ -62,10 +62,9 @@ public final class AppendIdLocalOp extends LocalOperator <AppendIdLocalOp>
 	}
 
 	@Override
-	public AppendIdLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		checkOpSize(1, inputs);
 		this.setOutputTable(appendId(inputs[0].getOutputTable(), getIdCol()));
-		return this;
 	}
 
 }

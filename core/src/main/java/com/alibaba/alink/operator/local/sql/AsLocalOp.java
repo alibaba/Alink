@@ -28,8 +28,7 @@ public final class AsLocalOp extends BaseSqlApiLocalOp <AsLocalOp>
 	}
 
 	@Override
-	public AsLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		this.setOutputTable(inputs[0].as(getClause()).getOutputTable());
-		return this;
 	}
 }

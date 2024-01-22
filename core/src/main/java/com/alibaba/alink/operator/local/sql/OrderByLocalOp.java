@@ -36,7 +36,7 @@ public final class OrderByLocalOp extends BaseSqlApiLocalOp <OrderByLocalOp>
 	}
 
 	@Override
-	public OrderByLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> outputOp;
 		int limit = getOrderByParamWithDefault(OrderByParams.LIMIT);
 		boolean isAscending = getOrder().equalsIgnoreCase("asc");
@@ -48,6 +48,5 @@ public final class OrderByLocalOp extends BaseSqlApiLocalOp <OrderByLocalOp>
 			outputOp = inputs[0].orderBy(getClause(), offset, fetch, isAscending);
 		}
 		this.setOutputTable(outputOp.getOutputTable());
-		return this;
 	}
 }

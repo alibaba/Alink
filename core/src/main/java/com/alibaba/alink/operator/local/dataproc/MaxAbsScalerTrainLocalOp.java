@@ -46,7 +46,7 @@ public class MaxAbsScalerTrainLocalOp extends LocalOperator <MaxAbsScalerTrainLo
 	}
 
 	@Override
-	public MaxAbsScalerTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String[] selectedColNames = getSelectedCols();
 
@@ -65,7 +65,6 @@ public class MaxAbsScalerTrainLocalOp extends LocalOperator <MaxAbsScalerTrainLo
 		converter.save(srt, rowCollector);
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), converter.getModelSchema()));
-		return this;
 	}
 
 	@Override

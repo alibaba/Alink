@@ -31,11 +31,10 @@ public class FirstNLocalOp extends LocalOperator <FirstNLocalOp>
 	}
 
 	@Override
-	public FirstNLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		int n = getSize();
 		MTable output = in.getOutputTable().subTable(0, Math.min(n, in.getOutputTable().getNumRow()));
 		setOutputTable(output);
-		return this;
 	}
 }

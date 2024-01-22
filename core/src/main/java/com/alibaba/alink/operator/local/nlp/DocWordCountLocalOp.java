@@ -46,7 +46,7 @@ public final class DocWordCountLocalOp extends LocalOperator <DocWordCountLocalO
 	}
 
 	@Override
-	public DocWordCountLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String wordDelimiter = this.getWordDelimiter();
 		int indexContent = TableUtil.findColIndexWithAssert(in.getSchema(), this.getContentCol());
@@ -78,7 +78,5 @@ public final class DocWordCountLocalOp extends LocalOperator <DocWordCountLocalO
 		);
 
 		this.setOutputTable(new MTable(list, schema));
-		return this;
-
 	}
 }

@@ -34,8 +34,6 @@ public class EvalRankingLocalOp extends LocalOperator <EvalRankingLocalOp>
 	implements EvalRankingParams <EvalRankingLocalOp>,
 	EvaluationMetricsCollector <RankingMetrics, EvalRankingLocalOp> {
 
-	private RankingMetrics metrics;
-
 	public EvalRankingLocalOp() {
 		super(null);
 	}
@@ -45,7 +43,7 @@ public class EvalRankingLocalOp extends LocalOperator <EvalRankingLocalOp>
 	}
 
 	@Override
-	public EvalRankingLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		TableUtil.assertSelectedColExist(in.getColNames(), this.getLabelCol());
@@ -57,7 +55,7 @@ public class EvalRankingLocalOp extends LocalOperator <EvalRankingLocalOp>
 		Tuple3 <Integer, Class, Integer> labelSizeClass
 			= getLabelNumberAndMaxK(dataSet, getPredictionRankingInfo(), getPredictionRankingInfo());
 
-		this.metrics = EvaluationUtil.getRankingMetrics(
+		RankingMetrics metrics = EvaluationUtil.getRankingMetrics(
 			in.getOutputTable().select(this.getLabelCol(), this.getPredictionCol()).getRows(),
 			labelSizeClass, getLabelRankingInfo(), getPredictionRankingInfo()
 		).toMetrics();
@@ -66,7 +64,6 @@ public class EvalRankingLocalOp extends LocalOperator <EvalRankingLocalOp>
 			new Row[] {metrics.serialize()},
 			new TableSchema(new String[] {"ranking_eval_result"}, new TypeInformation[] {Types.STRING})
 		));
-		return this;
 	}
 
 	@Override
@@ -76,7 +73,6 @@ public class EvalRankingLocalOp extends LocalOperator <EvalRankingLocalOp>
 
 	@Override
 	public RankingMetrics collectMetrics() {
-		return metrics;
+		return EvaluationMetricsCollector.super.collectMetrics();
 	}
-
 }

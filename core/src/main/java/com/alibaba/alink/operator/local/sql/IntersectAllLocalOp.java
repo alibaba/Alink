@@ -28,11 +28,10 @@ public final class IntersectAllLocalOp extends LocalOperator <IntersectAllLocalO
 	}
 
 	@Override
-	public IntersectAllLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		checkOpSize(2, inputs);
 		this.setOutputTable(LocalMLEnvironment.getInstance().getSqlExecutor()
 			.intersectAll(inputs[0], inputs[1])
 			.getOutputTable());
-		return this;
 	}
 }

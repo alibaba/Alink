@@ -18,7 +18,7 @@ import com.alibaba.alink.params.shared.colname.HasReservedColsDefaultAsNull;
 
 import java.util.Arrays;
 
-abstract class PreTrainedTokenizerMapper extends Mapper {
+public abstract class PreTrainedTokenizerMapper extends Mapper {
 
 	// Don't use prefix starting with underscore, since TF doesn't recognize such names.
 	private static final String SAFE_PREFIX = "alink_tokenizer_";
@@ -29,7 +29,6 @@ abstract class PreTrainedTokenizerMapper extends Mapper {
 
 	protected PreTrainedTokenizer tokenizer;
 	protected Kwargs encodeConfig = Kwargs.empty();
-
 
 	public PreTrainedTokenizerMapper(TableSchema dataSchema, Params params) {
 		super(dataSchema, params);

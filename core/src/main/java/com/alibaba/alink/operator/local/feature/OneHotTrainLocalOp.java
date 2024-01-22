@@ -64,7 +64,7 @@ public final class OneHotTrainLocalOp extends LocalOperator <OneHotTrainLocalOp>
 	}
 
 	@Override
-	public OneHotTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		final String[] selectedColNames = getSelectedCols();
@@ -108,7 +108,6 @@ public final class OneHotTrainLocalOp extends LocalOperator <OneHotTrainLocalOp>
 			new MTable(distinctNumber, new String[] {"selectedCol", "distinctTokenNumber"},
 				new TypeInformation[] {Types.STRING, Types.LONG})
 		});
-		return this;
 	}
 
 	@Override

@@ -46,7 +46,7 @@ public class StddevSampWithExcludeTest extends AggFunctionTestBase <Object[], Ob
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		return Arrays.asList(0.0, 0.0, 0.7071, 1.0, 1.2910, 1.5811, 1.8708, 2.1602);
+		return Arrays.asList(null, 0.0, 0.7071, 1.0, 1.2910, 1.5811, 1.8708, 2.1602);
 	}
 
 	@Override

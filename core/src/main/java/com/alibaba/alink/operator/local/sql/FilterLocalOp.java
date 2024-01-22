@@ -38,7 +38,7 @@ public final class FilterLocalOp extends BaseSqlApiLocalOp <FilterLocalOp>
 	}
 
 	@Override
-	public FilterLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		String predicate = getClause();
 		LocalOperator <?> in = inputs[0];
 
@@ -62,7 +62,7 @@ public final class FilterLocalOp extends BaseSqlApiLocalOp <FilterLocalOp>
 						}
 					}
 					this.setOutputTable(new MTable(outRows, in.getSchema()));
-					return this;
+					return;
 				}
 			}
 		} else if (predicate.contains("=")) {
@@ -88,7 +88,7 @@ public final class FilterLocalOp extends BaseSqlApiLocalOp <FilterLocalOp>
 						}
 					}
 					this.setOutputTable(new MTable(outRows, inputs[0].getSchema()));
-					return this;
+					return;
 				}
 			}
 		}
@@ -135,6 +135,5 @@ public final class FilterLocalOp extends BaseSqlApiLocalOp <FilterLocalOp>
 			outOp = LocalMLEnvironment.getInstance().getSqlExecutor().filter(in, selectClause, filterSqlClause);
 		}
 		this.setOutputTable(outOp.getOutputTable());
-		return this;
 	}
 }

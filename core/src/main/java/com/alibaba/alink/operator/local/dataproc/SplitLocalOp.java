@@ -35,23 +35,22 @@ public class SplitLocalOp extends LocalOperator <SplitLocalOp>
 	}
 
 	@Override
-	public SplitLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		Double fraction = getFraction();
 		Integer seed = getRandomSeed();
-				Random rand = (null==seed)?new Random(201706):new Random(seed);
-		ArrayList<Row> train = new ArrayList <>();
-		ArrayList<Row> test = new ArrayList <>();
-		for(Row row:in.getOutputTable().getRows()){
-			if(rand.nextDouble()<=fraction) {
+		Random rand = (null == seed) ? new Random(201706) : new Random(seed);
+		ArrayList <Row> train = new ArrayList <>();
+		ArrayList <Row> test = new ArrayList <>();
+		for (Row row : in.getOutputTable().getRows()) {
+			if (rand.nextDouble() <= fraction) {
 				train.add(row);
-			}else{
+			} else {
 				test.add(row);
 			}
 		}
 
 		this.setOutputTable(new MTable(train, in.getSchema()));
-		this.setSideOutputTables(new MTable[]{new MTable(test, in.getSchema())});
-		return this;
+		this.setSideOutputTables(new MTable[] {new MTable(test, in.getSchema())});
 	}
 }

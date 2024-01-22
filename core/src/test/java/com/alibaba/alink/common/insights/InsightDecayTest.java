@@ -1,10 +1,12 @@
 package com.alibaba.alink.common.insights;
 
+import com.alibaba.alink.common.utils.JsonConverter;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.source.CsvSourceLocalOp;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -34,18 +36,20 @@ public class InsightDecayTest {
 
 		List <Insight> insights = AutoDiscovery.find(data, 60);
 
-		InsightDecay insightDecay = new InsightDecay();
+		//InsightDecay insightDecay = new InsightDecay();
+		//
+		//for (Insight insight : insights) {
+		//	insight.score *= insightDecay.getInsightDecay(insight);
+		//}
+		//
+		//insights.sort(new Comparator <Insight>() {
+		//	@Override
+		//	public int compare(Insight o1, Insight o2) {
+		//		return -Double.compare(o1.score, o2.score);
+		//	}
+		//});
 
-		for (Insight insight : insights) {
-			insight.score *= insightDecay.getInsightDecay(insight);
-		}
-
-		insights.sort(new Comparator <Insight>() {
-			@Override
-			public int compare(Insight o1, Insight o2) {
-				return -Double.compare(o1.score, o2.score);
-			}
-		});
+		insights = InsightDecay.sortInsights(insights);
 
 		for (int i = 0; i < insights.size() && i <= 100; i++) {
 			System.out.println(insights.get(i));
@@ -59,10 +63,29 @@ public class InsightDecayTest {
 	public void testWithoutDecay() throws Exception {
 		LocalOperator <?> data = Data.getEmissionLocalSource();
 		List <Insight> insights = AutoDiscovery.find(data, 20);
-
-		for (int i = 0; i < insights.size() && i <= 100; i++) {
-			System.out.println(insights.get(i));
+		List <Insight> filterInsights = new ArrayList <>();
+		String colName = "ProducerType";
+		for (Insight insight : insights) {
+			if (null != insight.layout.xAxis && insight.layout.xAxis.contains(colName) || null != insight.layout.yAxis && insight.layout.yAxis.contains(colName)) {
+				filterInsights.add(insight);
+			}
 		}
+
+		List<Insight> sortInsights = InsightDecay.sortInsights(filterInsights, 0.6);
+		//
+		//for (Insight insight : insights) {
+		//	insight.score *= insightDecay.getInsightDecay(insight);
+		//}
+		//
+		//insights.sort(new Comparator <Insight>() {
+		//	@Override
+		//	public int compare(Insight o1, Insight o2) {
+		//		return -Double.compare(o1.score, o2.score);
+		//	}
+		//});
+		ToReport toReport = new ToReport(sortInsights);
+		toReport.withHtml("ProducerTypeEmission", true, 200);
+
 
 		LocalOperator.execute();
 	}

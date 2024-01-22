@@ -32,7 +32,7 @@ public class SampleWithSizeLocalOp extends LocalOperator <SampleWithSizeLocalOp>
 	}
 
 	@Override
-	public SampleWithSizeLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		MTable table = in.getOutputTable();
 		boolean withReplacement = getWithReplacement();
@@ -43,6 +43,5 @@ public class SampleWithSizeLocalOp extends LocalOperator <SampleWithSizeLocalOp>
 			? table.sampleWithSizeReplacement(numSamples, new Random(seed))
 			: table.sampleWithSize(numSamples, new Random(seed));
 		setOutputTable(out);
-		return this;
 	}
 }

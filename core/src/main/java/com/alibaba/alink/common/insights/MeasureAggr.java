@@ -23,4 +23,14 @@ public enum MeasureAggr {
 		return this.enName;
 	}
 
+	public String udfName() {
+		if(this == MeasureAggr.MAX) {
+			return "MAX_BATCH";
+		}
+		if(this == MeasureAggr.MIN) {
+			return "MIN_BATCH";
+		}
+		return name();
+	}
+
 }

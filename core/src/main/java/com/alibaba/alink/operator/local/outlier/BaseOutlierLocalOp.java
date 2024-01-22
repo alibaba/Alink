@@ -54,7 +54,7 @@ public class BaseOutlierLocalOp<T extends BaseOutlierLocalOp <T>> extends MapLoc
 	}
 
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		if (null == getParams().get(OutlierParams.GROUP_COLS)
@@ -84,7 +84,6 @@ public class BaseOutlierLocalOp<T extends BaseOutlierLocalOp <T>> extends MapLoc
 			setOutputTable(resultTable);
 		}
 
-		return (T) this;
 	}
 
 	protected boolean supportDealWholeData() {return false;}

@@ -41,14 +41,15 @@ public abstract class BaseSourceLocalOp<T extends BaseSourceLocalOp <T>> extends
 	}
 
 	@Override
-	public final T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		throw new AkUnsupportedOperationException("Source operator does not support linkFrom()");
 	}
 
 	@Override
-	public MTable getOutputTable() {
+	public synchronized MTable getOutputTable() {
 		if (isNullOutputTable()) {
 			super.setOutputTable(initializeDataSource());
+			super.markCheckpointSaved();
 		}
 		return super.getOutputTable();
 	}

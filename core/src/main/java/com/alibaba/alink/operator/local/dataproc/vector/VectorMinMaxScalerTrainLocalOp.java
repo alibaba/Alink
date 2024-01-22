@@ -46,7 +46,7 @@ public final class VectorMinMaxScalerTrainLocalOp extends LocalOperator <VectorM
 	}
 
 	@Override
-	public VectorMinMaxScalerTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String vectorColName = getSelectedCol();
 
@@ -59,8 +59,6 @@ public final class VectorMinMaxScalerTrainLocalOp extends LocalOperator <VectorM
 		converter.save(new Tuple3 <>(getMin(), getMax(), srt), rowCollector);
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), converter.getModelSchema()));
-
-		return this;
 	}
 
 	@Override

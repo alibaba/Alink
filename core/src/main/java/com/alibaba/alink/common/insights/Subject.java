@@ -39,4 +39,16 @@ public class Subject implements Serializable {
 		this.measures.add(measure);
 		return this;
 	}
+
+	public List <Subspace> getSubspaces() {
+		return subspaces;
+	}
+
+	public Breakdown getBreakdown() {
+		return breakdown;
+	}
+
+	public List <Measure> getMeasures() {
+		return measures;
+	}
 }

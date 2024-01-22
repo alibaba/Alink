@@ -21,52 +21,26 @@ public class AggregationQuery {
 	public static List <LocalOperator <?>> query(LocalOperator <?> subData,
 												 Breakdown breakdown,
 												 List <Measure> measures,
-												 Boolean isSingleThread) {
+												 int threadNum) {
 		String breakdownCol = breakdown.colName;
 		List <LocalOperator <?>> result = new ArrayList <>();
 
 		LocalOperator <?> dataQuery;
-		if (AutoDiscovery.isTimestampCol(subData.getSchema(), breakdownCol)) {
-			String tmpTsCol = "__alink_ts_tmp__";
-			StringBuilder sbdAggr = new StringBuilder();
-			sbdAggr.append(tmpTsCol);
-			String[] measureCols = new String[measures.size()];
-			for (int i = 0; i < measures.size(); i++) {
-				Measure measure = measures.get(i);
-				measureCols[i] = MEASURE_NAME_PREFIX + i;
-				sbdAggr.append(", ").append(measure.aggr).append("(`").append(measure.colName).append("`) AS ").append(
-					measureCols[i]);
-			}
-			String selectSql1 = String.format("unix_timestamp_macro(%s) as %s, *", breakdownCol, tmpTsCol);
-			String groupSql = sbdAggr.toString();
-			String selectSql2 = String.format("to_timestamp_micro(%s) as %s, %s", tmpTsCol, breakdownCol,
-				String.join(",", measureCols));
-
-			System.out.println(selectSql1);
-			System.out.println(groupSql);
-			System.out.println(selectSql2);
-
-			dataQuery = subData
-				.select(selectSql1)
-				.groupBy(tmpTsCol, groupSql)
-				.select(selectSql2);
-		} else {
-			String groupByClause = "`" + breakdownCol + "`";
-			StringBuilder sbdAggr = new StringBuilder();
-			sbdAggr.append(groupByClause);
-			for (int i = 0; i < measures.size(); i++) {
-				Measure measure = measures.get(i);
-				sbdAggr.append(", ").append(measure.aggr).append("(`").append(measure.colName).append("`) AS ").append(
+		String groupByClause = "`" + breakdownCol + "`";
+		StringBuilder sbdAggr = new StringBuilder();
+		sbdAggr.append(groupByClause);
+		for (int i = 0; i < measures.size(); i++) {
+			Measure measure = measures.get(i);
+			sbdAggr.append(", ").append(measure.aggr.udfName()).append("(`").append(measure.colName).append("`) AS ")
+				.append(
 					MEASURE_NAME_PREFIX).append(i);
-			}
-
-			LocalOperator <?> groupByOp = new GroupByLocalOp2(groupByClause, sbdAggr.toString());
-			if (isSingleThread) {
-				groupByOp.set(HasIsSingleThread.IS_SINGLE_THREAD, true);
-			}
-			dataQuery = subData.link(groupByOp);
-
 		}
+
+		LocalOperator <?> groupByOp = new GroupByLocalOp2(groupByClause, sbdAggr.toString());
+		groupByOp.set(HasIsSingleThread.THREAD_NUM, threadNum);
+
+		dataQuery = subData.link(groupByOp);
+
 		if (measures.size() == 1) {
 			result.add(dataQuery);
 		} else {
@@ -113,8 +87,9 @@ public class AggregationQuery {
 		sbdAggr.append(groupByClause);
 		for (int i = 0; i < measures.size(); i++) {
 			Measure measure = measures.get(i);
-			sbdAggr.append(", ").append(measure.aggr).append("(`").append(measure.colName).append("`) AS ").append(
-				MEASURE_NAME_PREFIX).append(i);
+			sbdAggr.append(", ").append(measure.aggr.udfName()).append("(`").append(measure.colName).append("`) AS ")
+				.append(
+					MEASURE_NAME_PREFIX).append(i);
 		}
 
 		//System.out.println("group sql: " + sbdAggr);
@@ -126,16 +101,22 @@ public class AggregationQuery {
 																String subspaceCol,
 																List <Subspace> subspaces,
 																Breakdown breakdown,
-																List <Measure> measures) {
+																List <Measure> measures,
+																int threadNum) {
 		String groupByClause = "`" + subspaceCol + "`" + ", `" + breakdown.colName + "`";
 		StringBuilder sbdAggr = new StringBuilder();
 		sbdAggr.append(groupByClause);
 		for (int i = 0; i < measures.size(); i++) {
 			Measure measure = measures.get(i);
-			sbdAggr.append(", ").append(measure.aggr).append("(`").append(measure.colName).append("`) AS ").append(
-				MEASURE_NAME_PREFIX).append(i);
+			sbdAggr.append(", ").append(measure.aggr.udfName()).append("(`").append(measure.colName).append("`) AS ")
+				.append(
+					MEASURE_NAME_PREFIX).append(i);
 		}
-		LocalOperator <?> dataQuery = source.groupBy(groupByClause, sbdAggr.toString());
+
+		LocalOperator <?> groupOp = new GroupByLocalOp2(groupByClause, sbdAggr.toString());
+		groupOp.getParams().set(HasIsSingleThread.THREAD_NUM, threadNum);
+
+		LocalOperator <?> dataQuery = source.link(groupOp);
 		List <LocalOperator <?>> result = new ArrayList <>();
 		List <List <Row>> list = new ArrayList <>();
 		Map <Object, Integer> indexMap = new HashMap <>();

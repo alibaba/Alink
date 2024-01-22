@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 public abstract class CorrelationInsightBase {
-	private static int MIN_SAMPLE_NUM = 5;
+	protected static int MIN_SAMPLE_NUM = 10;
 	public static final String MEASURE_NAME_PREFIX = "measure_";
 	protected Insight insight;
 	protected boolean needGroup = false;
@@ -24,7 +24,7 @@ public abstract class CorrelationInsightBase {
 	protected Number range = 0;
 	public static final Number MAX_SCALAR_THRESHOLD = 10;
 
-	private boolean singleThread = false;
+	private int threadNum = LocalOperator.getParallelism();
 
 	public CorrelationInsightBase(Insight insight) {
 		this.insight = insight;
@@ -43,12 +43,12 @@ public abstract class CorrelationInsightBase {
 		return this;
 	}
 
-	public void setSingleThread(boolean singleThread) {
-		this.singleThread = singleThread;
+	public void setThreadNum(int threadNum) {
+		this.threadNum = threadNum;
 	}
 
 	public List <LocalOperator <?>> groupData(LocalOperator <?> source, Subject subject) {
-		return AggregationQuery.query(source, subject.breakdown, subject.measures, this.singleThread);
+		return AggregationQuery.query(source, subject.breakdown, subject.measures, this.threadNum);
 	}
 
 	public MTable mergeData(List <Tuple3 <Number, Number, Object>> points, TableSchema schema, TableSchema schema2) {

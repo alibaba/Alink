@@ -30,7 +30,7 @@ public final class SelectLocalOp extends BaseSqlApiLocalOp <SelectLocalOp>
 	}
 
 	@Override
-	public SelectLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String[] colNames = in.getColNames();
 
@@ -38,6 +38,5 @@ public final class SelectLocalOp extends BaseSqlApiLocalOp <SelectLocalOp>
 		String newClause = SelectUtils.convertRegexClause2ColNames(colNames, clause);
 
 		this.setOutputTable(LocalMLEnvironment.getInstance().getSqlExecutor().select(in, newClause).getOutputTable());
-		return this;
 	}
 }

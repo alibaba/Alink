@@ -45,7 +45,7 @@ public class StandardScalerTrainLocalOp extends LocalOperator <StandardScalerTra
 	}
 
 	@Override
-	public StandardScalerTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String[] selectedColNames = getSelectedCols();
 
@@ -64,8 +64,6 @@ public class StandardScalerTrainLocalOp extends LocalOperator <StandardScalerTra
 		converter.save(new Tuple3 <>(getWithMean(), getWithStd(), srt), rowCollector);
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), converter.getModelSchema()));
-
-		return this;
 	}
 
 	@Override

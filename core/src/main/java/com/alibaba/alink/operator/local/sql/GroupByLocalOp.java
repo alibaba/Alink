@@ -49,7 +49,7 @@ public final class GroupByLocalOp extends BaseSqlApiLocalOp <GroupByLocalOp>
 	}
 
 	@Override
-	public GroupByLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		String selectClause = getSelectClause();
 		String groupClause = getGroupByPredicate();
 		if (isHasMTableClause(selectClause)) {
@@ -62,7 +62,6 @@ public final class GroupByLocalOp extends BaseSqlApiLocalOp <GroupByLocalOp>
 
 		this.setOutputTable(LocalMLEnvironment.getInstance().getSqlExecutor()
 			.groupBy(inputs[0], groupClause, selectClause).getOutputTable());
-		return this;
 	}
 
 	static boolean isHasMTableClause(String clause) {

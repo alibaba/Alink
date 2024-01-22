@@ -37,8 +37,6 @@ public class EvalMultiLabelLocalOp extends LocalOperator <EvalMultiLabelLocalOp>
 
 	public static String LABELS = "labels";
 
-	private MultiLabelMetrics metrics;
-
 	public EvalMultiLabelLocalOp() {
 		super(null);
 	}
@@ -48,7 +46,7 @@ public class EvalMultiLabelLocalOp extends LocalOperator <EvalMultiLabelLocalOp>
 	}
 
 	@Override
-	public EvalMultiLabelLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator in = checkAndGetFirst(inputs);
 
 		int indexLabel = TableUtil.findColIndex(in.getColNames(), this.getLabelCol());
@@ -62,7 +60,7 @@ public class EvalMultiLabelLocalOp extends LocalOperator <EvalMultiLabelLocalOp>
 		Tuple3 <Integer, Class, Integer> labelSizeClass
 			= getLabelNumberAndMaxK(dataSet, getPredictionRankingInfo(), getPredictionRankingInfo());
 
-		this.metrics = EvaluationUtil.getMultiLabelMetrics(
+		MultiLabelMetrics metrics = EvaluationUtil.getMultiLabelMetrics(
 			in.getOutputTable().select(this.getLabelCol(), this.getPredictionCol()).getRows(),
 			labelSizeClass, getLabelRankingInfo(), getPredictionRankingInfo()
 		).toMetrics();
@@ -71,7 +69,6 @@ public class EvalMultiLabelLocalOp extends LocalOperator <EvalMultiLabelLocalOp>
 			new Row[] {metrics.serialize()},
 			new TableSchema(new String[] {"multilabel_eval_result"}, new TypeInformation[] {Types.STRING})
 		));
-		return this;
 	}
 
 	@Override
@@ -81,7 +78,7 @@ public class EvalMultiLabelLocalOp extends LocalOperator <EvalMultiLabelLocalOp>
 
 	@Override
 	public MultiLabelMetrics collectMetrics() {
-		return metrics;
+		return EvaluationMetricsCollector.super.collectMetrics();
 	}
 
 	public static Tuple3 <HashSet <Object>, Class, Integer> subGetLabelNumberAndMaxK(

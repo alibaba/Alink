@@ -33,11 +33,11 @@ public class ImpactDetector {
 		this.threshold = threshold;
 	}
 
-	public void detect(LocalOperator <?> table) {
-		detect(table, BreakdownDetector.getBreakdownCols(table.getSchema()));
+	public void detect(LocalOperator <?> table, int threadNum) {
+		detect(table, BreakdownDetector.getBreakdownCols(table.getSchema()), threadNum);
 	}
 
-	public void detect(LocalOperator <?> table, String[] breakdownCols) {
+	public void detect(LocalOperator <?> table, String[] breakdownCols, int threadNum) {
 		colNames = breakdownCols;
 		System.out.println("subspace col num: " + colNames.length);
 		colNameMap = new HashMap <>(colNames.length);
@@ -51,49 +51,61 @@ public class ImpactDetector {
 
 		int type = 1;
 		if (type == 1) {
-			int parallelism = LocalOperator.getParallelism();
-			final TaskRunner taskRunner = new TaskRunner();
 			int breakDownColNum = breakdownCols.length;
 
-			for (int i = 0; i < parallelism; ++i) {
-				final int start = (int) AlinkLocalSession.DISTRIBUTOR.startPos(i, parallelism, breakDownColNum);
-				final int cnt = (int) AlinkLocalSession.DISTRIBUTOR.localRowCnt(i, parallelism, breakDownColNum);
-
-				if (cnt <= 0) {continue;}
-
-				taskRunner.submit(() -> {
-					for (int j = start; j < Math.min(start + cnt, breakDownColNum); j++) {
-						Map <Object, MutableInteger> maps = groupCount(table, colNames[j]);
-						for (Map.Entry <Object, MutableInteger> entry : maps.entrySet()) {
-							if (entry.getValue().getValue() > minCount) {
-								valueMaps[j].put(entry.getKey(), entry.getValue().getValue() / (double) totalCount);
-							}
+			if (threadNum == 1) {
+				for (int j = 0; j < breakDownColNum; j++) {
+					Map <Object, MutableInteger> maps = groupCount(table, colNames[j]);
+					for (Map.Entry <Object, MutableInteger> entry : maps.entrySet()) {
+						if (entry.getValue().getValue() > minCount) {
+							valueMaps[j].put(entry.getKey(),
+								entry.getValue().getValue() / (double) totalCount);
 						}
 					}
-				});
-			}
+				}
+			} else {
+				final TaskRunner taskRunner = new TaskRunner();
+				for (int i = 0; i < threadNum; ++i) {
+					final int start = (int) AlinkLocalSession.DISTRIBUTOR.startPos(i, threadNum, breakDownColNum);
+					final int cnt = (int) AlinkLocalSession.DISTRIBUTOR.localRowCnt(i, threadNum, breakDownColNum);
 
-			taskRunner.join();
+					if (cnt <= 0) {continue;}
+
+					taskRunner.submit(() -> {
+						for (int j = start; j < Math.min(start + cnt, breakDownColNum); j++) {
+							Map <Object, MutableInteger> maps = groupCount(table, colNames[j]);
+							for (Map.Entry <Object, MutableInteger> entry : maps.entrySet()) {
+								if (entry.getValue().getValue() > minCount) {
+									valueMaps[j].put(entry.getKey(),
+										entry.getValue().getValue() / (double) totalCount);
+								}
+							}
+						}
+					});
+				}
+
+				taskRunner.join();
+			}
 		} else if (type == 2) {
 			for (int i = 0; i < colNames.length; i++) {
 				String colName = "`" + colNames[i] + "`";
 				List <Row> rows;
-				if (AutoDiscovery.isTimestampCol(table.getSchema(), colNames[i])) {
-					String tmpTsCol = "__alink_ts_tmp__";
-					String selectSql1 = String.format("unix_timestamp_macro(%s) as %s, *", colName, tmpTsCol);
-					String groupSql = tmpTsCol + ", COUNT(" + tmpTsCol + ") AS cnt";
-					String selectSql2 = String.format("to_timestamp_micro(%s) as %s, %s", tmpTsCol, colName, "cnt");
-					rows = table
-						.select(selectSql1)
-						.groupBy(tmpTsCol, groupSql)
-						.select(selectSql2)
-						.filter("cnt>=" + minCount)
-						.getOutputTable()
-						.getRows();
-					for (Row row : rows) {
-						valueMaps[i].put(row.getField(0), ((Number) row.getField(1)).doubleValue() / totalCount);
-					}
-				} else {
+				//if (AutoDiscovery.isTimestampCol(table.getSchema(), colNames[i])) {
+				//	String tmpTsCol = "__alink_ts_tmp__";
+				//	String selectSql1 = String.format("unix_timestamp_macro(%s) as %s, *", colName, tmpTsCol);
+				//	String groupSql = tmpTsCol + ", COUNT(" + tmpTsCol + ") AS cnt";
+				//	String selectSql2 = String.format("to_timestamp_micro(%s) as %s, %s", tmpTsCol, colName, "cnt");
+				//	rows = table
+				//		.select(selectSql1)
+				//		.groupBy(tmpTsCol, groupSql)
+				//		.select(selectSql2)
+				//		.filter("cnt>=" + minCount)
+				//		.getOutputTable()
+				//		.getRows();
+				//	for (Row row : rows) {
+				//		valueMaps[i].put(row.getField(0), ((Number) row.getField(1)).doubleValue() / totalCount);
+				//	}
+				//} else {
 					Map <Object, MutableInteger> maps = groupCount(table, colNames[i]);
 					for (Map.Entry <Object, MutableInteger> entry : maps.entrySet()) {
 						if (entry.getValue().getValue() > minCount) {
@@ -101,19 +113,7 @@ public class ImpactDetector {
 						}
 					}
 				}
-			}
-		} else if (type == 3) {
-			int parallelism = LocalOperator.getParallelism();
-			for (int i = 0; i < colNames.length; i++) {
-				Map <Object, MutableInteger> maps = groupCountMultiThread(table, colNames[i], parallelism);
-				//System.out.println("colName: " + colNames[i] + " size: " + maps.size());
-				for (Map.Entry <Object, MutableInteger> entry : maps.entrySet()) {
-					if (entry.getValue().getValue() > minCount) {
-						valueMaps[i].put(entry.getKey(), entry.getValue().getValue() / (double) totalCount);
-					}
-				}
-
-			}
+			//}
 		}
 	}
 

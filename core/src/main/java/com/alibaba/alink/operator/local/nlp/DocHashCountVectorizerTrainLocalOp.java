@@ -52,7 +52,7 @@ public class DocHashCountVectorizerTrainLocalOp extends LocalOperator <DocHashCo
 	}
 
 	@Override
-	public DocHashCountVectorizerTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		int index = TableUtil.findColIndexWithAssertAndHint(in.getColNames(), this.getSelectedCol());
 
@@ -97,7 +97,6 @@ public class DocHashCountVectorizerTrainLocalOp extends LocalOperator <DocHashCo
 		TableSchema schema = new DocHashCountVectorizerModelDataConverter().getModelSchema();
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), schema));
-		return this;
 	}
 
 }

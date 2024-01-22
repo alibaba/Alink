@@ -52,7 +52,7 @@ public class ImputerTrainLocalOp extends LocalOperator <ImputerTrainLocalOp>
 	}
 
 	@Override
-	public ImputerTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String[] selectedColNames = getSelectedCols();
 		Strategy strategy = getStrategy();
@@ -76,7 +76,6 @@ public class ImputerTrainLocalOp extends LocalOperator <ImputerTrainLocalOp>
 		}
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), converter.getModelSchema()));
-		return this;
 	}
 
 	@Override

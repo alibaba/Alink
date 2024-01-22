@@ -49,7 +49,7 @@ public class FlatMapLocalOp<T extends FlatMapLocalOp <T>> extends LocalOperator 
 	}
 
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		try {
@@ -60,7 +60,6 @@ public class FlatMapLocalOp<T extends FlatMapLocalOp <T>> extends LocalOperator 
 
 			this.setOutputTable(new MTable(output, mapper.getOutputSchema()));
 			mapper.close();
-			return (T) this;
 		} catch (ExceptionWithErrorCode ex) {
 			throw ex;
 		} catch (Exception ex) {

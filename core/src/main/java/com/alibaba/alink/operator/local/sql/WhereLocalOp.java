@@ -29,8 +29,7 @@ public final class WhereLocalOp extends BaseSqlApiLocalOp <WhereLocalOp>
 	}
 
 	@Override
-	public WhereLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		this.setOutputTable(inputs[0].where(getClause()).getOutputTable());
-		return this;
 	}
 }

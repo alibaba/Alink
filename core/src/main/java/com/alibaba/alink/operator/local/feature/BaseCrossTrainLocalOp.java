@@ -55,7 +55,7 @@ abstract class BaseCrossTrainLocalOp<T extends BaseCrossTrainLocalOp <T>>
 	//todo construct function.
 
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		String[] reversedCols = getParams().get(HasReservedColsDefaultAsNull.RESERVED_COLS);
@@ -186,8 +186,6 @@ abstract class BaseCrossTrainLocalOp<T extends BaseCrossTrainLocalOp <T>>
 			BaseCrossTrainBatchOp.getAutoCrossModelSchema(inputSchema, modelSaved.getSchema(), selectedCols)));
 
 		buildSideOutput(oneHotModel, acModel, Arrays.asList(numericalCols));
-
-		return (T) this;
 	}
 
 	abstract List <Row> buildAcModelData(List <Tuple3 <Double, Double, Vector>> trainData,

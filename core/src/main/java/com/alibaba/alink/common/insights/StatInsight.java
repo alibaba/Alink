@@ -20,7 +20,7 @@ import java.util.Set;
 public class StatInsight {
 
 	public static boolean isNumberType(TypeInformation<?> type) {
-		return type.equals(Types.INT) || type.equals(Types.LONG) || type.equals(Types.DOUBLE) || type.equals(Types.FLOAT);
+		return type.equals(Types.INT) || type.equals(Types.LONG) || type.equals(Types.DOUBLE) || type.equals(Types.FLOAT)  || type.equals(Types.SHORT);
 	}
 
 	public static Insight basicStat(LocalOperator <?> dataAggr, String colName) {

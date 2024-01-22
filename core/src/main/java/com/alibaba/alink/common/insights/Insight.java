@@ -11,6 +11,7 @@ public class Insight implements Serializable {
 	public Subject subject;
 	public InsightType type;
 	public double score;
+	public double originScore;
 	public LayoutData layout;
 
 	public List <Subspace> attachSubspaces;
@@ -31,6 +32,7 @@ public class Insight implements Serializable {
 	public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("score: ").append(score).append(", \ttype: ").append(type.name());
+		stringBuilder.append("\n|-origin score: ").append(originScore);
 		if (null != subject) {
 			if (null != subject.subspaces && subject.subspaces.size() > 0) {
 				stringBuilder.append("\n|-subspaces: ").append(JsonConverter.toJson(subject.subspaces));
@@ -118,8 +120,8 @@ public class Insight implements Serializable {
 	public String getTitle() {
 		String title = String.format("%s里%s的%s",
 			subject.breakdown.colName, subject.measures.get(0).colName, subject.measures.get(0).aggr.getCnName());
-		if (!attachSubspaces.isEmpty()) {
-			title = attachSubspaces.get(0).strInDescription() + title;
+		if (!subject.subspaces.isEmpty()) {
+			title = subject.subspaces.get(0).strInDescription() + title;
 		}
 		return title;
 	}

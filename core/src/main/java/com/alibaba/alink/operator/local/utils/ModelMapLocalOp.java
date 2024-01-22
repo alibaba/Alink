@@ -50,7 +50,7 @@ public class ModelMapLocalOp<T extends ModelMapLocalOp <T>> extends LocalOperato
 	}
 
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		checkMinOpSize(1, inputs);
 
 		LocalOperator <?> model = inputs.length == 2 ? inputs[0] : null;
@@ -71,7 +71,6 @@ public class ModelMapLocalOp<T extends ModelMapLocalOp <T>> extends LocalOperato
 
 			this.setOutputTable(new MTable(output, mapper.getOutputSchema()));
 			mapper.close();
-			return (T) this;
 		} catch (ExceptionWithErrorCode ex) {
 			throw ex;
 		} catch (Exception ex) {

@@ -1,5 +1,7 @@
 package com.alibaba.alink.common.insights;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.types.Row;
@@ -14,7 +16,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class BreakdownDetector {
 
@@ -44,6 +45,7 @@ public class BreakdownDetector {
 									boolean sameSubspaceCol,
 									int distinctCountThreshold,
 									int threadNum) {
+		//System.out.println("breakdown thread num: " + threadNum);
 		LocalOperator <?> data;
 		if (!sameSubspaceCol) {
 			data = Mining.filter(table, subspaces);
@@ -53,36 +55,47 @@ public class BreakdownDetector {
 
 		Tuple2 <Set <String>, Set <String>> t2 = getBreakdownAndMeasureCols(subspaces, table.getSchema(),
 			breakdownCols);
+
+		// breakdownColNames less than breakdownCols
 		Set <String> breakdownColNames = t2.f0;
 		Set <String> allMeasureColNames = t2.f1;
 
 		final int totalCount = data.getOutputTable().getNumRow();
-
-		final TaskRunner taskRunner = new TaskRunner();
-
-		final String[] breakdownColNameList = breakdownCols;
+		final String[] breakdownColNameList = breakdownColNames.toArray(new String[0]);
 		int breakDownColNum = breakdownColNameList.length;
 		int[] breakDownColDistinctCount = new int[breakDownColNum];
 
-		for (int i = 0; i < threadNum; ++i) {
-			final int start = (int) AlinkLocalSession.DISTRIBUTOR.startPos(i, threadNum, breakDownColNum);
-			final int cnt = (int) AlinkLocalSession.DISTRIBUTOR.localRowCnt(i, threadNum, breakDownColNum);
+		//System.out.println("detect thread num: " + threadNum);
 
-			if (cnt <= 0) {continue;}
+		if (threadNum == 1) {
+			Set <Object> sets = new HashSet <>();
+			for (int j = 0; j < breakDownColNum; j++) {
+				sets.clear();
+				breakDownColDistinctCount[j] = distinctCount(data, breakdownColNameList[j],
+					distinctCountThreshold, sets);
+			}
+		} else {
+			final TaskRunner taskRunner = new TaskRunner();
+			for (int i = 0; i < threadNum; ++i) {
+				final int start = (int) AlinkLocalSession.DISTRIBUTOR.startPos(i, threadNum, breakDownColNum);
+				final int cnt = (int) AlinkLocalSession.DISTRIBUTOR.localRowCnt(i, threadNum, breakDownColNum);
 
-			taskRunner.submit(() -> {
-				Set <Object> sets = new HashSet <>();
-				for (int j = start; j < start + cnt; j++) {
-					sets.clear();
-					breakDownColDistinctCount[j] = distinctCount(data, breakdownColNameList[j],
-						distinctCountThreshold, sets);
-				}
-			});
+				if (cnt <= 0) {continue;}
+
+				taskRunner.submit(() -> {
+					Set <Object> sets = new HashSet <>();
+					for (int j = start; j < start + cnt; j++) {
+						sets.clear();
+						breakDownColDistinctCount[j] = distinctCount(data, breakdownColNameList[j],
+							distinctCountThreshold, sets);
+					}
+				});
+			}
+
+			taskRunner.join();
 		}
 
-		taskRunner.join();
-
-		list.addAll(calcBreakdownAndMeasures(breakdownColNames,
+		list.addAll(calcBreakdownAndMeasures(breakdownColNameList,
 			allMeasureColNames,
 			breakDownColDistinctCount,
 			totalCount,
@@ -111,17 +124,21 @@ public class BreakdownDetector {
 		return Tuple2.of(breakdownColNames, allMeasureColNames);
 	}
 
+	// category and timestamp type.
 	public static String[] getBreakdownCols(TableSchema tableSchema) {
-		return TableUtil.getCategoricalCols(tableSchema, tableSchema.getFieldNames(), null);
-	}
-
-	public static Tuple2 <Set <String>, Set <String>> getBreakdownAndMeasureCols(List <Subspace> subspaces,
-																				 TableSchema tableSchema) {
-		return getBreakdownAndMeasureCols(subspaces, tableSchema, getBreakdownCols(tableSchema));
+		String[] colNames = tableSchema.getFieldNames();
+		TypeInformation <?>[] colTypes = tableSchema.getFieldTypes();
+		List <String> res = new ArrayList <>();
+		for (int i = 0; i < colNames.length; i++) {
+			if (Types.SQL_TIMESTAMP == colTypes[i] || Types.STRING == colTypes[i]) {
+				res.add(colNames[i]);
+			}
+		}
+		return res.toArray(new String[0]);
 	}
 
 	public static List <Tuple2 <Breakdown, List <Measure>>> calcBreakdownAndMeasures(
-		Set <String> breakdownColNames,
+		String[] breakdownColNameList,
 		Set <String> allMeasureColNames,
 		int[] breakDownColDistinctCount,
 		int totalCount,
@@ -129,7 +146,6 @@ public class BreakdownDetector {
 	) {
 		List <Tuple2 <Breakdown, List <Measure>>> list = new ArrayList <>();
 
-		String[] breakdownColNameList = breakdownColNames.toArray(new String[0]);
 		int breakDownColNum = breakdownColNameList.length;
 		for (int i = 0; i < breakDownColNum; i++) {
 			String breakdownColName = breakdownColNameList[i];
@@ -159,11 +175,6 @@ public class BreakdownDetector {
 			}
 		}
 		return list;
-	}
-
-	public BreakdownDetector detect(LocalOperator <?> table, List <Subspace> subspaces) {
-		return detect(table, subspaces, false,
-			AutoDiscoveryConstants.BREAKDOWN_DISTINCT_COUNT_THRESHOLD, LocalOperator.getParallelism());
 	}
 
 	public static int distinctCount(LocalOperator <?> in,

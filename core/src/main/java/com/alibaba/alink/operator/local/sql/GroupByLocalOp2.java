@@ -57,7 +57,7 @@ public final class GroupByLocalOp2 extends BaseSqlApiLocalOp <GroupByLocalOp2>
 	}
 
 	@Override
-	public GroupByLocalOp2 linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = inputs[0];
 
 		// get group cols.
@@ -101,84 +101,101 @@ public final class GroupByLocalOp2 extends BaseSqlApiLocalOp <GroupByLocalOp2>
 		// deal with empty table.
 		if (mTable.getNumRow() == 0) {
 			this.setOutputTable(new MTable(outRows, outColNames, outColTypes));
-			return this;
+			return;
 		}
 
 		// type 3 result error when parallelism > 1;
-		int parallelism = getParallelism();
-		if (getParams().contains(HasIsSingleThread.IS_SINGLE_THREAD)) {
-			if (getParams().get(HasIsSingleThread.IS_SINGLE_THREAD)) {
-				parallelism = 1;
-			}
+		int threadNum = getParallelism();
+		if (getParams().contains(HasIsSingleThread.THREAD_NUM)) {
+			threadNum = getParams().get(HasIsSingleThread.THREAD_NUM);
 		}
-
-		final TaskRunner taskRunner = new TaskRunner();
 
 		final List <Row> input = in.getOutputTable().getRows();
 		final int numRows = input.size();
+		Map <Row, BaseUdaf <?, ?>[]> calcMaps = new TreeMap <>(new RowComparator(groupIndices)::compare);
 
-		Map <Row, BaseUdaf <?, ?>[]>[] calcMapsList = new Map[parallelism];
-		for (int i = 0; i < parallelism; i++) {
-			calcMapsList[i] = new TreeMap <>(new RowComparator(groupIndices)::compare);
-		}
+		if (threadNum == 1) {
+			List <Object[]> aggInputDataList = new ArrayList <>();
+			for (FeatureClause featureClause : featureClauses) {
+				aggInputDataList.add(new Object[featureClause.inputParams.length + 1]);
+			}
 
-		for (int i = 0; i < parallelism; ++i) {
-			final int start = (int) AlinkLocalSession.DISTRIBUTOR.startPos(i, parallelism, numRows);
-			final int cnt = (int) AlinkLocalSession.DISTRIBUTOR.localRowCnt(i, parallelism, numRows);
+			for (Row row : mTable.getRows()) {
+				try {
+					calcMaps.compute(row, (k, v) -> {
+						if (null == v) {
+							v = newUdafs(featureClauses);
+						}
+						calc(featureClauses, v, inputColNames, k, aggInputDataList);
+						return v;
+					});
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new AkIllegalDataException(e.getMessage());
+				}
+			}
+		} else {
+			final TaskRunner taskRunner = new TaskRunner();
 
-			//System.out.println(
-			//	"i: " + i + " start: " + start + " cnt:" + cnt + " numRows: " + numRows + " end: " + Math.min(
-			//		start + cnt, numRows));
+			Map <Row, BaseUdaf <?, ?>[]>[] calcMapsList = new Map[threadNum];
+			for (int i = 0; i < threadNum; i++) {
+				calcMapsList[i] = new TreeMap <>(new RowComparator(groupIndices)::compare);
+			}
 
-			if (cnt <= 0) {continue;}
+			for (int i = 0; i < threadNum; ++i) {
+				final int start = (int) AlinkLocalSession.DISTRIBUTOR.startPos(i, threadNum, numRows);
+				final int cnt = (int) AlinkLocalSession.DISTRIBUTOR.localRowCnt(i, threadNum, numRows);
 
-			int finalI = i;
-			taskRunner.submit(() -> {
+				if (cnt <= 0) {continue;}
+
+				int finalI = i;
+				taskRunner.submit(() -> {
+					List <Object[]> aggInputDataList = new ArrayList <>();
+					for (FeatureClause featureClause : featureClauses) {
+						aggInputDataList.add(new Object[featureClause.inputParams.length + 1]);
+					}
 					for (int j = start; j < Math.min(start + cnt, numRows); j++) {
 						try {
 							calcMapsList[finalI].compute(input.get(j), (k, v) -> {
 								if (null == v) {
 									v = newUdafs(featureClauses);
 								}
-								calc(featureClauses, v, inputColNames, k);
+								calc(featureClauses, v, inputColNames, k, aggInputDataList);
 								return v;
 							});
 						} catch (Exception e) {
 							e.printStackTrace();
 							throw new AkIllegalDataException(e.getMessage());
+
 						}
 					}
-				}
-			);
-		}
+				});
+			}
 
-		taskRunner.join();
+			taskRunner.join();
 
-		Map <Row, BaseUdaf <?, ?>[]> calcMaps = new TreeMap <>(new RowComparator(groupIndices)::compare);
-
-		for (Map <Row, BaseUdaf <?, ?>[]> rowMap : calcMapsList) {
-			for (Map.Entry <Row, BaseUdaf <?, ?>[]> entry : rowMap.entrySet()) {
-				Row key = entry.getKey();
-				BaseUdaf <?, ?>[] udafLeft = entry.getValue();
-				if (calcMaps.containsKey(key)) {
-					BaseUdaf <?, ?>[] udafRight = calcMaps.get(key);
-					for (int j = 0; j < udafLeft.length; j++) {
-						if (udafLeft[j] != null) {
-							udafLeft[j].merge(udafRight[j]);
+			for (Map <Row, BaseUdaf <?, ?>[]> rowMap : calcMapsList) {
+				for (Map.Entry <Row, BaseUdaf <?, ?>[]> entry : rowMap.entrySet()) {
+					Row key = entry.getKey();
+					BaseUdaf <?, ?>[] udafLeft = entry.getValue();
+					if (calcMaps.containsKey(key)) {
+						BaseUdaf <?, ?>[] udafRight = calcMaps.get(key);
+						for (int j = 0; j < udafLeft.length; j++) {
+							if (udafLeft[j] != null) {
+								udafLeft[j].merge(udafRight[j]);
+							}
 						}
+						calcMaps.put(key, udafLeft);
+					} else {
+						calcMaps.put(key, udafLeft);
 					}
-					calcMaps.put(key, udafLeft);
-				} else {
-					calcMaps.put(key, udafLeft);
 				}
 			}
 		}
-
 		for (Map.Entry <Row, BaseUdaf <?, ?>[]> entry : calcMaps.entrySet()) {
 			outRows.add(getOutRow(featureClauses, entry.getValue(), entry.getKey(), in.getSchema(), outColTypes));
 		}
 		this.setOutputTable(new MTable(outRows, outColNames, outColTypes));
-		return this;
 	}
 
 	public static class RowComparator implements Comparator <Row> {
@@ -201,14 +218,20 @@ public final class GroupByLocalOp2 extends BaseSqlApiLocalOp <GroupByLocalOp2>
 		}
 	}
 
-	private void calc(FeatureClause[] featureClauses, BaseUdaf <?, ?>[] calcs, String[] inputColNames, Row value) {
+	// aggInputDataList reserved.
+	private void calc(FeatureClause[] featureClauses,
+					  BaseUdaf <?, ?>[] calcs,
+					  String[] inputColNames,
+					  Row value,
+					  List <Object[]> aggInputDataList
+	) {
 		for (int i = 0; i < featureClauses.length; i++) {
 			BaseUdaf <?, ?> udaf = calcs[i];
 			if (udaf == null) {
 			} else if (udaf instanceof CountUdaf) {
 				udaf.accumulateBatch(0);
 			} else if (udaf instanceof MTableAgg) {
-				Object[] aggInputData = new Object[featureClauses[i].inputParams.length + 1];
+				Object[] aggInputData = aggInputDataList.get(i);
 				aggInputData[0] = value.getField(
 					TableUtil.findColIndex(inputColNames, featureClauses[i].inColName));
 				for (int j = 0; j < featureClauses[i].inputParams.length; j++) {
@@ -218,7 +241,7 @@ public final class GroupByLocalOp2 extends BaseSqlApiLocalOp <GroupByLocalOp2>
 
 				udaf.accumulateBatch(aggInputData);
 			} else {
-				Object[] aggInputData = new Object[featureClauses[i].inputParams.length + 1];
+				Object[] aggInputData = aggInputDataList.get(i);
 				aggInputData[0] = value.getField(
 					TableUtil.findColIndex(inputColNames, featureClauses[i].inColName));
 				System.arraycopy(featureClauses[i].inputParams, 0, aggInputData, 1,

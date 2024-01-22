@@ -42,7 +42,7 @@ public final class JoinLocalOp extends BaseSqlApiLocalOp <JoinLocalOp>
 	}
 
 	@Override
-	public JoinLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		String selectClause = "*";
 		if (this.getParams().contains(JoinParams.SELECT_CLAUSE)) {
 			selectClause = this.getParams().get(JoinParams.SELECT_CLAUSE);
@@ -74,6 +74,5 @@ public final class JoinLocalOp extends BaseSqlApiLocalOp <JoinLocalOp>
 				throw new AkUnsupportedOperationException("Not supported binary op: " + getType());
 		}
 		this.setOutputTable(outputOp.getOutputTable());
-		return this;
 	}
 }

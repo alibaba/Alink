@@ -54,7 +54,7 @@ public final class DocCountVectorizerTrainLocalOp extends LocalOperator <DocCoun
 	}
 
 	@Override
-	public DocCountVectorizerTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		DocCountVectorizerModelData resDocCountModel = generateDocCountModel(getParams(), in);
@@ -64,7 +64,6 @@ public final class DocCountVectorizerTrainLocalOp extends LocalOperator <DocCoun
 		TableSchema schema = new DocCountVectorizerModelDataConverter().getModelSchema();
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), schema));
-		return this;
 	}
 
 	public static DocCountVectorizerModelData generateDocCountModel(Params params, LocalOperator in) {

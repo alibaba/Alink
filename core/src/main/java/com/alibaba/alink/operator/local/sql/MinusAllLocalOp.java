@@ -29,11 +29,10 @@ public final class MinusAllLocalOp extends LocalOperator <MinusAllLocalOp> {
 	}
 
 	@Override
-	public MinusAllLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		checkMinOpSize(2, inputs);
 		this.setOutputTable(LocalMLEnvironment.getInstance().getSqlExecutor()
 			.minusAll(inputs[0], inputs[1])
 			.getOutputTable());
-		return this;
 	}
 }

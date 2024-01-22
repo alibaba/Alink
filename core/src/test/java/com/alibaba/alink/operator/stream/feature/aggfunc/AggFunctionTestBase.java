@@ -12,6 +12,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Base class for aggregate function test.
@@ -122,6 +124,15 @@ public abstract class AggFunctionTestBase<I, R, ACC> {
 	}
 
 	protected <E> void validateResult(E expected, E result) {
+		if (expected == null && result == null) {
+			return;
+		}
+		if (expected == null && result != null) {
+			assertNotNull(result);
+		}
+		if (expected != null && result == null) {
+			assertNull(result);
+		}
 		if (expected instanceof Number) {
 			assertEquals(((Number) expected).doubleValue(),
 				((Number) result).doubleValue(), 0.0001);

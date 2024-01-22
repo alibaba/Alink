@@ -29,13 +29,12 @@ public final class UnionAllLocalOp extends LocalOperator <UnionAllLocalOp> {
 	}
 
 	@Override
-	public UnionAllLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		checkMinOpSize(1, inputs);
 		LocalOperator <?> output = inputs[0];
 		for (int i = 1; i < inputs.length; i += 1) {
 			output = LocalMLEnvironment.getInstance().getSqlExecutor().unionAll(output, inputs[i]);
 		}
 		setOutputTable(output.getOutputTable());
-		return this;
 	}
 }

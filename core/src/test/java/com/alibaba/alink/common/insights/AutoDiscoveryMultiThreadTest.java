@@ -8,7 +8,6 @@ import org.junit.Test;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.Comparator;
 import java.util.List;
 
 public class AutoDiscoveryMultiThreadTest {
@@ -43,28 +42,41 @@ public class AutoDiscoveryMultiThreadTest {
 			.setFilePath(filePath)
 			.setSchemaStr(schemaStr);
 
-		List <Insight> insights = AutoDiscoveryMultiThread.find(data, 120);
+		List <Insight> insights = AutoDiscoveryMultiThread.find(data, 300);
 
 		System.out.println("Find Insights size: " + insights.size());
 
-		InsightDecay insightDecay = new InsightDecay();
-
-		for (Insight insight : insights) {
-			insight.score *= insightDecay.getInsightDecay(insight);
-		}
-
-		insights.sort(new Comparator <Insight>() {
-			@Override
-			public int compare(Insight o1, Insight o2) {
-				return -Double.compare(o1.score, o2.score);
-			}
-		});
-
-		for (int i = 0; i < insights.size() && i <= 100; i++) {
-			System.out.println(insights.get(i));
-		}
-		LocalOperator.execute();
+		insights = InsightDecay.sortInsights(insights);
 
 		System.out.println("insights.size(): " + insights.size());
+
+		ToReport toReport = new ToReport(insights);
+		toReport.withHtml("Criteo100w", true, 100);
+
+		LocalOperator.execute();
+	}
+
+	@Test
+	@Ignore
+	public void testCarSales() throws Exception {
+		LocalOperator <?> data = Data.getCarSalesLocalSource();
+
+		data = data.select("to_timestamp(CONCAT(REGEXP_REPLACE(`year`, '/', '-'), ' 00:00:00')) as ts, brand, category, model, sales");
+
+		long start = System.currentTimeMillis();
+		data.print();
+
+		List <Insight> insights = AutoDiscoveryMultiThread.find(data, 120);
+
+		LocalOperator.execute();
+
+		insights = InsightDecay.sortInsights(insights);
+
+		long end = System.currentTimeMillis();
+		System.out.println("insight size: " + insights.size());
+		System.out.println("auto discovery run time: " + (end - start) / 1000 + "s.");
+
+		ToReport toReport = new ToReport(insights);
+		toReport.withHtml("CarSales", true);
 	}
 }

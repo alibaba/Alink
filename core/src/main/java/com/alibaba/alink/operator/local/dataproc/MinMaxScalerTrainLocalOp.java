@@ -47,7 +47,7 @@ public class MinMaxScalerTrainLocalOp extends LocalOperator <MinMaxScalerTrainLo
 	}
 
 	@Override
-	public MinMaxScalerTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		String[] selectedColNames = getSelectedCols();
 
@@ -67,7 +67,6 @@ public class MinMaxScalerTrainLocalOp extends LocalOperator <MinMaxScalerTrainLo
 		converter.save(new Tuple3 <>(getMin(), getMax(), srt), rowCollector);
 
 		this.setOutputTable(new MTable(rowCollector.getRows(), converter.getModelSchema()));
-		return this;
 	}
 
 	@Override

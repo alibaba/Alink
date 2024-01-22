@@ -22,6 +22,7 @@ public class AutoDiscovery {
 	public static List <Insight> find(LocalOperator <?> data, float limitedSeconds) throws Exception {
 		final long startTime = System.currentTimeMillis();
 		final long stopTime = startTime + (long) (1000 * limitedSeconds);
+		int threadNum = LocalOperator.getParallelism();
 
 		List <Insight> output = new ArrayList <>();
 
@@ -31,7 +32,8 @@ public class AutoDiscovery {
 
 		//whole data
 		if (!isTimeOut(stopTime)) {
-			findInSingleSubspace(data, new ArrayList <>(), 1.0, stopTime, output, false, 0);
+			findInSingleSubspace(data, new ArrayList <>(), 1.0, stopTime,
+				output, threadNum, 0);
 		}
 
 		long end = System.currentTimeMillis();
@@ -44,7 +46,7 @@ public class AutoDiscovery {
 		start = System.currentTimeMillis();
 
 		ImpactDetector impactDetector = new ImpactDetector(AutoDiscoveryConstants.IMPACT_THRESHOLD);
-		impactDetector.detect(data);
+		impactDetector.detect(data, threadNum);
 
 		end = System.currentTimeMillis();
 		System.out.println("subspace impact detect time: " + (end - start) / 1000 + "s.");
@@ -60,7 +62,7 @@ public class AutoDiscovery {
 				start = System.currentTimeMillis();
 
 				findInSingleSubspace(data, Collections.singletonList(t2.f0),
-					t2.f1, stopTime, output, false, 0);
+					t2.f1, stopTime, output, threadNum, 0);
 
 				end = System.currentTimeMillis();
 				System.out.println("subspace [" + i + "] single find time: " + (end - start) / 1000);
@@ -87,13 +89,14 @@ public class AutoDiscovery {
 				}
 
 				BreakdownDetector detector = new BreakdownDetector().detect(data, subspaces, true,
-					AutoDiscoveryConstants.BREAKDOWN_DISTINCT_COUNT_THRESHOLD, LocalOperator.getParallelism());
+					AutoDiscoveryConstants.BREAKDOWN_DISTINCT_COUNT_THRESHOLD, threadNum);
 
 				int measureSize = 0;
 				for (Tuple2 <Breakdown, List <Measure>> bdTuple : detector.list) {
 					List <LocalOperator <?>> dataAgg = AggregationQuery.sameSubspaceColQuery(data, t.f0, subspaces,
-						bdTuple.f0, bdTuple.f1);
-					findInCrossSubspacesByBreakdown(t.f1, dataAgg, bdTuple.f0, bdTuple.f1, stopTime, output);
+						bdTuple.f0, bdTuple.f1, threadNum);
+					findInCrossSubspacesByBreakdown(t.f1, dataAgg, bdTuple.f0, bdTuple.f1, stopTime,
+						output, threadNum);
 					measureSize += bdTuple.f1.size();
 				}
 				System.out.println("subspace col: " + t.f0 + " subspaces size: " +
@@ -113,13 +116,7 @@ public class AutoDiscovery {
 		/**
 		 * STEP 3 : Recommendation
 		 */
-		output.sort(new Comparator <Insight>() {
-			@Override
-			public int compare(Insight o1, Insight o2) {
-				return -Double.compare(o1.score, o2.score);
-			}
-		});
-		return output;
+		return InsightDecay.sortInsights(output, 0.6);
 	}
 
 	static void basicStat(LocalOperator <?> data, final long stopTime, List <Insight> output) {
@@ -142,7 +139,7 @@ public class AutoDiscovery {
 											double impact,
 											long stopTime,
 											List <Insight> outInsights,
-											boolean isSingleThread,
+											int threadNum,
 											int threadId
 	) {
 		LocalOperator <?> curData = data;
@@ -152,7 +149,7 @@ public class AutoDiscovery {
 
 		if (AutoDiscovery.isTimeOut(stopTime)) {return;}
 
-		List <LocalOperator <?>> dataAggrs = AggregationQuery.query(curData, breakdown, measures, isSingleThread);
+		List <LocalOperator <?>> dataAggrs = AggregationQuery.query(curData, breakdown, measures, threadNum);
 
 		if (AutoDiscovery.isTimeOut(stopTime)) {return;}
 
@@ -160,12 +157,10 @@ public class AutoDiscovery {
 			StatInsight.distributionMulti(dataAggrs, breakdown, measures, outInsights);
 		}
 
-
-		System.out.println(
-			String.format("threadId[%s], subspace[%s] breakdown[%s] distinctCount: %s measures.size(): %s",
-				threadId,
-				subspaces.isEmpty() ? "" : subspaces.get(0),
-				breakdown.colName, dataAggrs.get(0).getOutputTable().getNumRow(), measures.size()));
+		System.out.printf("threadId[%s], subspace[%s] breakdown[%s] distinctCount: %s measures.size(): %s%n",
+			threadId,
+			subspaces.isEmpty() ? "" : subspaces.get(0),
+			breakdown.colName, dataAggrs.get(0).getOutputTable().getNumRow(), measures.size());
 
 		boolean isTimestampCol = AutoDiscovery.isTimestampCol(data.getSchema(), breakdown.colName);
 		CorrelationInsightBase correlationInsightBase;
@@ -190,18 +185,18 @@ public class AutoDiscovery {
 						ex.printStackTrace();
 					}
 				}
-			} else {
-				for (InsightType type : Insight.singlePointInsightType()) {
-					try {
-						Insight insight = Mining.calcInsight(subject, dataAggr, type);
-						insight.score *= impact;
+			}
 
-						if (insight.score >= AutoDiscoveryConstants.SCORE_THRESHOLD) {
-							outInsights.add(insight);
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace();
+			for (InsightType type : Insight.singlePointInsightType()) {
+				try {
+					Insight insight = Mining.calcInsight(subject, dataAggr, type);
+					insight.score *= impact;
+
+					if (insight.score >= AutoDiscoveryConstants.SCORE_THRESHOLD) {
+						outInsights.add(insight);
 					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
 			}
 
@@ -228,7 +223,7 @@ public class AutoDiscovery {
 						insight.type = type;
 
 						correlationInsightBase = MiningInsightFactory.getMiningInsight(insight);
-						correlationInsightBase.setSingleThread(isSingleThread);
+						correlationInsightBase.setThreadNum(threadNum);
 						correlationInsightBase.processData(dataAggr, dataAggr1);
 						insight.score *= impact;
 						if (insight.score >= AutoDiscoveryConstants.SCORE_THRESHOLD) {
@@ -250,7 +245,8 @@ public class AutoDiscovery {
 													   Breakdown breakdown,
 													   List <Measure> measures,
 													   final long stopTime,
-													   List <Insight> output) {
+													   List <Insight> output,
+													   int threadNum) {
 		int measureIdx = 0;
 		for (Measure m : measures) {
 			for (int i = 0; i < subspaces.size() - 1; i++) {
@@ -262,6 +258,7 @@ public class AutoDiscovery {
 					insight.type = InsightType.Correlation;
 					insight.addAttachSubspace(subspaces.get(j).f0);
 					CorrelationInsight correlationInsight = new CorrelationInsight(insight);
+					correlationInsight.setThreadNum(threadNum);
 					String[] columns = new String[] {breakdown.colName, MEASURE_NAME_PREFIX + measureIdx};
 					correlationInsight.processData(dataAgg.get(i).select(columns), dataAgg.get(j).select(columns));
 					insight.score *= (subspaces.get(i).f1 + subspaces.get(j).f1);
@@ -280,7 +277,7 @@ public class AutoDiscovery {
 									 double impact,
 									 final long stopTime,
 									 List <Insight> output,
-									 boolean isSingleThread,
+									 int threadNum,
 									 int threadId
 	) {
 		long start = System.currentTimeMillis();
@@ -299,7 +296,7 @@ public class AutoDiscovery {
 
 		BreakdownDetector breakdownDetector = new BreakdownDetector()
 			.detect(data, new ArrayList <>(), false,
-				AutoDiscoveryConstants.BREAKDOWN_DISTINCT_COUNT_THRESHOLD, LocalOperator.getParallelism());
+				AutoDiscoveryConstants.BREAKDOWN_DISTINCT_COUNT_THRESHOLD, threadNum);
 
 		end = System.currentTimeMillis();
 
@@ -315,7 +312,7 @@ public class AutoDiscovery {
 
 		for (Tuple2 <Breakdown, List <Measure>> t2 : breakdownDetector.list) {
 			AutoDiscovery.findInSingleSubspace(data, subspaces, t2.f0, t2.f1,
-				impact, stopTime, output, isSingleThread, threadId);
+				impact, stopTime, output, threadNum, threadId);
 			if (isTimeOut(stopTime)) {break;}
 		}
 

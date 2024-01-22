@@ -9,6 +9,7 @@ import com.alibaba.alink.operator.local.LocalOperator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -31,8 +32,10 @@ public class AutoDiscoveryMultiThread {
 		long startT = System.currentTimeMillis();
 		Tuple2 <List <Tuple4 <List <Subspace>, Breakdown, List <Measure>, Double>>,
 			List <Tuple2 <String, List <Tuple2 <Subspace, Double>>>>> searchSpaces =
-			findSearchSpace(data, AutoDiscoveryConstants.IMPACT_THRESHOLD,
-				AutoDiscoveryConstants.BREAKDOWN_DISTINCT_COUNT_THRESHOLD);
+			findSearchSpace(data, BreakdownDetector.getBreakdownCols(data.getSchema()),
+				AutoDiscoveryConstants.IMPACT_THRESHOLD,
+				AutoDiscoveryConstants.BREAKDOWN_DISTINCT_COUNT_THRESHOLD,
+				parallelism);
 
 		List <Tuple4 <List <Subspace>, Breakdown, List <Measure>, Double>> singleSearchSpaces = searchSpaces.f0;
 		List <Tuple2 <String, List <Tuple2 <Subspace, Double>>>> colSearchSpaces = searchSpaces.f1;
@@ -71,7 +74,7 @@ public class AutoDiscoveryMultiThread {
 						for (int j = 0; j < step + 1; j++) {
 							int idx = threadId + j * singleMeasureThreadNum;
 
-							System.out.println("threadId: " + threadId + " idx: " + idx);
+							System.out.println("threadId[" + threadId + "] idx: " + idx);
 
 							if (idx < searchSpacesSize) {
 								long start1 = System.currentTimeMillis();
@@ -79,11 +82,11 @@ public class AutoDiscoveryMultiThread {
 								Tuple4 <List <Subspace>, Breakdown, List <Measure>, Double> t4 =
 									singleSearchSpaces.get(idx);
 								AutoDiscovery.findInSingleSubspace(data, t4.f0, t4.f1, t4.f2, t4.f3, stopTime,
-									outInsights, true, threadId);
+									outInsights, 1, threadId);
 
 								long end1 = System.currentTimeMillis();
-								System.out.println(String.format("find in single subspace[%s] breakdown[%s] run time: "
-										+ "%s",
+								System.out.println(String.format("threadId[" + threadId + "]" +
+										"find in single subspace[%s] breakdown[%s] run time: %s",
 									t4.f0.isEmpty() ? "" : t4.f0.get(0),
 									t4.f1.colName,
 									(end1 - start1) / 1000));
@@ -125,10 +128,9 @@ public class AutoDiscoveryMultiThread {
 
 						for (Tuple2 <Breakdown, List <Measure>> bdTuple : detector.list) {
 							List <LocalOperator <?>> dataAgg = AggregationQuery.sameSubspaceColQuery(
-								data, t.f0, subspaces, bdTuple.f0, bdTuple.f1);
+								data, t.f0, subspaces, bdTuple.f0, bdTuple.f1, 1);
 							AutoDiscovery.findInCrossSubspacesByBreakdown(t.f1, dataAgg, bdTuple.f0, bdTuple.f1,
-								stopTime,
-								outInsights);
+								stopTime, outInsights, 1);
 							if (AutoDiscovery.isTimeOut(stopTime)) {break;}
 						}
 
@@ -143,30 +145,15 @@ public class AutoDiscoveryMultiThread {
 
 		taskRunner.join();
 
-		return outInsights;
-	}
-
-	/**
-	 * @param data
-	 * @param impactThreshold:    default value is 0.03.
-	 * @param breakDownThreshold: default value is 100.
-	 * @return
-	 */
-	static Tuple2 <List <Tuple4 <List <Subspace>, Breakdown, List <Measure>, Double>>,
-		List <Tuple2 <String, List <Tuple2 <Subspace, Double>>>>>
-	findSearchSpace(LocalOperator <?> data, double impactThreshold, int breakDownThreshold) {
-		List <Tuple4 <List <Subspace>, Breakdown, List <Measure>, Double>> subspaceAndBreakDown = new ArrayList <>();
-		List <Tuple2 <String, List <Tuple2 <Subspace, Double>>>> subspaceAndBreakDownByCol = new ArrayList <>();
-
-		return findSearchSpace(data, BreakdownDetector.getBreakdownCols(data.getSchema()), impactThreshold,
-			breakDownThreshold);
+		return InsightDecay.sortInsights(outInsights, 0.6);
 	}
 
 	public static Tuple2 <List <Tuple4 <List <Subspace>, Breakdown, List <Measure>, Double>>,
 		List <Tuple2 <String, List <Tuple2 <Subspace, Double>>>>>
-	findSearchSpace(LocalOperator <?> data, String[] breakdownCols, double impactThreshold, int breakDownThreshold) {
+	findSearchSpace(LocalOperator <?> data, String[] breakdownCols,
+					double impactThreshold, int breakDownThreshold, int threadNum) {
 		List <Tuple4 <List <Subspace>, Breakdown, List <Measure>, Double>> subspaceAndBreakDown = new ArrayList <>();
-		List <Tuple2 <String, List <Tuple2 <Subspace, Double>>>> subspaceAndBreakDownByCol = new ArrayList <>();
+		List <Tuple2 <String, List <Tuple2 <Subspace, Double>>>> subspaceAndBreakDownByCol;
 
 		// for whole table
 		{
@@ -174,8 +161,7 @@ public class AutoDiscoveryMultiThread {
 			long end;
 
 			BreakdownDetector breakdownDetector = new BreakdownDetector().detect(data, breakdownCols,
-				new ArrayList <>(),
-				false, breakDownThreshold, LocalOperator.getParallelism());
+				new ArrayList <>(), false, breakDownThreshold, threadNum);
 
 			for (Tuple2 <Breakdown, List <Measure>> b2 : breakdownDetector.list) {
 				subspaceAndBreakDown.add(Tuple4.of(new ArrayList <>(), b2.f0, b2.f1, 1.0));
@@ -190,7 +176,7 @@ public class AutoDiscoveryMultiThread {
 			long start = System.currentTimeMillis();
 
 			ImpactDetector impactDetector = new ImpactDetector(impactThreshold);
-			impactDetector.detect(data, breakdownCols);
+			impactDetector.detect(data, breakdownCols, threadNum);
 
 			long end = System.currentTimeMillis();
 			System.out.println("subspace impact detect run time: " + (end - start) / 1000 + "s.");
@@ -198,7 +184,7 @@ public class AutoDiscoveryMultiThread {
 
 			for (Tuple2 <Subspace, Double> t2 : impactDetector.listSingleSubspace()) {
 				BreakdownDetector breakdownDetector = new BreakdownDetector().detect(data,
-					Collections.singletonList(t2.f0), false, breakDownThreshold, LocalOperator.getParallelism());
+					Collections.singletonList(t2.f0), false, breakDownThreshold, threadNum);
 				for (Tuple2 <Breakdown, List <Measure>> b2 : breakdownDetector.list) {
 					subspaceAndBreakDown.add(Tuple4.of(Collections.singletonList(t2.f0), b2.f0, b2.f1, t2.f1));
 				}

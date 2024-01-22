@@ -61,7 +61,7 @@ public class FmTrainLocalOp<T extends FmTrainLocalOp <T>> extends LocalOperator 
 	 * @return this class.
 	 */
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		// Get parameters of this algorithm.
 		Params params = getParams();
@@ -92,7 +92,6 @@ public class FmTrainLocalOp<T extends FmTrainLocalOp <T>> extends LocalOperator 
 			labelsAndFeatureSize.f1, params, dim, isRegProc, labelType);
 
 		this.setOutputTable(new MTable(modelRows, new FmModelDataConverter(labelType).getModelSchema()));
-		return (T) this;
 	}
 
 	/**

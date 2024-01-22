@@ -37,9 +37,8 @@ public final class DistinctLocalOp extends BaseSqlApiLocalOp <DistinctLocalOp> {
 	}
 
 	@Override
-	public DistinctLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		this.setOutputTable(LocalMLEnvironment.getInstance().getSqlExecutor().distinct(inputs[0]).getOutputTable());
-		return this;
 	}
 
 }

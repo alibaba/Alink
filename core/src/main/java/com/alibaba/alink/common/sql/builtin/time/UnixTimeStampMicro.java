@@ -19,7 +19,7 @@ public class UnixTimeStampMicro extends ScalarFunction {
 		}
 
 		// when select * from ( select * from xxx), zone change from 8 to UTC. so need set to UTC
-		LocalDateTime ts = in.toLocalDateTime();
-		return ts.atZone(ZoneId.of("UTC")).toInstant().toEpochMilli();
+		//LocalDateTime ts = in.toLocalDateTime();
+		return in.getTime();
 	}
 }

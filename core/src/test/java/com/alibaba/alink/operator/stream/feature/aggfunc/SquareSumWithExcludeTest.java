@@ -33,7 +33,7 @@ public class SquareSumWithExcludeTest extends AggFunctionTestBase <Object[], Obj
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		return Arrays.asList(0.0, 1.0);
+		return Arrays.asList(null, 1.0);
 	}
 
 	@Override

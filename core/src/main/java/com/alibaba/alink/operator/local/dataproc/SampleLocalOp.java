@@ -37,7 +37,7 @@ public final class SampleLocalOp extends LocalOperator <SampleLocalOp>
 	}
 
 	@Override
-	public SampleLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 
 		boolean withReplacement = getWithReplacement();
@@ -58,7 +58,6 @@ public final class SampleLocalOp extends LocalOperator <SampleLocalOp>
 		}
 
 		this.setOutputTable(new MTable(result, in.getSchema()));
-		return this;
 	}
 
 }

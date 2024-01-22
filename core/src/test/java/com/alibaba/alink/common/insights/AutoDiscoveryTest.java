@@ -1,23 +1,44 @@
 package com.alibaba.alink.common.insights;
 
-import com.alibaba.alink.operator.batch.BatchOperator;
-import com.alibaba.alink.operator.batch.source.CsvSourceBatchOp;
-import com.alibaba.alink.operator.batch.sql.GroupByBatchOp;
 import com.alibaba.alink.operator.local.LocalOperator;
-import com.alibaba.alink.operator.local.sink.CsvSinkLocalOp;
 import com.alibaba.alink.operator.local.source.CsvSourceLocalOp;
-import com.alibaba.alink.operator.local.source.MemSourceLocalOp;
 import com.alibaba.alink.operator.local.sql.GroupByLocalOp2;
 import org.junit.Ignore;
 import org.junit.Test;
-import scala.concurrent.java8.FuturesConvertersImpl.P;
 
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.util.Comparator;
 import java.util.List;
 
 public class AutoDiscoveryTest {
+
+	@Test
+	@Ignore
+	public void test() throws Exception {
+		//LocalOperator <?> data = Data.getCarSalesLocalSource();
+		//LocalOperator<?> data = Data.getCensusLocalSource();
+		LocalOperator <?> data = Data.getEmissionLocalSource();
+		//LocalOperator <?> data = Data.getCriteo_10W_LocalSource();
+		data.printStatistics();
+
+		//data = data.select("to_timestamp_from_format(`year`, 'YYYY/MM/DD') as ts, brand, category, model, sales");
+
+		long start = System.currentTimeMillis();
+
+		List <Insight> insights = AutoDiscovery.find(data, 60);
+
+		LocalOperator.execute();
+
+		List <Insight> result = InsightDecay.sortInsights(insights);
+
+		long end = System.currentTimeMillis();
+		System.out.println("insight size: " + result.size());
+		System.out.println("auto discovery run time: " + (end - start) / 1000 + "s.");
+
+		ToReport toReport = new ToReport(result);
+
+		toReport.withHtml("Emission", true, 100);
+	}
+
 	@Test
 	@Ignore
 	public void testCriteo() throws Exception {
@@ -27,14 +48,14 @@ public class AutoDiscoveryTest {
 		//System.setErr(printstream);
 		//System.setOut(printstream);
 
-		//LocalOperator.setParallelism(1);
+		LocalOperator.setParallelism(1);
 
 		//data: https://www.kaggle.com/c/criteo-display-ad-challenge/data
-		String filePath = "https://alink-example-data.oss-cn-hangzhou-zmf.aliyuncs.com/criteo_random_10w_test_data";
+		//String filePath = "https://alink-example-data.oss-cn-hangzhou-zmf.aliyuncs.com/criteo_random_10w_test_data";
 		//String filePath = "http://alink-example-data.oss-cn-hangzhou-zmf.aliyuncs.com/criteo_random_90w_train_data";
 		//String filePath = "/Users/ning.cain/data/datav/criteo_random_10w_test_data";
 		//String filePath = "/Users/ning.cain/data/datav/criteo_random_90w_train_data";
-		//String filePath = "/Users/ning.cain/data/datav/criteo_random_100w_data";
+		String filePath = "/Users/ning.cain/data/datav/criteo_random_100w_data";
 		//String filePath = "/Users/ning.cain/data/datav/criteo_random_200w_data";
 
 		String schemaStr = "label int,nf01 int,nf02 int,nf03 int,nf04 int,nf05 int,nf06 int,nf07 int,nf08 int,nf09 "
@@ -67,7 +88,8 @@ public class AutoDiscoveryTest {
 		//String filePath = "http://alink-example-data.oss-cn-hangzhou-zmf.aliyuncs.com/criteo_random_10w_test_data";
 		//String filePath = "http://alink-example-data.oss-cn-hangzhou-zmf.aliyuncs.com/criteo_random_90w_train_data";
 
-		String filePath = "/Users/ning.cain/data/datav/criteo_random_90w_train_data";
+		//String filePath = "/Users/ning.cain/data/datav/criteo_random_90w_train_data";
+		String filePath = "/Users/ning.cain/data/datav/criteo_random_100w_data";
 
 		String schemaStr = "label int,nf01 int,nf02 int,nf03 int,nf04 int,nf05 int,nf06 int,nf07 int,nf08 int,nf09 "
 			+ "int,nf10 int,nf11 int,nf12 int,nf13 int,cf01 string,cf02 string,cf03 string,cf04 string,cf05 string,"
@@ -169,21 +191,6 @@ public class AutoDiscoveryTest {
 
 	@Test
 	@Ignore
-	public void test() throws Exception {
-		//LocalOperator<?> data = Data.getCarSalesLocalSource();
-		//LocalOperator<?> data = Data.getCensusLocalSource();
-		LocalOperator <?> data = Data.getEmissionLocalSource();
-		data.printStatistics();
-
-		List <Insight> insights = AutoDiscovery.find(data, 1);
-
-		for (Insight insight : insights) {
-			System.out.println(insight);
-		}
-	}
-
-	@Test
-	@Ignore
 	public void testForTs() throws Exception {
 		LocalOperator data = Data.getCarSalesLocalSource()
 			.select("to_timestamp_from_format(`year`, 'YYYY/MM/DD') as ts, brand, category, model, sales")
@@ -201,25 +208,49 @@ public class AutoDiscoveryTest {
 	@Test
 	@Ignore
 	public void test2() throws Exception {
-		//LocalOperator <?> data = Data.getCarSalesLocalSource();
-		LocalOperator <?> data = get10wData();
+		LocalOperator <?> data = Data.getCarSalesLocalSource();
+		//LocalOperator <?> data = get10wData();
 		//data.printStatistics("Data :");
 
 		//data.lazyPrint();
 
-		Subject subject = new Subject()
-			//.addSubspace(new Subspace("cf17", "776ce399"))
-			.setBreakdown(new Breakdown("cf06"))
-			.addMeasure(new Measure("nf02", MeasureAggr.COUNT));
+		//Subject subject = new Subject()
+		//	//.addSubspace(new Subspace("cf17", "776ce399"))
+		//	.setBreakdown(new Breakdown("cf06"))
+		//	.addMeasure(new Measure("nf02", MeasureAggr.COUNT));
 
 		//data = data.select("brand, category, -sales as sales");
-		//Subject subject = new Subject()
-		//	.addSubspace(new Subspace("brand", "BMW"))
-		//	.setBreakdown(new Breakdown("category"))
-		//	.addMeasure(new Measure("sales", MeasureAggr.AVG));
+		Subject subject = new Subject()
+			//.addSubspace(new Subspace("brand", "BMW"))
+			.setBreakdown(new Breakdown("model"))
+			.addMeasure(new Measure("sales", MeasureAggr.AVG));
 
 		Insight insight = Mining.calcInsight(data, subject, InsightType.OutstandingTop2);
 		System.out.println(insight);
+
+		//LocalOperator <?> sinkOp = new CsvSinkLocalOp()
+		//	.setFilePath("/Users/ning.cain/data/datav/1")
+		//	.setOverwriteSink(true);
+
+		//LayoutData layout = (LayoutData) insight.layout;
+		//new MemSourceLocalOp(layout.data).link(sinkOp);
+
+		LocalOperator.execute();
+	}
+
+	@Test
+	@Ignore
+	public void testOut() throws Exception {
+		LocalOperator <?> data = Data.getCarSalesLocalSource();
+		data = data.select("to_timestamp_from_format(`year`, 'YYYY/MM/DD') as ts, brand, category, model, sales");
+
+		Subject subject = new Subject()
+			.setBreakdown(new Breakdown("ts"))
+			.addMeasure(new Measure("sales", MeasureAggr.SUM));
+
+		Insight insight = Mining.calcInsight(data, subject, InsightType.ChangePoint);
+		System.out.println(insight);
+		System.out.println(insight.layout.data);
 
 		//LocalOperator <?> sinkOp = new CsvSinkLocalOp()
 		//	.setFilePath("/Users/ning.cain/data/datav/1")

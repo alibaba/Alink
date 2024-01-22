@@ -34,14 +34,19 @@ public class ScatterplotClusteringInsight extends CrossMeasureCorrelationInsight
 
 	@Override
 	public void fillLayout() {
-		this.insight.layout.xAxis = this.insight.subject.measures.get(0).aggr + "(" + this.insight.subject.measures.get(0).colName + ")";
-		this.insight.layout.yAxis = this.insight.subject.measures.get(1).aggr + "(" + this.insight.subject.measures.get(1).colName + ")";
-		this.insight.layout.title = insight.layout.xAxis + " and " + insight.layout.yAxis + " cluster";
+		List<Measure> measures = this.insight.subject.measures;
+		this.insight.layout.xAxis = String.format("%s(%s)", measures.get(0).aggr, measures.get(0).colName);
+		this.insight.layout.yAxis = String.format("%s(%s)", measures.get(1).aggr, measures.get(1).colName);
+		this.insight.layout.title = String.format("%s的%s", measures.get(0).colName, measures.get(0).aggr.getCnName())
+			+ " 与 " + String.format("%s的%s", measures.get(1).colName, measures.get(1).aggr.getCnName()) + " 的聚类结果";
 		StringBuilder builder = new StringBuilder();
 		if (null != insight.subject.subspaces && !insight.subject.subspaces.isEmpty()) {
 			builder.append(insight.getSubspaceStr(insight.subject.subspaces)).append(" 条件下，");
 		}
-		builder.append(this.insight.layout.xAxis).append(" 与 ").append(this.insight.layout.yAxis).append(" 有聚类特性");
+		builder.append(String.format("%s的%s", measures.get(0).colName, measures.get(0).aggr.getCnName()))
+			.append(" 与 ")
+			.append(String.format("%s的%s", measures.get(1).colName, measures.get(1).aggr.getCnName()))
+			.append(" 有聚类特性");
 		this.insight.layout.description = builder.toString();
 	}
 
@@ -128,6 +133,7 @@ public class ScatterplotClusteringInsight extends CrossMeasureCorrelationInsight
 			row.setField(1, measureValues0.get(key));
 			row.setField(2, measureValues1.get(key));
 			row.setField(3, result.f3[i]);
+			rows.add(row);
 		}
 		MTable mTable = new MTable(rows, outSchema);
 		this.insight.layout.data = mTable;

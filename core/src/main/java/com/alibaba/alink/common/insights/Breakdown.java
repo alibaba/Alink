@@ -4,9 +4,21 @@ import java.io.Serializable;
 
 public class Breakdown implements Serializable {
 
-	public final String colName;
+	public String colName;
+
+	public Breakdown() {
+
+	}
 
 	public Breakdown(String colName) {
+		this.colName = colName;
+	}
+
+	public String getColName() {
+		return colName;
+	}
+
+	public void setColName(String colName) {
 		this.colName = colName;
 	}
 }

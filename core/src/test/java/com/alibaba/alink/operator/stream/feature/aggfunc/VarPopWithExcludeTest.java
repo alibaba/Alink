@@ -45,7 +45,7 @@ public class VarPopWithExcludeTest extends AggFunctionTestBase <Object[], Object
 
 	@Override
 	protected List <Object> getExpectedResults() {
-		return Arrays.asList(0.0, 0.0, 0.25, 0.6667, 1.25, 2.0, 2.9167, 4.0);
+		return Arrays.asList(null, 0.0, 0.25, 0.6667, 1.25, 2.0, 2.9167, 4.0);
 	}
 
 	@Override

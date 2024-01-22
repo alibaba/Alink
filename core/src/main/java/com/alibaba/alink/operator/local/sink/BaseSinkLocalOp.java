@@ -14,11 +14,11 @@ import com.alibaba.alink.common.exceptions.AkIllegalOperationException;
 import com.alibaba.alink.common.exceptions.AkIllegalStateException;
 import com.alibaba.alink.operator.local.AlinkLocalSession;
 import com.alibaba.alink.operator.local.AlinkLocalSession.IOTaskRunner;
+import com.alibaba.alink.operator.local.utils.LocalCheckpointManagerInterface;
 import com.alibaba.alink.operator.local.LocalOperator;
 import com.alibaba.alink.operator.local.utils.MTableSerializeLocalOp;
 import com.alibaba.alink.operator.local.utils.TensorSerializeLocalOp;
 import com.alibaba.alink.operator.local.utils.VectorSerializeLocalOp;
-import com.alibaba.alink.params.shared.HasNumThreads;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
@@ -37,9 +37,14 @@ public abstract class BaseSinkLocalOp<T extends BaseSinkLocalOp <T>> extends Loc
 	}
 
 	@Override
-	public T linkFrom(LocalOperator <?>... inputs) {
+	public T enableCheckpoint(LocalCheckpointManagerInterface localCheckpointManager, String checkpointName) {
+		throw new RuntimeException("Sink operator does not support checkpoint.");
+	}
+
+	@Override
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
-		return sinkFrom(in
+		sinkFrom(in
 			.link(new VectorSerializeLocalOp())
 			.link(new MTableSerializeLocalOp())
 			.link(new TensorSerializeLocalOp())
@@ -96,42 +101,42 @@ public abstract class BaseSinkLocalOp<T extends BaseSinkLocalOp <T>> extends Loc
 				if (cnt <= 0) {continue;}
 
 				ioTaskRunner.submit(() -> {
-					OutputFormat <T> localOutputFormat = SerializationUtils.deserialize(serialized);
+						OutputFormat <T> localOutputFormat = SerializationUtils.deserialize(serialized);
 
-					// Todo: need to mock the configuration.
-					localOutputFormat.configure(new Configuration());
+						// Todo: need to mock the configuration.
+						localOutputFormat.configure(new Configuration());
 
-					if (localOutputFormat instanceof RichOutputFormat) {
-						//((RichOutputFormat <Row>) localOutputFormat)
-						//	.setRuntimeContext(new LocalOutputFormatRuntimeContext());
-					}
-
-					try {
-						localOutputFormat.open(curThread, numThreads);
-
-						for (int j = start; j < start + cnt; ++j) {
-							localOutputFormat.writeRecord(input.get(j));
+						if (localOutputFormat instanceof RichOutputFormat) {
+							//((RichOutputFormat <Row>) localOutputFormat)
+							//	.setRuntimeContext(new LocalOutputFormatRuntimeContext());
 						}
 
-					} catch (IOException e) {
-						if (localOutputFormat instanceof CleanupWhenUnsuccessful) {
+						try {
+							localOutputFormat.open(curThread, numThreads);
+
+							for (int j = start; j < start + cnt; ++j) {
+								localOutputFormat.writeRecord(input.get(j));
+							}
+
+						} catch (IOException e) {
+							if (localOutputFormat instanceof CleanupWhenUnsuccessful) {
+								try {
+									((CleanupWhenUnsuccessful) localOutputFormat).tryCleanupOnError();
+								} catch (Exception sub) {
+									sub.printStackTrace();
+									// pass
+								}
+							}
+
+							e.printStackTrace();
+
+						} finally {
 							try {
-								((CleanupWhenUnsuccessful) localOutputFormat).tryCleanupOnError();
-							} catch (Exception sub) {
-								sub.printStackTrace();
-								// pass
+								localOutputFormat.close();
+							} catch (Exception ex) {
+								ex.printStackTrace();
 							}
 						}
-
-						e.printStackTrace();
-
-					} finally {
-						try {
-							localOutputFormat.close();
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
 					}
 				);
 			}

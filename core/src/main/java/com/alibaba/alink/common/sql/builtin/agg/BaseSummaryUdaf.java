@@ -83,81 +83,76 @@ public abstract class BaseSummaryUdaf extends BaseUdaf <Object, SummaryData> {
 		}
 
 		public Number getSum() {
-			if (count == 0) {
-				return 0.0;
-			}
-			return handle.transformData(sum);
+			return count == 0 ? null : handle.transformData(sum);
 		}
 
 		public Number getSquareSum() {
-			if (count == 0) {
-				return 0.0;
-			}
-			return handle.transformData(squareSum);
+			return count == 0 ? null : handle.transformData(squareSum);
 		}
 
 		public Number getAvg() {
-			if (count == 0) {
-				return 0.0;
-			}
-			double res = sum / count;
-			return handle.transformData(res);
+			return count == 0 ? null : handle.transformData(sum / count);
 		}
 
 		public Number getVarPop() {
 			if (count == 0) {
-				return 0.0;
+				return null;
 			}
+
 			double res = (squareSum - Math.pow(sum, 2) / count) / count;
+
 			if (Double.isNaN(res)) {
-				return handle.transformData(0.0);
+				res = 0.0;
 			}
+
 			return handle.transformData(res);
 		}
 
 		public Number getVarSamp() {
 			if (count == 0) {
-				return 0.0;
+				return null;
 			}
 			double res = getVarPop().doubleValue() * count / (count - 1);
+
 			if (Double.isNaN(res)) {
-				return handle.transformData(0.0);
+				res = 0.0;
 			}
 			return handle.transformData(res);
 		}
 
 		public Number getStdPop() {
 			if (count == 0) {
-				return 0.0;
+				return null;
 			}
 			double res = Math.sqrt(getVarPop().doubleValue());
 			if (Double.isNaN(res)) {
-				return handle.transformData(0.0);
+				res = 0.0;
 			}
 			return handle.transformData(res);
 		}
 
 		public Number getStdSamp() {
 			if (count == 0) {
-				return 0.0;
+				return null;
 			}
 			double res = Math.sqrt(getVarSamp().doubleValue());
+
 			if (Double.isNaN(res)) {
-				return handle.transformData(0);
+				res = 0.0;
 			}
 			return handle.transformData(res);
 		}
 
 		public Number getSkewness() {
 			if (count == 0) {
-				return 0.0;
+				return null;
 			}
 			double avg = getAvg().doubleValue();
 			double std = getStdPop().doubleValue();
 			double res = (cubicSum / count - avg * (3 * Math.pow(std, 2) + Math.pow(avg, 2)))
 				/ Math.pow(std, 3);
 			if (Double.isNaN(res)) {
-				return handle.transformData(0);
+				res = 0.0;
 			}
 			return handle.transformData(res);
 		}

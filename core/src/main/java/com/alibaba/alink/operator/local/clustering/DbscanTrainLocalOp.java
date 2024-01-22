@@ -30,7 +30,7 @@ public class DbscanTrainLocalOp extends LocalOperator <DbscanTrainLocalOp>
 	private static final String NEIGHBOR_COL_NAME = "NEIGHBOR_COL";
 	
 	@Override
-	public DbscanTrainLocalOp linkFrom(LocalOperator <?>... inputs) {
+	protected void linkFromImpl(LocalOperator <?>... inputs) {
 		LocalOperator <?> in = checkAndGetFirst(inputs);
 		if (!getParams().contains(DbscanLocalParams.RADIUS)) {
 			throw new AkIllegalOperatorParameterException("missing radius of Dbscan.");
@@ -90,6 +90,5 @@ public class DbscanTrainLocalOp extends LocalOperator <DbscanTrainLocalOp>
 			}
 		}
 		this.setOutputTable(new MTable(resultRows, "modelInfo string"));
-		return this;
 	}
 }
