@@ -26,7 +26,7 @@ public class DocWordSplitCountTest extends AlinkTestBase {
 		environment.registerFunction("DocWordSplitCount", new DocWordSplitCount(" "));
 		environment.registerTable("myTable", table);
 		List <Row> list = environment.toDataSet(
-			environment.sqlQuery("SELECT w, cnt FROM myTable, LATERAL TABLE(DocWordSplitCount(f0)) as T(w, cnt)"),
+			environment.sqlQuery("SELECT w, cnt FROM myTable, LATERAL TABLE(DocWordSplitCount(f0)) as T(w, cnt) ORDER BY w"),
 			Row.class).collect();
 		Assert.assertArrayEquals(list.toArray(),
 			new Row[] {Row.of("a", 2L), Row.of("b", 2L), Row.of("c", 2L), Row.of("d", 1L)});
